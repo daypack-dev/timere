@@ -901,7 +901,7 @@ module Resolve_pattern = struct
               |> Seq.map (fun x -> `Range_inc (x, x))
               |> Result.ok ) )
 
-  let matching_time_slots ~allow_search_param_override
+  let matching_intervals ~allow_search_param_override
       (search_param : Search_param.t) (t : Time.Pattern.pattern) :
     ((int64 * int64) Seq.t, error) result =
     let f (x, y) =
@@ -932,12 +932,12 @@ module Resolve_pattern = struct
           |> Time.Intervals.Normalize.normalize ~skip_filter_invalid:true
             ~skip_sort:true)
 
-  let matching_time_slots_round_robin_non_decreasing
+  let matching_intervals_round_robin_non_decreasing
       ~allow_search_param_override (search_param : Search_param.t)
       (l : Time.Pattern.pattern list) :
     ((int64 * int64) list Seq.t, error) result =
     let l =
-      List.map (matching_time_slots ~allow_search_param_override search_param) l
+      List.map (matching_intervals ~allow_search_param_override search_param) l
     in
     match List.find_opt Result.is_error l with
     | Some e -> Error (Result.get_error e)
@@ -950,10 +950,10 @@ module Resolve_pattern = struct
       |> Seq.map (List.map Option.get)
       |> Result.ok
 
-  let matching_time_slots_round_robin_non_decreasing_flat
+  let matching_intervals_round_robin_non_decreasing_flat
       ~allow_search_param_override (search_param : Search_param.t)
       (l : Time.Pattern.pattern list) : ((int64 * int64) Seq.t, error) result =
-    matching_time_slots_round_robin_non_decreasing ~allow_search_param_override
+    matching_intervals_round_robin_non_decreasing ~allow_search_param_override
       search_param l
     |> Result.map (Seq.flat_map List.to_seq)
 
@@ -976,10 +976,10 @@ module Resolve_pattern = struct
             | Error () -> None
             | Ok x -> Some x ))
 
-  let next_match_time_slot ~(allow_search_param_override : bool)
+  let next_match_interval ~(allow_search_param_override : bool)
       (search_param : Search_param.t) (t : Time.Pattern.pattern) :
     ((int64 * int64) option, error) result =
-    matching_time_slots ~allow_search_param_override search_param t
+    matching_intervals ~allow_search_param_override search_param t
     |> Result.map (fun s ->
         match s () with Seq.Nil -> None | Seq.Cons (x, _) -> Some x)
 end
@@ -992,7 +992,7 @@ let resolve (search_param : Search_param.t) (time : Time.t) :
     | Unix_second_interval (start, end_exc) ->
       Result.ok @@ Seq.return (start, end_exc)
     | Pattern pat ->
-      Resolve_pattern.matching_time_slots ~allow_search_param_override:true
+      Resolve_pattern.matching_intervals ~allow_search_param_override:true
         search_param pat
       |> Result.map_error (fun _ -> "Error during resolution of pattern")
     | _ -> failwith "Unimplemented"
