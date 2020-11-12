@@ -117,3 +117,30 @@ module Resolver : sig
   val resolve :
     Search_param.t -> Time.t -> ((int64 * int64) Seq.t, string) result
 end
+
+module Duration : sig
+  type t = private {
+    days : int;
+    hours : int;
+    minutes : int;
+    seconds : int;
+  }
+
+  val make :
+    days:int -> hours:int -> minutes:int -> seconds:int -> (t, unit) result
+
+  val make_frac :
+    days:float ->
+    hours:float ->
+    minutes:float ->
+    seconds:int ->
+    (t, unit) result
+
+  val zero : t
+
+  val of_seconds : int64 -> (t, unit) result
+
+  val to_seconds : t -> int64
+
+  val normalize : t -> t
+end
