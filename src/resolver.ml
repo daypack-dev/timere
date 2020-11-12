@@ -932,9 +932,8 @@ module Resolve_pattern = struct
           |> Time.Intervals.Normalize.normalize ~skip_filter_invalid:true
             ~skip_sort:true)
 
-  let matching_intervals_round_robin_non_decreasing
-      ~allow_search_param_override (search_param : Search_param.t)
-      (l : Time.Pattern.pattern list) :
+  let matching_intervals_round_robin_non_decreasing ~allow_search_param_override
+      (search_param : Search_param.t) (l : Time.Pattern.pattern list) :
     ((int64 * int64) list Seq.t, error) result =
     let l =
       List.map (matching_intervals ~allow_search_param_override search_param) l
@@ -995,6 +994,11 @@ let resolve (search_param : Search_param.t) (time : Time.t) :
       Resolve_pattern.matching_intervals ~allow_search_param_override:true
         search_param pat
       |> Result.map_error (fun _ -> "Error during resolution of pattern")
+    | Round_robin_pick l ->
+      Misc_utils.get_ok_error_list (List.map (aux search_param) l)
+      |> Result.map
+        Time.Intervals.Round_robin
+        .merge_multi_list_round_robin_non_decreasing
     | _ -> failwith "Unimplemented"
   in
   aux search_param time

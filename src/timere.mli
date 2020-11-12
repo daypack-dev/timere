@@ -66,6 +66,8 @@ module Time : sig
 
   val interval_exc : t -> t -> t
 
+  val round_robin_pick : t list -> t
+
   val flatten : t Seq.t -> t
 
   val flatten_list : t list -> t

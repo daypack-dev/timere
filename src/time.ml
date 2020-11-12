@@ -1705,6 +1705,7 @@ type t =
     }
   | Unary_op of unary_op * t
   | Binary_op of binary_op * t * t
+  | Round_robin_pick of t list
   | List of t list
   | Seq of t Seq.t
 
@@ -1728,6 +1729,8 @@ let point (a : t) : t = Unary_op (Next_n_points 1, a)
 let interval_inc (a : t) (b : t) : t = Binary_op (Interval_inc, a, b)
 
 let interval_exc (a : t) (b : t) : t = Binary_op (Interval_exc, a, b)
+
+let round_robin_pick (l : t list) : t = Round_robin_pick l
 
 let not_in (a : t) : t = Unary_op (Not, a)
 
