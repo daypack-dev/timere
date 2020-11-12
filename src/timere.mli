@@ -38,6 +38,10 @@ module Time : sig
       second:int ->
       tz_offset_s:int ->
       t
+
+    val to_unix_second : t -> (int64, unit) result
+
+    val of_unix_second : int64 -> (t, unit) result
   end
 
   type t
