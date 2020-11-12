@@ -136,4 +136,3 @@ module Resolver : sig
       (interval Seq.t, string) result
   end
 end
-
