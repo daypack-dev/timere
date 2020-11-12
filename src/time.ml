@@ -2272,9 +2272,9 @@ type binary_op =
   | Interval_inc
   | Interval_exc
 
-type branching_days =
-  | Month_days of int Range.range list
-  (* | Weekdays of weekday Range.range list *)
+type branching_days = Month_days of int Range.range list
+
+(* | Weekdays of weekday Range.range list *)
 
 type t =
   | Unix_second of int64
@@ -2290,34 +2290,35 @@ type t =
   | List of t list
   | Seq of t Seq.t
 
-let chunk (chunk_size : int64) (t : t) : t =
-  Unary_op (Chunk chunk_size, t)
+let chunk (chunk_size : int64) (t : t) : t = Unary_op (Chunk chunk_size, t)
 
-let flatten (s : t Seq.t) : t =
-  Seq s
+let flatten (s : t Seq.t) : t = Seq s
 
-let flatten_list (l : t list) : t =
-  List l
+let flatten_list (l : t list) : t = List l
 
-let inter (a : t) (b : t) : t =
-  Binary_op (Inter, a, b)
+let inter (a : t) (b : t) : t = Binary_op (Inter, a, b)
 
-let union (a : t) (b : t) : t =
-  Binary_op (Union, a, b)
+let union (a : t) (b : t) : t = Binary_op (Union, a, b)
 
-let point (a : t) : t =
-  Unary_op (Next_n_points 1, a)
+let point (a : t) : t = Unary_op (Next_n_points 1, a)
 
-let interval_inc (a : t) (b : t) : t =
-  Binary_op (Interval_inc, a, b)
+let interval_inc (a : t) (b : t) : t = Binary_op (Interval_inc, a, b)
 
-let interval_exc (a : t) (b : t) : t =
-  Binary_op (Interval_exc, a, b)
+let interval_exc (a : t) (b : t) : t = Binary_op (Interval_exc, a, b)
 
-let not_in (a : t) : t =
-  Unary_op (Not, a)
+let not_in (a : t) : t = Unary_op (Not, a)
 
-let of_pattern ?(years = [])
-    ?(months = []) ?(month_days = []) ?(weekdays = []) ?(hours = []) ?(minutes = [])
-    ?(seconds = []) ?(unix_seconds = []) () : t =
-  Pattern (Pattern.{ years; months; month_days; weekdays; hours; minutes; seconds; unix_seconds})
+let of_pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
+    ?(hours = []) ?(minutes = []) ?(seconds = []) ?(unix_seconds = []) () : t =
+  Pattern
+    Pattern.
+      {
+        years;
+        months;
+        month_days;
+        weekdays;
+        hours;
+        minutes;
+        seconds;
+        unix_seconds;
+      }

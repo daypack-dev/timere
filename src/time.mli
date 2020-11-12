@@ -44,13 +44,13 @@ val flatten : t Seq.t -> t
 val flatten_list : t list -> t
 
 val of_pattern :
-  ?years : int list ->
-  ?months : month list ->
-  ?month_days : int list ->
-  ?weekdays : weekday list ->
-  ?hours : int list ->
-  ?minutes : int list ->
-  ?seconds : int list ->
-  ?unix_seconds : int64 list ->
+  ?years:int list ->
+  ?months:month list ->
+  ?month_days:int list ->
+  ?weekdays:weekday list ->
+  ?hours:int list ->
+  ?minutes:int list ->
+  ?seconds:int list ->
+  ?unix_seconds:int64 list ->
   unit ->
   t
