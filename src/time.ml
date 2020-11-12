@@ -1452,6 +1452,9 @@ module Date_time = struct
     tz_offset_s : int;
   }
 
+  let make ~year ~month ~day ~hour ~minute ~second ~tz_offset_s =
+    { year; month; day; hour; minute; second; tz_offset_s }
+
   let to_ptime_date_time (x : t) : Ptime.date * Ptime.time =
     ( (x.year, human_int_of_month x.month, x.day),
       ((x.hour, x.minute, x.second), x.tz_offset_s) )
@@ -1707,12 +1710,12 @@ module Search_param = struct
             else Error Invalid_start )
   end
 
-  let make_using_intervals ?search_using_tz_offset_s
-      (intervals : Interval.t list) : (t, error) result =
+  let of_intervals ?search_using_tz_offset_s (intervals : Interval.t list) :
+    (t, error) result =
     let t = { search_using_tz_offset_s; typ = Intervals intervals } in
     match Check.check_search_param t with Ok () -> Ok t | Error e -> Error e
 
-  let make_using_years_ahead ?search_using_tz_offset_s ?(start : start option)
+  let of_years_ahead ?search_using_tz_offset_s ?(start : start option)
       years_ahead : (t, error) result =
     let t =
       {
@@ -2277,7 +2280,8 @@ type branching_days = Month_days of int Range.range list
 (* | Weekdays of weekday Range.range list *)
 
 type t =
-  | Unix_second of int64
+  | Unix_second_interval of int64 * int64
+  | Date_time of Date_time.t
   | Pattern of Pattern.pattern
   | Branching of {
       years : int Range.range list;
@@ -2322,3 +2326,8 @@ let of_pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
         seconds;
         unix_seconds;
       }
+
+let of_date_time (date_time : Date_time.t) : t = Date_time date_time
+
+let of_unix_second_interval ((start, end_exc) : int64 * int64) : t =
+  Unix_second_interval (start, end_exc)
