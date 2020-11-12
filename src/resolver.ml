@@ -987,21 +987,23 @@ let resolve (search_param : Search_param.t) (time : Time.t) :
 
 module Search_in_intervals = struct
   let resolve ?search_using_tz_offset_s (intervals : Time.Interval.t list)
-      (time : Time.t)
-      : ((int64 * int64) Seq.t, string) result =
-    let search_param = Search_param.{ search_using_tz_offset_s; typ = Intervals intervals } in
-    match Search_param.Check.check_search_param search_param with Ok () -> resolve search_param time | Error _ -> Error "Invalid search intervals"
+      (time : Time.t) : ((int64 * int64) Seq.t, string) result =
+    let search_param =
+      Search_param.{ search_using_tz_offset_s; typ = Intervals intervals }
+    in
+    match Search_param.Check.check_search_param search_param with
+    | Ok () -> resolve search_param time
+    | Error _ -> Error "Invalid search intervals"
 end
 
 module Search_years_ahead = struct
   type start = Search_param.start
 
-  let resolve ?search_using_tz_offset_s ?(start : start option)
-      years_ahead
-      (time : Time.t)
-    : ((int64 * int64) Seq.t, string) result =
+  let resolve ?search_using_tz_offset_s ?(start : start option) years_ahead
+      (time : Time.t) : ((int64 * int64) Seq.t, string) result =
     let search_param =
-      Search_param.{
+      let open Search_param in
+      {
         search_using_tz_offset_s;
         typ =
           Years_ahead
@@ -1014,5 +1016,7 @@ module Search_years_ahead = struct
             };
       }
     in
-    match Search_param.Check.check_search_param search_param with Ok () -> resolve search_param time | Error _ -> Error "Invalid search years ahead or invalid start"
+    match Search_param.Check.check_search_param search_param with
+    | Ok () -> resolve search_param time
+    | Error _ -> Error "Invalid search years ahead or invalid start"
 end
