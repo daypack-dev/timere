@@ -2248,10 +2248,76 @@ module Pattern = struct
   end
 end
 
-type weekday_range = weekday Range.range
+type hms = {
+  hour : int;
+  minute : int;
+  second : int;
+}
 
-type month_day_range = int Range.range
+type sign_expr =
+  | Pos
+  | Neg
 
-type day_range =
-  | Weekday_range of weekday_range
-  | Month_day_range of month_day_range
+type unary_op =
+  | Not
+  | Every
+  | Next_n_points of int
+  | Next_n_intervals of int
+  | Chunk of int64
+  | Tz_offset of sign_expr * hms
+
+type binary_op =
+  | Union
+  | Inter
+  | Interval_inc
+  | Interval_exc
+
+type branching_days =
+  | Month_days of int Range.range list
+  (* | Weekdays of weekday Range.range list *)
+
+type t =
+  | Unix_second of int64
+  | Pattern of Pattern.pattern
+  | Branching of {
+      years : int Range.range list;
+      months : month Range.range list;
+      days : branching_days;
+      hms : hms Range.range list;
+    }
+  | Unary_op of unary_op * t
+  | Binary_op of binary_op * t * t
+  | List of t list
+  | Seq of t Seq.t
+
+let chunk (chunk_size : int64) (t : t) : t =
+  Unary_op (Chunk chunk_size, t)
+
+let flatten (s : t Seq.t) : t =
+  Seq s
+
+let flatten_list (l : t list) : t =
+  List l
+
+let inter (a : t) (b : t) : t =
+  Binary_op (Inter, a, b)
+
+let union (a : t) (b : t) : t =
+  Binary_op (Union, a, b)
+
+let point (a : t) : t =
+  Unary_op (Next_n_points 1, a)
+
+let interval_inc (a : t) (b : t) : t =
+  Binary_op (Interval_inc, a, b)
+
+let interval_exc (a : t) (b : t) : t =
+  Binary_op (Interval_exc, a, b)
+
+let not_in (a : t) : t =
+  Unary_op (Not, a)
+
+let of_pattern ?(years = [])
+    ?(months = []) ?(month_days = []) ?(weekdays = []) ?(hours = []) ?(minutes = [])
+    ?(seconds = []) ?(unix_seconds = []) () : t =
+  Pattern (Pattern.{ years; months; month_days; weekdays; hours; minutes; seconds; unix_seconds})
