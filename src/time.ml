@@ -1673,6 +1673,11 @@ type unary_op =
   | Every
   | Next_n_points of int
   | Next_n_intervals of int
+  | Normalize of {
+      skip_filter_invalid : bool;
+      skip_filter_empty : bool;
+      skip_sort : bool;
+    }
   | Chunk of {
       chunk_size : int64;
       drop_partial : bool;
@@ -1702,6 +1707,10 @@ type t =
   | Binary_op of binary_op * t * t
   | List of t list
   | Seq of t Seq.t
+
+let normalize ?(skip_filter_invalid = false) ?(skip_filter_empty = false)
+    ?(skip_sort = false) (t : t) : t =
+  Unary_op (Normalize { skip_filter_invalid; skip_filter_empty; skip_sort }, t)
 
 let chunk ?(drop_partial = false) (chunk_size : int64) (t : t) : t =
   Unary_op (Chunk { chunk_size; drop_partial }, t)

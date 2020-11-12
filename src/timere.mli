@@ -47,6 +47,13 @@ module Time : sig
 
   type t
 
+  val normalize :
+    ?skip_filter_invalid:bool ->
+    ?skip_filter_empty:bool ->
+    ?skip_sort:bool ->
+    t ->
+    t
+
   val chunk : ?drop_partial:bool -> int64 -> t -> t
 
   val inter : t -> t -> t
