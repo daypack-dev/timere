@@ -1,5 +1,7 @@
 type tz_offset_s = int
 
+type unix_second = int64
+
 let tz_offset_s_utc = 0
 
 type weekday =
@@ -1466,9 +1468,6 @@ module Date_time = struct
     tz_offset_s : int;
   }
 
-  let make ~year ~month ~day ~hour ~minute ~second ~tz_offset_s =
-    { year; month; day; hour; minute; second; tz_offset_s }
-
   let to_ptime_date_time (x : t) : Ptime.date * Ptime.time =
     ( (x.year, human_int_of_month x.month, x.day),
       ((x.hour, x.minute, x.second), x.tz_offset_s) )
@@ -1744,7 +1743,11 @@ let intervals_exc (a : t) (b : t) : t = Binary_op (Intervals_exc, a, b)
 let not_in (a : t) : t = Unary_op (Not, a)
 
 let of_pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
-    ?(hours = []) ?(minutes = []) ?(seconds = []) ?(unix_seconds = []) () : t =
+    ?(hours = []) ?(minutes = []) ?(seconds = []) ?(unix_seconds = []) () : (t, unit) result =
+  let p = List.for_all (fun x -> x >= 0) in
+  let p' = List.for_all (fun x -> x >= 0L) in
+  if p years && p month_days && p hours && p minutes && p seconds && p' unix_seconds then
+    Ok (
   Pattern
     Pattern.
       {
@@ -1757,6 +1760,16 @@ let of_pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
         seconds;
         unix_seconds;
       }
+)
+  else
+    Error ()
+
+let of_date_time ~year ~month ~day ~hour ~minute ~second ~tz_offset_s =
+  Date_time.{ year; month; day; hour; minute; second; tz_offset_s }
+  |> Date_time.to_unix_second
+  |> Result.map (fun x ->
+      Unix_second_interval (x, Int64.succ x)
+    )
 
 let of_unix_second_interval ((start, end_exc) : int64 * int64) : t =
   Unix_second_interval (start, end_exc)

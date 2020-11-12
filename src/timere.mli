@@ -1,4 +1,7 @@
-module Time : sig
+type unix_second = int64
+
+type interval = int64 * int64
+
   type tz_offset_s = int
 
   type weekday =
@@ -25,25 +28,6 @@ module Time : sig
     | `Nov
     | `Dec
     ]
-
-  module Date_time : sig
-    type t
-
-    val make :
-      year:int ->
-      month:month ->
-      day:int ->
-      hour:int ->
-      minute:int ->
-      second:int ->
-      tz_offset_s:int ->
-      t
-
-    val to_unix_second : t -> (int64, unit) result
-
-    val of_unix_second :
-      tz_offset_s_of_date_time:tz_offset_s option -> int64 -> (t, unit) result
-  end
 
   type t
 
@@ -88,40 +72,35 @@ module Time : sig
     ?seconds:int list ->
     ?unix_seconds:int64 list ->
     unit ->
-    t
+    (t, unit) result
+
+  val of_date_time :
+    year:int ->
+    month:month ->
+    day:int ->
+    hour:int ->
+    minute:int ->
+    second:int ->
+    tz_offset_s:int ->
+    (t, unit) result
 
   val of_unix_second_interval : int64 * int64 -> t
-end
 
 module Resolver : sig
-  module Search_param : sig
+  module Search_in_intervals : sig
+    val resolve :
+      ?search_using_tz_offset_s:tz_offset_s -> interval list -> Time.t -> (interval Seq.t, string) result
+  end
+
+  module Search_years_ahead : sig
     type start =
       [ `Unix_second of int64
       | `Date_time of Time.Date_time.t
       ]
 
-    type t
-
-    type error =
-      | Invalid_start
-      | Invalid_intervals
-      | Invalid_search_years_ahead
-      | Too_far_into_future
-
-    val of_intervals :
-      ?search_using_tz_offset_s:Time.tz_offset_s ->
-      (int64 * int64) list ->
-      (t, error) result
-
-    val of_years_ahead :
-      ?search_using_tz_offset_s:Time.tz_offset_s ->
-      ?start:start ->
-      int ->
-      (t, error) result
+    val resolve :
+      ?search_using_tz_offset_s:tz_offset_s -> ?start:start -> int -> Time.t -> (interval Seq.t, string) result
   end
-
-  val resolve :
-    Search_param.t -> Time.t -> ((int64 * int64) Seq.t, string) result
 end
 
 module Duration : sig
