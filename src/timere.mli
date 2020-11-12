@@ -70,8 +70,6 @@ module Time : sig
     unit ->
     t
 
-  val of_date_time : Date_time.t -> t
-
   val of_unix_second_interval : int64 * int64 -> t
 end
 
