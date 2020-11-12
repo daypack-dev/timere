@@ -1,0 +1,11 @@
+(library
+ (flags     (-w "+a-4-9-29-37-40-42-44-48-50-32-30@8"))
+ (name timere)
+ (public_name timere)
+ (libraries unix
+            ptime
+            oseq
+            mparser
+            re
+ )
+)

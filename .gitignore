@@ -1,0 +1,7 @@
+_build/
+_coverage/
+.merlin
+*.rst~
+*.install
+bisect*.out
+bisect*.coverage

@@ -1,0 +1,7 @@
+break-infix = fit-or-vertical
+break-infix-before-func
+field-space = loose
+let-and = sparse
+let-open = auto
+sequence-style = terminator
+type-decl = sparse
