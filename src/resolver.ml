@@ -994,8 +994,13 @@ let resolve (search_param : Search_param.t) (time : Time.t) :
       Resolve_pattern.matching_intervals ~allow_search_param_override:true
         search_param pat
       |> Result.map_error (fun _ -> "Error during resolution of pattern")
-    | Round_robin_pick l ->
+    | Round_robin_pick_list l ->
       Misc_utils.get_ok_error_list (List.map (aux search_param) l)
+      |> Result.map
+        Time.Intervals.Round_robin
+        .merge_multi_list_round_robin_non_decreasing
+    | Round_robin_pick_seq s ->
+      Seq_utils.get_ok_error_list (Seq.map (aux search_param) s)
       |> Result.map
         Time.Intervals.Round_robin
         .merge_multi_list_round_robin_non_decreasing

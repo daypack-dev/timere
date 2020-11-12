@@ -97,8 +97,7 @@ let check_if_f_holds_for_immediate_neighbors (type a) ~(f : a -> a -> bool)
   in
   aux f f_exn None s
 
-let find_first_error_or_return_whole_list (s : ('a, 'b) result Seq.t) :
-  ('a list, 'b) result =
+let get_ok_error_list (s : ('a, 'b) result Seq.t) : ('a list, 'b) result =
   let rec aux acc (s : ('a, 'b) result Seq.t) : ('a list, 'b) result =
     match s () with
     | Seq.Nil -> Ok (List.rev acc)

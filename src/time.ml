@@ -1689,6 +1689,8 @@ type binary_op =
   | Inter
   | Interval_inc
   | Interval_exc
+  | Intervals_inc
+  | Intervals_exc
 
 type branching_days = Month_days of int Range.range list
 
@@ -1705,9 +1707,10 @@ type t =
     }
   | Unary_op of unary_op * t
   | Binary_op of binary_op * t * t
-  | Round_robin_pick of t list
-  | List of t list
-  | Seq of t Seq.t
+  | Round_robin_pick_list of t list
+  | Round_robin_pick_seq of t Seq.t
+  | Merge_list of t list
+  | Merge_seq of t Seq.t
 
 let normalize ?(skip_filter_invalid = false) ?(skip_filter_empty = false)
     ?(skip_sort = false) (t : t) : t =
@@ -1716,9 +1719,13 @@ let normalize ?(skip_filter_invalid = false) ?(skip_filter_empty = false)
 let chunk ?(drop_partial = false) (chunk_size : int64) (t : t) : t =
   Unary_op (Chunk { chunk_size; drop_partial }, t)
 
-let flatten (s : t Seq.t) : t = Seq s
+let merge (l : t list) : t = Merge_list l
 
-let flatten_list (l : t list) : t = List l
+let merge_seq (s : t Seq.t) : t = Merge_seq s
+
+let round_robin_pick (l : t list) : t = Round_robin_pick_list l
+
+let round_robin_pick_seq (s : t Seq.t) : t = Round_robin_pick_seq s
 
 let inter (a : t) (b : t) : t = Binary_op (Inter, a, b)
 
@@ -1730,7 +1737,9 @@ let interval_inc (a : t) (b : t) : t = Binary_op (Interval_inc, a, b)
 
 let interval_exc (a : t) (b : t) : t = Binary_op (Interval_exc, a, b)
 
-let round_robin_pick (l : t list) : t = Round_robin_pick l
+let intervals_inc (a : t) (b : t) : t = Binary_op (Intervals_inc, a, b)
+
+let intervals_exc (a : t) (b : t) : t = Binary_op (Intervals_exc, a, b)
 
 let not_in (a : t) : t = Unary_op (Not, a)
 
