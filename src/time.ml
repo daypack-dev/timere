@@ -1673,7 +1673,10 @@ type unary_op =
   | Every
   | Next_n_points of int
   | Next_n_intervals of int
-  | Chunk of int64
+  | Chunk of {
+      chunk_size : int64;
+      drop_partial : bool;
+    }
   | Tz_offset of sign_expr * hms
 
 type binary_op =
@@ -1700,7 +1703,8 @@ type t =
   | List of t list
   | Seq of t Seq.t
 
-let chunk (chunk_size : int64) (t : t) : t = Unary_op (Chunk chunk_size, t)
+let chunk ?(drop_partial = false) (chunk_size : int64) (t : t) : t =
+  Unary_op (Chunk { chunk_size; drop_partial }, t)
 
 let flatten (s : t Seq.t) : t = Seq s
 

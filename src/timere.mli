@@ -41,12 +41,13 @@ module Time : sig
 
     val to_unix_second : t -> (int64, unit) result
 
-    val of_unix_second : int64 -> (t, unit) result
+    val of_unix_second :
+      tz_offset_s_of_date_time:tz_offset_s option -> int64 -> (t, unit) result
   end
 
   type t
 
-  val chunk : int64 -> t -> t
+  val chunk : ?drop_partial:bool -> int64 -> t -> t
 
   val inter : t -> t -> t
 
