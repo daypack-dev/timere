@@ -1,3 +1,19 @@
+module Int64_multipliers = struct
+  let minute_to_seconds = 60L
+
+  let hour_to_seconds = Int64.mul 60L minute_to_seconds
+
+  let day_to_seconds = Int64.mul 24L hour_to_seconds
+end
+
+module Float_multipliers = struct
+  let minute_to_seconds = Int64.to_float Int64_multipliers.minute_to_seconds
+
+  let hour_to_seconds = Int64.to_float Int64_multipliers.hour_to_seconds
+
+  let day_to_seconds = Int64.to_float Int64_multipliers.day_to_seconds
+end
+
 type raw = {
   days : float;
   hours : float;
@@ -37,15 +53,15 @@ let to_seconds (t : t) : int64 =
   let hours = Int64.of_int t.hours in
   let minutes = Int64.of_int t.minutes in
   let seconds = Int64.of_int t.seconds in
-  (days *^ Time.Int64_multipliers.day_to_seconds)
-  +^ (hours *^ Time.Int64_multipliers.hour_to_seconds)
-  +^ (minutes *^ Time.Int64_multipliers.minute_to_seconds)
+  (days *^ Int64_multipliers.day_to_seconds)
+  +^ (hours *^ Int64_multipliers.hour_to_seconds)
+  +^ (minutes *^ Int64_multipliers.minute_to_seconds)
   +^ seconds
 
 let seconds_of_raw (r : raw) : int64 =
-  (r.days *. Time.Float_multipliers.day_to_seconds)
-  +. (r.hours *. Time.Float_multipliers.hour_to_seconds)
-  +. (r.minutes *. Time.Float_multipliers.minute_to_seconds)
+  (r.days *. Float_multipliers.day_to_seconds)
+  +. (r.hours *. Float_multipliers.hour_to_seconds)
+  +. (r.minutes *. Float_multipliers.minute_to_seconds)
   |> Int64.of_float
   |> Int64.add (Int64.of_int r.seconds)
 
