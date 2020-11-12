@@ -29,6 +29,33 @@ type month =
   | `Dec
   ]
 
+module Duration : sig
+  type t = private {
+    days : int;
+    hours : int;
+    minutes : int;
+    seconds : int;
+  }
+
+  val make :
+    days:int -> hours:int -> minutes:int -> seconds:int -> (t, unit) result
+
+  val make_frac :
+    days:float ->
+    hours:float ->
+    minutes:float ->
+    seconds:int ->
+    (t, unit) result
+
+  val zero : t
+
+  val of_seconds : int64 -> (t, unit) result
+
+  val to_seconds : t -> int64
+
+  val normalize : t -> t
+end
+
 type t
 
 val normalize :
@@ -110,29 +137,3 @@ module Resolver : sig
   end
 end
 
-module Duration : sig
-  type t = private {
-    days : int;
-    hours : int;
-    minutes : int;
-    seconds : int;
-  }
-
-  val make :
-    days:int -> hours:int -> minutes:int -> seconds:int -> (t, unit) result
-
-  val make_frac :
-    days:float ->
-    hours:float ->
-    minutes:float ->
-    seconds:int ->
-    (t, unit) result
-
-  val zero : t
-
-  val of_seconds : int64 -> (t, unit) result
-
-  val to_seconds : t -> int64
-
-  val normalize : t -> t
-end
