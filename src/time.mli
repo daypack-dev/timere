@@ -39,32 +39,6 @@ module Date_time : sig
     t
 end
 
-module Search_param : sig
-  type start =
-    [ `Unix_second of int64
-    | `Date_time of Date_time.t
-    ]
-
-  type t
-
-  type error =
-    | Invalid_start
-    | Invalid_intervals
-    | Invalid_search_years_ahead
-    | Too_far_into_future
-
-  val of_intervals :
-    ?search_using_tz_offset_s:tz_offset_s ->
-    (int64 * int64) list ->
-    (t, error) result
-
-  val of_years_ahead :
-    ?search_using_tz_offset_s:tz_offset_s ->
-    ?start:start ->
-    int ->
-    (t, error) result
-end
-
 type t
 
 val chunk : int64 -> t -> t
@@ -98,3 +72,31 @@ val of_pattern :
 val of_date_time : Date_time.t -> t
 
 val of_unix_second_interval : int64 * int64 -> t
+
+module Resolver : sig
+  module Search_param : sig
+    type start =
+      [ `Unix_second of int64
+      | `Date_time of Date_time.t
+      ]
+
+    type t
+
+    type error =
+      | Invalid_start
+      | Invalid_intervals
+      | Invalid_search_years_ahead
+      | Too_far_into_future
+
+    val of_intervals :
+      ?search_using_tz_offset_s:tz_offset_s ->
+      (int64 * int64) list ->
+      (t, error) result
+
+    val of_years_ahead :
+      ?search_using_tz_offset_s:tz_offset_s ->
+      ?start:start ->
+      int ->
+      (t, error) result
+  end
+end
