@@ -99,4 +99,7 @@ module Resolver : sig
       int ->
       (t, error) result
   end
+
+  val resolve :
+    Search_param.t -> Time.t -> ((int64 * int64) Seq.t, string) result
 end
