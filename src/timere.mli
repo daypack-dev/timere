@@ -99,7 +99,7 @@ end
 
 type t
 
-val of_pattern :
+val pattern :
   ?years:int list ->
   ?months:month list ->
   ?month_days:int list ->
@@ -109,21 +109,21 @@ val of_pattern :
   ?seconds:int list ->
   ?timestamps:timestamp list ->
   unit ->
-  (t, unit) result
+  t
 
-val of_years : int list -> (t, unit) result
+val years : int list -> t
 
-val of_months : month list -> (t, unit) result
+val months : month list -> t
 
-val of_month_days : int list -> (t, unit) result
+val month_days : int list -> t
 
-val of_weekdays : weekday list -> (t, unit) result
+val weekdays : weekday list -> t
 
-val of_hours : int list -> (t, unit) result
+val hours : int list -> t
 
-val of_minutes : int list -> (t, unit) result
+val minutes : int list -> t
 
-val of_seconds : int list -> (t, unit) result
+val seconds : int list -> t
 
 val any : t
 

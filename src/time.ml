@@ -1762,9 +1762,8 @@ let intervals_exc (a : t) (b : t) : t = Binary_op (Intervals_exc, a, b)
 
 let not_in (a : t) : t = Unary_op (Not, a)
 
-let of_pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
-    ?(hours = []) ?(minutes = []) ?(seconds = []) ?(timestamps = []) () :
-  (t, unit) result =
+let pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
+    ?(hours = []) ?(minutes = []) ?(seconds = []) ?(timestamps = []) () : t =
   let p = List.for_all (fun x -> x >= 0) in
   let p' = List.for_all (fun x -> x >= 0L) in
   if
@@ -1775,37 +1774,36 @@ let of_pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
     && p seconds
     && p' timestamps
   then
-    Ok
-      (Pattern
-         {
-           Pattern.years;
-           months;
-           month_days;
-           weekdays;
-           hours;
-           minutes;
-           seconds;
-           timestamps;
-         })
-  else Error ()
+    Pattern
+      {
+        Pattern.years;
+        months;
+        month_days;
+        weekdays;
+        hours;
+        minutes;
+        seconds;
+        timestamps;
+      }
+  else invalid_arg "of_pattern"
 
-let of_years years = of_pattern ~years ()
+let years years = pattern ~years ()
 
-let of_months months = of_pattern ~months ()
+let months months = pattern ~months ()
 
-let of_month_days month_days = of_pattern ~month_days ()
+let month_days month_days = pattern ~month_days ()
 
-let of_weekdays weekdays = of_pattern ~weekdays ()
+let weekdays weekdays = pattern ~weekdays ()
 
-let of_hours hours = of_pattern ~hours ()
+let hours hours = pattern ~hours ()
 
-let of_minutes minutes = of_pattern ~minutes ()
+let minutes minutes = pattern ~minutes ()
 
-let of_seconds seconds = of_pattern ~seconds ()
+let seconds seconds = pattern ~seconds ()
 
-let of_timestamps timestamps = of_pattern ~timestamps ()
+let timestamps timestamps = pattern ~timestamps ()
 
-let any = Result.get_ok @@ of_pattern ()
+let any = pattern ()
 
 let of_date_time (date_time : Date_time.t) : (t, unit) result =
   date_time
