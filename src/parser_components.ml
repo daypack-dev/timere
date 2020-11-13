@@ -123,7 +123,7 @@ let extraneous_text_check ~end_markers =
 let result_of_mparser_result (x : 'a result) : ('a, string) Result.t =
   match x with
   | Success x -> Ok x
-  | Failed (s, err) -> (
+  | Failed (_, err) -> (
       match err with
       | No_error -> Error "Unknown error"
       | Parse_error (pos, msgs) -> (

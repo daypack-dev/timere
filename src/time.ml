@@ -1777,17 +1777,16 @@ let of_pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
   then
     Ok
       (Pattern
-         Pattern.
-           {
-             years;
-             months;
-             month_days;
-             weekdays;
-             hours;
-             minutes;
-             seconds;
-             timestamps;
-           })
+         {
+           Pattern.years;
+           months;
+           month_days;
+           weekdays;
+           hours;
+           minutes;
+           seconds;
+           timestamps;
+         })
   else Error ()
 
 let of_years years = of_pattern ~years ()

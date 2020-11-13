@@ -930,7 +930,7 @@ let resolve (search_param : Search_param.t) (time : Time.t) :
       Resolve_pattern.matching_intervals ~allow_search_param_override:true
         search_param pat
       |> Result.map_error (fun _ -> "Error during resolution of pattern")
-    | Branching branching -> failwith "Unimplemented"
+    | Branching _branching -> failwith "Unimplemented"
     | Unary_op _ -> failwith "Unimplemented"
     | Binary_op _ -> failwith "Unimplemented"
     | Round_robin_pick_list l ->
