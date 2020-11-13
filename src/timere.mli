@@ -1,24 +1,12 @@
-type timestamp = int64
-
 type tz_offset_s = int
 
-exception Interval_is_invalid
+type timestamp = int64
 
-exception Interval_is_empty
+type t
 
-exception Intervals_are_not_sorted
+val any : t
 
-exception Intervals_are_not_disjoint
-
-type weekday =
-  [ `Sun
-  | `Mon
-  | `Tue
-  | `Wed
-  | `Thu
-  | `Fri
-  | `Sat
-  ]
+val years : int list -> t
 
 type month =
   [ `Jan
@@ -34,6 +22,62 @@ type month =
   | `Nov
   | `Dec
   ]
+
+val months : month list -> t
+
+val month_days : int list -> t
+
+type weekday =
+  [ `Sun
+  | `Mon
+  | `Tue
+  | `Wed
+  | `Thu
+  | `Fri
+  | `Sat
+  ]
+
+val weekdays : weekday list -> t
+
+val hours : int list -> t
+
+val minutes : int list -> t
+
+val seconds : int list -> t
+
+val pattern :
+  ?years:int list ->
+  ?months:month list ->
+  ?month_days:int list ->
+  ?weekdays:weekday list ->
+  ?hours:int list ->
+  ?minutes:int list ->
+  ?seconds:int list ->
+  ?timestamps:timestamp list ->
+  unit ->
+  t
+
+(** {1 Algebraic operations} *)
+
+val inter : t -> t -> t
+
+val union : t -> t -> t
+
+val not : t -> t
+
+val interval_inc : t -> t -> t
+
+val interval_exc : t -> t -> t
+
+val intervals_inc : t -> t -> t
+
+val intervals_exc : t -> t -> t
+
+val merge : t list -> t
+
+val merge_seq : t Seq.t -> t
+
+(** {1 Discrete time points} *)
 
 module Date_time : sig
   type t = private {
@@ -68,6 +112,10 @@ module Date_time : sig
   val max : t
 end
 
+val of_date_time : Date_time.t -> (t, unit) result
+
+(** {1 Durations} *)
+
 module Duration : sig
   type t = private {
     days : int;
@@ -95,65 +143,13 @@ module Duration : sig
   val normalize : t -> t
 end
 
-type t
-
-val pattern :
-  ?years:int list ->
-  ?months:month list ->
-  ?month_days:int list ->
-  ?weekdays:weekday list ->
-  ?hours:int list ->
-  ?minutes:int list ->
-  ?seconds:int list ->
-  ?timestamps:timestamp list ->
-  unit ->
-  t
-
-val years : int list -> t
-
-val months : month list -> t
-
-val month_days : int list -> t
-
-val weekdays : weekday list -> t
-
-val hours : int list -> t
-
-val minutes : int list -> t
-
-val seconds : int list -> t
-
-val any : t
-
-val of_date_time : Date_time.t -> (t, unit) result
-
-val chunk : ?drop_partial:bool -> int64 -> t -> t
-
 val shift : Duration.t -> t -> t
 
 val lengthen : Duration.t -> t -> t
 
-(** {1 Algebraic operations} *)
+(** {1 List and Filtering operations} *)
 
-val inter : t -> t -> t
-
-val union : t -> t -> t
-
-val not : t -> t
-
-val interval_inc : t -> t -> t
-
-val interval_exc : t -> t -> t
-
-val intervals_inc : t -> t -> t
-
-val intervals_exc : t -> t -> t
-  
-val merge : t list -> t
-
-val merge_seq : t Seq.t -> t
-
-(** {1 List and Filtering} *)
+val chunk : ?drop_partial:bool -> int64 -> t -> t
 
 val first : t -> t
 
@@ -169,14 +165,21 @@ val skip_n_points : int -> t -> t
 
 (** {1 Manual intervals} *)
 
+exception Interval_is_invalid
+
+exception Interval_is_empty
+
+exception Intervals_are_not_sorted
+
+exception Intervals_are_not_disjoint
+
 type interval = timestamp * timestamp
 
 val of_interval : interval -> t
 
 val of_intervals : ?skip_invalid:bool -> interval list -> t
 
-val of_intervals_seq :
-  ?skip_invalid:bool -> interval Seq.t -> t
+val of_intervals_seq : ?skip_invalid:bool -> interval Seq.t -> t
 
 val of_sorted_intervals : ?skip_invalid:bool -> interval list -> t
 
