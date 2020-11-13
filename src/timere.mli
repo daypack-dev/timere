@@ -69,6 +69,8 @@ val chunk : ?drop_partial:bool -> int64 -> t -> t
 
 val shift : Duration.t -> t -> t
 
+val lengthen : Duration.t -> t -> t
+
 val inter : t -> t -> t
 
 val union : t -> t -> t

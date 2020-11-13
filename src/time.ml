@@ -1668,6 +1668,7 @@ type unary_op =
       drop_partial : bool;
     }
   | Shift of int64
+  | Lengthen of int64
   | Tz_offset of sign_expr * hms
 
 type binary_op =
@@ -1707,6 +1708,9 @@ let chunk ?(drop_partial = false) (chunk_size : int64) (t : t) : t =
 
 let shift (offset : Duration.t) (t : t) : t =
   Unary_op (Shift (Duration.to_seconds offset), t)
+
+let lengthen (x : Duration.t) (t : t) : t =
+  Unary_op (Lengthen (Duration.to_seconds x), t)
 
 let merge (l : t list) : t = Merge_list l
 
