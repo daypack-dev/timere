@@ -102,11 +102,9 @@ module Search_param = struct
           List.for_all
             (fun (x, y) ->
                Time.Interval.Check.is_valid (x, y)
-               && Time.Date_time.of_timestamp ~tz_offset_s_of_date_time:None
-                 x
+               && Time.Date_time.of_timestamp ~tz_offset_s_of_date_time:None x
                   |> Result.is_ok
-               && Time.Date_time.of_timestamp ~tz_offset_s_of_date_time:None
-                 y
+               && Time.Date_time.of_timestamp ~tz_offset_s_of_date_time:None y
                   |> Result.is_ok)
             intervals
         then Ok ()
@@ -738,8 +736,8 @@ module Resolve_pattern = struct
           |> Seq.flat_map
             (Matching_seconds.matching_seconds pat
                ~overall_search_start)
-          |> filter_using_matching_timestamps ~search_using_tz_offset_s
-            pat ~overall_search_start)
+          |> filter_using_matching_timestamps ~search_using_tz_offset_s pat
+            ~overall_search_start)
 
   let matching_timestamps ~(allow_search_param_override : bool)
       (search_param : Search_param.t) (t : Time.Pattern.pattern) :
@@ -873,8 +871,8 @@ module Resolve_pattern = struct
                 (Matching_minutes.matching_minutes t ~overall_search_start)
               |> Seq.flat_map
                 (Matching_seconds.matching_seconds t ~overall_search_start)
-              |> filter_using_matching_timestamps ~search_using_tz_offset_s
-                t ~overall_search_start
+              |> filter_using_matching_timestamps ~search_using_tz_offset_s t
+                ~overall_search_start
               |> Seq.map (fun x -> `Range_inc (x, x))
               |> Result.ok ) )
 

@@ -52,7 +52,8 @@ module Date_time : sig
 
   val to_timestamp : t -> (timestamp, unit) result
 
-  val of_timestamp : tz_offset_s_of_date_time:tz_offset_s option -> timestamp -> (t, unit) result
+  val of_timestamp :
+    tz_offset_s_of_date_time:tz_offset_s option -> timestamp -> (t, unit) result
 end
 
 module Duration : sig
@@ -112,16 +113,13 @@ val of_seconds : int list -> (t, unit) result
 
 val any : t
 
-val of_date_time :
-  Date_time.t ->
-  (t, unit) result
+val of_date_time : Date_time.t -> (t, unit) result
 
 val of_timestamp_interval : interval -> (t, unit) result
 
 val of_sorted_timestamp_intervals : ?skip_invalid:bool -> interval list -> t
 
-val of_sorted_timestamp_interval_seq :
-  ?skip_invalid:bool -> interval Seq.t -> t
+val of_sorted_timestamp_interval_seq : ?skip_invalid:bool -> interval Seq.t -> t
 
 val of_unsorted_timestamp_intervals : ?skip_invalid:bool -> interval list -> t
 

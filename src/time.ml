@@ -1471,8 +1471,8 @@ module Date_time = struct
     | None -> Error ()
     | Some x -> x |> Ptime.to_float_s |> Int64.of_float |> Result.ok
 
-  let of_timestamp ~(tz_offset_s_of_date_time : tz_offset_s option)
-      (x : int64) : (t, unit) result =
+  let of_timestamp ~(tz_offset_s_of_date_time : tz_offset_s option) (x : int64)
+    : (t, unit) result =
     match Ptime.of_float_s (Int64.to_float x) with
     | None -> Error ()
     | Some x ->
@@ -1485,8 +1485,8 @@ module Date_time = struct
     { year; month; day; hour; minute; second; tz_offset_s }
     |> to_timestamp
     |> Result.map (fun x ->
-        Result.get_ok @@ of_timestamp ~tz_offset_s_of_date_time:(Some tz_offset_s) x
-      )
+        Result.get_ok
+        @@ of_timestamp ~tz_offset_s_of_date_time:(Some tz_offset_s) x)
 
   let min =
     Ptime.min |> Ptime.to_date_time |> of_ptime_date_time |> Result.get_ok
@@ -1811,11 +1811,10 @@ let any = Result.get_ok @@ of_pattern ()
 let of_date_time (date_time : Date_time.t) : (t, unit) result =
   date_time
   |> Date_time.to_timestamp
-  |> Result.map (fun x ->
-      Timestamp_interval_seq (Seq.return (x, Int64.succ x)))
+  |> Result.map (fun x -> Timestamp_interval_seq (Seq.return (x, Int64.succ x)))
 
-let of_timestamp_interval ((start, end_exc) : int64 * int64) :
-  (t, unit) result =
+let of_timestamp_interval ((start, end_exc) : int64 * int64) : (t, unit) result
+  =
   if Interval.Check.is_valid (start, end_exc) then
     Ok (Timestamp_interval_seq (Seq.return (start, end_exc)))
   else Error ()
