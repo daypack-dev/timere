@@ -38,7 +38,15 @@ type month =
   ]
 
 module Date_time : sig
-  type t
+  type t = private {
+    year : int;
+    month : month;
+    day : int;
+    hour : int;
+    minute : int;
+    second : int;
+    tz_offset_s : int;
+  }
 
   val make :
     year:int ->
@@ -54,6 +62,12 @@ module Date_time : sig
 
   val of_timestamp :
     tz_offset_s_of_date_time:tz_offset_s option -> timestamp -> (t, unit) result
+
+  val compare : t -> t -> int
+
+  val min : t
+
+  val max : t
 end
 
 module Duration : sig
