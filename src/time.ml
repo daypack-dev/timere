@@ -1782,6 +1782,24 @@ let of_pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
            })
   else Error ()
 
+let of_years years = of_pattern ~years ()
+
+let of_months months = of_pattern ~months ()
+
+let of_month_days month_days = of_pattern ~month_days ()
+
+let of_weekdays weekdays = of_pattern ~weekdays ()
+
+let of_hours hours = of_pattern ~hours ()
+
+let of_minutes minutes = of_pattern ~minutes ()
+
+let of_seconds seconds = of_pattern ~seconds ()
+
+let of_unix_seconds unix_seconds = of_pattern ~unix_seconds ()
+
+let wildcard = Result.get_ok @@ of_pattern ()
+
 let of_date_time ~year ~month ~day ~hour ~minute ~second ~tz_offset_s =
   Date_time.{ year; month; day; hour; minute; second; tz_offset_s }
   |> Date_time.to_unix_second

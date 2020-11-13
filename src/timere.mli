@@ -117,6 +117,22 @@ val of_pattern :
   unit ->
   (t, unit) result
 
+val of_years : int list -> (t, unit) result
+
+val of_months : month list -> (t, unit) result
+
+val of_month_days : int list -> (t, unit) result
+
+val of_weekdays : weekday list -> (t, unit) result
+
+val of_hours : int list -> (t, unit) result
+
+val of_minutes : int list -> (t, unit) result
+
+val of_seconds : int list -> (t, unit) result
+
+val wildcard : t
+
 val of_date_time :
   year:int ->
   month:month ->
