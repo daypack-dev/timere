@@ -1,7 +1,5 @@
 type timestamp = int64
 
-type interval = int64 * int64
-
 type tz_offset_s = int
 
 exception Interval_is_invalid
@@ -129,28 +127,19 @@ val any : t
 
 val of_date_time : Date_time.t -> (t, unit) result
 
-val of_timestamp_interval : interval -> (t, unit) result
-
-val of_sorted_timestamp_intervals : ?skip_invalid:bool -> interval list -> t
-
-val of_sorted_timestamp_interval_seq : ?skip_invalid:bool -> interval Seq.t -> t
-
-val of_unsorted_timestamp_intervals : ?skip_invalid:bool -> interval list -> t
-
-val of_unsorted_timestamp_interval_seq :
-  ?skip_invalid:bool -> interval Seq.t -> t
-
 val chunk : ?drop_partial:bool -> int64 -> t -> t
 
 val shift : Duration.t -> t -> t
 
 val lengthen : Duration.t -> t -> t
 
+(** {1 Algebraic operations} *)
+
 val inter : t -> t -> t
 
 val union : t -> t -> t
 
-val not_in : t -> t
+val not : t -> t
 
 val interval_inc : t -> t -> t
 
@@ -159,14 +148,12 @@ val interval_exc : t -> t -> t
 val intervals_inc : t -> t -> t
 
 val intervals_exc : t -> t -> t
-
-val round_robin_pick : t list -> t
-
-val round_robin_pick_seq : t Seq.t -> t
-
+  
 val merge : t list -> t
 
 val merge_seq : t Seq.t -> t
+
+(** {1 List and Filtering} *)
 
 val first : t -> t
 
@@ -180,6 +167,28 @@ val take_n_points : int -> t -> t
 
 val skip_n_points : int -> t -> t
 
+(** {1 Manual intervals} *)
+
+type interval = timestamp * timestamp
+
+val of_interval : interval -> t
+
+val of_intervals : ?skip_invalid:bool -> interval list -> t
+
+val of_intervals_seq :
+  ?skip_invalid:bool -> interval Seq.t -> t
+
+val of_sorted_intervals : ?skip_invalid:bool -> interval list -> t
+
+val of_sorted_intervals_seq : ?skip_invalid:bool -> interval Seq.t -> t
+
+(** {1 Sampling} *)
+
+val round_robin_pick : t list -> t
+
+val round_robin_pick_seq : t Seq.t -> t
+
+(** {1 Infix operators} *)
 module Infix : sig
   val ( &&& ) : t -> t -> t
 

@@ -1760,7 +1760,7 @@ let intervals_inc (a : t) (b : t) : t = Binary_op (Intervals_inc, a, b)
 
 let intervals_exc (a : t) (b : t) : t = Binary_op (Intervals_exc, a, b)
 
-let not_in (a : t) : t = Unary_op (Not, a)
+let not (a : t) : t = Unary_op (Not, a)
 
 let pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
     ?(hours = []) ?(minutes = []) ?(seconds = []) ?(timestamps = []) () : t =
@@ -1810,13 +1810,12 @@ let of_date_time (date_time : Date_time.t) : (t, unit) result =
   |> Date_time.to_timestamp
   |> Result.map (fun x -> Timestamp_interval_seq (Seq.return (x, Int64.succ x)))
 
-let of_timestamp_interval ((start, end_exc) : int64 * int64) : (t, unit) result
-  =
+let of_interval ((start, end_exc) : int64 * int64) : t =
   if Interval.Check.is_valid (start, end_exc) then
-    Ok (Timestamp_interval_seq (Seq.return (start, end_exc)))
-  else Error ()
+    Timestamp_interval_seq (Seq.return (start, end_exc))
+  else invalid_arg "of_interval"
 
-let of_sorted_timestamp_interval_seq ?(skip_invalid : bool = false)
+let of_sorted_intervals_seq ?(skip_invalid : bool = false)
     (s : (int64 * int64) Seq.t) : t =
   Timestamp_interval_seq
     ( s
@@ -1827,12 +1826,11 @@ let of_sorted_timestamp_interval_seq ?(skip_invalid : bool = false)
       |> Intervals.Normalize.normalize ~skip_filter_invalid:true
         ~skip_filter_empty:true ~skip_sort:true )
 
-let of_sorted_timestamp_intervals ?(skip_invalid : bool = false)
+let of_sorted_intervals ?(skip_invalid : bool = false)
     (l : (int64 * int64) list) : t =
-  l |> List.to_seq |> of_sorted_timestamp_interval_seq ~skip_invalid
+  l |> List.to_seq |> of_sorted_intervals_seq ~skip_invalid
 
-let of_unsorted_timestamp_intervals ?(skip_invalid : bool = false)
-    (l : (int64 * int64) list) : t =
+let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
   Timestamp_interval_seq
     ( l
       |> Intervals.Filter.filter_empty_list
@@ -1843,6 +1841,6 @@ let of_unsorted_timestamp_intervals ?(skip_invalid : bool = false)
       |> Intervals.Normalize.normalize ~skip_filter_invalid:true
         ~skip_filter_empty:true ~skip_sort:true )
 
-let of_unsorted_timestamp_interval_seq ?(skip_invalid : bool = false)
-    (s : (int64 * int64) Seq.t) : t =
-  s |> List.of_seq |> of_unsorted_timestamp_intervals ~skip_invalid
+let of_intervals_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t)
+  : t =
+  s |> List.of_seq |> of_intervals ~skip_invalid
