@@ -74,7 +74,7 @@ val of_pattern :
   ?hours:int list ->
   ?minutes:int list ->
   ?seconds:int list ->
-  ?timestamps:int64 list ->
+  ?timestamps:timestamp list ->
   unit ->
   (t, unit) result
 
@@ -104,7 +104,7 @@ val of_date_time :
   tz_offset_s:int ->
   (t, unit) result
 
-val of_timestamp_interval : int64 * int64 -> (t, unit) result
+val of_timestamp_interval : interval -> (t, unit) result
 
 val of_sorted_timestamp_intervals : ?skip_invalid:bool -> interval list -> t
 
@@ -181,7 +181,7 @@ module Resolver : sig
 
   module Search_years_ahead : sig
     type start =
-      [ `Timestamp of int64
+      [ `Timestamp of timestamp
       | `Date_time of Time.Date_time.t
       ]
 
