@@ -1654,6 +1654,8 @@ type sign_expr =
 type unary_op =
   | Not
   | Every
+  | Skip_n_points of int
+  | Skip_n_intervals of int
   | Next_n_points of int
   | Next_n_intervals of int
   | Normalize of {
@@ -1718,7 +1720,25 @@ let inter (a : t) (b : t) : t = Binary_op (Inter, a, b)
 
 let union (a : t) (b : t) : t = Binary_op (Union, a, b)
 
-let point (a : t) : t = Unary_op (Next_n_points 1, a)
+let first_point (a : t) : t = Unary_op (Next_n_points 1, a)
+
+let take_n_points (n : int) (t : t) : t =
+  if n < 0 then raise (Invalid_argument "take_n_points: n < 0")
+  else Unary_op (Next_n_points n, t)
+
+let skip_n_points (n : int) (t : t) : t =
+  if n < 0 then raise (Invalid_argument "skip_n_points: n < 0")
+  else Unary_op (Skip_n_points n, t)
+
+let first (t : t) : t = Unary_op (Next_n_intervals 1, t)
+
+let take_n (n : int) (t : t) : t =
+  if n < 0 then raise (Invalid_argument "take_n: n < 0")
+  else Unary_op (Next_n_intervals n, t)
+
+let skip_n (n : int) (t : t) : t =
+  if n < 0 then raise (Invalid_argument "skip_n: n < 0")
+  else Unary_op (Skip_n_intervals n, t)
 
 let interval_inc (a : t) (b : t) : t = Binary_op (Interval_inc, a, b)
 

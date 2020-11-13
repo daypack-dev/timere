@@ -91,6 +91,18 @@ val merge : t list -> t
 
 val merge_seq : t Seq.t -> t
 
+val first : t -> t
+
+val take_n : int -> t -> t
+
+val skip_n : int -> t -> t
+
+val first_point : t -> t
+
+val take_n_points : int -> t -> t
+
+val skip_n_points : int -> t -> t
+
 val of_pattern :
   ?years:int list ->
   ?months:month list ->
@@ -114,6 +126,20 @@ val of_date_time :
   (t, unit) result
 
 val of_unix_second_interval : int64 * int64 -> t
+
+module Infix : sig
+  val ( &&& ) : t -> t -> t
+
+  val ( ||| ) : t -> t -> t
+
+  val ( -- ) : t -> t -> t
+
+  val ( --^ ) : t -> t -> t
+
+  val ( --* ) : t -> t -> t
+
+  val ( --*^ ) : t -> t -> t
+end
 
 module Resolver : sig
   module Search_in_intervals : sig
