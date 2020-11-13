@@ -1799,7 +1799,7 @@ let of_seconds seconds = of_pattern ~seconds ()
 
 let of_unix_seconds unix_seconds = of_pattern ~unix_seconds ()
 
-let wildcard = Result.get_ok @@ of_pattern ()
+let any = Result.get_ok @@ of_pattern ()
 
 let of_date_time ~year ~month ~day ~hour ~minute ~second ~tz_offset_s =
   Date_time.{ year; month; day; hour; minute; second; tz_offset_s }

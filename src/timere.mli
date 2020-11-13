@@ -92,7 +92,7 @@ val of_minutes : int list -> (t, unit) result
 
 val of_seconds : int list -> (t, unit) result
 
-val wildcard : t
+val any : t
 
 val of_date_time :
   year:int ->
