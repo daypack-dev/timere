@@ -1,4 +1,4 @@
-type unix_second = int64
+type timestamp = int64
 
 type interval = int64 * int64
 
@@ -74,7 +74,7 @@ val of_pattern :
   ?hours:int list ->
   ?minutes:int list ->
   ?seconds:int list ->
-  ?unix_seconds:int64 list ->
+  ?timestamps:int64 list ->
   unit ->
   (t, unit) result
 
@@ -104,16 +104,16 @@ val of_date_time :
   tz_offset_s:int ->
   (t, unit) result
 
-val of_unix_second_interval : int64 * int64 -> (t, unit) result
+val of_timestamp_interval : int64 * int64 -> (t, unit) result
 
-val of_sorted_unix_second_intervals : ?skip_invalid:bool -> interval list -> t
+val of_sorted_timestamp_intervals : ?skip_invalid:bool -> interval list -> t
 
-val of_sorted_unix_second_interval_seq :
+val of_sorted_timestamp_interval_seq :
   ?skip_invalid:bool -> interval Seq.t -> t
 
-val of_unsorted_unix_second_intervals : ?skip_invalid:bool -> interval list -> t
+val of_unsorted_timestamp_intervals : ?skip_invalid:bool -> interval list -> t
 
-val of_unsorted_unix_second_interval_seq :
+val of_unsorted_timestamp_interval_seq :
   ?skip_invalid:bool -> interval Seq.t -> t
 
 val chunk : ?drop_partial:bool -> int64 -> t -> t
@@ -181,7 +181,7 @@ module Resolver : sig
 
   module Search_years_ahead : sig
     type start =
-      [ `Unix_second of int64
+      [ `Timestamp of int64
       | `Date_time of Time.Date_time.t
       ]
 

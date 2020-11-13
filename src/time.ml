@@ -1,6 +1,6 @@
 type tz_offset_s = int
 
-type unix_second = int64
+type timestamp = int64
 
 let tz_offset_s_utc = 0
 
@@ -1466,12 +1466,12 @@ module Date_time = struct
     | Ok month -> Ok { year; month; day; hour; minute; second; tz_offset_s }
     | Error () -> Error ()
 
-  let to_unix_second (x : t) : (int64, unit) result =
+  let to_timestamp (x : t) : (int64, unit) result =
     match Ptime.of_date_time (to_ptime_date_time x) with
     | None -> Error ()
     | Some x -> x |> Ptime.to_float_s |> Int64.of_float |> Result.ok
 
-  let of_unix_second ~(tz_offset_s_of_date_time : tz_offset_s option)
+  let of_timestamp ~(tz_offset_s_of_date_time : tz_offset_s option)
       (x : int64) : (t, unit) result =
     match Ptime.of_float_s (Int64.to_float x) with
     | None -> Error ()
@@ -1543,10 +1543,10 @@ module Date_time_set = Set.Make (struct
   end)
 
 module Current = struct
-  let cur_unix_second () : int64 = Unix.time () |> Int64.of_float
+  let cur_timestamp () : int64 = Unix.time () |> Int64.of_float
 
   let cur_date_time ~tz_offset_s_of_date_time : (Date_time.t, unit) result =
-    cur_unix_second () |> Date_time.of_unix_second ~tz_offset_s_of_date_time
+    cur_timestamp () |> Date_time.of_timestamp ~tz_offset_s_of_date_time
 
   let cur_tm_local () : Unix.tm = Unix.time () |> Unix.localtime
 
@@ -1554,8 +1554,8 @@ module Current = struct
 end
 
 module Check = struct
-  let unix_second_is_valid (x : int64) : bool =
-    match Date_time.of_unix_second ~tz_offset_s_of_date_time:None x with
+  let timestamp_is_valid (x : int64) : bool =
+    match Date_time.of_timestamp ~tz_offset_s_of_date_time:None x with
     | Ok _ -> true
     | Error () -> false
 
@@ -1569,7 +1569,7 @@ module Check = struct
     (0 <= hour && hour < 24) && minute_second_is_valid ~minute ~second
 
   let date_time_is_valid (x : Date_time.t) : bool =
-    match Date_time.to_unix_second x with Ok _ -> true | Error () -> false
+    match Date_time.to_timestamp x with Ok _ -> true | Error () -> false
 end
 
 let next_hour_minute ~(hour : int) ~(minute : int) : (int * int, unit) result =
@@ -1586,7 +1586,7 @@ module Pattern = struct
     hours : int list;
     minutes : int list;
     seconds : int list;
-    unix_seconds : int64 list;
+    timestamps : int64 list;
   }
 
   type error =
@@ -1595,7 +1595,7 @@ module Pattern = struct
     | Invalid_hours of int list
     | Invalid_minutes of int list
     | Invalid_seconds of int list
-    | Invalid_unix_seconds of int64 list
+    | Invalid_timestamps of int64 list
 
   type range_pattern = pattern Range.range
 
@@ -1608,12 +1608,12 @@ module Pattern = struct
       let invalid_hours = List.filter (fun x -> x < 0 || 23 < x) x.hours in
       let invalid_minutes = List.filter (fun x -> x < 0 || 59 < x) x.minutes in
       let invalid_seconds = List.filter (fun x -> x < 0 || 59 < x) x.seconds in
-      let invalid_unix_seconds =
+      let invalid_timestamps =
         List.filter
           (fun x ->
              Result.is_error
-               (Date_time.of_unix_second ~tz_offset_s_of_date_time:None x))
-          x.unix_seconds
+               (Date_time.of_timestamp ~tz_offset_s_of_date_time:None x))
+          x.timestamps
       in
       match invalid_years with
       | [] -> (
@@ -1625,9 +1625,9 @@ module Pattern = struct
                   | [] -> (
                       match invalid_seconds with
                       | [] -> (
-                          match invalid_unix_seconds with
+                          match invalid_timestamps with
                           | [] -> Ok ()
-                          | l -> Error (Invalid_unix_seconds l) )
+                          | l -> Error (Invalid_timestamps l) )
                       | l -> Error (Invalid_seconds l) )
                   | l -> Error (Invalid_minutes l) )
               | l -> Error (Invalid_hours l) )
@@ -1694,7 +1694,7 @@ type branching = {
 }
 
 type t =
-  | Unix_second_interval_seq of (int64 * int64) Seq.t
+  | Timestamp_interval_seq of (int64 * int64) Seq.t
   | Pattern of Pattern.pattern
   | Branching of branching
   | Unary_op of unary_op * t
@@ -1756,7 +1756,7 @@ let intervals_exc (a : t) (b : t) : t = Binary_op (Intervals_exc, a, b)
 let not_in (a : t) : t = Unary_op (Not, a)
 
 let of_pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
-    ?(hours = []) ?(minutes = []) ?(seconds = []) ?(unix_seconds = []) () :
+    ?(hours = []) ?(minutes = []) ?(seconds = []) ?(timestamps = []) () :
   (t, unit) result =
   let p = List.for_all (fun x -> x >= 0) in
   let p' = List.for_all (fun x -> x >= 0L) in
@@ -1766,7 +1766,7 @@ let of_pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
     && p hours
     && p minutes
     && p seconds
-    && p' unix_seconds
+    && p' timestamps
   then
     Ok
       (Pattern
@@ -1779,7 +1779,7 @@ let of_pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
              hours;
              minutes;
              seconds;
-             unix_seconds;
+             timestamps;
            })
   else Error ()
 
@@ -1797,25 +1797,25 @@ let of_minutes minutes = of_pattern ~minutes ()
 
 let of_seconds seconds = of_pattern ~seconds ()
 
-let of_unix_seconds unix_seconds = of_pattern ~unix_seconds ()
+let of_timestamps timestamps = of_pattern ~timestamps ()
 
 let any = Result.get_ok @@ of_pattern ()
 
 let of_date_time ~year ~month ~day ~hour ~minute ~second ~tz_offset_s =
   Date_time.{ year; month; day; hour; minute; second; tz_offset_s }
-  |> Date_time.to_unix_second
+  |> Date_time.to_timestamp
   |> Result.map (fun x ->
-      Unix_second_interval_seq (Seq.return (x, Int64.succ x)))
+      Timestamp_interval_seq (Seq.return (x, Int64.succ x)))
 
-let of_unix_second_interval ((start, end_exc) : int64 * int64) :
+let of_timestamp_interval ((start, end_exc) : int64 * int64) :
   (t, unit) result =
   if Interval.Check.is_valid (start, end_exc) then
-    Ok (Unix_second_interval_seq (Seq.return (start, end_exc)))
+    Ok (Timestamp_interval_seq (Seq.return (start, end_exc)))
   else Error ()
 
-let of_sorted_unix_second_interval_seq ?(skip_invalid : bool = false)
+let of_sorted_timestamp_interval_seq ?(skip_invalid : bool = false)
     (s : (int64 * int64) Seq.t) : t =
-  Unix_second_interval_seq
+  Timestamp_interval_seq
     ( s
       |> Intervals.Filter.filter_empty
       |> ( if skip_invalid then Intervals.Filter.filter_invalid
@@ -1824,13 +1824,13 @@ let of_sorted_unix_second_interval_seq ?(skip_invalid : bool = false)
       |> Intervals.Normalize.normalize ~skip_filter_invalid:true
         ~skip_filter_empty:true ~skip_sort:true )
 
-let of_sorted_unix_second_intervals ?(skip_invalid : bool = false)
+let of_sorted_timestamp_intervals ?(skip_invalid : bool = false)
     (l : (int64 * int64) list) : t =
-  l |> List.to_seq |> of_sorted_unix_second_interval_seq ~skip_invalid
+  l |> List.to_seq |> of_sorted_timestamp_interval_seq ~skip_invalid
 
-let of_unsorted_unix_second_intervals ?(skip_invalid : bool = false)
+let of_unsorted_timestamp_intervals ?(skip_invalid : bool = false)
     (l : (int64 * int64) list) : t =
-  Unix_second_interval_seq
+  Timestamp_interval_seq
     ( l
       |> Intervals.Filter.filter_empty_list
       |> ( if skip_invalid then Intervals.Filter.filter_invalid_list
@@ -1840,6 +1840,6 @@ let of_unsorted_unix_second_intervals ?(skip_invalid : bool = false)
       |> Intervals.Normalize.normalize ~skip_filter_invalid:true
         ~skip_filter_empty:true ~skip_sort:true )
 
-let of_unsorted_unix_second_interval_seq ?(skip_invalid : bool = false)
+let of_unsorted_timestamp_interval_seq ?(skip_invalid : bool = false)
     (s : (int64 * int64) Seq.t) : t =
-  s |> List.of_seq |> of_unsorted_unix_second_intervals ~skip_invalid
+  s |> List.of_seq |> of_unsorted_timestamp_intervals ~skip_invalid

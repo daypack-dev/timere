@@ -1,6 +1,6 @@
 module Search_param = struct
   type start =
-    [ `Unix_second of int64
+    [ `Timestamp of int64
     | `Date_time of Time.Date_time.t
     ]
 
@@ -39,19 +39,19 @@ module Search_param = struct
           Ok { search_param with typ = Intervals intervals } )
     | Years_ahead { years_ahead; start = start' } -> (
         match start' with
-        | `Unix_second start' ->
+        | `Timestamp start' ->
           let start = max start' start in
           Ok
             {
               search_param with
-              typ = Years_ahead { years_ahead; start = `Unix_second start };
+              typ = Years_ahead { years_ahead; start = `Timestamp start };
             }
         | `Date_time start' -> (
-            match Time.Date_time.to_unix_second start' with
+            match Time.Date_time.to_timestamp start' with
             | Error () -> Error ()
             | Ok start' ->
               let start = max start' start in
-              Time.Date_time.of_unix_second
+              Time.Date_time.of_timestamp
                 ~tz_offset_s_of_date_time:
                   search_param.search_using_tz_offset_s start
               |> Result.map (fun start ->
@@ -69,13 +69,13 @@ module Search_param = struct
         | None -> None
         | Some (start, end_exc) ->
           let start =
-            Time.Date_time.of_unix_second
+            Time.Date_time.of_timestamp
               ~tz_offset_s_of_date_time:search_param.search_using_tz_offset_s
               start
             |> Result.get_ok
           in
           let end_exc =
-            Time.Date_time.of_unix_second
+            Time.Date_time.of_timestamp
               ~tz_offset_s_of_date_time:search_param.search_using_tz_offset_s
               end_exc
             |> Result.get_ok
@@ -84,9 +84,9 @@ module Search_param = struct
           Some (start, search_years_ahead) )
     | Years_ahead { years_ahead; start } -> (
         match start with
-        | `Unix_second start ->
+        | `Timestamp start ->
           let start =
-            Time.Date_time.of_unix_second
+            Time.Date_time.of_timestamp
               ~tz_offset_s_of_date_time:search_param.search_using_tz_offset_s
               start
             |> Result.get_ok
@@ -102,10 +102,10 @@ module Search_param = struct
           List.for_all
             (fun (x, y) ->
                Time.Interval.Check.is_valid (x, y)
-               && Time.Date_time.of_unix_second ~tz_offset_s_of_date_time:None
+               && Time.Date_time.of_timestamp ~tz_offset_s_of_date_time:None
                  x
                   |> Result.is_ok
-               && Time.Date_time.of_unix_second ~tz_offset_s_of_date_time:None
+               && Time.Date_time.of_timestamp ~tz_offset_s_of_date_time:None
                  y
                   |> Result.is_ok)
             intervals
@@ -113,9 +113,9 @@ module Search_param = struct
         else Error Invalid_intervals
       | Years_ahead { years_ahead; start } -> (
           match start with
-          | `Unix_second start -> (
+          | `Timestamp start -> (
               match
-                Time.Date_time.of_unix_second
+                Time.Date_time.of_timestamp
                   ~tz_offset_s_of_date_time:x.search_using_tz_offset_s start
               with
               | Error () -> Error Invalid_start
@@ -587,21 +587,21 @@ module Resolve_pattern = struct
              ~f_exc:(range_map_exc ~overall_search_start))
   end
 
-  module Matching_unix_seconds = struct
-    let matching_unix_seconds
+  module Matching_timestamps = struct
+    let matching_timestamps
         ~(search_using_tz_offset_s : Time.tz_offset_s option)
         (t : Time.Pattern.pattern) (start : Time.Date_time.t) :
       Time.Date_time_set.t =
-      match Time.Date_time.to_unix_second start with
+      match Time.Date_time.to_timestamp start with
       | Error () -> Time.Date_time_set.empty
       | Ok start ->
-        t.unix_seconds
+        t.timestamps
         |> List.sort_uniq compare
         |> List.to_seq
         |> OSeq.filter (fun x -> x >= start)
         |> Seq.filter_map (fun x ->
             match
-              Time.Date_time.of_unix_second
+              Time.Date_time.of_timestamp
                 ~tz_offset_s_of_date_time:search_using_tz_offset_s x
             with
             | Ok x -> Some x
@@ -609,22 +609,22 @@ module Resolve_pattern = struct
         |> Time.Date_time_set.of_seq
   end
 
-  let filter_using_matching_unix_seconds ~search_using_tz_offset_s
+  let filter_using_matching_timestamps ~search_using_tz_offset_s
       (t : Time.Pattern.pattern) ~overall_search_start
       (s : Time.Date_time.t Seq.t) : Time.Date_time.t Seq.t =
-    let matching_unix_seconds =
-      Matching_unix_seconds.matching_unix_seconds ~search_using_tz_offset_s t
+    let matching_timestamps =
+      Matching_timestamps.matching_timestamps ~search_using_tz_offset_s t
         overall_search_start
     in
-    if Time.Date_time_set.is_empty matching_unix_seconds then s
-    else Seq.filter (fun x -> Time.Date_time_set.mem x matching_unix_seconds) s
+    if Time.Date_time_set.is_empty matching_timestamps then s
+    else Seq.filter (fun x -> Time.Date_time_set.mem x matching_timestamps) s
 
-  let date_time_range_seq_of_unix_seconds ~search_using_tz_offset_s
+  let date_time_range_seq_of_timestamps ~search_using_tz_offset_s
       (s : int64 Seq.t) : Time.Date_time.t Time.Range.range Seq.t =
     let f (x, y) =
-      ( Time.Date_time.of_unix_second
+      ( Time.Date_time.of_timestamp
           ~tz_offset_s_of_date_time:search_using_tz_offset_s x,
-        Time.Date_time.of_unix_second
+        Time.Date_time.of_timestamp
           ~tz_offset_s_of_date_time:search_using_tz_offset_s y )
     in
     s
@@ -738,17 +738,17 @@ module Resolve_pattern = struct
           |> Seq.flat_map
             (Matching_seconds.matching_seconds pat
                ~overall_search_start)
-          |> filter_using_matching_unix_seconds ~search_using_tz_offset_s
+          |> filter_using_matching_timestamps ~search_using_tz_offset_s
             pat ~overall_search_start)
 
-  let matching_unix_seconds ~(allow_search_param_override : bool)
+  let matching_timestamps ~(allow_search_param_override : bool)
       (search_param : Search_param.t) (t : Time.Pattern.pattern) :
     (int64 Seq.t, error) result =
     matching_date_times ~allow_search_param_override search_param t
     |> Result.map (fun s ->
         Seq.filter_map
           (fun x ->
-             match Time.Date_time.to_unix_second x with
+             match Time.Date_time.to_timestamp x with
              | Ok x -> Some x
              | Error () -> None)
           s)
@@ -780,7 +780,7 @@ module Resolve_pattern = struct
                 t.hours,
                 t.minutes,
                 t.seconds,
-                t.unix_seconds )
+                t.timestamps )
             with
             | _years, [], [], [], [], [], [], [] ->
               Matching_years.matching_year_ranges ~search_years_ahead t
@@ -848,10 +848,10 @@ module Resolve_pattern = struct
                 (Matching_seconds.matching_second_ranges t
                    ~overall_search_start)
               |> Result.ok
-            | [], [], [], [], [], [], [], unix_seconds ->
-              unix_seconds
+            | [], [], [], [], [], [], [], timestamps ->
+              timestamps
               |> List.to_seq
-              |> date_time_range_seq_of_unix_seconds ~search_using_tz_offset_s
+              |> date_time_range_seq_of_timestamps ~search_using_tz_offset_s
               |> Result.ok
             | ( _years,
                 _months,
@@ -860,7 +860,7 @@ module Resolve_pattern = struct
                 _hours,
                 _minutes,
                 _seconds,
-                _unix_seconds ) ->
+                _timestamps ) ->
               Matching_years.matching_years ~search_years_ahead t
                 ~overall_search_start
               |> Seq.flat_map
@@ -873,7 +873,7 @@ module Resolve_pattern = struct
                 (Matching_minutes.matching_minutes t ~overall_search_start)
               |> Seq.flat_map
                 (Matching_seconds.matching_seconds t ~overall_search_start)
-              |> filter_using_matching_unix_seconds ~search_using_tz_offset_s
+              |> filter_using_matching_timestamps ~search_using_tz_offset_s
                 t ~overall_search_start
               |> Seq.map (fun x -> `Range_inc (x, x))
               |> Result.ok ) )
@@ -882,7 +882,7 @@ module Resolve_pattern = struct
       (search_param : Search_param.t) (t : Time.Pattern.pattern) :
     ((int64 * int64) Seq.t, error) result =
     let f (x, y) =
-      (Time.Date_time.to_unix_second x, Time.Date_time.to_unix_second y)
+      (Time.Date_time.to_timestamp x, Time.Date_time.to_timestamp y)
     in
     matching_date_time_ranges ~allow_search_param_override search_param t
     |> Result.map (fun s ->
@@ -940,7 +940,7 @@ module Resolve_pattern = struct
     |> Result.map (fun s ->
         match s () with Seq.Nil -> None | Seq.Cons (x, _) -> Some x)
 
-  let next_match_unix_second ~(allow_search_param_override : bool)
+  let next_match_timestamp ~(allow_search_param_override : bool)
       (search_param : Search_param.t) (t : Time.Pattern.pattern) :
     (int64 option, error) result =
     next_match_date_time ~allow_search_param_override search_param t
@@ -948,7 +948,7 @@ module Resolve_pattern = struct
         match x with
         | None -> None
         | Some x -> (
-            match Time.Date_time.to_unix_second x with
+            match Time.Date_time.to_timestamp x with
             | Error () -> None
             | Ok x -> Some x ))
 
@@ -965,7 +965,7 @@ let resolve (search_param : Search_param.t) (time : Time.t) :
   let rec aux search_param time =
     let open Time in
     match time with
-    | Unix_second_interval_seq s -> Ok s
+    | Timestamp_interval_seq s -> Ok s
     | Pattern pat ->
       Resolve_pattern.matching_intervals ~allow_search_param_override:true
         search_param pat
@@ -1017,7 +1017,7 @@ module Search_years_ahead = struct
             {
               start =
                 Option.value
-                  ~default:(`Unix_second (Time.Current.cur_unix_second ()))
+                  ~default:(`Timestamp (Time.Current.cur_timestamp ()))
                   start;
               years_ahead;
             };
