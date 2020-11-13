@@ -33,20 +33,18 @@ module Search_param = struct
           in
           Ok { search_param with typ = Intervals intervals } )
     | Years_ahead { years_ahead; start = start' } -> (
-        (
-            match Time.Date_time.to_timestamp start' with
-            | Error () -> Error ()
-            | Ok start' ->
-              let start = max start' start in
-              Time.Date_time.of_timestamp
-                ~tz_offset_s_of_date_time:
-                  search_param.search_using_tz_offset_s start
-              |> Result.map (fun start ->
-                  {
-                    search_param with
-                    typ =
-                      Years_ahead { years_ahead; start };
-                  }) ) )
+        match Time.Date_time.to_timestamp start' with
+        | Error () -> Error ()
+        | Ok start' ->
+          let start = max start' start in
+          Time.Date_time.of_timestamp
+            ~tz_offset_s_of_date_time:search_param.search_using_tz_offset_s
+            start
+          |> Result.map (fun start ->
+              {
+                search_param with
+                typ = Years_ahead { years_ahead; start };
+              }) )
 
   let start_date_time_and_search_years_ahead_of_search_param (search_param : t)
     : (Time.Date_time.t * int) option =
@@ -69,8 +67,7 @@ module Search_param = struct
           in
           let search_years_ahead = end_exc.year - start.year + 1 in
           Some (start, search_years_ahead) )
-    | Years_ahead { years_ahead; start } -> (
-        Some (start, years_ahead) )
+    | Years_ahead { years_ahead; start } -> Some (start, years_ahead)
 
   module Check = struct
     let check_search_param (x : t) : (unit, error) result =
@@ -87,13 +84,13 @@ module Search_param = struct
             intervals
         then Ok ()
         else Error Invalid_intervals
-      | Years_ahead { years_ahead; start } -> (
-            if Time.Check.date_time_is_valid start then
-              if years_ahead <= 0 then Error Invalid_search_years_ahead
-              else if start.year + years_ahead > Time.Date_time.max.year then
-                Error Too_far_into_future
-              else Ok ()
-            else Error Invalid_start )
+      | Years_ahead { years_ahead; start } ->
+        if Time.Check.date_time_is_valid start then
+          if years_ahead <= 0 then Error Invalid_search_years_ahead
+          else if start.year + years_ahead > Time.Date_time.max.year then
+            Error Too_far_into_future
+          else Ok ()
+        else Error Invalid_start
   end
 end
 
@@ -972,9 +969,11 @@ module Search_years_ahead = struct
     let date_time =
       match start with
       | Some x ->
-        Time.Date_time.of_timestamp ~tz_offset_s_of_date_time:search_using_tz_offset_s x
+        Time.Date_time.of_timestamp
+          ~tz_offset_s_of_date_time:search_using_tz_offset_s x
       | None ->
-        Time.Current.cur_date_time ~tz_offset_s_of_date_time:search_using_tz_offset_s
+        Time.Current.cur_date_time
+          ~tz_offset_s_of_date_time:search_using_tz_offset_s
     in
     match date_time with
     | Ok date_time -> (
@@ -982,18 +981,11 @@ module Search_years_ahead = struct
           let open Search_param in
           {
             search_using_tz_offset_s;
-            typ =
-              Years_ahead
-                {
-                  start = date_time;
-                  years_ahead;
-                };
+            typ = Years_ahead { start = date_time; years_ahead };
           }
         in
         match Search_param.Check.check_search_param search_param with
         | Ok () -> resolve search_param time
-        | Error _ -> Error "Invalid search years ahead or invalid start"
-      )
-    | Error () ->
-      Error "Invalid timestamp"
+        | Error _ -> Error "Invalid search years ahead or invalid start" )
+    | Error () -> Error "Invalid timestamp"
 end
