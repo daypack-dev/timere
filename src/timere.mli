@@ -4,6 +4,14 @@ type interval = int64 * int64
 
 type tz_offset_s = int
 
+exception Interval_is_invalid
+
+exception Interval_is_empty
+
+exception Intervals_are_not_sorted
+
+exception Intervals_are_not_disjoint
+
 type weekday =
   [ `Sun
   | `Mon
@@ -57,13 +65,6 @@ module Duration : sig
 end
 
 type t
-
-val normalize :
-  ?skip_filter_invalid:bool ->
-  ?skip_filter_empty:bool ->
-  ?skip_sort:bool ->
-  t ->
-  t
 
 val chunk : ?drop_partial:bool -> int64 -> t -> t
 
@@ -143,7 +144,17 @@ val of_date_time :
   tz_offset_s:int ->
   (t, unit) result
 
-val of_unix_second_interval : int64 * int64 -> t
+val of_unix_second_interval : int64 * int64 -> (t, unit) result
+
+val of_sorted_unix_second_intervals : ?skip_invalid:bool -> interval list -> t
+
+val of_sorted_unix_second_interval_seq :
+  ?skip_invalid:bool -> interval Seq.t -> t
+
+val of_unsorted_unix_second_intervals : ?skip_invalid:bool -> interval list -> t
+
+val of_unsorted_unix_second_interval_seq :
+  ?skip_invalid:bool -> interval Seq.t -> t
 
 module Infix : sig
   val ( &&& ) : t -> t -> t

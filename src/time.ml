@@ -4,6 +4,14 @@ type unix_second = int64
 
 let tz_offset_s_utc = 0
 
+exception Interval_is_invalid
+
+exception Interval_is_empty
+
+exception Intervals_are_not_sorted
+
+exception Intervals_are_not_disjoint
+
 type weekday =
   [ `Sun
   | `Mon
@@ -157,10 +165,6 @@ let weekday_of_month_day ~(year : int) ~(month : month) ~(mday : int) :
   | Some wday -> Ok (Ptime.weekday wday)
 
 module Interval = struct
-  exception Interval_is_invalid
-
-  exception Interval_is_empty
-
   type t = int64 * int64
 
   let lt (x1, y1) (x2, y2) =
@@ -216,13 +220,12 @@ end
 module Intervals = struct
   open Int64_utils
 
-  exception Intervals_are_not_sorted
-
-  exception Intervals_are_not_disjoint
-
   module Check = struct
     let check_if_valid (intervals : Interval.t Seq.t) : Interval.t Seq.t =
       Seq.map Interval.Check.check_if_valid intervals
+
+    let check_if_valid_list (intervals : Interval.t list) : Interval.t list =
+      List.map Interval.Check.check_if_valid intervals
 
     let check_if_not_empty (intervals : Interval.t Seq.t) : Interval.t Seq.t =
       Seq.map Interval.Check.check_if_not_empty intervals
@@ -1685,6 +1688,7 @@ type branching_days = Month_days of int Range.range list
 
 type t =
   | Unix_second_interval of int64 * int64
+  | Unix_second_interval_seq of (int64 * int64) Seq.t
   | Pattern of Pattern.pattern
   | Branching of {
       years : int Range.range list;
@@ -1698,10 +1702,6 @@ type t =
   | Round_robin_pick_seq of t Seq.t
   | Merge_list of t list
   | Merge_seq of t Seq.t
-
-let normalize ?(skip_filter_invalid = false) ?(skip_filter_empty = false)
-    ?(skip_sort = false) (t : t) : t =
-  Unary_op (Normalize { skip_filter_invalid; skip_filter_empty; skip_sort }, t)
 
 let chunk ?(drop_partial = false) (chunk_size : int64) (t : t) : t =
   Unary_op (Chunk { chunk_size; drop_partial }, t)
@@ -1805,5 +1805,39 @@ let of_date_time ~year ~month ~day ~hour ~minute ~second ~tz_offset_s =
   |> Date_time.to_unix_second
   |> Result.map (fun x -> Unix_second_interval (x, Int64.succ x))
 
-let of_unix_second_interval ((start, end_exc) : int64 * int64) : t =
-  Unix_second_interval (start, end_exc)
+let of_unix_second_interval ((start, end_exc) : int64 * int64) :
+  (t, unit) result =
+  if Interval.Check.is_valid (start, end_exc) then
+    Ok (Unix_second_interval (start, end_exc))
+  else Error ()
+
+let of_sorted_unix_second_interval_seq ?(skip_invalid : bool = false)
+    (s : (int64 * int64) Seq.t) : t =
+  Unix_second_interval_seq
+    ( s
+      |> Intervals.Filter.filter_empty
+      |> ( if skip_invalid then Intervals.Filter.filter_invalid
+           else Intervals.Check.check_if_valid )
+      |> Intervals.Check.check_if_sorted
+      |> Intervals.Normalize.normalize ~skip_filter_invalid:true
+        ~skip_filter_empty:true ~skip_sort:true )
+
+let of_sorted_unix_second_intervals ?(skip_invalid : bool = false)
+    (l : (int64 * int64) list) : t =
+  l |> List.to_seq |> of_sorted_unix_second_interval_seq ~skip_invalid
+
+let of_unsorted_unix_second_intervals ?(skip_invalid : bool = false)
+    (l : (int64 * int64) list) : t =
+  Unix_second_interval_seq
+    ( l
+      |> Intervals.Filter.filter_empty_list
+      |> ( if skip_invalid then Intervals.Filter.filter_invalid_list
+           else Intervals.Check.check_if_valid_list )
+      |> Intervals.Sort.sort_uniq_intervals_list
+      |> List.to_seq
+      |> Intervals.Normalize.normalize ~skip_filter_invalid:true
+        ~skip_filter_empty:true ~skip_sort:true )
+
+let of_unsorted_unix_second_interval_seq ?(skip_invalid : bool = false)
+    (s : (int64 * int64) Seq.t) : t =
+  s |> List.of_seq |> of_unsorted_unix_second_intervals ~skip_invalid
