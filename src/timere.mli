@@ -66,46 +66,6 @@ end
 
 type t
 
-val chunk : ?drop_partial:bool -> int64 -> t -> t
-
-val shift : Duration.t -> t -> t
-
-val lengthen : Duration.t -> t -> t
-
-val inter : t -> t -> t
-
-val union : t -> t -> t
-
-val not_in : t -> t
-
-val interval_inc : t -> t -> t
-
-val interval_exc : t -> t -> t
-
-val intervals_inc : t -> t -> t
-
-val intervals_exc : t -> t -> t
-
-val round_robin_pick : t list -> t
-
-val round_robin_pick_seq : t Seq.t -> t
-
-val merge : t list -> t
-
-val merge_seq : t Seq.t -> t
-
-val first : t -> t
-
-val take_n : int -> t -> t
-
-val skip_n : int -> t -> t
-
-val first_point : t -> t
-
-val take_n_points : int -> t -> t
-
-val skip_n_points : int -> t -> t
-
 val of_pattern :
   ?years:int list ->
   ?months:month list ->
@@ -155,6 +115,46 @@ val of_unsorted_unix_second_intervals : ?skip_invalid:bool -> interval list -> t
 
 val of_unsorted_unix_second_interval_seq :
   ?skip_invalid:bool -> interval Seq.t -> t
+
+val chunk : ?drop_partial:bool -> int64 -> t -> t
+
+val shift : Duration.t -> t -> t
+
+val lengthen : Duration.t -> t -> t
+
+val inter : t -> t -> t
+
+val union : t -> t -> t
+
+val not_in : t -> t
+
+val interval_inc : t -> t -> t
+
+val interval_exc : t -> t -> t
+
+val intervals_inc : t -> t -> t
+
+val intervals_exc : t -> t -> t
+
+val round_robin_pick : t list -> t
+
+val round_robin_pick_seq : t Seq.t -> t
+
+val merge : t list -> t
+
+val merge_seq : t Seq.t -> t
+
+val first : t -> t
+
+val take_n : int -> t -> t
+
+val skip_n : int -> t -> t
+
+val first_point : t -> t
+
+val take_n_points : int -> t -> t
+
+val skip_n_points : int -> t -> t
 
 module Infix : sig
   val ( &&& ) : t -> t -> t
