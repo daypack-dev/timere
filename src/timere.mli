@@ -37,6 +37,24 @@ type month =
   | `Dec
   ]
 
+module Date_time : sig
+  type t
+
+  val make :
+    year:int ->
+    month:month ->
+    day:int ->
+    hour:int ->
+    minute:int ->
+    second:int ->
+    tz_offset_s:int ->
+    (t, unit) result
+
+  val to_timestamp : t -> (timestamp, unit) result
+
+  val of_timestamp : tz_offset_s_of_date_time:tz_offset_s option -> timestamp -> (t, unit) result
+end
+
 module Duration : sig
   type t = private {
     days : int;
@@ -95,13 +113,7 @@ val of_seconds : int list -> (t, unit) result
 val any : t
 
 val of_date_time :
-  year:int ->
-  month:month ->
-  day:int ->
-  hour:int ->
-  minute:int ->
-  second:int ->
-  tz_offset_s:int ->
+  Date_time.t ->
   (t, unit) result
 
 val of_timestamp_interval : interval -> (t, unit) result

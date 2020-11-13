@@ -1481,6 +1481,13 @@ module Date_time = struct
       in
       x |> Ptime.to_date_time ~tz_offset_s |> of_ptime_date_time
 
+  let make ~year ~month ~day ~hour ~minute ~second ~tz_offset_s =
+    { year; month; day; hour; minute; second; tz_offset_s }
+    |> to_timestamp
+    |> Result.map (fun x ->
+        Result.get_ok @@ of_timestamp ~tz_offset_s_of_date_time:(Some tz_offset_s) x
+      )
+
   let min =
     Ptime.min |> Ptime.to_date_time |> of_ptime_date_time |> Result.get_ok
 
@@ -1801,8 +1808,8 @@ let of_timestamps timestamps = of_pattern ~timestamps ()
 
 let any = Result.get_ok @@ of_pattern ()
 
-let of_date_time ~year ~month ~day ~hour ~minute ~second ~tz_offset_s =
-  Date_time.{ year; month; day; hour; minute; second; tz_offset_s }
+let of_date_time (date_time : Date_time.t) : (t, unit) result =
+  date_time
   |> Date_time.to_timestamp
   |> Result.map (fun x ->
       Timestamp_interval_seq (Seq.return (x, Int64.succ x)))
