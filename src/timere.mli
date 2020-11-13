@@ -204,14 +204,9 @@ module Resolver : sig
   end
 
   module Search_years_ahead : sig
-    type start =
-      [ `Timestamp of timestamp
-      | `Date_time of Time.Date_time.t
-      ]
-
     val resolve :
       ?search_using_tz_offset_s:tz_offset_s ->
-      ?start:start ->
+      ?start:timestamp ->
       int ->
       Time.t ->
       (interval Seq.t, string) result
