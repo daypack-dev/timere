@@ -965,23 +965,30 @@ let resolve (search_param : Search_param.t) (time : Time.t) :
   let rec aux search_param time =
     let open Time in
     match time with
-    | Unix_second_interval (start, end_exc) ->
-      Result.ok @@ Seq.return (start, end_exc)
+    | Unix_second_interval_seq s -> Ok s
     | Pattern pat ->
       Resolve_pattern.matching_intervals ~allow_search_param_override:true
         search_param pat
       |> Result.map_error (fun _ -> "Error during resolution of pattern")
+    | Branching branching -> failwith "Unimplemented"
+    | Unary_op _ -> failwith "Unimplemented"
+    | Binary_op _ -> failwith "Unimplemented"
     | Round_robin_pick_list l ->
       Misc_utils.get_ok_error_list (List.map (aux search_param) l)
       |> Result.map
-        Time.Intervals.Round_robin
-        .merge_multi_list_round_robin_non_decreasing
+        (Time.Intervals.Round_robin
+         .merge_multi_list_round_robin_non_decreasing ~skip_check:true)
     | Round_robin_pick_seq s ->
       Seq_utils.get_ok_error_list (Seq.map (aux search_param) s)
       |> Result.map
         Time.Intervals.Round_robin
         .merge_multi_list_round_robin_non_decreasing
-    | _ -> failwith "Unimplemented"
+    | Merge_list l ->
+      Misc_utils.get_ok_error_list (List.map (aux search_param) l)
+      |> Result.map (Time.Intervals.Merge.merge_multi_list ~skip_check:true)
+    | Merge_seq s ->
+      Seq_utils.get_ok_error_list (Seq.map (aux search_param) s)
+      |> Result.map (Time.Intervals.Merge.merge_multi_list ~skip_check:true)
   in
   aux search_param time
 

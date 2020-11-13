@@ -1686,16 +1686,17 @@ type branching_days = Month_days of int Range.range list
 
 (* | Weekdays of weekday Range.range list *)
 
+type branching = {
+  years : int Range.range list;
+  months : month Range.range list;
+  days : branching_days;
+  hms : hms Range.range list;
+}
+
 type t =
-  | Unix_second_interval of int64 * int64
   | Unix_second_interval_seq of (int64 * int64) Seq.t
   | Pattern of Pattern.pattern
-  | Branching of {
-      years : int Range.range list;
-      months : month Range.range list;
-      days : branching_days;
-      hms : hms Range.range list;
-    }
+  | Branching of branching
   | Unary_op of unary_op * t
   | Binary_op of binary_op * t * t
   | Round_robin_pick_list of t list
@@ -1803,12 +1804,13 @@ let wildcard = Result.get_ok @@ of_pattern ()
 let of_date_time ~year ~month ~day ~hour ~minute ~second ~tz_offset_s =
   Date_time.{ year; month; day; hour; minute; second; tz_offset_s }
   |> Date_time.to_unix_second
-  |> Result.map (fun x -> Unix_second_interval (x, Int64.succ x))
+  |> Result.map (fun x ->
+      Unix_second_interval_seq (Seq.return (x, Int64.succ x)))
 
 let of_unix_second_interval ((start, end_exc) : int64 * int64) :
   (t, unit) result =
   if Interval.Check.is_valid (start, end_exc) then
-    Ok (Unix_second_interval (start, end_exc))
+    Ok (Unix_second_interval_seq (Seq.return (start, end_exc)))
   else Error ()
 
 let of_sorted_unix_second_interval_seq ?(skip_invalid : bool = false)
