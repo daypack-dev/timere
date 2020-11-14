@@ -1714,9 +1714,7 @@ type t =
   | Unary_op of search_space * unary_op * t
   | Binary_op of search_space * binary_op * t * t
   | Round_robin_pick_list of search_space * t list
-  (* | Round_robin_pick_seq of search_space * t Seq.t *)
   | Merge_list of search_space * t list
-  (* | Merge_seq of search_space * t Seq.t *)
 
 let chunk ?(drop_partial = false) (chunk_size : int64) (t : t) : t =
   Unary_op (default_search_space, Chunk { chunk_size; drop_partial }, t)
@@ -1729,13 +1727,8 @@ let lengthen (x : Duration.t) (t : t) : t =
 
 let merge (l : t list) : t = Merge_list (default_search_space, l)
 
-(* let merge_seq (s : t Seq.t) : t = Merge_seq (default_search_space, s) *)
-
 let round_robin_pick (l : t list) : t =
   Round_robin_pick_list (default_search_space, l)
-
-(* let round_robin_pick_seq (s : t Seq.t) : t =
- *   Round_robin_pick_seq (default_search_space, s) *)
 
 let inter (a : t) (b : t) : t = Binary_op (default_search_space, Inter, a, b)
 
