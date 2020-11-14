@@ -1702,67 +1702,78 @@ type branching = {
 
 type search_space = Interval.t
 
+let default_search_space =
+  let open Date_time in
+  ( Result.get_ok @@ to_timestamp min,
+    Int64.succ @@ Result.get_ok @@ to_timestamp max )
+
 type t =
-  | Timestamp_interval_seq of search_space option * (int64 * int64) Seq.t
-  | Pattern of search_space option * Pattern.pattern
-  | Branching of search_space option * branching
-  | Unary_op of search_space option * unary_op * t
-  | Binary_op of search_space option * binary_op * t * t
-  | Round_robin_pick_list of search_space option * t list
-  | Round_robin_pick_seq of search_space option * t Seq.t
-  | Merge_list of search_space option * t list
-  | Merge_seq of search_space option * t Seq.t
+  | Timestamp_interval_seq of search_space * (int64 * int64) Seq.t
+  | Pattern of search_space * Pattern.pattern
+  | Branching of search_space * branching
+  | Unary_op of search_space * unary_op * t
+  | Binary_op of search_space * binary_op * t * t
+  | Round_robin_pick_list of search_space * t list
+  | Round_robin_pick_seq of search_space * t Seq.t
+  | Merge_list of search_space * t list
+  | Merge_seq of search_space * t Seq.t
 
 let chunk ?(drop_partial = false) (chunk_size : int64) (t : t) : t =
-  Unary_op (None, Chunk { chunk_size; drop_partial }, t)
+  Unary_op (default_search_space, Chunk { chunk_size; drop_partial }, t)
 
 let shift (offset : Duration.t) (t : t) : t =
-  Unary_op (None, Shift (Duration.to_seconds offset), t)
+  Unary_op (default_search_space, Shift (Duration.to_seconds offset), t)
 
 let lengthen (x : Duration.t) (t : t) : t =
-  Unary_op (None, Lengthen (Duration.to_seconds x), t)
+  Unary_op (default_search_space, Lengthen (Duration.to_seconds x), t)
 
-let merge (l : t list) : t = Merge_list (None, l)
+let merge (l : t list) : t = Merge_list (default_search_space, l)
 
-let merge_seq (s : t Seq.t) : t = Merge_seq (None, s)
+let merge_seq (s : t Seq.t) : t = Merge_seq (default_search_space, s)
 
-let round_robin_pick (l : t list) : t = Round_robin_pick_list (None, l)
+let round_robin_pick (l : t list) : t =
+  Round_robin_pick_list (default_search_space, l)
 
-let round_robin_pick_seq (s : t Seq.t) : t = Round_robin_pick_seq (None, s)
+let round_robin_pick_seq (s : t Seq.t) : t =
+  Round_robin_pick_seq (default_search_space, s)
 
-let inter (a : t) (b : t) : t = Binary_op (None, Inter, a, b)
+let inter (a : t) (b : t) : t = Binary_op (default_search_space, Inter, a, b)
 
-let union (a : t) (b : t) : t = Binary_op (None, Union, a, b)
+let union (a : t) (b : t) : t = Binary_op (default_search_space, Union, a, b)
 
-let first_point (a : t) : t = Unary_op (None, Next_n_points 1, a)
+let first_point (a : t) : t = Unary_op (default_search_space, Next_n_points 1, a)
 
 let take_n_points (n : int) (t : t) : t =
   if n < 0 then raise (Invalid_argument "take_n_points: n < 0")
-  else Unary_op (None, Next_n_points n, t)
+  else Unary_op (default_search_space, Next_n_points n, t)
 
 let skip_n_points (n : int) (t : t) : t =
   if n < 0 then raise (Invalid_argument "skip_n_points: n < 0")
-  else Unary_op (None, Skip_n_points n, t)
+  else Unary_op (default_search_space, Skip_n_points n, t)
 
-let first (t : t) : t = Unary_op (None, Next_n_intervals 1, t)
+let first (t : t) : t = Unary_op (default_search_space, Next_n_intervals 1, t)
 
 let take_n (n : int) (t : t) : t =
   if n < 0 then raise (Invalid_argument "take_n: n < 0")
-  else Unary_op (None, Next_n_intervals n, t)
+  else Unary_op (default_search_space, Next_n_intervals n, t)
 
 let skip_n (n : int) (t : t) : t =
   if n < 0 then raise (Invalid_argument "skip_n: n < 0")
-  else Unary_op (None, Skip_n_intervals n, t)
+  else Unary_op (default_search_space, Skip_n_intervals n, t)
 
-let interval_inc (a : t) (b : t) : t = Binary_op (None, Interval_inc, a, b)
+let interval_inc (a : t) (b : t) : t =
+  Binary_op (default_search_space, Interval_inc, a, b)
 
-let interval_exc (a : t) (b : t) : t = Binary_op (None, Interval_exc, a, b)
+let interval_exc (a : t) (b : t) : t =
+  Binary_op (default_search_space, Interval_exc, a, b)
 
-let intervals_inc (a : t) (b : t) : t = Binary_op (None, Intervals_inc, a, b)
+let intervals_inc (a : t) (b : t) : t =
+  Binary_op (default_search_space, Intervals_inc, a, b)
 
-let intervals_exc (a : t) (b : t) : t = Binary_op (None, Intervals_exc, a, b)
+let intervals_exc (a : t) (b : t) : t =
+  Binary_op (default_search_space, Intervals_exc, a, b)
 
-let not (a : t) : t = Unary_op (None, Not, a)
+let not (a : t) : t = Unary_op (default_search_space, Not, a)
 
 let pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
     ?(hours = []) ?(minutes = []) ?(seconds = []) ?(timestamps = []) () : t =
@@ -1777,7 +1788,7 @@ let pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
     && p' timestamps
   then
     Pattern
-      ( None,
+      ( default_search_space,
         {
           Pattern.years;
           months;
@@ -1834,17 +1845,18 @@ let of_date_time (date_time : Date_time.t) : (t, unit) result =
   date_time
   |> Date_time.to_timestamp
   |> Result.map (fun x ->
-      Timestamp_interval_seq (None, Seq.return (x, Int64.succ x)))
+      Timestamp_interval_seq
+        (default_search_space, Seq.return (x, Int64.succ x)))
 
 let of_interval ((start, end_exc) : int64 * int64) : t =
   if Interval.Check.is_valid (start, end_exc) then
-    Timestamp_interval_seq (None, Seq.return (start, end_exc))
+    Timestamp_interval_seq (default_search_space, Seq.return (start, end_exc))
   else invalid_arg "of_interval"
 
 let of_sorted_intervals_seq ?(skip_invalid : bool = false)
     (s : (int64 * int64) Seq.t) : t =
   Timestamp_interval_seq
-    ( None,
+    ( default_search_space,
       s
       |> Intervals.Filter.filter_empty
       |> ( if skip_invalid then Intervals.Filter.filter_invalid
@@ -1859,7 +1871,7 @@ let of_sorted_intervals ?(skip_invalid : bool = false)
 
 let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
   Timestamp_interval_seq
-    ( None,
+    ( default_search_space,
       l
       |> Intervals.Filter.filter_empty_list
       |> ( if skip_invalid then Intervals.Filter.filter_invalid_list

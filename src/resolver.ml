@@ -5,11 +5,18 @@ module Search_param = struct
     end_inc : Time.Date_time.t;
   }
 
-  let default =
+  let make ~search_using_tz_offset_s ((start, end_exc) : Time.Interval.t) : t =
     {
-      search_using_tz_offset_s = None;
-      start = Time.Date_time.min;
-      end_inc = Time.Date_time.max;
+      search_using_tz_offset_s;
+      start =
+        Result.get_ok
+        @@ Time.Date_time.of_timestamp
+          ~tz_offset_s_of_date_time:search_using_tz_offset_s start;
+      end_inc =
+        Result.get_ok
+        @@ Time.Date_time.of_timestamp
+          ~tz_offset_s_of_date_time:search_using_tz_offset_s
+          (Int64.pred end_exc);
     }
 end
 
@@ -659,32 +666,71 @@ module Resolve_pattern = struct
     match s () with Seq.Nil -> None | Seq.Cons (x, _) -> Some x
 end
 
+let optimize_search_space (time : Time.t) : Time.t =
+  let rec aux time =
+    let open Time in
+    match time with
+    | Timestamp_interval_seq ((_, end_exc), s) -> (
+        match s () with
+        | Seq.Nil -> time
+        | Seq.Cons ((start, _), _) ->
+          Timestamp_interval_seq ((start, end_exc), s) )
+    | Pattern (_, pat) -> (
+        match pat.years with
+        | [] -> time
+        | l ->
+          let start_year = List.hd l in
+          let end_inc_year = List.hd (List.rev l) in
+          let start_date_time =
+            Date_time.set_to_first_month_day_hour_min_sec
+              { Date_time.min with year = start_year }
+          in
+          let end_inc_date_time =
+            Date_time.set_to_last_month_day_hour_min_sec
+              { Date_time.min with year = end_inc_year }
+          in
+          let start =
+            Result.get_ok @@ Date_time.to_timestamp start_date_time
+          in
+          let end_exc =
+            Int64.succ
+            @@ Result.get_ok
+            @@ Date_time.to_timestamp end_inc_date_time
+          in
+          Pattern ((start, end_exc), pat) )
+    | _ -> failwith "Unimplemented"
+  in
+  aux time
+
 let resolve ?search_using_tz_offset_s (time : Time.t) :
   ((int64 * int64) Seq.t, string) result =
-  let rec aux search_param time =
+  let rec aux time =
     let open Time in
     match time with
     | Timestamp_interval_seq (_, s) -> Ok s
-    | Pattern (_, pat) ->
-      Ok (Resolve_pattern.matching_intervals search_param pat)
+    | Pattern (space, pat) ->
+      Ok
+        (Resolve_pattern.matching_intervals
+           (Search_param.make ~search_using_tz_offset_s space)
+           pat)
     | Branching (_branching, _) -> failwith "Unimplemented"
     | Unary_op _ -> failwith "Unimplemented"
     | Binary_op _ -> failwith "Unimplemented"
     | Round_robin_pick_list (_, l) ->
-      Misc_utils.get_ok_error_list (List.map (aux search_param) l)
+      Misc_utils.get_ok_error_list (List.map aux l)
       |> Result.map
         (Time.Intervals.Round_robin
          .merge_multi_list_round_robin_non_decreasing ~skip_check:true)
     | Round_robin_pick_seq (_, s) ->
-      Seq_utils.get_ok_error_list (Seq.map (aux search_param) s)
+      Seq_utils.get_ok_error_list (Seq.map aux s)
       |> Result.map
         Time.Intervals.Round_robin
         .merge_multi_list_round_robin_non_decreasing
     | Merge_list (_, l) ->
-      Misc_utils.get_ok_error_list (List.map (aux search_param) l)
+      Misc_utils.get_ok_error_list (List.map aux l)
       |> Result.map (Time.Intervals.Merge.merge_multi_list ~skip_check:true)
     | Merge_seq (_, s) ->
-      Seq_utils.get_ok_error_list (Seq.map (aux search_param) s)
+      Seq_utils.get_ok_error_list (Seq.map aux s)
       |> Result.map (Time.Intervals.Merge.merge_multi_list ~skip_check:true)
   in
-  aux { Search_param.default with search_using_tz_offset_s } time
+  aux time
