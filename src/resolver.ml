@@ -675,13 +675,13 @@ let get_search_space (time : Time.t) : Time.Interval.t =
   | Unary_op (s, _, _) -> s
   | Binary_op (s, _, _, _) -> s
   | Round_robin_pick_list (s, _) -> s
-  | Round_robin_pick_seq (s, _) -> s
   | Merge_list (s, _) -> s
-  | Merge_seq (s, _) -> s
+
+let empty_search_space = (0L, 0L)
 
 let optimize_search_space (time : Time.t) : Time.t =
+  let open Time in
   let rec aux time =
-    let open Time in
     match time with
     | Timestamp_interval_seq ((_, end_exc), s) -> (
         match s () with
@@ -714,7 +714,7 @@ let optimize_search_space (time : Time.t) : Time.t =
     | Branching _ -> failwith "Unimplemented"
     | Unary_op (_, op, t) -> (
         match op with
-        | Not -> Unary_op (default_search_space, op, t)
+        | Not -> Unary_op (default_search_space, op, aux t)
         | _ -> time )
     | Binary_op (_, op, t1, t2) -> (
         let t1 = aux t1 in
@@ -728,12 +728,33 @@ let optimize_search_space (time : Time.t) : Time.t =
               Interval.overlap_of_a_over_b ~a:(t1_start, t1_end_exc)
                 ~b:(t2_start, t2_end_exc)
             with
-            | _, None, _ -> (0L, 0L)
+            | _, None, _ -> empty_search_space
             | _, Some s, _ -> s
           in
           Binary_op (space, Inter, t1, t2)
         | _ -> Binary_op ((t1_start, t2_end_exc), op, t1, t2) )
-    | _ -> failwith "Unimplemented"
+    | Round_robin_pick_list (_, l) ->
+      let space, l = aux_list l in
+      Round_robin_pick_list (space, l)
+    | Merge_list (_, l) ->
+      let space, l = aux_list l in
+      Merge_list (space, l)
+  and aux_list l =
+    let l = List.map aux l in
+    let spaces =
+      List.map get_search_space l
+      |> Intervals.Normalize.normalize_list_in_seq_out ~skip_filter_invalid:true
+      |> List.of_seq
+    in
+    let space =
+      match spaces with
+      | [] -> empty_search_space
+      | l ->
+        let start, _ = List.hd l in
+        let _, end_exc = List.hd (List.rev l) in
+        (start, end_exc)
+    in
+    (space, l)
   in
   aux time
 
@@ -756,16 +777,8 @@ let resolve ?search_using_tz_offset_s (time : Time.t) :
       |> Result.map
         (Time.Intervals.Round_robin
          .merge_multi_list_round_robin_non_decreasing ~skip_check:true)
-    | Round_robin_pick_seq (_, s) ->
-      Seq_utils.get_ok_error_list (Seq.map aux s)
-      |> Result.map
-        Time.Intervals.Round_robin
-        .merge_multi_list_round_robin_non_decreasing
     | Merge_list (_, l) ->
       Misc_utils.get_ok_error_list (List.map aux l)
-      |> Result.map (Time.Intervals.Merge.merge_multi_list ~skip_check:true)
-    | Merge_seq (_, s) ->
-      Seq_utils.get_ok_error_list (Seq.map aux s)
       |> Result.map (Time.Intervals.Merge.merge_multi_list ~skip_check:true)
   in
   aux time
