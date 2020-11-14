@@ -1697,7 +1697,7 @@ type branching = {
   years : int Range.range list;
   months : month Range.range list;
   days : branching_days;
-  hms : hms Range.range list;
+  hmss : hms Range.range list;
 }
 
 type t =
@@ -1786,6 +1786,28 @@ let pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
         timestamps;
       }
   else invalid_arg "of_pattern"
+
+(* let branching ?(years = []) ?(months = []) ?(month_days = [])
+ *     ?(hmss = [])
+ *     () : t =
+ *   let p = List.for_all (fun x -> x >= 0) in
+ *   if
+ *     p years
+ *     && p month_days
+ *     && List.for_all (fun hms ->
+ *         0 <= hms.hour && hms.hour <= 23
+ *         && 0 <= hms.minute && hms.minute < 60
+ *         && 0 <= hms.second && hms.second < 60
+ *       )
+ *       hmss
+ *   then
+ *       {
+ *         years;
+ *         months;
+ *         days = Month_days month_days;
+ *         hmss;
+ *       }
+ *   else invalid_arg "of_pattern" *)
 
 let years years = pattern ~years ()
 
