@@ -139,8 +139,6 @@ module Duration : sig
   val of_seconds : int64 -> (t, unit) result
 
   val to_seconds : t -> int64
-
-  val normalize : t -> t
 end
 
 val shift : Duration.t -> t -> t
