@@ -201,6 +201,4 @@ module Infix : sig
 end
 
 val resolve :
-  ?search_using_tz_offset_s:tz_offset_s ->
-  Time.t ->
-  (interval Seq.t, string) result
+  ?search_using_tz_offset_s:tz_offset_s -> t -> (interval Seq.t, string) result
