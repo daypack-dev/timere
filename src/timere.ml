@@ -9,11 +9,11 @@ module Infix = struct
 
   let ( ||| ) = Time.union
 
-  let ( -- ) = Time.interval_exc
+  let ( -- ) = Time.interval_inc
 
-  let ( --^ ) = Time.interval_inc
+  let ( --^ ) = Time.interval_exc
 
-  let ( --* ) = Time.intervals_exc
+  let ( --* ) = Time.intervals_inc
 
-  let ( --*^ ) = Time.intervals_inc
+  let ( --*^ ) = Time.intervals_exc
 end
