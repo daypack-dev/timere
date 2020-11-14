@@ -1783,14 +1783,14 @@ let pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
     Pattern
       ( default_search_space,
         {
-          Pattern.years;
-          months;
-          month_days;
-          weekdays;
-          hours;
-          minutes;
-          seconds;
-          timestamps;
+          Pattern.years = List.sort_uniq compare years;
+          months = List.sort_uniq compare_month months;
+          month_days = List.sort_uniq compare month_days;
+          weekdays = List.sort_uniq compare_weekday weekdays;
+          hours = List.sort_uniq compare hours;
+          minutes = List.sort_uniq compare minutes;
+          seconds = List.sort_uniq compare seconds;
+          timestamps = List.sort_uniq compare timestamps;
         } )
   else invalid_arg "of_pattern"
 
