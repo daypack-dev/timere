@@ -75,8 +75,6 @@ val intervals_exc : t -> t -> t
 
 val merge : t list -> t
 
-val merge_seq : t Seq.t -> t
-
 (** {1 Discrete time points} *)
 
 module Date_time : sig
@@ -186,8 +184,6 @@ val of_sorted_intervals_seq : ?skip_invalid:bool -> interval Seq.t -> t
 (** {1 Sampling} *)
 
 val round_robin_pick : t list -> t
-
-val round_robin_pick_seq : t Seq.t -> t
 
 (** {1 Infix operators} *)
 module Infix : sig
