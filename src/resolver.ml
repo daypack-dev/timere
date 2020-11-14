@@ -679,7 +679,7 @@ let get_search_space (time : Time.t) : Time.Interval.t =
 
 let empty_search_space = (0L, 0L)
 
-let optimize_search_space (time : Time.t) : Time.t =
+let propagate_search_space_bottom_up (time : Time.t) : Time.t =
   let open Time in
   let rec aux time =
     match time with
@@ -758,6 +758,39 @@ let optimize_search_space (time : Time.t) : Time.t =
   in
   aux time
 
+let propagate_search_space_top_down (time : Time.t) : Time.t =
+  let open Time in
+  let restrict_search_space (parent : search_space) (cur : search_space) =
+    match Interval.overlap_of_a_over_b ~a:parent ~b:cur with
+    | None, Some space, None -> space
+    | None, None, None -> empty_search_space
+    | _ -> cur
+  in
+  let rec aux parent_search_space time =
+    match time with
+    | Timestamp_interval_seq (cur, s) ->
+      Timestamp_interval_seq (restrict_search_space parent_search_space cur, s)
+    | Pattern (cur, pat) ->
+      Pattern (restrict_search_space parent_search_space cur, pat)
+    | Branching _ -> failwith "Unimplemented"
+    | Unary_op (cur, op, t) ->
+      let space = restrict_search_space parent_search_space cur in
+      Unary_op (space, op, aux space t)
+    | Binary_op (cur, op, t1, t2) ->
+      let space = restrict_search_space parent_search_space cur in
+      Binary_op (space, op, aux space t1, aux space t2)
+    | Round_robin_pick_list (cur, l) ->
+      let space = restrict_search_space parent_search_space cur in
+      Round_robin_pick_list (space, aux_list space l)
+    | Merge_list (cur, l) ->
+      let space = restrict_search_space parent_search_space cur in
+      Merge_list (space, aux_list space l)
+  and aux_list parent_search_space l = List.map (aux parent_search_space) l in
+  aux default_search_space time
+
+let optimize_search_space t =
+  t |> propagate_search_space_bottom_up |> propagate_search_space_top_down
+
 let resolve ?search_using_tz_offset_s (time : Time.t) :
   ((int64 * int64) Seq.t, string) result =
   let rec aux time =
@@ -769,9 +802,28 @@ let resolve ?search_using_tz_offset_s (time : Time.t) :
         (Resolve_pattern.matching_intervals
            (Search_param.make ~search_using_tz_offset_s space)
            pat)
-    | Branching (_branching, _) -> failwith "Unimplemented"
-    | Unary_op _ -> failwith "Unimplemented"
-    | Binary_op _ -> failwith "Unimplemented"
+    | Branching (_, _branching) -> failwith "Unimplemented"
+    | Unary_op ((start, end_exc), op, t) ->
+      aux t
+      |> Result.map (fun s ->
+          match op with
+          | Not -> Intervals.invert ~skip_check:true ~start ~end_exc s
+          | Every -> s
+          | Chunk { chunk_size; drop_partial } ->
+            Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
+          | _ -> failwith "Unimplemented")
+    | Binary_op (_, op, t1, t2) -> (
+        match aux t1 with
+        | Error msg -> Error msg
+        | Ok s1 -> (
+            match aux t2 with
+            | Error msg -> Error msg
+            | Ok s2 ->
+              Ok
+                ( match op with
+                  | Union -> Intervals.Union.union ~skip_check:true s1 s2
+                  | Inter -> Intervals.inter ~skip_check:true s1 s2
+                  | _ -> failwith "Unimplemented" ) ) )
     | Round_robin_pick_list (_, l) ->
       Misc_utils.get_ok_error_list (List.map aux l)
       |> Result.map
@@ -781,4 +833,4 @@ let resolve ?search_using_tz_offset_s (time : Time.t) :
       Misc_utils.get_ok_error_list (List.map aux l)
       |> Result.map (Time.Intervals.Merge.merge_multi_list ~skip_check:true)
   in
-  aux time
+  aux (optimize_search_space time)
