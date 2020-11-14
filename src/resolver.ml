@@ -666,6 +666,19 @@ module Resolve_pattern = struct
     match s () with Seq.Nil -> None | Seq.Cons (x, _) -> Some x
 end
 
+let get_search_space (time : Time.t) : Time.Interval.t =
+  let open Time in
+  match time with
+  | Timestamp_interval_seq (s, _) -> s
+  | Pattern (s, _) -> s
+  | Branching (s, _) -> s
+  | Unary_op (s, _, _) -> s
+  | Binary_op (s, _, _, _) -> s
+  | Round_robin_pick_list (s, _) -> s
+  | Round_robin_pick_seq (s, _) -> s
+  | Merge_list (s, _) -> s
+  | Merge_seq (s, _) -> s
+
 let optimize_search_space (time : Time.t) : Time.t =
   let rec aux time =
     let open Time in
@@ -698,6 +711,28 @@ let optimize_search_space (time : Time.t) : Time.t =
             @@ Date_time.to_timestamp end_inc_date_time
           in
           Pattern ((start, end_exc), pat) )
+    | Branching _ -> failwith "Unimplemented"
+    | Unary_op (_, op, t) -> (
+        match op with
+        | Not -> Unary_op (default_search_space, op, t)
+        | _ -> time )
+    | Binary_op (_, op, t1, t2) -> (
+        let t1 = aux t1 in
+        let t2 = aux t2 in
+        let t1_start, t1_end_exc = get_search_space t1 in
+        let t2_start, t2_end_exc = get_search_space t2 in
+        match op with
+        | Inter ->
+          let space =
+            match
+              Interval.overlap_of_a_over_b ~a:(t1_start, t1_end_exc)
+                ~b:(t2_start, t2_end_exc)
+            with
+            | _, None, _ -> (0L, 0L)
+            | _, Some s, _ -> s
+          in
+          Binary_op (space, Inter, t1, t2)
+        | _ -> Binary_op ((t1_start, t2_end_exc), op, t1, t2) )
     | _ -> failwith "Unimplemented"
   in
   aux time
