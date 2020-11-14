@@ -507,65 +507,6 @@ module Resolve_pattern = struct
 
   type error = Time.Pattern.error
 
-  (* let override_search_param_possibly ~allow_search_param_override
-   *     (search_param : Search_param.t) (t : Time.Pattern.pattern) :
-   *   Search_param.t =
-   *   if allow_search_param_override then
-   *     match t.years with
-   *     | [] -> search_param
-   *     | l -> (
-   *         let l = List.sort_uniq compare l in
-   *         let start_year = List.hd l in
-   *         let end_inc_year = List.hd (List.rev l) in
-   *         let search_using_tz_offset_s =
-   *           Option.value ~default:0 search_param.search_using_tz_offset_s
-   *         in
-   *         let start_date_time =
-   *           let open Time.Date_time in
-   *           {
-   *             min with
-   *             year = start_year;
-   *             tz_offset_s = search_using_tz_offset_s;
-   *           }
-   *           |> set_to_first_month_day_hour_min_sec
-   *         in
-   *         match
-   *           Search_param.start_date_time_and_search_years_ahead_of_search_param
-   *             search_param
-   *         with
-   *         | None ->
-   *           let open Search_param in
-   *           {
-   *             search_using_tz_offset_s = Some search_using_tz_offset_s;
-   *             typ =
-   *               Years_ahead
-   *                 {
-   *                   start = start_date_time;
-   *                   years_ahead = end_inc_year - start_year + 1;
-   *                 };
-   *           }
-   *         | Some (start_date_time', search_years_ahead') ->
-   *           let cmp_value =
-   *             Time.Date_time.compare start_date_time start_date_time'
-   *           in
-   *           let end_inc_year =
-   *             max (start_date_time'.year + search_years_ahead') end_inc_year
-   *           in
-   *           let start_date_time =
-   *             if cmp_value <= 0 then start_date_time else start_date_time'
-   *           in
-   *           let open Search_param in
-   *           {
-   *             search_using_tz_offset_s = Some search_using_tz_offset_s;
-   *             typ =
-   *               Years_ahead
-   *                 {
-   *                   start = start_date_time;
-   *                   years_ahead = end_inc_year - start_date_time.year + 1;
-   *                 };
-   *           } )
-   *   else search_param *)
-
   let matching_date_times (search_param : Search_param.t)
       (pat : Time.Pattern.pattern) : Time.Date_time.t Seq.t =
     let search_using_tz_offset_s = search_param.search_using_tz_offset_s in
