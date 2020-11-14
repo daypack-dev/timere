@@ -206,21 +206,7 @@ module Infix : sig
   val ( --*^ ) : t -> t -> t
 end
 
-module Resolver : sig
-  module Search_in_intervals : sig
-    val resolve :
-      ?search_using_tz_offset_s:tz_offset_s ->
-      interval list ->
-      Time.t ->
-      (interval Seq.t, string) result
-  end
-
-  module Search_years_ahead : sig
-    val resolve :
-      ?search_using_tz_offset_s:tz_offset_s ->
-      ?start:timestamp ->
-      int ->
-      Time.t ->
-      (interval Seq.t, string) result
-  end
-end
+val resolve :
+  ?search_using_tz_offset_s:tz_offset_s ->
+  Time.t ->
+  (interval Seq.t, string) result

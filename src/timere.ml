@@ -1,4 +1,3 @@
-module Resolver = Resolver
 module Duration = Duration
 include Time
 
@@ -17,3 +16,5 @@ module Infix = struct
 
   let ( --*^ ) = Time.intervals_exc
 end
+
+let resolve = Resolver.resolve
