@@ -1689,9 +1689,9 @@ type binary_op =
   | Intervals_inc
   | Intervals_exc
 
-type branching_days = Month_days of int Range.range list
-
-(* | Weekdays of weekday Range.range list *)
+type branching_days =
+  | Month_days of int Range.range list
+  | Weekdays of weekday Range.range list
 
 type branching = {
   years : int Range.range list;

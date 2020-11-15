@@ -727,7 +727,32 @@ let propagate_search_space_bottom_up (time : Time.t) : Time.t =
             |> List.of_seq
           in
           Pattern (space, pat) )
-    | Branching _ -> failwith "Unimplemented"
+    | Branching (_, branching) ->
+      let space =
+        branching.years
+        |> List.map (fun year_range ->
+            match year_range with
+            | `Range_inc (start, end_inc) ->
+              ( Date_time.set_to_first_month_day_hour_min_sec
+                  { Date_time.min with year = start }
+                |> Date_time.to_timestamp
+                |> Result.get_ok,
+                Date_time.set_to_last_month_day_hour_min_sec
+                  { Date_time.min with year = end_inc }
+                |> Date_time.to_timestamp
+                |> Result.get_ok
+                |> Int64.succ )
+            | `Range_exc (start, end_exc) ->
+              ( Date_time.set_to_first_month_day_hour_min_sec
+                  { Date_time.min with year = start }
+                |> Date_time.to_timestamp
+                |> Result.get_ok,
+                Date_time.set_to_last_month_day_hour_min_sec
+                  { Date_time.min with year = end_exc }
+                |> Date_time.to_timestamp
+                |> Result.get_ok ))
+      in
+      Branching (space, branching)
     | Unary_op (_, op, t) -> (
         let t = aux t in
         match op with
@@ -802,7 +827,8 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
       Timestamp_interval_seq (restrict_search_space parent_search_space cur, s)
     | Pattern (cur, pat) ->
       Pattern (restrict_search_space parent_search_space cur, pat)
-    | Branching _ -> failwith "Unimplemented"
+    | Branching (cur, branching) ->
+      Branching (restrict_search_space parent_search_space cur, branching)
     | Unary_op (cur, op, t) ->
       let space = restrict_search_space parent_search_space cur in
       Unary_op (space, op, aux space t)
