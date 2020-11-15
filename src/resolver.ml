@@ -688,6 +688,32 @@ let set_search_space space (time : Time.t) : Time.t =
   | Round_robin_pick_list (_, x) -> Round_robin_pick_list (space, x)
   | Merge_list (_, x) -> Merge_list (space, x)
 
+let search_space_of_year_range year_range =
+  let open Time in
+  match year_range with
+  | `Range_inc (start, end_inc) ->
+    ( Date_time.set_to_first_month_day_hour_min_sec
+        { Date_time.min with year = start }
+      |> Date_time.to_timestamp
+      |> Result.get_ok,
+      Date_time.set_to_last_month_day_hour_min_sec
+        { Date_time.min with year = end_inc }
+      |> Date_time.to_timestamp
+      |> Result.get_ok
+      |> Int64.succ )
+  | `Range_exc (start, end_exc) ->
+    ( Date_time.set_to_first_month_day_hour_min_sec
+        { Date_time.min with year = start }
+      |> Date_time.to_timestamp
+      |> Result.get_ok,
+      Date_time.set_to_last_month_day_hour_min_sec
+        { Date_time.min with year = end_exc }
+      |> Date_time.to_timestamp
+      |> Result.get_ok )
+
+let search_space_of_year year =
+  search_space_of_year_range (`Range_inc (year, year))
+
 let empty_search_space = []
 
 let propagate_search_space_bottom_up (time : Time.t) : Time.t =
@@ -702,16 +728,7 @@ let propagate_search_space_bottom_up (time : Time.t) : Time.t =
       )
     | Pattern (_, pat) -> (
         let space_for_years =
-          pat.years
-          |> List.to_seq
-          |> Seq.map (fun year ->
-              ( Date_time.set_to_first_month_day_hour_min_sec
-                  { Date_time.min with year },
-                Date_time.set_to_last_month_day_hour_min_sec
-                  { Date_time.min with year } ))
-          |> Seq.map (fun (dt1, dt2) ->
-              ( Result.get_ok @@ Date_time.to_timestamp dt1,
-                Int64.succ @@ Result.get_ok @@ Date_time.to_timestamp dt2 ))
+          pat.years |> List.to_seq |> Seq.map search_space_of_year
         in
         let space_for_timestamps =
           pat.timestamps |> List.to_seq |> Seq.map (fun x -> (x, Int64.succ x))
@@ -728,30 +745,7 @@ let propagate_search_space_bottom_up (time : Time.t) : Time.t =
           in
           Pattern (space, pat) )
     | Branching (_, branching) ->
-      let space =
-        branching.years
-        |> List.map (fun year_range ->
-            match year_range with
-            | `Range_inc (start, end_inc) ->
-              ( Date_time.set_to_first_month_day_hour_min_sec
-                  { Date_time.min with year = start }
-                |> Date_time.to_timestamp
-                |> Result.get_ok,
-                Date_time.set_to_last_month_day_hour_min_sec
-                  { Date_time.min with year = end_inc }
-                |> Date_time.to_timestamp
-                |> Result.get_ok
-                |> Int64.succ )
-            | `Range_exc (start, end_exc) ->
-              ( Date_time.set_to_first_month_day_hour_min_sec
-                  { Date_time.min with year = start }
-                |> Date_time.to_timestamp
-                |> Result.get_ok,
-                Date_time.set_to_last_month_day_hour_min_sec
-                  { Date_time.min with year = end_exc }
-                |> Date_time.to_timestamp
-                |> Result.get_ok ))
-      in
+      let space = branching.years |> List.map search_space_of_year_range in
       Branching (space, branching)
     | Unary_op (_, op, t) -> (
         let t = aux t in
@@ -859,18 +853,7 @@ let time_t_seq_of_branching (branching : Time.branching) : Time.t Seq.t =
     let days = days |> List.to_seq |> Month_day_ranges.Flatten.flatten in
     Seq.flat_map
       (fun year ->
-         let search_space =
-           [
-             ( Date_time.set_to_first_month_day_hour_min_sec
-                 { Date_time.min with year }
-               |> Date_time.to_timestamp
-               |> Result.get_ok,
-               Date_time.set_to_last_month_day_hour_min_sec
-                 { Date_time.min with year }
-               |> Date_time.to_timestamp
-               |> Result.get_ok );
-           ]
-         in
+         let search_space = [ search_space_of_year year ] in
          Seq.flat_map
            (fun month ->
               Seq.flat_map
@@ -914,18 +897,7 @@ let time_t_seq_of_branching (branching : Time.branching) : Time.t Seq.t =
     let days = days |> List.to_seq |> Weekday_ranges.Flatten.flatten in
     Seq.flat_map
       (fun year ->
-         let search_space =
-           [
-             ( Date_time.set_to_first_month_day_hour_min_sec
-                 { Date_time.min with year }
-               |> Date_time.to_timestamp
-               |> Result.get_ok,
-               Date_time.set_to_last_month_day_hour_min_sec
-                 { Date_time.min with year }
-               |> Date_time.to_timestamp
-               |> Result.get_ok );
-           ]
-         in
+         let search_space = [ search_space_of_year year ] in
          Seq.flat_map
            (fun month ->
               Seq.flat_map
