@@ -666,7 +666,7 @@ module Resolve_pattern = struct
     match s () with Seq.Nil -> None | Seq.Cons (x, _) -> Some x
 end
 
-let get_search_space (time : Time.t) : Time.Interval.t =
+let get_search_space (time : Time.t) : Time.Interval.t list =
   let open Time in
   match time with
   | Timestamp_interval_seq (s, _) -> s
@@ -688,40 +688,35 @@ let set_search_space space (time : Time.t) : Time.t =
   | Round_robin_pick_list (_, x) -> Round_robin_pick_list (space, x)
   | Merge_list (_, x) -> Merge_list (space, x)
 
-let empty_search_space = (0L, 0L)
+let empty_search_space = []
 
 let propagate_search_space_bottom_up (time : Time.t) : Time.t =
   let open Time in
   let rec aux time =
     match time with
-    | Timestamp_interval_seq ((_, end_exc), s) -> (
+    | Timestamp_interval_seq (_, s) -> (
         match s () with
         | Seq.Nil -> time
         | Seq.Cons ((start, _), _) ->
-          Timestamp_interval_seq ((start, end_exc), s) )
+          Timestamp_interval_seq ([ (start, default_search_space_end_exc) ], s)
+      )
     | Pattern (_, pat) -> (
         match pat.years with
         | [] -> time
         | l ->
-          let start_year = List.hd l in
-          let end_inc_year = List.hd (List.rev l) in
-          let start_date_time =
-            Date_time.set_to_first_month_day_hour_min_sec
-              { Date_time.min with year = start_year }
+          let space =
+            l
+            |> List.map (fun year ->
+                ( Date_time.set_to_first_month_day_hour_min_sec
+                    { Date_time.min with year },
+                  Date_time.set_to_last_month_day_hour_min_sec
+                    { Date_time.min with year } ))
+            |> List.map (fun (dt1, dt2) ->
+                ( Result.get_ok @@ Date_time.to_timestamp dt1,
+                  Int64.succ @@ Result.get_ok @@ Date_time.to_timestamp dt2
+                ))
           in
-          let end_inc_date_time =
-            Date_time.set_to_last_month_day_hour_min_sec
-              { Date_time.min with year = end_inc_year }
-          in
-          let start =
-            Result.get_ok @@ Date_time.to_timestamp start_date_time
-          in
-          let end_exc =
-            Int64.succ
-            @@ Result.get_ok
-            @@ Date_time.to_timestamp end_inc_date_time
-          in
-          Pattern ((start, end_exc), pat) )
+          Pattern (space, pat) )
     | Branching _ -> failwith "Unimplemented"
     | Unary_op (_, op, t) -> (
         match op with
@@ -730,23 +725,42 @@ let propagate_search_space_bottom_up (time : Time.t) : Time.t =
     | Binary_op (_, op, t1, t2) -> (
         let t1 = aux t1 in
         let t2 = aux t2 in
-        let t1_start, t1_end_exc = get_search_space t1 in
-        let t2_start, t2_end_exc = get_search_space t2 in
+        let t1_search_space = get_search_space t1 in
+        let t2_search_space = get_search_space t2 in
         match op with
         | Inter ->
           let space =
-            match
-              Interval.overlap_of_a_over_b ~a:(t1_start, t1_end_exc)
-                ~b:(t2_start, t2_end_exc)
-            with
-            | _, None, _ -> empty_search_space
-            | _, Some s, _ -> s
+            Intervals.inter
+              (List.to_seq t1_search_space)
+              (List.to_seq t2_search_space)
+            |> List.of_seq
           in
           Binary_op (space, Inter, t1, t2)
-        | Interval_inc | Interval_exc | Intervals_inc | Intervals_exc ->
-          let t2 = set_search_space (max t1_start t2_start, t2_end_exc) t2 in
-          Binary_op ((t1_start, t2_end_exc), op, t1, t2)
-        | _ -> Binary_op ((t1_start, t2_end_exc), op, t1, t2) )
+        | Interval_inc | Interval_exc | Intervals_inc | Intervals_exc -> (
+            match t1_search_space with
+            | [] -> Binary_op ([], op, t1, t2)
+            | (t1_start, _) :: _ ->
+              let t2_search_space =
+                Intervals.inter
+                  (Seq.return (t1_start, default_search_space_end_exc))
+                  (List.to_seq t2_search_space)
+              in
+              let t2 = set_search_space (List.of_seq t2_search_space) t2 in
+              let space =
+                Intervals.Union.union
+                  (List.to_seq t1_search_space)
+                  t2_search_space
+                |> List.of_seq
+              in
+              Binary_op (space, op, t1, t2) )
+        | _ ->
+          let space =
+            Intervals.Union.union
+              (List.to_seq t1_search_space)
+              (List.to_seq t2_search_space)
+            |> List.of_seq
+          in
+          Binary_op (space, op, t1, t2) )
     | Round_robin_pick_list (_, l) ->
       let space, l = aux_list l in
       Round_robin_pick_list (space, l)
@@ -755,18 +769,11 @@ let propagate_search_space_bottom_up (time : Time.t) : Time.t =
       Merge_list (space, l)
   and aux_list l =
     let l = List.map aux l in
-    let spaces =
-      List.map get_search_space l
-      |> Intervals.Normalize.normalize_list_in_seq_out ~skip_filter_invalid:true
-      |> List.of_seq
-    in
     let space =
-      match spaces with
-      | [] -> empty_search_space
-      | l ->
-        let start, _ = List.hd l in
-        let _, end_exc = List.hd (List.rev l) in
-        (start, end_exc)
+      List.map get_search_space l
+      |> List.map List.to_seq
+      |> Intervals.Merge.merge_multi_list
+      |> List.of_seq
     in
     (space, l)
   in
@@ -775,10 +782,8 @@ let propagate_search_space_bottom_up (time : Time.t) : Time.t =
 let propagate_search_space_top_down (time : Time.t) : Time.t =
   let open Time in
   let restrict_search_space (parent : search_space) (cur : search_space) =
-    match Interval.overlap_of_a_over_b ~a:parent ~b:cur with
-    | None, Some space, None -> space
-    | None, None, None -> empty_search_space
-    | _ -> cur
+    Intervals.inter ~skip_check:true (List.to_seq parent) (List.to_seq cur)
+    |> List.of_seq
   in
   let rec aux parent_search_space time =
     match time with
@@ -806,22 +811,28 @@ let optimize_search_space t =
   t |> propagate_search_space_bottom_up |> propagate_search_space_top_down
 
 let resolve ?search_using_tz_offset_s (time : Time.t) :
-  ((int64 * int64) Seq.t, string) result =
+  (Time.Interval.t Seq.t, string) result =
   let rec aux time =
     let open Time in
     match time with
     | Timestamp_interval_seq (_, s) -> Ok s
     | Pattern (space, pat) ->
+      let params =
+        List.map (Search_param.make ~search_using_tz_offset_s) space
+      in
       Ok
-        (Resolve_pattern.matching_intervals
-           (Search_param.make ~search_using_tz_offset_s space)
-           pat)
+        (Intervals.Union.union_multi_list ~skip_check:true
+           (List.map
+              (fun param -> Resolve_pattern.matching_intervals param pat)
+              params))
     | Branching (_, _branching) -> failwith "Unimplemented"
-    | Unary_op ((start, end_exc), op, t) ->
+    | Unary_op (space, op, t) ->
       aux t
       |> Result.map (fun s ->
           match op with
-          | Not -> Intervals.invert ~skip_check:true ~start ~end_exc s
+          | Not ->
+            Intervals.relative_complement ~skip_check:true ~not_mem_of:s
+              (List.to_seq space)
           | Every -> s
           | Chunk { chunk_size; drop_partial } ->
             Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s

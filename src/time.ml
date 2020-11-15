@@ -1700,12 +1700,15 @@ type branching = {
   hmss : hms Range.range list;
 }
 
-type search_space = Interval.t
+type search_space = Interval.t list
 
-let default_search_space =
-  let open Date_time in
-  ( Result.get_ok @@ to_timestamp min,
-    Int64.succ @@ Result.get_ok @@ to_timestamp max )
+let default_search_space_start = Result.get_ok @@ Date_time.(to_timestamp min)
+
+let default_search_space_end_exc =
+  Int64.succ @@ Result.get_ok @@ Date_time.(to_timestamp max)
+
+let default_search_space : search_space =
+  [ (default_search_space_start, default_search_space_end_exc) ]
 
 type t =
   | Timestamp_interval_seq of search_space * (int64 * int64) Seq.t
