@@ -957,7 +957,7 @@ let resolve ?search_using_tz_offset_s (time : Time.t) :
       let t =
         Round_robin_pick_list
           (space, List.of_seq @@ time_t_seq_of_branching branching)
-        |> optimize_search_space
+        |> propagate_search_space_top_down
       in
       aux t
     | Unary_op (space, op, t) ->
