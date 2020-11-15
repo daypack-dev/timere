@@ -1773,15 +1773,15 @@ let not (a : t) : t = Unary_op (default_search_space, Not, a)
 
 let pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
     ?(hours = []) ?(minutes = []) ?(seconds = []) ?(timestamps = []) () : t =
-  let p = List.for_all (fun x -> x >= 0) in
-  let p' = List.for_all (fun x -> x >= 0L) in
   if
-    p years
-    && p month_days
-    && p hours
-    && p minutes
-    && p seconds
-    && p' timestamps
+    List.for_all
+      (fun year -> Date_time.min.year <= year && year <= Date_time.max.year)
+      years
+    && List.for_all (fun day -> 1 <= day && day <= 31) month_days
+    && List.for_all (fun day -> 1 <= day && day < 24) hours
+    && List.for_all (fun day -> 1 <= day && day < 60) minutes
+    && List.for_all (fun day -> 1 <= day && day < 60) seconds
+    && List.for_all (fun x -> x >= 0L) timestamps
   then
     Pattern
       ( default_search_space,
