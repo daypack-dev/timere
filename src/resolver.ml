@@ -701,20 +701,30 @@ let propagate_search_space_bottom_up (time : Time.t) : Time.t =
           Timestamp_interval_seq ([ (start, default_search_space_end_exc) ], s)
       )
     | Pattern (_, pat) -> (
-        match pat.years with
-        | [] -> time
-        | l ->
+        let space_for_years =
+          pat.years
+          |> List.to_seq
+          |> Seq.map (fun year ->
+              ( Date_time.set_to_first_month_day_hour_min_sec
+                  { Date_time.min with year },
+                Date_time.set_to_last_month_day_hour_min_sec
+                  { Date_time.min with year } ))
+          |> Seq.map (fun (dt1, dt2) ->
+              ( Result.get_ok @@ Date_time.to_timestamp dt1,
+                Int64.succ @@ Result.get_ok @@ Date_time.to_timestamp dt2 ))
+        in
+        let space_for_timestamps =
+          pat.timestamps |> List.to_seq |> Seq.map (fun x -> (x, Int64.succ x))
+        in
+        match (pat.years, pat.timestamps) with
+        | [], [] -> time
+        | _years, [] -> Pattern (List.of_seq space_for_years, pat)
+        | [], _timestamps -> Pattern (List.of_seq space_for_timestamps, pat)
+        | _years, _timestamps ->
           let space =
-            l
-            |> List.map (fun year ->
-                ( Date_time.set_to_first_month_day_hour_min_sec
-                    { Date_time.min with year },
-                  Date_time.set_to_last_month_day_hour_min_sec
-                    { Date_time.min with year } ))
-            |> List.map (fun (dt1, dt2) ->
-                ( Result.get_ok @@ Date_time.to_timestamp dt1,
-                  Int64.succ @@ Result.get_ok @@ Date_time.to_timestamp dt2
-                ))
+            Intervals.inter ~skip_check:true space_for_timestamps
+              space_for_years
+            |> List.of_seq
           in
           Pattern (space, pat) )
     | Branching _ -> failwith "Unimplemented"
