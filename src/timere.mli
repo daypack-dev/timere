@@ -2,6 +2,11 @@ type tz_offset_s = int
 
 type timestamp = int64
 
+type 'a range =
+  [ `Range_inc of 'a * 'a
+  | `Range_exc of 'a * 'a
+  ]
+
 type t
 
 val any : t
@@ -54,6 +59,24 @@ val pattern :
   ?minutes:int list ->
   ?seconds:int list ->
   ?timestamps:timestamp list ->
+  unit ->
+  t
+
+type hms = {
+  hour : int;
+  minute : int;
+  second : int;
+}
+
+type branching_days =
+  | Month_days of int range list
+  | Weekdays of weekday range list
+
+val branching :
+  ?years:int range list ->
+  ?months:month range list ->
+  ?days:branching_days ->
+  ?hmss:hms range list ->
   unit ->
   t
 

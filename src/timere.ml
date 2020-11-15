@@ -1,7 +1,9 @@
 module Duration = Duration
 include Time
 
-type interval = Time.Interval.t
+type 'a range = 'a Range.range
+
+type interval = Interval.t
 
 module Infix = struct
   let ( &&& ) = Time.inter

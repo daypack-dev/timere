@@ -1657,6 +1657,14 @@ type hms = {
   second : int;
 }
 
+(* let make_hms ~hour ~minute ~second =
+ *   if 0 <= hour && hour < 24 &&
+ *      0 <= minute && minute < 60 &&
+ *      0 <= second && second < 60 then
+ *     Ok { hour; minute; second }
+ *   else
+ *     Error () *)
+
 type sign_expr =
   | Pos
   | Neg
@@ -1693,12 +1701,12 @@ type branching_days =
   | Month_days of int Range.range list
   | Weekdays of weekday Range.range list
 
-type branching = {
-  years : int Range.range list;
-  months : month Range.range list;
-  days : branching_days;
-  hmss : hms Range.range list;
-}
+(* type branching = {
+ *   years : int Range.range list;
+ *   months : month Range.range list;
+ *   days : branching_days;
+ *   hmss : hms Range.range list;
+ * } *)
 
 type search_space = Interval.t list
 
@@ -1713,7 +1721,7 @@ let default_search_space : search_space =
 type t =
   | Timestamp_interval_seq of search_space * (int64 * int64) Seq.t
   | Pattern of search_space * Pattern.pattern
-  | Branching of search_space * branching
+  (* | Branching of search_space * branching *)
   | Unary_op of search_space * unary_op * t
   | Binary_op of search_space * binary_op * t * t
   | Round_robin_pick_list of search_space * t list
@@ -1777,10 +1785,10 @@ let pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
     List.for_all
       (fun year -> Date_time.min.year <= year && year <= Date_time.max.year)
       years
-    && List.for_all (fun day -> 1 <= day && day <= 31) month_days
-    && List.for_all (fun day -> 1 <= day && day < 24) hours
-    && List.for_all (fun day -> 1 <= day && day < 60) minutes
-    && List.for_all (fun day -> 1 <= day && day < 60) seconds
+    && List.for_all (fun x -> 1 <= x && x <= 31) month_days
+    && List.for_all (fun x -> 0 <= x && x < 24) hours
+    && List.for_all (fun x -> 0 <= x && x < 60) minutes
+    && List.for_all (fun x -> 0 <= x && x < 60) seconds
     && List.for_all (fun x -> x >= 0L) timestamps
   then
     Pattern
@@ -1795,29 +1803,113 @@ let pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
           seconds = List.sort_uniq compare seconds;
           timestamps = List.sort_uniq compare timestamps;
         } )
-  else invalid_arg "of_pattern"
+  else invalid_arg "pattern"
 
-(* let branching ?(years = []) ?(months = []) ?(month_days = [])
- *     ?(hmss = [])
- *     () : t =
- *   let p = List.for_all (fun x -> x >= 0) in
- *   if
- *     p years
- *     && p month_days
- *     && List.for_all (fun hms ->
- *         0 <= hms.hour && hms.hour <= 23
- *         && 0 <= hms.minute && hms.minute < 60
- *         && 0 <= hms.second && hms.second < 60
- *       )
- *       hmss
- *   then
- *       {
- *         years;
- *         months;
- *         days = Month_days month_days;
- *         hmss;
- *       }
- *   else invalid_arg "of_pattern" *)
+let branching ?(years = []) ?(months = []) ?(days = Month_days []) ?(hmss = [])
+    () : t =
+  let years = years |> List.to_seq |> Year_ranges.Flatten.flatten in
+  let months = months |> List.to_seq |> Month_ranges.Flatten.flatten in
+  let hmss = hmss |> List.to_seq in
+  let p_hms hms =
+    0 <= hms.hour
+    && hms.hour <= 23
+    && 0 <= hms.minute
+    && hms.minute < 60
+    && 0 <= hms.second
+    && hms.second < 60
+  in
+  if
+    OSeq.for_all
+      (fun year -> Date_time.min.year <= year && year <= Date_time.max.year)
+      years
+    && ( match days with
+        | Month_days days ->
+          days
+          |> Month_day_ranges.Flatten.flatten_list
+          |> List.for_all (fun day -> 1 <= day && day <= 31)
+        | Weekdays _ -> true )
+    && OSeq.for_all
+      (fun hms_range ->
+         match hms_range with
+         | `Range_inc (hms1, hms2) | `Range_exc (hms1, hms2) ->
+           p_hms hms1 && p_hms hms2)
+      hmss
+  then
+    let s =
+      match days with
+      | Month_days days ->
+        let days = days |> List.to_seq |> Month_day_ranges.Flatten.flatten in
+        Seq.flat_map
+          (fun year ->
+             Seq.flat_map
+               (fun month ->
+                  Seq.flat_map
+                    (fun day ->
+                       Seq.map
+                         (fun hms_range ->
+                            match hms_range with
+                            | `Range_inc (start, end_inc) ->
+                              interval_inc
+                                (pattern ~years:[ year ] ~months:[ month ]
+                                   ~month_days:[ day ] ~hours:[ start.hour ]
+                                   ~minutes:[ start.minute ]
+                                   ~seconds:[ start.second ] ())
+                                (pattern ~years:[ year ] ~months:[ month ]
+                                   ~month_days:[ day ] ~hours:[ end_inc.hour ]
+                                   ~minutes:[ end_inc.minute ]
+                                   ~seconds:[ end_inc.second ] ())
+                            | `Range_exc (start, end_exc) ->
+                              interval_exc
+                                (pattern ~years:[ year ] ~months:[ month ]
+                                   ~month_days:[ day ] ~hours:[ start.hour ]
+                                   ~minutes:[ start.minute ]
+                                   ~seconds:[ start.second ] ())
+                                (pattern ~years:[ year ] ~months:[ month ]
+                                   ~month_days:[ day ] ~hours:[ end_exc.hour ]
+                                   ~minutes:[ end_exc.minute ]
+                                   ~seconds:[ end_exc.second ] ()))
+                         hmss)
+                    days)
+               months)
+          years
+      | Weekdays days ->
+        let days = days |> List.to_seq |> Weekday_ranges.Flatten.flatten in
+        Seq.flat_map
+          (fun year ->
+             Seq.flat_map
+               (fun month ->
+                  Seq.flat_map
+                    (fun day ->
+                       Seq.map
+                         (fun hms_range ->
+                            match hms_range with
+                            | `Range_inc (start, end_inc) ->
+                              interval_inc
+                                (pattern ~years:[ year ] ~months:[ month ]
+                                   ~weekdays:[ day ] ~hours:[ start.hour ]
+                                   ~minutes:[ start.minute ]
+                                   ~seconds:[ start.second ] ())
+                                (pattern ~years:[ year ] ~months:[ month ]
+                                   ~weekdays:[ day ] ~hours:[ end_inc.hour ]
+                                   ~minutes:[ end_inc.minute ]
+                                   ~seconds:[ end_inc.second ] ())
+                            | `Range_exc (start, end_exc) ->
+                              interval_exc
+                                (pattern ~years:[ year ] ~months:[ month ]
+                                   ~weekdays:[ day ] ~hours:[ start.hour ]
+                                   ~minutes:[ start.minute ]
+                                   ~seconds:[ start.second ] ())
+                                (pattern ~years:[ year ] ~months:[ month ]
+                                   ~weekdays:[ day ] ~hours:[ end_exc.hour ]
+                                   ~minutes:[ end_exc.minute ]
+                                   ~seconds:[ end_exc.second ] ()))
+                         hmss)
+                    days)
+               months)
+          years
+    in
+    Round_robin_pick_list (default_search_space, List.of_seq s)
+  else invalid_arg "branching"
 
 let years years = pattern ~years ()
 
