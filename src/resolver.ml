@@ -936,6 +936,31 @@ let time_t_seq_of_branching (b : Time.branching) : Time.t Seq.t =
            months)
       years
 
+type inc_or_exc =
+  | Inc
+  | Exc
+
+let construct_intervals_from_two_seqs inc_or_exc s1 s2 =
+  let construct_interval =
+    match inc_or_exc with
+    | Inc -> fun (start, _) (_, end_exc') -> (start, Int64.succ end_exc')
+    | Exc -> fun (start, _) (start', _) -> (start, start')
+  in
+  let rec aux s1 s2 =
+    match s1 () with
+    | Seq.Nil -> Seq.empty
+    | Seq.Cons ((start, end_exc), s1_rest) -> (
+        match s2 () with
+        | Seq.Nil -> Seq.empty
+        | Seq.Cons ((start', end_exc'), s2_rest) ->
+          if start <= start' then fun () ->
+            Seq.Cons
+              ( construct_interval (start, end_exc) (start', end_exc'),
+                aux s1_rest s2_rest )
+          else aux s1 s2_rest )
+  in
+  aux s1 s2
+
 let resolve ?search_using_tz_offset_s (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
   let rec aux time =
@@ -980,7 +1005,13 @@ let resolve ?search_using_tz_offset_s (time : Time.t) :
                 ( match op with
                   | Union -> Intervals.Union.union ~skip_check:true s1 s2
                   | Inter -> Intervals.inter ~skip_check:true s1 s2
-                  | _ -> failwith "Unimplemented" ) ) )
+                  | Interval_inc ->
+                    construct_intervals_from_two_seqs Inc s1 s2 |> OSeq.take 1
+                  | Interval_exc ->
+                    construct_intervals_from_two_seqs Exc s1 s2 |> OSeq.take 1
+                  | Intervals_inc -> construct_intervals_from_two_seqs Inc s1 s2
+                  | Intervals_exc -> construct_intervals_from_two_seqs Exc s1 s2
+                ) ) )
     | Round_robin_pick_list (_, l) ->
       Misc_utils.get_ok_error_list (List.map aux l)
       |> Result.map
