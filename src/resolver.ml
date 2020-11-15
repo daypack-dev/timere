@@ -847,6 +847,125 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
 let optimize_search_space t =
   t |> propagate_search_space_bottom_up |> propagate_search_space_top_down
 
+let time_t_seq_of_branching (branching : Time.branching) : Time.t Seq.t =
+  let open Time in
+  let years = branching.years |> List.to_seq |> Year_ranges.Flatten.flatten in
+  let months =
+    branching.months |> List.to_seq |> Month_ranges.Flatten.flatten
+  in
+  let hmss = branching.hmss |> List.to_seq in
+  match branching.days with
+  | Month_days days ->
+    let days = days |> List.to_seq |> Month_day_ranges.Flatten.flatten in
+    Seq.flat_map
+      (fun year ->
+         let search_space =
+           [
+             ( Date_time.set_to_first_month_day_hour_min_sec
+                 { Date_time.min with year }
+               |> Date_time.to_timestamp
+               |> Result.get_ok,
+               Date_time.set_to_last_month_day_hour_min_sec
+                 { Date_time.min with year }
+               |> Date_time.to_timestamp
+               |> Result.get_ok );
+           ]
+         in
+         Seq.flat_map
+           (fun month ->
+              Seq.flat_map
+                (fun day ->
+                   Seq.map
+                     (fun hms_range ->
+                        match hms_range with
+                        | `Range_inc (start, end_inc) ->
+                          Binary_op
+                            ( search_space,
+                              Interval_inc,
+                              set_search_space search_space
+                                (pattern ~years:[ year ] ~months:[ month ]
+                                   ~month_days:[ day ] ~hours:[ start.hour ]
+                                   ~minutes:[ start.minute ]
+                                   ~seconds:[ start.second ] ()),
+                              set_search_space search_space
+                                (pattern ~years:[ year ] ~months:[ month ]
+                                   ~month_days:[ day ] ~hours:[ end_inc.hour ]
+                                   ~minutes:[ end_inc.minute ]
+                                   ~seconds:[ end_inc.second ] ()) )
+                        | `Range_exc (start, end_exc) ->
+                          Binary_op
+                            ( search_space,
+                              Interval_exc,
+                              set_search_space search_space
+                                (pattern ~years:[ year ] ~months:[ month ]
+                                   ~month_days:[ day ] ~hours:[ start.hour ]
+                                   ~minutes:[ start.minute ]
+                                   ~seconds:[ start.second ] ()),
+                              set_search_space search_space
+                                (pattern ~years:[ year ] ~months:[ month ]
+                                   ~month_days:[ day ] ~hours:[ end_exc.hour ]
+                                   ~minutes:[ end_exc.minute ]
+                                   ~seconds:[ end_exc.second ] ()) ))
+                     hmss)
+                days)
+           months)
+      years
+  | Weekdays days ->
+    let days = days |> List.to_seq |> Weekday_ranges.Flatten.flatten in
+    Seq.flat_map
+      (fun year ->
+         let search_space =
+           [
+             ( Date_time.set_to_first_month_day_hour_min_sec
+                 { Date_time.min with year }
+               |> Date_time.to_timestamp
+               |> Result.get_ok,
+               Date_time.set_to_last_month_day_hour_min_sec
+                 { Date_time.min with year }
+               |> Date_time.to_timestamp
+               |> Result.get_ok );
+           ]
+         in
+         Seq.flat_map
+           (fun month ->
+              Seq.flat_map
+                (fun day ->
+                   Seq.map
+                     (fun hms_range ->
+                        match hms_range with
+                        | `Range_inc (start, end_inc) ->
+                          Binary_op
+                            ( search_space,
+                              Interval_inc,
+                              set_search_space search_space
+                                (pattern ~years:[ year ] ~months:[ month ]
+                                   ~weekdays:[ day ] ~hours:[ start.hour ]
+                                   ~minutes:[ start.minute ]
+                                   ~seconds:[ start.second ] ()),
+                              set_search_space search_space
+                                (pattern ~years:[ year ] ~months:[ month ]
+                                   ~weekdays:[ day ] ~hours:[ end_inc.hour ]
+                                   ~minutes:[ end_inc.minute ]
+                                   ~seconds:[ end_inc.second ] ()) )
+                        | `Range_exc (start, end_exc) ->
+                          Binary_op
+                            ( search_space,
+                              Interval_exc,
+                              set_search_space search_space
+                                (pattern ~years:[ year ] ~months:[ month ]
+                                   ~weekdays:[ day ] ~hours:[ start.hour ]
+                                   ~minutes:[ start.minute ]
+                                   ~seconds:[ start.second ] ()),
+                              set_search_space search_space
+                                (pattern ~years:[ year ] ~months:[ month ]
+                                   ~weekdays:[ day ] ~hours:[ end_exc.hour ]
+                                   ~minutes:[ end_exc.minute ]
+                                   ~seconds:[ end_exc.second ] ()) ))
+                     hmss)
+                days)
+           months)
+      years
+
 let resolve ?search_using_tz_offset_s (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
   let rec aux time =
@@ -862,7 +981,13 @@ let resolve ?search_using_tz_offset_s (time : Time.t) :
            (List.map
               (fun param -> Resolve_pattern.matching_intervals param pat)
               params))
-    | Branching (_, _branching) -> failwith "Unimplemented"
+    | Branching (space, branching) ->
+      let t =
+        Round_robin_pick_list
+          (space, List.of_seq @@ time_t_seq_of_branching branching)
+        |> optimize_search_space
+      in
+      aux t
     | Unary_op (space, op, t) ->
       aux t
       |> Result.map (fun s ->
