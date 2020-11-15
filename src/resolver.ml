@@ -844,9 +844,7 @@ let optimize_search_space t =
 let time_t_seq_of_branching (b : Time.branching) : Time.t Seq.t =
   let open Time in
   let years = b.years |> List.to_seq |> Year_ranges.Flatten.flatten in
-  let months =
-    b.months |> List.to_seq |> Month_ranges.Flatten.flatten
-  in
+  let months = b.months |> List.to_seq |> Month_ranges.Flatten.flatten in
   let hmss = b.hmss |> List.to_seq in
   match b.days with
   | Month_days days ->

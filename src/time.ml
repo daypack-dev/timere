@@ -1833,8 +1833,7 @@ let branching ?(years = []) ?(months = []) ?(days = Month_days []) ?(hmss = [])
          | `Range_inc (hms1, hms2) | `Range_exc (hms1, hms2) ->
            p_hms hms1 && p_hms hms2)
       hmss'
-  then
-    Branching (default_search_space, { years; months; days; hmss })
+  then Branching (default_search_space, { years; months; days; hmss })
   else invalid_arg "branching"
 
 let years years = pattern ~years ()
