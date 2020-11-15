@@ -677,6 +677,17 @@ let get_search_space (time : Time.t) : Time.Interval.t =
   | Round_robin_pick_list (s, _) -> s
   | Merge_list (s, _) -> s
 
+let set_search_space space (time : Time.t) : Time.t =
+  let open Time in
+  match time with
+  | Timestamp_interval_seq (_, x) -> Timestamp_interval_seq (space, x)
+  | Pattern (_, x) -> Pattern (space, x)
+  | Branching (_, x) -> Branching (space, x)
+  | Unary_op (_, op, x) -> Unary_op (space, op, x)
+  | Binary_op (_, op, x, y) -> Binary_op (space, op, x, y)
+  | Round_robin_pick_list (_, x) -> Round_robin_pick_list (space, x)
+  | Merge_list (_, x) -> Merge_list (space, x)
+
 let empty_search_space = (0L, 0L)
 
 let propagate_search_space_bottom_up (time : Time.t) : Time.t =
@@ -732,6 +743,9 @@ let propagate_search_space_bottom_up (time : Time.t) : Time.t =
             | _, Some s, _ -> s
           in
           Binary_op (space, Inter, t1, t2)
+        | Interval_inc | Interval_exc | Intervals_inc | Intervals_exc ->
+          let t2 = set_search_space (max t1_start t2_start, t2_end_exc) t2 in
+          Binary_op ((t1_start, t2_end_exc), op, t1, t2)
         | _ -> Binary_op ((t1_start, t2_end_exc), op, t1, t2) )
     | Round_robin_pick_list (_, l) ->
       let space, l = aux_list l in
