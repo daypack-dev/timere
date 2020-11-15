@@ -728,10 +728,11 @@ let propagate_search_space_bottom_up (time : Time.t) : Time.t =
           in
           Pattern (space, pat) )
     | Branching _ -> failwith "Unimplemented"
-    | Unary_op (space, op, t) -> (
+    | Unary_op (_, op, t) -> (
+        let t = aux t in
         match op with
-        | Not -> Unary_op (default_search_space, op, aux t)
-        | _ -> Unary_op (space, op, aux t) )
+        | Not -> Unary_op (default_search_space, op, t)
+        | _ -> Unary_op (get_search_space t, op, t) )
     | Binary_op (_, op, t1, t2) -> (
         let t1 = aux t1 in
         let t2 = aux t2 in
