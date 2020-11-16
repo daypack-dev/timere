@@ -4,11 +4,11 @@ open Parser_components
 type guess =
   | Dot
   | Comma
-  | To
-  | From
   | Hyphen
   | Colon
   | Star
+  | To
+  | From
   | Nat of int
   | Weekday of Time.weekday
   | Month of Time.month
@@ -64,11 +64,14 @@ let token_p : (token, unit) MParser.t =
   >>= fun pos ->
   choice
     [
-      attempt (char '*') >>$ Star;
       attempt (char '.') >>$ Dot;
       attempt (char ',') >>$ Comma;
+      attempt (char '-') >>$ Hyphen;
+      attempt (char ':') >>$ Colon;
+      attempt (char '*') >>$ Star;
       attempt to_str >>$ To;
       attempt from_str >>$ From;
+      (attempt nat_zero |>> fun x -> Nat x);
       fail "Unrecognized token";
     ]
   >>= fun guess -> spaces >>$ (pos, guess)
