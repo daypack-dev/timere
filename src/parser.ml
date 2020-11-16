@@ -69,6 +69,7 @@ let token_p : (token, unit) MParser.t =
       attempt (char ',') >>$ Comma;
       attempt to_str >>$ To;
       attempt from_str >>$ From;
+      fail "Unrecognized token";
     ]
   >>= fun guess -> spaces >>$ (pos, guess)
 
