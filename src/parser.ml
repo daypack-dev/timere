@@ -8,6 +8,7 @@ type guess =
   | From
   | Hyphen
   | Colon
+  | Star
   | Nat of int
   | Weekday of Time.weekday
   | Month of Time.month
@@ -63,6 +64,7 @@ let token_p : (token, unit) MParser.t =
   >>= fun pos ->
   choice
     [
+      attempt (char '*') >>$ Star;
       attempt (char '.') >>$ Dot;
       attempt (char ',') >>$ Comma;
       attempt to_str >>$ To;
@@ -128,6 +130,7 @@ let ast_of_string (s : string) : (ast, string) Result.t =
 let rules : (token list -> (Time.t, unit) Result.t) list =
   let open Time in
   [
+    (fun l -> match l with [ (_, Star) ] -> Ok Time.any | _ -> Error ());
     (fun l ->
        match l with
        | [ (_, Nat year); (_, Month month); (_, Nat day) ] ->
