@@ -994,6 +994,9 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
       in
       aux search_using_tz_offset_s t
     | Unary_op (space, op, t) ->
+      let search_using_tz_offset_s =
+        match op with Tz_offset x -> x | _ -> search_using_tz_offset_s
+      in
       aux search_using_tz_offset_s t
       |> Result.map (fun s ->
           match op with
@@ -1026,7 +1029,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
                 (start, Int64.add end_exc n))
             |> Intervals.Normalize.normalize ~skip_filter_empty:true
               ~skip_sort:true ~skip_filter_invalid:true
-          | _ -> failwith "Unimplemented")
+          | Tz_offset _ -> s)
     | Binary_op (_, op, t1, t2) -> (
         match aux search_using_tz_offset_s t1 with
         | Error msg -> Error msg
