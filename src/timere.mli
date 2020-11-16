@@ -225,3 +225,5 @@ end
 
 val resolve :
   ?search_using_tz_offset_s:tz_offset_s -> t -> (interval Seq.t, string) result
+
+val parse : string -> (Time.t, string) result

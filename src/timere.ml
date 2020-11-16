@@ -20,3 +20,5 @@ module Infix = struct
 end
 
 let resolve = Resolver.resolve
+
+let parse = Parser.of_string

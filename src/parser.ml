@@ -1,26 +1,18 @@
 open MParser
 open Parser_components
 
-type ambiguous =
-  | Years of int list
-  | Months of Time.month list
-  | Month_days of int list
-  | Weekdays of Time.weekday list
-  | Hours of int list
-  | Minutes of int list
-  | Seconds of int list
-
 type guess =
-  | Uncertain of ambiguous list
   | Dot
   | Comma
   | To
   | From
+  | Hyphen
+  | Colon
+  | Nat of int
+  | Weekday of Time.weekday
+  | Month of Time.month
 
-type token = {
-  pos : int * int * int;
-  guess : guess;
-}
+type token = (int * int * int) * guess
 
 type binary_op =
   | Union
@@ -76,7 +68,7 @@ let token_p : (token, unit) MParser.t =
       attempt to_str >>$ To;
       attempt from_str >>$ From;
     ]
-  |>> fun guess -> { pos; guess }
+  |>> fun guess -> (pos, guess)
 
 let tokens_p = many1 token_p
 
@@ -120,7 +112,7 @@ let expr =
   in
   expr >>= fun e -> return (flatten_round_robin_select e)
 
-let of_string (s : string) : (ast, string) Result.t =
+let ast_of_string (s : string) : (ast, string) Result.t =
   parse_string
     ( expr
       << spaces
@@ -132,3 +124,50 @@ let of_string (s : string) : (ast, string) Result.t =
          <|> fail (Printf.sprintf "Expected EOI, pos: %s" (string_of_pos pos)) )
     s ()
   |> result_of_mparser_result
+
+let rules : (token list -> (Time.t, unit) Result.t) list =
+  let open Time in
+  [
+    (fun l ->
+       match l with
+       | [ (_, Nat year); (_, Month month); (_, Nat day) ] ->
+         Ok (pattern ~years:[ year ] ~months:[ month ] ~month_days:[ day ] ())
+       | _ -> Error ());
+  ]
+
+let time_t_of_tokens (tokens : token list) : (Time.t, string) Result.t =
+  let rec aux tokens rules =
+    match rules with
+    | [] -> Error "Unrecognized"
+    | rule :: rest -> (
+        match rule tokens with
+        | Ok time -> Ok time
+        | Error () -> aux tokens rest )
+  in
+  aux tokens rules
+
+let time_t_of_ast (ast : ast) : (Time.t, string) Result.t =
+  let rec aux ast =
+    match ast with
+    | Tokens tokens -> time_t_of_tokens tokens
+    | Binary_op (op, ast1, ast2) -> (
+        match aux ast1 with
+        | Error msg -> Error msg
+        | Ok time1 -> (
+            match aux ast2 with
+            | Error msg -> Error msg
+            | Ok time2 -> (
+                match op with
+                | Union -> Ok (Time.union time1 time2)
+                | Inter -> Ok (Time.inter time1 time2) ) ) )
+    | Round_robin_pick l -> (
+        match l |> List.map aux |> Misc_utils.get_ok_error_list with
+        | Error msg -> Error msg
+        | Ok l -> Ok (Time.round_robin_pick l) )
+  in
+  aux ast
+
+let of_string s =
+  match ast_of_string s with
+  | Error msg -> Error msg
+  | Ok ast -> time_t_of_ast ast
