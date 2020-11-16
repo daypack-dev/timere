@@ -210,7 +210,7 @@ val round_robin_pick : t list -> t
 
 (** {1 Infix operators} *)
 module Infix : sig
-  val ( &&& ) : t -> t -> t
+  val ( & ) : t -> t -> t
 
   val ( ||| ) : t -> t -> t
 
