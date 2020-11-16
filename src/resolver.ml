@@ -1,6 +1,6 @@
 module Search_param = struct
   type t = {
-    search_using_tz_offset_s : Time.tz_offset_s option;
+    search_using_tz_offset_s : Time.tz_offset_s;
     start : Time.Date_time.t;
     end_inc : Time.Date_time.t;
   }
@@ -11,11 +11,11 @@ module Search_param = struct
       start =
         Result.get_ok
         @@ Time.Date_time.of_timestamp
-          ~tz_offset_s_of_date_time:search_using_tz_offset_s start;
+          ~tz_offset_s_of_date_time:(Some search_using_tz_offset_s) start;
       end_inc =
         Result.get_ok
         @@ Time.Date_time.of_timestamp
-          ~tz_offset_s_of_date_time:search_using_tz_offset_s
+          ~tz_offset_s_of_date_time:(Some search_using_tz_offset_s)
           (Int64.pred end_exc);
     }
 end
@@ -466,8 +466,7 @@ module Resolve_pattern = struct
   end
 
   module Matching_timestamps = struct
-    let matching_timestamps
-        ~(search_using_tz_offset_s : Time.tz_offset_s option)
+    let matching_timestamps ~(search_using_tz_offset_s : Time.tz_offset_s)
         (t : Time.Pattern.pattern) (start : Time.Date_time.t) :
       Time.Date_time_set.t =
       match Time.Date_time.to_timestamp start with
@@ -480,7 +479,7 @@ module Resolve_pattern = struct
         |> Seq.filter_map (fun x ->
             match
               Time.Date_time.of_timestamp
-                ~tz_offset_s_of_date_time:search_using_tz_offset_s x
+                ~tz_offset_s_of_date_time:(Some search_using_tz_offset_s) x
             with
             | Ok x -> Some x
             | Error () -> None)
@@ -501,9 +500,9 @@ module Resolve_pattern = struct
       (s : int64 Seq.t) : Time.Date_time.t Time.Range.range Seq.t =
     let f (x, y) =
       ( Time.Date_time.of_timestamp
-          ~tz_offset_s_of_date_time:search_using_tz_offset_s x,
+          ~tz_offset_s_of_date_time:(Some search_using_tz_offset_s) x,
         Time.Date_time.of_timestamp
-          ~tz_offset_s_of_date_time:search_using_tz_offset_s y )
+          ~tz_offset_s_of_date_time:(Some search_using_tz_offset_s) y )
     in
     s
     |> Time.Ranges.Of_seq.range_seq_of_seq ~modulo:None
@@ -688,37 +687,38 @@ let set_search_space space (time : Time.t) : Time.t =
   | Round_robin_pick_list (_, x) -> Round_robin_pick_list (space, x)
   | Merge_list (_, x) -> Merge_list (space, x)
 
-let search_space_of_year_range year_range =
+let search_space_of_year_range tz_offset_s year_range =
   let open Time in
   match year_range with
   | `Range_inc (start, end_inc) ->
     ( Date_time.set_to_first_month_day_hour_min_sec
-        { Date_time.min with year = start }
+        { Date_time.min with year = start; tz_offset_s }
       |> Date_time.to_timestamp
       |> Result.get_ok,
       Date_time.set_to_last_month_day_hour_min_sec
-        { Date_time.min with year = end_inc }
+        { Date_time.min with year = end_inc; tz_offset_s }
       |> Date_time.to_timestamp
       |> Result.get_ok
       |> Int64.succ )
   | `Range_exc (start, end_exc) ->
     ( Date_time.set_to_first_month_day_hour_min_sec
-        { Date_time.min with year = start }
+        { Date_time.min with year = start; tz_offset_s }
       |> Date_time.to_timestamp
       |> Result.get_ok,
       Date_time.set_to_last_month_day_hour_min_sec
-        { Date_time.min with year = end_exc }
+        { Date_time.min with year = end_exc; tz_offset_s }
       |> Date_time.to_timestamp
       |> Result.get_ok )
 
-let search_space_of_year year =
-  search_space_of_year_range (`Range_inc (year, year))
+let search_space_of_year tz_offset_s year =
+  search_space_of_year_range tz_offset_s (`Range_inc (year, year))
 
 let empty_search_space = []
 
-let propagate_search_space_bottom_up (time : Time.t) : Time.t =
+let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
+  Time.t =
   let open Time in
-  let rec aux time =
+  let rec aux tz_offset_s time =
     match time with
     | Timestamp_interval_seq (_, s) -> (
         match s () with
@@ -728,7 +728,7 @@ let propagate_search_space_bottom_up (time : Time.t) : Time.t =
       )
     | Pattern (_, pat) -> (
         let space_for_years =
-          pat.years |> List.to_seq |> Seq.map search_space_of_year
+          pat.years |> List.to_seq |> Seq.map (search_space_of_year tz_offset_s)
         in
         let space_for_timestamps =
           pat.timestamps |> List.to_seq |> Seq.map (fun x -> (x, Int64.succ x))
@@ -745,16 +745,22 @@ let propagate_search_space_bottom_up (time : Time.t) : Time.t =
           in
           Pattern (space, pat) )
     | Branching (_, branching) ->
-      let space = branching.years |> List.map search_space_of_year_range in
+      let space =
+        branching.years |> List.map (search_space_of_year_range tz_offset_s)
+      in
       Branching (space, branching)
     | Unary_op (_, op, t) -> (
-        let t = aux t in
         match op with
-        | Not -> Unary_op (default_search_space, op, t)
-        | _ -> Unary_op (get_search_space t, op, t) )
+        | Not -> Unary_op (default_search_space, op, aux tz_offset_s t)
+        | Tz_offset tz_offset_s ->
+          let t = aux tz_offset_s t in
+          Unary_op (get_search_space t, op, t)
+        | _ ->
+          let t = aux tz_offset_s t in
+          Unary_op (get_search_space t, op, t) )
     | Binary_op (_, op, t1, t2) -> (
-        let t1 = aux t1 in
-        let t2 = aux t2 in
+        let t1 = aux tz_offset_s t1 in
+        let t2 = aux tz_offset_s t2 in
         let t1_search_space = get_search_space t1 in
         let t2_search_space = get_search_space t2 in
         match op with
@@ -792,13 +798,13 @@ let propagate_search_space_bottom_up (time : Time.t) : Time.t =
           in
           Binary_op (space, op, t1, t2) )
     | Round_robin_pick_list (_, l) ->
-      let space, l = aux_list l in
+      let space, l = aux_list tz_offset_s l in
       Round_robin_pick_list (space, l)
     | Merge_list (_, l) ->
-      let space, l = aux_list l in
+      let space, l = aux_list tz_offset_s l in
       Merge_list (space, l)
-  and aux_list l =
-    let l = List.map aux l in
+  and aux_list tz_offset_s l =
+    let l = List.map (aux tz_offset_s) l in
     let space =
       List.map get_search_space l
       |> List.map List.to_seq
@@ -807,7 +813,7 @@ let propagate_search_space_bottom_up (time : Time.t) : Time.t =
     in
     (space, l)
   in
-  aux time
+  aux default_tz_offset_s time
 
 let propagate_search_space_top_down (time : Time.t) : Time.t =
   let open Time in
@@ -838,10 +844,12 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
   and aux_list parent_search_space l = List.map (aux parent_search_space) l in
   aux default_search_space time
 
-let optimize_search_space t =
-  t |> propagate_search_space_bottom_up |> propagate_search_space_top_down
+let optimize_search_space default_tz_offset_s t =
+  t
+  |> propagate_search_space_bottom_up default_tz_offset_s
+  |> propagate_search_space_top_down
 
-let time_t_seq_of_branching (b : Time.branching) : Time.t Seq.t =
+let time_t_seq_of_branching tz_offset_s (b : Time.branching) : Time.t Seq.t =
   let open Time in
   let years = b.years |> List.to_seq |> Year_ranges.Flatten.flatten in
   let months = b.months |> List.to_seq |> Month_ranges.Flatten.flatten in
@@ -851,7 +859,7 @@ let time_t_seq_of_branching (b : Time.branching) : Time.t Seq.t =
     let days = days |> List.to_seq |> Month_day_ranges.Flatten.flatten in
     Seq.flat_map
       (fun year ->
-         let search_space = [ search_space_of_year year ] in
+         let search_space = [ search_space_of_year tz_offset_s year ] in
          Seq.flat_map
            (fun month ->
               Seq.flat_map
@@ -895,7 +903,7 @@ let time_t_seq_of_branching (b : Time.branching) : Time.t Seq.t =
     let days = days |> List.to_seq |> Weekday_ranges.Flatten.flatten in
     Seq.flat_map
       (fun year ->
-         let search_space = [ search_space_of_year year ] in
+         let search_space = [ search_space_of_year tz_offset_s year ] in
          Seq.flat_map
            (fun month ->
               Seq.flat_map
@@ -961,9 +969,9 @@ let construct_intervals_from_two_seqs inc_or_exc s1 s2 =
   in
   aux s1 s2
 
-let resolve ?search_using_tz_offset_s (time : Time.t) :
+let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
-  let rec aux time =
+  let rec aux search_using_tz_offset_s time =
     let open Time in
     match time with
     | Timestamp_interval_seq (_, s) -> Ok s
@@ -979,12 +987,14 @@ let resolve ?search_using_tz_offset_s (time : Time.t) :
     | Branching (space, branching) ->
       let t =
         Round_robin_pick_list
-          (space, List.of_seq @@ time_t_seq_of_branching branching)
+          ( space,
+            List.of_seq
+            @@ time_t_seq_of_branching search_using_tz_offset_s branching )
         |> propagate_search_space_top_down
       in
-      aux t
+      aux search_using_tz_offset_s t
     | Unary_op (space, op, t) ->
-      aux t
+      aux search_using_tz_offset_s t
       |> Result.map (fun s ->
           match op with
           | Not ->
@@ -1018,10 +1028,10 @@ let resolve ?search_using_tz_offset_s (time : Time.t) :
               ~skip_sort:true ~skip_filter_invalid:true
           | _ -> failwith "Unimplemented")
     | Binary_op (_, op, t1, t2) -> (
-        match aux t1 with
+        match aux search_using_tz_offset_s t1 with
         | Error msg -> Error msg
         | Ok s1 -> (
-            match aux t2 with
+            match aux search_using_tz_offset_s t2 with
             | Error msg -> Error msg
             | Ok s2 ->
               Ok
@@ -1036,12 +1046,13 @@ let resolve ?search_using_tz_offset_s (time : Time.t) :
                   | Intervals_exc -> construct_intervals_from_two_seqs Exc s1 s2
                 ) ) )
     | Round_robin_pick_list (_, l) ->
-      Misc_utils.get_ok_error_list (List.map aux l)
+      Misc_utils.get_ok_error_list (List.map (aux search_using_tz_offset_s) l)
       |> Result.map
         (Time.Intervals.Round_robin
          .merge_multi_list_round_robin_non_decreasing ~skip_check:true)
     | Merge_list (_, l) ->
-      Misc_utils.get_ok_error_list (List.map aux l)
+      Misc_utils.get_ok_error_list (List.map (aux search_using_tz_offset_s) l)
       |> Result.map (Time.Intervals.Merge.merge_multi_list ~skip_check:true)
   in
-  aux (optimize_search_space time)
+  aux search_using_tz_offset_s
+    (optimize_search_space search_using_tz_offset_s time)

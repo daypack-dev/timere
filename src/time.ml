@@ -1687,7 +1687,7 @@ type unary_op =
     }
   | Shift of int64
   | Lengthen of int64
-  | Tz_offset of sign_expr * hms
+  | Tz_offset of int
 
 type binary_op =
   | Union
