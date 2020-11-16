@@ -991,8 +991,31 @@ let resolve ?search_using_tz_offset_s (time : Time.t) :
             Intervals.relative_complement ~skip_check:true ~not_mem_of:s
               (List.to_seq space)
           | Every -> s
+          | Skip_n_points n ->
+            Intervals.chunk ~skip_check:true ~chunk_size:1L s
+            |> OSeq.drop n
+          | Skip_n_intervals n -> OSeq.drop n s
+          | Next_n_points n ->
+            Intervals.chunk ~skip_check:true ~chunk_size:1L s
+            |> OSeq.take n
+          | Next_n_intervals n -> OSeq.take n s
+          | Normalize { skip_filter_invalid; skip_filter_empty; skip_sort }
+            ->
+            Intervals.Normalize.normalize ~skip_filter_invalid
+              ~skip_filter_empty ~skip_sort s
           | Chunk { chunk_size; drop_partial } ->
             Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
+          | Shift n ->
+            Seq.map
+              (fun (start, end_exc) ->
+                 (Int64.add start n, Int64.add end_exc n))
+              s
+          | Lengthen n ->
+            s
+            |> Seq.map (fun (start, end_exc) ->
+                (start, Int64.add end_exc n))
+            |> Intervals.Normalize.normalize ~skip_filter_empty:true
+              ~skip_sort:true ~skip_filter_invalid:true
           | _ -> failwith "Unimplemented")
     | Binary_op (_, op, t1, t2) -> (
         match aux t1 with
