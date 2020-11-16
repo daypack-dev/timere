@@ -70,9 +70,9 @@ let token_p : (token, unit) MParser.t =
       attempt to_str >>$ To;
       attempt from_str >>$ From;
     ]
-  |>> fun guess -> (pos, guess)
+  >>= fun guess -> spaces >>$ (pos, guess)
 
-let tokens_p = many1 token_p
+let tokens_p = spaces >> sep_by token_p spaces1 << spaces
 
 let inter : (ast -> ast -> ast, unit) t =
   string "&&" >> return (fun a b -> Binary_op (Inter, a, b))
