@@ -131,7 +131,10 @@ let token_p : (token, unit) MParser.t =
       (attempt nat_zero |>> fun x -> Nat x);
       (attempt weekday_p |>> fun x -> Weekday x);
       (attempt month_p |>> fun x -> Month x);
-      fail "Unrecognized token";
+      ( non_space_string
+        >>= fun s ->
+        fail (Printf.sprintf "%s - Unrecognized token: %s" (string_of_pos pos) s)
+      );
     ]
   >>= fun guess -> spaces >>$ (pos, guess)
 
