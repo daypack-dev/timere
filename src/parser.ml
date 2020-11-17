@@ -9,6 +9,8 @@ type guess =
   | Star
   | To
   | From
+  | Am
+  | Pm
   | Nat of int
   | Weekday of Time.weekday
   | Month of Time.month
@@ -75,40 +77,40 @@ let month_p : (Time.month, unit) t =
   | Ok x -> return x
   | Error _ -> fail (Printf.sprintf "Failed to interpret month string: %s" x)
 
-type static_str_p = (string, unit) MParser.t
-
-let not_str : static_str_p = string "not"
-
-let next_slot_str : static_str_p = string "next-slot"
-
-let next_point_str : static_str_p =
-  attempt (string "next-point") <|> string "next-pt"
-
-let next_batch_str : static_str_p = string "next-batch"
-
-let next_str : static_str_p = string "next"
-
-let point_str : static_str_p = string "point"
-
-let slot_str : static_str_p = string "slot"
-
-let points_str : static_str_p = string "points"
-
-let slots_str : static_str_p = string "slots"
-
-let batch_str : static_str_p = string "batch"
-
-let batches_str : static_str_p = string "batches"
-
-let of_str : static_str_p = string "of"
-
-let from_str : static_str_p = string "from"
-
-let to_str : static_str_p = string "to"
-
-let first_str : static_str_p = string "first"
-
-let last_str : static_str_p = string "last"
+(* type static_str_p = (string, unit) MParser.t
+ * 
+ * let not_str : static_str_p = string "not"
+ * 
+ * let next_slot_str : static_str_p = string "next-slot"
+ * 
+ * let next_point_str : static_str_p =
+ *   attempt (string "next-point") <|> string "next-pt"
+ * 
+ * let next_batch_str : static_str_p = string "next-batch"
+ * 
+ * let next_str : static_str_p = string "next"
+ * 
+ * let point_str : static_str_p = string "point"
+ * 
+ * let slot_str : static_str_p = string "slot"
+ * 
+ * let points_str : static_str_p = string "points"
+ * 
+ * let slots_str : static_str_p = string "slots"
+ * 
+ * let batch_str : static_str_p = string "batch"
+ * 
+ * let batches_str : static_str_p = string "batches"
+ * 
+ * let of_str : static_str_p = string "of"
+ * 
+ * let from_str : static_str_p = string "from"
+ * 
+ * let to_str : static_str_p = string "to"
+ * 
+ * let first_str : static_str_p = string "first"
+ * 
+ * let last_str : static_str_p = string "last" *)
 
 let token_p : (token, unit) MParser.t =
   get_pos
@@ -120,8 +122,12 @@ let token_p : (token, unit) MParser.t =
       attempt (char '-') >>$ Hyphen;
       attempt (char ':') >>$ Colon;
       attempt (char '*') >>$ Star;
-      attempt to_str >>$ To;
-      attempt from_str >>$ From;
+      attempt (string "to") >>$ To;
+      attempt (string "from") >>$ From;
+      attempt (string "am") >>$ Am;
+      attempt (string "AM") >>$ Am;
+      attempt (string "pm") >>$ Pm;
+      attempt (string "PM") >>$ Pm;
       (attempt nat_zero |>> fun x -> Nat x);
       (attempt weekday_p |>> fun x -> Weekday x);
       (attempt month_p |>> fun x -> Month x);
@@ -198,7 +204,7 @@ let rules : (token list -> (Time.t, unit) Result.t) list =
 let time_t_of_tokens (tokens : token list) : (Time.t, string) Result.t =
   let rec aux tokens rules =
     match rules with
-    | [] -> Error "Unrecognized"
+    | [] -> Error "Unrecognized text pattern"
     | rule :: rest -> (
         match rule tokens with
         | Ok time -> Ok time
