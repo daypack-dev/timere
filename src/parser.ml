@@ -170,62 +170,69 @@ let expr =
 
 module Ast_normalize = struct
   let group (type a) ~(extract_single : guess -> a option)
-      ~(constr_single : a -> guess)
+      ~(extract_grouped : guess -> a Time.Range.range list option)
       ~(constr_grouped : a Time.Range.range list -> guess) (l : token list) :
     token list =
-    let rec aux (pos : pos option) (acc : a Time.Range.range list) tokens :
-      token list =
+    let rec recognize_single_interval tokens : token list =
       match tokens with
-      | (pos_x, x) :: (_, Comma) :: (pos_y, y) :: rest -> (
+      | (pos_x, x) :: (pos_comma, Comma) :: rest -> (
+          match extract_single x with
+          | Some x ->
+            (pos_x, constr_grouped [ `Range_inc (x, x) ])
+            :: (pos_comma, Comma)
+            :: recognize_single_interval rest
+          | _ -> recognize_fallback tokens )
+      | (pos_x, x) :: (_, To) :: (_, y) :: (pos_comma, Comma) :: rest -> (
           match (extract_single x, extract_single y) with
           | Some x, Some y ->
-            aux (Some pos_x)
-              (`Range_inc (x, x) :: acc)
-              ((pos_y, constr_single y) :: rest)
-          | _, _ -> handle_unknown_pattern pos acc tokens )
-      | (pos_x, x) :: (_, To) :: (_, y) :: (_, Comma) :: rest -> (
-          match (extract_single x, extract_single y) with
-          | Some x, Some y -> aux (Some pos_x) (`Range_inc (x, y) :: acc) rest
-          | _, _ -> handle_unknown_pattern pos acc tokens )
+            (pos_x, constr_grouped [ `Range_inc (x, y) ])
+            :: (pos_comma, Comma)
+            :: recognize_single_interval rest
+          | _, _ -> recognize_fallback tokens )
       | (pos_x, x) :: (_, To) :: (_, y) :: rest -> (
           match (extract_single x, extract_single y) with
-          | Some x, Some y -> aux (Some pos_x) (`Range_inc (x, y) :: acc) rest
-          | _, _ -> handle_unknown_pattern pos acc tokens )
-      | _ -> handle_unknown_pattern pos acc tokens
-    and handle_unknown_pattern pos acc l =
+          | Some x, Some y ->
+            (pos_x, constr_grouped [ `Range_inc (x, y) ])
+            :: recognize_single_interval rest
+          | _, _ -> recognize_fallback tokens )
+      | _ -> recognize_fallback tokens
+    and recognize_fallback l =
       match l with
-      | [] -> (
-          match acc with
-          | [] -> []
-          | l -> [ (Option.get pos, constr_grouped (List.rev l)) ] )
-      | token :: rest -> (
-          match acc with
-          | [] -> token :: aux None [] rest
-          | l ->
-            (Option.get pos, constr_grouped (List.rev l))
-            :: token
-            :: aux None [] rest )
+      | [] -> []
+      | token :: rest -> token :: recognize_single_interval rest
     in
-    aux None [] l
+    let rec merge_intervals tokens : token list =
+      match tokens with
+      | (pos_x, x) :: (_, Comma) :: (_, y) :: rest -> (
+          match (extract_grouped x, extract_grouped y) with
+          | Some l1, Some l2 ->
+            merge_intervals ((pos_x, constr_grouped (l1 @ l2)) :: rest)
+          | _, _ -> merge_fallback tokens )
+      | _ -> merge_fallback tokens
+    and merge_fallback l =
+      match l with [] -> [] | token :: rest -> token :: merge_intervals rest
+    in
+    l |> recognize_single_interval |> merge_intervals
 
   let group_nats (l : token list) : token list =
     group
       ~extract_single:(fun x -> match x with Nat x -> Some x | _ -> None)
-      ~constr_single:(fun x -> Nat x)
+      ~extract_grouped:(fun x -> match x with Nats l -> Some l | _ -> None)
       ~constr_grouped:(fun l -> Nats l)
       l
 
   let group_months (l : token list) : token list =
     group
       ~extract_single:(fun x -> match x with Month x -> Some x | _ -> None)
-      ~constr_single:(fun x -> Month x)
+      ~extract_grouped:(fun x -> match x with Months l -> Some l | _ -> None)
       ~constr_grouped:(fun x -> Months x)
       l
 
   let group_weekdays (l : token list) : token list =
     group
       ~extract_single:(fun x -> match x with Weekday x -> Some x | _ -> None)
-      ~constr_single:(fun x -> Weekday x)
+      ~extract_grouped:(fun x ->
+          match x with Weekdays l -> Some l | _ -> None)
       ~constr_grouped:(fun x -> Weekdays x)
       l
 
