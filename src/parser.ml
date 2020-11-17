@@ -12,8 +12,11 @@ type guess =
   | Am
   | Pm
   | Nat of int
+  | Nats of int Time.Range.range list
   | Weekday of Time.weekday
+  | Weekdays of Time.weekday Time.Range.range list
   | Month of Time.month
+  | Months of Time.month Time.Range.range list
 
 type token = (int * int * int) * guess
 
@@ -149,23 +152,94 @@ let union : (ast -> ast -> ast, unit) t =
 let round_robin_pick : (ast -> ast -> ast, unit) t =
   string ">>" >> return (fun a b -> Round_robin_pick [ a; b ])
 
-let flatten_round_robin_select (e : ast) : ast =
-  let rec aux e =
-    match e with
-    | Tokens _ -> e
-    | Binary_op (op, e1, e2) -> Binary_op (op, aux e1, aux e2)
-    | Round_robin_pick l ->
-      l
-      |> List.to_seq
-      |> Seq.map aux
-      |> Seq.flat_map (fun e ->
-          match e with
-          | Round_robin_pick l -> List.to_seq l
-          | _ -> Seq.return e)
-      |> List.of_seq
-      |> fun l -> Round_robin_pick l
-  in
-  aux e
+module Ast_normalize = struct
+  let group_nats (l : token list) : token list =
+    let rec aux (pos : pos option) (acc : int Time.Range.range list) tokens :
+      token list =
+      match tokens with
+      | (pos_x, Nat x) :: (_, Comma) :: (pos_y, Nat y) :: rest ->
+        aux (Some pos_x) (`Range_inc (x, x) :: acc) ((pos_y, Nat y) :: rest)
+      | (pos_x, Nat x) :: (_, To) :: (_, Nat y) :: (_, Comma) :: rest ->
+        aux (Some pos_x) (`Range_inc (x, y) :: acc) rest
+      | (pos_x, Nat x) :: (_, To) :: (_, Nat y) :: rest ->
+        aux (Some pos_x) (`Range_inc (x, y) :: acc) rest
+      | [] -> []
+      | _ :: rest -> (
+          match acc with
+          | [] -> aux None [] rest
+          | l -> (Option.get pos, Nats (List.rev l)) :: aux None [] rest )
+    in
+    aux None [] l
+
+  let group_months (l : token list) : token list =
+    let rec aux (pos : pos option) (acc : Time.month Time.Range.range list)
+        tokens : token list =
+      match tokens with
+      | (pos_x, Month x) :: (_, Comma) :: (pos_y, Month y) :: rest ->
+        aux (Some pos_x) (`Range_inc (x, x) :: acc) ((pos_y, Month y) :: rest)
+      | (pos_x, Month x) :: (_, To) :: (_, Month y) :: (_, Comma) :: rest ->
+        aux (Some pos_x) (`Range_inc (x, y) :: acc) rest
+      | (pos_x, Month x) :: (_, To) :: (_, Month y) :: rest ->
+        aux (Some pos_x) (`Range_inc (x, y) :: acc) rest
+      | [] -> []
+      | _ :: rest -> (
+          match acc with
+          | [] -> aux None [] rest
+          | l -> (Option.get pos, Months (List.rev l)) :: aux None [] rest )
+    in
+    aux None [] l
+
+  let group_weekdays (l : token list) : token list =
+    let rec aux (pos : pos option) (acc : Time.weekday Time.Range.range list)
+        tokens : token list =
+      match tokens with
+      | (pos_x, Weekday x) :: (_, Comma) :: (pos_y, Weekday y) :: rest ->
+        aux (Some pos_x)
+          (`Range_inc (x, x) :: acc)
+          ((pos_y, Weekday y) :: rest)
+      | (pos_x, Weekday x) :: (_, To) :: (_, Weekday y) :: (_, Comma) :: rest ->
+        aux (Some pos_x) (`Range_inc (x, y) :: acc) rest
+      | (pos_x, Weekday x) :: (_, To) :: (_, Weekday y) :: rest ->
+        aux (Some pos_x) (`Range_inc (x, y) :: acc) rest
+      | [] -> []
+      | _ :: rest -> (
+          match acc with
+          | [] -> aux None [] rest
+          | l -> (Option.get pos, Weekdays (List.rev l)) :: aux None [] rest )
+    in
+    aux None [] l
+
+  let group_tokens (e : ast) : ast =
+    let rec aux e =
+      match e with
+      | Tokens l ->
+        l |> group_nats |> group_weekdays |> group_months |> fun l -> Tokens l
+      | Binary_op (op, e1, e2) -> Binary_op (op, aux e1, aux e2)
+      | Round_robin_pick l -> Round_robin_pick (List.map aux l)
+    in
+    aux e
+
+  let flatten_round_robin_select (e : ast) : ast =
+    let rec aux e =
+      match e with
+      | Tokens _ -> e
+      | Binary_op (op, e1, e2) -> Binary_op (op, aux e1, aux e2)
+      | Round_robin_pick l ->
+        l
+        |> List.to_seq
+        |> Seq.map aux
+        |> Seq.flat_map (fun e ->
+            match e with
+            | Round_robin_pick l -> List.to_seq l
+            | _ -> Seq.return e)
+        |> List.of_seq
+        |> fun l -> Round_robin_pick l
+    in
+    aux e
+
+  let normalize (e : ast) : ast =
+    e |> flatten_round_robin_select |> group_tokens
+end
 
 let expr =
   let rec expr mparser_state =
@@ -178,7 +252,7 @@ let expr =
     let union_part = chain_left1 ordered_select_part inter in
     chain_left1 union_part union mparser_state
   in
-  expr >>= fun e -> return (flatten_round_robin_select e)
+  expr
 
 let parse_into_ast (s : string) : (ast, string) Result.t =
   parse_string
@@ -192,6 +266,7 @@ let parse_into_ast (s : string) : (ast, string) Result.t =
          <|> fail (Printf.sprintf "Expected EOI, pos: %s" (string_of_pos pos)) )
     s ()
   |> result_of_mparser_result
+  |> Result.map Ast_normalize.normalize
 
 let rules : (token list -> (Time.t, unit) Result.t) list =
   let open Time in
