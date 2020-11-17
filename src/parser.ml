@@ -134,14 +134,17 @@ let token_p : (token, unit) MParser.t =
       (attempt nat_zero |>> fun x -> Nat x);
       (attempt weekday_p |>> fun x -> Weekday x);
       (attempt month_p |>> fun x -> Month x);
-      ( non_space_string
+      ( attempt non_space_string
         >>= fun s ->
-        fail (Printf.sprintf "%s - Unrecognized token: %s" (string_of_pos pos) s)
+        if s = "" then
+          fail (Printf.sprintf "%s: Unexpected end of tokens" (string_of_pos pos))
+        else
+          fail (Printf.sprintf "%s: Unrecognized token: %s" (string_of_pos pos) s)
       );
     ]
-  >>= fun guess -> spaces >>$ (pos, guess)
+  >>= fun guess -> spaces >> return (pos, guess)
 
-let tokens_p = spaces >> sep_by token_p spaces1 << spaces
+let tokens_p = spaces >> many1 token_p << spaces
 
 let inter : (ast -> ast -> ast, unit) t =
   string "&&" >> return (fun a b -> Binary_op (Inter, a, b))
@@ -152,62 +155,79 @@ let union : (ast -> ast -> ast, unit) t =
 let round_robin_pick : (ast -> ast -> ast, unit) t =
   string ">>" >> return (fun a b -> Round_robin_pick [ a; b ])
 
+let expr =
+  let rec expr mparser_state =
+    let inter_part =
+      attempt (char '(')
+      >> (spaces >> expr << spaces << char ')')
+         <|> (tokens_p |>> fun l -> Tokens l)
+    in
+    let ordered_select_part = chain_left1 inter_part round_robin_pick in
+    let union_part = chain_left1 ordered_select_part inter in
+    chain_left1 union_part union mparser_state
+  in
+  expr
+
 module Ast_normalize = struct
-  let group_nats (l : token list) : token list =
-    let rec aux (pos : pos option) (acc : int Time.Range.range list) tokens :
+  let group (type a) ~(extract_single : guess -> a option)
+      ~(constr_single : a -> guess)
+      ~(constr_grouped : a Time.Range.range list -> guess) (l : token list) :
+    token list =
+    let rec aux (pos : pos option) (acc : a Time.Range.range list) tokens :
       token list =
       match tokens with
-      | (pos_x, Nat x) :: (_, Comma) :: (pos_y, Nat y) :: rest ->
-        aux (Some pos_x) (`Range_inc (x, x) :: acc) ((pos_y, Nat y) :: rest)
-      | (pos_x, Nat x) :: (_, To) :: (_, Nat y) :: (_, Comma) :: rest ->
-        aux (Some pos_x) (`Range_inc (x, y) :: acc) rest
-      | (pos_x, Nat x) :: (_, To) :: (_, Nat y) :: rest ->
-        aux (Some pos_x) (`Range_inc (x, y) :: acc) rest
-      | [] -> []
-      | _ :: rest -> (
+      | (pos_x, x) :: (_, Comma) :: (pos_y, y) :: rest -> (
+          match (extract_single x, extract_single y) with
+          | Some x, Some y ->
+            aux (Some pos_x)
+              (`Range_inc (x, x) :: acc)
+              ((pos_y, constr_single y) :: rest)
+          | _, _ -> handle_unknown_pattern pos acc tokens )
+      | (pos_x, x) :: (_, To) :: (_, y) :: (_, Comma) :: rest -> (
+          match (extract_single x, extract_single y) with
+          | Some x, Some y -> aux (Some pos_x) (`Range_inc (x, y) :: acc) rest
+          | _, _ -> handle_unknown_pattern pos acc tokens )
+      | (pos_x, x) :: (_, To) :: (_, y) :: rest -> (
+          match (extract_single x, extract_single y) with
+          | Some x, Some y -> aux (Some pos_x) (`Range_inc (x, y) :: acc) rest
+          | _, _ -> handle_unknown_pattern pos acc tokens )
+      | _ -> handle_unknown_pattern pos acc tokens
+    and handle_unknown_pattern pos acc l =
+      match l with
+      | [] -> (
           match acc with
-          | [] -> aux None [] rest
-          | l -> (Option.get pos, Nats (List.rev l)) :: aux None [] rest )
+          | [] -> []
+          | l -> [ (Option.get pos, constr_grouped (List.rev l)) ] )
+      | token :: rest -> (
+          match acc with
+          | [] -> token :: aux None [] rest
+          | l ->
+            (Option.get pos, constr_grouped (List.rev l))
+            :: token
+            :: aux None [] rest )
     in
     aux None [] l
+
+  let group_nats (l : token list) : token list =
+    group
+      ~extract_single:(fun x -> match x with Nat x -> Some x | _ -> None)
+      ~constr_single:(fun x -> Nat x)
+      ~constr_grouped:(fun l -> Nats l)
+      l
 
   let group_months (l : token list) : token list =
-    let rec aux (pos : pos option) (acc : Time.month Time.Range.range list)
-        tokens : token list =
-      match tokens with
-      | (pos_x, Month x) :: (_, Comma) :: (pos_y, Month y) :: rest ->
-        aux (Some pos_x) (`Range_inc (x, x) :: acc) ((pos_y, Month y) :: rest)
-      | (pos_x, Month x) :: (_, To) :: (_, Month y) :: (_, Comma) :: rest ->
-        aux (Some pos_x) (`Range_inc (x, y) :: acc) rest
-      | (pos_x, Month x) :: (_, To) :: (_, Month y) :: rest ->
-        aux (Some pos_x) (`Range_inc (x, y) :: acc) rest
-      | [] -> []
-      | _ :: rest -> (
-          match acc with
-          | [] -> aux None [] rest
-          | l -> (Option.get pos, Months (List.rev l)) :: aux None [] rest )
-    in
-    aux None [] l
+    group
+      ~extract_single:(fun x -> match x with Month x -> Some x | _ -> None)
+      ~constr_single:(fun x -> Month x)
+      ~constr_grouped:(fun x -> Months x)
+      l
 
   let group_weekdays (l : token list) : token list =
-    let rec aux (pos : pos option) (acc : Time.weekday Time.Range.range list)
-        tokens : token list =
-      match tokens with
-      | (pos_x, Weekday x) :: (_, Comma) :: (pos_y, Weekday y) :: rest ->
-        aux (Some pos_x)
-          (`Range_inc (x, x) :: acc)
-          ((pos_y, Weekday y) :: rest)
-      | (pos_x, Weekday x) :: (_, To) :: (_, Weekday y) :: (_, Comma) :: rest ->
-        aux (Some pos_x) (`Range_inc (x, y) :: acc) rest
-      | (pos_x, Weekday x) :: (_, To) :: (_, Weekday y) :: rest ->
-        aux (Some pos_x) (`Range_inc (x, y) :: acc) rest
-      | [] -> []
-      | _ :: rest -> (
-          match acc with
-          | [] -> aux None [] rest
-          | l -> (Option.get pos, Weekdays (List.rev l)) :: aux None [] rest )
-    in
-    aux None [] l
+    group
+      ~extract_single:(fun x -> match x with Weekday x -> Some x | _ -> None)
+      ~constr_single:(fun x -> Weekday x)
+      ~constr_grouped:(fun x -> Weekdays x)
+      l
 
   let group_tokens (e : ast) : ast =
     let rec aux e =
@@ -241,19 +261,6 @@ module Ast_normalize = struct
     e |> flatten_round_robin_select |> group_tokens
 end
 
-let expr =
-  let rec expr mparser_state =
-    let inter_part =
-      attempt (char '(')
-      >> (spaces >> expr << spaces << char ')')
-         <|> (tokens_p |>> fun l -> Tokens l)
-    in
-    let ordered_select_part = chain_left1 inter_part round_robin_pick in
-    let union_part = chain_left1 ordered_select_part inter in
-    chain_left1 union_part union mparser_state
-  in
-  expr
-
 let parse_into_ast (s : string) : (ast, string) Result.t =
   parse_string
     ( expr
@@ -266,12 +273,16 @@ let parse_into_ast (s : string) : (ast, string) Result.t =
          <|> fail (Printf.sprintf "Expected EOI, pos: %s" (string_of_pos pos)) )
     s ()
   |> result_of_mparser_result
-  |> Result.map Ast_normalize.normalize
 
 let rules : (token list -> (Time.t, unit) Result.t) list =
   let open Time in
   [
     (fun l -> match l with [ (_, Star) ] -> Ok Time.any | _ -> Error ());
+    (fun l ->
+       match l with
+       | [ (_, Months l) ] ->
+         Ok (Time.months (Time.Month_ranges.Flatten.flatten_list l))
+       | _ -> Error ());
     (fun l ->
        match l with
        | [ (_, Nat year); (_, Month month); (_, Nat day) ] ->
@@ -314,4 +325,4 @@ let time_t_of_ast (ast : ast) : (Time.t, string) Result.t =
 let parse s =
   match parse_into_ast s with
   | Error msg -> Error msg
-  | Ok ast -> time_t_of_ast ast
+  | Ok ast -> ast |> Ast_normalize.normalize |> time_t_of_ast

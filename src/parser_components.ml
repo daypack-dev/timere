@@ -51,7 +51,7 @@ let non_square_bracket_string : (string, unit) t =
 let non_parenthesis_string : (string, unit) t =
   many_satisfy (function '(' | ')' -> false | _ -> true)
 
-let non_space_string : (string, unit) t = many_chars non_space
+let non_space_string : (string, unit) t = many1_chars non_space
 
 let sep_by_comma (p : ('a, unit) t) : ('a list, unit) t =
   sep_by p (attempt (spaces >> comma >> spaces))
