@@ -21,4 +21,4 @@ end
 
 let resolve = Resolver.resolve
 
-let parse = Parser.of_string
+let parse = Parser.parse

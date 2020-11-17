@@ -24,6 +24,57 @@ type ast =
   | Binary_op of binary_op * ast * ast
   | Round_robin_pick of ast list
 
+let weekdays : (string * Time.weekday) list =
+  [
+    ("sunday", `Sun);
+    ("monday", `Mon);
+    ("tuesday", `Tue);
+    ("wednesday", `Wed);
+    ("thursday", `Thu);
+    ("friday", `Fri);
+    ("saturday", `Sat);
+  ]
+
+let months : (string * Time.month) list =
+  [
+    ("january", `Jan);
+    ("february", `Feb);
+    ("march", `Mar);
+    ("april", `Apr);
+    ("may", `May);
+    ("june", `Jun);
+    ("july", `Jul);
+    ("august", `Aug);
+    ("september", `Sep);
+    ("october", `Oct);
+    ("november", `Nov);
+    ("december", `Dec);
+  ]
+
+let parse_weekday (s : string) : (Time.weekday, unit) Result.t =
+  match Misc_utils.prefix_string_match weekdays s with
+  | [ (_, x) ] -> Ok x
+  | _ -> Error ()
+
+let parse_month (s : string) : (Time.month, unit) Result.t =
+  match Misc_utils.prefix_string_match months s with
+  | [ (_, x) ] -> Ok x
+  | _ -> Error ()
+
+let weekday_p : (Time.weekday, unit) t =
+  alpha_string
+  >>= fun x ->
+  match parse_weekday x with
+  | Ok x -> return x
+  | Error _ -> fail (Printf.sprintf "Failed to interpret weekday string")
+
+let month_p : (Time.month, unit) t =
+  alpha_string
+  >>= fun x ->
+  match parse_month x with
+  | Ok x -> return x
+  | Error _ -> fail (Printf.sprintf "Failed to interpret month string: %s" x)
+
 type static_str_p = (string, unit) MParser.t
 
 let not_str : static_str_p = string "not"
@@ -72,6 +123,8 @@ let token_p : (token, unit) MParser.t =
       attempt to_str >>$ To;
       attempt from_str >>$ From;
       (attempt nat_zero |>> fun x -> Nat x);
+      (attempt weekday_p |>> fun x -> Weekday x);
+      (attempt month_p |>> fun x -> Month x);
       fail "Unrecognized token";
     ]
   >>= fun guess -> spaces >>$ (pos, guess)
@@ -118,7 +171,7 @@ let expr =
   in
   expr >>= fun e -> return (flatten_round_robin_select e)
 
-let ast_of_string (s : string) : (ast, string) Result.t =
+let parse_into_ast (s : string) : (ast, string) Result.t =
   parse_string
     ( expr
       << spaces
@@ -174,7 +227,7 @@ let time_t_of_ast (ast : ast) : (Time.t, string) Result.t =
   in
   aux ast
 
-let of_string s =
-  match ast_of_string s with
+let parse s =
+  match parse_into_ast s with
   | Error msg -> Error msg
   | Ok ast -> time_t_of_ast ast
