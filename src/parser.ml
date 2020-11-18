@@ -7,6 +7,10 @@ type guess =
   | Hyphen
   | Colon
   | Star
+  | Not
+  | Outside
+  | Of
+  | In
   | To
   | From
   | Am
@@ -92,6 +96,10 @@ let token_p : (token, unit) MParser.t =
       attempt (char '-') >>$ Hyphen;
       attempt (char ':') >>$ Colon;
       attempt (char '*') >>$ Star;
+      attempt (string "not") >>$ Not;
+      attempt (string "outside") >>$ Outside;
+      attempt (string "of") >>$ Of;
+      attempt (string "in") >>$ In;
       attempt (string "to") >>$ To;
       attempt (string "from") >>$ From;
       attempt (string "am") >>$ Am;
