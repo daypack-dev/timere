@@ -260,28 +260,44 @@ let parse_into_ast (s : string) : (ast, string) Result.t =
     s ()
   |> result_of_mparser_result
 
-let rules : (token list -> (Time.t, unit) Result.t) list =
+let rules : (token list -> (Time.t, string option) Result.t) list =
   let open Time in
   [
-    (function [ (_, Star) ] -> Ok Time.any | _ -> Error ());
+    (function [ (_, Star) ] -> Ok Time.any | _ -> Error None);
     (function
       | [ (_, Months l) ] ->
         Ok (Time.months (Time.Month_ranges.Flatten.flatten_list l))
-      | _ -> Error ());
+      | _ -> Error None);
     (function
-      | [ (_, Nat year); (_, Month month); (_, Nat day) ] ->
+      | [ (_, Nat year); (_, Month month); (_, Nat day) ] when year > 31 ->
         Ok (pattern ~years:[ year ] ~months:[ month ] ~month_days:[ day ] ())
-      | _ -> Error ());
+      | [ (_, Nat day); (_, Month month); (_, Nat year) ] when year > 31 ->
+        Ok (pattern ~years:[ year ] ~months:[ month ] ~month_days:[ day ] ())
+      | _ -> Error None);
+    (function
+      | [ (_, Nat year); (_, Month month); (_, Nat day); (pos_hour, Nat hour); (_, Pm) ] ->
+        if 1 <= hour && hour <= 12 then
+          let hour =
+            (hour mod 12) + 12
+          in
+          Ok (pattern ~years:[ year ] ~months:[ month ] ~month_days:[ day ] ~hours:[ hour ] ())
+        else
+          Error (Some (Printf.sprintf "%s: Hour out of range: %d" (string_of_pos pos_hour) hour))
+      | _ -> Error None);
   ]
 
 let time_t_of_tokens (tokens : token list) : (Time.t, string) Result.t =
   let rec aux tokens rules =
     match rules with
-    | [] -> Error "Unrecognized text pattern"
+    | [] ->
+      let (pos, _) = List.hd tokens in
+      Error (Printf.sprintf "%s: Unrecognized token pattern" (string_of_pos pos))
     | rule :: rest -> (
         match rule tokens with
         | Ok time -> Ok time
-        | Error () -> aux tokens rest )
+        | Error None -> aux tokens rest
+        | Error (Some msg) -> Error msg
+      )
   in
   aux tokens rules
 
