@@ -80,6 +80,8 @@ let month_p : (Time.month, unit) t =
   | Ok x -> return x
   | Error _ -> fail (Printf.sprintf "Failed to interpret month string: %s" x)
 
+let symbols = "()[]&|>"
+
 let token_p : (token, unit) MParser.t =
   get_pos
   >>= fun pos ->
@@ -99,7 +101,7 @@ let token_p : (token, unit) MParser.t =
       (attempt nat_zero |>> fun x -> Nat x);
       (attempt weekday_p |>> fun x -> Weekday x);
       (attempt month_p |>> fun x -> Month x);
-      ( attempt non_space_string
+      ( attempt (many1_satisfy (fun c -> not (String.contains symbols c)))
         >>= fun s ->
         if s = "" then
           fail (Printf.sprintf "%s: Unexpected end of tokens" (string_of_pos pos))
@@ -181,23 +183,22 @@ module Ast_normalize = struct
 
   let group_nats (l : token list) : token list =
     group
-      ~extract_single:(fun x -> match x with Nat x -> Some x | _ -> None)
-      ~extract_grouped:(fun x -> match x with Nats l -> Some l | _ -> None)
+      ~extract_single:(function Nat x -> Some x | _ -> None)
+      ~extract_grouped:(function Nats l -> Some l | _ -> None)
       ~constr_grouped:(fun l -> Nats l)
       l
 
   let group_months (l : token list) : token list =
     group
-      ~extract_single:(fun x -> match x with Month x -> Some x | _ -> None)
-      ~extract_grouped:(fun x -> match x with Months l -> Some l | _ -> None)
+      ~extract_single:(function Month x -> Some x | _ -> None)
+      ~extract_grouped:(function Months l -> Some l | _ -> None)
       ~constr_grouped:(fun x -> Months x)
       l
 
   let group_weekdays (l : token list) : token list =
     group
-      ~extract_single:(fun x -> match x with Weekday x -> Some x | _ -> None)
-      ~extract_grouped:(fun x ->
-          match x with Weekdays l -> Some l | _ -> None)
+      ~extract_single:(function Weekday x -> Some x | _ -> None)
+      ~extract_grouped:(function Weekdays l -> Some l | _ -> None)
       ~constr_grouped:(fun x -> Weekdays x)
       l
 
@@ -249,17 +250,15 @@ let parse_into_ast (s : string) : (ast, string) Result.t =
 let rules : (token list -> (Time.t, unit) Result.t) list =
   let open Time in
   [
-    (fun l -> match l with [ (_, Star) ] -> Ok Time.any | _ -> Error ());
-    (fun l ->
-       match l with
-       | [ (_, Months l) ] ->
-         Ok (Time.months (Time.Month_ranges.Flatten.flatten_list l))
-       | _ -> Error ());
-    (fun l ->
-       match l with
-       | [ (_, Nat year); (_, Month month); (_, Nat day) ] ->
-         Ok (pattern ~years:[ year ] ~months:[ month ] ~month_days:[ day ] ())
-       | _ -> Error ());
+    (function [ (_, Star) ] -> Ok Time.any | _ -> Error ());
+    (function
+      | [ (_, Months l) ] ->
+        Ok (Time.months (Time.Month_ranges.Flatten.flatten_list l))
+      | _ -> Error ());
+    (function
+      | [ (_, Nat year); (_, Month month); (_, Nat day) ] ->
+        Ok (pattern ~years:[ year ] ~months:[ month ] ~month_days:[ day ] ())
+      | _ -> Error ());
   ]
 
 let time_t_of_tokens (tokens : token list) : (Time.t, string) Result.t =
