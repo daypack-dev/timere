@@ -15,6 +15,10 @@ type guess =
   | From
   | Am
   | Pm
+  | St
+  | Nd
+  | Rd
+  | Th
   | Nat of int
   | Nats of int Time.Range.range list
   | Weekday of Time.weekday
@@ -106,6 +110,10 @@ let token_p : (token, unit) MParser.t =
       attempt (string "AM") >>$ Am;
       attempt (string "pm") >>$ Pm;
       attempt (string "PM") >>$ Pm;
+      attempt (string "st") >>$ St;
+      attempt (string "nd") >>$ Nd;
+      attempt (string "rd") >>$ Rd;
+      attempt (string "th") >>$ Th;
       (attempt nat_zero |>> fun x -> Nat x);
       (attempt weekday_p |>> fun x -> Weekday x);
       (attempt month_p |>> fun x -> Month x);
