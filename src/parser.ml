@@ -111,10 +111,7 @@ let token_p : (token, unit) MParser.t =
       (attempt month_p |>> fun x -> Month x);
       ( attempt (many1_satisfy (fun c -> not (String.contains symbols c)))
         >>= fun s ->
-        if s = "" then
-          fail (Printf.sprintf "%s: Unexpected end of tokens" (string_of_pos pos))
-        else
-          fail (Printf.sprintf "%s: Unrecognized token: %s" (string_of_pos pos) s)
+        fail (Printf.sprintf "%s: Unrecognized token: %s" (string_of_pos pos) s)
       );
     ]
   >>= fun guess -> spaces >> return (pos, guess)
