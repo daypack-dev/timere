@@ -80,41 +80,6 @@ let month_p : (Time.month, unit) t =
   | Ok x -> return x
   | Error _ -> fail (Printf.sprintf "Failed to interpret month string: %s" x)
 
-(* type static_str_p = (string, unit) MParser.t
- * 
- * let not_str : static_str_p = string "not"
- * 
- * let next_slot_str : static_str_p = string "next-slot"
- * 
- * let next_point_str : static_str_p =
- *   attempt (string "next-point") <|> string "next-pt"
- * 
- * let next_batch_str : static_str_p = string "next-batch"
- * 
- * let next_str : static_str_p = string "next"
- * 
- * let point_str : static_str_p = string "point"
- * 
- * let slot_str : static_str_p = string "slot"
- * 
- * let points_str : static_str_p = string "points"
- * 
- * let slots_str : static_str_p = string "slots"
- * 
- * let batch_str : static_str_p = string "batch"
- * 
- * let batches_str : static_str_p = string "batches"
- * 
- * let of_str : static_str_p = string "of"
- * 
- * let from_str : static_str_p = string "from"
- * 
- * let to_str : static_str_p = string "to"
- * 
- * let first_str : static_str_p = string "first"
- * 
- * let last_str : static_str_p = string "last" *)
-
 let token_p : (token, unit) MParser.t =
   get_pos
   >>= fun pos ->
