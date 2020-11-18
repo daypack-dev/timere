@@ -21,6 +21,8 @@ type guess =
   | Th
   | Nat of int
   | Nats of int Time.Range.range list
+  | Hms of Time.hms
+  | Hmss of (Time.hms * Time.hms) list
   | Weekday of Time.weekday
   | Weekdays of Time.weekday Time.Range.range list
   | Month of Time.month
@@ -215,13 +217,131 @@ module Ast_normalize = struct
       ~constr_grouped:(fun x -> Weekdays x)
       l
 
-  let group_tokens (e : ast) : ast =
+  type hms_mode =
+    | Hms_24
+    | Hms_am
+    | Hms_pm
+
+  let recognize_hms (l : token list) : (token list, string) Result.t =
+    let make_hms mode ~pos_hour ~hour ?pos_minute ?(minute = 0) ?pos_second
+        ?(second = 0) () : (token, string) Result.t =
+      let hour =
+        match mode with
+        | Hms_24 ->
+          if 0 <= hour && hour < 24 then Ok hour
+          else
+            Error
+              (Printf.sprintf "%s: Invalid hour: %d" (string_of_pos pos_hour)
+                 hour)
+        | Hms_am ->
+          if 1 <= hour && hour <= 12 then Ok (hour mod 12)
+          else
+            Error
+              (Printf.sprintf "%s: Invalid hour: %d am"
+                 (string_of_pos pos_hour) hour)
+        | Hms_pm ->
+          if 1 <= hour && hour <= 12 then Ok ((hour mod 12) + 12)
+          else
+            Error
+              (Printf.sprintf "%s: Invalid hour: %d pm"
+                 (string_of_pos pos_hour) hour)
+      in
+      match hour with
+      | Error msg -> Error msg
+      | Ok hour ->
+        if 0 <= minute && minute < 60 then
+          if 0 <= second && second < 60 then
+            Ok (pos_hour, Hms { hour; minute; second })
+          else
+            Error
+              (Printf.sprintf "%s: Invalid second: %d"
+                 (string_of_pos @@ Option.get @@ pos_second)
+                 minute)
+        else
+          Error
+            (Printf.sprintf "%s: Invalid minute: %d"
+               (string_of_pos @@ Option.get @@ pos_minute)
+               minute)
+    in
+    let rec aux acc (l : token list) : (token list, string) Result.t =
+      match l with
+      | (pos_hour, Nat hour)
+        :: (_, Colon)
+        :: (pos_minute, Nat minute)
+        :: (_, Colon) :: (pos_second, Nat second) :: (_, Am) :: rest -> (
+          match
+            make_hms Hms_am ~pos_hour ~hour ~pos_minute ~minute ~pos_second
+              ~second ()
+          with
+          | Error msg -> Error msg
+          | Ok token -> aux (token :: acc) rest )
+      | (pos_hour, Nat hour)
+        :: (_, Colon)
+        :: (pos_minute, Nat minute)
+        :: (_, Colon) :: (pos_second, Nat second) :: (_, Pm) :: rest -> (
+          match
+            make_hms Hms_pm ~pos_hour ~hour ~pos_minute ~minute ~pos_second
+              ~second ()
+          with
+          | Error msg -> Error msg
+          | Ok token -> aux (token :: acc) rest )
+      | (pos_hour, Nat hour)
+        :: (_, Colon)
+        :: (pos_minute, Nat minute)
+        :: (_, Colon) :: (pos_second, Nat second) :: rest -> (
+          match
+            make_hms Hms_24 ~pos_hour ~hour ~pos_minute ~minute ~pos_second
+              ~second ()
+          with
+          | Error msg -> Error msg
+          | Ok token -> aux (token :: acc) rest )
+      | (pos_hour, Nat hour)
+        :: (_, Colon) :: (pos_minute, Nat minute) :: (_, Am) :: rest -> (
+          match make_hms Hms_am ~pos_hour ~hour ~pos_minute ~minute () with
+          | Error msg -> Error msg
+          | Ok token -> aux (token :: acc) rest )
+      | (pos_hour, Nat hour)
+        :: (_, Colon) :: (pos_minute, Nat minute) :: (_, Pm) :: rest -> (
+          match make_hms Hms_pm ~pos_hour ~hour ~pos_minute ~minute () with
+          | Error msg -> Error msg
+          | Ok token -> aux (token :: acc) rest )
+      | (pos_hour, Nat hour) :: (_, Colon) :: (pos_minute, Nat minute) :: rest
+        -> (
+            match make_hms Hms_24 ~pos_hour ~hour ~pos_minute ~minute () with
+            | Error msg -> Error msg
+            | Ok token -> aux (token :: acc) rest )
+      | (pos_hour, Nat hour) :: (_, Am) :: rest -> (
+          match make_hms Hms_am ~pos_hour ~hour () with
+          | Error msg -> Error msg
+          | Ok token -> aux (token :: acc) rest )
+      | (pos_hour, Nat hour) :: (_, Pm) :: rest -> (
+          match make_hms Hms_pm ~pos_hour ~hour () with
+          | Error msg -> Error msg
+          | Ok token -> aux (token :: acc) rest )
+      | [] -> Ok (List.rev acc)
+      | token :: rest -> aux (token :: acc) rest
+    in
+    aux [] l
+
+  let process_tokens (e : ast) : (ast, string) Result.t =
     let rec aux e =
       match e with
-      | Tokens l ->
-        l |> group_nats |> group_weekdays |> group_months |> fun l -> Tokens l
-      | Binary_op (op, e1, e2) -> Binary_op (op, aux e1, aux e2)
-      | Round_robin_pick l -> Round_robin_pick (List.map aux l)
+      | Tokens l -> (
+          let l = l |> group_nats |> group_weekdays |> group_months in
+          match recognize_hms l with
+          | Error msg -> Error msg
+          | Ok l -> Ok (Tokens l) )
+      | Binary_op (op, e1, e2) -> (
+          match aux e1 with
+          | Error msg -> Error msg
+          | Ok e1 -> (
+              match aux e2 with
+              | Error msg -> Error msg
+              | Ok e2 -> Ok (Binary_op (op, e1, e2)) ) )
+      | Round_robin_pick l ->
+        List.map aux l
+        |> Misc_utils.get_ok_error_list
+        |> Result.map (fun l -> Round_robin_pick l)
     in
     aux e
 
@@ -243,8 +363,8 @@ module Ast_normalize = struct
     in
     aux e
 
-  let normalize (e : ast) : ast =
-    e |> flatten_round_robin_select |> group_tokens
+  let normalize (e : ast) : (ast, string) Result.t =
+    e |> flatten_round_robin_select |> process_tokens
 end
 
 let parse_into_ast (s : string) : (ast, string) Result.t =
@@ -260,29 +380,127 @@ let parse_into_ast (s : string) : (ast, string) Result.t =
     s ()
   |> result_of_mparser_result
 
+let flatten_months pos (l : Time.month Time.Range.range list) =
+  try Ok (Time.Month_ranges.Flatten.flatten_list l)
+  with Time.Range.Range_is_invalid ->
+    Error (Some (Printf.sprintf "%s: Invalid month ranges" (string_of_pos pos)))
+
+let pattern ?(years = []) ?(months = []) ?pos_month_days ?(month_days = [])
+    ?(weekdays = []) ?pos_hours ?(hours = []) ?pos_minutes ?(minutes = [])
+    ?pos_seconds ?(seconds = []) () =
+  if not (List.for_all (fun x -> 1 <= x && x <= 31) month_days) then
+    Error
+      (Some
+         (Printf.sprintf "%s: Invalid month days"
+            (string_of_pos @@ Option.get @@ pos_month_days)))
+  else if not (List.for_all (fun x -> 0 <= x && x < 24) hours) then
+    Error
+      (Some
+         (Printf.sprintf "%s: Invalid hours"
+            (string_of_pos @@ Option.get @@ pos_hours)))
+  else if not (List.for_all (fun x -> 0 <= x && x < 60) minutes) then
+    Error
+      (Some
+         (Printf.sprintf "%s: Invalid minutes"
+            (string_of_pos @@ Option.get @@ pos_minutes)))
+  else if not (List.for_all (fun x -> 0 <= x && x < 60) seconds) then
+    Error
+      (Some
+         (Printf.sprintf "%s: Invalid seconds"
+            (string_of_pos @@ Option.get @@ pos_seconds)))
+  else
+    Ok
+      (Time.pattern ~years ~months ~month_days ~weekdays ~hours ~minutes
+         ~seconds ())
+
 let rules : (token list -> (Time.t, string option) Result.t) list =
-  let open Time in
   [
     (function [ (_, Star) ] -> Ok Time.any | _ -> Error None);
     (function
-      | [ (_, Months l) ] ->
-        Ok (Time.months (Time.Month_ranges.Flatten.flatten_list l))
+      | [ (pos, Months l) ] ->
+        flatten_months pos l |> Result.map (fun l -> Time.months l)
       | _ -> Error None);
     (function
-      | [ (_, Nat year); (_, Month month); (_, Nat day) ] when year > 31 ->
-        Ok (pattern ~years:[ year ] ~months:[ month ] ~month_days:[ day ] ())
-      | [ (_, Nat day); (_, Month month); (_, Nat year) ] when year > 31 ->
-        Ok (pattern ~years:[ year ] ~months:[ month ] ~month_days:[ day ] ())
+      | [ (_, Nat year); (_, Month month); (pos_month_days, Nat day) ]
+        when year > 31 ->
+        pattern ~years:[ year ] ~months:[ month ] ~pos_month_days
+          ~month_days:[ day ] ()
+      | [ (pos_month_days, Nat day); (_, Month month); (_, Nat year) ]
+        when year > 31 ->
+        pattern ~years:[ year ] ~months:[ month ] ~pos_month_days
+          ~month_days:[ day ] ()
+      | [ (_, Nat year); (pos_month_days, Nat day); (_, Of); (_, Month month) ]
+      | [
+        (_, Nat year);
+        (pos_month_days, Nat day);
+        (_, St);
+        (_, Of);
+        (_, Month month);
+      ]
+      | [
+        (_, Nat year);
+        (pos_month_days, Nat day);
+        (_, Nd);
+        (_, Of);
+        (_, Month month);
+      ]
+      | [
+        (_, Nat year);
+        (pos_month_days, Nat day);
+        (_, Rd);
+        (_, Of);
+        (_, Month month);
+      ] ->
+        pattern ~years:[ year ] ~months:[ month ] ~pos_month_days
+          ~month_days:[ day ] ()
       | _ -> Error None);
     (function
-      | [ (_, Nat year); (_, Month month); (_, Nat day); (pos_hour, Nat hour); (_, Pm) ] ->
+      | [
+        (_, Nat year);
+        (_, Month month);
+        (pos_month_days, Nat day);
+        (pos_hours, Nat hour);
+        (_, Pm);
+      ]
+      | [
+        (pos_hours, Nat hour);
+        (_, Pm);
+        (pos_month_days, Nat day);
+        (_, Month month);
+        (_, Nat year);
+      ] ->
         if 1 <= hour && hour <= 12 then
-          let hour =
-            (hour mod 12) + 12
-          in
-          Ok (pattern ~years:[ year ] ~months:[ month ] ~month_days:[ day ] ~hours:[ hour ] ())
+          let hour = (hour mod 12) + 12 in
+          pattern ~years:[ year ] ~months:[ month ] ~pos_month_days
+            ~month_days:[ day ] ~pos_hours ~hours:[ hour ] ()
         else
-          Error (Some (Printf.sprintf "%s: Hour out of range: %d" (string_of_pos pos_hour) hour))
+          Error
+            (Some
+               (Printf.sprintf "%s: Hour out of range: %d"
+                  (string_of_pos pos_hours) hour))
+      | [
+        (_, Nat year);
+        (_, Month month);
+        (_, Nat day);
+        (pos_hours, Nat hour);
+        (_, Am);
+      ]
+      | [
+        (pos_hours, Nat hour);
+        (_, Am);
+        (_, Nat day);
+        (_, Month month);
+        (_, Nat year);
+      ] ->
+        if 1 <= hour && hour <= 12 then
+          let hour = hour mod 12 in
+          pattern ~years:[ year ] ~months:[ month ] ~month_days:[ day ]
+            ~pos_hours ~hours:[ hour ] ()
+        else
+          Error
+            (Some
+               (Printf.sprintf "%s: Hour out of range: %d"
+                  (string_of_pos pos_hours) hour))
       | _ -> Error None);
   ]
 
@@ -290,14 +508,14 @@ let time_t_of_tokens (tokens : token list) : (Time.t, string) Result.t =
   let rec aux tokens rules =
     match rules with
     | [] ->
-      let (pos, _) = List.hd tokens in
-      Error (Printf.sprintf "%s: Unrecognized token pattern" (string_of_pos pos))
+      let pos, _ = List.hd tokens in
+      Error
+        (Printf.sprintf "%s: Unrecognized token pattern" (string_of_pos pos))
     | rule :: rest -> (
         match rule tokens with
         | Ok time -> Ok time
         | Error None -> aux tokens rest
-        | Error (Some msg) -> Error msg
-      )
+        | Error (Some msg) -> Error msg )
   in
   aux tokens rules
 
@@ -325,4 +543,7 @@ let time_t_of_ast (ast : ast) : (Time.t, string) Result.t =
 let parse s =
   match parse_into_ast s with
   | Error msg -> Error msg
-  | Ok ast -> ast |> Ast_normalize.normalize |> time_t_of_ast
+  | Ok ast -> (
+      match Ast_normalize.normalize ast with
+      | Error msg -> Error msg
+      | Ok ast -> time_t_of_ast ast )
