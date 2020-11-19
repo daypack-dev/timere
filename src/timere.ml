@@ -23,4 +23,6 @@ let resolve = Resolver.resolve
 
 let parse = Parser.parse
 
+let parse_date_time = Parser.parse_date_time
+
 let parse_duration = Parser.parse_duration

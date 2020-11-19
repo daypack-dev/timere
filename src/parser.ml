@@ -597,11 +597,6 @@ let time_t_of_ast (ast : ast) : (Time.t, string) Result.t =
   in
   aux ast
 
-let duration_t_of_ast (ast : ast) : (Duration.t, string) Result.t =
-  match ast with
-  | Tokens [ (_, Duration duration) ] -> Ok duration
-  | _ -> Error "Unrecognized pattern"
-
 let parse s =
   match parse_into_ast s with
   | Error msg -> Error msg
@@ -609,6 +604,29 @@ let parse s =
       match Ast_normalize.normalize ast with
       | Error msg -> Error msg
       | Ok ast -> time_t_of_ast ast )
+
+let date_time_t_of_ast ~tz_offset_s (ast : ast) :
+  (Time.Date_time.t, string) Result.t =
+  match ast with
+  | Tokens [ (_, Nat year); (_, Month month); (_, Nat day); (_, Hms hms) ]
+    when year > 31 ->
+    Time.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
+      ~second:hms.second ~tz_offset_s
+    |> Result.map_error (fun () -> "Invalid date time")
+  | _ -> Error "Unrecognized pattern"
+
+let parse_date_time ?(tz_offset_s = 0) s =
+  match parse_into_ast s with
+  | Error msg -> Error msg
+  | Ok ast -> (
+      match Ast_normalize.normalize ast with
+      | Error msg -> Error msg
+      | Ok ast -> date_time_t_of_ast ~tz_offset_s ast )
+
+let duration_t_of_ast (ast : ast) : (Duration.t, string) Result.t =
+  match ast with
+  | Tokens [ (_, Duration duration) ] -> Ok duration
+  | _ -> Error "Unrecognized pattern"
 
 let parse_duration s =
   match parse_into_ast s with

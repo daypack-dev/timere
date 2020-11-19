@@ -228,4 +228,7 @@ val resolve :
 
 val parse : string -> (t, string) result
 
+val parse_date_time :
+  ?tz_offset_s:tz_offset_s -> string -> (Date_time.t, string) result
+
 val parse_duration : string -> (Duration.t, string) result
