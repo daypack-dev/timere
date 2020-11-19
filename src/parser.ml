@@ -22,7 +22,7 @@ type guess =
   | Nat of int
   | Nats of int Time.Range.range list
   | Hms of Time.hms
-  | Hmss of (Time.hms * Time.hms) list
+  | Hmss of Time.hms Time.Range.range list
   | Weekday of Time.weekday
   | Weekdays of Time.weekday Time.Range.range list
   | Month of Time.month
@@ -323,14 +323,24 @@ module Ast_normalize = struct
     in
     aux [] l
 
+  let group_hms (l : token list) : token list =
+    group
+      ~extract_single:(function Hms x -> Some x | _ -> None)
+      ~extract_grouped:(function Hmss l -> Some l | _ -> None)
+      ~constr_grouped:(fun x -> Hmss x)
+      l
+
   let process_tokens (e : ast) : (ast, string) Result.t =
     let rec aux e =
       match e with
       | Tokens l -> (
-          let l = l |> group_nats |> group_weekdays |> group_months in
           match recognize_hms l with
           | Error msg -> Error msg
-          | Ok l -> Ok (Tokens l) )
+          | Ok l ->
+            let l =
+              l |> group_nats |> group_weekdays |> group_months |> group_hms
+            in
+            Ok (Tokens l) )
       | Binary_op (op, e1, e2) -> (
           match aux e1 with
           | Error msg -> Error msg
