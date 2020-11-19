@@ -6,6 +6,7 @@ type 'a range =
   [ `Range_inc of 'a * 'a
   | `Range_exc of 'a * 'a
   ]
+
 type t
 
 val any : t
