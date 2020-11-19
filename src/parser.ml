@@ -130,7 +130,7 @@ let token_p : (token, unit) MParser.t =
       (attempt nat_zero |>> fun x -> Nat x);
       (attempt weekday_p |>> fun x -> Weekday x);
       (attempt month_p |>> fun x -> Month x);
-      ( attempt (many1_satisfy (fun c -> not (String.contains symbols c)))
+      ( attempt (many1_satisfy (fun c -> c <> ' ' && not (String.contains symbols c)))
         >>= fun s ->
         fail (Printf.sprintf "%s: Unrecognized token: %s" (string_of_pos pos) s)
       );
