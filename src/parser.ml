@@ -19,11 +19,9 @@ type guess =
   | Nd
   | Rd
   | Th
-  | Hour
+  | Days
   | Hours
-  | Minute
   | Minutes
-  | Second
   | Seconds
   | Nat of int
   | Nats of int Time.Range.range list
@@ -123,12 +121,12 @@ let token_p : (token, unit) MParser.t =
       attempt (string "nd") >>$ Nd;
       attempt (string "rd") >>$ Rd;
       attempt (string "th") >>$ Th;
-      attempt (string "hours") >>$ Hour;
-      attempt (string "hour") >>$ Hour;
+      attempt (string "hours") >>$ Hours;
+      attempt (string "hour") >>$ Hours;
       attempt (string "minutes") >>$ Minutes;
-      attempt (string "minute") >>$ Minute;
+      attempt (string "minute") >>$ Minutes;
       attempt (string "seconds") >>$ Seconds;
-      attempt (string "second") >>$ Second;
+      attempt (string "second") >>$ Seconds;
       (attempt nat_zero |>> fun x -> Nat x);
       (attempt weekday_p |>> fun x -> Weekday x);
       (attempt month_p |>> fun x -> Month x);
@@ -343,17 +341,74 @@ module Ast_normalize = struct
       ~constr_grouped:(fun x -> Hmss x)
       l
 
+  let recognize_duration (l : token list) : (token list, string) Result.t =
+    let rec aux acc l =
+      match l with
+      | (pos, Nat days)
+        :: (_, Days)
+        :: (_, Nat hours)
+        :: (_, Hours)
+        :: (_, Nat minutes)
+        :: (_, Minutes) :: (_, Nat seconds) :: (_, Seconds) :: rest
+        ->
+        let token =
+          ( pos,
+            Duration
+              (Result.get_ok (Duration.make ~days ~hours ~minutes ~seconds))
+          )
+        in
+        aux (token :: acc) rest
+      | (pos, Nat hours)
+        :: (_, Hours)
+        :: (_, Nat minutes)
+        :: (_, Minutes) :: (_, Nat seconds) :: (_, Seconds) :: rest ->
+        let token =
+          ( pos,
+            Duration
+              (Result.get_ok (Duration.make ~days:0 ~hours ~minutes ~seconds))
+          )
+        in
+        aux (token :: acc) rest
+      | (pos, Nat minutes)
+        :: (_, Minutes) :: (_, Nat seconds) :: (_, Seconds) :: rest ->
+        let token =
+          ( pos,
+            Duration
+              (Result.get_ok
+                 (Duration.make ~days:0 ~hours:0 ~minutes ~seconds)) )
+        in
+        aux (token :: acc) rest
+      | (pos, Nat seconds) :: (_, Seconds) :: rest ->
+        let token =
+          ( pos,
+            Duration
+              (Result.get_ok
+                 (Duration.make ~days:0 ~hours:0 ~minutes:0 ~seconds)) )
+        in
+        aux (token :: acc) rest
+      | [] -> Ok (List.rev acc)
+      | token :: rest -> aux (token :: acc) rest
+    in
+    aux [] l
+
   let process_tokens (e : ast) : (ast, string) Result.t =
     let rec aux e =
       match e with
       | Tokens l -> (
           match recognize_hms l with
           | Error msg -> Error msg
-          | Ok l ->
-            let l =
-              l |> group_nats |> group_weekdays |> group_months |> group_hms
-            in
-            Ok (Tokens l) )
+          | Ok l -> (
+              match recognize_duration l with
+              | Error msg -> Error msg
+              | Ok l ->
+                let l =
+                  l
+                  |> group_nats
+                  |> group_weekdays
+                  |> group_months
+                  |> group_hms
+                in
+                Ok (Tokens l) ) )
       | Binary_op (op, e1, e2) -> (
           match aux e1 with
           | Error msg -> Error msg
@@ -423,7 +478,7 @@ let pattern ?(years = []) ?(months = []) ?pos_month_days ?(month_days = [])
         (Time.pattern ~years ~months ~month_days ~weekdays ~hours:[ hms.hour ]
            ~minutes:[ hms.minute ] ~seconds:[ hms.second ] ())
 
-let rules : (token list -> (Time.t, string option) Result.t) list =
+let time_t_rules : (token list -> (Time.t, string option) Result.t) list =
   [
     (function [ (_, Star) ] -> Ok Time.any | _ -> Error None);
     (function
@@ -486,7 +541,7 @@ let time_t_of_tokens (tokens : token list) : (Time.t, string) Result.t =
         | Error None -> aux tokens rest
         | Error (Some msg) -> Error msg )
   in
-  aux tokens rules
+  aux tokens time_t_rules
 
 let time_t_of_ast (ast : ast) : (Time.t, string) Result.t =
   let rec aux ast =
@@ -509,6 +564,11 @@ let time_t_of_ast (ast : ast) : (Time.t, string) Result.t =
   in
   aux ast
 
+let duration_t_of_ast (ast : ast) : (Duration.t, string) Result.t =
+  match ast with
+  | Tokens [ (_, Duration duration) ] -> Ok duration
+  | _ -> Error "Unrecognized pattern"
+
 let parse s =
   match parse_into_ast s with
   | Error msg -> Error msg
@@ -516,3 +576,11 @@ let parse s =
       match Ast_normalize.normalize ast with
       | Error msg -> Error msg
       | Ok ast -> time_t_of_ast ast )
+
+let parse_duration s =
+  match parse_into_ast s with
+  | Error msg -> Error msg
+  | Ok ast -> (
+      match Ast_normalize.normalize ast with
+      | Error msg -> Error msg
+      | Ok ast -> duration_t_of_ast ast )

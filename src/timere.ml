@@ -22,3 +22,5 @@ end
 let resolve = Resolver.resolve
 
 let parse = Parser.parse
+
+let parse_duration = Parser.parse_duration
