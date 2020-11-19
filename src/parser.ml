@@ -131,10 +131,12 @@ let token_p : (token, unit) MParser.t =
       attempt (string "h") >>$ Hours;
       attempt (string "minutes") >>$ Minutes;
       attempt (string "minute") >>$ Minutes;
+      attempt (string "mins") >>$ Minutes;
       attempt (string "min") >>$ Minutes;
       attempt (string "m") >>$ Minutes;
       attempt (string "seconds") >>$ Seconds;
       attempt (string "second") >>$ Seconds;
+      attempt (string "secs") >>$ Seconds;
       attempt (string "sec") >>$ Seconds;
       attempt (string "s") >>$ Seconds;
       ( attempt
