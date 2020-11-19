@@ -1,2 +1,2 @@
 # timere
-Time reasoning/regex-ish library in OCaml
+Time reasoning library in OCaml with NLP-style parsing
