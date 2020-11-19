@@ -20,11 +20,3 @@ module Infix = struct
 end
 
 let resolve = Resolver.resolve
-
-module Parse = struct
-  let timere = Parser.parse
-
-  let date_time = Parser.parse_date_time
-
-  let duration = Parser.parse_duration
-end

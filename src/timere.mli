@@ -6,7 +6,6 @@ type 'a range =
   [ `Range_inc of 'a * 'a
   | `Range_exc of 'a * 'a
   ]
-
 type t
 
 val any : t
@@ -226,11 +225,136 @@ end
 val resolve :
   ?search_using_tz_offset_s:tz_offset_s -> t -> (interval Seq.t, string) result
 
-module Parse : sig
-  val timere : string -> (t, string) result
+(** {1 Low-level range handling}*)
+module Range : sig
+  exception Modulo_is_invalid
 
-  val date_time :
-    ?tz_offset_s:tz_offset_s -> string -> (Date_time.t, string) result
+  exception Range_is_invalid
 
-  val duration : string -> (Duration.t, string) result
+  module type B = sig
+    type t
+
+    val modulo : int64 option
+
+    val to_int64 : t -> int64
+
+    val of_int64 : int64 -> t
+  end
+
+  module type S = sig
+    type t
+
+    val int64_range_of_range : t range -> int64 range
+
+    val int64_inc_range_of_range : t range -> int64 * int64
+
+    val int64_exc_range_of_range : t range -> int64 * int64
+
+    val inc_range_of_range : t range -> t * t
+
+    val exc_range_of_range : t range -> t * t
+
+    val join : t range -> t range -> t range option
+
+    val is_valid : t range -> bool
+
+    module Flatten : sig
+      val flatten_into_seq : t range -> t Seq.t
+
+      val flatten_into_list : t range -> t list
+    end
+  end
+
+  module Make (B : B) : S with type t := B.t
 end
+
+module Range_small : sig
+  module type B = sig
+    type t
+
+    val modulo : int option
+
+    val to_int : t -> int
+
+    val of_int : int -> t
+  end
+
+  module type S = sig
+    type t
+
+    val int_range_of_range : t range -> int range
+
+    val int_exc_range_of_range : t range -> int * int
+
+    val inc_range_of_range : t range -> t * t
+
+    val exc_range_of_range : t range -> t * t
+
+    val join : t range -> t range -> t range option
+
+    module Flatten : sig
+      val flatten_into_seq : t range -> t Seq.t
+
+      val flatten_into_list : t range -> t list
+    end
+  end
+
+  module Make (B : B) : S with type t := B.t
+end
+
+module Ranges : sig
+  module type S = sig
+    type t
+
+    val normalize :
+      ?skip_filter_invalid:bool ->
+      ?skip_filter_empty:bool ->
+      ?skip_sort:bool ->
+      t range Seq.t ->
+      t range Seq.t
+
+    module Check : sig
+      val seq_is_valid : t range Seq.t -> bool
+
+      val list_is_valid : t range list -> bool
+    end
+
+    module Flatten : sig
+      val flatten : t range Seq.t -> t Seq.t
+
+      val flatten_list : t range list -> t list
+    end
+
+    module Of_seq : sig
+      val range_seq_of_seq : t Seq.t -> t range Seq.t
+
+      val range_list_of_seq : t Seq.t -> t range list
+    end
+
+    module Of_list : sig
+      val range_seq_of_list : t list -> t range Seq.t
+
+      val range_list_of_list : t list -> t range list
+    end
+  end
+
+  module Make (B : Range.B) : S with type t := B.t
+end
+
+module Ranges_small : sig
+  module Make (B : Range_small.B) : Ranges.S with type t := B.t
+end
+
+module Second_ranges : Ranges.S with type t := int
+
+module Minute_ranges : Ranges.S with type t := int
+
+module Hour_ranges : Ranges.S with type t := int
+
+module Weekday_ranges : Ranges.S with type t := weekday
+
+module Month_day_ranges : Ranges.S with type t := int
+
+module Month_ranges : Ranges.S with type t := month
+
+module Year_ranges : Ranges.S with type t := int

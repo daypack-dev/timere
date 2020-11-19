@@ -25,14 +25,14 @@ type guess =
   | Minutes
   | Seconds
   | Nat of int
-  | Nats of int Time.Range.range list
-  | Hms of Time.hms
-  | Hmss of Time.hms Time.Range.range list
-  | Weekday of Time.weekday
-  | Weekdays of Time.weekday Time.Range.range list
-  | Month of Time.month
-  | Months of Time.month Time.Range.range list
-  | Duration of Duration.t
+  | Nats of int Timere.range list
+  | Hms of Timere.hms
+  | Hmss of Timere.hms Timere.range list
+  | Weekday of Timere.weekday
+  | Weekdays of Timere.weekday Timere.range list
+  | Month of Timere.month
+  | Months of Timere.month Timere.range list
+  | Duration of Timere.Duration.t
 
 type token = (int * int * int) * guess
 
@@ -45,7 +45,7 @@ type ast =
   | Binary_op of binary_op * ast * ast
   | Round_robin_pick of ast list
 
-let weekdays : (string * Time.weekday) list =
+let weekdays : (string * Timere.weekday) list =
   [
     ("sunday", `Sun);
     ("monday", `Mon);
@@ -56,7 +56,7 @@ let weekdays : (string * Time.weekday) list =
     ("saturday", `Sat);
   ]
 
-let months : (string * Time.month) list =
+let months : (string * Timere.month) list =
   [
     ("january", `Jan);
     ("february", `Feb);
@@ -72,17 +72,17 @@ let months : (string * Time.month) list =
     ("december", `Dec);
   ]
 
-let parse_weekday (s : string) : (Time.weekday, unit) Result.t =
+let parse_weekday (s : string) : (Timere.weekday, unit) Result.t =
   match Misc_utils.prefix_string_match weekdays s with
   | [ (_, x) ] -> Ok x
   | _ -> Error ()
 
-let parse_month (s : string) : (Time.month, unit) Result.t =
+let parse_month (s : string) : (Timere.month, unit) Result.t =
   match Misc_utils.prefix_string_match months s with
   | [ (_, x) ] -> Ok x
   | _ -> Error ()
 
-let weekday_p : (Time.weekday, unit) t =
+let weekday_p : (Timere.weekday, unit) t =
   alpha_string
   >>= fun x ->
   if String.length x < 3 then fail (Printf.sprintf "String too short")
@@ -91,7 +91,7 @@ let weekday_p : (Time.weekday, unit) t =
     | Ok x -> return x
     | Error _ -> fail (Printf.sprintf "Failed to interpret weekday string")
 
-let month_p : (Time.month, unit) t =
+let month_p : (Timere.month, unit) t =
   alpha_string
   >>= fun x ->
   if String.length x < 3 then fail (Printf.sprintf "String too short")
@@ -144,7 +144,7 @@ let token_p : (token, unit) MParser.t =
       attempt (string "sec") >>$ Seconds;
       attempt (string "s") >>$ Seconds;
       ( attempt
-          (many1_satisfy (fun c -> c <> ' ' && not (String.contains symbols c)))
+          (many1_satisfy (fun c -> c <> ' ' && Stdlib.not (String.contains symbols c)))
         >>= fun s ->
         fail (Printf.sprintf "%s: Unrecognized token: %s" (string_of_pos pos) s)
       );
@@ -177,8 +177,8 @@ let expr =
 
 module Ast_normalize = struct
   let group (type a) ~(extract_single : guess -> a option)
-      ~(extract_grouped : guess -> a Time.Range.range list option)
-      ~(constr_grouped : a Time.Range.range list -> guess) (l : token list) :
+      ~(extract_grouped : guess -> a Timere.range list option)
+      ~(constr_grouped : a Timere.range list -> guess) (l : token list) :
     token list =
     let rec recognize_single_interval tokens : token list =
       match tokens with
@@ -360,7 +360,7 @@ module Ast_normalize = struct
       ( Option.get pos,
         Duration
           (Result.get_ok
-             (Duration.make
+             (Timere.Duration.make
                 ~days:(Option.value ~default:0 days)
                 ~hours:(Option.value ~default:0 hours)
                 ~minutes:(Option.value ~default:0 minutes)
@@ -392,7 +392,7 @@ module Ast_normalize = struct
           ( Option.value ~default:pos_seconds pos,
             Duration
               (Result.get_ok
-                 (Duration.make
+                 (Timere.Duration.make
                     ~days:(Option.value ~default:0 days)
                     ~hours:(Option.value ~default:0 hours)
                     ~minutes:(Option.value ~default:0 minutes)
@@ -491,13 +491,13 @@ let parse_into_ast (s : string) : (ast, string) Result.t =
     s ()
   |> result_of_mparser_result
 
-let flatten_months pos (l : Time.month Time.Range.range list) =
-  try Ok (Time.Month_ranges.Flatten.flatten_list l)
-  with Time.Range.Range_is_invalid ->
+let flatten_months pos (l : Timere.month Timere.range list) =
+  try Ok (Timere.Month_ranges.Flatten.flatten_list l)
+  with Timere.Range.Range_is_invalid ->
     Error (Some (Printf.sprintf "%s: Invalid month ranges" (string_of_pos pos)))
 
 let pattern ?(years = []) ?(months = []) ?pos_month_days ?(month_days = [])
-    ?(weekdays = []) ?(hms : Time.hms option) () =
+    ?(weekdays = []) ?(hms : Timere.hms option) () =
   if not (List.for_all (fun x -> 1 <= x && x <= 31) month_days) then
     Error
       (Some
@@ -505,18 +505,18 @@ let pattern ?(years = []) ?(months = []) ?pos_month_days ?(month_days = [])
             (string_of_pos @@ Option.get @@ pos_month_days)))
   else
     match hms with
-    | None -> Ok (Time.pattern ~years ~months ~month_days ~weekdays ())
+    | None -> Ok (Timere.pattern ~years ~months ~month_days ~weekdays ())
     | Some hms ->
       Ok
-        (Time.pattern ~years ~months ~month_days ~weekdays ~hours:[ hms.hour ]
+        (Timere.pattern ~years ~months ~month_days ~weekdays ~hours:[ hms.hour ]
            ~minutes:[ hms.minute ] ~seconds:[ hms.second ] ())
 
-let time_t_rules : (token list -> (Time.t, string option) Result.t) list =
+let t_rules : (token list -> (Timere.t, string option) Result.t) list =
   [
-    (function [ (_, Star) ] -> Ok Time.any | _ -> Error None);
+    (function [ (_, Star) ] -> Ok Timere.any | _ -> Error None);
     (function
       | [ (pos, Months l) ] ->
-        flatten_months pos l |> Result.map (fun l -> Time.months l)
+        flatten_months pos l |> Result.map (fun l -> Timere.months l)
       | _ -> Error None);
     (function
       | [ (_, Nat year); (_, Month month); (pos_month_days, Nat day) ]
@@ -561,7 +561,7 @@ let time_t_rules : (token list -> (Time.t, string option) Result.t) list =
       | _ -> Error None);
   ]
 
-let time_t_of_tokens (tokens : token list) : (Time.t, string) Result.t =
+let t_of_tokens (tokens : token list) : (Timere.t, string) Result.t =
   let rec aux tokens rules =
     match rules with
     | [] ->
@@ -574,12 +574,12 @@ let time_t_of_tokens (tokens : token list) : (Time.t, string) Result.t =
         | Error None -> aux tokens rest
         | Error (Some msg) -> Error msg )
   in
-  aux tokens time_t_rules
+  aux tokens t_rules
 
-let time_t_of_ast (ast : ast) : (Time.t, string) Result.t =
+let t_of_ast (ast : ast) : (Timere.t, string) Result.t =
   let rec aux ast =
     match ast with
-    | Tokens tokens -> time_t_of_tokens tokens
+    | Tokens tokens -> t_of_tokens tokens
     | Binary_op (op, ast1, ast2) -> (
         match aux ast1 with
         | Error msg -> Error msg
@@ -588,34 +588,34 @@ let time_t_of_ast (ast : ast) : (Time.t, string) Result.t =
             | Error msg -> Error msg
             | Ok time2 -> (
                 match op with
-                | Union -> Ok (Time.union time1 time2)
-                | Inter -> Ok (Time.inter time1 time2) ) ) )
+                | Union -> Ok (Timere.union time1 time2)
+                | Inter -> Ok (Timere.inter time1 time2) ) ) )
     | Round_robin_pick l -> (
         match l |> List.map aux |> Misc_utils.get_ok_error_list with
         | Error msg -> Error msg
-        | Ok l -> Ok (Time.round_robin_pick l) )
+        | Ok l -> Ok (Timere.round_robin_pick l) )
   in
   aux ast
 
-let parse s =
+let parse_timere s =
   match parse_into_ast s with
   | Error msg -> Error msg
   | Ok ast -> (
       match Ast_normalize.normalize ast with
       | Error msg -> Error msg
-      | Ok ast -> time_t_of_ast ast )
+      | Ok ast -> t_of_ast ast )
 
 let date_time_t_of_ast ~tz_offset_s (ast : ast) :
-  (Time.Date_time.t, string) Result.t =
+  (Timere.Date_time.t, string) Result.t =
   match ast with
   | Tokens [ (_, Nat year); (_, Month month); (_, Nat day); (_, Hms hms) ]
     when year > 31 ->
-    Time.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
+    Timere.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
       ~second:hms.second ~tz_offset_s
     |> Result.map_error (fun () -> "Invalid date time")
   | Tokens [ (_, Nat day); (_, Month month); (_, Nat year); (_, Hms hms) ]
     when year > 31 ->
-    Time.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
+    Timere.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
       ~second:hms.second ~tz_offset_s
     |> Result.map_error (fun () -> "Invalid date time")
   | Tokens
@@ -625,7 +625,7 @@ let date_time_t_of_ast ~tz_offset_s (ast : ast) :
   | Tokens
       [ (_, Nat year); (_, Month month); (_, Nat day); (_, Rd); (_, Hms hms) ]
     ->
-    Time.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
+    Timere.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
       ~second:hms.second ~tz_offset_s
     |> Result.map_error (fun () -> "Invalid date time")
   | _ -> Error "Unrecognized pattern"
@@ -638,7 +638,7 @@ let parse_date_time ?(tz_offset_s = 0) s =
       | Error msg -> Error msg
       | Ok ast -> date_time_t_of_ast ~tz_offset_s ast )
 
-let duration_t_of_ast (ast : ast) : (Duration.t, string) Result.t =
+let duration_t_of_ast (ast : ast) : (Timere.Duration.t, string) Result.t =
   match ast with
   | Tokens [ (_, Duration duration) ] -> Ok duration
   | _ -> Error "Unrecognized pattern"

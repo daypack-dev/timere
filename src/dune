@@ -5,7 +5,6 @@
  (libraries unix
             ptime
             oseq
-            mparser
             re
  )
 )
