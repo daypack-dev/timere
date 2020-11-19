@@ -345,11 +345,20 @@ module Ast_normalize = struct
       l
 
   let recognize_duration (l : token list) : (token list, string) Result.t =
+    let make_duration ~pos ~days ~hours ~minutes ~seconds =
+      ( Option.get pos,
+        Duration
+          (Result.get_ok
+             (Duration.make
+                ~days:(Option.value ~default:0 days)
+                ~hours:(Option.value ~default:0 hours)
+                ~minutes:(Option.value ~default:0 minutes)
+                ~seconds)) )
+    in
     let rec aux_start_with_days acc l =
       match l with
       | (pos, Nat days) :: (_, Days) :: rest ->
         aux_start_with_hours ~pos:(Some pos) ~days:(Some days) acc rest
-      | [] -> List.rev acc
       | _ -> aux_start_with_hours ~pos:None ~days:None acc l
     and aux_start_with_hours ~pos ~days acc l =
       match l with
@@ -379,24 +388,28 @@ module Ast_normalize = struct
                     ~seconds)) )
         in
         aux_start_with_days (token :: acc) rest
-      | _ ->
+      | [] ->
         if
           Option.is_some days
           || Option.is_some hours
           || Option.is_some minutes
         then
-          let token =
-            ( Option.get pos,
-              Duration
-                (Result.get_ok
-                   (Duration.make
-                      ~days:(Option.value ~default:0 days)
-                      ~hours:(Option.value ~default:0 hours)
-                      ~minutes:(Option.value ~default:0 minutes)
-                      ~seconds:0)) )
+          let new_token =
+            make_duration ~pos ~days ~hours ~minutes ~seconds:0
           in
-          aux_start_with_days (token :: acc) l
-        else aux_start_with_days acc l
+          List.rev (new_token :: acc)
+        else List.rev acc
+      | token :: rest ->
+        if
+          Option.is_some days
+          || Option.is_some hours
+          || Option.is_some minutes
+        then
+          let new_token =
+            make_duration ~pos ~days ~hours ~minutes ~seconds:0
+          in
+          aux_start_with_days (token :: new_token :: acc) rest
+        else aux_start_with_days (token :: acc) rest
     in
     Ok (aux_start_with_days [] l)
 
