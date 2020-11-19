@@ -21,8 +21,10 @@ end
 
 let resolve = Resolver.resolve
 
-let parse = Parser.parse
+module Parse = struct
+  let timere = Parser.parse
 
-let parse_date_time = Parser.parse_date_time
+  let date_time = Parser.parse_date_time
 
-let parse_duration = Parser.parse_duration
+  let duration = Parser.parse_duration
+end

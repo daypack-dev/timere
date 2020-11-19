@@ -226,9 +226,11 @@ end
 val resolve :
   ?search_using_tz_offset_s:tz_offset_s -> t -> (interval Seq.t, string) result
 
-val parse : string -> (t, string) result
+module Parse : sig
+  val timere : string -> (t, string) result
 
-val parse_date_time :
-  ?tz_offset_s:tz_offset_s -> string -> (Date_time.t, string) result
+  val date_time :
+    ?tz_offset_s:tz_offset_s -> string -> (Date_time.t, string) result
 
-val parse_duration : string -> (Duration.t, string) result
+  val duration : string -> (Duration.t, string) result
+end
