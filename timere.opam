@@ -1,8 +1,9 @@
 opam-version: "2.0"
-synopsis: "Time reasoning/regex-ish library in OCaml"
+synopsis: "Time reasoning library in OCaml"
 description: """
-Timere provides natural language parsing of time expression (in English), and facilities
-for reasoning over time spans, e.g. union, intersect, relative complement
+Timere provides facilities for reasoning over time intervals, e.g. union, intersect, relative complement
+
+See Timere-parse for the natural language parsing component
 """
 maintainer: "Darren Ldl <darrenldldev@gmail.com>"
 authors: "Daypack developers"
@@ -14,7 +15,7 @@ depends: [
   "ocaml" {>= "4.08.0"}
   "dune" {>= "1.11.0"}
   "oseq"
-  "ptime"
+  "timere"
   "mparser"
 ]
 build: [

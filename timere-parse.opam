@@ -1,7 +1,6 @@
 opam-version: "2.0"
-synopsis: "Timere NLP style parsing component"
+synopsis: "Timere natural language parsing component"
 description: """
-Timere-parse provides natural language parsing of time expression (in English) for Timere
 """
 maintainer: "Darren Ldl <darrenldldev@gmail.com>"
 authors: "Daypack developers"
