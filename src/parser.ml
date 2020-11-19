@@ -618,11 +618,14 @@ let date_time_t_of_ast ~tz_offset_s (ast : ast) :
     Time.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
       ~second:hms.second ~tz_offset_s
     |> Result.map_error (fun () -> "Invalid date time")
-  | Tokens [ (_, Nat year); (_, Month month); (_, Nat day); (_, St); (_, Hms hms) ]
-  | Tokens [ (_, Nat year); (_, Month month); (_, Nat day); (_, Nd); (_, Hms hms) ]
-  | Tokens [ (_, Nat year); (_, Month month); (_, Nat day); (_, Rd); (_, Hms hms) ]
+  | Tokens
+      [ (_, Nat year); (_, Month month); (_, Nat day); (_, St); (_, Hms hms) ]
+  | Tokens
+      [ (_, Nat year); (_, Month month); (_, Nat day); (_, Nd); (_, Hms hms) ]
+  | Tokens
+      [ (_, Nat year); (_, Month month); (_, Nat day); (_, Rd); (_, Hms hms) ]
     ->
-      Time.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
+    Time.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
       ~second:hms.second ~tz_offset_s
     |> Result.map_error (fun () -> "Invalid date time")
   | _ -> Error "Unrecognized pattern"
