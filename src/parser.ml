@@ -85,16 +85,20 @@ let parse_month (s : string) : (Time.month, unit) Result.t =
 let weekday_p : (Time.weekday, unit) t =
   alpha_string
   >>= fun x ->
-  match parse_weekday x with
-  | Ok x -> return x
-  | Error _ -> fail (Printf.sprintf "Failed to interpret weekday string")
+  if String.length x < 3 then fail (Printf.sprintf "String too short")
+  else
+    match parse_weekday x with
+    | Ok x -> return x
+    | Error _ -> fail (Printf.sprintf "Failed to interpret weekday string")
 
 let month_p : (Time.month, unit) t =
   alpha_string
   >>= fun x ->
-  match parse_month x with
-  | Ok x -> return x
-  | Error _ -> fail (Printf.sprintf "Failed to interpret month string: %s" x)
+  if String.length x < 3 then fail (Printf.sprintf "String too short")
+  else
+    match parse_month x with
+    | Ok x -> return x
+    | Error _ -> fail (Printf.sprintf "Failed to interpret month string: %s" x)
 
 let symbols = "()[]&|>"
 
