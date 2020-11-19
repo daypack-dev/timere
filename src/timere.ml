@@ -20,3 +20,8 @@ module Infix = struct
 end
 
 let resolve = Resolver.resolve
+
+module Utils = struct
+  let flatten_month_ranges (months : month range Seq.t) : (month Seq.t, unit) Result.t =
+    Month_ranges.Flatten.flatten
+end
