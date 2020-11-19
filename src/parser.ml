@@ -19,6 +19,12 @@ type guess =
   | Nd
   | Rd
   | Th
+  | Hour
+  | Hours
+  | Minute
+  | Minutes
+  | Second
+  | Seconds
   | Nat of int
   | Nats of int Time.Range.range list
   | Hms of Time.hms
@@ -27,6 +33,7 @@ type guess =
   | Weekdays of Time.weekday Time.Range.range list
   | Month of Time.month
   | Months of Time.month Time.Range.range list
+  | Duration of Duration.t
 
 type token = (int * int * int) * guess
 
@@ -116,6 +123,12 @@ let token_p : (token, unit) MParser.t =
       attempt (string "nd") >>$ Nd;
       attempt (string "rd") >>$ Rd;
       attempt (string "th") >>$ Th;
+      attempt (string "hours") >>$ Hour;
+      attempt (string "hour") >>$ Hour;
+      attempt (string "minutes") >>$ Minutes;
+      attempt (string "minute") >>$ Minute;
+      attempt (string "seconds") >>$ Seconds;
+      attempt (string "second") >>$ Second;
       (attempt nat_zero |>> fun x -> Nat x);
       (attempt weekday_p |>> fun x -> Weekday x);
       (attempt month_p |>> fun x -> Month x);
@@ -396,32 +409,19 @@ let flatten_months pos (l : Time.month Time.Range.range list) =
     Error (Some (Printf.sprintf "%s: Invalid month ranges" (string_of_pos pos)))
 
 let pattern ?(years = []) ?(months = []) ?pos_month_days ?(month_days = [])
-    ?(weekdays = []) ?pos_hours ?(hours = []) ?pos_minutes ?(minutes = [])
-    ?pos_seconds ?(seconds = []) () =
+    ?(weekdays = []) ?(hms : Time.hms option) () =
   if not (List.for_all (fun x -> 1 <= x && x <= 31) month_days) then
     Error
       (Some
          (Printf.sprintf "%s: Invalid month days"
             (string_of_pos @@ Option.get @@ pos_month_days)))
-  else if not (List.for_all (fun x -> 0 <= x && x < 24) hours) then
-    Error
-      (Some
-         (Printf.sprintf "%s: Invalid hours"
-            (string_of_pos @@ Option.get @@ pos_hours)))
-  else if not (List.for_all (fun x -> 0 <= x && x < 60) minutes) then
-    Error
-      (Some
-         (Printf.sprintf "%s: Invalid minutes"
-            (string_of_pos @@ Option.get @@ pos_minutes)))
-  else if not (List.for_all (fun x -> 0 <= x && x < 60) seconds) then
-    Error
-      (Some
-         (Printf.sprintf "%s: Invalid seconds"
-            (string_of_pos @@ Option.get @@ pos_seconds)))
   else
-    Ok
-      (Time.pattern ~years ~months ~month_days ~weekdays ~hours ~minutes
-         ~seconds ())
+    match hms with
+    | None -> Ok (Time.pattern ~years ~months ~month_days ~weekdays ())
+    | Some hms ->
+      Ok
+        (Time.pattern ~years ~months ~month_days ~weekdays ~hours:[ hms.hour ]
+           ~minutes:[ hms.minute ] ~seconds:[ hms.second ] ())
 
 let rules : (token list -> (Time.t, string option) Result.t) list =
   [
@@ -466,51 +466,10 @@ let rules : (token list -> (Time.t, string option) Result.t) list =
       | _ -> Error None);
     (function
       | [
-        (_, Nat year);
-        (_, Month month);
-        (pos_month_days, Nat day);
-        (pos_hours, Nat hour);
-        (_, Pm);
-      ]
-      | [
-        (pos_hours, Nat hour);
-        (_, Pm);
-        (pos_month_days, Nat day);
-        (_, Month month);
-        (_, Nat year);
+        (_, Nat year); (_, Month month); (pos_month_days, Nat day); (_, Hms hms);
       ] ->
-        if 1 <= hour && hour <= 12 then
-          let hour = (hour mod 12) + 12 in
-          pattern ~years:[ year ] ~months:[ month ] ~pos_month_days
-            ~month_days:[ day ] ~pos_hours ~hours:[ hour ] ()
-        else
-          Error
-            (Some
-               (Printf.sprintf "%s: Hour out of range: %d"
-                  (string_of_pos pos_hours) hour))
-      | [
-        (_, Nat year);
-        (_, Month month);
-        (_, Nat day);
-        (pos_hours, Nat hour);
-        (_, Am);
-      ]
-      | [
-        (pos_hours, Nat hour);
-        (_, Am);
-        (_, Nat day);
-        (_, Month month);
-        (_, Nat year);
-      ] ->
-        if 1 <= hour && hour <= 12 then
-          let hour = hour mod 12 in
-          pattern ~years:[ year ] ~months:[ month ] ~month_days:[ day ]
-            ~pos_hours ~hours:[ hour ] ()
-        else
-          Error
-            (Some
-               (Printf.sprintf "%s: Hour out of range: %d"
-                  (string_of_pos pos_hours) hour))
+        pattern ~years:[ year ] ~months:[ month ] ~pos_month_days
+          ~month_days:[ day ] ~hms ()
       | _ -> Error None);
   ]
 
