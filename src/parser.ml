@@ -123,15 +123,20 @@ let token_p : (token, unit) MParser.t =
       attempt (string "nd") >>$ Nd;
       attempt (string "rd") >>$ Rd;
       attempt (string "th") >>$ Th;
-      attempt (string "hours") >>$ Hours;
-      attempt (string "hour") >>$ Hours;
-      attempt (string "minutes") >>$ Minutes;
-      attempt (string "minute") >>$ Minutes;
-      attempt (string "seconds") >>$ Seconds;
-      attempt (string "second") >>$ Seconds;
       (attempt nat_zero |>> fun x -> Nat x);
       (attempt weekday_p |>> fun x -> Weekday x);
       (attempt month_p |>> fun x -> Month x);
+      attempt (string "hours") >>$ Hours;
+      attempt (string "hour") >>$ Hours;
+      attempt (string "h") >>$ Hours;
+      attempt (string "minutes") >>$ Minutes;
+      attempt (string "minute") >>$ Minutes;
+      attempt (string "min") >>$ Minutes;
+      attempt (string "m") >>$ Minutes;
+      attempt (string "seconds") >>$ Seconds;
+      attempt (string "second") >>$ Seconds;
+      attempt (string "sec") >>$ Seconds;
+      attempt (string "s") >>$ Seconds;
       ( attempt
           (many1_satisfy (fun c -> c <> ' ' && not (String.contains symbols c)))
         >>= fun s ->
