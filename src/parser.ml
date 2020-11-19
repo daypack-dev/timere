@@ -9,6 +9,7 @@ type guess =
   | Star
   | Not
   | Outside
+  | For
   | Of
   | In
   | To
@@ -109,6 +110,7 @@ let token_p : (token, unit) MParser.t =
       attempt (char '*') >>$ Star;
       attempt (string "not") >>$ Not;
       attempt (string "outside") >>$ Outside;
+      attempt (string "for") >>$ For;
       attempt (string "of") >>$ Of;
       attempt (string "in") >>$ In;
       attempt (string "to") >>$ To;
@@ -130,7 +132,8 @@ let token_p : (token, unit) MParser.t =
       (attempt nat_zero |>> fun x -> Nat x);
       (attempt weekday_p |>> fun x -> Weekday x);
       (attempt month_p |>> fun x -> Month x);
-      ( attempt (many1_satisfy (fun c -> c <> ' ' && not (String.contains symbols c)))
+      ( attempt
+          (many1_satisfy (fun c -> c <> ' ' && not (String.contains symbols c)))
         >>= fun s ->
         fail (Printf.sprintf "%s: Unrecognized token: %s" (string_of_pos pos) s)
       );
@@ -342,54 +345,60 @@ module Ast_normalize = struct
       l
 
   let recognize_duration (l : token list) : (token list, string) Result.t =
-    let rec aux acc l =
+    let rec aux_start_with_days acc l =
       match l with
-      | (pos, Nat days)
-        :: (_, Days)
-        :: (_, Nat hours)
-        :: (_, Hours)
-        :: (_, Nat minutes)
-        :: (_, Minutes) :: (_, Nat seconds) :: (_, Seconds) :: rest
-        ->
+      | (pos, Nat days) :: (_, Days) :: rest ->
+        aux_start_with_hours ~pos:(Some pos) ~days:(Some days) acc rest
+      | [] -> List.rev acc
+      | _ -> aux_start_with_hours ~pos:None ~days:None acc l
+    and aux_start_with_hours ~pos ~days acc l =
+      match l with
+      | (pos_hours, Nat hours) :: (_, Hours) :: rest ->
+        aux_start_with_minutes
+          ~pos:(Some (Option.value ~default:pos_hours pos))
+          ~days ~hours:(Some hours) acc rest
+      | _ -> aux_start_with_minutes ~pos ~days ~hours:None acc l
+    and aux_start_with_minutes ~pos ~days ~hours acc l =
+      match l with
+      | (pos_minutes, Nat minutes) :: (_, Minutes) :: rest ->
+        aux_start_with_seconds
+          ~pos:(Some (Option.value ~default:pos_minutes pos))
+          ~days ~hours ~minutes:(Some minutes) acc rest
+      | _ -> aux_start_with_seconds ~pos ~days ~hours ~minutes:None acc l
+    and aux_start_with_seconds ~pos ~days ~hours ~minutes acc l =
+      match l with
+      | (pos_seconds, Nat seconds) :: (_, Seconds) :: rest ->
         let token =
-          ( pos,
-            Duration
-              (Result.get_ok (Duration.make ~days ~hours ~minutes ~seconds))
-          )
-        in
-        aux (token :: acc) rest
-      | (pos, Nat hours)
-        :: (_, Hours)
-        :: (_, Nat minutes)
-        :: (_, Minutes) :: (_, Nat seconds) :: (_, Seconds) :: rest ->
-        let token =
-          ( pos,
-            Duration
-              (Result.get_ok (Duration.make ~days:0 ~hours ~minutes ~seconds))
-          )
-        in
-        aux (token :: acc) rest
-      | (pos, Nat minutes)
-        :: (_, Minutes) :: (_, Nat seconds) :: (_, Seconds) :: rest ->
-        let token =
-          ( pos,
+          ( Option.value ~default:pos_seconds pos,
             Duration
               (Result.get_ok
-                 (Duration.make ~days:0 ~hours:0 ~minutes ~seconds)) )
+                 (Duration.make
+                    ~days:(Option.value ~default:0 days)
+                    ~hours:(Option.value ~default:0 hours)
+                    ~minutes:(Option.value ~default:0 minutes)
+                    ~seconds)) )
         in
-        aux (token :: acc) rest
-      | (pos, Nat seconds) :: (_, Seconds) :: rest ->
-        let token =
-          ( pos,
-            Duration
-              (Result.get_ok
-                 (Duration.make ~days:0 ~hours:0 ~minutes:0 ~seconds)) )
-        in
-        aux (token :: acc) rest
-      | [] -> Ok (List.rev acc)
-      | token :: rest -> aux (token :: acc) rest
+        aux_start_with_days (token :: acc) rest
+      | _ ->
+        if
+          Option.is_some days
+          || Option.is_some hours
+          || Option.is_some minutes
+        then
+          let token =
+            ( Option.get pos,
+              Duration
+                (Result.get_ok
+                   (Duration.make
+                      ~days:(Option.value ~default:0 days)
+                      ~hours:(Option.value ~default:0 hours)
+                      ~minutes:(Option.value ~default:0 minutes)
+                      ~seconds:0)) )
+          in
+          aux_start_with_days (token :: acc) l
+        else aux_start_with_days acc l
     in
-    aux [] l
+    Ok (aux_start_with_days [] l)
 
   let process_tokens (e : ast) : (ast, string) Result.t =
     let rec aux e =
