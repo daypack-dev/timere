@@ -132,6 +132,8 @@ module Date_time : sig
 
   val max : t
 
+  val cur : tz_offset_s_of_date_time:tz_offset_s option -> (t, unit) result
+
   val sprintf : string -> t -> (string, string) result
 
   val pp : string -> Format.formatter -> t -> unit

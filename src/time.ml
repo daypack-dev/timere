@@ -1444,6 +1444,8 @@ module Year_ranges = Ranges_small.Make (struct
     let of_int x = x
   end)
 
+let cur_timestamp () : int64 = Unix.time () |> Int64.of_float
+
 module Date_time = struct
   type t = {
     year : int;
@@ -1493,6 +1495,9 @@ module Date_time = struct
 
   let max =
     Ptime.max |> Ptime.to_date_time |> of_ptime_date_time |> Result.get_ok
+
+  let cur ~tz_offset_s_of_date_time : (t, unit) result =
+    cur_timestamp () |> of_timestamp ~tz_offset_s_of_date_time
 
   let compare (x : t) (y : t) : int =
     match compare x.year y.year with
@@ -1550,11 +1555,6 @@ module Date_time_set = Set.Make (struct
   end)
 
 module Current = struct
-  let cur_timestamp () : int64 = Unix.time () |> Int64.of_float
-
-  let cur_date_time ~tz_offset_s_of_date_time : (Date_time.t, unit) result =
-    cur_timestamp () |> Date_time.of_timestamp ~tz_offset_s_of_date_time
-
   let cur_tm_local () : Unix.tm = Unix.time () |> Unix.localtime
 
   let cur_tm_utc () : Unix.tm = Unix.time () |> Unix.gmtime
