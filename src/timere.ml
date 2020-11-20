@@ -29,9 +29,9 @@ module Infix = struct
 
   let ( --^ ) = Time.interval_exc
 
-  let ( --* ) = Time.intervals_inc
-
-  let ( --*^ ) = Time.intervals_exc
+  (* let ( --* ) = Time.intervals_inc
+   * 
+   * let ( --*^ ) = Time.intervals_exc *)
 end
 
 let resolve = Resolver.resolve

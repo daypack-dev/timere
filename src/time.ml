@@ -1680,8 +1680,8 @@ type binary_op =
   | Inter
   | Interval_inc
   | Interval_exc
-  | Intervals_inc
-  | Intervals_exc
+  (* | Intervals_inc
+   * | Intervals_exc *)
 
 type branching_days =
   | Month_days of int Range.range list
@@ -1757,11 +1757,11 @@ let interval_inc (a : t) (b : t) : t =
 let interval_exc (a : t) (b : t) : t =
   Binary_op (default_search_space, Interval_exc, a, b)
 
-let intervals_inc (a : t) (b : t) : t =
-  Binary_op (default_search_space, Intervals_inc, a, b)
-
-let intervals_exc (a : t) (b : t) : t =
-  Binary_op (default_search_space, Intervals_exc, a, b)
+(* let intervals_inc (a : t) (b : t) : t =
+ *   Binary_op (default_search_space, Intervals_inc, a, b)
+ * 
+ * let intervals_exc (a : t) (b : t) : t =
+ *   Binary_op (default_search_space, Intervals_exc, a, b) *)
 
 let not (a : t) : t = Unary_op (default_search_space, Not, a)
 
