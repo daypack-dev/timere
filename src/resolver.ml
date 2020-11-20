@@ -843,9 +843,6 @@ let optimize_search_space default_tz_offset_s t =
 
 let time_t_seq_of_branching tz_offset_s (b : Time.branching) : Time.t Seq.t =
   let open Time in
-  let years = b.years |> List.to_seq |> Year_ranges.Flatten.flatten in
-  let months = b.months |> List.to_seq |> Month_ranges.Flatten.flatten in
-  let hmss = b.hmss |> List.to_seq in
   let time_t_seq_of_month_days year month month_days hmss =
     Seq.flat_map
       (fun day ->
@@ -897,6 +894,9 @@ let time_t_seq_of_branching tz_offset_s (b : Time.branching) : Time.t Seq.t =
            hmss)
       month_days
   in
+  let years = b.years |> List.to_seq |> Year_ranges.Flatten.flatten in
+  let months = b.months |> List.to_seq |> Month_ranges.Flatten.flatten in
+  let hmss = b.hmss |> List.to_seq in
   match b.days with
   | Month_days days ->
     let days = days |> List.to_seq |> Month_day_ranges.Flatten.flatten in
