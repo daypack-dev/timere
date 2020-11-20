@@ -1,0 +1,8 @@
+(executable
+   (flags     (-w "+a-4-9-29-37-40-42-44-48-50-32"))
+   (name main)
+   (libraries timere
+      timere-parse
+      ptime.clock.os
+   )
+)
