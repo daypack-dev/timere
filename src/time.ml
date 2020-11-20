@@ -1469,7 +1469,8 @@ module Date_time = struct
   let to_timestamp (x : t) : int64 =
     Ptime.of_date_time (to_ptime_date_time x)
     |> Option.get
-    |> Ptime.to_float_s |> Int64.of_float
+    |> Ptime.to_float_s
+    |> Int64.of_float
 
   let of_timestamp ?(tz_offset_s_of_date_time = 0) (x : int64) :
     (t, unit) result =
@@ -1484,8 +1485,7 @@ module Date_time = struct
     let dt = { year; month; day; hour; minute; second; tz_offset_s } in
     match Ptime.of_date_time (to_ptime_date_time dt) with
     | None -> Error ()
-    | Some _ ->
-      Ok dt
+    | Some _ -> Ok dt
 
   let min =
     Ptime.min |> Ptime.to_date_time |> of_ptime_date_time |> Result.get_ok
@@ -1692,8 +1692,7 @@ type search_space = Interval.t list
 
 let default_search_space_start = Date_time.(to_timestamp min)
 
-let default_search_space_end_exc =
-  Int64.succ @@ Date_time.(to_timestamp max)
+let default_search_space_end_exc = Int64.succ @@ Date_time.(to_timestamp max)
 
 let default_search_space : search_space =
   [ (default_search_space_start, default_search_space_end_exc) ]
@@ -1870,9 +1869,8 @@ let any = pattern ()
 let date_time (date_time : Date_time.t) : t =
   date_time
   |> Date_time.to_timestamp
-  |> (fun x ->
-      Timestamp_interval_seq
-        (default_search_space, Seq.return (x, Int64.succ x)))
+  |> fun x ->
+  Timestamp_interval_seq (default_search_space, Seq.return (x, Int64.succ x))
 
 let of_interval ((start, end_exc) : int64 * int64) : t =
   if Interval.Check.is_valid (start, end_exc) then

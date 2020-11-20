@@ -88,10 +88,6 @@ val union : t -> t -> t
 
 val not : t -> t
 
-val interval_inc : t -> t -> t
-
-val interval_exc : t -> t -> t
-
 val merge : t list -> t
 
 (** {1 Discrete time points} *)
@@ -119,7 +115,7 @@ module Date_time : sig
     tz_offset_s:int ->
     (t, unit) result
 
-  val to_timestamp : t -> (timestamp, unit) result
+  val to_timestamp : t -> timestamp
 
   val of_timestamp :
     ?tz_offset_s_of_date_time:tz_offset_s -> timestamp -> (t, unit) result
@@ -137,7 +133,11 @@ module Date_time : sig
   val pp : string -> Format.formatter -> t -> unit
 end
 
-val of_date_time : Date_time.t -> (t, unit) result
+val date_time : Date_time.t -> t
+
+val interval_inc : Date_time.t -> Date_time.t -> t
+
+val interval_exc : Date_time.t -> Date_time.t -> t
 
 (** {1 Durations} *)
 

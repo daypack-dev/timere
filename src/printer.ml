@@ -122,10 +122,8 @@ module Format_string_parsers = struct
           ( string "sec:"
             >> padding
             >>= fun padding -> return (pad_int padding date_time.second) );
-        ( string "unix"
-          >>
-          return (Int64.to_string (Time.Date_time.to_timestamp date_time))
-        )
+        string "unix"
+        >> return (Int64.to_string (Time.Date_time.to_timestamp date_time));
       ]
 end
 
