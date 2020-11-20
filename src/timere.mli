@@ -227,4 +227,13 @@ val resolve :
   ?search_using_tz_offset_s:tz_offset_s -> t -> (interval Seq.t, string) result
 
 module Utils : sig
+  val flatten_month_ranges : month range Seq.t -> (month Seq.t, unit) result
+
+  val flatten_weekday_ranges :
+    weekday range Seq.t -> (weekday Seq.t, unit) result
+
+  val flatten_month_range_list : month range list -> (month list, unit) result
+
+  val flatten_weekday_range_list :
+    weekday range list -> (weekday list, unit) result
 end

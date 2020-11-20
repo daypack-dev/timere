@@ -492,9 +492,10 @@ let parse_into_ast (s : string) : (ast, string) Result.t =
   |> result_of_mparser_result
 
 let flatten_months pos (l : Timere.month Timere.range list) =
-  try Ok (Timere.Month_ranges.Flatten.flatten_list l)
-  with Timere.Range.Range_is_invalid ->
-    Error (Some (Printf.sprintf "%s: Invalid month ranges" (string_of_pos pos)))
+  Timere.Utils.flatten_month_range_list l
+  |> Result.map_error (fun () ->
+      Some (Printf.sprintf "%s: Invalid month ranges" (string_of_pos pos))
+    )
 
 let pattern ?(years = []) ?(months = []) ?pos_month_days ?(month_days = [])
     ?(weekdays = []) ?(hms : Timere.hms option) () =
