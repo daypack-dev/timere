@@ -36,6 +36,10 @@ end
 
 let resolve = Resolver.resolve
 
+let sprintf_timestamp = Printer.sprintf_timestamp
+
+let pp_timestamp = Printer.pp_timestamp
+
 let sprintf_interval = Printer.sprintf_interval
 
 let pp_interval = Printer.pp_interval

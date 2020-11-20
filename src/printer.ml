@@ -156,6 +156,21 @@ let pp_date_time format formatter x =
   | Error msg -> invalid_arg msg
   | Ok s -> Format.fprintf formatter "%s" s
 
+let sprintf_timestamp ?(display_using_tz_offset_s = 0) format
+     (time : int64) :
+  (string, string) result =
+  match
+    Time.Date_time.of_timestamp
+      ~tz_offset_s_of_date_time:display_using_tz_offset_s time
+  with
+  | Error () -> Error "Invalid unix second"
+  | Ok dt -> sprintf_date_time format dt
+
+let pp_timestamp ?(display_using_tz_offset_s = 0) format formatter x =
+  match sprintf_timestamp ~display_using_tz_offset_s format x with
+  | Error msg -> invalid_arg msg
+  | Ok s -> Format.fprintf formatter "%s" s
+
 let sprintf_interval ?(display_using_tz_offset_s = 0) (format : string) ((s, e) : Time.Interval.t) : (string, string) result =
   let open MParser in
   let open Parser_components in
