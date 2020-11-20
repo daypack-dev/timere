@@ -533,34 +533,6 @@ let t_rules : (token list -> (Timere.t, string option) Result.t) list =
         pattern ~years:[ year ] ~months:[ month ] ~pos_month_days
           ~month_days:[ day ] ()
       | [ (_, Nat year); (pos_month_days, Nat day); (_, Of); (_, Month month) ]
-      | [
-        (_, Nat year);
-        (pos_month_days, Nat day);
-        (_, St);
-        (_, Of);
-        (_, Month month);
-      ]
-      | [
-        (_, Nat year);
-        (pos_month_days, Nat day);
-        (_, Nd);
-        (_, Of);
-        (_, Month month);
-      ]
-      | [
-        (_, Nat year);
-        (pos_month_days, Nat day);
-        (_, Rd);
-        (_, Of);
-        (_, Month month);
-      ]
-      | [
-        (_, Nat year);
-        (pos_month_days, Nat day);
-        (_, Th);
-        (_, Of);
-        (_, Month month);
-      ]
         ->
         pattern ~years:[ year ] ~months:[ month ] ~pos_month_days
           ~month_days:[ day ] ()
