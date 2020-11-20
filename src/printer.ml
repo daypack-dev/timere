@@ -124,9 +124,8 @@ module Format_string_parsers = struct
             >>= fun padding -> return (pad_int padding date_time.second) );
         ( string "unix"
           >>
-          match Time.Date_time.to_timestamp date_time with
-          | Error () -> fail "Invalid date time"
-          | Ok sec -> return (Int64.to_string sec) );
+          return (Int64.to_string (Time.Date_time.to_timestamp date_time))
+        )
       ]
 end
 

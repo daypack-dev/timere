@@ -21,18 +21,19 @@ let debug_resolve () =
         Result.get_ok
         @@ Timere.Date_time.cur ()
       in
-      let search_start_timere =
-        Result.get_ok @@ Timere.of_date_time cur_date_time
-      in
-      let search_end_exc_timere =
-        let open Timere in
-        shift
-          (Result.get_ok @@ Duration.make ~days:(search_years_ahead * 365) ())
-          search_start_timere
+      let search_end_exc =
+        Result.get_ok @@
+        Timere.Date_time.make ~year:(cur_date_time.year + search_years_ahead)
+          ~month:cur_date_time.month
+          ~day:cur_date_time.day
+          ~hour:cur_date_time.hour
+          ~minute:cur_date_time.minute
+          ~second:cur_date_time.second
+          ~tz_offset_s:cur_date_time.tz_offset_s
       in
       let timere =
         let open Timere in
-        inter timere (interval_exc search_start_timere search_end_exc_timere)
+        inter timere (interval_exc cur_date_time search_end_exc)
       in
       match Timere.resolve timere with
       | Error msg -> print_endline msg

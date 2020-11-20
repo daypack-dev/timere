@@ -469,21 +469,21 @@ module Resolve_pattern = struct
     let matching_timestamps ~(search_using_tz_offset_s : Time.tz_offset_s)
         (t : Time.Pattern.pattern) (start : Time.Date_time.t) :
       Time.Date_time_set.t =
-      match Time.Date_time.to_timestamp start with
-      | Error () -> Time.Date_time_set.empty
-      | Ok start ->
-        t.timestamps
-        |> List.sort_uniq compare
-        |> List.to_seq
-        |> OSeq.filter (fun x -> x >= start)
-        |> Seq.filter_map (fun x ->
-            match
-              Time.Date_time.of_timestamp
-                ~tz_offset_s_of_date_time:search_using_tz_offset_s x
-            with
-            | Ok x -> Some x
-            | Error () -> None)
-        |> Time.Date_time_set.of_seq
+      let start =
+        Time.Date_time.to_timestamp start
+      in
+      t.timestamps
+      |> List.sort_uniq compare
+      |> List.to_seq
+      |> OSeq.filter (fun x -> x >= start)
+      |> Seq.filter_map (fun x ->
+          match
+            Time.Date_time.of_timestamp
+              ~tz_offset_s_of_date_time:search_using_tz_offset_s x
+          with
+          | Ok x -> Some x
+          | Error () -> None)
+      |> Time.Date_time_set.of_seq
   end
 
   let filter_using_matching_timestamps ~search_using_tz_offset_s
@@ -532,10 +532,7 @@ module Resolve_pattern = struct
   let matching_timestamps (search_param : Search_param.t)
       (t : Time.Pattern.pattern) : int64 Seq.t =
     matching_date_times search_param t
-    |> Seq.filter_map (fun x ->
-        match Time.Date_time.to_timestamp x with
-        | Ok x -> Some x
-        | Error () -> None)
+    |> Seq.map Time.Date_time.to_timestamp
 
   let matching_date_time_ranges (search_param : Search_param.t)
       (t : Time.Pattern.pattern) : Time.Date_time.t Time.Range.range Seq.t =
@@ -622,7 +619,6 @@ module Resolve_pattern = struct
     in
     matching_date_time_ranges search_param t
     |> Seq.map (Time.Range.map ~f_inc:f ~f_exc:f)
-    |> Seq.filter_map Time.Range_utils.result_range_get
     |> Seq.map (fun r ->
         match r with
         | `Range_inc (x, y) -> (x, Int64.succ y)
@@ -655,9 +651,8 @@ module Resolve_pattern = struct
     match next_match_date_time search_param t with
     | None -> None
     | Some x -> (
-        match Time.Date_time.to_timestamp x with
-        | Error () -> None
-        | Ok x -> Some x )
+        Some (Time.Date_time.to_timestamp x)
+         )
 
   let next_match_interval (search_param : Search_param.t)
       (t : Time.Pattern.pattern) : (int64 * int64) option =
@@ -673,6 +668,8 @@ let get_search_space (time : Time.t) : Time.Interval.t list =
   | Branching (s, _) -> s
   | Unary_op (s, _, _) -> s
   | Binary_op (s, _, _, _) -> s
+  | Interval_exc (s, _, _) -> s
+  | Interval_inc (s, _, _) -> s
   | Round_robin_pick_list (s, _) -> s
   | Merge_list (s, _) -> s
 
@@ -684,6 +681,8 @@ let set_search_space space (time : Time.t) : Time.t =
   | Branching (_, x) -> Branching (space, x)
   | Unary_op (_, op, x) -> Unary_op (space, op, x)
   | Binary_op (_, op, x, y) -> Binary_op (space, op, x, y)
+  | Interval_exc (_, x, y) -> Interval_exc (space, x, y)
+  | Interval_inc (_, x, y) -> Interval_inc (space, x, y)
   | Round_robin_pick_list (_, x) -> Round_robin_pick_list (space, x)
   | Merge_list (_, x) -> Merge_list (space, x)
 
@@ -694,21 +693,20 @@ let search_space_of_year_range tz_offset_s year_range =
     ( Date_time.set_to_first_month_day_hour_min_sec
         { Date_time.min with year = start; tz_offset_s }
       |> Date_time.to_timestamp
-      |> Result.get_ok,
+      ,
       Date_time.set_to_last_month_day_hour_min_sec
         { Date_time.min with year = end_inc; tz_offset_s }
       |> Date_time.to_timestamp
-      |> Result.get_ok
       |> Int64.succ )
   | `Range_exc (start, end_exc) ->
     ( Date_time.set_to_first_month_day_hour_min_sec
         { Date_time.min with year = start; tz_offset_s }
       |> Date_time.to_timestamp
-      |> Result.get_ok,
+      ,
       Date_time.set_to_last_month_day_hour_min_sec
         { Date_time.min with year = end_exc; tz_offset_s }
       |> Date_time.to_timestamp
-      |> Result.get_ok )
+       )
 
 let search_space_of_year tz_offset_s year =
   search_space_of_year_range tz_offset_s (`Range_inc (year, year))
@@ -772,23 +770,6 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
             |> List.of_seq
           in
           Binary_op (space, Inter, t1, t2)
-        | Interval_inc | Interval_exc -> (
-            match t1_search_space with
-            | [] -> Binary_op ([], op, t1, t2)
-            | (t1_start, _) :: _ ->
-              let t2_search_space =
-                Intervals.inter
-                  (Seq.return (t1_start, default_search_space_end_exc))
-                  (List.to_seq t2_search_space)
-              in
-              let t2 = set_search_space (List.of_seq t2_search_space) t2 in
-              let space =
-                Intervals.Union.union
-                  (List.to_seq t1_search_space)
-                  t2_search_space
-                |> List.of_seq
-              in
-              Binary_op (space, op, t1, t2) )
         | _ ->
           let space =
             Intervals.Union.union
@@ -797,6 +778,24 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
             |> List.of_seq
           in
           Binary_op (space, op, t1, t2) )
+    | Interval_exc (_, start, end_exc) ->
+      let space =
+        [
+          (Date_time.to_timestamp start,
+           Date_time.to_timestamp end_exc
+          )
+        ]
+      in
+      Interval_exc (space, start, end_exc)
+    | Interval_inc (_, start, end_inc) ->
+      let space =
+        [
+          (Date_time.to_timestamp start,
+           Int64.succ @@ Date_time.to_timestamp end_inc
+          )
+        ]
+      in
+      Interval_inc (space, start, end_inc)
     | Round_robin_pick_list (_, l) ->
       let space, l = aux_list tz_offset_s l in
       Round_robin_pick_list (space, l)
@@ -835,6 +834,12 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
     | Binary_op (cur, op, t1, t2) ->
       let space = restrict_search_space parent_search_space cur in
       Binary_op (space, op, aux space t1, aux space t2)
+    | Interval_exc (cur, p1, p2) ->
+      let space = restrict_search_space parent_search_space cur in
+      Interval_exc (space, p1, p2)
+    | Interval_inc (cur, p1, p2) ->
+      let space = restrict_search_space parent_search_space cur in
+      Interval_inc (space, p1, p2)
     | Round_robin_pick_list (cur, l) ->
       let space = restrict_search_space parent_search_space cur in
       Round_robin_pick_list (space, aux_list space l)
@@ -854,93 +859,72 @@ let time_t_seq_of_branching tz_offset_s (b : Time.branching) : Time.t Seq.t =
   let years = b.years |> List.to_seq |> Year_ranges.Flatten.flatten in
   let months = b.months |> List.to_seq |> Month_ranges.Flatten.flatten in
   let hmss = b.hmss |> List.to_seq in
+  let time_t_seq_of_month_days year month month_days hmss =
+    Seq.flat_map
+      (fun day ->
+         Seq.filter_map
+           (fun hms_range ->
+              match hms_range with
+              | `Range_inc (start, end_inc) -> (
+                  match Date_time.make ~year ~month ~day ~hour:start.hour ~minute:start.minute ~second:start.second ~tz_offset_s with
+                  | Error () -> None
+                  | Ok dt1 ->
+                    match Date_time.make ~year ~month ~day ~hour:end_inc.hour ~minute:end_inc.minute ~second:end_inc.second ~tz_offset_s with
+                    | Error () -> None
+                    | Ok dt2 ->
+                      let search_space = [ (Date_time.to_timestamp dt1, Date_time.to_timestamp dt2) ] in
+                      Some (Interval_inc (search_space, dt1, dt2))
+                )
+              | `Range_exc (start, end_exc) -> (
+                  match Date_time.make ~year ~month ~day ~hour:start.hour ~minute:start.minute ~second:start.second ~tz_offset_s with
+                  | Error () -> None
+                  | Ok dt1 ->
+                    match Date_time.make ~year ~month ~day ~hour:end_exc.hour ~minute:end_exc.minute ~second:end_exc.second ~tz_offset_s with
+                    | Error () -> None
+                    | Ok dt2 ->
+                      let search_space = [ (Date_time.to_timestamp dt1, Date_time.to_timestamp dt2) ] in
+                      Some (Interval_exc (search_space, dt1, dt2))
+                )
+           )
+           hmss)
+      month_days
+  in
   match b.days with
   | Month_days days ->
     let days = days |> List.to_seq |> Month_day_ranges.Flatten.flatten in
     Seq.flat_map
       (fun year ->
-         let search_space = [ search_space_of_year tz_offset_s year ] in
          Seq.flat_map
            (fun month ->
-              Seq.flat_map
-                (fun day ->
-                   Seq.map
-                     (fun hms_range ->
-                        match hms_range with
-                        | `Range_inc (start, end_inc) ->
-                          Binary_op
-                            ( search_space,
-                              Interval_inc,
-                              set_search_space search_space
-                                (pattern ~years:[ year ] ~months:[ month ]
-                                   ~month_days:[ day ] ~hours:[ start.hour ]
-                                   ~minutes:[ start.minute ]
-                                   ~seconds:[ start.second ] ()),
-                              set_search_space search_space
-                                (pattern ~years:[ year ] ~months:[ month ]
-                                   ~month_days:[ day ] ~hours:[ end_inc.hour ]
-                                   ~minutes:[ end_inc.minute ]
-                                   ~seconds:[ end_inc.second ] ()) )
-                        | `Range_exc (start, end_exc) ->
-                          Binary_op
-                            ( search_space,
-                              Interval_exc,
-                              set_search_space search_space
-                                (pattern ~years:[ year ] ~months:[ month ]
-                                   ~month_days:[ day ] ~hours:[ start.hour ]
-                                   ~minutes:[ start.minute ]
-                                   ~seconds:[ start.second ] ()),
-                              set_search_space search_space
-                                (pattern ~years:[ year ] ~months:[ month ]
-                                   ~month_days:[ day ] ~hours:[ end_exc.hour ]
-                                   ~minutes:[ end_exc.minute ]
-                                   ~seconds:[ end_exc.second ] ()) ))
-                     hmss)
-                days)
+              time_t_seq_of_month_days year month days hmss
+           )
            months)
       years
   | Weekdays days ->
-    let days = days |> List.to_seq |> Weekday_ranges.Flatten.flatten in
+    let days = days |> Weekday_ranges.Flatten.flatten_list in
     Seq.flat_map
       (fun year ->
-         let search_space = [ search_space_of_year tz_offset_s year ] in
+         let search_space = search_space_of_year tz_offset_s year in
          Seq.flat_map
            (fun month ->
-              Seq.flat_map
-                (fun day ->
-                   Seq.map
-                     (fun hms_range ->
-                        match hms_range with
-                        | `Range_inc (start, end_inc) ->
-                          Binary_op
-                            ( search_space,
-                              Interval_inc,
-                              set_search_space search_space
-                                (pattern ~years:[ year ] ~months:[ month ]
-                                   ~weekdays:[ day ] ~hours:[ start.hour ]
-                                   ~minutes:[ start.minute ]
-                                   ~seconds:[ start.second ] ()),
-                              set_search_space search_space
-                                (pattern ~years:[ year ] ~months:[ month ]
-                                   ~weekdays:[ day ] ~hours:[ end_inc.hour ]
-                                   ~minutes:[ end_inc.minute ]
-                                   ~seconds:[ end_inc.second ] ()) )
-                        | `Range_exc (start, end_exc) ->
-                          Binary_op
-                            ( search_space,
-                              Interval_exc,
-                              set_search_space search_space
-                                (pattern ~years:[ year ] ~months:[ month ]
-                                   ~weekdays:[ day ] ~hours:[ start.hour ]
-                                   ~minutes:[ start.minute ]
-                                   ~seconds:[ start.second ] ()),
-                              set_search_space search_space
-                                (pattern ~years:[ year ] ~months:[ month ]
-                                   ~weekdays:[ day ] ~hours:[ end_exc.hour ]
-                                   ~minutes:[ end_exc.minute ]
-                                   ~seconds:[ end_exc.second ] ()) ))
-                     hmss)
-                days)
+              let month_days =
+                Pattern.{
+                  years=[year];
+                  months=[month];
+                  month_days = [];
+                  weekdays=days;
+                  hours=[ 0 ];
+                  minutes=[ 0 ];
+                  seconds=[ 0 ];
+                  timestamps = [];
+                }
+                |> Resolve_pattern.matching_date_times (Search_param.make ~search_using_tz_offset_s:tz_offset_s search_space)
+                |> Seq.map (fun Date_time.{ day; _ } ->
+                    day
+                  )
+              in
+              time_t_seq_of_month_days year month month_days hmss
+           )
            months)
       years
 

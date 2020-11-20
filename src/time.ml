@@ -1466,10 +1466,10 @@ module Date_time = struct
     | Ok month -> Ok { year; month; day; hour; minute; second; tz_offset_s }
     | Error () -> Error ()
 
-  let to_timestamp (x : t) : (int64, unit) result =
-    match Ptime.of_date_time (to_ptime_date_time x) with
-    | None -> Error ()
-    | Some x -> x |> Ptime.to_float_s |> Int64.of_float |> Result.ok
+  let to_timestamp (x : t) : int64 =
+    Ptime.of_date_time (to_ptime_date_time x)
+    |> Option.get
+    |> Ptime.to_float_s |> Int64.of_float
 
   let of_timestamp ?(tz_offset_s_of_date_time = 0) (x : int64) :
     (t, unit) result =
@@ -1481,10 +1481,11 @@ module Date_time = struct
       |> of_ptime_date_time
 
   let make ~year ~month ~day ~hour ~minute ~second ~tz_offset_s =
-    { year; month; day; hour; minute; second; tz_offset_s }
-    |> to_timestamp
-    |> Result.map (fun x ->
-        Result.get_ok @@ of_timestamp ~tz_offset_s_of_date_time:tz_offset_s x)
+    let dt = { year; month; day; hour; minute; second; tz_offset_s } in
+    match Ptime.of_date_time (to_ptime_date_time dt) with
+    | None -> Error ()
+    | Some _ ->
+      Ok dt
 
   let min =
     Ptime.min |> Ptime.to_date_time |> of_ptime_date_time |> Result.get_ok
@@ -1562,9 +1563,6 @@ module Check = struct
   let hour_minute_second_is_valid ~(hour : int) ~(minute : int) ~(second : int)
     : bool =
     (0 <= hour && hour < 24) && minute_second_is_valid ~minute ~second
-
-  let date_time_is_valid (x : Date_time.t) : bool =
-    match Date_time.to_timestamp x with Ok _ -> true | Error () -> false
 end
 
 let next_hour_minute ~(hour : int) ~(minute : int) : (int * int, unit) result =
@@ -1678,11 +1676,6 @@ type unary_op =
 type binary_op =
   | Union
   | Inter
-  | Interval_inc
-  | Interval_exc
-
-(* | Intervals_inc
- * | Intervals_exc *)
 
 type branching_days =
   | Month_days of int Range.range list
@@ -1697,10 +1690,10 @@ type branching = {
 
 type search_space = Interval.t list
 
-let default_search_space_start = Result.get_ok @@ Date_time.(to_timestamp min)
+let default_search_space_start = Date_time.(to_timestamp min)
 
 let default_search_space_end_exc =
-  Int64.succ @@ Result.get_ok @@ Date_time.(to_timestamp max)
+  Int64.succ @@ Date_time.(to_timestamp max)
 
 let default_search_space : search_space =
   [ (default_search_space_start, default_search_space_end_exc) ]
@@ -1711,6 +1704,8 @@ type t =
   | Branching of search_space * branching
   | Unary_op of search_space * unary_op * t
   | Binary_op of search_space * binary_op * t * t
+  | Interval_inc of search_space * Date_time.t * Date_time.t
+  | Interval_exc of search_space * Date_time.t * Date_time.t
   | Round_robin_pick_list of search_space * t list
   | Merge_list of search_space * t list
 
@@ -1752,11 +1747,11 @@ let skip_n (n : int) (t : t) : t =
   if n < 0 then raise (Invalid_argument "skip_n: n < 0")
   else Unary_op (default_search_space, Skip_n_intervals n, t)
 
-let interval_inc (a : t) (b : t) : t =
-  Binary_op (default_search_space, Interval_inc, a, b)
+let interval_inc (a : Date_time.t) (b : Date_time.t) : t =
+  Interval_inc (default_search_space, a, b)
 
-let interval_exc (a : t) (b : t) : t =
-  Binary_op (default_search_space, Interval_exc, a, b)
+let interval_exc (a : Date_time.t) (b : Date_time.t) : t =
+  Interval_exc (default_search_space, a, b)
 
 (* let intervals_inc (a : t) (b : t) : t =
  *   Binary_op (default_search_space, Intervals_inc, a, b)
@@ -1872,10 +1867,10 @@ let timestamps timestamps = pattern ~timestamps ()
 
 let any = pattern ()
 
-let of_date_time (date_time : Date_time.t) : (t, unit) result =
+let date_time (date_time : Date_time.t) : t =
   date_time
   |> Date_time.to_timestamp
-  |> Result.map (fun x ->
+  |> (fun x ->
       Timestamp_interval_seq
         (default_search_space, Seq.return (x, Int64.succ x)))
 
