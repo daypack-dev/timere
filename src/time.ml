@@ -1680,8 +1680,9 @@ type binary_op =
   | Inter
   | Interval_inc
   | Interval_exc
-  (* | Intervals_inc
-   * | Intervals_exc *)
+
+(* | Intervals_inc
+ * | Intervals_exc *)
 
 type branching_days =
   | Month_days of int Range.range list

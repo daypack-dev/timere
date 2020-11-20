@@ -772,8 +772,7 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
             |> List.of_seq
           in
           Binary_op (space, Inter, t1, t2)
-        | Interval_inc | Interval_exc
-          -> (
+        | Interval_inc | Interval_exc -> (
             match t1_search_space with
             | [] -> Binary_op ([], op, t1, t2)
             | (t1_start, _) :: _ ->
@@ -957,23 +956,26 @@ let construct_interval_from_two_seqs inc_or_exc s1 s2 =
   in
   match s1 () with
   | Seq.Nil -> Error "Failed to resolve start of interval"
-  | Seq.Cons ((start, end_exc), rest) ->
-    if Int64.succ start <> end_exc then
-      Error "Start of interval is not a discrete time point"
-    else
-      match rest () with
-      | Seq.Cons _ -> Error "Start of interval is not a unique discrete time point"
-      | Seq.Nil ->
-        match s2 () with
-        | Seq.Nil -> Error "Failed to resolve end of interval"
-        | Seq.Cons ((start', end_exc'), rest') ->
-          if Int64.succ start' <> end_exc' then
-            Error "End of interval is not a discrete time point"
-          else
-            match rest' () with
-            | Seq.Cons _ -> Error "End of interval is not a unique discrete time point"
-            | Seq.Nil ->
-              Ok (Seq.return (construct_interval start start'))
+  | Seq.Cons ((start, end_exc), rest) -> (
+      if Int64.succ start <> end_exc then
+        Error "Start of interval is not a discrete time point"
+      else
+        match rest () with
+        | Seq.Cons _ ->
+          Error "Start of interval is not a unique discrete time point"
+        | Seq.Nil -> (
+            match s2 () with
+            | Seq.Nil -> Error "Failed to resolve end of interval"
+            | Seq.Cons ((start', end_exc'), rest') -> (
+                if Int64.succ start' <> end_exc' then
+                  Error "End of interval is not a discrete time point"
+                else
+                  match rest' () with
+                  | Seq.Cons _ ->
+                    Error
+                      "End of interval is not a unique discrete time point"
+                  | Seq.Nil -> Ok (Seq.return (construct_interval start start'))
+              ) ) )
 
 (* let construct_intervals_from_two_seqs inc_or_exc s1 s2 =
  *   let construct_interval =
@@ -1063,17 +1065,16 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
         | Ok s1 -> (
             match aux search_using_tz_offset_s t2 with
             | Error msg -> Error msg
-            | Ok s2 ->
-                ( match op with
-                  | Union -> Ok (Intervals.Union.union ~skip_check:true s1 s2)
-                  | Inter -> Ok (Intervals.inter ~skip_check:true s1 s2)
-                  | Interval_inc ->
-                    construct_interval_from_two_seqs Inc s1 s2
-                  | Interval_exc ->
-                    construct_interval_from_two_seqs Exc s1 s2
+            | Ok s2 -> (
+                match op with
+                | Union -> Ok (Intervals.Union.union ~skip_check:true s1 s2)
+                | Inter -> Ok (Intervals.inter ~skip_check:true s1 s2)
+                | Interval_inc -> construct_interval_from_two_seqs Inc s1 s2
+                | Interval_exc ->
+                  construct_interval_from_two_seqs Exc s1 s2
                   (* | Intervals_inc -> construct_intervals_from_two_seqs Inc s1 s2
                    * | Intervals_exc -> construct_intervals_from_two_seqs Exc s1 s2 *)
-                ) ) )
+              ) ) )
     | Round_robin_pick_list (_, l) ->
       Misc_utils.get_ok_error_list (List.map (aux search_using_tz_offset_s) l)
       |> Result.map
