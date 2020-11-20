@@ -6,5 +6,6 @@
             ptime
             oseq
             re
+            mparser
  )
 )
