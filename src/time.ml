@@ -1807,8 +1807,21 @@ let pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
 
 let branching ?(years = []) ?(months = []) ?(days = Month_days []) ?(hmss = [])
     () : t =
-  let years' = years |> List.to_seq |> Year_ranges.Flatten.flatten in
-  let hmss' = hmss |> List.to_seq in
+  let years =
+    match years with
+    | [] -> [ `Range_inc (Date_time.min.year, Date_time.max.year) ]
+    | _ -> years
+  in
+  let months =
+    match months with [] -> [ `Range_inc (`Jan, `Dec) ] | _ -> months
+  in
+  let days =
+    match days with
+    | Month_days [] | Weekdays [] -> Month_days [ `Range_inc (1, 31) ]
+    | _ -> days
+  in
+  let p_year year = Date_time.min.year <= year && year <= Date_time.max.year in
+  let p_day day = 1 <= day && day <= 31 in
   let p_hms hms =
     0 <= hms.hour
     && hms.hour <= 23
@@ -1818,21 +1831,25 @@ let branching ?(years = []) ?(months = []) ?(days = Month_days []) ?(hmss = [])
     && hms.second < 60
   in
   if
-    OSeq.for_all
-      (fun year -> Date_time.min.year <= year && year <= Date_time.max.year)
-      years'
+    List.for_all
+      (fun year_range ->
+         match year_range with
+         | `Range_inc (y1, y2) | `Range_exc (y1, y2) -> p_year y1 && p_year y2)
+      years
     && ( match days with
         | Month_days days ->
           days
-          |> Month_day_ranges.Flatten.flatten_list
-          |> List.for_all (fun day -> 1 <= day && day <= 31)
+          |> List.for_all (fun day_range ->
+              match day_range with
+              | `Range_inc (d1, d2) | `Range_exc (d1, d2) ->
+                p_day d1 && p_day d2)
         | Weekdays _ -> true )
-    && OSeq.for_all
+    && List.for_all
       (fun hms_range ->
          match hms_range with
          | `Range_inc (hms1, hms2) | `Range_exc (hms1, hms2) ->
            p_hms hms1 && p_hms hms2)
-      hmss'
+      hmss
   then Branching (default_search_space, { years; months; days; hmss })
   else invalid_arg "branching"
 
