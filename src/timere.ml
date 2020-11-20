@@ -30,8 +30,6 @@ end
 let resolve = Resolver.resolve
 
 module Utils = struct
-  let cur_timestamp = cur_timestamp
-
   let flatten_month_ranges (months : month range Seq.t) :
     (month Seq.t, unit) Result.t =
     try Ok (Month_ranges.Flatten.flatten months)

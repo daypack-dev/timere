@@ -100,6 +100,8 @@ val merge : t list -> t
 
 (** {1 Discrete time points} *)
 
+val cur_timestamp : unit -> int64
+
 module Date_time : sig
   type t = private {
     year : int;
@@ -234,8 +236,6 @@ val resolve :
   ?search_using_tz_offset_s:tz_offset_s -> t -> (interval Seq.t, string) result
 
 module Utils : sig
-  val cur_timestamp : unit -> int64
-
   val flatten_month_ranges : month range Seq.t -> (month Seq.t, unit) result
 
   val flatten_weekday_ranges :
