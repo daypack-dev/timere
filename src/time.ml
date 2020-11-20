@@ -1554,12 +1554,6 @@ module Date_time_set = Set.Make (struct
     let compare = Date_time.compare
   end)
 
-module Current = struct
-  let cur_tm_local () : Unix.tm = Unix.time () |> Unix.localtime
-
-  let cur_tm_utc () : Unix.tm = Unix.time () |> Unix.gmtime
-end
-
 module Check = struct
   let timestamp_is_valid (x : int64) : bool =
     match Date_time.of_timestamp ~tz_offset_s_of_date_time:None x with
