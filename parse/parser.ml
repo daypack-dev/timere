@@ -103,6 +103,9 @@ let month_p : (Timere.month, unit) t =
 let symbols = "()[]&|>"
 
 let token_p : (token, unit) MParser.t =
+  let attempt p =
+    attempt (p << look_ahead (eof <|> (space >> return ())))
+  in
   get_pos
   >>= fun pos ->
   choice
