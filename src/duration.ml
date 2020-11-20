@@ -67,12 +67,14 @@ let seconds_of_raw (r : raw) : int64 =
 
 let normalize (t : t) : t = t |> to_seconds |> of_seconds |> Result.get_ok
 
-let make ~days ~hours ~minutes ~seconds : (t, unit) result =
+let make ?(days = 0) ?(hours = 0) ?(minutes = 0) ?(seconds = 0) () :
+  (t, unit) result =
   if days >= 0 && hours >= 0 && minutes >= 0 && seconds >= 0 then
     Ok (({ days; hours; minutes; seconds } : t) |> normalize)
   else Error ()
 
-let make_frac ~days ~hours ~minutes ~seconds : (t, unit) result =
+let make_frac ?(days = 0.0) ?(hours = 0.0) ?(minutes = 0.0) ?(seconds = 0) () :
+  (t, unit) result =
   if days >= 0.0 && hours >= 0.0 && minutes >= 0.0 && seconds >= 0 then
     Ok
       ( ({ days; hours; minutes; seconds } : raw)

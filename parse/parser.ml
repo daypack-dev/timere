@@ -364,7 +364,7 @@ module Ast_normalize = struct
                 ~days:(Option.value ~default:0 days)
                 ~hours:(Option.value ~default:0 hours)
                 ~minutes:(Option.value ~default:0 minutes)
-                ~seconds)) )
+                ~seconds ())) )
     in
     let rec aux_start_with_days acc l =
       match l with
@@ -396,7 +396,7 @@ module Ast_normalize = struct
                     ~days:(Option.value ~default:0 days)
                     ~hours:(Option.value ~default:0 hours)
                     ~minutes:(Option.value ~default:0 minutes)
-                    ~seconds)) )
+                    ~seconds ())) )
         in
         aux_start_with_days (token :: acc) rest
       | [] ->

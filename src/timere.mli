@@ -154,13 +154,19 @@ module Duration : sig
   }
 
   val make :
-    days:int -> hours:int -> minutes:int -> seconds:int -> (t, unit) result
+    ?days:int ->
+    ?hours:int ->
+    ?minutes:int ->
+    ?seconds:int ->
+    unit ->
+    (t, unit) result
 
   val make_frac :
-    days:float ->
-    hours:float ->
-    minutes:float ->
-    seconds:int ->
+    ?days:float ->
+    ?hours:float ->
+    ?minutes:float ->
+    ?seconds:int ->
+    unit ->
     (t, unit) result
 
   val zero : t
