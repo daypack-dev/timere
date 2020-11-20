@@ -130,7 +130,7 @@ module Format_string_parsers = struct
       ]
 end
 
-let pp_date_time (format : string) (x : Time.Date_time.t) :
+let sprintf_date_time (format : string) (x : Time.Date_time.t) :
   (string, string) result =
   let open MParser in
   let open Parser_components in
@@ -148,3 +148,8 @@ let pp_date_time (format : string) (x : Time.Date_time.t) :
   parse_string (p x << eof) format ()
   |> result_of_mparser_result
   |> Result.map (fun l -> String.concat "" l)
+
+let pp_date_time format formatter x =
+  match sprintf_date_time format x with
+  | Error msg -> invalid_arg msg
+  | Ok s -> Format.fprintf formatter "%s" s

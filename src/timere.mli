@@ -132,7 +132,9 @@ module Date_time : sig
 
   val max : t
 
-  val pp : string -> t -> (string, string) result
+  val sprintf : string -> t -> (string, string) result
+
+  val pp : string -> Format.formatter -> t -> unit
 end
 
 val of_date_time : Date_time.t -> (t, unit) result

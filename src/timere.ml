@@ -5,6 +5,8 @@ module Date_time = struct
   include Date_time
 
   let pp = Printer.pp_date_time
+
+  let sprintf = Printer.sprintf_date_time
 end
 
 type 'a range = 'a Range.range
