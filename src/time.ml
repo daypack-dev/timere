@@ -1820,6 +1820,16 @@ let branching ?(years = []) ?(months = []) ?(days = Month_days []) ?(hmss = [])
     | Month_days [] | Weekdays [] -> Month_days [ `Range_inc (1, 31) ]
     | _ -> days
   in
+  let hmss =
+    match hmss with
+    | [] ->
+      [
+        `Range_inc
+          ( { hour = 0; minute = 0; second = 0 },
+            { hour = 23; minute = 59; second = 59 } );
+      ]
+    | _ -> hmss
+  in
   let p_year year = Date_time.min.year <= year && year <= Date_time.max.year in
   let p_day day = 1 <= day && day <= 31 in
   let p_hms hms =
