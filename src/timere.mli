@@ -88,6 +88,14 @@ val union : t -> t -> t
 
 val not : t -> t
 
+val interval_inc : t -> t -> t
+
+val interval_exc : t -> t -> t
+
+val intervals_inc : t -> t -> t
+
+val intervals_exc : t -> t -> t
+
 val merge : t list -> t
 
 (** {1 Discrete time points} *)
