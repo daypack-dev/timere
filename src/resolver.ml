@@ -1059,4 +1059,6 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
   in
   aux search_using_tz_offset_s
     (optimize_search_space search_using_tz_offset_s time)
-  |> Result.map (Time.Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true)
+  |> Result.map
+    (Time.Intervals.Normalize.normalize ~skip_filter_invalid:true
+       ~skip_sort:true)
