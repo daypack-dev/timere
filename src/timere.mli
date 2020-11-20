@@ -247,13 +247,31 @@ val resolve :
 
 (** {1 Pretty printers} *)
 
-val sprintf_timestamp : ?display_using_tz_offset_s:tz_offset_s -> string -> timestamp -> (string, string) result
+val sprintf_timestamp :
+  ?display_using_tz_offset_s:tz_offset_s ->
+  string ->
+  timestamp ->
+  (string, string) result
 
-val pp_timestamp : ?display_using_tz_offset_s:tz_offset_s -> string -> Format.formatter -> timestamp -> unit
+val pp_timestamp :
+  ?display_using_tz_offset_s:tz_offset_s ->
+  string ->
+  Format.formatter ->
+  timestamp ->
+  unit
 
-val sprintf_interval : ?display_using_tz_offset_s:tz_offset_s -> string -> interval -> (string, string) result
+val sprintf_interval :
+  ?display_using_tz_offset_s:tz_offset_s ->
+  string ->
+  interval ->
+  (string, string) result
 
-val pp_interval : ?display_using_tz_offset_s:tz_offset_s -> string -> Format.formatter -> interval -> unit
+val pp_interval :
+  ?display_using_tz_offset_s:tz_offset_s ->
+  string ->
+  Format.formatter ->
+  interval ->
+  unit
 
 module Utils : sig
   val flatten_month_ranges : month range Seq.t -> (month Seq.t, unit) result

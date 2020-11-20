@@ -11,11 +11,11 @@ module Search_param = struct
       start =
         Result.get_ok
         @@ Time.Date_time.of_timestamp
-          ~tz_offset_s_of_date_time:(search_using_tz_offset_s) start;
+          ~tz_offset_s_of_date_time:search_using_tz_offset_s start;
       end_inc =
         Result.get_ok
         @@ Time.Date_time.of_timestamp
-          ~tz_offset_s_of_date_time:(search_using_tz_offset_s)
+          ~tz_offset_s_of_date_time:search_using_tz_offset_s
           (Int64.pred end_exc);
     }
 end
@@ -479,7 +479,7 @@ module Resolve_pattern = struct
         |> Seq.filter_map (fun x ->
             match
               Time.Date_time.of_timestamp
-                ~tz_offset_s_of_date_time:(search_using_tz_offset_s) x
+                ~tz_offset_s_of_date_time:search_using_tz_offset_s x
             with
             | Ok x -> Some x
             | Error () -> None)
@@ -500,9 +500,9 @@ module Resolve_pattern = struct
       (s : int64 Seq.t) : Time.Date_time.t Time.Range.range Seq.t =
     let f (x, y) =
       ( Time.Date_time.of_timestamp
-          ~tz_offset_s_of_date_time:(search_using_tz_offset_s) x,
+          ~tz_offset_s_of_date_time:search_using_tz_offset_s x,
         Time.Date_time.of_timestamp
-          ~tz_offset_s_of_date_time:(search_using_tz_offset_s) y )
+          ~tz_offset_s_of_date_time:search_using_tz_offset_s y )
     in
     s
     |> Time.Ranges.Of_seq.range_seq_of_seq ~modulo:None

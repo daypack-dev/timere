@@ -156,8 +156,7 @@ let pp_date_time format formatter x =
   | Error msg -> invalid_arg msg
   | Ok s -> Format.fprintf formatter "%s" s
 
-let sprintf_timestamp ?(display_using_tz_offset_s = 0) format
-     (time : int64) :
+let sprintf_timestamp ?(display_using_tz_offset_s = 0) format (time : int64) :
   (string, string) result =
   match
     Time.Date_time.of_timestamp
@@ -171,25 +170,26 @@ let pp_timestamp ?(display_using_tz_offset_s = 0) format formatter x =
   | Error msg -> invalid_arg msg
   | Ok s -> Format.fprintf formatter "%s" s
 
-let sprintf_interval ?(display_using_tz_offset_s = 0) (format : string) ((s, e) : Time.Interval.t) : (string, string) result =
+let sprintf_interval ?(display_using_tz_offset_s = 0) (format : string)
+    ((s, e) : Time.Interval.t) : (string, string) result =
   let open MParser in
   let open Parser_components in
-  let single (start_date_time : Time.Date_time.t) (end_date_time : Time.Date_time.t) :
-    (string, unit) t =
+  let single (start_date_time : Time.Date_time.t)
+      (end_date_time : Time.Date_time.t) : (string, unit) t =
     choice
       [
         attempt (string "{{" >> return "{");
         ( attempt (char '{')
           >> ( attempt (char 's' >> return start_date_time)
                <|> (char 'e' >> return end_date_time) )
-          >>= fun date_time -> Format_string_parsers.date_time_inner date_time << char '}'
-        );
+          >>= fun date_time ->
+          Format_string_parsers.date_time_inner date_time << char '}' );
         ( many1_satisfy (function '{' -> false | _ -> true)
           >>= fun s -> return s );
       ]
   in
-  let p (start_date_time : Time.Date_time.t) (end_date_time : Time.Date_time.t) :
-    (string list, unit) t =
+  let p (start_date_time : Time.Date_time.t) (end_date_time : Time.Date_time.t)
+    : (string list, unit) t =
     many (single start_date_time end_date_time)
   in
   match

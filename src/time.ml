@@ -1470,19 +1470,20 @@ module Date_time = struct
     | None -> Error ()
     | Some x -> x |> Ptime.to_float_s |> Int64.of_float |> Result.ok
 
-  let of_timestamp ?(tz_offset_s_of_date_time = 0) (x : int64)
-    : (t, unit) result =
+  let of_timestamp ?(tz_offset_s_of_date_time = 0) (x : int64) :
+    (t, unit) result =
     match Ptime.of_float_s (Int64.to_float x) with
     | None -> Error ()
     | Some x ->
-      x |> Ptime.to_date_time ~tz_offset_s:tz_offset_s_of_date_time |> of_ptime_date_time
+      x
+      |> Ptime.to_date_time ~tz_offset_s:tz_offset_s_of_date_time
+      |> of_ptime_date_time
 
   let make ~year ~month ~day ~hour ~minute ~second ~tz_offset_s =
     { year; month; day; hour; minute; second; tz_offset_s }
     |> to_timestamp
     |> Result.map (fun x ->
-        Result.get_ok
-        @@ of_timestamp ~tz_offset_s_of_date_time:(tz_offset_s) x)
+        Result.get_ok @@ of_timestamp ~tz_offset_s_of_date_time:tz_offset_s x)
 
   let min =
     Ptime.min |> Ptime.to_date_time |> of_ptime_date_time |> Result.get_ok
@@ -1550,9 +1551,7 @@ module Date_time_set = Set.Make (struct
 
 module Check = struct
   let timestamp_is_valid (x : int64) : bool =
-    match Date_time.of_timestamp x with
-    | Ok _ -> true
-    | Error () -> false
+    match Date_time.of_timestamp x with Ok _ -> true | Error () -> false
 
   let second_is_valid ~(second : int) : bool = 0 <= second && second < 60
 
@@ -1605,9 +1604,7 @@ module Pattern = struct
       let invalid_seconds = List.filter (fun x -> x < 0 || 59 < x) x.seconds in
       let invalid_timestamps =
         List.filter
-          (fun x ->
-             Result.is_error
-               (Date_time.of_timestamp x))
+          (fun x -> Result.is_error (Date_time.of_timestamp x))
           x.timestamps
       in
       match invalid_years with
