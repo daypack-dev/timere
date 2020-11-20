@@ -103,9 +103,6 @@ let month_p : (Timere.month, unit) t =
 let symbols = "()[]&|>"
 
 let token_p : (token, unit) MParser.t =
-  let attempt p =
-    attempt (p << look_ahead (eof <|> (space >> return ())))
-  in
   get_pos
   >>= fun pos ->
   choice
@@ -115,6 +112,9 @@ let token_p : (token, unit) MParser.t =
       attempt (char '-') >>$ Hyphen;
       attempt (char ':') >>$ Colon;
       attempt (char '*') >>$ Star;
+      (attempt nat_zero |>> fun x -> Nat x);
+      (attempt weekday_p |>> fun x -> Weekday x);
+      (attempt month_p |>> fun x -> Month x);
       attempt (string "not") >>$ Not;
       attempt (string "outside") >>$ Outside;
       attempt (string "for") >>$ For;
@@ -130,9 +130,6 @@ let token_p : (token, unit) MParser.t =
       attempt (string "nd") >>$ Nd;
       attempt (string "rd") >>$ Rd;
       attempt (string "th") >>$ Th;
-      (attempt nat_zero |>> fun x -> Nat x);
-      (attempt weekday_p |>> fun x -> Weekday x);
-      (attempt month_p |>> fun x -> Month x);
       attempt (string "hours") >>$ Hours;
       attempt (string "hour") >>$ Hours;
       attempt (string "h") >>$ Hours;
