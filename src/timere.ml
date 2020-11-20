@@ -36,6 +36,10 @@ end
 
 let resolve = Resolver.resolve
 
+let sprintf_interval = Printer.sprintf_interval
+
+let pp_interval = Printer.pp_interval
+
 module Utils = struct
   let flatten_month_ranges (months : month range Seq.t) :
     (month Seq.t, unit) Result.t =

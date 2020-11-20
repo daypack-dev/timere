@@ -156,6 +156,58 @@ let pp_date_time format formatter x =
   | Error msg -> invalid_arg msg
   | Ok s -> Format.fprintf formatter "%s" s
 
+let sprintf_interval ?(display_using_tz_offset_s = 0) (format : string) ((s, e) : Time.Interval.t) : (string, string) result =
+  let open MParser in
+  let open Parser_components in
+  let single (start_date_time : Time.Date_time.t) (end_date_time : Time.Date_time.t) :
+    (string, unit) t =
+    choice
+      [
+        attempt (string "{{" >> return "{");
+        ( attempt (char '{')
+          >> ( attempt (char 's' >> return start_date_time)
+               <|> (char 'e' >> return end_date_time) )
+          >>= fun date_time -> Format_string_parsers.date_time_inner date_time << char '}'
+        );
+        ( many1_satisfy (function '{' -> false | _ -> true)
+          >>= fun s -> return s );
+      ]
+  in
+  let p (start_date_time : Time.Date_time.t) (end_date_time : Time.Date_time.t) :
+    (string list, unit) t =
+    many (single start_date_time end_date_time)
+  in
+  match
+    Time.Date_time.of_timestamp
+      ~tz_offset_s_of_date_time:display_using_tz_offset_s s
+  with
+  | Error () -> Error "Invalid start unix time"
+  | Ok s -> (
+      match
+        Time.Date_time.of_timestamp
+          ~tz_offset_s_of_date_time:display_using_tz_offset_s e
+      with
+      | Error () -> Error "Invalid end unix time"
+      | Ok e ->
+        parse_string
+          ( p s e
+            >>= fun s ->
+            get_pos
+            >>= fun pos ->
+            attempt eof
+            >> return s
+               <|> fail
+                 (Printf.sprintf "Expected EOI, pos: %s" (string_of_pos pos))
+          )
+          format ()
+        |> result_of_mparser_result
+        |> Result.map (fun l -> String.concat "" l) )
+
+let pp_interval ?(display_using_tz_offset_s = 0) format formatter interval =
+  match sprintf_interval ~display_using_tz_offset_s format interval with
+  | Error msg -> invalid_arg msg
+  | Ok s -> Format.fprintf formatter "%s" s
+
 let sprint_duration ({ days; hours; minutes; seconds } : Duration.t) : string =
   if days > 0 then
     Printf.sprintf "%d days %d hours %d mins %d secs" days hours minutes seconds

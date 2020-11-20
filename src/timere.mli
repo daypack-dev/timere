@@ -126,7 +126,7 @@ module Date_time : sig
   val to_timestamp : t -> (timestamp, unit) result
 
   val of_timestamp :
-    tz_offset_s_of_date_time:tz_offset_s option -> timestamp -> (t, unit) result
+    ?tz_offset_s_of_date_time:tz_offset_s -> timestamp -> (t, unit) result
 
   val compare : t -> t -> int
 
@@ -134,7 +134,7 @@ module Date_time : sig
 
   val max : t
 
-  val cur : tz_offset_s_of_date_time:tz_offset_s option -> (t, unit) result
+  val cur : ?tz_offset_s_of_date_time:tz_offset_s -> unit -> (t, unit) result
 
   val sprintf : string -> t -> (string, string) result
 
@@ -244,6 +244,12 @@ end
 
 val resolve :
   ?search_using_tz_offset_s:tz_offset_s -> t -> (interval Seq.t, string) result
+
+(** {1 Pretty printers} *)
+
+val sprintf_interval : ?display_using_tz_offset_s:tz_offset_s -> string -> interval -> (string, string) result
+
+val pp_interval : ?display_using_tz_offset_s:tz_offset_s -> string -> Format.formatter -> interval -> unit
 
 module Utils : sig
   val flatten_month_ranges : month range Seq.t -> (month Seq.t, unit) result

@@ -41,9 +41,6 @@ let first_mday = 1
 
 let tm_year_offset = 1900
 
-let resolve_current_tz_offset_s (x : tz_offset_s option) : tz_offset_s =
-  Option.value ~default:0 x
-
 let next_weekday (wday : weekday) : weekday =
   match wday with
   | `Sun -> `Mon
@@ -1473,22 +1470,19 @@ module Date_time = struct
     | None -> Error ()
     | Some x -> x |> Ptime.to_float_s |> Int64.of_float |> Result.ok
 
-  let of_timestamp ~(tz_offset_s_of_date_time : tz_offset_s option) (x : int64)
+  let of_timestamp ?(tz_offset_s_of_date_time = 0) (x : int64)
     : (t, unit) result =
     match Ptime.of_float_s (Int64.to_float x) with
     | None -> Error ()
     | Some x ->
-      let tz_offset_s =
-        resolve_current_tz_offset_s tz_offset_s_of_date_time
-      in
-      x |> Ptime.to_date_time ~tz_offset_s |> of_ptime_date_time
+      x |> Ptime.to_date_time ~tz_offset_s:tz_offset_s_of_date_time |> of_ptime_date_time
 
   let make ~year ~month ~day ~hour ~minute ~second ~tz_offset_s =
     { year; month; day; hour; minute; second; tz_offset_s }
     |> to_timestamp
     |> Result.map (fun x ->
         Result.get_ok
-        @@ of_timestamp ~tz_offset_s_of_date_time:(Some tz_offset_s) x)
+        @@ of_timestamp ~tz_offset_s_of_date_time:(tz_offset_s) x)
 
   let min =
     Ptime.min |> Ptime.to_date_time |> of_ptime_date_time |> Result.get_ok
@@ -1496,7 +1490,7 @@ module Date_time = struct
   let max =
     Ptime.max |> Ptime.to_date_time |> of_ptime_date_time |> Result.get_ok
 
-  let cur ~tz_offset_s_of_date_time : (t, unit) result =
+  let cur ?(tz_offset_s_of_date_time = 0) () : (t, unit) result =
     cur_timestamp () |> of_timestamp ~tz_offset_s_of_date_time
 
   let compare (x : t) (y : t) : int =
@@ -1556,7 +1550,7 @@ module Date_time_set = Set.Make (struct
 
 module Check = struct
   let timestamp_is_valid (x : int64) : bool =
-    match Date_time.of_timestamp ~tz_offset_s_of_date_time:None x with
+    match Date_time.of_timestamp x with
     | Ok _ -> true
     | Error () -> false
 
@@ -1613,7 +1607,7 @@ module Pattern = struct
         List.filter
           (fun x ->
              Result.is_error
-               (Date_time.of_timestamp ~tz_offset_s_of_date_time:None x))
+               (Date_time.of_timestamp x))
           x.timestamps
       in
       match invalid_years with
