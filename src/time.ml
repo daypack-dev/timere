@@ -856,11 +856,8 @@ module Range = struct
     match modulo with
     | None -> (
         match int64_range_of_range ~to_int64 t with
-        | `Range_inc (x, y) ->
-          x <= y
-        | `Range_exc (x, y) ->
-          x <= y
-      )
+        | `Range_inc (x, y) -> x <= y
+        | `Range_exc (x, y) -> x <= y )
     | Some _ -> true
 
   module Flatten = struct
@@ -1839,12 +1836,13 @@ let branching ?(years = []) ?(months = []) ?(days = Month_days []) ?(hmss = [])
     && Month_ranges.Check.list_is_valid months
     && ( match days with
         | Month_days days ->
-          List.for_all (fun day_range ->
-              match day_range with
-              | `Range_inc (d1, d2) | `Range_exc (d1, d2) ->
-                p_day d1 && p_day d2) days
-          &&
-          Month_day_ranges.Check.list_is_valid days
+          List.for_all
+            (fun day_range ->
+               match day_range with
+               | `Range_inc (d1, d2) | `Range_exc (d1, d2) ->
+                 p_day d1 && p_day d2)
+            days
+          && Month_day_ranges.Check.list_is_valid days
         | Weekdays days -> Weekday_ranges.Check.list_is_valid days )
     && List.for_all
       (fun hms_range ->
