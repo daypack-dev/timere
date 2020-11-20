@@ -11,7 +11,7 @@ let debug_branching () =
 
 let debug_resolve () =
   let expr =
-    "nov to oct"
+    "nov to dec"
   in
   let search_years_ahead = 5 in
   match Timere_parse.timere expr with
@@ -52,8 +52,8 @@ let debug_resolve () =
               | Error msg -> Printf.printf "Error: %s\n" msg);
           print_newline () )
 
-let () =
-  debug_branching ()
-
 (* let () =
- *   debug_resolve () *)
+ *   debug_branching () *)
+
+let () =
+  debug_resolve ()
