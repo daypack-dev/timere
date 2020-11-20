@@ -5,9 +5,13 @@ let default_interval_format_string =
   "[{syear} {smon:Xxx} {smday:0X} {swday:Xxx} {shour:0X}:{smin:0X}:{ssec:0X}, \
    {eyear} {emon:Xxx} {emday:0X} {ewday:Xxx} {ehour:0X}:{emin:0X}:{esec:0X})"
 
+let debug_branching () =
+  Timere.branching ~months:[`Range_inc (`Nov, `Oct)] ()
+  |> ignore
+
 let debug_resolve () =
   let expr =
-    "nov"
+    "nov to oct"
   in
   let search_years_ahead = 5 in
   match Timere_parse.timere expr with
@@ -49,4 +53,7 @@ let debug_resolve () =
           print_newline () )
 
 let () =
-  debug_resolve ()
+  debug_branching ()
+
+(* let () =
+ *   debug_resolve () *)
