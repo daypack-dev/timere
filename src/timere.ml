@@ -1,4 +1,3 @@
-module Duration = Duration
 include Time
 
 module Date_time = struct
@@ -7,6 +6,14 @@ module Date_time = struct
   let sprintf = Printer.sprintf_date_time
 
   let pp = Printer.pp_date_time
+end
+
+module Duration = struct
+  include Duration
+
+  let sprint = Printer.sprint_duration
+
+  let pp = Printer.pp_duration
 end
 
 type 'a range = 'a Range.range

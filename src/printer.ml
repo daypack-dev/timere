@@ -80,7 +80,7 @@ module Format_string_parsers = struct
         >>= fun padding -> char 'X' >> return (Some padding) )
     <|> (char 'X' >> return None)
 
-  let inner (date_time : Time.Date_time.t) : (string, unit) t =
+  let date_time_inner (date_time : Time.Date_time.t) : (string, unit) t =
     choice
       [
         attempt (string "year") >> return (string_of_int date_time.year);
@@ -138,7 +138,9 @@ let sprintf_date_time (format : string) (x : Time.Date_time.t) :
     choice
       [
         attempt (string "{{" >> return "{");
-        attempt (char '{') >> Format_string_parsers.inner date_time << char '}';
+        attempt (char '{')
+        >> Format_string_parsers.date_time_inner date_time
+           << char '}';
         (many1_satisfy (function '{' -> false | _ -> true) |>> fun s -> s);
       ]
   in
@@ -153,3 +155,13 @@ let pp_date_time format formatter x =
   match sprintf_date_time format x with
   | Error msg -> invalid_arg msg
   | Ok s -> Format.fprintf formatter "%s" s
+
+let sprint_duration ({ days; hours; minutes; seconds } : Duration.t) : string =
+  if days > 0 then
+    Printf.sprintf "%d days %d hours %d mins %d secs" days hours minutes seconds
+  else if hours > 0 then
+    Printf.sprintf "%d hours %d mins %d secs" hours minutes seconds
+  else if minutes > 0 then Printf.sprintf "%d mins %d secs" minutes seconds
+  else Printf.sprintf "%d secs" seconds
+
+let pp_duration formatter x = Format.fprintf formatter "%s" (sprint_duration x)

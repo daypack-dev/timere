@@ -168,6 +168,10 @@ module Duration : sig
   val of_seconds : int64 -> (t, unit) result
 
   val to_seconds : t -> int64
+
+  val sprint : t -> string
+
+  val pp : Format.formatter -> t -> unit
 end
 
 val shift : Duration.t -> t -> t
