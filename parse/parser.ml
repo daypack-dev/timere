@@ -521,6 +521,10 @@ let t_rules : (token list -> (Timere.t, string option) Result.t) list =
       | _ -> Error None);
     (function
       | [ (_, Nat year); (_, Month month); (pos_month_days, Nat day) ]
+      | [ (_, Nat year); (_, Month month); (pos_month_days, Nat day); (_, St) ]
+      | [ (_, Nat year); (_, Month month); (pos_month_days, Nat day); (_, Nd) ]
+      | [ (_, Nat year); (_, Month month); (pos_month_days, Nat day); (_, Rd) ]
+      | [ (_, Nat year); (_, Month month); (pos_month_days, Nat day); (_, Th) ]
         when year > 31 ->
         pattern ~years:[ year ] ~months:[ month ] ~pos_month_days
           ~month_days:[ day ] ()
@@ -549,7 +553,15 @@ let t_rules : (token list -> (Timere.t, string option) Result.t) list =
         (_, Rd);
         (_, Of);
         (_, Month month);
-      ] ->
+      ]
+      | [
+        (_, Nat year);
+        (pos_month_days, Nat day);
+        (_, Th);
+        (_, Of);
+        (_, Month month);
+      ]
+        ->
         pattern ~years:[ year ] ~months:[ month ] ~pos_month_days
           ~month_days:[ day ] ()
       | _ -> Error None);
@@ -625,6 +637,8 @@ let date_time_t_of_ast ~tz_offset_s (ast : ast) :
       [ (_, Nat year); (_, Month month); (_, Nat day); (_, Nd); (_, Hms hms) ]
   | Tokens
       [ (_, Nat year); (_, Month month); (_, Nat day); (_, Rd); (_, Hms hms) ]
+  | Tokens
+      [ (_, Nat year); (_, Month month); (_, Nat day); (_, Th); (_, Hms hms) ]
     ->
     Timere.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
       ~second:hms.second ~tz_offset_s
