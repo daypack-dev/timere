@@ -131,6 +131,8 @@ module Date_time : sig
   val min : t
 
   val max : t
+
+  val pp : string -> t -> (string, string) result
 end
 
 val of_date_time : Date_time.t -> (t, unit) result

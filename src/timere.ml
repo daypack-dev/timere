@@ -1,6 +1,12 @@
 module Duration = Duration
 include Time
 
+module Date_time = struct
+  include Date_time
+
+  let pp = Printer.pp_date_time
+end
+
 type 'a range = 'a Range.range
 
 type interval = Interval.t
