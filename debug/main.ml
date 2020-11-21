@@ -7,7 +7,7 @@ let default_interval_format_string =
 
 let debug_branching () =
   let timere =
-    Timere.branching ~months:[`Range_inc (`Dec, `Dec)]
+    Timere.branching ~months:[`Range_inc (`Dec, `Dec); `Range_inc (`Nov, `Nov)]
       ~days:(Timere.Month_days [`Range_inc (1, 31);])
       ()
   in
@@ -50,7 +50,7 @@ let debug_branching () =
 
 let debug_parsing () =
   let expr =
-    "nov to dec"
+    "dec to jan"
   in
   let search_years_ahead = 5 in
   match Timere_parse.timere expr with

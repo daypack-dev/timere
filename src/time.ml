@@ -1845,7 +1845,31 @@ let branching ?(years = []) ?(months = []) ?(days = Month_days []) ?(hmss = [])
          | `Range_inc (hms1, hms2) | `Range_exc (hms1, hms2) ->
            p_hms hms1 && p_hms hms2)
       hmss
-  then Branching (default_search_space, { years; months; days; hmss })
+  then
+    let years =
+      years
+      |> List.to_seq
+      |> Year_ranges.normalize ~skip_filter_invalid:true ~skip_sort:true
+      |> List.of_seq
+    in
+    let months =
+      months
+      |> List.to_seq
+      |> Month_ranges.normalize ~skip_filter_invalid:true ~skip_sort:true
+      |> List.of_seq
+    in
+    let days =
+      match days with
+      | Month_days days ->
+        Month_days
+          ( days
+            |> List.to_seq
+            |> Month_day_ranges.normalize ~skip_filter_invalid:true
+              ~skip_sort:true
+            |> List.of_seq )
+      | Weekdays days -> Weekdays days
+    in
+    Branching (default_search_space, { years; months; days; hmss })
   else invalid_arg "branching"
 
 let years years = pattern ~years ()
