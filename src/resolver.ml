@@ -841,9 +841,10 @@ let optimize_search_space default_tz_offset_s t =
   |> propagate_search_space_bottom_up default_tz_offset_s
   |> propagate_search_space_top_down
 
-let time_t_seq_of_branching tz_offset_s (b : Time.branching) : Time.t Seq.t =
+let intervals_of_branching tz_offset_s (b : Time.branching) :
+  Time.Interval.t Seq.t =
   let open Time in
-  let time_t_seq_of_month_days year month month_days hmss =
+  let intervals_of_month_days year month month_days hmss =
     Seq.flat_map
       (fun day ->
          Seq.filter_map
@@ -863,13 +864,9 @@ let time_t_seq_of_branching tz_offset_s (b : Time.branching) : Time.t Seq.t =
                       with
                       | Error () -> None
                       | Ok dt2 ->
-                        let search_space =
-                          [
-                            ( Date_time.to_timestamp dt1,
-                              Date_time.to_timestamp dt2 );
-                          ]
-                        in
-                        Some (Interval_inc (search_space, dt1, dt2)) ) )
+                        Some
+                          ( Date_time.to_timestamp dt1,
+                            Date_time.to_timestamp dt2 ) ) )
               | `Range_exc (start, end_exc) -> (
                   match
                     Date_time.make ~year ~month ~day ~hour:start.hour
@@ -884,13 +881,9 @@ let time_t_seq_of_branching tz_offset_s (b : Time.branching) : Time.t Seq.t =
                       with
                       | Error () -> None
                       | Ok dt2 ->
-                        let search_space =
-                          [
-                            ( Date_time.to_timestamp dt1,
-                              Date_time.to_timestamp dt2 );
-                          ]
-                        in
-                        Some (Interval_exc (search_space, dt1, dt2)) ) ))
+                        Some
+                          ( Date_time.to_timestamp dt1,
+                            Date_time.to_timestamp dt2 ) ) ))
            hmss)
       month_days
   in
@@ -903,7 +896,7 @@ let time_t_seq_of_branching tz_offset_s (b : Time.branching) : Time.t Seq.t =
     Seq.flat_map
       (fun year ->
          Seq.flat_map
-           (fun month -> time_t_seq_of_month_days year month days hmss)
+           (fun month -> intervals_of_month_days year month days hmss)
            months)
       years
   | Weekdays days ->
@@ -930,7 +923,7 @@ let time_t_seq_of_branching tz_offset_s (b : Time.branching) : Time.t Seq.t =
                      search_space)
                 |> Seq.map (fun Date_time.{ day; _ } -> day)
               in
-              time_t_seq_of_month_days year month month_days hmss)
+              intervals_of_month_days year month month_days hmss)
            months)
       years
 
@@ -938,34 +931,34 @@ type inc_or_exc =
   | Inc
   | Exc
 
-let construct_interval_from_two_seqs inc_or_exc s1 s2 =
-  let construct_interval start1 start2 =
-    match inc_or_exc with
-    | Inc -> (start1, Int64.succ start2)
-    | Exc -> (start1, start2)
-  in
-  match s1 () with
-  | Seq.Nil -> Error "Failed to resolve start of interval"
-  | Seq.Cons ((start, end_exc), rest) -> (
-      if Int64.succ start <> end_exc then
-        Error "Start of interval is not a discrete time point"
-      else
-        match rest () with
-        | Seq.Cons _ ->
-          Error "Start of interval is not a unique discrete time point"
-        | Seq.Nil -> (
-            match s2 () with
-            | Seq.Nil -> Error "Failed to resolve end of interval"
-            | Seq.Cons ((start', end_exc'), rest') -> (
-                if Int64.succ start' <> end_exc' then
-                  Error "End of interval is not a discrete time point"
-                else
-                  match rest' () with
-                  | Seq.Cons _ ->
-                    Error
-                      "End of interval is not a unique discrete time point"
-                  | Seq.Nil -> Ok (Seq.return (construct_interval start start'))
-              ) ) )
+(* let construct_interval_from_two_seqs inc_or_exc s1 s2 =
+ *   let construct_interval start1 start2 =
+ *     match inc_or_exc with
+ *     | Inc -> (start1, Int64.succ start2)
+ *     | Exc -> (start1, start2)
+ *   in
+ *   match s1 () with
+ *   | Seq.Nil -> Error "Failed to resolve start of interval"
+ *   | Seq.Cons ((start, end_exc), rest) -> (
+ *       if Int64.succ start <> end_exc then
+ *         Error "Start of interval is not a discrete time point"
+ *       else
+ *         match rest () with
+ *         | Seq.Cons _ ->
+ *           Error "Start of interval is not a unique discrete time point"
+ *         | Seq.Nil -> (
+ *             match s2 () with
+ *             | Seq.Nil -> Error "Failed to resolve end of interval"
+ *             | Seq.Cons ((start', end_exc'), rest') -> (
+ *                 if Int64.succ start' <> end_exc' then
+ *                   Error "End of interval is not a discrete time point"
+ *                 else
+ *                   match rest' () with
+ *                   | Seq.Cons _ ->
+ *                     Error
+ *                       "End of interval is not a unique discrete time point"
+ *                   | Seq.Nil -> Ok (Seq.return (construct_interval start start'))
+ *               ) ) ) *)
 
 (* let construct_intervals_from_two_seqs inc_or_exc s1 s2 =
  *   let construct_interval =
@@ -1004,14 +997,9 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
               (fun param -> Resolve_pattern.matching_intervals param pat)
               params))
     | Branching (space, branching) ->
-      let t =
-        Round_robin_pick_list
-          ( space,
-            List.of_seq
-            @@ time_t_seq_of_branching search_using_tz_offset_s branching )
-        |> propagate_search_space_top_down
-      in
-      aux search_using_tz_offset_s t
+      Result.ok
+      @@ Intervals.inter ~skip_check:true (List.to_seq space)
+        (intervals_of_branching search_using_tz_offset_s branching)
     | Unary_op (space, op, t) ->
       let search_using_tz_offset_s =
         match op with Tz_offset x -> x | _ -> search_using_tz_offset_s
