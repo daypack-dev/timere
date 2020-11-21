@@ -907,17 +907,17 @@ let intervals_of_branching tz_offset_s (b : Time.branching) :
          Seq.flat_map
            (fun month ->
               let month_days =
-                Pattern.
-                  {
-                    years = [ year ];
-                    months = [ month ];
-                    month_days = [];
-                    weekdays = days;
-                    hours = [ 0 ];
-                    minutes = [ 0 ];
-                    seconds = [ 0 ];
-                    timestamps = [];
-                  }
+                ( {
+                  years = [ year ];
+                  months = [ month ];
+                  month_days = [];
+                  weekdays = days;
+                  hours = [ 0 ];
+                  minutes = [ 0 ];
+                  seconds = [ 0 ];
+                  timestamps = [];
+                }
+                  : Time.Pattern.pattern )
                 |> Resolve_pattern.matching_date_times
                   (Search_param.make ~search_using_tz_offset_s:tz_offset_s
                      search_space)
