@@ -931,56 +931,6 @@ type inc_or_exc =
   | Inc
   | Exc
 
-(* let construct_interval_from_two_seqs inc_or_exc s1 s2 =
- *   let construct_interval start1 start2 =
- *     match inc_or_exc with
- *     | Inc -> (start1, Int64.succ start2)
- *     | Exc -> (start1, start2)
- *   in
- *   match s1 () with
- *   | Seq.Nil -> Error "Failed to resolve start of interval"
- *   | Seq.Cons ((start, end_exc), rest) -> (
- *       if Int64.succ start <> end_exc then
- *         Error "Start of interval is not a discrete time point"
- *       else
- *         match rest () with
- *         | Seq.Cons _ ->
- *           Error "Start of interval is not a unique discrete time point"
- *         | Seq.Nil -> (
- *             match s2 () with
- *             | Seq.Nil -> Error "Failed to resolve end of interval"
- *             | Seq.Cons ((start', end_exc'), rest') -> (
- *                 if Int64.succ start' <> end_exc' then
- *                   Error "End of interval is not a discrete time point"
- *                 else
- *                   match rest' () with
- *                   | Seq.Cons _ ->
- *                     Error
- *                       "End of interval is not a unique discrete time point"
- *                   | Seq.Nil -> Ok (Seq.return (construct_interval start start'))
- *               ) ) ) *)
-
-(* let construct_intervals_from_two_seqs inc_or_exc s1 s2 =
- *   let construct_interval =
- *     match inc_or_exc with
- *     | Inc -> fun (start, _) (_, end_exc') -> (start, Int64.succ end_exc')
- *     | Exc -> fun (start, _) (start', _) -> (start, start')
- *   in
- *   let rec aux s1 s2 =
- *     match s1 () with
- *     | Seq.Nil -> Seq.empty
- *     | Seq.Cons ((start, end_exc), s1_rest) -> (
- *         match s2 () with
- *         | Seq.Nil -> Seq.empty
- *         | Seq.Cons ((start', end_exc'), s2_rest) ->
- *           if start <= start' then fun () ->
- *             Seq.Cons
- *               ( construct_interval (start, end_exc) (start', end_exc'),
- *                 aux s1_rest s2_rest )
- *           else aux s1 s2_rest )
- *   in
- *   aux s1 s2 *)
-
 let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
   let rec aux search_using_tz_offset_s time =
