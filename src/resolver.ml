@@ -866,7 +866,7 @@ let intervals_of_branching tz_offset_s (b : Time.branching) :
                       | Ok dt2 ->
                         Some
                           ( Date_time.to_timestamp dt1,
-                            Date_time.to_timestamp dt2 ) ) )
+                            Int64.succ @@ Date_time.to_timestamp dt2 ) ) )
               | `Range_exc (start, end_exc) -> (
                   match
                     Date_time.make ~year ~month ~day ~hour:start.hour
