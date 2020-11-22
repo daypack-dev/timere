@@ -72,6 +72,8 @@ type branching_days =
   | Month_days of int range list
   | Weekdays of weekday range list
 
+exception Month_day_ranges_are_invalid
+
 val branching :
   ?allow_out_of_range_month_day:bool ->
   ?years:int range list ->
@@ -96,6 +98,8 @@ val merge : t list -> t
 val cur_timestamp : unit -> int64
 
 module Date_time : sig
+  exception Invalid_date_time
+
   type t = private {
     year : int;
     month : month;
@@ -115,6 +119,16 @@ module Date_time : sig
     second:int ->
     tz_offset_s:int ->
     (t, unit) result
+
+  val make_exn :
+    year:int ->
+    month:month ->
+    day:int ->
+    hour:int ->
+    minute:int ->
+    second:int ->
+    tz_offset_s:int ->
+    t
 
   val to_timestamp : t -> timestamp
 

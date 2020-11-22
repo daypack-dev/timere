@@ -12,6 +12,8 @@ exception Intervals_are_not_sorted
 
 exception Intervals_are_not_disjoint
 
+exception Month_day_ranges_are_invalid
+
 type weekday =
   [ `Sun
   | `Mon
@@ -1480,6 +1482,8 @@ module Year_ranges = Ranges_small.Make (struct
 let cur_timestamp () : int64 = Unix.time () |> Int64.of_float
 
 module Date_time = struct
+  exception Invalid_date_time
+
   type t = {
     year : int;
     month : month;
@@ -1521,6 +1525,11 @@ module Date_time = struct
     match Ptime.of_date_time (to_ptime_date_time dt) with
     | None -> Error ()
     | Some _ -> Ok dt
+
+  let make_exn ~year ~month ~day ~hour ~minute ~second ~tz_offset_s =
+    match make ~year ~month ~day ~hour ~minute ~second ~tz_offset_s with
+    | Error () -> raise Invalid_date_time
+    | Ok x -> x
 
   let min =
     Ptime.min |> Ptime.to_date_time |> of_ptime_date_time |> Result.get_ok
@@ -1913,7 +1922,7 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
     && hms.second < 60
   in
   match days with
-  | Error () -> failwith "Invalid month day ranges"
+  | Error () -> raise Month_day_ranges_are_invalid
   | Ok days ->
     if
       List.for_all
