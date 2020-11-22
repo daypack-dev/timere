@@ -1836,7 +1836,9 @@ let min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start =
   if start < 0 then safe_month_day_end_inc + start + 1 else start
 
 let min_acceptable_negative_day_end_inc ~safe_month_day_end_inc ~start =
-  let start = min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start in
+  let start =
+    min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start
+  in
   -(safe_month_day_end_inc - start)
 
 let branching ?(allow_out_of_range_month_day = false) ?(years = [])
@@ -1860,7 +1862,9 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
         if allow_out_of_range_month_day then (-31, 31)
         else (safe_month_day_start, safe_month_day_end_inc)
       in
-      let p_day_inc day = check_start <= day && day <= check_end_inc && day <> 0 in
+      let p_day_inc day =
+        check_start <= day && day <= check_end_inc && day <> 0
+      in
       let p_day_exc day = check_start <= day && day <= check_end_inc + 1 in
       if
         List.for_all
@@ -1874,19 +1878,22 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
              match day_range with
              | `Range_inc (start, d) ->
                if d < 0 then
-                 min_acceptable_negative_day_end_inc ~safe_month_day_end_inc
-                   ~start
+                 min_acceptable_negative_day_end_inc
+                   ~safe_month_day_end_inc ~start
                  <= d
                else
-                 min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start <= d
+                 min_acceptable_positive_day_end_inc
+                   ~safe_month_day_end_inc ~start
+                 <= d
              | `Range_exc (start, d) ->
                if d < 0 then
-                 min_acceptable_negative_day_end_inc ~safe_month_day_end_inc
-                   ~start
+                 min_acceptable_negative_day_end_inc
+                   ~safe_month_day_end_inc ~start
                  < d
                else
-                 min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start < d
-          )
+                 min_acceptable_positive_day_end_inc
+                   ~safe_month_day_end_inc ~start
+                 < d)
           days
       then Ok (Month_days days)
       else Error ()
