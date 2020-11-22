@@ -1807,7 +1807,7 @@ let pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
         } )
   else invalid_arg "pattern"
 
-let day_range_inc ~years ~months =
+let safe_month_day_range_inc ~years ~months =
   let contains_non_leap_year =
     years
     |> List.to_seq
@@ -1832,14 +1832,27 @@ let day_range_inc ~years ~months =
   in
   aux (-31) 31 (Month_ranges.Flatten.flatten @@ List.to_seq @@ months)
 
-let min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start =
-  if start < 0 then safe_month_day_end_inc + start + 1 else start
-
-let min_acceptable_negative_day_end_inc ~safe_month_day_end_inc ~start =
-  let start =
-    min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start
+let month_day_range_is_valid ~safe_month_day_end_inc day_range =
+  let min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start =
+    if start < 0 then safe_month_day_end_inc + start + 1 else start
   in
-  -(safe_month_day_end_inc - start)
+  let min_acceptable_negative_day_end_inc ~safe_month_day_end_inc ~start =
+    let start =
+      min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start
+    in
+    -(safe_month_day_end_inc - start)
+  in
+  match day_range with
+  | `Range_inc (start, d) ->
+    if d < 0 then
+      min_acceptable_negative_day_end_inc ~safe_month_day_end_inc ~start <= d
+    else
+      min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start <= d
+  | `Range_exc (start, d) ->
+    if d < 0 then
+      min_acceptable_negative_day_end_inc ~safe_month_day_end_inc ~start < d
+    else
+      min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start < d
 
 let branching ?(allow_out_of_range_month_day = false) ?(years = [])
     ?(months = []) ?(days = Month_days []) ?(hmss = []) () : t =
@@ -1852,7 +1865,7 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
     match months with [] -> [ `Range_inc (`Jan, `Dec) ] | _ -> months
   in
   let safe_month_day_start, safe_month_day_end_inc =
-    day_range_inc ~years ~months
+    safe_month_day_range_inc ~years ~months
   in
   let days =
     match days with
@@ -1874,26 +1887,7 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
                p_day_inc d1 && p_day_exc d2)
           days
         && List.for_all
-          (fun day_range ->
-             match day_range with
-             | `Range_inc (start, d) ->
-               if d < 0 then
-                 min_acceptable_negative_day_end_inc
-                   ~safe_month_day_end_inc ~start
-                 <= d
-               else
-                 min_acceptable_positive_day_end_inc
-                   ~safe_month_day_end_inc ~start
-                 <= d
-             | `Range_exc (start, d) ->
-               if d < 0 then
-                 min_acceptable_negative_day_end_inc
-                   ~safe_month_day_end_inc ~start
-                 < d
-               else
-                 min_acceptable_positive_day_end_inc
-                   ~safe_month_day_end_inc ~start
-                 < d)
+          (month_day_range_is_valid ~safe_month_day_end_inc)
           days
       then Ok (Month_days days)
       else Error ()
