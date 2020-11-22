@@ -1857,13 +1857,14 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
         if allow_out_of_range_month_day then (-31, 31)
         else (safe_month_day_start, safe_month_day_end_inc)
       in
-      let p_day day = check_start <= day && day <= check_end_inc in
+      let p_day_inc day = check_start <= day && day <= check_end_inc && day <> 0 in
+      let p_day_exc day = check_start <= day && day <= check_end_inc + 1 in
       if
         List.for_all
           (fun day_range ->
              match day_range with
              | `Range_inc (d1, d2) | `Range_exc (d1, d2) ->
-               p_day d1 && p_day d2)
+               p_day_inc d1 && p_day_exc d2)
           days
         && List.for_all
           (fun day_range ->
