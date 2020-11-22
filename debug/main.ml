@@ -7,8 +7,8 @@ let default_interval_format_string =
 
 let debug_branching () =
   let timere =
-    Timere.branching ~months:[`Range_inc (`Dec, `Dec); ]
-      ~days:(Timere.Month_days [`Range_inc (30, -1);])
+    Timere.branching ~months:[`Range_inc (`Jan, `Mar); ]
+      ~days:(Timere.Month_days [`Range_inc (-2, -1);])
       ()
   in
   let search_years_ahead = 5 in
@@ -37,7 +37,7 @@ let debug_branching () =
     | Seq.Nil -> print_endline "No matching time slots"
     | Seq.Cons _ ->
       s
-      |> OSeq.take 10
+      |> OSeq.take 20
       |> OSeq.iter (fun ts ->
           match
             Timere.sprintf_interval
