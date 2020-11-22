@@ -1830,7 +1830,7 @@ let day_range_inc ~years ~months =
         | _ ->
           day_count_of_month ~year:leap_year ~month
       in
-      aux (min (- count) start) (max count end_inc) rest
+      aux (max (- count) start) (min count end_inc) rest
   in
   aux (-31) 31 (Month_ranges.Flatten.flatten @@ List.to_seq @@ months)
 
