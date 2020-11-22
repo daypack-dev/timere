@@ -898,17 +898,13 @@ let intervals_of_branching tz_offset_s (b : Time.branching) :
            (fun month ->
               let day_count = day_count_of_month ~year ~month in
               let f (x, y) =
-                ((if x < 0 then x + day_count else x),
-                 (if y < 0 then y + day_count else y)
-                )
+                ( (if x < 0 then x + day_count else x),
+                  if y < 0 then y + day_count else y )
               in
               let days =
-                days |> List.to_seq
-                |> Seq.map (
-                    Range.map
-                      ~f_inc:f
-                      ~f_exc:f
-                  )
+                days
+                |> List.to_seq
+                |> Seq.map (Range.map ~f_inc:f ~f_exc:f)
                 |> Month_day_ranges.normalize
                 |> Month_day_ranges.Flatten.flatten
               in

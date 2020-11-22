@@ -1825,27 +1825,19 @@ let day_range_inc ~years ~months =
         | `Feb ->
           if contains_non_leap_year then
             day_count_of_month ~year:non_leap_year ~month
-          else
-            day_count_of_month ~year:leap_year ~month
-        | _ ->
-          day_count_of_month ~year:leap_year ~month
+          else day_count_of_month ~year:leap_year ~month
+        | _ -> day_count_of_month ~year:leap_year ~month
       in
-      aux (max (- count) start) (min count end_inc) rest
+      aux (max (-count) start) (min count end_inc) rest
   in
   aux (-31) 31 (Month_ranges.Flatten.flatten @@ List.to_seq @@ months)
 
 let min_acceptable_negative_day_end_inc ~safe_month_day_end_inc ~start =
-  let start =
-    if start < 0 then
-      safe_month_day_end_inc + start
-    else
-      start
-  in
-  - (safe_month_day_end_inc - start)
+  let start = if start < 0 then safe_month_day_end_inc + start else start in
+  -(safe_month_day_end_inc - start)
 
-let branching ?(allow_out_of_range_month_day = false)
-    ?(years = []) ?(months = []) ?(days = Month_days []) ?(hmss = [])
-    () : t =
+let branching ?(allow_out_of_range_month_day = false) ?(years = [])
+    ?(months = []) ?(days = Month_days []) ?(hmss = []) () : t =
   let years =
     match years with
     | [] -> [ `Range_inc (Date_time.min.year, Date_time.max.year) ]
@@ -1854,41 +1846,40 @@ let branching ?(allow_out_of_range_month_day = false)
   let months =
     match months with [] -> [ `Range_inc (`Jan, `Dec) ] | _ -> months
   in
-  let (safe_month_day_start, safe_month_day_end_inc) = day_range_inc ~years ~months in
+  let safe_month_day_start, safe_month_day_end_inc =
+    day_range_inc ~years ~months
+  in
   let days =
     match days with
-    | Month_days [] | Weekdays [] ->
-      Ok (Month_days [ `Range_inc (1, 31) ])
+    | Month_days [] | Weekdays [] -> Ok (Month_days [ `Range_inc (1, 31) ])
     | Month_days days ->
-      let (check_start, check_end_inc) =
-        if allow_out_of_range_month_day then
-          (-31, 31)
-        else
-          (safe_month_day_start, safe_month_day_end_inc)
+      let check_start, check_end_inc =
+        if allow_out_of_range_month_day then (-31, 31)
+        else (safe_month_day_start, safe_month_day_end_inc)
       in
       let p_day day = check_start <= day && day <= check_end_inc in
-      if List.for_all
-        (fun day_range ->
-           match day_range with
-           | `Range_inc (d1, d2) | `Range_exc (d1, d2) ->
-             p_day d1 && p_day d2)
-        days
-         &&
-         List.for_all
-           (fun day_range ->
-              match day_range with
-              | `Range_inc (d1, d2) ->
-                min_acceptable_negative_day_end_inc ~safe_month_day_end_inc ~start:d1 <= d2
-              | `Range_exc (d1, d2) ->
-                min_acceptable_negative_day_end_inc ~safe_month_day_end_inc ~start:d1 < d2
-                )
-           days
-        then
-          Ok (Month_days days)
-        else
-          Error ()
-    | Weekdays _ ->
-      Ok days
+      if
+        List.for_all
+          (fun day_range ->
+             match day_range with
+             | `Range_inc (d1, d2) | `Range_exc (d1, d2) ->
+               p_day d1 && p_day d2)
+          days
+        && List.for_all
+          (fun day_range ->
+             match day_range with
+             | `Range_inc (d1, d2) ->
+               min_acceptable_negative_day_end_inc ~safe_month_day_end_inc
+                 ~start:d1
+               <= d2
+             | `Range_exc (d1, d2) ->
+               min_acceptable_negative_day_end_inc ~safe_month_day_end_inc
+                 ~start:d1
+               < d2)
+          days
+      then Ok (Month_days days)
+      else Error ()
+    | Weekdays _ -> Ok days
   in
   let hmss =
     match hmss with
@@ -1910,42 +1901,42 @@ let branching ?(allow_out_of_range_month_day = false)
     && hms.second < 60
   in
   match days with
-  | Error () ->
-    failwith "Invalid month day ranges"
+  | Error () -> failwith "Invalid month day ranges"
   | Ok days ->
-  if
-    List.for_all
-      (fun year_range ->
-         match year_range with
-         | `Range_inc (y1, y2) | `Range_exc (y1, y2) -> p_year y1 && p_year y2)
-      years
-    && Year_ranges.Check.list_is_valid years
-    && Month_ranges.Check.list_is_valid months
-    && ( match days with
-        | Month_days _ -> true
-        | Weekdays days -> Weekday_ranges.Check.list_is_valid days )
-    && List.for_all
-      (fun hms_range ->
-         match hms_range with
-         | `Range_inc (hms1, hms2) | `Range_exc (hms1, hms2) ->
-           p_hms hms1 && p_hms hms2)
-      hmss
-    && Hms_ranges.Check.list_is_valid hmss
-  then
-    let years =
-      years
-      |> List.to_seq
-      |> Year_ranges.normalize ~skip_filter_invalid:true ~skip_sort:true
-      |> List.of_seq
-    in
-    let months =
-      months
-      |> List.to_seq
-      |> Month_ranges.normalize ~skip_filter_invalid:true ~skip_sort:true
-      |> List.of_seq
-    in
-    Branching (default_search_space, { years; months; days; hmss })
-  else invalid_arg "branching"
+    if
+      List.for_all
+        (fun year_range ->
+           match year_range with
+           | `Range_inc (y1, y2) | `Range_exc (y1, y2) ->
+             p_year y1 && p_year y2)
+        years
+      && Year_ranges.Check.list_is_valid years
+      && Month_ranges.Check.list_is_valid months
+      && ( match days with
+          | Month_days _ -> true
+          | Weekdays days -> Weekday_ranges.Check.list_is_valid days )
+      && List.for_all
+        (fun hms_range ->
+           match hms_range with
+           | `Range_inc (hms1, hms2) | `Range_exc (hms1, hms2) ->
+             p_hms hms1 && p_hms hms2)
+        hmss
+      && Hms_ranges.Check.list_is_valid hmss
+    then
+      let years =
+        years
+        |> List.to_seq
+        |> Year_ranges.normalize ~skip_filter_invalid:true ~skip_sort:true
+        |> List.of_seq
+      in
+      let months =
+        months
+        |> List.to_seq
+        |> Month_ranges.normalize ~skip_filter_invalid:true ~skip_sort:true
+        |> List.of_seq
+      in
+      Branching (default_search_space, { years; months; days; hmss })
+    else invalid_arg "branching"
 
 let years years = pattern ~years ()
 
