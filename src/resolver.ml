@@ -847,43 +847,37 @@ let intervals_of_branching tz_offset_s (b : Time.branching) :
   let intervals_of_month_days year month month_days hmss =
     Seq.flat_map
       (fun day ->
-         Seq.filter_map
+         Seq.map
            (fun hms_range ->
               match hms_range with
               | `Range_inc (start, end_inc) -> (
-                  match
+                  let dt1 =
+                    Result.get_ok @@
                     Date_time.make ~year ~month ~day ~hour:start.hour
                       ~minute:start.minute ~second:start.second ~tz_offset_s
-                  with
-                  | Error () -> None
-                  | Ok dt1 -> (
-                      match
-                        Date_time.make ~year ~month ~day ~hour:end_inc.hour
-                          ~minute:end_inc.minute ~second:end_inc.second
-                          ~tz_offset_s
-                      with
-                      | Error () -> None
-                      | Ok dt2 ->
-                        Some
-                          ( Date_time.to_timestamp dt1,
-                            Int64.succ @@ Date_time.to_timestamp dt2 ) ) )
+                  in
+                  let dt2 =
+                    Result.get_ok @@
+                    Date_time.make ~year ~month ~day ~hour:end_inc.hour
+                      ~minute:end_inc.minute ~second:end_inc.second
+                      ~tz_offset_s
+                  in
+                  ( Date_time.to_timestamp dt1,
+                    Int64.succ @@ Date_time.to_timestamp dt2 ) )
               | `Range_exc (start, end_exc) -> (
-                  match
+                  let dt1 =
+                    Result.get_ok @@
                     Date_time.make ~year ~month ~day ~hour:start.hour
                       ~minute:start.minute ~second:start.second ~tz_offset_s
-                  with
-                  | Error () -> None
-                  | Ok dt1 -> (
-                      match
-                        Date_time.make ~year ~month ~day ~hour:end_exc.hour
-                          ~minute:end_exc.minute ~second:end_exc.second
-                          ~tz_offset_s
-                      with
-                      | Error () -> None
-                      | Ok dt2 ->
-                        Some
-                          ( Date_time.to_timestamp dt1,
-                            Date_time.to_timestamp dt2 ) ) ))
+                  in
+                  let dt2 =
+                    Result.get_ok @@
+                    Date_time.make ~year ~month ~day ~hour:end_exc.hour
+                      ~minute:end_exc.minute ~second:end_exc.second
+                      ~tz_offset_s
+                  in
+                  ( Date_time.to_timestamp dt1,
+                    Date_time.to_timestamp dt2 ) ) )
            hmss)
       month_days
   in
@@ -898,11 +892,11 @@ let intervals_of_branching tz_offset_s (b : Time.branching) :
            (fun month ->
               let day_count = day_count_of_month ~year ~month in
               let f_inc (x, y) =
-                ( (if x < 0 then x + day_count else x),
+                ( (if x < 0 then x + 1 + day_count else x),
                   if y < 0 then y + day_count else y )
               in
               let f_exc (x, y) =
-                ( (if x < 0 then x + day_count else x),
+                ( (if x < 0 then x + 1 + day_count else x),
                   if y <= 0 then y + day_count else y )
               in
               let days =
