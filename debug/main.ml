@@ -8,7 +8,7 @@ let default_interval_format_string =
 let debug_branching () =
   let timere =
     Timere.branching ~months:[`Range_inc (`Dec, `Dec); ]
-      ~days:(Timere.Month_days [`Range_inc (-2, -1);])
+      ~days:(Timere.Month_days [`Range_inc (30, -1);])
       ()
   in
   let search_years_ahead = 5 in

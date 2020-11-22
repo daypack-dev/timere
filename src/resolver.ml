@@ -841,6 +841,9 @@ let optimize_search_space default_tz_offset_s t =
   |> propagate_search_space_bottom_up default_tz_offset_s
   |> propagate_search_space_top_down
 
+let positive_day_of_zero_or_negative_day ~day_count day =
+  if day <= 0 then day + 1 + day_count else day
+
 let intervals_of_branching tz_offset_s (b : Time.branching) :
   Time.Interval.t Seq.t =
   let open Time in
@@ -891,12 +894,12 @@ let intervals_of_branching tz_offset_s (b : Time.branching) :
            (fun month ->
               let day_count = day_count_of_month ~year ~month in
               let f_inc (x, y) =
-                ( (if x < 0 then x + 1 + day_count else x),
-                  if y < 0 then y + day_count else y )
+                ( positive_day_of_zero_or_negative_day ~day_count x,
+                  positive_day_of_zero_or_negative_day ~day_count y )
               in
               let f_exc (x, y) =
-                ( (if x < 0 then x + 1 + day_count else x),
-                  if y <= 0 then y + day_count else y )
+                ( positive_day_of_zero_or_negative_day ~day_count x,
+                  positive_day_of_zero_or_negative_day ~day_count y )
               in
               let days =
                 days
