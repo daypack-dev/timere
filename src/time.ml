@@ -1837,7 +1837,7 @@ let day_range_inc ~years ~months =
 let min_acceptable_negative_day_end_inc ~safe_month_day_end_inc ~start =
   let start =
     if start < 0 then
-      safe_month_day_end_inc - start
+      safe_month_day_end_inc + start
     else
       start
   in
