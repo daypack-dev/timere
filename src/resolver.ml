@@ -902,7 +902,7 @@ let intervals_of_branching tz_offset_s (b : Time.branching) :
                 days
                 |> List.to_seq
                 |> Seq.map (Range.map ~f_inc ~f_exc)
-                |> Month_day_ranges.normalize
+                |> Month_day_ranges.normalize ~skip_filter_invalid:true
                 |> Month_day_ranges.Flatten.flatten
               in
               intervals_of_month_days year month days hmss)
