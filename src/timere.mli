@@ -73,6 +73,7 @@ type branching_days =
   | Weekdays of weekday range list
 
 val branching :
+  ?allow_out_of_range_month_day:bool ->
   ?years:int range list ->
   ?months:month range list ->
   ?days:branching_days ->
