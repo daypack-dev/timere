@@ -1401,22 +1401,26 @@ let make_hms ~hour ~minute ~second =
   then Ok { hour; minute; second }
   else Error ()
 
+let second_of_day_of_hms x =
+  Duration.make ~hours:x.hour ~minutes:x.minute ~seconds:x.second ()
+  |> Result.get_ok
+  |> Duration.to_seconds
+  |> Int64.to_int
+
+let hms_of_second_of_day x =
+  let ({ hours; minutes; seconds; _ } : Duration.t) =
+    x |> Int64.of_int |> Duration.of_seconds |> Result.get_ok
+  in
+  Result.get_ok @@ make_hms ~hour:hours ~minute:minutes ~second:seconds
+
 module Hms_ranges = Ranges_small.Make (struct
     type t = hms
 
     let modulo = None
 
-    let to_int x =
-      Duration.make ~hours:x.hour ~minutes:x.minute ~seconds:x.second ()
-      |> Result.get_ok
-      |> Duration.to_seconds
-      |> Int64.to_int
+    let to_int = second_of_day_of_hms
 
-    let of_int x =
-      let ({ hours; minutes; seconds; _ } : Duration.t) =
-        x |> Int64.of_int |> Duration.of_seconds |> Result.get_ok
-      in
-      Result.get_ok @@ make_hms ~hour:hours ~minute:minutes ~second:seconds
+    let of_int = hms_of_second_of_day
   end)
 
 module Weekday_tm_int_ranges = Ranges_small.Make (struct
