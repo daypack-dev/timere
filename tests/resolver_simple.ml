@@ -97,6 +97,19 @@ let mem (t : Time.t) (timestamp : Time.timestamp) : bool =
             match op with
             | Not -> Stdlib.not (aux t timestamp)
             | _ -> failwith "Unimplemented" )
-        | _ -> failwith "Unimplemented" )
+        | Binary_op (_, op, t1, t2) -> (
+            match op with
+            | Union -> aux t1 timestamp || aux t2 timestamp
+            | Inter -> aux t1 timestamp && aux t2 timestamp )
+        | Interval_inc (_, start, end_inc) ->
+          let start = Date_time.to_timestamp start in
+          let end_inc = Date_time.to_timestamp end_inc in
+          start <= timestamp && timestamp <= end_inc
+        | Interval_exc (_, start, end_inc) ->
+          let start = Date_time.to_timestamp start in
+          let end_inc = Date_time.to_timestamp end_inc in
+          start <= timestamp && timestamp < end_inc
+        | Round_robin_pick_list (_, l) -> failwith "Unimplemented"
+        | Merge_list (_, l) -> List.exists (fun t -> aux t timestamp) l )
   in
   aux t timestamp
