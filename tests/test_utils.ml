@@ -191,16 +191,14 @@ let month_gen : Time.month QCheck.Gen.t =
 let month_days_gen : int list QCheck.Gen.t =
   QCheck.Gen.(list_size (int_bound 10) (int_range 1 32))
 
-let month_days =
-  QCheck.make
-    ~print:QCheck.Print.(list int)
-    month_days_gen
+let month_days = QCheck.make ~print:QCheck.Print.(list int) month_days_gen
 
 let weekdays_gen : Time.weekday list QCheck.Gen.t =
   QCheck.Gen.(list_size (int_bound 10) weekday_gen)
 
 let weekdays =
-  QCheck.make ~print:(QCheck.Print.list Printer.abbreviated_string_of_weekday)
+  QCheck.make
+    ~print:(QCheck.Print.list Printer.abbreviated_string_of_weekday)
     weekdays_gen
 
 (* let time_pattern_gen : Time_pattern.time_pattern QCheck.Gen.t =
@@ -238,8 +236,7 @@ let date_time_testable : (module Alcotest.TESTABLE) =
   ( module struct
     type t = Time.Date_time.t
 
-    let pp =
-      Printer.pp_date_time default_date_time_format_string
+    let pp = Printer.pp_date_time default_date_time_format_string
 
     let equal = ( = )
   end )

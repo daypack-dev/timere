@@ -159,10 +159,7 @@ module Qc = struct
     QCheck.Test.make ~count:10_000 ~name:"normalize_time_slots_are_unique"
       time_slots (fun l ->
           let l =
-            l
-            |> List.to_seq
-            |> Time.Intervals.Normalize.normalize
-            |> List.of_seq
+            l |> List.to_seq |> Time.Intervals.Normalize.normalize |> List.of_seq
           in
           List.length (List.sort_uniq compare l) = List.length l)
 
@@ -247,8 +244,7 @@ module Qc = struct
            |> Time.Intervals.invert ~start ~end_exc
            |> List.of_seq
            |> (fun inverted ->
-               ( Time.Intervals.Slice.slice ~start ~end_exc
-                   (List.to_seq l)
+               ( Time.Intervals.Slice.slice ~start ~end_exc (List.to_seq l)
                  |> List.of_seq )
                @ inverted)
            |> List.to_seq
@@ -283,17 +279,13 @@ module Qc = struct
              ~not_mem_of:(List.to_seq not_mem_of) (List.to_seq mem_of)
          in
          let res = res_s |> List.of_seq in
-         Time.Intervals.inter (List.to_seq mem_of) res_s
-         |> List.of_seq
-            = res)
+         Time.Intervals.inter (List.to_seq mem_of) res_s |> List.of_seq = res)
 
   let relatvie_complement_self =
     QCheck.Test.make ~count:10_000 ~name:"relatvie_complement_self"
       sorted_time_slots_maybe_gaps (fun l ->
           let s = List.to_seq l in
-          Time.Intervals.relative_complement ~not_mem_of:s s
-          |> List.of_seq
-             = [])
+          Time.Intervals.relative_complement ~not_mem_of:s s |> List.of_seq = [])
 
   let inter_with_self =
     QCheck.Test.make ~count:10_000 ~name:"inter_with_self"
@@ -321,12 +313,8 @@ module Qc = struct
          let s1 = l1 |> List.to_seq in
          let s2 = l2 |> List.to_seq in
          let s3 = l3 |> List.to_seq in
-         let inter1 =
-           Time.Intervals.(inter (inter s1 s2) s3) |> List.of_seq
-         in
-         let inter2 =
-           Time.Intervals.(inter s1 (inter s2 s3)) |> List.of_seq
-         in
+         let inter1 = Time.Intervals.(inter (inter s1 s2) s3) |> List.of_seq in
+         let inter2 = Time.Intervals.(inter s1 (inter s2 s3)) |> List.of_seq in
          inter1 = inter2)
 
   let union_with_self =
@@ -356,12 +344,10 @@ module Qc = struct
          let s2 = l2 |> List.to_seq in
          let s3 = l3 |> List.to_seq in
          let res1 =
-           Time.Intervals.(Union.union (Union.union s1 s2) s3)
-           |> List.of_seq
+           Time.Intervals.(Union.union (Union.union s1 s2) s3) |> List.of_seq
          in
          let res2 =
-           Time.Intervals.(Union.union s1 (Union.union s2 s3))
-           |> List.of_seq
+           Time.Intervals.(Union.union s1 (Union.union s2 s3)) |> List.of_seq
          in
          res1 = res2)
 

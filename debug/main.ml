@@ -7,93 +7,75 @@ let default_interval_format_string =
 
 let debug_branching () =
   let timere =
-    Timere.branching ~months:[`Range_inc (`Jan, `Mar); ]
-      ~days:(Timere.Month_days [`Range_inc (-2, -1);])
+    Timere.branching
+      ~months:[ `Range_inc (`Jan, `Mar) ]
+      ~days:(Timere.Month_days [ `Range_inc (-2, -1) ])
       ()
   in
   let search_years_ahead = 5 in
-  let cur_date_time =
-    Result.get_ok
-    @@ Timere.Date_time.cur ()
-  in
+  let cur_date_time = Result.get_ok @@ Timere.Date_time.cur () in
   let search_end_exc =
-    Result.get_ok @@
-    Timere.Date_time.make ~year:(cur_date_time.year + search_years_ahead)
-      ~month:cur_date_time.month
-      ~day:cur_date_time.day
-      ~hour:cur_date_time.hour
-      ~minute:cur_date_time.minute
-      ~second:cur_date_time.second
-      ~tz_offset_s:cur_date_time.tz_offset_s
+    Result.get_ok
+    @@ Timere.Date_time.make
+      ~year:(cur_date_time.year + search_years_ahead)
+      ~month:cur_date_time.month ~day:cur_date_time.day
+      ~hour:cur_date_time.hour ~minute:cur_date_time.minute
+      ~second:cur_date_time.second ~tz_offset_s:cur_date_time.tz_offset_s
   in
   let timere =
-    let open Timere in
-    inter timere (interval_exc cur_date_time search_end_exc)
+    Timere.(inter timere (interval_exc cur_date_time search_end_exc))
   in
   match Timere.resolve timere with
   | Error msg -> print_endline msg
-  | Ok s ->
-    match s () with
-    | Seq.Nil -> print_endline "No matching time slots"
-    | Seq.Cons _ ->
-      s
-      |> OSeq.take 20
-      |> OSeq.iter (fun ts ->
-          match
-            Timere.sprintf_interval
-              default_interval_format_string ts
-          with
-          | Ok s ->
-            Printf.printf "%s\n" s
-          | Error msg -> Printf.printf "Error: %s\n" msg);
-      print_newline ()
+  | Ok s -> (
+      match s () with
+      | Seq.Nil -> print_endline "No matching time slots"
+      | Seq.Cons _ ->
+        s
+        |> OSeq.take 20
+        |> OSeq.iter (fun ts ->
+            match
+              Timere.sprintf_interval default_interval_format_string ts
+            with
+            | Ok s -> Printf.printf "%s\n" s
+            | Error msg -> Printf.printf "Error: %s\n" msg);
+        print_newline () )
 
 let debug_parsing () =
-  let expr =
-    "dec to jan"
-  in
+  let expr = "dec to jan" in
   let search_years_ahead = 5 in
   match Timere_parse.timere expr with
   | Error msg -> print_endline msg
   | Ok timere -> (
-      let cur_date_time =
-        Result.get_ok
-        @@ Timere.Date_time.cur ()
-      in
+      let cur_date_time = Result.get_ok @@ Timere.Date_time.cur () in
       let search_end_exc =
-        Result.get_ok @@
-        Timere.Date_time.make ~year:(cur_date_time.year + search_years_ahead)
-          ~month:cur_date_time.month
-          ~day:cur_date_time.day
-          ~hour:cur_date_time.hour
-          ~minute:cur_date_time.minute
-          ~second:cur_date_time.second
-          ~tz_offset_s:cur_date_time.tz_offset_s
+        Result.get_ok
+        @@ Timere.Date_time.make
+          ~year:(cur_date_time.year + search_years_ahead)
+          ~month:cur_date_time.month ~day:cur_date_time.day
+          ~hour:cur_date_time.hour ~minute:cur_date_time.minute
+          ~second:cur_date_time.second ~tz_offset_s:cur_date_time.tz_offset_s
       in
       let timere =
-        let open Timere in
-        inter timere (interval_exc cur_date_time search_end_exc)
+        Timere.(inter timere (interval_exc cur_date_time search_end_exc))
       in
       match Timere.resolve timere with
       | Error msg -> print_endline msg
-      | Ok s ->
-        match s () with
-        | Seq.Nil -> print_endline "No matching time slots"
-        | Seq.Cons _ ->
-          s
-          |> OSeq.take 100
-          |> OSeq.iter (fun ts ->
-              match
-                Timere.sprintf_interval
-                  default_interval_format_string ts
-              with
-              | Ok s ->
-                Printf.printf "%s\n" s
-              | Error msg -> Printf.printf "Error: %s\n" msg);
-          print_newline () )
+      | Ok s -> (
+          match s () with
+          | Seq.Nil -> print_endline "No matching time slots"
+          | Seq.Cons _ ->
+            s
+            |> OSeq.take 100
+            |> OSeq.iter (fun ts ->
+                match
+                  Timere.sprintf_interval default_interval_format_string ts
+                with
+                | Ok s -> Printf.printf "%s\n" s
+                | Error msg -> Printf.printf "Error: %s\n" msg);
+            print_newline () ) )
 
-let () =
-  debug_branching ()
+let () = debug_branching ()
 
 (* let () =
  *   debug_parsing () *)
