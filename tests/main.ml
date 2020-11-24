@@ -20,9 +20,7 @@ let () =
   in
   let timere = Time.pattern ~months:[ `Jan ] () in
   let s =
-    Resolver_simple.resolve ~search_start ~search_end_exc
-      ~tz_offset_s:(Option.get @@ Ptime_clock.current_tz_offset_s ())
-      timere
+    Resolver_simple.resolve ~search_start ~search_end_exc ~tz_offset_s:0 timere
   in
   match s () with
   | Seq.Nil -> print_endline "No matching time slots"
