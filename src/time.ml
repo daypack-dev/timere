@@ -601,7 +601,7 @@ module Intervals = struct
       |> List.map (fun s ->
           if skip_check then s
           else s |> Check.check_if_valid |> Check.check_if_sorted)
-      |> Seq_utils.collect_round_robin Interval.le
+      |> Seq_utils.collect_round_robin ~f_le:Interval.le
 
     let merge_multi_list_round_robin_non_decreasing ?(skip_check = false)
         (batches : Interval.t Seq.t list) : Interval.t Seq.t =
