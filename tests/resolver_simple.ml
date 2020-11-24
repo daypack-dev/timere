@@ -1,4 +1,4 @@
-let mem (t : Time.t) (timestamp : Time.timestamp) : bool =
+let mem ?(search_start : Time.timestamp = Time.Date_time.(to_timestamp min)) (t : Time.t) (timestamp : Time.timestamp) : bool =
   let open Time in
   let rec aux t timestamp =
     match Time.Date_time.of_timestamp timestamp with
