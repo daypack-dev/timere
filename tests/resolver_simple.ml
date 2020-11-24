@@ -98,6 +98,8 @@ let mem (t : Time.t) (timestamp : Time.timestamp) : bool =
         | Unary_op (_, op, t) -> (
             match op with
             | Not -> Stdlib.not (aux t timestamp)
+            | Every -> aux t timestamp
+            | Shift n -> aux t (Int64.sub timestamp n)
             | _ -> failwith "Unimplemented" )
         | Binary_op (_, op, t1, t2) -> (
             match op with
