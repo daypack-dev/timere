@@ -1013,10 +1013,10 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
             Intervals.chunk ~skip_check:true ~chunk_size:1L s
             |> OSeq.take n
           | Next_n_intervals n -> OSeq.take n s
-          | Normalize { skip_filter_invalid; skip_filter_empty; skip_sort }
-            ->
-            Intervals.Normalize.normalize ~skip_filter_invalid
-              ~skip_filter_empty ~skip_sort s
+          (* | Normalize { skip_filter_invalid; skip_filter_empty; skip_sort }
+           *   ->
+           *   Intervals.Normalize.normalize ~skip_filter_invalid
+           *     ~skip_filter_empty ~skip_sort s *)
           | Chunk { chunk_size; drop_partial } ->
             Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
           | Shift n ->
