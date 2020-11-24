@@ -43,12 +43,14 @@ let do_chunk (n : int64) drop_partial (s : Time.Interval.t Seq.t) :
   aux n s
 
 let rec resolve ~(search_start : Time.timestamp)
-    ~(search_end_exc : Time.timestamp) (t : Time.t) : Time.Interval.t Seq.t =
+    ~(search_end_exc : Time.timestamp) ~tz_offset_s (t : Time.t) :
+  Time.Interval.t Seq.t =
   let open Time in
   let rec aux t cur end_exc tz_offset_s =
     match t with
     | Timestamp_interval_seq (_, s) -> s
-    | Round_robin_pick_list (_, l) -> resolve_round_robin l cur end_exc
+    | Round_robin_pick_list (_, l) ->
+      resolve_round_robin l cur end_exc tz_offset_s
     | Unary_op (_, op, t) -> (
         match op with
         | Not ->
@@ -79,17 +81,17 @@ let rec resolve ~(search_start : Time.timestamp)
       |> Seq.filter (mem ~search_start ~search_end_exc ~tz_offset_s t)
       |> Seq.map (fun x -> (x, Int64.succ x))
       |> Time.Intervals.Normalize.normalize
-  and resolve_round_robin l cur end_exc : Time.Interval.t Seq.t =
+  and resolve_round_robin l cur end_exc tz_offset_s : Time.Interval.t Seq.t =
     let res =
       List.fold_left
         (fun acc t ->
            match acc with
            | [] -> (
-               match (aux t cur end_exc) () with
+               match (aux t cur end_exc tz_offset_s) () with
                | Seq.Nil -> acc
                | Seq.Cons (x, _) -> x :: acc )
            | (cur, _) :: _ -> (
-               match (aux t cur end_exc) () with
+               match (aux t cur end_exc tz_offset_s) () with
                | Seq.Nil -> acc
                | Seq.Cons (x, _) -> x :: acc ))
         [] l
@@ -98,9 +100,9 @@ let rec resolve ~(search_start : Time.timestamp)
     | [] -> Seq.empty
     | (cur, _) :: _ ->
       let cur_batch = res |> List.rev |> List.to_seq in
-      OSeq.append cur_batch (resolve_round_robin l cur end_exc)
+      OSeq.append cur_batch (resolve_round_robin l cur end_exc tz_offset_s)
   in
-  aux t search_start search_end_exc
+  aux t search_start search_end_exc tz_offset_s
 
 and mem ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
     ~tz_offset_s (t : Time.t) (timestamp : Time.timestamp) : bool =
@@ -216,7 +218,7 @@ and mem ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
           let end_inc = Date_time.to_timestamp end_inc in
           start <= timestamp && timestamp < end_inc
         | Unary_op (_, _, _) | Round_robin_pick_list (_, _) ->
-          resolve ~search_start ~search_end_exc t
+          resolve ~search_start ~search_end_exc ~tz_offset_s t
           |> OSeq.exists (fun (x, y) -> x <= timestamp && timestamp < y)
         | Merge_list (_, l) -> List.exists (fun t -> aux t timestamp) l )
   in

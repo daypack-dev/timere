@@ -53,6 +53,7 @@
             qcheck-alcotest
             alcotest
             ptime
+            ptime.clock.os
             oseq
             mparser
             )
