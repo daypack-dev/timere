@@ -1,7 +1,115 @@
-let mem ?(search_start : Time.timestamp = Time.Date_time.(to_timestamp min)) (t : Time.t) (timestamp : Time.timestamp) : bool =
+let do_skip_n_points (n : int64) (s : Time.Interval.t Seq.t) :
+  Time.Interval.t Seq.t =
+  let rec aux n s =
+    if n = 0L then s
+    else
+      match s () with
+      | Seq.Nil -> Seq.empty
+      | Seq.Cons ((x, y), rest) ->
+        let size = Int64.sub y x in
+        if size >= n then fun () -> Seq.Cons ((Int64.add n x, y), rest)
+        else aux (Int64.sub n size) rest
+  in
+  aux n s
+
+let do_take_n_points (n : int64) (s : Time.Interval.t Seq.t) :
+  Time.Interval.t Seq.t =
+  let rec aux n s =
+    if n = 0L then Seq.empty
+    else
+      match s () with
+      | Seq.Nil -> Seq.empty
+      | Seq.Cons ((x, y), rest) ->
+        let size = Int64.sub y x in
+        if size >= n then Seq.return (x, Int64.add n x)
+        else fun () -> Seq.Cons ((x, y), aux (Int64.sub n size) rest)
+  in
+  aux n s
+
+let do_chunk (n : int64) drop_partial (s : Time.Interval.t Seq.t) :
+  Time.Interval.t Seq.t =
+  let rec aux n s =
+    match s () with
+    | Seq.Nil -> Seq.empty
+    | Seq.Cons ((x, y), rest) ->
+      let size = Int64.sub y x in
+      if size >= n then fun () ->
+        Seq.Cons
+          ( (x, Int64.add n x),
+            aux n (fun () -> Seq.Cons ((Int64.add n x, y), rest)) )
+      else if drop_partial then aux n rest
+      else fun () -> Seq.Cons ((x, Int64.add n x), aux n rest)
+  in
+  aux n s
+
+let rec resolve ~(search_start : Time.timestamp)
+    ~(search_end_exc : Time.timestamp) (t : Time.t) : Time.Interval.t Seq.t =
+  let open Time in
+  let rec aux t cur end_exc tz_offset_s =
+    match t with
+    | Timestamp_interval_seq (_, s) -> s
+    | Round_robin_pick_list (_, l) -> resolve_round_robin l cur end_exc
+    | Unary_op (_, op, t) -> (
+        match op with
+        | Not ->
+          Seq_utils.a_to_b_exc_int64 ~a:cur ~b:end_exc
+          |> Seq.filter (fun x ->
+              Stdlib.not
+                (mem ~search_start ~search_end_exc ~tz_offset_s t x))
+          |> Seq.map (fun x -> (x, Int64.succ x))
+          |> Time.Intervals.Normalize.normalize
+        | Every -> aux t cur end_exc tz_offset_s
+        | Skip_n_points n ->
+          do_skip_n_points (Int64.of_int n) (aux t cur end_exc tz_offset_s)
+        | Skip_n_intervals n -> OSeq.drop n (aux t cur end_exc tz_offset_s)
+        | Next_n_points n ->
+          do_take_n_points (Int64.of_int n) (aux t cur end_exc tz_offset_s)
+        | Next_n_intervals n -> OSeq.take n (aux t cur end_exc tz_offset_s)
+        | Chunk { chunk_size; drop_partial } ->
+          do_chunk chunk_size drop_partial (aux t cur end_exc tz_offset_s)
+        | Shift n ->
+          aux t cur end_exc tz_offset_s
+          |> Seq.map (fun (x, y) -> (Int64.add n x, Int64.add n y))
+        | Lengthen n ->
+          aux t cur end_exc tz_offset_s
+          |> Seq.map (fun (x, y) -> (Int64.add n x, Int64.add n y))
+        | Tz_offset n -> aux t cur end_exc n )
+    | _ ->
+      Seq_utils.a_to_b_exc_int64 ~a:cur ~b:end_exc
+      |> Seq.filter (mem ~search_start ~search_end_exc ~tz_offset_s t)
+      |> Seq.map (fun x -> (x, Int64.succ x))
+      |> Time.Intervals.Normalize.normalize
+  and resolve_round_robin l cur end_exc : Time.Interval.t Seq.t =
+    let res =
+      List.fold_left
+        (fun acc t ->
+           match acc with
+           | [] -> (
+               match (aux t cur end_exc) () with
+               | Seq.Nil -> acc
+               | Seq.Cons (x, _) -> x :: acc )
+           | (cur, _) :: _ -> (
+               match (aux t cur end_exc) () with
+               | Seq.Nil -> acc
+               | Seq.Cons (x, _) -> x :: acc ))
+        [] l
+    in
+    match res with
+    | [] -> Seq.empty
+    | (cur, _) :: _ ->
+      let cur_batch = res |> List.rev |> List.to_seq in
+      OSeq.append cur_batch (resolve_round_robin l cur end_exc)
+  in
+  aux t search_start search_end_exc
+
+and mem ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
+    ~tz_offset_s (t : Time.t) (timestamp : Time.timestamp) : bool =
   let open Time in
   let rec aux t timestamp =
-    match Time.Date_time.of_timestamp timestamp with
+    match
+      Time.Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s
+        timestamp
+    with
     | Error () -> failwith (Printf.sprintf "Invalid timestamp: %Ld" timestamp)
     | Ok dt -> (
         let weekday =
@@ -95,12 +203,6 @@ let mem ?(search_start : Time.timestamp = Time.Date_time.(to_timestamp min)) (t 
                  let y = Time.second_of_day_of_hms y in
                  x <= second_of_day && second_of_day < y)
             branching.hmss
-        | Unary_op (_, op, t) -> (
-            match op with
-            | Not -> Stdlib.not (aux t timestamp)
-            | Every -> aux t timestamp
-            | Shift n -> aux t (Int64.sub timestamp n)
-            | _ -> failwith "Unimplemented" )
         | Binary_op (_, op, t1, t2) -> (
             match op with
             | Union -> aux t1 timestamp || aux t2 timestamp
@@ -113,6 +215,9 @@ let mem ?(search_start : Time.timestamp = Time.Date_time.(to_timestamp min)) (t 
           let start = Date_time.to_timestamp start in
           let end_inc = Date_time.to_timestamp end_inc in
           start <= timestamp && timestamp < end_inc
+        | Unary_op (_, _, _) | Round_robin_pick_list (_, _) ->
+          resolve ~search_start ~search_end_exc t
+          |> OSeq.exists (fun (x, y) -> x <= timestamp && timestamp < y)
         | Merge_list (_, l) -> List.exists (fun t -> aux t timestamp) l )
   in
   aux t timestamp
