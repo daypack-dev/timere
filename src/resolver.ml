@@ -621,22 +621,22 @@ module Resolve_pattern = struct
         | `Range_inc (x, y) -> (x, Int64.succ y)
         | `Range_exc (x, y) -> (x, y))
 
-  (* let matching_intervals_round_robin_non_decreasing
-   *     (search_param : Search_param.t) (l : Time.Pattern.pattern list) :
-   *   ((int64 * int64) list Seq.t, error) result =
-   *   let l = List.map (matching_intervals search_param) l in
-   *   l
-   *   |> Time.Intervals.Round_robin.collect_round_robin_non_decreasing
-   *     ~skip_check:true
-   *   |> OSeq.take_while (List.for_all Option.is_some)
-   *   |> Seq.map (List.map Option.get)
-   *   |> Result.ok *)
+  let matching_intervals_round_robin_non_decreasing
+      (search_param : Search_param.t) (l : Time.Pattern.pattern list) :
+    ((int64 * int64) list Seq.t, error) result =
+    let l = List.map (matching_intervals search_param) l in
+    l
+    |> Time.Intervals.Round_robin.collect_round_robin_non_decreasing
+      ~skip_check:true
+    |> OSeq.take_while (List.for_all Option.is_some)
+    |> Seq.map (List.map Option.get)
+    |> Result.ok
 
-  (* let matching_intervals_round_robin_non_decreasing_flat
-   *     (search_param : Search_param.t) (l : Time.Pattern.pattern list) :
-   *   ((int64 * int64) Seq.t, error) result =
-   *   matching_intervals_round_robin_non_decreasing search_param l
-   *   |> Result.map (Seq.flat_map List.to_seq) *)
+  let matching_intervals_round_robin_non_decreasing_flat
+      (search_param : Search_param.t) (l : Time.Pattern.pattern list) :
+    ((int64 * int64) Seq.t, error) result =
+    matching_intervals_round_robin_non_decreasing search_param l
+    |> Result.map (Seq.flat_map List.to_seq)
 
   let next_match_date_time (search_param : Search_param.t)
       (t : Time.Pattern.pattern) : Time.Date_time.t option =
@@ -665,7 +665,7 @@ let get_search_space (time : Time.t) : Time.Interval.t list =
   | Binary_op (s, _, _, _) -> s
   | Interval_exc (s, _, _) -> s
   | Interval_inc (s, _, _) -> s
-  (* | Round_robin_pick_list (s, _) -> s *)
+  | Round_robin_pick_list (s, _) -> s
   | Merge_list (s, _) -> s
 
 let set_search_space space (time : Time.t) : Time.t =
@@ -678,7 +678,7 @@ let set_search_space space (time : Time.t) : Time.t =
   | Binary_op (_, op, x, y) -> Binary_op (space, op, x, y)
   | Interval_exc (_, x, y) -> Interval_exc (space, x, y)
   | Interval_inc (_, x, y) -> Interval_inc (space, x, y)
-  (* | Round_robin_pick_list (_, x) -> Round_robin_pick_list (space, x) *)
+  | Round_robin_pick_list (_, x) -> Round_robin_pick_list (space, x)
   | Merge_list (_, x) -> Merge_list (space, x)
 
 let search_space_of_year_range tz_offset_s year_range =
@@ -783,9 +783,9 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
         ]
       in
       Interval_inc (space, start, end_inc)
-    (* | Round_robin_pick_list (_, l) ->
-     *   let space, l = aux_list tz_offset_s l in
-     *   Round_robin_pick_list (space, l) *)
+    | Round_robin_pick_list (_, l) ->
+      let space, l = aux_list tz_offset_s l in
+      Round_robin_pick_list (space, l)
     | Merge_list (_, l) ->
       let space, l = aux_list tz_offset_s l in
       Merge_list (space, l)
@@ -827,9 +827,9 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
     | Interval_inc (cur, p1, p2) ->
       let space = restrict_search_space parent_search_space cur in
       Interval_inc (space, p1, p2)
-    (* | Round_robin_pick_list (cur, l) ->
-     *   let space = restrict_search_space parent_search_space cur in
-     *   Round_robin_pick_list (space, aux_list space l) *)
+    | Round_robin_pick_list (cur, l) ->
+      let space = restrict_search_space parent_search_space cur in
+      Round_robin_pick_list (space, aux_list space l)
     | Merge_list (cur, l) ->
       let space = restrict_search_space parent_search_space cur in
       Merge_list (space, aux_list space l)
@@ -1048,11 +1048,11 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
              Int64.succ @@ Date_time.to_timestamp dt2 ))
     | Interval_exc (_, dt1, dt2) ->
       Ok (Seq.return (Date_time.to_timestamp dt1, Date_time.to_timestamp dt2))
-    (* | Round_robin_pick_list (_, l) ->
-     *   Misc_utils.get_ok_error_list (List.map (aux search_using_tz_offset_s) l)
-     *   |> Result.map
-     *     (Time.Intervals.Round_robin
-     *      .merge_multi_list_round_robin_non_decreasing ~skip_check:true) *)
+    | Round_robin_pick_list (_, l) ->
+      Misc_utils.get_ok_error_list (List.map (aux search_using_tz_offset_s) l)
+      |> Result.map
+        (Time.Intervals.Round_robin
+         .merge_multi_list_round_robin_non_decreasing ~skip_check:true)
     | Merge_list (_, l) ->
       Misc_utils.get_ok_error_list (List.map (aux search_using_tz_offset_s) l)
       |> Result.map (Time.Intervals.Merge.merge_multi_list ~skip_check:true)
