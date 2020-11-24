@@ -80,7 +80,9 @@ let mem (t : Time.t) (timestamp : Time.timestamp) : bool =
                      | `Range_inc (x, y) -> x <= dt.day && dt.day <= y
                      | `Range_exc (x, y) -> x <= dt.day && dt.day < y)
                   days
-              | Weekdays _ -> failwith "Unimplemented" )
+              | Weekdays days ->
+                List.mem weekday (Weekday_ranges.Flatten.flatten_list days)
+            )
           && List.exists
             (fun hmss_range ->
                match hmss_range with
