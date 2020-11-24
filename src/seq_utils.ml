@@ -54,13 +54,13 @@ let mod_int n =
 
 let collect_round_robin (type a) ~(f_le : a -> a -> bool) (batches : a Seq.t list) :
   a option list Seq.t =
-  let rec get_usable_part compare (cur : a) (seq : a Seq.t) : a Seq.t =
+  let rec get_usable_part (cur : a) (seq : a Seq.t) : a Seq.t =
     match seq () with
     | Seq.Nil -> Seq.empty
     | Seq.Cons (x, rest) as s ->
-      if f_le cur x then fun () -> s else get_usable_part compare cur rest
+      if f_le cur x then fun () -> s else get_usable_part cur rest
   in
-  let rec aux compare (cur : a option) (batches : a Seq.t list) :
+  let rec aux (cur : a option) (batches : a Seq.t list) :
     a option list Seq.t =
     let cur, acc, new_batches =
       List.fold_left
@@ -68,7 +68,7 @@ let collect_round_robin (type a) ~(f_le : a -> a -> bool) (batches : a Seq.t lis
            let usable =
              match cur with
              | None -> seq
-             | Some cur_start -> get_usable_part compare cur_start seq
+             | Some cur_start -> get_usable_part cur_start seq
            in
            match usable () with
            | Seq.Nil -> (cur, None :: acc, new_batches)
@@ -78,10 +78,10 @@ let collect_round_robin (type a) ~(f_le : a -> a -> bool) (batches : a Seq.t lis
     if List.exists Option.is_some acc then
       let acc = List.rev acc in
       let new_batches = List.rev new_batches in
-      fun () -> Seq.Cons (acc, aux compare cur new_batches)
+      fun () -> Seq.Cons (acc, aux cur new_batches)
     else Seq.empty
   in
-  aux compare None batches
+  aux None batches
 
 let check_if_f_holds_for_immediate_neighbors (type a) ~(f : a -> a -> bool)
     ~(f_exn : a -> a -> exn) (s : a Seq.t) : a Seq.t =
