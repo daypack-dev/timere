@@ -594,26 +594,26 @@ module Intervals = struct
       List.to_seq interval_batches |> merge_multi_seq ~skip_check
   end
 
-  module Round_robin = struct
-    let collect_round_robin_non_decreasing ?(skip_check = false)
-        (batches : Interval.t Seq.t list) : Interval.t option list Seq.t =
-      batches
-      |> List.map (fun s ->
-          if skip_check then s
-          else s |> Check.check_if_valid |> Check.check_if_sorted)
-      |> Seq_utils.collect_round_robin Interval.le
-
-    let merge_multi_list_round_robin_non_decreasing ?(skip_check = false)
-        (batches : Interval.t Seq.t list) : Interval.t Seq.t =
-      collect_round_robin_non_decreasing ~skip_check batches
-      |> Seq.flat_map (fun l -> List.to_seq l |> Seq.filter_map (fun x -> x))
-
-    let merge_multi_seq_round_robin_non_decreasing ?(skip_check = false)
-        (batches : Interval.t Seq.t Seq.t) : Interval.t Seq.t =
-      batches
-      |> List.of_seq
-      |> merge_multi_list_round_robin_non_decreasing ~skip_check
-  end
+  (* module Round_robin = struct
+   *   let collect_round_robin_non_decreasing ?(skip_check = false)
+   *       (batches : Interval.t Seq.t list) : Interval.t option list Seq.t =
+   *     batches
+   *     |> List.map (fun s ->
+   *         if skip_check then s
+   *         else s |> Check.check_if_valid |> Check.check_if_sorted)
+   *     |> Seq_utils.collect_round_robin Interval.le
+   * 
+   *   let merge_multi_list_round_robin_non_decreasing ?(skip_check = false)
+   *       (batches : Interval.t Seq.t list) : Interval.t Seq.t =
+   *     collect_round_robin_non_decreasing ~skip_check batches
+   *     |> Seq.flat_map (fun l -> List.to_seq l |> Seq.filter_map (fun x -> x))
+   * 
+   *   let merge_multi_seq_round_robin_non_decreasing ?(skip_check = false)
+   *       (batches : Interval.t Seq.t Seq.t) : Interval.t Seq.t =
+   *     batches
+   *     |> List.of_seq
+   *     |> merge_multi_list_round_robin_non_decreasing ~skip_check
+   * end *)
 
   module Union = struct
     let union ?(skip_check = false) intervals1 intervals2 =
@@ -1739,7 +1739,7 @@ type t =
   | Binary_op of search_space * binary_op * t * t
   | Interval_inc of search_space * Date_time.t * Date_time.t
   | Interval_exc of search_space * Date_time.t * Date_time.t
-  | Round_robin_pick_list of search_space * t list
+  (* | Round_robin_pick_list of search_space * t list *)
   | Merge_list of search_space * t list
 
 let chunk ?(drop_partial = false) (chunk_size : int64) (t : t) : t =
@@ -1753,8 +1753,8 @@ let lengthen (x : Duration.t) (t : t) : t =
 
 let merge (l : t list) : t = Merge_list (default_search_space, l)
 
-let round_robin_pick (l : t list) : t =
-  Round_robin_pick_list (default_search_space, l)
+(* let round_robin_pick (l : t list) : t =
+ *   Round_robin_pick_list (default_search_space, l) *)
 
 let inter (a : t) (b : t) : t = Binary_op (default_search_space, Inter, a, b)
 
