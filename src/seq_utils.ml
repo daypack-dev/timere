@@ -52,16 +52,15 @@ let mod_int n =
  *   in
  *   aux f s 0L *)
 
-let collect_round_robin (type a) ~(f_le : a -> a -> bool) (batches : a Seq.t list) :
-  a option list Seq.t =
+let collect_round_robin (type a) ~(f_le : a -> a -> bool)
+    (batches : a Seq.t list) : a option list Seq.t =
   let rec get_usable_part (cur : a) (seq : a Seq.t) : a Seq.t =
     match seq () with
     | Seq.Nil -> Seq.empty
     | Seq.Cons (x, rest) as s ->
       if f_le cur x then fun () -> s else get_usable_part cur rest
   in
-  let rec aux (cur : a option) (batches : a Seq.t list) :
-    a option list Seq.t =
+  let rec aux (cur : a option) (batches : a Seq.t list) : a option list Seq.t =
     let cur, acc, new_batches =
       List.fold_left
         (fun (cur, acc, new_batches) seq ->

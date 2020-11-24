@@ -1694,11 +1694,11 @@ type unary_op =
   | Skip_n_intervals of int
   | Next_n_points of int
   | Next_n_intervals of int
-  | Normalize of {
-      skip_filter_invalid : bool;
-      skip_filter_empty : bool;
-      skip_sort : bool;
-    }
+  (* | Normalize of {
+   *     skip_filter_invalid : bool;
+   *     skip_filter_empty : bool;
+   *     skip_sort : bool;
+   *   } *)
   | Chunk of {
       chunk_size : int64;
       drop_partial : bool;
