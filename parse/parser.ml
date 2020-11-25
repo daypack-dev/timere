@@ -43,7 +43,7 @@ type binary_op =
 type ast =
   | Tokens of token list
   | Binary_op of binary_op * ast * ast
-  (* | Round_robin_pick of ast list *)
+  | Round_robin_pick of ast list
 
 let weekdays : (string * Timere.weekday) list =
   [
@@ -159,8 +159,8 @@ let inter : (ast -> ast -> ast, unit) t =
 let union : (ast -> ast -> ast, unit) t =
   string "||" >> return (fun a b -> Binary_op (Union, a, b))
 
-(* let round_robin_pick : (ast -> ast -> ast, unit) t =
- *   string ">>" >> return (fun a b -> Round_robin_pick [ a; b ]) *)
+let round_robin_pick : (ast -> ast -> ast, unit) t =
+  string ">>" >> return (fun a b -> Round_robin_pick [ a; b ])
 
 let expr =
   let rec expr mparser_state =
@@ -449,34 +449,34 @@ module Ast_normalize = struct
               match aux e2 with
               | Error msg -> Error msg
               | Ok e2 -> Ok (Binary_op (op, e1, e2)) ) )
-      (* | Round_robin_pick l ->
-       *   List.map aux l
-       *   |> Misc_utils.get_ok_error_list
-       *   |> Result.map (fun l -> Round_robin_pick l) *)
+      | Round_robin_pick l ->
+        List.map aux l
+        |> Misc_utils.get_ok_error_list
+        |> Result.map (fun l -> Round_robin_pick l)
     in
     aux e
 
-  (* let flatten_round_robin_select (e : ast) : ast =
-   *   let rec aux e =
-   *     match e with
-   *     | Tokens _ -> e
-   *     | Binary_op (op, e1, e2) -> Binary_op (op, aux e1, aux e2)
-   *     | Round_robin_pick l ->
-   *       l
-   *       |> List.to_seq
-   *       |> Seq.map aux
-   *       |> Seq.flat_map (fun e ->
-   *           match e with
-   *           | Round_robin_pick l -> List.to_seq l
-   *           | _ -> Seq.return e)
-   *       |> List.of_seq
-   *       |> fun l -> Round_robin_pick l
-   *   in
-   *   aux e *)
+  let flatten_round_robin_select (e : ast) : ast =
+    let rec aux e =
+      match e with
+      | Tokens _ -> e
+      | Binary_op (op, e1, e2) -> Binary_op (op, aux e1, aux e2)
+      | Round_robin_pick l ->
+        l
+        |> List.to_seq
+        |> Seq.map aux
+        |> Seq.flat_map (fun e ->
+            match e with
+            | Round_robin_pick l -> List.to_seq l
+            | _ -> Seq.return e)
+        |> List.of_seq
+        |> fun l -> Round_robin_pick l
+    in
+    aux e
 
   let normalize (e : ast) : (ast, string) Result.t =
     e
-    (* |> flatten_round_robin_select *)
+    |> flatten_round_robin_select
     |> process_tokens
 end
 
@@ -591,10 +591,10 @@ let t_of_ast (ast : ast) : (Timere.t, string) Result.t =
                 match op with
                 | Union -> Ok (Timere.union time1 time2)
                 | Inter -> Ok (Timere.inter time1 time2) ) ) )
-    (* | Round_robin_pick l -> (
-     *     match l |> List.map aux |> Misc_utils.get_ok_error_list with
-     *     | Error msg -> Error msg
-     *     | Ok l -> Ok (Timere.round_robin_pick l) ) *)
+    | Round_robin_pick l -> (
+        match l |> List.map aux |> Misc_utils.get_ok_error_list with
+        | Error msg -> Error msg
+        | Ok l -> Ok (Timere.round_robin_pick l) )
   in
   aux ast
 
