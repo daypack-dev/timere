@@ -59,7 +59,8 @@ let rec resolve ~(search_start : Time.timestamp)
               Stdlib.not
                 (mem ~search_start ~search_end_exc ~tz_offset_s t x))
           |> Seq.map (fun x -> (x, Int64.succ x))
-          |> Time.Intervals.Normalize.normalize
+          |> Time.Intervals.Normalize.normalize ~skip_filter_invalid:true
+            ~skip_filter_empty:true ~skip_sort:true
         | Every -> aux t cur end_exc tz_offset_s
         | Skip_n_points n ->
           do_skip_n_points (Int64.of_int n) (aux t cur end_exc tz_offset_s)
