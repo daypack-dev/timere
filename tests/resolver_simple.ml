@@ -81,7 +81,8 @@ let rec resolve ~(search_start : Time.timestamp)
       Seq_utils.a_to_b_exc_int64 ~a:cur ~b:end_exc
       |> Seq.filter (mem ~search_start ~search_end_exc ~tz_offset_s t)
       |> Seq.map (fun x -> (x, Int64.succ x))
-      |> Time.Intervals.Normalize.normalize
+      |> Time.Intervals.Normalize.normalize ~skip_filter_invalid:true
+        ~skip_filter_empty:true ~skip_sort:true
   and resolve_round_robin l cur end_exc tz_offset_s : Time.Interval.t Seq.t =
     let res =
       List.fold_left
