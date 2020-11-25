@@ -42,6 +42,19 @@ let do_chunk (n : int64) drop_partial (s : Time.Interval.t Seq.t) :
   in
   aux n s
 
+let intervals_of_timestamps (s : Time.timestamp Seq.t) : Time.Interval.t Seq.t =
+  let rec aux acc s =
+    match s () with
+    | Seq.Nil -> ( match acc with None -> Seq.empty | Some x -> Seq.return x )
+    | Seq.Cons (x, rest) -> (
+        match acc with
+        | None -> aux (Some (x, Int64.succ x)) rest
+        | Some (x', y') ->
+          if y' = x then aux (Some (x', Int64.succ x)) rest
+          else fun () -> Seq.Cons ((x', y'), aux None rest) )
+  in
+  aux None s
+
 let rec resolve ~(search_start : Time.timestamp)
     ~(search_end_exc : Time.timestamp) ~tz_offset_s (t : Time.t) :
   Time.Interval.t Seq.t =
@@ -58,9 +71,7 @@ let rec resolve ~(search_start : Time.timestamp)
           |> Seq.filter (fun x ->
               Stdlib.not
                 (mem ~search_start ~search_end_exc ~tz_offset_s t x))
-          |> Seq.map (fun x -> (x, Int64.succ x))
-          |> Time.Intervals.Normalize.normalize ~skip_filter_invalid:true
-            ~skip_filter_empty:true ~skip_sort:true
+          |> intervals_of_timestamps
         | Every -> aux t cur end_exc tz_offset_s
         | Skip_n_points n ->
           do_skip_n_points (Int64.of_int n) (aux t cur end_exc tz_offset_s)
@@ -80,9 +91,7 @@ let rec resolve ~(search_start : Time.timestamp)
     | _ ->
       Seq_utils.a_to_b_exc_int64 ~a:cur ~b:end_exc
       |> Seq.filter (mem ~search_start ~search_end_exc ~tz_offset_s t)
-      |> Seq.map (fun x -> (x, Int64.succ x))
-      |> Time.Intervals.Normalize.normalize ~skip_filter_invalid:true
-        ~skip_filter_empty:true ~skip_sort:true
+      |> intervals_of_timestamps
   and resolve_round_robin l cur end_exc tz_offset_s : Time.Interval.t Seq.t =
     let res =
       List.fold_left
