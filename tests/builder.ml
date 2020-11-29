@@ -22,10 +22,11 @@ let make_timestamp_intervals ~rng ~min_year =
   let len = rng () in
   OSeq.(0 -- len)
   |> Seq.map (fun _ ->
-      let start = make_date_time ~rng ~min_year |> Time.Date_time.to_timestamp in
+      let start =
+        make_date_time ~rng ~min_year |> Time.Date_time.to_timestamp
+      in
       let end_exc = Int64.add start (Int64.of_int (rng ())) in
-      (start, end_exc)
-    )
+      (start, end_exc))
   |> List.of_seq
   |> List.sort_uniq Time.Interval.compare
   |> List.to_seq
@@ -33,9 +34,7 @@ let make_timestamp_intervals ~rng ~min_year =
 
 let make_pattern ~rng ~min_year =
   let years =
-    OSeq.(0 -- rng ())
-    |> Seq.map (fun _ -> min_year + rng ())
-    |> List.of_seq
+    OSeq.(0 -- rng ()) |> Seq.map (fun _ -> min_year + rng ()) |> List.of_seq
   in
   let months =
     OSeq.(0 -- rng ())
@@ -43,9 +42,7 @@ let make_pattern ~rng ~min_year =
     |> List.of_seq
   in
   let month_days =
-    OSeq.(0 -- rng ())
-    |> Seq.map (fun _ -> 1 + (rng () mod 31))
-    |> List.of_seq
+    OSeq.(0 -- rng ()) |> Seq.map (fun _ -> 1 + (rng () mod 31)) |> List.of_seq
   in
   let weekdays =
     OSeq.(0 -- rng ())
@@ -69,34 +66,30 @@ let make_branching ~rng ~min_year =
     |> Seq.map (fun _ ->
         let start = min_year + rng () in
         let end_inc = start + rng () in
-        `Range_inc (start, end_inc)
-      )
+        `Range_inc (start, end_inc))
     |> List.of_seq
   in
   let months =
     OSeq.(0 -- rng ())
     |> Seq.map (fun _ ->
         let start_int = rng () mod 12 in
-        let end_inc_int =
-          max 11 (start_int + rng ())
-        in
+        let end_inc_int = max 11 (start_int + rng ()) in
         let start = Result.get_ok @@ Time.month_of_tm_int start_int in
         let end_inc = Result.get_ok @@ Time.month_of_tm_int end_inc_int in
-        `Range_inc (start, end_inc)
-      )
+        `Range_inc (start, end_inc))
     |> List.of_seq
   in
   Time.branching ~allow_out_of_range_month_day:true ~years ~months ()
 
 let make_interval_inc ~rng ~min_year =
-  let start_dt = make_date_time ~rng ~min_year  in
+  let start_dt = make_date_time ~rng ~min_year in
   let start = Time.Date_time.to_timestamp start_dt in
   let end_inc = Int64.add start (Int64.of_int (rng ())) in
   let end_inc_dt = Result.get_ok @@ Time.Date_time.of_timestamp end_inc in
   Time.interval_inc start_dt end_inc_dt
 
 let make_interval_exc ~rng ~min_year =
-  let start_dt = make_date_time ~rng ~min_year  in
+  let start_dt = make_date_time ~rng ~min_year in
   let start = Time.Date_time.to_timestamp start_dt in
   let end_exc = Int64.add start (Int64.of_int (rng ())) in
   let end_exc_dt = Result.get_ok @@ Time.Date_time.of_timestamp end_exc in
@@ -122,8 +115,7 @@ let make_binary_op ~rng t1 t2 =
   | _ -> failwith "Unexpected case"
 
 let make ~min_year ~height ~(randomness : int list) : Time.t =
-  if height <= 0 then
-    invalid_arg "make";
+  if height <= 0 then invalid_arg "make";
   let open Time in
   let rng = make_rng ~randomness in
   let rec aux height =
@@ -141,16 +133,12 @@ let make ~min_year ~height ~(randomness : int list) : Time.t =
       | 1 -> make_binary_op ~rng (aux (pred height)) (aux (pred height))
       | 2 ->
         OSeq.(0 -- rng ())
-        |> Seq.map (fun _ ->
-            aux (pred height)
-          )
+        |> Seq.map (fun _ -> aux (pred height))
         |> List.of_seq
         |> Time.round_robin_pick
       | 3 ->
         OSeq.(0 -- rng ())
-        |> Seq.map (fun _ ->
-            aux (pred height)
-          )
+        |> Seq.map (fun _ -> aux (pred height))
         |> List.of_seq
         |> Time.merge
       | _ -> failwith "Unexpected case"
