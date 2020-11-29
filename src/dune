@@ -7,5 +7,6 @@
             oseq
             re
             mparser
+            containers
  )
 )

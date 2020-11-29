@@ -56,5 +56,6 @@
             ptime.clock.os
             oseq
             mparser
+            containers
             )
  )

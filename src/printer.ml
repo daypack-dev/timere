@@ -229,3 +229,24 @@ let sprint_duration ({ days; hours; minutes; seconds } : Duration.t) : string =
   else Printf.sprintf "%d secs" seconds
 
 let pp_duration formatter x = Format.fprintf formatter "%s" (sprint_duration x)
+
+let default_date_time_format_string =
+  "{year} {mon:Xxx} {mday:0X} {hour:0X}:{min:0X}:{sec:0X}"
+
+let default_interval_format_string =
+  "[{syear} {smon:Xxx} {smday:0X} {shour:0X}:{smin:0X}:{ssec:0X}, \
+   {eyear} {emon:Xxx} {emday:0X} {ehour:0X}:{emin:0X}:{esec:0X})"
+
+let to_sexp (t : Time.t) : CCSexp.t =
+  let open Time in
+  let rec aux t =
+    match t with
+    | Timestamp_interval_seq (_, s) ->
+      s
+      |> List.of_seq
+      |> List.map (fun x -> Result.get_ok @@ sprintf_interval default_interval_format_string x)
+      |> List.map CCSexp.atom
+      |> CCSexp.list
+    | _ -> failwith "Unimplemented"
+  in
+  aux t

@@ -16,6 +16,7 @@ depends: [
   "dune" {>= "1.11.0"}
   "oseq"
   "mparser"
+  "containers" {>= "3.0"}
 ]
 build: [
   ["dune" "build" "-p" name "-j" jobs]
