@@ -18,6 +18,19 @@ let make_date_time ~rng ~min_year =
   Result.get_ok
   @@ Time.Date_time.make ~year ~month ~day ~hour ~minute ~second ~tz_offset_s:0
 
+let make_timestamp_intervals ~rng ~min_year =
+  let len = rng () in
+  OSeq.(0 -- len)
+  |> Seq.map (fun _ ->
+      let start = make_date_time ~rng ~min_year |> Time.Date_time.to_timestamp in
+      let end_exc = Int64.add start (Int64.of_int (rng ())) in
+      (start, end_exc)
+    )
+  |> List.of_seq
+  |> List.sort_uniq Time.Interval.compare
+  |> List.to_seq
+  |> Time.of_intervals_seq
+
 let make_pattern ~rng ~min_year =
   let year_count = rng () in
   let years =
@@ -64,7 +77,8 @@ let make ~min_year ~height ~(randomness : int list) : Time.t =
   let rec aux height =
     if height = 1 then
       match rng () with
-      | 0 -> make_pattern ~rng ~min_year
+      | 0 -> make_timestamp_intervals ~rng ~min_year
+      | 1 -> make_pattern ~rng ~min_year
       | _ -> failwith "Unimplemented"
     else
       match rng () with
