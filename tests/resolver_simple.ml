@@ -87,7 +87,7 @@ let rec resolve ~(search_start : Time.timestamp)
         | Lengthen n ->
           aux t cur end_exc tz_offset_s
           |> Seq.map (fun (x, y) -> (Int64.add n x, Int64.add n y))
-        | Tz_offset n -> aux t cur end_exc n )
+        | Tz_offset_s n -> aux t cur end_exc n )
     | _ ->
       Seq_utils.a_to_b_exc_int64 ~a:cur ~b:end_exc
       |> Seq.filter (mem ~search_start ~search_end_exc ~tz_offset_s t)

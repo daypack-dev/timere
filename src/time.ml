@@ -1705,7 +1705,7 @@ type unary_op =
     }
   | Shift of int64
   | Lengthen of int64
-  | Tz_offset of int
+  | Tz_offset_s of int
 
 type binary_op =
   | Union
@@ -1793,6 +1793,9 @@ let interval_exc (a : Date_time.t) (b : Date_time.t) : t =
  *   Binary_op (default_search_space, Intervals_exc, a, b) *)
 
 let not (a : t) : t = Unary_op (default_search_space, Not, a)
+
+let to_tz_offset_s offset t =
+  Unary_op (default_search_space, Tz_offset_s offset, t)
 
 let pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
     ?(hours = []) ?(minutes = []) ?(seconds = []) ?(timestamps = []) () : t =

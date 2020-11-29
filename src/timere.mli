@@ -83,6 +83,9 @@ val branching :
   unit ->
   t
 
+(** {1 Timezone change} *)
+val to_tz_offset_s : int -> t -> t
+
 (** {1 Algebraic operations} *)
 
 val inter : t -> t -> t

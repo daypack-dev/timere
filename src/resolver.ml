@@ -742,7 +742,7 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
     | Unary_op (_, op, t) -> (
         match op with
         | Not -> Unary_op (default_search_space, op, aux tz_offset_s t)
-        | Tz_offset tz_offset_s ->
+        | Tz_offset_s tz_offset_s ->
           let t = aux tz_offset_s t in
           Unary_op (get_search_space t, op, t)
         | _ ->
@@ -996,7 +996,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
         (intervals_of_branching search_using_tz_offset_s branching)
     | Unary_op (space, op, t) ->
       let search_using_tz_offset_s =
-        match op with Tz_offset x -> x | _ -> search_using_tz_offset_s
+        match op with Tz_offset_s x -> x | _ -> search_using_tz_offset_s
       in
       aux search_using_tz_offset_s t
       |> Result.map (fun s ->
@@ -1030,7 +1030,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
                 (start, Int64.add end_exc n))
             |> Intervals.Normalize.normalize ~skip_filter_empty:true
               ~skip_sort:true ~skip_filter_invalid:true
-          | Tz_offset _ -> s)
+          | Tz_offset_s _ -> s)
     | Binary_op (_, op, t1, t2) -> (
         match aux search_using_tz_offset_s t1 with
         | Error msg -> Error msg
