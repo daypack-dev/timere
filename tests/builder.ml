@@ -79,7 +79,27 @@ let make_branching ~rng ~min_year =
         `Range_inc (start, end_inc))
     |> List.of_seq
   in
-  Time.branching ~allow_out_of_range_month_day:true ~years ~months ()
+  let days =
+    Time.Month_days
+      ( OSeq.(0 -- rng ())
+        |> Seq.map (fun _ ->
+            let start = rng () mod 31 in
+            let end_inc = max 31 (start + rng ()) in
+            `Range_inc (start, end_inc))
+        |> List.of_seq )
+  in
+  let hmss =
+    OSeq.(0 -- rng ())
+    |> Seq.map (fun _ ->
+        let start_int = rng () mod (24 * 60 * 60) in
+        let end_inc_int = max (24 * 60 * 60) (start_int + rng ()) in
+        let start = Time.hms_of_second_of_day start_int in
+        let end_inc = Time.hms_of_second_of_day end_inc_int in
+        `Range_inc (start, end_inc))
+    |> List.of_seq
+  in
+  Time.branching ~allow_out_of_range_month_day:true ~years ~months ~days ~hmss
+    ()
 
 let make_interval_inc ~rng ~min_year =
   let start_dt = make_date_time ~rng ~min_year in
