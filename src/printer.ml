@@ -270,53 +270,29 @@ let sexp_of_pattern (pat : Time.Pattern.pattern) : CCSexp.t =
     |> List.map CCSexp.atom
   in
   let open CCSexp in
-    [
-      Some (atom "pattern");
-      (match years with
-       | [] -> None
-       | _ -> Some (list (atom "years" :: years))
-      );
-      (match months with
-       | [] -> None
-       | _ ->
-         Some (list (atom "months" :: months))
-      )
-      ;
-      (match month_days with
-       | [] -> None
-       | _ ->
-         Some (list (atom "month_days" :: month_days))
-      )
-      ;
-      (match weekdays with
-       | [] -> None
-       | _ ->
-         Some (list (atom "weekdays" :: weekdays))
-      )
-      ;
-      (match hours with
-       | [] -> None
-       | _ -> Some (list (atom "hours" :: hours))
-      )
-      ;
-      (match minutes with
-       | [] -> None
-       | _ -> Some (list (atom "minutes" :: minutes))
-      )
-      ;
-      (match seconds with
-       | [] -> None
-       | _ -> Some (list (atom "seconds" :: seconds))
-      )
-      ;
-      (match timestamps with
-       | [] -> None
-       | _ -> Some (list (atom "timestamps" :: timestamps))
-      )
-      ;
-    ]
-    |> List.filter_map (fun x -> x)
-    |> list
+  [
+    Some (atom "pattern");
+    (match years with [] -> None | _ -> Some (list (atom "years" :: years)));
+    (match months with [] -> None | _ -> Some (list (atom "months" :: months)));
+    ( match month_days with
+      | [] -> None
+      | _ -> Some (list (atom "month_days" :: month_days)) );
+    ( match weekdays with
+      | [] -> None
+      | _ -> Some (list (atom "weekdays" :: weekdays)) );
+    (match hours with [] -> None | _ -> Some (list (atom "hours" :: hours)));
+    ( match minutes with
+      | [] -> None
+      | _ -> Some (list (atom "minutes" :: minutes)) );
+    ( match seconds with
+      | [] -> None
+      | _ -> Some (list (atom "seconds" :: seconds)) );
+    ( match timestamps with
+      | [] -> None
+      | _ -> Some (list (atom "timestamps" :: timestamps)) );
+  ]
+  |> List.filter_map (fun x -> x)
+  |> list
 
 let sexp_of_branching (b : Time.branching) : CCSexp.t =
   let open Time in
@@ -337,31 +313,13 @@ let sexp_of_branching (b : Time.branching) : CCSexp.t =
       b.hmss
   in
   let open CCSexp in
-    [
-      Some (atom "branching");
-      (match years with
-       | [] -> None
-       | _ ->
-         Some (list (atom "years" :: years))
-      )
-      ;
-      (match months with
-       | [] -> None
-       | _ ->
-         Some (list (atom "months" :: months))
-      )
-      ;
-      (match days with
-       | [] -> None
-       | _ -> Some (list days)
-      )
-      ;
-      (match hmss with
-       | [] -> None
-       | _ ->
-         Some (list (atom "hmss " :: hmss))
-      );
-    ]
+  [
+    Some (atom "branching");
+    (match years with [] -> None | _ -> Some (list (atom "years" :: years)));
+    (match months with [] -> None | _ -> Some (list (atom "months" :: months)));
+    (match days with [] -> None | _ -> Some (list days));
+    (match hmss with [] -> None | _ -> Some (list (atom "hmss " :: hmss)));
+  ]
   |> List.filter_map (fun x -> x)
   |> list
 
