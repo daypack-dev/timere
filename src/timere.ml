@@ -44,6 +44,8 @@ let to_sexp = Printer.to_sexp
 
 let pp_sexp = Printer.pp_sexp
 
+let to_sexp_string = Printer.to_sexp_string
+
 module Utils = struct
   let flatten_month_ranges (months : month range Seq.t) :
     (month Seq.t, unit) Result.t =

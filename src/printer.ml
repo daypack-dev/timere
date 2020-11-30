@@ -395,3 +395,5 @@ let to_sexp (t : Time.t) : CCSexp.t =
   aux t
 
 let pp_sexp formatter t = CCSexp.pp formatter (to_sexp t)
+
+let to_sexp_string t = CCSexp.to_string (to_sexp t)
