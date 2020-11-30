@@ -980,27 +980,24 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
   let rec aux search_using_tz_offset_s time =
     let open Time in
     match time with
-    | Timestamp_interval_seq (_, s) -> Ok s
+    | Timestamp_interval_seq (_, s) -> s
     | Pattern (space, pat) ->
       let params =
         List.map (Search_param.make ~search_using_tz_offset_s) space
       in
-      Ok
         (Intervals.Union.union_multi_list ~skip_check:true
            (List.map
               (fun param -> Resolve_pattern.matching_intervals param pat)
               params))
     | Branching (space, branching) ->
-      Result.ok
-      @@ Intervals.inter ~skip_check:true (List.to_seq space)
+      Intervals.inter ~skip_check:true (List.to_seq space)
         (intervals_of_branching search_using_tz_offset_s branching)
     | Unary_op (space, op, t) ->
       let search_using_tz_offset_s =
         match op with Tz_offset_s x -> x | _ -> search_using_tz_offset_s
       in
-      aux search_using_tz_offset_s t
-      |> Result.map (fun s ->
-          match op with
+      let s = aux search_using_tz_offset_s t in
+          (match op with
           | Not ->
             Intervals.relative_complement ~skip_check:true ~not_mem_of:s
               (List.to_seq space)
@@ -1032,33 +1029,32 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
               ~skip_sort:true ~skip_filter_invalid:true
           | Tz_offset_s _ -> s)
     | Binary_op (_, op, t1, t2) -> (
-        match aux search_using_tz_offset_s t1 with
-        | Error msg -> Error msg
-        | Ok s1 -> (
-            match aux search_using_tz_offset_s t2 with
-            | Error msg -> Error msg
-            | Ok s2 -> (
+        let s1 = aux search_using_tz_offset_s t1 in
+        let s2 = aux search_using_tz_offset_s t2 in
+            (
                 match op with
-                | Union -> Ok (Intervals.Union.union ~skip_check:true s1 s2)
-                | Inter -> Ok (Intervals.inter ~skip_check:true s1 s2) ) ) )
+                | Union -> (Intervals.Union.union ~skip_check:true s1 s2)
+                | Inter -> (Intervals.inter ~skip_check:true s1 s2) ) )
     | Interval_inc (_, dt1, dt2) ->
-      Ok
         (Seq.return
            ( Date_time.to_timestamp dt1,
              Int64.succ @@ Date_time.to_timestamp dt2 ))
     | Interval_exc (_, dt1, dt2) ->
-      Ok (Seq.return (Date_time.to_timestamp dt1, Date_time.to_timestamp dt2))
+      (Seq.return (Date_time.to_timestamp dt1, Date_time.to_timestamp dt2))
     | Round_robin_pick_list (_, l) ->
-      Misc_utils.get_ok_error_list (List.map (aux search_using_tz_offset_s) l)
-      |> Result.map
-        (Time.Intervals.Round_robin
+      (List.map (aux search_using_tz_offset_s) l)
+      |> (Time.Intervals.Round_robin
          .merge_multi_list_round_robin_non_decreasing ~skip_check:true)
     | Merge_list (_, l) ->
-      Misc_utils.get_ok_error_list (List.map (aux search_using_tz_offset_s) l)
-      |> Result.map (Time.Intervals.Merge.merge_multi_list ~skip_check:true)
+      (List.map (aux search_using_tz_offset_s) l)
+      |> (Time.Intervals.Merge.merge_multi_list ~skip_check:true)
   in
-  aux search_using_tz_offset_s
-    (optimize_search_space search_using_tz_offset_s time)
-  |> Result.map
-    (Time.Intervals.Normalize.normalize ~skip_filter_invalid:true
-       ~skip_sort:true)
+  try
+    aux search_using_tz_offset_s
+      (optimize_search_space search_using_tz_offset_s time)
+    |> (Time.Intervals.Normalize.normalize ~skip_filter_invalid:true
+          ~skip_sort:true)
+    |> Result.ok
+  with
+  | Time.Interval_is_invalid -> Error "Invalid interval"
+  | Time.Intervals_are_not_sorted -> Error "Intervals are not sorted"
