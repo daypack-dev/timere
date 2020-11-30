@@ -237,16 +237,129 @@ let default_interval_format_string =
   "[{syear} {smon:Xxx} {smday:0X} {shour:0X}:{smin:0X}:{ssec:0X}, \
    {eyear} {emon:Xxx} {emday:0X} {ehour:0X}:{emin:0X}:{esec:0X})"
 
+let sexp_of_month x =
+  CCSexp.atom @@ abbreviated_string_of_month x
+
+let sexp_of_weekday x =
+  CCSexp.atom @@ abbreviated_string_of_weekday x
+
+let sexp_of_int x =
+  CCSexp.atom @@ string_of_int x
+
+let sexp_list_of_ints l =
+  List.map sexp_of_int
+  l
+
+let sexp_of_range ~(f : 'a -> CCSexp.t) (r : 'a Time.Range.range) =
+  match r with
+  | `Range_inc (x, y) ->
+    CCSexp.(list [
+        atom "range_inc";
+        f x;
+        f y;
+      ])
+  | `Range_exc (x, y) ->
+    CCSexp.(list [
+        atom "range_exc";
+        f x;
+        f y;
+      ])
+
+let sexp_of_pattern (pat : Time.Pattern.pattern) : CCSexp.t =
+  let years =
+    sexp_list_of_ints
+    pat.years
+  in
+  let months =
+    List.map sexp_of_month
+    pat.months
+  in
+  let month_days =
+    sexp_list_of_ints
+    pat.month_days
+  in
+  let weekdays =
+    List.map sexp_of_weekday
+    pat.weekdays
+  in
+  let hours =
+    sexp_list_of_ints
+    pat.hours
+  in
+  let minutes =
+    sexp_list_of_ints
+    pat.minutes
+  in
+  let seconds =
+    sexp_list_of_ints
+    pat.seconds
+  in
+  let timestamps =
+    pat.timestamps
+    |> List.map (fun x -> Result.get_ok @@ sprintf_timestamp default_date_time_format_string x)
+    |> List.map CCSexp.atom
+  in
+  CCSexp.(list
+            [
+              atom "pattern";
+              list (atom "years" :: years);
+              list (atom "months" :: months);
+              list (atom "month_days" :: month_days);
+              list (atom "weekdays" :: weekdays);
+              list (atom "hours" :: hours);
+              list (atom "minutes" :: minutes);
+              list (atom "seconds" :: seconds);
+              list (atom "timestamps" :: timestamps)
+            ]
+         )
+
+let sexp_of_branching (b : Time.branching) : CCSexp.t =
+  let open Time in
+  let years =
+    List.map (sexp_of_range ~f:sexp_of_int) b.years
+  in
+  let months =
+    List.map (sexp_of_range ~f:sexp_of_month) b.months
+  in
+  let days =
+    match b.days with
+    | Month_days days ->
+      CCSexp.atom "month_days" :: (List.map (sexp_of_range ~f:sexp_of_int) days)
+    | Weekdays days ->
+      CCSexp.atom "weekdays" :: (List.map (sexp_of_range ~f:sexp_of_weekday) days)
+  in
+  let hmss =
+    List.map (sexp_of_range ~f:(fun { hour; minute; second} ->
+        CCSexp.atom (Printf.sprintf "%d:%d:%d" hour minute second)
+      )) b.hmss
+  in
+  CCSexp.(list [
+      atom "branching";
+      list (atom "years" :: years);
+      list (atom "months" :: months);
+      list days;
+      list (atom "hmss " :: hmss);
+    ]
+   )
+
 let to_sexp (t : Time.t) : CCSexp.t =
   let open Time in
   let rec aux t =
     match t with
     | Timestamp_interval_seq (_, s) ->
-      s
-      |> List.of_seq
-      |> List.map (fun x -> Result.get_ok @@ sprintf_interval default_interval_format_string x)
-      |> List.map CCSexp.atom
-      |> CCSexp.list
+      let l =
+        s
+        |> List.of_seq
+        |> List.map (fun (x, y) ->
+            Result.get_ok @@ sprintf_timestamp default_date_time_format_string x,
+            Result.get_ok @@ sprintf_timestamp default_date_time_format_string y)
+        |> List.map (fun (x, y) ->
+            CCSexp.(list [ atom x; atom y])
+          )
+      in
+      CCSexp.list (CCSexp.atom "intervals" :: l)
+    | Pattern (_, pat) ->
+      sexp_of_pattern pat
     | _ -> failwith "Unimplemented"
   in
   aux t
