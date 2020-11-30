@@ -18,7 +18,7 @@ let search_end_exc =
 
 module Qc = struct
   let resolver_is_same_as_simple_resolver =
-    QCheck.Test.make ~count:10_000 ~name:"resolver_is_same_as_simple_resolver"
+    QCheck.Test.make ~count:10 ~name:"resolver_is_same_as_simple_resolver"
       time
       (fun t ->
          OSeq.equal ~eq:(=)
