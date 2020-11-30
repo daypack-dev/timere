@@ -300,11 +300,18 @@ let sexp_of_branching (b : Time.branching) : CCSexp.t =
   let months = List.map (sexp_of_range ~f:sexp_of_month) b.months in
   let days =
     match b.days with
-    | Month_days days ->
-      CCSexp.atom "month_days" :: List.map (sexp_of_range ~f:sexp_of_int) days
-    | Weekdays days ->
-      CCSexp.atom "weekdays"
-      :: List.map (sexp_of_range ~f:sexp_of_weekday) days
+    | Month_days days -> (
+        match days with
+        | [] -> []
+        | _ ->
+          CCSexp.atom "month_days"
+          :: List.map (sexp_of_range ~f:sexp_of_int) days )
+    | Weekdays days -> (
+        match days with
+        | [] -> []
+        | _ ->
+          CCSexp.atom "weekdays"
+          :: List.map (sexp_of_range ~f:sexp_of_weekday) days )
   in
   let hmss =
     List.map
