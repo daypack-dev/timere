@@ -282,13 +282,9 @@ val pp_interval :
 
 (** {1 S-expressions} *)
 
-val to_sexp :
-  t -> CCSexp.t
+val to_sexp : t -> CCSexp.t
 
-val pp_sexp :
-  Format.formatter ->
-  t ->
-  unit
+val pp_sexp : Format.formatter -> t -> unit
 
 module Utils : sig
   val flatten_month_ranges : month range Seq.t -> (month Seq.t, unit) result
