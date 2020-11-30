@@ -337,14 +337,33 @@ let sexp_of_branching (b : Time.branching) : CCSexp.t =
       b.hmss
   in
   let open CCSexp in
-  list
     [
-      atom "branching";
-      list (atom "years" :: years);
-      list (atom "months" :: months);
-      list days;
-      list (atom "hmss " :: hmss);
+      Some (atom "branching");
+      (match years with
+       | [] -> None
+       | _ ->
+         Some (list (atom "years" :: years))
+      )
+      ;
+      (match months with
+       | [] -> None
+       | _ ->
+         Some (list (atom "months" :: months))
+      )
+      ;
+      (match days with
+       | [] -> None
+       | _ -> Some (list days)
+      )
+      ;
+      (match hmss with
+       | [] -> None
+       | _ ->
+         Some (list (atom "hmss " :: hmss))
+      );
     ]
+  |> List.filter_map (fun x -> x)
+  |> list
 
 let sexp_list_of_unary_op (op : Time.unary_op) =
   let open Time in
