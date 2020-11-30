@@ -270,18 +270,53 @@ let sexp_of_pattern (pat : Time.Pattern.pattern) : CCSexp.t =
     |> List.map CCSexp.atom
   in
   let open CCSexp in
-  list
     [
-      atom "pattern";
-      list (atom "years" :: years);
-      list (atom "months" :: months);
-      list (atom "month_days" :: month_days);
-      list (atom "weekdays" :: weekdays);
-      list (atom "hours" :: hours);
-      list (atom "minutes" :: minutes);
-      list (atom "seconds" :: seconds);
-      list (atom "timestamps" :: timestamps);
+      Some (atom "pattern");
+      (match years with
+       | [] -> None
+       | _ -> Some (list (atom "years" :: years))
+      );
+      (match months with
+       | [] -> None
+       | _ ->
+         Some (list (atom "months" :: months))
+      )
+      ;
+      (match month_days with
+       | [] -> None
+       | _ ->
+         Some (list (atom "month_days" :: month_days))
+      )
+      ;
+      (match weekdays with
+       | [] -> None
+       | _ ->
+         Some (list (atom "weekdays" :: weekdays))
+      )
+      ;
+      (match hours with
+       | [] -> None
+       | _ -> Some (list (atom "hours" :: hours))
+      )
+      ;
+      (match minutes with
+       | [] -> None
+       | _ -> Some (list (atom "minutes" :: minutes))
+      )
+      ;
+      (match seconds with
+       | [] -> None
+       | _ -> Some (list (atom "seconds" :: seconds))
+      )
+      ;
+      (match timestamps with
+       | [] -> None
+       | _ -> Some (list (atom "timestamps" :: timestamps))
+      )
+      ;
     ]
+    |> List.filter_map (fun x -> x)
+    |> list
 
 let sexp_of_branching (b : Time.branching) : CCSexp.t =
   let open Time in
