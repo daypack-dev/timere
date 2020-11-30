@@ -40,6 +40,10 @@ let sprintf_interval = Printer.sprintf_interval
 
 let pp_interval = Printer.pp_interval
 
+let to_sexp = Printer.to_sexp
+
+let pp_sexp = Printer.pp_sexp
+
 module Utils = struct
   let flatten_month_ranges (months : month range Seq.t) :
     (month Seq.t, unit) Result.t =

@@ -374,3 +374,7 @@ let to_sexp (t : Time.t) : CCSexp.t =
     | Merge_list (_, l) -> CCSexp.(list (atom "merge" :: List.map aux l))
   in
   aux t
+
+let pp_sexp formatter t =
+  CCSexp.pp formatter
+    (to_sexp t)
