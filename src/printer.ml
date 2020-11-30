@@ -250,6 +250,10 @@ let sexp_list_of_ints l =
   List.map sexp_of_int
   l
 
+let sexp_of_date_time x =
+  CCSexp.atom @@
+  Result.get_ok @@ sprintf_date_time default_date_time_format_string x
+
 let sexp_of_range ~(f : 'a -> CCSexp.t) (r : 'a Time.Range.range) =
   match r with
   | `Range_inc (x, y) ->
@@ -342,6 +346,39 @@ let sexp_of_branching (b : Time.branching) : CCSexp.t =
     ]
    )
 
+let sexp_list_of_unary_op (op : Time.unary_op) =
+  let open Time in
+  match op with
+  | Not -> [CCSexp.atom "not"]
+  | Every -> [CCSexp.atom "every"]
+  | Skip_n_points n ->
+    [ CCSexp.atom "skip_n_points";
+      CCSexp.atom (string_of_int n)]
+  | Skip_n_intervals n ->
+    [ CCSexp.atom "skip_n";
+      CCSexp.atom (string_of_int n)]
+  | Next_n_points n ->
+    [ CCSexp.atom "next_n_points";
+      CCSexp.atom (string_of_int n)]
+  | Next_n_intervals n ->
+    [ CCSexp.atom "next_n";
+      CCSexp.atom (string_of_int n)]
+  | Chunk { chunk_size; drop_partial } ->
+    CCSexp.atom "chunk" ::
+    CCSexp.atom (Int64.to_string chunk_size) ::
+    (if drop_partial then
+       [ CCSexp.atom "drop_partial"]
+    else [])
+  | Shift n ->
+    [ CCSexp.atom "shift";
+      CCSexp.atom (Int64.to_string n)]
+  | Lengthen n ->
+    [ CCSexp.atom "lengthen";
+      CCSexp.atom (Int64.to_string n)]
+  | Tz_offset_s n ->
+    [ CCSexp.atom "tz_offset_s";
+      CCSexp.atom (string_of_int n)]
+
 let to_sexp (t : Time.t) : CCSexp.t =
   let open Time in
   let rec aux t =
@@ -360,6 +397,49 @@ let to_sexp (t : Time.t) : CCSexp.t =
       CCSexp.list (CCSexp.atom "intervals" :: l)
     | Pattern (_, pat) ->
       sexp_of_pattern pat
-    | _ -> failwith "Unimplemented"
+    | Branching (_, b) ->
+      sexp_of_branching b
+    | Unary_op (_, op, t) ->
+      CCSexp.list
+        (sexp_list_of_unary_op op @ [ aux t ])
+    | Binary_op (_, op, t1, t2) -> (
+        CCSexp.list
+          [
+            (match op with
+             | Union -> CCSexp.atom "union"
+             | Inter -> CCSexp.atom "inter"
+            );
+            aux t1;
+            aux t2;
+          ]
+      )
+    | Interval_inc (_, dt1, dt2) ->
+      CCSexp.(list
+                [
+                  atom "interval_inc";
+                  sexp_of_date_time dt1;
+                  sexp_of_date_time dt2;
+                ]
+             )
+    | Interval_exc (_, dt1, dt2) ->
+      CCSexp.(list
+                [
+                  atom "interval_exc";
+                  sexp_of_date_time dt1;
+                  sexp_of_date_time dt2;
+                ]
+             )
+    | Round_robin_pick_list (_, l) ->
+      CCSexp.(list
+                (atom "round_robin" ::
+                 List.map aux l
+                )
+             )
+    | Merge_list (_, l) ->
+      CCSexp.(list
+                (atom "merge" ::
+                 List.map aux l
+                )
+             )
   in
   aux t
