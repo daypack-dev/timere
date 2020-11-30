@@ -1,4 +1,4 @@
-module Int64_range = Daypack_lib.Range.Make (struct
+module Int64_range = Time.Range.Make (struct
     type t = int64
 
     let modulo = None
@@ -8,7 +8,7 @@ module Int64_range = Daypack_lib.Range.Make (struct
     let of_int64 x = x
   end)
 
-module Int_range = Daypack_lib.Range_small.Make (struct
+module Int_range = Time.Range_small.Make (struct
     type t = int
 
     let modulo = None

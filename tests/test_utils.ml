@@ -251,3 +251,16 @@ let date_time_testable : (module Alcotest.TESTABLE) =
  * 
  *     let equal = ( = )
  *   end ) *)
+
+let time_gen : Time.t QCheck.Gen.t =
+  let open QCheck.Gen in
+  map2 (fun height randomness ->
+      Builder.make ~min_year:2000 ~height ~randomness
+    )
+    (int_range 1 10)
+    (list_size (int_bound 20) nat)
+
+let time =
+  QCheck.make
+    ~print:Printer.to_sexp_string
+    time_gen
