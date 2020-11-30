@@ -985,75 +985,69 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
       let params =
         List.map (Search_param.make ~search_using_tz_offset_s) space
       in
-        (Intervals.Union.union_multi_list ~skip_check:true
-           (List.map
-              (fun param -> Resolve_pattern.matching_intervals param pat)
-              params))
+      Intervals.Union.union_multi_list ~skip_check:true
+        (List.map
+           (fun param -> Resolve_pattern.matching_intervals param pat)
+           params)
     | Branching (space, branching) ->
       Intervals.inter ~skip_check:true (List.to_seq space)
         (intervals_of_branching search_using_tz_offset_s branching)
-    | Unary_op (space, op, t) ->
-      let search_using_tz_offset_s =
-        match op with Tz_offset_s x -> x | _ -> search_using_tz_offset_s
-      in
-      let s = aux search_using_tz_offset_s t in
-          (match op with
-          | Not ->
-            Intervals.relative_complement ~skip_check:true ~not_mem_of:s
-              (List.to_seq space)
-          | Every -> s
-          | Skip_n_points n ->
-            Intervals.chunk ~skip_check:true ~chunk_size:1L s
-            |> OSeq.drop n
-          | Skip_n_intervals n -> OSeq.drop n s
-          | Next_n_points n ->
-            Intervals.chunk ~skip_check:true ~chunk_size:1L s
-            |> OSeq.take n
-          | Next_n_intervals n -> OSeq.take n s
-          (* | Normalize { skip_filter_invalid; skip_filter_empty; skip_sort }
-           *   ->
-           *   Intervals.Normalize.normalize ~skip_filter_invalid
-           *     ~skip_filter_empty ~skip_sort s *)
-          | Chunk { chunk_size; drop_partial } ->
-            Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
-          | Shift n ->
-            Seq.map
-              (fun (start, end_exc) ->
-                 (Int64.add start n, Int64.add end_exc n))
-              s
-          | Lengthen n ->
+    | Unary_op (space, op, t) -> (
+        let search_using_tz_offset_s =
+          match op with Tz_offset_s x -> x | _ -> search_using_tz_offset_s
+        in
+        let s = aux search_using_tz_offset_s t in
+        match op with
+        | Not ->
+          Intervals.relative_complement ~skip_check:true ~not_mem_of:s
+            (List.to_seq space)
+        | Every -> s
+        | Skip_n_points n ->
+          Intervals.chunk ~skip_check:true ~chunk_size:1L s |> OSeq.drop n
+        | Skip_n_intervals n -> OSeq.drop n s
+        | Next_n_points n ->
+          Intervals.chunk ~skip_check:true ~chunk_size:1L s |> OSeq.take n
+        | Next_n_intervals n -> OSeq.take n s
+        (* | Normalize { skip_filter_invalid; skip_filter_empty; skip_sort }
+         *   ->
+         *   Intervals.Normalize.normalize ~skip_filter_invalid
+         *     ~skip_filter_empty ~skip_sort s *)
+        | Chunk { chunk_size; drop_partial } ->
+          Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
+        | Shift n ->
+          Seq.map
+            (fun (start, end_exc) -> (Int64.add start n, Int64.add end_exc n))
             s
-            |> Seq.map (fun (start, end_exc) ->
-                (start, Int64.add end_exc n))
-            |> Intervals.Normalize.normalize ~skip_filter_empty:true
-              ~skip_sort:true ~skip_filter_invalid:true
-          | Tz_offset_s _ -> s)
+        | Lengthen n ->
+          s
+          |> Seq.map (fun (start, end_exc) -> (start, Int64.add end_exc n))
+          |> Intervals.Normalize.normalize ~skip_filter_empty:true
+            ~skip_sort:true ~skip_filter_invalid:true
+        | Tz_offset_s _ -> s )
     | Binary_op (_, op, t1, t2) -> (
         let s1 = aux search_using_tz_offset_s t1 in
         let s2 = aux search_using_tz_offset_s t2 in
-            (
-                match op with
-                | Union -> (Intervals.Union.union ~skip_check:true s1 s2)
-                | Inter -> (Intervals.inter ~skip_check:true s1 s2) ) )
+        match op with
+        | Union -> Intervals.Union.union ~skip_check:true s1 s2
+        | Inter -> Intervals.inter ~skip_check:true s1 s2 )
     | Interval_inc (_, dt1, dt2) ->
-        (Seq.return
-           ( Date_time.to_timestamp dt1,
-             Int64.succ @@ Date_time.to_timestamp dt2 ))
+      Seq.return
+        (Date_time.to_timestamp dt1, Int64.succ @@ Date_time.to_timestamp dt2)
     | Interval_exc (_, dt1, dt2) ->
-      (Seq.return (Date_time.to_timestamp dt1, Date_time.to_timestamp dt2))
+      Seq.return (Date_time.to_timestamp dt1, Date_time.to_timestamp dt2)
     | Round_robin_pick_list (_, l) ->
-      (List.map (aux search_using_tz_offset_s) l)
-      |> (Time.Intervals.Round_robin
-         .merge_multi_list_round_robin_non_decreasing ~skip_check:true)
+      List.map (aux search_using_tz_offset_s) l
+      |> Time.Intervals.Round_robin
+         .merge_multi_list_round_robin_non_decreasing ~skip_check:true
     | Merge_list (_, l) ->
-      (List.map (aux search_using_tz_offset_s) l)
-      |> (Time.Intervals.Merge.merge_multi_list ~skip_check:true)
+      List.map (aux search_using_tz_offset_s) l
+      |> Time.Intervals.Merge.merge_multi_list ~skip_check:true
   in
   try
     aux search_using_tz_offset_s
       (optimize_search_space search_using_tz_offset_s time)
-    |> (Time.Intervals.Normalize.normalize ~skip_filter_invalid:true
-          ~skip_sort:true)
+    |> Time.Intervals.Normalize.normalize ~skip_filter_invalid:true
+      ~skip_sort:true
     |> Result.ok
   with
   | Time.Interval_is_invalid -> Error "Invalid interval"

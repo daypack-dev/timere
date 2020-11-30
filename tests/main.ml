@@ -36,7 +36,9 @@ let default_interval_format_string =
  *     print_newline () *)
 
 let () =
-  let alco_suites = [ ("Time_intervals.Alco", Time_intervals_tests.Alco.suite) ] in
+  let alco_suites =
+    [ ("Time_intervals.Alco", Time_intervals_tests.Alco.suite) ]
+  in
   let qc_suites =
     [
       (* ("Time_intervals.Qc", Time_intervals_tests.Qc.suite); *)
