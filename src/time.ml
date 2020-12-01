@@ -1694,11 +1694,6 @@ type unary_op =
   | Skip_n_intervals of int
   | Next_n_points of int
   | Next_n_intervals of int
-  (* | Normalize of {
-   *     skip_filter_invalid : bool;
-   *     skip_filter_empty : bool;
-   *     skip_sort : bool;
-   *   } *)
   | Chunk of {
       chunk_size : int64;
       drop_partial : bool;
@@ -1791,12 +1786,6 @@ let interval_exc (a : Date_time.t) (b : Date_time.t) : t =
   let b_timestamp = Date_time.to_timestamp b in
   if a_timestamp <= b_timestamp then Interval_exc (default_search_space, a, b)
   else failwith "interval_exc: a > b"
-
-(* let intervals_inc (a : t) (b : t) : t =
- *   Binary_op (default_search_space, Intervals_inc, a, b)
- * 
- * let intervals_exc (a : t) (b : t) : t =
- *   Binary_op (default_search_space, Intervals_exc, a, b) *)
 
 let not (a : t) : t = Unary_op (default_search_space, Not, a)
 
