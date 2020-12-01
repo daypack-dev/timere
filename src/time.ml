@@ -1781,10 +1781,20 @@ let skip_n (n : int) (t : t) : t =
   else Unary_op (default_search_space, Skip_n_intervals n, t)
 
 let interval_inc (a : Date_time.t) (b : Date_time.t) : t =
-  Interval_inc (default_search_space, a, b)
+  let a_timestamp = Date_time.to_timestamp a in
+  let b_timestamp = Date_time.to_timestamp b in
+  if a_timestamp <= b_timestamp then
+    Interval_inc (default_search_space, a, b)
+  else
+    failwith "interval_inc: a > b"
 
 let interval_exc (a : Date_time.t) (b : Date_time.t) : t =
+  let a_timestamp = Date_time.to_timestamp a in
+  let b_timestamp = Date_time.to_timestamp b in
+  if a_timestamp <= b_timestamp then
   Interval_exc (default_search_space, a, b)
+  else
+    failwith "interval_exc: a > b"
 
 (* let intervals_inc (a : t) (b : t) : t =
  *   Binary_op (default_search_space, Intervals_inc, a, b)
