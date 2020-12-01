@@ -2,21 +2,21 @@ open Test_utils
 
 let search_start_dt =
   Result.get_ok
-  @@ Time.Date_time.make ~year:1900 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+  @@ Time.Date_time.make ~year:1980 ~month:`Jan ~day:1 ~hour:0 ~minute:0
     ~second:0 ~tz_offset_s:0
 
 let search_start = Time.Date_time.to_timestamp search_start_dt
 
 let search_end_exc_dt =
   Result.get_ok
-  @@ Time.Date_time.make ~year:2100 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+  @@ Time.Date_time.make ~year:2020 ~month:`Jan ~day:1 ~hour:0 ~minute:0
     ~second:0 ~tz_offset_s:0
 
 let search_end_exc = Time.Date_time.to_timestamp search_end_exc_dt
 
 module Qc = struct
   let resolver_is_same_as_simple_resolver =
-    QCheck.Test.make ~count:10 ~name:"resolver_is_same_as_simple_resolver" time
+    QCheck.Test.make ~count:1 ~name:"resolver_is_same_as_simple_resolver" time
       (fun t ->
          OSeq.equal ~eq:( = )
            ( Result.get_ok

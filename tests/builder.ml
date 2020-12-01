@@ -4,7 +4,7 @@ let make_rng ~randomness : unit -> int =
   let len = Array.length arr in
   let cur = ref 0 in
   fun () ->
-    let ret = min 0 arr.(!cur) mod 5000 in
+    let ret = max 0 (arr.(!cur) mod 5000) in
     cur := (!cur + 1) mod len;
     ret
 
@@ -73,7 +73,7 @@ let make_branching ~rng ~min_year =
     OSeq.(0 -- rng ())
     |> Seq.map (fun _ ->
         let start_int = rng () mod 12 in
-        let end_inc_int = max 11 (start_int + rng ()) in
+        let end_inc_int = min 11 (start_int + rng ()) in
         let start = Result.get_ok @@ Time.month_of_tm_int start_int in
         let end_inc = Result.get_ok @@ Time.month_of_tm_int end_inc_int in
         `Range_inc (start, end_inc))
@@ -84,7 +84,7 @@ let make_branching ~rng ~min_year =
       ( OSeq.(0 -- rng ())
         |> Seq.map (fun _ ->
             let start = rng () mod 31 in
-            let end_inc = max 31 (start + rng ()) in
+            let end_inc = min 31 (start + rng ()) in
             `Range_inc (start, end_inc))
         |> List.of_seq )
   in
@@ -92,7 +92,7 @@ let make_branching ~rng ~min_year =
     OSeq.(0 -- rng ())
     |> Seq.map (fun _ ->
         let start_int = rng () mod (24 * 60 * 60) in
-        let end_inc_int = max (24 * 60 * 60) (start_int + rng ()) in
+        let end_inc_int = min (24 * 60 * 60) (start_int + rng ()) in
         let start = Time.hms_of_second_of_day start_int in
         let end_inc = Time.hms_of_second_of_day end_inc_int in
         `Range_inc (start, end_inc))
@@ -134,9 +134,8 @@ let make_binary_op ~rng t1 t2 =
   | 1 -> Time.inter t1 t2
   | _ -> failwith "Unexpected case"
 
-let make ~min_year ~height ~(randomness : int list) : Time.t =
+let make ~min_year ~height ~max_branching ~(randomness : int list) : Time.t =
   if height <= 0 then invalid_arg "make";
-  let open Time in
   let rng = make_rng ~randomness in
   let rec aux height =
     if height = 1 then
@@ -152,12 +151,12 @@ let make ~min_year ~height ~(randomness : int list) : Time.t =
       | 0 -> make_unary_op ~rng (aux (pred height))
       | 1 -> make_binary_op ~rng (aux (pred height)) (aux (pred height))
       | 2 ->
-        OSeq.(0 -- rng ())
+        OSeq.(0 -- Stdlib.min max_branching (rng ()))
         |> Seq.map (fun _ -> aux (pred height))
         |> List.of_seq
         |> Time.round_robin_pick
       | 3 ->
-        OSeq.(0 -- rng ())
+        OSeq.(0 -- Stdlib.min max_branching (rng ()))
         |> Seq.map (fun _ -> aux (pred height))
         |> List.of_seq
         |> Time.merge
