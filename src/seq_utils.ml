@@ -5,11 +5,6 @@ let nat : int Seq.t =
   let rec aux n = yield n >>= fun () -> aux (n + 1) in
   run (aux 0)
 
-(* let nat_int64 : int64 Seq.t =
- *   let open OSeq.Generator in
- *   let rec aux n = yield n >>= fun () -> aux (n ^+ 1L) in
- *   run (aux 0L) *)
-
 let zero_to_n_exc n : int Seq.t =
   let rec aux cur n =
     if cur < n then fun () -> Seq.Cons (cur, aux (cur + 1) n) else Seq.empty
@@ -35,22 +30,6 @@ let mod_int n =
     if cur < n then fun () -> Seq.Cons (cur, aux (cur + 1) n) else aux 0 n
   in
   aux 0 n
-
-(* let mapi (f : int -> 'a -> 'b) (s : 'a Seq.t) : 'b Seq.t =
- *   let rec aux f s i =
- *     match s () with
- *     | Seq.Nil -> Seq.empty
- *     | Seq.Cons (x, rest) -> fun () -> Seq.Cons (f i x, aux f rest (i + 1))
- *   in
- *   aux f s 0 *)
-
-(* let mapi_int64 (f : int64 -> 'a -> 'b) (s : 'a Seq.t) : 'b Seq.t =
- *   let rec aux f s i =
- *     match s () with
- *     | Seq.Nil -> Seq.empty
- *     | Seq.Cons (x, rest) -> fun () -> Seq.Cons (f i x, aux f rest (i ^+ 1L))
- *   in
- *   aux f s 0L *)
 
 let collect_round_robin (type a) ~(f_le : a -> a -> bool)
     (batches : a Seq.t list) : a option list Seq.t =
