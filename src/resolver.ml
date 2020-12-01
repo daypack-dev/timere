@@ -757,16 +757,16 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
         | Inter ->
           let space =
             Intervals.inter
-              (List.to_seq t1_search_space)
-              (List.to_seq t2_search_space)
+              (t1_search_space |> List.to_seq |> Intervals.Normalize.normalize ~skip_sort:true)
+              (t2_search_space |> List.to_seq |> Intervals.Normalize.normalize ~skip_sort:true)
             |> List.of_seq
           in
           Binary_op (space, Inter, t1, t2)
         | _ ->
           let space =
             Intervals.Union.union
-              (List.to_seq t1_search_space)
-              (List.to_seq t2_search_space)
+              (t1_search_space |> List.to_seq |> Intervals.Normalize.normalize ~skip_sort:true)
+              (t2_search_space |> List.to_seq |> Intervals.Normalize.normalize ~skip_sort:true)
             |> List.of_seq
           in
           Binary_op (space, op, t1, t2) )
