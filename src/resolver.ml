@@ -757,16 +757,24 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
         | Inter ->
           let space =
             Intervals.inter ~skip_check:true
-              (t1_search_space |> List.to_seq |> Intervals.Normalize.normalize ~skip_sort:true)
-              (t2_search_space |> List.to_seq |> Intervals.Normalize.normalize ~skip_sort:true)
+              ( t1_search_space
+                |> List.to_seq
+                |> Intervals.Normalize.normalize ~skip_sort:true )
+              ( t2_search_space
+                |> List.to_seq
+                |> Intervals.Normalize.normalize ~skip_sort:true )
             |> List.of_seq
           in
           Binary_op (space, Inter, t1, t2)
         | _ ->
           let space =
             Intervals.Union.union ~skip_check:true
-              (t1_search_space |> List.to_seq |> Intervals.Normalize.normalize ~skip_sort:true)
-              (t2_search_space |> List.to_seq |> Intervals.Normalize.normalize ~skip_sort:true)
+              ( t1_search_space
+                |> List.to_seq
+                |> Intervals.Normalize.normalize ~skip_sort:true )
+              ( t2_search_space
+                |> List.to_seq
+                |> Intervals.Normalize.normalize ~skip_sort:true )
             |> List.of_seq
           in
           Binary_op (space, op, t1, t2) )
@@ -869,8 +877,7 @@ let intervals_of_branching tz_offset_s (b : Time.branching) :
                       | Ok dt2 ->
                         Some
                           ( Date_time.to_timestamp dt1,
-                            Int64.succ @@ Date_time.to_timestamp dt2 )
-                           ) )
+                            Int64.succ @@ Date_time.to_timestamp dt2 ) ) )
               | `Range_exc (start, end_exc) -> (
                   match
                     Date_time.make ~year ~month ~day ~hour:start.hour
@@ -887,8 +894,7 @@ let intervals_of_branching tz_offset_s (b : Time.branching) :
                       | Ok dt2 ->
                         Some
                           ( Date_time.to_timestamp dt1,
-                            Date_time.to_timestamp dt2 ) ) )
-              )
+                            Date_time.to_timestamp dt2 ) ) ))
            hmss)
       month_days
   in
