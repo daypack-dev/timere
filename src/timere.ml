@@ -44,7 +44,7 @@ let to_sexp = To_sexp.to_sexp
 
 let pp_sexp = Printer.pp_sexp
 
-let to_sexp_string = Printer.to_sexp_string
+let to_sexp_string = To_sexp.to_sexp_string
 
 let of_sexp = Of_sexp.of_sexp
 

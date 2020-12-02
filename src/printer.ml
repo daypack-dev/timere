@@ -208,5 +208,3 @@ let sprint_duration ({ days; hours; minutes; seconds } : Duration.t) : string =
 let pp_duration formatter x = Format.fprintf formatter "%s" (sprint_duration x)
 
 let pp_sexp formatter t = CCSexp.pp formatter (To_sexp.to_sexp t)
-
-let to_sexp_string t = CCSexp.to_string (To_sexp.to_sexp t)

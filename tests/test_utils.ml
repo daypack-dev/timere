@@ -260,4 +260,4 @@ let time_gen : Time.t QCheck.Gen.t =
     (int_range 1 3) (int_range 1 5)
     (list_size (int_range 1 10) (int_bound 100))
 
-let time = QCheck.make ~print:Printer.to_sexp_string time_gen
+let time = QCheck.make ~print:To_sexp.to_sexp_string time_gen

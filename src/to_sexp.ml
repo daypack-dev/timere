@@ -158,3 +158,5 @@ let to_sexp (t : Time.t) : CCSexp.t =
     | Merge_list (_, l) -> CCSexp.(list (atom "merge" :: List.map aux l))
   in
   aux t
+
+let to_sexp_string t = CCSexp.to_string (to_sexp t)
