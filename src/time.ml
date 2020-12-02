@@ -1783,7 +1783,7 @@ let interval_inc (a : timestamp) (b : timestamp) : t =
       | Error () -> invalid_arg "interval_inc: invalid timestamp"
       | Ok _ ->
         if a <= b then Interval_inc (default_search_space, a, b)
-        else failwith "interval_inc: a > b" )
+        else invalid_arg "interval_inc: a > b" )
 
 let interval_exc (a : timestamp) (b : timestamp) : t =
   match Date_time.of_timestamp a with
@@ -1793,19 +1793,19 @@ let interval_exc (a : timestamp) (b : timestamp) : t =
       | Error () -> invalid_arg "interval_exc: invalid timestamp"
       | Ok _ ->
         if a <= b then Interval_exc (default_search_space, a, b)
-        else failwith "interval_exc: a > b" )
+        else invalid_arg "interval_exc: a > b" )
 
 let interval_dt_inc (a : Date_time.t) (b : Date_time.t) : t =
   let a = Date_time.to_timestamp a in
   let b = Date_time.to_timestamp b in
   if a <= b then Interval_inc (default_search_space, a, b)
-  else failwith "interval_dt_inc: a > b"
+  else invalid_arg "interval_dt_inc: a > b"
 
 let interval_dt_exc (a : Date_time.t) (b : Date_time.t) : t =
   let a = Date_time.to_timestamp a in
   let b = Date_time.to_timestamp b in
   if a <= b then Interval_exc (default_search_space, a, b)
-  else failwith "interval_dt_exc: a > b"
+  else invalid_arg "interval_dt_exc: a > b"
 
 let not (a : t) : t = Unary_op (default_search_space, Not, a)
 
