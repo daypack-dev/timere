@@ -2041,3 +2041,34 @@ let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
 let of_intervals_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t)
   : t =
   s |> List.of_seq |> of_intervals ~skip_invalid
+
+let full_string_of_weekday (wday : weekday) : string =
+  match wday with
+  | `Sun -> "Sunday"
+  | `Mon -> "Monday"
+  | `Tue -> "Tuesday"
+  | `Wed -> "Wednesday"
+  | `Thu -> "Thursday"
+  | `Fri -> "Friday"
+  | `Sat -> "Saturday"
+
+let abbreviated_string_of_weekday (wday : weekday) : string =
+  String.sub (full_string_of_weekday wday) 0 3
+
+let full_string_of_month (month : month) : string =
+  match month with
+  | `Jan -> "January"
+  | `Feb -> "February"
+  | `Mar -> "March"
+  | `Apr -> "April"
+  | `May -> "May"
+  | `Jun -> "June"
+  | `Jul -> "July"
+  | `Aug -> "August"
+  | `Sep -> "September"
+  | `Oct -> "October"
+  | `Nov -> "November"
+  | `Dec -> "December"
+
+let abbreviated_string_of_month (month : month) : string =
+  String.sub (full_string_of_month month) 0 3

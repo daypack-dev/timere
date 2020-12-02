@@ -29,6 +29,12 @@
 )
 
 (rule
+ (targets to_sexp.ml)
+ (deps    ../src/to_sexp.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
  (targets printer.ml)
  (deps    ../src/printer.ml)
  (action  (copy %{deps} %{targets}))
