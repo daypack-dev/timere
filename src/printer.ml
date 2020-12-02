@@ -72,7 +72,8 @@ module Format_string_parsers = struct
           | Error () -> fail "Invalid date time"
           | Ok wday ->
             return
-              (map_string_to_size_and_casing x (Time.full_string_of_weekday wday)) );
+              (map_string_to_size_and_casing x
+                 (Time.full_string_of_weekday wday)) );
         attempt
           ( string "hour:"
             >> padding

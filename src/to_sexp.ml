@@ -7,27 +7,20 @@ let sexp_of_int x = CCSexp.atom @@ string_of_int x
 let sexp_list_of_ints l = List.map sexp_of_int l
 
 let sexp_of_date_time (x : Time.Date_time.t) =
-  CCSexp.(
-    list [
+  let open CCSexp in
+  list
+    [
       sexp_of_int x.year;
       sexp_of_month x.month;
       sexp_of_int x.day;
       sexp_of_int x.hour;
       sexp_of_int x.minute;
       sexp_of_int x.second;
-      list ( [
-          atom "tz_offset_s";
-          sexp_of_int x.tz_offset_s;
-        ]
-        )
+      list [ atom "tz_offset_s"; sexp_of_int x.tz_offset_s ];
     ]
-  )
 
 let sexp_of_timestamp x =
-  x
-  |> Time.Date_time.of_timestamp
-  |> Result.get_ok
-  |> sexp_of_date_time
+  x |> Time.Date_time.of_timestamp |> Result.get_ok |> sexp_of_date_time
 
 let sexp_of_range ~(f : 'a -> CCSexp.t) (r : 'a Time.Range.range) =
   match r with
@@ -42,10 +35,7 @@ let sexp_of_pattern (pat : Time.Pattern.pattern) : CCSexp.t =
   let hours = sexp_list_of_ints pat.hours in
   let minutes = sexp_list_of_ints pat.minutes in
   let seconds = sexp_list_of_ints pat.seconds in
-  let timestamps =
-    List.map sexp_of_timestamp
-      pat.timestamps
-  in
+  let timestamps = List.map sexp_of_timestamp pat.timestamps in
   let open CCSexp in
   [
     Some (atom "pattern");
@@ -138,8 +128,7 @@ let to_sexp (t : Time.t) : CCSexp.t =
         s
         |> List.of_seq
         |> List.map (fun (x, y) ->
-            CCSexp.list [ sexp_of_timestamp x; sexp_of_timestamp y]
-          )
+            CCSexp.list [ sexp_of_timestamp x; sexp_of_timestamp y ])
       in
       CCSexp.list (CCSexp.atom "intervals" :: l)
     | Pattern (_, pat) -> sexp_of_pattern pat
