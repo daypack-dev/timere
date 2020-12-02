@@ -1778,22 +1778,22 @@ let skip_n (n : int) (t : t) : t =
 let interval_inc (a : timestamp) (b : timestamp) : t =
   match Date_time.of_timestamp a with
   | Error () -> invalid_arg "interval_inc: invalid timestamp"
-  | Ok _ ->
-    match Date_time.of_timestamp b with
-    | Error () -> invalid_arg "interval_inc: invalid timestamp"
-    | Ok _ ->
-      if a <= b then Interval_inc (default_search_space, a, b)
-      else failwith "interval_inc: a > b"
+  | Ok _ -> (
+      match Date_time.of_timestamp b with
+      | Error () -> invalid_arg "interval_inc: invalid timestamp"
+      | Ok _ ->
+        if a <= b then Interval_inc (default_search_space, a, b)
+        else failwith "interval_inc: a > b" )
 
 let interval_exc (a : timestamp) (b : timestamp) : t =
   match Date_time.of_timestamp a with
   | Error () -> invalid_arg "interval_inc: invalid timestamp"
-  | Ok _ ->
-    match Date_time.of_timestamp b with
-    | Error () -> invalid_arg "interval_inc: invalid timestamp"
-    | Ok _ ->
-      if a <= b then Interval_exc (default_search_space, a, b)
-      else failwith "interval_exc: a > b"
+  | Ok _ -> (
+      match Date_time.of_timestamp b with
+      | Error () -> invalid_arg "interval_inc: invalid timestamp"
+      | Ok _ ->
+        if a <= b then Interval_exc (default_search_space, a, b)
+        else failwith "interval_exc: a > b" )
 
 let interval_dt_inc (a : Date_time.t) (b : Date_time.t) : t =
   let a = Date_time.to_timestamp a in

@@ -779,17 +779,10 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
           in
           Binary_op (space, op, t1, t2) )
     | Interval_exc (_, start, end_exc) ->
-      let space =
-        [ (start, end_exc) ]
-      in
+      let space = [ (start, end_exc) ] in
       Interval_exc (space, start, end_exc)
     | Interval_inc (_, start, end_inc) ->
-      let space =
-        [
-          ( start,
-            Int64.succ @@ end_inc );
-        ]
-      in
+      let space = [ (start, Int64.succ @@ end_inc) ] in
       Interval_inc (space, start, end_inc)
     | Round_robin_pick_list (_, l) ->
       let space, l = aux_list tz_offset_s l in
@@ -1009,11 +1002,8 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
         match op with
         | Union -> Intervals.Union.union ~skip_check:true s1 s2
         | Inter -> Intervals.inter ~skip_check:true s1 s2 )
-    | Interval_inc (_, a, b) ->
-      Seq.return
-        (a, Int64.succ b)
-    | Interval_exc (_, a, b) ->
-      Seq.return (a, b)
+    | Interval_inc (_, a, b) -> Seq.return (a, Int64.succ b)
+    | Interval_exc (_, a, b) -> Seq.return (a, b)
     | Round_robin_pick_list (_, l) ->
       List.map (aux search_using_tz_offset_s) l
       |> Time.Intervals.Round_robin

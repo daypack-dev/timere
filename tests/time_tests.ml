@@ -16,15 +16,15 @@ let search_end_exc = Time.Date_time.to_timestamp search_end_exc_dt
 
 module Qc = struct
   let resolver_is_same_as_simple_resolver =
-    QCheck.Test.make ~count:1000 ~name:"resolver_is_same_as_simple_resolver" time
-      (fun t ->
-         OSeq.equal ~eq:( = )
-           ( Result.get_ok
-             @@ Resolver.resolve
-               Time.(inter t (interval_dt_exc search_start_dt search_end_exc_dt))
-           )
-           (Simple_resolver.resolve ~search_start ~search_end_exc ~tz_offset_s:0
-              t))
+    QCheck.Test.make ~count:1000 ~name:"resolver_is_same_as_simple_resolver"
+      time (fun t ->
+          OSeq.equal ~eq:( = )
+            ( Result.get_ok
+              @@ Resolver.resolve
+                Time.(
+                  inter t (interval_dt_exc search_start_dt search_end_exc_dt)) )
+            (Simple_resolver.resolve ~search_start ~search_end_exc ~tz_offset_s:0
+               t))
 
   let suite = [ resolver_is_same_as_simple_resolver ]
 end

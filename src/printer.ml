@@ -387,12 +387,10 @@ let to_sexp (t : Time.t) : CCSexp.t =
         ]
     | Interval_inc (_, a, b) ->
       let open CCSexp in
-      list
-        [ atom "interval_inc"; sexp_of_timestamp a; sexp_of_timestamp b ]
+      list [ atom "interval_inc"; sexp_of_timestamp a; sexp_of_timestamp b ]
     | Interval_exc (_, a, b) ->
       let open CCSexp in
-      list
-        [ atom "interval_exc"; sexp_of_timestamp a; sexp_of_timestamp b ]
+      list [ atom "interval_exc"; sexp_of_timestamp a; sexp_of_timestamp b ]
     | Round_robin_pick_list (_, l) ->
       CCSexp.(list (atom "round_robin" :: List.map aux l))
     | Merge_list (_, l) -> CCSexp.(list (atom "merge" :: List.map aux l))
