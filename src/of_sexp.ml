@@ -195,45 +195,39 @@ let of_sexp (x : CCSexp.t) =
         | [ `Atom "next_n_points"; n; x ] ->
           take_n_points (int_of_sexp n) (aux x)
         | [ `Atom "next_n"; n; x ] -> take_n (int_of_sexp n) (aux x)
-        | [ `Atom "chunk"; n; x ] -> chunk ~drop_partial:false (int64_of_sexp n) (aux x)
-        | [ `Atom "chunk"; `Atom "drop_partial"; n; x ] -> chunk ~drop_partial:true (int64_of_sexp n) (aux x)
-        | [ `Atom "shift"; n; x] ->
+        | [ `Atom "chunk"; n; x ] ->
+          chunk ~drop_partial:false (int64_of_sexp n) (aux x)
+        | [ `Atom "chunk"; `Atom "drop_partial"; n; x ] ->
+          chunk ~drop_partial:true (int64_of_sexp n) (aux x)
+        | [ `Atom "shift"; n; x ] ->
           let n =
             match Duration.of_seconds (int64_of_sexp n) with
             | Error () -> raise Invalid_data
             | Ok n -> n
           in
           shift n (aux x)
-        | [ `Atom "lengthen"; n] ->
+        | [ `Atom "lengthen"; n ] ->
           let n =
             match Duration.of_seconds (int64_of_sexp n) with
             | Error () -> raise Invalid_data
             | Ok n -> n
           in
           lengthen n (aux x)
-        | [ `Atom "change_tz_offset_s"; n; x] ->
-          let n =
-            int_of_sexp n
-          in
+        | [ `Atom "change_tz_offset_s"; n; x ] ->
+          let n = int_of_sexp n in
           change_tz_offset_s n (aux x)
-        | [ `Atom "union"; x1; x2] ->
-          union (aux x1) (aux x2)
-        | [ `Atom "inter"; x1; x2] ->
-          inter (aux x1) (aux x2)
-        | [ `Atom "interval_inc"; a; b] ->
+        | [ `Atom "union"; x1; x2 ] -> union (aux x1) (aux x2)
+        | [ `Atom "inter"; x1; x2 ] -> inter (aux x1) (aux x2)
+        | [ `Atom "interval_inc"; a; b ] ->
           interval_dt_inc (date_time_of_sexp a) (date_time_of_sexp b)
-        | [ `Atom "interval_exc"; a; b] ->
+        | [ `Atom "interval_exc"; a; b ] ->
           interval_dt_exc (date_time_of_sexp a) (date_time_of_sexp b)
-        | (`Atom "round_robin") :: l ->
-          round_robin_pick (List.map aux l)
-        | (`Atom "merge") :: l ->
-          merge (List.map aux l)
+        | `Atom "round_robin" :: l -> round_robin_pick (List.map aux l)
+        | `Atom "merge" :: l -> merge (List.map aux l)
         | _ -> raise Invalid_data )
     | _ -> raise Invalid_data
   in
-  try
-    Ok (aux x)
-  with
+  try Ok (aux x) with
   | Invalid_data -> Error ()
   | Month_day_ranges_are_invalid -> Error ()
   | Invalid_argument _ -> Error ()
