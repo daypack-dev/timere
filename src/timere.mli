@@ -231,8 +231,6 @@ exception Intervals_are_not_disjoint
 
 type interval = timestamp * timestamp
 
-val of_interval : interval -> t
-
 val of_intervals : ?skip_invalid:bool -> interval list -> t
 
 val of_intervals_seq : ?skip_invalid:bool -> interval Seq.t -> t
