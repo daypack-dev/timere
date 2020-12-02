@@ -1787,10 +1787,10 @@ let interval_inc (a : timestamp) (b : timestamp) : t =
 
 let interval_exc (a : timestamp) (b : timestamp) : t =
   match Date_time.of_timestamp a with
-  | Error () -> invalid_arg "interval_inc: invalid timestamp"
+  | Error () -> invalid_arg "interval_exc: invalid timestamp"
   | Ok _ -> (
       match Date_time.of_timestamp b with
-      | Error () -> invalid_arg "interval_inc: invalid timestamp"
+      | Error () -> invalid_arg "interval_exc: invalid timestamp"
       | Ok _ ->
         if a <= b then Interval_exc (default_search_space, a, b)
         else failwith "interval_exc: a > b" )
