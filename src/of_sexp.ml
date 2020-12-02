@@ -231,3 +231,9 @@ let of_sexp (x : CCSexp.t) =
   | Invalid_data -> Error ()
   | Month_day_ranges_are_invalid -> Error ()
   | Invalid_argument _ -> Error ()
+
+let of_sexp_string s =
+  match CCSexp.parse_string s with
+  | Error _ -> Error ()
+  | Ok x ->
+    of_sexp x

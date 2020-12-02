@@ -292,6 +292,8 @@ val to_sexp_string : t -> string
 
 val of_sexp : CCSexp.t -> (t, unit) result
 
+val of_sexp_string : string -> (t, unit) result
+
 module Utils : sig
   val flatten_month_ranges : month range Seq.t -> (month Seq.t, unit) result
 
