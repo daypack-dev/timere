@@ -1,34 +1,37 @@
-exception Invalid_data
+exception Invalid_data of string
+
+let invalid_data s =
+  raise (Invalid_data s)
 
 let month_of_sexp (x : CCSexp.t) =
   match x with
   | `Atom s -> (
       match Time.month_of_abbr_string s with
       | Ok x -> x
-      | Error () -> raise Invalid_data )
-  | `List _ -> raise Invalid_data
+      | Error () -> (invalid_data (Printf.sprintf "Failed to parse month: %s" s)) )
+  | `List _ -> (invalid_data (Printf.sprintf "Expected atom for month: %s" (CCSexp.to_string x)))
 
 let weekday_of_sexp (x : CCSexp.t) =
   match x with
   | `Atom s -> (
       match Time.weekday_of_abbr_string s with
       | Ok x -> x
-      | Error () -> raise Invalid_data )
-  | `List _ -> raise Invalid_data
+      | Error () -> (invalid_data (Printf.sprintf "Failed to parse weekday: %s" s) ))
+  | `List _ -> (invalid_data (Printf.sprintf "Expected atom for weekday: %s" (CCSexp.to_string x)))
 
 let int_of_sexp (x : CCSexp.t) =
   match x with
-  | `Atom s -> ( try int_of_string s with Failure _ -> raise Invalid_data )
-  | `List _ -> raise Invalid_data
+  | `Atom s -> ( try int_of_string s with Failure _ -> (invalid_data (Printf.sprintf "Failed to parse int: %s" s)) )
+  | `List _ -> (invalid_data (Printf.sprintf "Expected atom for int: %s" (CCSexp.to_string x)))
 
 let int64_of_sexp (x : CCSexp.t) =
   match x with
-  | `Atom s -> ( try Int64.of_string s with Failure _ -> raise Invalid_data )
-  | `List _ -> raise Invalid_data
+  | `Atom s -> ( try Int64.of_string s with Failure _ -> (invalid_data (Printf.sprintf "Failed to parse int64: %s" s)) )
+  | `List _ -> (invalid_data (Printf.sprintf "Expected atom for int64: %s" (CCSexp.to_string x)))
 
 let ints_of_sexp_list (x : CCSexp.t) =
   match x with
-  | `Atom _ -> raise Invalid_data
+  | `Atom _ -> (invalid_data (Printf.sprintf "Expected list for ints: %s" (CCSexp.to_string x)))
   | `List l -> List.map int_of_sexp l
 
 let date_time_of_sexp (x : CCSexp.t) =
@@ -54,8 +57,8 @@ let date_time_of_sexp (x : CCSexp.t) =
         Time.Date_time.make ~year ~month ~day ~hour ~minute ~second ~tz_offset_s
       with
       | Ok x -> x
-      | Error _ -> raise Invalid_data )
-  | _ -> raise Invalid_data
+      | Error () -> (invalid_data (Printf.sprintf "Invalid date: %s" (CCSexp.to_string x))) )
+  | _ -> invalid_data (Printf.sprintf "Invalid date: %s" (CCSexp.to_string x))
 
 let timestamp_of_sexp x = x |> date_time_of_sexp |> Time.Date_time.to_timestamp
 
@@ -63,11 +66,11 @@ let range_of_sexp ~(f : CCSexp.t -> 'a) (x : CCSexp.t) =
   match x with
   | `List [ `Atom "range_inc"; x; y ] -> `Range_inc (f x, f y)
   | `List [ `Atom "range_exc"; x; y ] -> `Range_exc (f x, f y)
-  | _ -> raise Invalid_data
+  | _ -> invalid_data (Printf.sprintf "Invalid range: %s" (CCSexp.to_string x))
 
 let pattern_of_sexp (x : CCSexp.t) =
   match x with
-  | `Atom _ -> raise Invalid_data
+  | `Atom _ -> invalid_data (Printf.sprintf "Expected list for pattern: %s" (CCSexp.to_string x))
   | `List l -> (
       match l with
       | `Atom "pattern" :: l -> (
@@ -117,12 +120,12 @@ let pattern_of_sexp (x : CCSexp.t) =
           | [] ->
             Time.pattern ~years ~months ~month_days ~weekdays ~hours ~minutes
               ~seconds ()
-          | _ -> raise Invalid_data )
-      | _ -> raise Invalid_data )
+          | _ -> invalid_data (Printf.sprintf "Invalid pattern: %s" (CCSexp.to_string x)))
+      | _ -> invalid_data (Printf.sprintf "Invalid pattern: %s" (CCSexp.to_string x)) )
 
 let branching_of_sexp (x : CCSexp.t) =
   match x with
-  | `Atom _ -> raise Invalid_data
+  | `Atom _ -> invalid_data (Printf.sprintf "Expected list for branching: %s" (CCSexp.to_string x))
   | `List l -> (
       match l with
       | `Atom "branching" :: l -> (
@@ -162,15 +165,21 @@ let branching_of_sexp (x : CCSexp.t) =
                            minute = int_of_sexp minute;
                            second = int_of_sexp second;
                          }
-                       | _ -> raise Invalid_data))
+                       | _ -> invalid_data (Printf.sprintf "Invalid hms: %s" (CCSexp.to_string x))))
                   hmss,
                 l )
             | _ -> ([], l)
           in
           match l with
           | [] -> Time.branching ~years ~months ~days ~hmss ()
-          | _ -> raise Invalid_data )
-      | _ -> raise Invalid_data )
+          | _ -> invalid_data (Printf.sprintf "Unexpected expressions: %s" (l
+                                                                            |> List.map CCSexp.to_string
+                                                                            |> String.concat ", "
+                                                                           )))
+      | _ -> invalid_data (Printf.sprintf "Unexpected expressions: %s" (l
+                                                                        |> List.map CCSexp.to_string
+                                                                        |> String.concat ", "
+                                                                       )))
 
 let of_sexp (x : CCSexp.t) =
   let open Time in
@@ -183,7 +192,7 @@ let of_sexp (x : CCSexp.t) =
           |> List.map (fun x ->
               match x with
               | `List [ x; y ] -> (timestamp_of_sexp x, timestamp_of_sexp y)
-              | _ -> raise Invalid_data)
+              | _ -> invalid_data (Printf.sprintf "Expected list for interval: %s" (CCSexp.to_string x)))
           |> of_sorted_intervals ~skip_invalid:false
         | `Atom "pattern" :: _ -> pattern_of_sexp x
         | `Atom "branching" :: _ -> branching_of_sexp x
@@ -202,14 +211,14 @@ let of_sexp (x : CCSexp.t) =
         | [ `Atom "shift"; n; x ] ->
           let n =
             match Duration.of_seconds (int64_of_sexp n) with
-            | Error () -> raise Invalid_data
+            | Error () -> invalid_data (Printf.sprintf "Invalid duration: %s" (CCSexp.to_string n))
             | Ok n -> n
           in
           shift n (aux x)
         | [ `Atom "lengthen"; n ] ->
           let n =
             match Duration.of_seconds (int64_of_sexp n) with
-            | Error () -> raise Invalid_data
+            | Error () -> invalid_data(Printf.sprintf "Invalid duration: %s" (CCSexp.to_string n))
             | Ok n -> n
           in
           lengthen n (aux x)
@@ -224,16 +233,16 @@ let of_sexp (x : CCSexp.t) =
           interval_dt_exc (date_time_of_sexp a) (date_time_of_sexp b)
         | `Atom "round_robin" :: l -> round_robin_pick (List.map aux l)
         | `Atom "merge" :: l -> merge (List.map aux l)
-        | _ -> raise Invalid_data )
-    | _ -> raise Invalid_data
+        | _ -> invalid_data (Printf.sprintf "Invalid timere data: %s" (CCSexp.to_string x)))
+    | `Atom _ -> invalid_data (Printf.sprintf "Expected list for timere data: %s" (CCSexp.to_string x))
   in
   try Ok (aux x) with
-  | Invalid_data -> Error ()
-  | Month_day_ranges_are_invalid -> Error ()
-  | Invalid_argument _ -> Error ()
+  | Invalid_data msg -> Error msg
+  | Month_day_ranges_are_invalid -> Error "Month day ranges are invalid in branching"
+  | Invalid_argument msg -> Error msg
 
 let of_sexp_string s =
   match CCSexp.parse_string s with
-  | Error _ -> Error ()
+  | Error msg -> Error msg
   | Ok x ->
     of_sexp x
