@@ -105,15 +105,13 @@ let make_interval_inc ~rng ~min_year =
   let start_dt = make_date_time ~rng ~min_year in
   let start = Time.Date_time.to_timestamp start_dt in
   let end_inc = Int64.add start (Int64.of_int (rng ())) in
-  let end_inc_dt = Result.get_ok @@ Time.Date_time.of_timestamp end_inc in
-  Time.interval_inc start_dt end_inc_dt
+  Time.interval_inc start end_inc
 
 let make_interval_exc ~rng ~min_year =
   let start_dt = make_date_time ~rng ~min_year in
   let start = Time.Date_time.to_timestamp start_dt in
   let end_exc = Int64.add start (Int64.of_int (rng ())) in
-  let end_exc_dt = Result.get_ok @@ Time.Date_time.of_timestamp end_exc in
-  Time.interval_exc start_dt end_exc_dt
+  Time.interval_exc start end_exc
 
 let make_unary_op ~rng t =
   match rng () mod 9 with

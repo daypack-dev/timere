@@ -154,9 +154,13 @@ end
 
 val date_time : Date_time.t -> t
 
-val interval_inc : Date_time.t -> Date_time.t -> t
+val interval_dt_inc : Date_time.t -> Date_time.t -> t
 
-val interval_exc : Date_time.t -> Date_time.t -> t
+val interval_dt_exc : Date_time.t -> Date_time.t -> t
+
+val interval_inc : timestamp -> timestamp -> t
+
+val interval_exc : timestamp -> timestamp -> t
 
 (** {1 Durations} *)
 

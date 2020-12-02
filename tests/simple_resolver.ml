@@ -224,12 +224,8 @@ and mem ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
             | Union -> aux t1 timestamp || aux t2 timestamp
             | Inter -> aux t1 timestamp && aux t2 timestamp )
         | Interval_inc (_, start, end_inc) ->
-          let start = Date_time.to_timestamp start in
-          let end_inc = Date_time.to_timestamp end_inc in
           start <= timestamp && timestamp <= end_inc
         | Interval_exc (_, start, end_inc) ->
-          let start = Date_time.to_timestamp start in
-          let end_inc = Date_time.to_timestamp end_inc in
           start <= timestamp && timestamp < end_inc
         | Unary_op (_, _, _) | Round_robin_pick_list (_, _) ->
           resolve ~search_start ~search_end_exc ~tz_offset_s t

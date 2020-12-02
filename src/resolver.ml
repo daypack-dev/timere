@@ -780,14 +780,14 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
           Binary_op (space, op, t1, t2) )
     | Interval_exc (_, start, end_exc) ->
       let space =
-        [ (Date_time.to_timestamp start, Date_time.to_timestamp end_exc) ]
+        [ (start, end_exc) ]
       in
       Interval_exc (space, start, end_exc)
     | Interval_inc (_, start, end_inc) ->
       let space =
         [
-          ( Date_time.to_timestamp start,
-            Int64.succ @@ Date_time.to_timestamp end_inc );
+          ( start,
+            Int64.succ @@ end_inc );
         ]
       in
       Interval_inc (space, start, end_inc)
@@ -1009,11 +1009,11 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
         match op with
         | Union -> Intervals.Union.union ~skip_check:true s1 s2
         | Inter -> Intervals.inter ~skip_check:true s1 s2 )
-    | Interval_inc (_, dt1, dt2) ->
+    | Interval_inc (_, a, b) ->
       Seq.return
-        (Date_time.to_timestamp dt1, Int64.succ @@ Date_time.to_timestamp dt2)
-    | Interval_exc (_, dt1, dt2) ->
-      Seq.return (Date_time.to_timestamp dt1, Date_time.to_timestamp dt2)
+        (a, Int64.succ b)
+    | Interval_exc (_, a, b) ->
+      Seq.return (a, b)
     | Round_robin_pick_list (_, l) ->
       List.map (aux search_using_tz_offset_s) l
       |> Time.Intervals.Round_robin

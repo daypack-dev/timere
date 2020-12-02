@@ -23,7 +23,7 @@ let debug_branching () =
       ~second:cur_date_time.second ~tz_offset_s:cur_date_time.tz_offset_s
   in
   let timere =
-    Timere.(inter timere (interval_exc cur_date_time search_end_exc))
+    Timere.(inter timere (interval_dt_exc cur_date_time search_end_exc))
   in
   match Timere.resolve timere with
   | Error msg -> print_endline msg
@@ -57,7 +57,7 @@ let debug_parsing () =
           ~second:cur_date_time.second ~tz_offset_s:cur_date_time.tz_offset_s
       in
       let timere =
-        Timere.(inter timere (interval_exc cur_date_time search_end_exc))
+        Timere.(inter timere (interval_dt_exc cur_date_time search_end_exc))
       in
       match Timere.resolve timere with
       | Error msg -> print_endline msg

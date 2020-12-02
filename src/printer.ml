@@ -245,6 +245,11 @@ let sexp_of_int x = CCSexp.atom @@ string_of_int x
 
 let sexp_list_of_ints l = List.map sexp_of_int l
 
+let sexp_of_timestamp x =
+  CCSexp.atom
+  @@ Result.get_ok
+  @@ sprintf_timestamp default_date_time_format_string x
+
 let sexp_of_date_time x =
   CCSexp.atom
   @@ Result.get_ok
@@ -380,14 +385,14 @@ let to_sexp (t : Time.t) : CCSexp.t =
           aux t1;
           aux t2;
         ]
-    | Interval_inc (_, dt1, dt2) ->
+    | Interval_inc (_, a, b) ->
       let open CCSexp in
       list
-        [ atom "interval_inc"; sexp_of_date_time dt1; sexp_of_date_time dt2 ]
-    | Interval_exc (_, dt1, dt2) ->
+        [ atom "interval_inc"; sexp_of_timestamp a; sexp_of_timestamp b ]
+    | Interval_exc (_, a, b) ->
       let open CCSexp in
       list
-        [ atom "interval_exc"; sexp_of_date_time dt1; sexp_of_date_time dt2 ]
+        [ atom "interval_exc"; sexp_of_timestamp a; sexp_of_timestamp b ]
     | Round_robin_pick_list (_, l) ->
       CCSexp.(list (atom "round_robin" :: List.map aux l))
     | Merge_list (_, l) -> CCSexp.(list (atom "merge" :: List.map aux l))

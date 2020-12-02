@@ -1732,8 +1732,8 @@ type t =
   | Branching of search_space * branching
   | Unary_op of search_space * unary_op * t
   | Binary_op of search_space * binary_op * t * t
-  | Interval_inc of search_space * Date_time.t * Date_time.t
-  | Interval_exc of search_space * Date_time.t * Date_time.t
+  | Interval_inc of search_space * timestamp * timestamp
+  | Interval_exc of search_space * timestamp * timestamp
   | Round_robin_pick_list of search_space * t list
   | Merge_list of search_space * t list
 
@@ -1775,17 +1775,37 @@ let skip_n (n : int) (t : t) : t =
   if n < 0 then raise (Invalid_argument "skip_n: n < 0")
   else Unary_op (default_search_space, Skip_n_intervals n, t)
 
-let interval_inc (a : Date_time.t) (b : Date_time.t) : t =
-  let a_timestamp = Date_time.to_timestamp a in
-  let b_timestamp = Date_time.to_timestamp b in
-  if a_timestamp <= b_timestamp then Interval_inc (default_search_space, a, b)
-  else failwith "interval_inc: a > b"
+let interval_inc (a : timestamp) (b : timestamp) : t =
+  match Date_time.of_timestamp a with
+  | Error () -> invalid_arg "interval_inc: invalid timestamp"
+  | Ok _ ->
+    match Date_time.of_timestamp b with
+    | Error () -> invalid_arg "interval_inc: invalid timestamp"
+    | Ok _ ->
+      if a <= b then Interval_inc (default_search_space, a, b)
+      else failwith "interval_inc: a > b"
 
-let interval_exc (a : Date_time.t) (b : Date_time.t) : t =
-  let a_timestamp = Date_time.to_timestamp a in
-  let b_timestamp = Date_time.to_timestamp b in
-  if a_timestamp <= b_timestamp then Interval_exc (default_search_space, a, b)
-  else failwith "interval_exc: a > b"
+let interval_exc (a : timestamp) (b : timestamp) : t =
+  match Date_time.of_timestamp a with
+  | Error () -> invalid_arg "interval_inc: invalid timestamp"
+  | Ok _ ->
+    match Date_time.of_timestamp b with
+    | Error () -> invalid_arg "interval_inc: invalid timestamp"
+    | Ok _ ->
+      if a <= b then Interval_exc (default_search_space, a, b)
+      else failwith "interval_exc: a > b"
+
+let interval_dt_inc (a : Date_time.t) (b : Date_time.t) : t =
+  let a = Date_time.to_timestamp a in
+  let b = Date_time.to_timestamp b in
+  if a <= b then Interval_inc (default_search_space, a, b)
+  else failwith "interval_dt_inc: a > b"
+
+let interval_dt_exc (a : Date_time.t) (b : Date_time.t) : t =
+  let a = Date_time.to_timestamp a in
+  let b = Date_time.to_timestamp b in
+  if a <= b then Interval_exc (default_search_space, a, b)
+  else failwith "interval_dt_exc: a > b"
 
 let not (a : t) : t = Unary_op (default_search_space, Not, a)
 
