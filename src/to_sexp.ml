@@ -83,7 +83,12 @@ let sexp_of_branching (b : Time.branching) : CCSexp.t =
   let hmss =
     List.map
       (sexp_of_range ~f:(fun { hour; minute; second } ->
-           CCSexp.atom (Printf.sprintf "%d:%d:%d" hour minute second)))
+           CCSexp.( list [
+             sexp_of_int hour;
+             sexp_of_int minute;
+             sexp_of_int second;
+           ])
+           ))
       b.hmss
   in
   let open CCSexp in
@@ -111,9 +116,12 @@ let sexp_list_of_unary_op (op : Time.unary_op) =
   | Next_n_intervals n ->
     [ CCSexp.atom "next_n"; CCSexp.atom (string_of_int n) ]
   | Chunk { chunk_size; drop_partial } ->
-    CCSexp.atom "chunk"
-    :: CCSexp.atom (Int64.to_string chunk_size)
-    :: (if drop_partial then [ CCSexp.atom "drop_partial" ] else [])
+    [
+      Some (CCSexp.atom "chunk");
+      (if drop_partial then Some (CCSexp.atom "drop_partial") else None);
+      Some (CCSexp.atom (Int64.to_string chunk_size));
+    ]
+    |> List.filter_map (fun x -> x)
   | Shift n -> [ CCSexp.atom "shift"; CCSexp.atom (Int64.to_string n) ]
   | Lengthen n -> [ CCSexp.atom "lengthen"; CCSexp.atom (Int64.to_string n) ]
   | Tz_offset_s n ->
