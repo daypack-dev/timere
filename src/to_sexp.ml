@@ -1,6 +1,6 @@
-let sexp_of_month x = CCSexp.atom @@ Time.abbreviated_string_of_month x
+let sexp_of_month x = CCSexp.atom @@ Time.abbr_string_of_month x
 
-let sexp_of_weekday x = CCSexp.atom @@ Time.abbreviated_string_of_weekday x
+let sexp_of_weekday x = CCSexp.atom @@ Time.abbr_string_of_weekday x
 
 let sexp_of_int x = CCSexp.atom @@ string_of_int x
 

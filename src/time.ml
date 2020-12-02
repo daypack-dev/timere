@@ -2052,8 +2052,30 @@ let full_string_of_weekday (wday : weekday) : string =
   | `Fri -> "Friday"
   | `Sat -> "Saturday"
 
-let abbreviated_string_of_weekday (wday : weekday) : string =
+let weekday_of_full_string s : (weekday, unit) result =
+  match s with
+  | "Sunday" -> Ok `Sun
+  | "Monday" -> Ok `Mon
+  | "Tuesday" -> Ok `Tue
+  | "Wednesday" -> Ok `Wed
+  | "Thursday" -> Ok `Thu
+  | "Friday" -> Ok `Fri
+  | "Saturday" -> Ok `Sat
+  | _ -> Error ()
+
+let abbr_string_of_weekday (wday : weekday) : string =
   String.sub (full_string_of_weekday wday) 0 3
+
+let weekday_of_abbr_string s : (weekday, unit) result =
+  match s with
+  | "Sun" -> Ok `Sun
+  | "Mon" -> Ok `Mon
+  | "Tue" -> Ok `Tue
+  | "Wed" -> Ok `Wed
+  | "Thu" -> Ok `Thu
+  | "Fri" -> Ok `Fri
+  | "Sat" -> Ok `Sat
+  | _ -> Error ()
 
 let full_string_of_month (month : month) : string =
   match month with
@@ -2070,5 +2092,37 @@ let full_string_of_month (month : month) : string =
   | `Nov -> "November"
   | `Dec -> "December"
 
-let abbreviated_string_of_month (month : month) : string =
+let month_of_full_string s : (month, unit) result =
+  match s with
+  | "January" -> Ok `Jan
+  | "February" -> Ok `Feb
+  | "March" -> Ok `Mar
+  | "April" -> Ok `Apr
+  | "May" -> Ok `May
+  | "June" -> Ok `Jun
+  | "July" -> Ok `Jul
+  | "August" -> Ok `Aug
+  | "September" -> Ok `Sep
+  | "October" -> Ok `Oct
+  | "November" -> Ok `Nov
+  | "December" -> Ok `Dec
+  | _ -> Error ()
+
+let abbr_string_of_month (month : month) : string =
   String.sub (full_string_of_month month) 0 3
+
+let month_of_abbr_string s : (month, unit) result =
+  match s with
+  | "Jan" -> Ok `Jan
+  | "Feb" -> Ok `Feb
+  | "Mar" -> Ok `Mar
+  | "Apr" -> Ok `Apr
+  | "May" -> Ok `May
+  | "Jun" -> Ok `Jun
+  | "Jul" -> Ok `Jul
+  | "Aug" -> Ok `Aug
+  | "Sep" -> Ok `Sep
+  | "Oct" -> Ok `Oct
+  | "Nov" -> Ok `Nov
+  | "Dec" -> Ok `Dec
+  | _ -> Error ()

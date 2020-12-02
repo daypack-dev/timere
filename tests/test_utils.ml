@@ -198,7 +198,7 @@ let weekdays_gen : Time.weekday list QCheck.Gen.t =
 
 let weekdays =
   QCheck.make
-    ~print:(QCheck.Print.list Time.abbreviated_string_of_weekday)
+    ~print:(QCheck.Print.list Time.abbr_string_of_weekday)
     weekdays_gen
 
 (* let time_pattern_gen : Time_pattern.time_pattern QCheck.Gen.t =
