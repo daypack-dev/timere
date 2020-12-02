@@ -1758,21 +1758,21 @@ let union (a : t) (b : t) : t = Binary_op (default_search_space, Union, a, b)
 let first_point (a : t) : t = Unary_op (default_search_space, Next_n_points 1, a)
 
 let take_n_points (n : int) (t : t) : t =
-  if n < 0 then raise (Invalid_argument "take_n_points: n < 0")
+  if n < 0 then invalid_arg "take_n_points: n < 0"
   else Unary_op (default_search_space, Next_n_points n, t)
 
 let skip_n_points (n : int) (t : t) : t =
-  if n < 0 then raise (Invalid_argument "skip_n_points: n < 0")
+  if n < 0 then invalid_arg "skip_n_points: n < 0"
   else Unary_op (default_search_space, Skip_n_points n, t)
 
 let first (t : t) : t = Unary_op (default_search_space, Next_n_intervals 1, t)
 
 let take_n (n : int) (t : t) : t =
-  if n < 0 then raise (Invalid_argument "take_n: n < 0")
+  if n < 0 then invalid_arg "take_n: n < 0"
   else Unary_op (default_search_space, Next_n_intervals n, t)
 
 let skip_n (n : int) (t : t) : t =
-  if n < 0 then raise (Invalid_argument "skip_n: n < 0")
+  if n < 0 then invalid_arg "skip_n: n < 0"
   else Unary_op (default_search_space, Skip_n_intervals n, t)
 
 let interval_inc (a : timestamp) (b : timestamp) : t =
