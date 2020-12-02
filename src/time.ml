@@ -1809,7 +1809,7 @@ let interval_dt_exc (a : Date_time.t) (b : Date_time.t) : t =
 
 let not (a : t) : t = Unary_op (default_search_space, Not, a)
 
-let to_tz_offset_s offset t =
+let change_tz_offset_s offset t =
   Unary_op (default_search_space, Tz_offset_s offset, t)
 
 let pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])

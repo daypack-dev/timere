@@ -123,7 +123,7 @@ let make_unary_op ~rng t =
   | 5 -> Time.chunk (Int64.of_int (rng ())) t
   | 6 -> Time.shift (Result.get_ok @@ Duration.make ~seconds:(rng ()) ()) t
   | 7 -> Time.lengthen (Result.get_ok @@ Duration.make ~seconds:(rng ()) ()) t
-  | 8 -> Time.to_tz_offset_s (rng ()) t
+  | 8 -> Time.change_tz_offset_s (rng ()) t
   | _ -> failwith "Unexpected case"
 
 let make_binary_op ~rng t1 t2 =
