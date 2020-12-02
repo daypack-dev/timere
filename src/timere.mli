@@ -290,6 +290,8 @@ val pp_sexp : Format.formatter -> t -> unit
 
 val to_sexp_string : t -> string
 
+val of_sexp : CCSexp.t -> (t, unit) result
+
 module Utils : sig
   val flatten_month_ranges : month range Seq.t -> (month Seq.t, unit) result
 
