@@ -83,12 +83,8 @@ let sexp_of_branching (b : Time.branching) : CCSexp.t =
   let hmss =
     List.map
       (sexp_of_range ~f:(fun { hour; minute; second } ->
-           CCSexp.( list [
-             sexp_of_int hour;
-             sexp_of_int minute;
-             sexp_of_int second;
-           ])
-           ))
+           let open CCSexp in
+           list [ sexp_of_int hour; sexp_of_int minute; sexp_of_int second ]))
       b.hmss
   in
   let open CCSexp in
