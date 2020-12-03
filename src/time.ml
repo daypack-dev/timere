@@ -1653,15 +1653,21 @@ module Pattern = struct
   end
 
   let merge p1 p2 =
+    let compare_month m1 m2 =
+      compare (tm_int_of_month m1) (tm_int_of_month m2)
+    in
+    let compare_weekday d1 d2 =
+      compare (tm_int_of_weekday d1) (tm_int_of_weekday d2)
+    in
     {
-      years = List.sort_uniq compare (p1.years @ p2.years);
-      months = List.sort_uniq compare (p1.months @ p2.months);
-      month_days = List.sort_uniq compare (p1.month_days @ p2.month_days);
-      weekdays = List.sort_uniq compare (p1.weekdays @ p2.weekdays);
-      hours = List.sort_uniq compare (p1.hours @ p2.hours);
-      minutes = List.sort_uniq compare (p1.minutes @ p2.minutes);
-      seconds = List.sort_uniq compare (p1.seconds @ p2.seconds);
-      timestamps = List.sort_uniq compare (p1.timestamps @ p2.timestamps);
+      years = List.sort_uniq compare (List.merge compare p1.years p2.years);
+      months = List.sort_uniq compare_month (List.merge compare_month p1.months p2.months);
+      month_days = List.sort_uniq compare (List.merge compare p1.month_days p2.month_days);
+      weekdays = List.sort_uniq compare_weekday (List.merge compare_weekday p1.weekdays p2.weekdays);
+      hours = List.sort_uniq compare (List.merge compare p1.hours p2.hours);
+      minutes = List.sort_uniq compare (List.merge compare p1.minutes p2.minutes);
+      seconds = List.sort_uniq compare (List.merge compare p1.seconds p2.seconds);
+      timestamps = List.sort_uniq compare (List.merge compare p1.timestamps p2.timestamps);
     }
 
   let inter p1 p2 =
@@ -1791,7 +1797,7 @@ let merge (l : t list) : t =
   in
   let l = l |> List.to_seq
           |> flatten
-          (* |> merge_patterns *)
+          |> merge_patterns
           |> List.of_seq in
   Merge_list (default_search_space, l)
 
