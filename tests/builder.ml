@@ -84,7 +84,8 @@ let make_branching ~rng ~min_year =
       ( OSeq.(0 -- rng ())
         |> Seq.map (fun _ ->
             match rng () mod 3 with
-            | 0 -> let start = 1 + (rng () mod 31) in
+            | 0 ->
+              let start = 1 + (rng () mod 31) in
               let end_inc = min 31 (start + rng ()) in
               `Range_inc (start, end_inc)
             | 1 ->
@@ -93,10 +94,9 @@ let make_branching ~rng ~min_year =
               `Range_inc (start, end_inc)
             | 2 ->
               let start = -(1 + (rng () mod 31)) in
-              let end_inc = min 31 ((31 + start + 1) + rng ()) in
+              let end_inc = min 31 (31 + start + 1 + rng ()) in
               `Range_inc (start, end_inc)
-            | _ -> failwith "Unexpected case"
-          )
+            | _ -> failwith "Unexpected case")
         |> List.of_seq )
   in
   let hmss =
