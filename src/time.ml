@@ -1806,8 +1806,8 @@ let round_robin_pick (l : t list) : t =
 
 let inter (a : t) (b : t) : t =
   match (a, b) with
-  (* | Pattern (_, a), Pattern (_, b) ->
-   *   Pattern (default_search_space, Pattern.inter a b) *)
+  | Pattern (_, a), Pattern (_, b) ->
+    Pattern (default_search_space, Pattern.inter a b)
   | _, _ -> Binary_op (default_search_space, Inter, a, b)
 
 let union (a : t) (b : t) : t = merge [ a; b ]
