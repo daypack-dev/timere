@@ -1661,13 +1661,21 @@ module Pattern = struct
     in
     {
       years = List.sort_uniq compare (List.merge compare p1.years p2.years);
-      months = List.sort_uniq compare_month (List.merge compare_month p1.months p2.months);
-      month_days = List.sort_uniq compare (List.merge compare p1.month_days p2.month_days);
-      weekdays = List.sort_uniq compare_weekday (List.merge compare_weekday p1.weekdays p2.weekdays);
+      months =
+        List.sort_uniq compare_month
+          (List.merge compare_month p1.months p2.months);
+      month_days =
+        List.sort_uniq compare (List.merge compare p1.month_days p2.month_days);
+      weekdays =
+        List.sort_uniq compare_weekday
+          (List.merge compare_weekday p1.weekdays p2.weekdays);
       hours = List.sort_uniq compare (List.merge compare p1.hours p2.hours);
-      minutes = List.sort_uniq compare (List.merge compare p1.minutes p2.minutes);
-      seconds = List.sort_uniq compare (List.merge compare p1.seconds p2.seconds);
-      timestamps = List.sort_uniq compare (List.merge compare p1.timestamps p2.timestamps);
+      minutes =
+        List.sort_uniq compare (List.merge compare p1.minutes p2.minutes);
+      seconds =
+        List.sort_uniq compare (List.merge compare p1.seconds p2.seconds);
+      timestamps =
+        List.sort_uniq compare (List.merge compare p1.timestamps p2.timestamps);
     }
 
   let inter p1 p2 =
@@ -1795,10 +1803,7 @@ let merge (l : t list) : t =
     | None -> rest
     | Some pat -> OSeq.cons (Pattern (default_search_space, pat)) rest
   in
-  let l = l |> List.to_seq
-          |> flatten
-          |> merge_patterns
-          |> List.of_seq in
+  let l = l |> List.to_seq |> flatten |> merge_patterns |> List.of_seq in
   Merge_list (default_search_space, l)
 
 let round_robin_pick (l : t list) : t =
