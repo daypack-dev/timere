@@ -205,7 +205,7 @@ val lengthen : Duration.t -> t -> t
 
 (** {1 List and Filtering operations} *)
 
-val chunk : ?drop_partial:bool -> int64 -> t -> t
+val chunk : ?drop_partial:bool -> Duration.t -> t -> t
 
 val first : t -> t
 

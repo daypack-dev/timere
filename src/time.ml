@@ -1737,8 +1737,8 @@ type t =
   | Round_robin_pick_list of search_space * t list
   | Merge_list of search_space * t list
 
-let chunk ?(drop_partial = false) (chunk_size : int64) (t : t) : t =
-  Unary_op (default_search_space, Chunk { chunk_size; drop_partial }, t)
+let chunk ?(drop_partial = false) (chunk_size : Duration.t) (t : t) : t =
+  Unary_op (default_search_space, Chunk { chunk_size = Duration.to_seconds chunk_size; drop_partial }, t)
 
 let shift (offset : Duration.t) (t : t) : t =
   Unary_op (default_search_space, Shift (Duration.to_seconds offset), t)
