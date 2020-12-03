@@ -1942,7 +1942,7 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
       let p_day_inc day =
         check_start <= day && day <= check_end_inc && day <> 0
       in
-      let p_day_exc day = check_start <= day && day <= check_end_inc + 1 in
+      let p_day_exc day = check_start <= day && day <= check_end_inc + 1 && day <> 0 in
       if
         List.for_all
           (fun day_range ->
