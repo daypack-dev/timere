@@ -1659,35 +1659,33 @@ module Pattern = struct
     let compare_weekday d1 d2 =
       compare (tm_int_of_weekday d1) (tm_int_of_weekday d2)
     in
+    let aux compare l1 l2 = List.sort_uniq compare (List.merge compare l1 l2) in
+    let merge_ints (l1 : int list) (l2 : int list) = aux compare l1 l2 in
+    let merge_int64s (l1 : int64 list) (l2 : int64 list) = aux compare l1 l2 in
+    let merge_months l1 l2 = aux compare_month l1 l2 in
+    let merge_weekdays l1 l2 = aux compare_weekday l1 l2 in
     {
-      years = List.sort_uniq compare (List.merge compare p1.years p2.years);
-      months =
-        List.sort_uniq compare_month
-          (List.merge compare_month p1.months p2.months);
-      month_days =
-        List.sort_uniq compare (List.merge compare p1.month_days p2.month_days);
-      weekdays =
-        List.sort_uniq compare_weekday
-          (List.merge compare_weekday p1.weekdays p2.weekdays);
-      hours = List.sort_uniq compare (List.merge compare p1.hours p2.hours);
-      minutes =
-        List.sort_uniq compare (List.merge compare p1.minutes p2.minutes);
-      seconds =
-        List.sort_uniq compare (List.merge compare p1.seconds p2.seconds);
-      timestamps =
-        List.sort_uniq compare (List.merge compare p1.timestamps p2.timestamps);
+      years = merge_ints p1.years p2.years;
+      months = merge_months p1.months p2.months;
+      month_days = merge_ints p1.month_days p2.month_days;
+      weekdays = merge_weekdays p1.weekdays p2.weekdays;
+      hours = merge_ints p1.hours p2.hours;
+      minutes = merge_ints p1.minutes p2.minutes;
+      seconds = merge_ints p1.seconds p2.seconds;
+      timestamps = merge_int64s p1.timestamps p2.timestamps;
     }
 
   let inter p1 p2 =
+    let aux l1 l2 = List.filter (fun x -> List.mem x l2) l1 in
     {
-      years = List.filter (fun x -> List.mem x p2.years) p1.years;
-      months = List.filter (fun x -> List.mem x p2.months) p1.months;
-      month_days = List.filter (fun x -> List.mem x p2.month_days) p1.month_days;
-      weekdays = List.filter (fun x -> List.mem x p2.weekdays) p1.weekdays;
-      hours = List.filter (fun x -> List.mem x p2.hours) p1.hours;
-      minutes = List.filter (fun x -> List.mem x p2.minutes) p1.minutes;
-      seconds = List.filter (fun x -> List.mem x p2.seconds) p1.seconds;
-      timestamps = List.filter (fun x -> List.mem x p2.timestamps) p1.timestamps;
+      years = aux p1.years p2.years;
+      months = aux p1.months p2.months;
+      month_days = aux p1.month_days p2.month_days;
+      weekdays = aux p1.weekdays p2.weekdays;
+      hours = aux p1.hours p2.hours;
+      minutes = aux p1.minutes p2.minutes;
+      seconds = aux p1.seconds p2.seconds;
+      timestamps = aux p1.timestamps p2.timestamps;
     }
 end
 
