@@ -1789,7 +1789,10 @@ let merge (l : t list) : t =
     | None -> rest
     | Some pat -> OSeq.cons (Pattern (default_search_space, pat)) rest
   in
-  let l = l |> List.to_seq |> flatten |> merge_patterns |> List.of_seq in
+  let l = l |> List.to_seq
+          |> flatten
+          (* |> merge_patterns *)
+          |> List.of_seq in
   Merge_list (default_search_space, l)
 
 let round_robin_pick (l : t list) : t =
@@ -1797,11 +1800,11 @@ let round_robin_pick (l : t list) : t =
 
 let inter (a : t) (b : t) : t =
   match (a, b) with
-  | Pattern (_, a), Pattern (_, b) ->
-    Pattern (default_search_space, Pattern.inter a b)
+  (* | Pattern (_, a), Pattern (_, b) ->
+   *   Pattern (default_search_space, Pattern.inter a b) *)
   | _, _ -> Binary_op (default_search_space, Inter, a, b)
 
-let union (a : t) (b : t) : t = Merge_list (default_search_space, [ a; b ])
+let union (a : t) (b : t) : t = merge [ a; b ]
 
 let first_point (a : t) : t = Unary_op (default_search_space, Next_n_points 1, a)
 
