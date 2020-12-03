@@ -385,17 +385,6 @@ module Qc = struct
          in
          res1 = res2)
 
-  let merge =
-    QCheck.Test.make ~count:10_000 ~name:"merge"
-      QCheck.(
-        pair sorted_time_slots_with_overlaps sorted_time_slots_with_overlaps)
-      (fun (l1, l2) ->
-         let s1 = l1 |> List.to_seq in
-         let s2 = l2 |> List.to_seq in
-         let res1 = Time.Intervals.Merge.merge s1 s2 |> List.of_seq in
-         let res2 = Time.Intervals.Sort.sort_intervals_list (l1 @ l2) in
-         res1 = res2)
-
   let suite =
     [
       slice_start;
@@ -420,6 +409,5 @@ module Qc = struct
       merge_associative;
       inter_merge_distributive1;
       inter_merge_distributive2;
-      merge;
     ]
 end
