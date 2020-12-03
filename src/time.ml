@@ -1651,6 +1651,26 @@ module Pattern = struct
           | Ok () -> (
               match check_pattern y with Error e -> Error e | Ok () -> Ok () ) )
   end
+
+  let merge p1 p2 =
+    {
+      years =
+        List.sort_uniq compare (p1.years @ p2.years);
+      months =
+        List.sort_uniq compare (p1.months @ p2.months);
+      month_days =
+        List.sort_uniq compare (p1.month_days @ p2.month_days);
+      weekdays =
+        List.sort_uniq compare (p1.weekdays @ p2.weekdays);
+      hours =
+        List.sort_uniq compare (p1.hours @ p2.hours);
+      minutes =
+        List.sort_uniq compare (p1.minutes @ p2.minutes);
+      seconds =
+        List.sort_uniq compare (p1.seconds @ p2.seconds);
+      timestamps =
+        List.sort_uniq compare (p1.timestamps @ p2.timestamps);
+    }
 end
 
 type sign_expr =
@@ -1739,7 +1759,50 @@ let shift (offset : Duration.t) (t : t) : t =
 let lengthen (x : Duration.t) (t : t) : t =
   Unary_op (default_search_space, Lengthen (Duration.to_seconds x), t)
 
-let merge (l : t list) : t = Merge_list (default_search_space, l)
+let merge (l : t list) : t =
+  let flatten s =
+    Seq.flat_map (fun x ->
+        match x with
+        | Merge_list (_, l) -> List.to_seq l
+        | _ -> Seq.return x
+      ) s
+  in
+  let merge_patterns s =
+    let (patterns, rest) = OSeq.partition (fun x ->
+        match x with
+        | Pattern _ -> true
+        | _ -> false
+      ) s
+    in
+    let pattern =
+      Seq.fold_left (fun acc x ->
+          match x with
+          | Pattern (_, pat) -> (
+              match acc with
+              | None ->
+                Some pat
+              | Some acc ->
+                Some (Pattern.merge acc pat)
+            )
+          | _ ->
+            acc
+        )
+        None
+        patterns
+    in
+    match pattern with
+    | None -> rest
+    | Some pat ->
+      OSeq.cons (Pattern (default_search_space, pat)) rest
+  in
+  let l =
+    l
+    |> List.to_seq
+    |> flatten
+    |> merge_patterns
+    |> List.of_seq
+  in
+  Merge_list (default_search_space, l)
 
 let round_robin_pick (l : t list) : t =
   Round_robin_pick_list (default_search_space, l)
