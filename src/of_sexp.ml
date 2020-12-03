@@ -207,7 +207,7 @@ let branching_of_sexp (x : CCSexp.t) =
             | _ -> ([], l)
           in
           match l with
-          | [] -> Time.branching ~years ~months ~days ~hmss ()
+          | [] -> Time.branching ~allow_out_of_range_month_day:true ~years ~months ~days ~hmss ()
           | _ ->
             invalid_data
               (Printf.sprintf "Unexpected expressions: %s"
