@@ -92,8 +92,8 @@ let make_branching ~rng ~min_year =
               let end_inc = min (-1) (start + rng ()) in
               `Range_inc (start, end_inc)
             | 2 ->
-              let start = -(1 + (rng () mod 20)) in
-              let end_inc = (start + (rng () mod 32)) in
+              let start = -(1 + (rng () mod 31)) in
+              let end_inc = min 31 ((31 + start + 1) + rng ()) in
               `Range_inc (start, end_inc)
             | _ -> failwith "Unexpected case"
           )
