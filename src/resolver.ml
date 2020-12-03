@@ -765,8 +765,7 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
                 |> Intervals.Normalize.normalize ~skip_sort:true )
             |> List.of_seq
           in
-          Binary_op (space, Inter, t1, t2)
-      )
+          Binary_op (space, Inter, t1, t2) )
     | Interval_exc (_, start, end_exc) ->
       let space = [ (start, end_exc) ] in
       Interval_exc (space, start, end_exc)
@@ -988,8 +987,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
     | Binary_op (_, op, t1, t2) -> (
         let s1 = aux search_using_tz_offset_s t1 in
         let s2 = aux search_using_tz_offset_s t2 in
-        match op with
-        | Inter -> Intervals.inter ~skip_check:true s1 s2 )
+        match op with Inter -> Intervals.inter ~skip_check:true s1 s2 )
     | Interval_inc (_, a, b) -> Seq.return (a, Int64.succ b)
     | Interval_exc (_, a, b) -> Seq.return (a, b)
     | Round_robin_pick_list (_, l) ->

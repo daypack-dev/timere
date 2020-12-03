@@ -140,12 +140,7 @@ let to_sexp (t : Time.t) : CCSexp.t =
     | Unary_op (_, op, t) -> CCSexp.list (sexp_list_of_unary_op op @ [ aux t ])
     | Binary_op (_, op, t1, t2) ->
       CCSexp.list
-        [
-          ( match op with
-            | Inter -> CCSexp.atom "inter" );
-          aux t1;
-          aux t2;
-        ]
+        [ (match op with Inter -> CCSexp.atom "inter"); aux t1; aux t2 ]
     | Interval_inc (_, a, b) ->
       let open CCSexp in
       list [ atom "interval_inc"; sexp_of_timestamp a; sexp_of_timestamp b ]

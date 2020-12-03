@@ -220,8 +220,7 @@ and mem ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
                  x <= second_of_day && second_of_day < y)
             branching.hmss
         | Binary_op (_, op, t1, t2) -> (
-            match op with
-            | Inter -> aux t1 timestamp && aux t2 timestamp )
+            match op with Inter -> aux t1 timestamp && aux t2 timestamp )
         | Interval_inc (_, start, end_inc) ->
           start <= timestamp && timestamp <= end_inc
         | Interval_exc (_, start, end_inc) ->
