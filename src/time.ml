@@ -1896,7 +1896,7 @@ let safe_month_day_range_inc ~years ~months =
   in
   aux (-31) 31 (Month_ranges.Flatten.flatten @@ List.to_seq @@ months)
 
-let month_day_range_is_valid ~safe_month_day_end_inc day_range =
+let month_day_range_is_valid_strict ~safe_month_day_start ~safe_month_day_end_inc day_range =
   let min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start =
     if start < 0 then safe_month_day_end_inc + start + 1 else start
   in
@@ -1914,15 +1914,31 @@ let month_day_range_is_valid ~safe_month_day_end_inc day_range =
   in
   match day_range with
   | `Range_inc (start, d) ->
-    if d < 0 then
+    start <> 0
+    &&
+    safe_month_day_start <= start
+    &&
+    d <> 0
+    &&
+    (if d < 0 then
       min_acceptable_negative_day_end_inc ~safe_month_day_end_inc ~start <= d
     else
-      min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start <= d
+      min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start <= d)
   | `Range_exc (start, d) ->
-    if d < 0 then
+    start <> 0
+    &&
+    safe_month_day_start <= start
+    &&
+    d <> 0
+    &&
+    (if d < 0 then
       min_acceptable_negative_day_end_inc ~safe_month_day_end_inc ~start < d
     else
-      min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start < d
+      min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start < d)
+
+let month_day_range_is_valid_relaxed day_range =
+  month_day_range_is_valid_strict ~safe_month_day_start:(-31)
+    ~safe_month_day_end_inc:31 day_range
 
 let branching ?(allow_out_of_range_month_day = false) ?(years = [])
     ?(months = []) ?(days = Month_days []) ?(hmss = []) () : t =
@@ -1941,29 +1957,17 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
     match days with
     | Month_days [] | Weekdays [] -> Ok (Month_days [ `Range_inc (1, 31) ])
     | Month_days days ->
-      let check_start, check_end_inc =
-        if allow_out_of_range_month_day then (-31, 31)
-        else (safe_month_day_start, safe_month_day_end_inc)
-      in
-      let p_start_day day =
-        check_start <= day && day <= check_end_inc && day <> 0
-      in
-      let p_end_day_inc day =
-        check_start <= day && day <= check_end_inc && day <> 0
-      in
-      let p_end_day_exc day = check_start <= day && day <= check_end_inc + 1 && day <> 0 in
       if
-        List.for_all
-          (fun day_range ->
-             match day_range with
-             | `Range_inc (d1, d2) ->
-               p_start_day d1 && p_end_day_inc d2
-             | `Range_exc (d1, d2) ->
-               p_start_day d1 && p_end_day_exc d2)
-          days
-        && List.for_all
-          (month_day_range_is_valid ~safe_month_day_end_inc)
-          days
+        (
+        if allow_out_of_range_month_day then
+          List.for_all
+            month_day_range_is_valid_relaxed
+            days
+        else
+          List.for_all
+            (month_day_range_is_valid_strict ~safe_month_day_start ~safe_month_day_end_inc)
+            days
+      )
       then Ok (Month_days days)
       else Error ()
     | Weekdays _ -> Ok days
