@@ -685,84 +685,84 @@ module Intervals = struct
     let a = List.of_seq a in
     a = inter
 
-  let count_overlap ?(skip_check = false) (intervals : Interval.t Seq.t) :
-    (Interval.t * int) Seq.t =
-    let flatten_buffer buffer =
-      buffer
-      |> List.sort (fun (x, _count) (y, _count) -> Interval.compare x y)
-      |> List.to_seq
-      |> Seq.flat_map (fun (x, count) ->
-          OSeq.(0 --^ count) |> Seq.map (fun _ -> x))
-    in
-    let flush_buffer_to_input buffer intervals =
-      Merge.merge (flatten_buffer buffer) intervals
-    in
-    let rec aux (cur : ((int64 * int64) * int) option)
-        (buffer : ((int64 * int64) * int) list) (intervals : Interval.t Seq.t) :
-      (Interval.t * int) Seq.t =
-      match intervals () with
-      | Seq.Nil -> (
-          match buffer with
-          | [] -> (
-              match cur with None -> Seq.empty | Some cur -> Seq.return cur )
-          | buffer -> aux cur [] (flatten_buffer buffer) )
-      | Seq.Cons (x, rest) -> (
-          let s () = Seq.Cons (x, rest) in
-          match cur with
-          | None -> (
-              match buffer with
-              | [] -> aux (Some (x, 1)) [] rest
-              | buffer -> aux None [] (flush_buffer_to_input buffer s) )
-          | Some ((cur_start, cur_end_exc), cur_count) -> (
-              match
-                Interval.overlap_of_a_over_b ~a:x ~b:(cur_start, cur_end_exc)
-              with
-              | None, None, None -> aux cur buffer rest
-              | Some _, _, _ ->
-                failwith "Unexpected case, time slots are not sorted"
-              (* raise (Invalid_argument "Time slots are not sorted") *)
-              | None, Some (start, end_exc), None
-              | None, Some (start, _), Some (_, end_exc) ->
-                if start = cur_start then
-                  if end_exc < cur_end_exc then
-                    failwith "Unexpected case, time slots are not sorted"
-                    (* raise (Invalid_argument "Time slots are not sorted") *)
-                  else if end_exc = cur_end_exc then
-                    aux
-                      (Some ((cur_start, cur_end_exc), succ cur_count))
-                      buffer rest
-                  else
-                    aux
-                      (Some ((cur_start, cur_end_exc), succ cur_count))
-                      (((cur_end_exc, end_exc), 1) :: buffer)
-                      rest
-                else fun () ->
-                  Seq.Cons
-                    ( ((cur_start, start), cur_count),
-                      let buffer =
-                        if end_exc < cur_end_exc then
-                          ((start, end_exc), succ cur_count)
-                          :: ((end_exc, cur_end_exc), cur_count)
-                          :: buffer
-                        else if end_exc = cur_end_exc then
-                          ((start, cur_end_exc), succ cur_count) :: buffer
-                        else
-                          ((start, cur_end_exc), succ cur_count)
-                          :: ((cur_end_exc, end_exc), 1)
-                          :: buffer
-                      in
-                      aux None buffer rest )
-              | None, None, Some _ ->
-                fun () ->
-                  Seq.Cons
-                    (((cur_start, cur_end_exc), cur_count), aux None buffer s)
-            ) )
-    in
-    intervals
-    |> (fun s ->
-        if skip_check then s
-        else s |> Check.check_if_valid |> Check.check_if_sorted)
-    |> aux None []
+  (* let count_overlap ?(skip_check = false) (intervals : Interval.t Seq.t) :
+   *   (Interval.t * int) Seq.t =
+   *   let flatten_buffer buffer =
+   *     buffer
+   *     |> List.sort (fun (x, _count) (y, _count) -> Interval.compare x y)
+   *     |> List.to_seq
+   *     |> Seq.flat_map (fun (x, count) ->
+   *         OSeq.(0 --^ count) |> Seq.map (fun _ -> x))
+   *   in
+   *   let flush_buffer_to_input buffer intervals =
+   *     Merge.merge (flatten_buffer buffer) intervals
+   *   in
+   *   let rec aux (cur : ((int64 * int64) * int) option)
+   *       (buffer : ((int64 * int64) * int) list) (intervals : Interval.t Seq.t) :
+   *     (Interval.t * int) Seq.t =
+   *     match intervals () with
+   *     | Seq.Nil -> (
+   *         match buffer with
+   *         | [] -> (
+   *             match cur with None -> Seq.empty | Some cur -> Seq.return cur )
+   *         | buffer -> aux cur [] (flatten_buffer buffer) )
+   *     | Seq.Cons (x, rest) -> (
+   *         let s () = Seq.Cons (x, rest) in
+   *         match cur with
+   *         | None -> (
+   *             match buffer with
+   *             | [] -> aux (Some (x, 1)) [] rest
+   *             | buffer -> aux None [] (flush_buffer_to_input buffer s) )
+   *         | Some ((cur_start, cur_end_exc), cur_count) -> (
+   *             match
+   *               Interval.overlap_of_a_over_b ~a:x ~b:(cur_start, cur_end_exc)
+   *             with
+   *             | None, None, None -> aux cur buffer rest
+   *             | Some _, _, _ ->
+   *               failwith "Unexpected case, time slots are not sorted"
+   *             (\* raise (Invalid_argument "Time slots are not sorted") *\)
+   *             | None, Some (start, end_exc), None
+   *             | None, Some (start, _), Some (_, end_exc) ->
+   *               if start = cur_start then
+   *                 if end_exc < cur_end_exc then
+   *                   failwith "Unexpected case, time slots are not sorted"
+   *                   (\* raise (Invalid_argument "Time slots are not sorted") *\)
+   *                 else if end_exc = cur_end_exc then
+   *                   aux
+   *                     (Some ((cur_start, cur_end_exc), succ cur_count))
+   *                     buffer rest
+   *                 else
+   *                   aux
+   *                     (Some ((cur_start, cur_end_exc), succ cur_count))
+   *                     (((cur_end_exc, end_exc), 1) :: buffer)
+   *                     rest
+   *               else fun () ->
+   *                 Seq.Cons
+   *                   ( ((cur_start, start), cur_count),
+   *                     let buffer =
+   *                       if end_exc < cur_end_exc then
+   *                         ((start, end_exc), succ cur_count)
+   *                         :: ((end_exc, cur_end_exc), cur_count)
+   *                         :: buffer
+   *                       else if end_exc = cur_end_exc then
+   *                         ((start, cur_end_exc), succ cur_count) :: buffer
+   *                       else
+   *                         ((start, cur_end_exc), succ cur_count)
+   *                         :: ((cur_end_exc, end_exc), 1)
+   *                         :: buffer
+   *                     in
+   *                     aux None buffer rest )
+   *             | None, None, Some _ ->
+   *               fun () ->
+   *                 Seq.Cons
+   *                   (((cur_start, cur_end_exc), cur_count), aux None buffer s)
+   *           ) )
+   *   in
+   *   intervals
+   *   |> (fun s ->
+   *       if skip_check then s
+   *       else s |> Check.check_if_valid |> Check.check_if_sorted)
+   *   |> aux None [] *)
 end
 
 module Range = struct
