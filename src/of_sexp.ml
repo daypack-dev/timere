@@ -141,7 +141,7 @@ let pattern_of_sexp (x : CCSexp.t) =
             match l with
             | `List (`Atom "timestamps" :: timestamps) :: l ->
               (List.map timestamp_of_sexp timestamps, l)
-            | _-> ([], l)
+            | _ -> ([], l)
           in
           match l with
           | [] ->
@@ -207,7 +207,9 @@ let branching_of_sexp (x : CCSexp.t) =
             | _ -> ([], l)
           in
           match l with
-          | [] -> Time.branching ~allow_out_of_range_month_day:true ~years ~months ~days ~hmss ()
+          | [] ->
+            Time.branching ~allow_out_of_range_month_day:true ~years ~months
+              ~days ~hmss ()
           | _ ->
             invalid_data
               (Printf.sprintf "Unexpected expressions: %s"

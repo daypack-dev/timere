@@ -1630,8 +1630,7 @@ module Pattern = struct
     timestamps : int64 list;
   }
 
-  let equal p1 p2 =
-    p1 = p2
+  let equal p1 p2 = p1 = p2
 
   type error =
     | Invalid_years of int list
@@ -1720,8 +1719,7 @@ type branching = {
   hmss : hms Range.range list;
 }
 
-let branching_equal b1 b2 =
-  b1 = b2
+let branching_equal b1 b2 = b1 = b2
 
 type search_space = Interval.t list
 
@@ -1745,23 +1743,19 @@ type t =
 
 let equal t1 t2 =
   let rec aux t1 t2 =
-    match t1, t2 with
+    match (t1, t2) with
     | Timestamp_interval_seq (_, s1), Timestamp_interval_seq (_, s2) ->
       OSeq.equal ~eq:( = ) s1 s2
-    | Pattern (_, p1), Pattern (_, p2) ->
-      Pattern.equal p1 p2
-    | Branching (_, b1), Branching (_, b2) ->
-      branching_equal b1 b2
-    | Unary_op (_, op1, t1), Unary_op (_, op2, t2) ->
-      op1 = op2 && aux t1 t2
+    | Pattern (_, p1), Pattern (_, p2) -> Pattern.equal p1 p2
+    | Branching (_, b1), Branching (_, b2) -> branching_equal b1 b2
+    | Unary_op (_, op1, t1), Unary_op (_, op2, t2) -> op1 = op2 && aux t1 t2
     | Binary_op (_, op1, t11, t12), Binary_op (_, op2, t21, t22) ->
       op1 = op2 && aux t11 t21 && aux t12 t22
     | Interval_inc (_, x11, x12), Interval_inc (_, x21, x22)
     | Interval_exc (_, x11, x12), Interval_exc (_, x21, x22) ->
       x11 = x21 && x12 = x22
     | Round_robin_pick_list (_, l1), Round_robin_pick_list (_, l2)
-    | Merge_list (_, l1), Merge_list (_, l2)
-      ->
+    | Merge_list (_, l1), Merge_list (_, l2) ->
       List.for_all2 aux l1 l2
     | _ -> false
   in
@@ -1896,7 +1890,8 @@ let safe_month_day_range_inc ~years ~months =
   in
   aux (-31) 31 (Month_ranges.Flatten.flatten @@ List.to_seq @@ months)
 
-let month_day_range_is_valid_strict ~safe_month_day_start ~safe_month_day_end_inc day_range =
+let month_day_range_is_valid_strict ~safe_month_day_start
+    ~safe_month_day_end_inc day_range =
   let min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start =
     if start < 0 then safe_month_day_end_inc + start + 1 else start
   in
@@ -1907,34 +1902,28 @@ let month_day_range_is_valid_strict ~safe_month_day_start ~safe_month_day_end_in
     let days_usable =
       safe_month_day_end_inc - min_acceptable_positive_day_end_inc
     in
-    let largest_negative_index =
-      days_usable + 1
-    in
+    let largest_negative_index = days_usable + 1 in
     -largest_negative_index
   in
   match day_range with
   | `Range_inc (start, d) ->
     start <> 0
+    && safe_month_day_start <= start
+    && d <> 0
     &&
-    safe_month_day_start <= start
-    &&
-    d <> 0
-    &&
-    (if d < 0 then
+    if d < 0 then
       min_acceptable_negative_day_end_inc ~safe_month_day_end_inc ~start <= d
     else
-      min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start <= d)
+      min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start <= d
   | `Range_exc (start, d) ->
     start <> 0
+    && safe_month_day_start <= start
+    && d <> 0
     &&
-    safe_month_day_start <= start
-    &&
-    d <> 0
-    &&
-    (if d < 0 then
+    if d < 0 then
       min_acceptable_negative_day_end_inc ~safe_month_day_end_inc ~start < d
     else
-      min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start < d)
+      min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start < d
 
 let month_day_range_is_valid_relaxed day_range =
   month_day_range_is_valid_strict ~safe_month_day_start:(-31)
@@ -1958,16 +1947,13 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
     | Month_days [] | Weekdays [] -> Ok (Month_days [ `Range_inc (1, 31) ])
     | Month_days days ->
       if
-        (
         if allow_out_of_range_month_day then
-          List.for_all
-            month_day_range_is_valid_relaxed
-            days
+          List.for_all month_day_range_is_valid_relaxed days
         else
           List.for_all
-            (month_day_range_is_valid_strict ~safe_month_day_start ~safe_month_day_end_inc)
+            (month_day_range_is_valid_strict ~safe_month_day_start
+               ~safe_month_day_end_inc)
             days
-      )
       then Ok (Month_days days)
       else Error ()
     | Weekdays _ -> Ok days
