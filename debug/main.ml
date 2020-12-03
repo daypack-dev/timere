@@ -97,21 +97,37 @@ let debug_resolver () =
   let timere =
     Timere.(inter timere (interval_exc search_start search_end_exc))
   in
-  match Timere.resolve timere with
-  | Error msg -> print_endline msg
-  | Ok s -> (
-      match s () with
-      | Seq.Nil -> print_endline "No matching time slots"
-      | Seq.Cons _ ->
-        s
-        |> OSeq.take 20
-        |> OSeq.iter (fun ts ->
-            match
-              Timere.sprintf_interval default_interval_format_string ts
-            with
-            | Ok s -> Printf.printf "%s\n" s
-            | Error msg -> Printf.printf "Error: %s\n" msg);
-        print_newline () )
+  ( match Timere.resolve timere with
+    | Error msg -> print_endline msg
+    | Ok s -> (
+        match s () with
+        | Seq.Nil -> print_endline "No matching time slots"
+        | Seq.Cons _ ->
+          s
+          |> OSeq.take 20
+          |> OSeq.iter (fun ts ->
+              match
+                Timere.sprintf_interval default_interval_format_string ts
+              with
+              | Ok s -> Printf.printf "%s\n" s
+              | Error msg -> Printf.printf "Error: %s\n" msg);
+          print_newline () ) );
+  let s =
+    Timere.Utils.resolve_simple ~search_start ~search_end_exc ~tz_offset_s:0
+      timere
+  in
+  match s () with
+  | Seq.Nil -> print_endline "No matching time slots"
+  | Seq.Cons _ ->
+    s
+    |> OSeq.take 20
+    |> OSeq.iter (fun ts ->
+        match
+          Timere.sprintf_interval default_interval_format_string ts
+        with
+        | Ok s -> Printf.printf "%s\n" s
+        | Error msg -> Printf.printf "Error: %s\n" msg);
+    print_newline ()
 
 (* let () = debug_branching () *)
 
