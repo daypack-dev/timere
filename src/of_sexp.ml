@@ -264,7 +264,7 @@ let of_sexp (x : CCSexp.t) =
             | Ok n -> n
           in
           shift n (aux x)
-        | [ `Atom "lengthen"; n ] ->
+        | [ `Atom "lengthen"; n; x ] ->
           let n =
             match Duration.of_seconds (int64_of_sexp n) with
             | Error () ->
