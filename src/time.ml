@@ -1901,10 +1901,16 @@ let month_day_range_is_valid ~safe_month_day_end_inc day_range =
     if start < 0 then safe_month_day_end_inc + start + 1 else start
   in
   let min_acceptable_negative_day_end_inc ~safe_month_day_end_inc ~start =
-    let start =
+    let min_acceptable_positive_day_end_inc =
       min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start
     in
-    -(safe_month_day_end_inc - start)
+    let days_usable =
+      safe_month_day_end_inc - min_acceptable_positive_day_end_inc
+    in
+    let largest_negative_index =
+      days_usable + 1
+    in
+    -largest_negative_index
   in
   match day_range with
   | `Range_inc (start, d) ->
