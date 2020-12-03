@@ -142,7 +142,6 @@ let to_sexp (t : Time.t) : CCSexp.t =
       CCSexp.list
         [
           ( match op with
-            | Union -> CCSexp.atom "union"
             | Inter -> CCSexp.atom "inter" );
           aux t1;
           aux t2;

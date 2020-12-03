@@ -278,7 +278,6 @@ let of_sexp (x : CCSexp.t) =
         | [ `Atom "change_tz_offset_s"; n; x ] ->
           let n = int_of_sexp n in
           change_tz_offset_s n (aux x)
-        | [ `Atom "union"; x1; x2 ] -> union (aux x1) (aux x2)
         | [ `Atom "inter"; x1; x2 ] -> inter (aux x1) (aux x2)
         | [ `Atom "interval_inc"; a; b ] ->
           interval_dt_inc (date_time_of_sexp a) (date_time_of_sexp b)

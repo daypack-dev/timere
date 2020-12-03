@@ -221,7 +221,6 @@ and mem ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
             branching.hmss
         | Binary_op (_, op, t1, t2) -> (
             match op with
-            | Union -> aux t1 timestamp || aux t2 timestamp
             | Inter -> aux t1 timestamp && aux t2 timestamp )
         | Interval_inc (_, start, end_inc) ->
           start <= timestamp && timestamp <= end_inc

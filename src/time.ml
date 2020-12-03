@@ -1673,7 +1673,6 @@ type unary_op =
   | Tz_offset_s of int
 
 type binary_op =
-  | Union
   | Inter
 
 type branching_days =
@@ -1748,7 +1747,7 @@ let round_robin_pick (l : t list) : t =
 
 let inter (a : t) (b : t) : t = Binary_op (default_search_space, Inter, a, b)
 
-let union (a : t) (b : t) : t = Binary_op (default_search_space, Union, a, b)
+let union (a : t) (b : t) : t = Merge_list (default_search_space, [a; b])
 
 let first_point (a : t) : t = Unary_op (default_search_space, Next_n_points 1, a)
 
