@@ -93,7 +93,7 @@ let sexp_of_branching (b : Time.branching) : CCSexp.t =
     (match years with [] -> None | _ -> Some (list (atom "years" :: years)));
     (match months with [] -> None | _ -> Some (list (atom "months" :: months)));
     (match days with [] -> None | _ -> Some (list days));
-    (match hmss with [] -> None | _ -> Some (list (atom "hmss " :: hmss)));
+    (match hmss with [] -> None | _ -> Some (list (atom "hmss" :: hmss)));
   ]
   |> List.filter_map (fun x -> x)
   |> list

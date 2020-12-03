@@ -137,10 +137,16 @@ let pattern_of_sexp (x : CCSexp.t) =
               (List.map int_of_sexp seconds, l)
             | _ -> ([], l)
           in
+          let timestamps, l =
+            match l with
+            | `List (`Atom "timestamps" :: timestamps) :: l ->
+              (List.map timestamp_of_sexp timestamps, l)
+            | _-> ([], l)
+          in
           match l with
           | [] ->
             Time.pattern ~years ~months ~month_days ~weekdays ~hours ~minutes
-              ~seconds ()
+              ~seconds ~timestamps ()
           | _ ->
             invalid_data
               (Printf.sprintf "Invalid pattern: %s" (CCSexp.to_string x)) )
