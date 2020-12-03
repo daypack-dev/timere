@@ -22,7 +22,8 @@ module Qc = struct
            ( Result.get_ok
              @@ Resolver.resolve
                Time.(
-                 inter [t; interval_dt_exc search_start_dt search_end_exc_dt]) )
+                 inter [ t; interval_dt_exc search_start_dt search_end_exc_dt ])
+           )
            (Simple_resolver.resolve ~search_start ~search_end_exc ~tz_offset_s:0
               t))
 

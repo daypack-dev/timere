@@ -748,20 +748,18 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
         | _ ->
           let t = aux tz_offset_s t in
           Unary_op (get_search_space t, op, t) )
-    | Inter_list (_, l) -> (
-        let l =
-          List.map (aux tz_offset_s) l
-        in
-        let space =
-          l
-          |> List.to_seq
-          |> Seq.map get_search_space
-          |> Seq.map List.to_seq
-          |> Seq.map (Intervals.Normalize.normalize ~skip_sort:true)
-          |> Intervals.Inter.inter_multi_seq ~skip_check:true
-          |> List.of_seq
-        in
-        Inter_list (space, l) )
+    | Inter_list (_, l) ->
+      let l = List.map (aux tz_offset_s) l in
+      let space =
+        l
+        |> List.to_seq
+        |> Seq.map get_search_space
+        |> Seq.map List.to_seq
+        |> Seq.map (Intervals.Normalize.normalize ~skip_sort:true)
+        |> Intervals.Inter.inter_multi_seq ~skip_check:true
+        |> List.of_seq
+      in
+      Inter_list (space, l)
     | Interval_exc (_, start, end_exc) ->
       let space = [ (start, end_exc) ] in
       Interval_exc (space, start, end_exc)
@@ -789,7 +787,8 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
 let propagate_search_space_top_down (time : Time.t) : Time.t =
   let open Time in
   let restrict_search_space (parent : search_space) (cur : search_space) =
-    Intervals.Inter.inter ~skip_check:true (List.to_seq parent) (List.to_seq cur)
+    Intervals.Inter.inter ~skip_check:true (List.to_seq parent)
+      (List.to_seq cur)
     |> List.of_seq
   in
   let rec aux parent_search_space time =

@@ -277,7 +277,9 @@ module Qc = struct
              ~not_mem_of:(List.to_seq not_mem_of) (List.to_seq mem_of)
          in
          let res = res_s |> List.of_seq in
-         Time.Intervals.Inter.inter (List.to_seq mem_of) res_s |> List.of_seq = res)
+         Time.Intervals.Inter.inter (List.to_seq mem_of) res_s
+         |> List.of_seq
+            = res)
 
   let relative_complement_self =
     QCheck.Test.make ~count:10_000 ~name:"relative_complement_self"
@@ -311,8 +313,12 @@ module Qc = struct
          let s1 = l1 |> List.to_seq in
          let s2 = l2 |> List.to_seq in
          let s3 = l3 |> List.to_seq in
-         let inter1 = Time.Intervals.Inter.(inter (inter s1 s2) s3) |> List.of_seq in
-         let inter2 = Time.Intervals.Inter.(inter s1 (inter s2 s3)) |> List.of_seq in
+         let inter1 =
+           Time.Intervals.Inter.(inter (inter s1 s2) s3) |> List.of_seq
+         in
+         let inter2 =
+           Time.Intervals.Inter.(inter s1 (inter s2 s3)) |> List.of_seq
+         in
          inter1 = inter2)
 
   let union_with_self =
