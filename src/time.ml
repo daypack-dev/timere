@@ -2045,11 +2045,6 @@ let date_time (date_time : Date_time.t) : t =
   |> fun x ->
   Timestamp_interval_seq (default_search_space, Seq.return (x, Int64.succ x))
 
-(* let of_interval ((start, end_exc) : int64 * int64) : t =
- *   if Interval.Check.is_valid (start, end_exc) then
- *     Timestamp_interval_seq (default_search_space, Seq.return (start, end_exc))
- *   else invalid_arg "of_interval" *)
-
 let of_sorted_intervals_seq ?(skip_invalid : bool = false)
     (s : (int64 * int64) Seq.t) : t =
   Timestamp_interval_seq
