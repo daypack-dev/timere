@@ -89,7 +89,7 @@ let make_branching ~rng ~min_year =
               let end_inc = min 31 (start + rng ()) in
               `Range_inc (start, end_inc)
             else
-                let start = - (rng () mod 31) in
+                let start = - (1 + (rng () mod 31)) in
                 let end_inc = min (-1) (start + rng ()) in
                 `Range_inc (start, end_inc)
           )
