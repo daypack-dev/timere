@@ -514,52 +514,64 @@ module Intervals = struct
     relative_complement ~skip_check ~not_mem_of:intervals
       (Seq.return (start, end_exc))
 
-  let inter ?(skip_check = false) (intervals1 : Interval.t Seq.t)
-      (intervals2 : Interval.t Seq.t) : Interval.t Seq.t =
-    let rec aux intervals1 intervals2 : Interval.t Seq.t =
-      match (intervals1 (), intervals2 ()) with
-      | Seq.Nil, _ -> Seq.empty
-      | _, Seq.Nil -> Seq.empty
-      | ( Seq.Cons ((start1, end_exc1), rest1),
-          Seq.Cons ((start2, end_exc2), rest2) ) ->
-        if end_exc1 < start2 then
-          (* 1 is before 2 entirely, drop 1, keep 2 *)
-          aux rest1 intervals2
-        else if end_exc2 < start1 then
-          (* 2 is before 1 entirely, keep 1, drop 2 *)
-          aux intervals1 rest2
+  module Inter = struct
+    let inter ?(skip_check = false) (intervals1 : Interval.t Seq.t)
+        (intervals2 : Interval.t Seq.t) : Interval.t Seq.t =
+      let rec aux intervals1 intervals2 : Interval.t Seq.t =
+        match (intervals1 (), intervals2 ()) with
+        | Seq.Nil, _ -> Seq.empty
+        | _, Seq.Nil -> Seq.empty
+        | ( Seq.Cons ((start1, end_exc1), rest1),
+            Seq.Cons ((start2, end_exc2), rest2) ) ->
+          if end_exc1 < start2 then
+            (* 1 is before 2 entirely, drop 1, keep 2 *)
+            aux rest1 intervals2
+          else if end_exc2 < start1 then
+            (* 2 is before 1 entirely, keep 1, drop 2 *)
+            aux intervals1 rest2
+          else
+            (* there is an overlap or touching *)
+            let overlap_start = max start1 start2 in
+            let overlap_end_exc = min end_exc1 end_exc2 in
+            let s1 =
+              if end_exc1 <= overlap_end_exc then rest1 else intervals1
+            in
+            let s2 =
+              if end_exc2 <= overlap_end_exc then rest2 else intervals2
+            in
+            if overlap_start < overlap_end_exc then
+              (* there is an overlap *)
+              fun () -> Seq.Cons ((overlap_start, overlap_end_exc), aux s1 s2)
+            else aux s1 s2
+      in
+      let intervals1 =
+        if skip_check then intervals1
         else
-          (* there is an overlap or touching *)
-          let overlap_start = max start1 start2 in
-          let overlap_end_exc = min end_exc1 end_exc2 in
-          let s1 =
-            if end_exc1 <= overlap_end_exc then rest1 else intervals1
-          in
-          let s2 =
-            if end_exc2 <= overlap_end_exc then rest2 else intervals2
-          in
-          if overlap_start < overlap_end_exc then
-            (* there is an overlap *)
-            fun () -> Seq.Cons ((overlap_start, overlap_end_exc), aux s1 s2)
-          else aux s1 s2
-    in
-    let intervals1 =
-      if skip_check then intervals1
-      else
-        intervals1
-        |> Check.check_if_valid
-        |> Check.check_if_disjoint
-        |> Check.check_if_sorted
-    in
-    let intervals2 =
-      if skip_check then intervals2
-      else
-        intervals2
-        |> Check.check_if_valid
-        |> Check.check_if_disjoint
-        |> Check.check_if_sorted
-    in
-    aux intervals1 intervals2
+          intervals1
+          |> Check.check_if_valid
+          |> Check.check_if_disjoint
+          |> Check.check_if_sorted
+      in
+      let intervals2 =
+        if skip_check then intervals2
+        else
+          intervals2
+          |> Check.check_if_valid
+          |> Check.check_if_disjoint
+          |> Check.check_if_sorted
+      in
+      aux intervals1 intervals2
+
+    let inter_multi_seq ?(skip_check = false)
+        (interval_batches : Interval.t Seq.t Seq.t) : Interval.t Seq.t =
+      Seq.fold_left
+        (fun acc intervals -> inter ~skip_check acc intervals)
+        Seq.empty interval_batches
+
+    let inter_multi_list ?(skip_check = false)
+        (interval_batches : Interval.t Seq.t list) : Interval.t Seq.t =
+      List.to_seq interval_batches |> inter_multi_seq ~skip_check
+  end
 
   module Merge = struct
     let merge ?(skip_check = false) (intervals1 : Interval.t Seq.t)
@@ -681,7 +693,7 @@ module Intervals = struct
     intervals1 = intervals2
 
   let a_is_subset_of_b ~(a : Interval.t Seq.t) ~(b : Interval.t Seq.t) : bool =
-    let inter = inter a b |> List.of_seq in
+    let inter = Inter.inter a b |> List.of_seq in
     let a = List.of_seq a in
     a = inter
 
@@ -1708,8 +1720,6 @@ type unary_op =
   | Lengthen of int64
   | Tz_offset_s of int
 
-type binary_op = Inter
-
 type branching_days =
   | Month_days of int Range.range list
   | Weekdays of weekday Range.range list
@@ -1737,10 +1747,10 @@ type t =
   | Pattern of search_space * Pattern.pattern
   | Branching of search_space * branching
   | Unary_op of search_space * unary_op * t
-  | Binary_op of search_space * binary_op * t * t
   | Interval_inc of search_space * timestamp * timestamp
   | Interval_exc of search_space * timestamp * timestamp
   | Round_robin_pick_list of search_space * t list
+  | Inter_list of search_space * t list
   | Merge_list of search_space * t list
 
 let equal t1 t2 =
@@ -1751,12 +1761,11 @@ let equal t1 t2 =
     | Pattern (_, p1), Pattern (_, p2) -> Pattern.equal p1 p2
     | Branching (_, b1), Branching (_, b2) -> branching_equal b1 b2
     | Unary_op (_, op1, t1), Unary_op (_, op2, t2) -> op1 = op2 && aux t1 t2
-    | Binary_op (_, op1, t11, t12), Binary_op (_, op2, t21, t22) ->
-      op1 = op2 && aux t11 t21 && aux t12 t22
     | Interval_inc (_, x11, x12), Interval_inc (_, x21, x22)
     | Interval_exc (_, x11, x12), Interval_exc (_, x21, x22) ->
       x11 = x21 && x12 = x22
     | Round_robin_pick_list (_, l1), Round_robin_pick_list (_, l2)
+    | Inter_list (_, l1), Inter_list (_, l2)
     | Merge_list (_, l1), Merge_list (_, l2) ->
       List.for_all2 aux l1 l2
     | _ -> false
@@ -1774,6 +1783,35 @@ let shift (offset : Duration.t) (t : t) : t =
 
 let lengthen (x : Duration.t) (t : t) : t =
   Unary_op (default_search_space, Lengthen (Duration.to_seconds x), t)
+
+let inter (l : t list) : t =
+  let flatten s =
+    Seq.flat_map
+      (fun x ->
+         match x with Inter_list (_, l) -> List.to_seq l | _ -> Seq.return x)
+      s
+  in
+  let inter_patterns s =
+    let patterns, rest =
+      OSeq.partition (fun x -> match x with Pattern _ -> true | _ -> false) s
+    in
+    let pattern =
+      Seq.fold_left
+        (fun acc x ->
+           match x with
+           | Pattern (_, pat) -> (
+               match acc with
+               | None -> Some pat
+               | Some acc -> Some (Pattern.inter acc pat) )
+           | _ -> acc)
+        None patterns
+    in
+    match pattern with
+    | None -> rest
+    | Some pat -> OSeq.cons (Pattern (default_search_space, pat)) rest
+  in
+  let l = l |> List.to_seq |> flatten |> inter_patterns |> List.of_seq in
+  Inter_list (default_search_space, l)
 
 let merge (l : t list) : t =
   let flatten s =
@@ -1806,12 +1844,6 @@ let merge (l : t list) : t =
 
 let round_robin_pick (l : t list) : t =
   Round_robin_pick_list (default_search_space, l)
-
-let inter (a : t) (b : t) : t =
-  match (a, b) with
-  | Pattern (_, a), Pattern (_, b) ->
-    Pattern (default_search_space, Pattern.inter a b)
-  | _, _ -> Binary_op (default_search_space, Inter, a, b)
 
 let union (a : t) (b : t) : t = merge [ a; b ]
 

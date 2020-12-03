@@ -138,9 +138,6 @@ let to_sexp (t : Time.t) : CCSexp.t =
     | Pattern (_, pat) -> sexp_of_pattern pat
     | Branching (_, b) -> sexp_of_branching b
     | Unary_op (_, op, t) -> CCSexp.list (sexp_list_of_unary_op op @ [ aux t ])
-    | Binary_op (_, op, t1, t2) ->
-      CCSexp.list
-        [ (match op with Inter -> CCSexp.atom "inter"); aux t1; aux t2 ]
     | Interval_inc (_, a, b) ->
       let open CCSexp in
       list [ atom "interval_inc"; sexp_of_timestamp a; sexp_of_timestamp b ]
@@ -149,6 +146,7 @@ let to_sexp (t : Time.t) : CCSexp.t =
       list [ atom "interval_exc"; sexp_of_timestamp a; sexp_of_timestamp b ]
     | Round_robin_pick_list (_, l) ->
       CCSexp.(list (atom "round_robin" :: List.map aux l))
+    | Inter_list (_, l) -> CCSexp.(list (atom "inter" :: List.map aux l))
     | Merge_list (_, l) -> CCSexp.(list (atom "merge" :: List.map aux l))
   in
   aux t

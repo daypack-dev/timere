@@ -89,7 +89,7 @@ val change_tz_offset_s : int -> t -> t
 
 (** {1 Algebraic operations} *)
 
-val inter : t -> t -> t
+val inter : t list -> t
 
 val union : t -> t -> t
 

@@ -277,7 +277,7 @@ module Qc = struct
              ~not_mem_of:(List.to_seq not_mem_of) (List.to_seq mem_of)
          in
          let res = res_s |> List.of_seq in
-         Time.Intervals.inter (List.to_seq mem_of) res_s |> List.of_seq = res)
+         Time.Intervals.Inter.inter (List.to_seq mem_of) res_s |> List.of_seq = res)
 
   let relative_complement_self =
     QCheck.Test.make ~count:10_000 ~name:"relative_complement_self"
@@ -289,7 +289,7 @@ module Qc = struct
     QCheck.Test.make ~count:10_000 ~name:"inter_with_self"
       sorted_time_slots_maybe_gaps (fun l ->
           let s = l |> List.to_seq in
-          let res = Time.Intervals.inter s s |> List.of_seq in
+          let res = Time.Intervals.Inter.inter s s |> List.of_seq in
           l = res)
 
   let inter_commutative =
@@ -298,8 +298,8 @@ module Qc = struct
       (fun (l1, l2) ->
          let s1 = l1 |> List.to_seq in
          let s2 = l2 |> List.to_seq in
-         let inter1 = Time.Intervals.inter s1 s2 |> List.of_seq in
-         let inter2 = Time.Intervals.inter s2 s1 |> List.of_seq in
+         let inter1 = Time.Intervals.Inter.inter s1 s2 |> List.of_seq in
+         let inter2 = Time.Intervals.Inter.inter s2 s1 |> List.of_seq in
          inter1 = inter2)
 
   let inter_associative =
@@ -311,8 +311,8 @@ module Qc = struct
          let s1 = l1 |> List.to_seq in
          let s2 = l2 |> List.to_seq in
          let s3 = l3 |> List.to_seq in
-         let inter1 = Time.Intervals.(inter (inter s1 s2) s3) |> List.of_seq in
-         let inter2 = Time.Intervals.(inter s1 (inter s2 s3)) |> List.of_seq in
+         let inter1 = Time.Intervals.Inter.(inter (inter s1 s2) s3) |> List.of_seq in
+         let inter2 = Time.Intervals.Inter.(inter s1 (inter s2 s3)) |> List.of_seq in
          inter1 = inter2)
 
   let merge_with_self =
@@ -359,10 +359,10 @@ module Qc = struct
          let s2 = l2 |> List.to_seq in
          let s3 = l3 |> List.to_seq in
          let res1 =
-           Time.Intervals.(Merge.merge s1 (inter s2 s3)) |> List.of_seq
+           Time.Intervals.(Merge.merge s1 (Inter.inter s2 s3)) |> List.of_seq
          in
          let res2 =
-           Time.Intervals.(inter (Merge.merge s1 s2) (Merge.merge s1 s3))
+           Time.Intervals.(Inter.inter (Merge.merge s1 s2) (Merge.merge s1 s3))
            |> List.of_seq
          in
          res1 = res2)
@@ -377,10 +377,10 @@ module Qc = struct
          let s2 = l2 |> List.to_seq in
          let s3 = l3 |> List.to_seq in
          let res1 =
-           Time.Intervals.(inter s1 (Merge.merge s2 s3)) |> List.of_seq
+           Time.Intervals.(Inter.inter s1 (Merge.merge s2 s3)) |> List.of_seq
          in
          let res2 =
-           Time.Intervals.(Merge.merge (inter s1 s2) (inter s1 s3))
+           Time.Intervals.(Merge.merge (Inter.inter s1 s2) (Inter.inter s1 s3))
            |> List.of_seq
          in
          res1 = res2)

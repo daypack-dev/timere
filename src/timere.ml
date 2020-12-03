@@ -21,7 +21,7 @@ type 'a range = 'a Range.range
 type interval = Interval.t
 
 module Infix = struct
-  let ( & ) = Time.inter
+  let ( & ) a b = Time.inter [a; b]
 
   let ( ||| ) = Time.union
 

@@ -662,10 +662,10 @@ let get_search_space (time : Time.t) : Time.Interval.t list =
   | Pattern (s, _) -> s
   | Branching (s, _) -> s
   | Unary_op (s, _, _) -> s
-  | Binary_op (s, _, _, _) -> s
   | Interval_exc (s, _, _) -> s
   | Interval_inc (s, _, _) -> s
   | Round_robin_pick_list (s, _) -> s
+  | Inter_list (s, _) -> s
   | Merge_list (s, _) -> s
 
 let set_search_space space (time : Time.t) : Time.t =
@@ -675,10 +675,10 @@ let set_search_space space (time : Time.t) : Time.t =
   | Pattern (_, x) -> Pattern (space, x)
   | Branching (_, x) -> Branching (space, x)
   | Unary_op (_, op, x) -> Unary_op (space, op, x)
-  | Binary_op (_, op, x, y) -> Binary_op (space, op, x, y)
   | Interval_exc (_, x, y) -> Interval_exc (space, x, y)
   | Interval_inc (_, x, y) -> Interval_inc (space, x, y)
   | Round_robin_pick_list (_, x) -> Round_robin_pick_list (space, x)
+  | Inter_list (_, x) -> Inter_list (space, x)
   | Merge_list (_, x) -> Merge_list (space, x)
 
 let search_space_of_year_range tz_offset_s year_range =
@@ -729,7 +729,7 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
         | [], _timestamps -> Pattern (List.of_seq space_for_timestamps, pat)
         | _years, _timestamps ->
           let space =
-            Intervals.inter ~skip_check:true space_for_timestamps
+            Intervals.Inter.inter ~skip_check:true space_for_timestamps
               space_for_years
             |> List.of_seq
           in
@@ -748,24 +748,20 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
         | _ ->
           let t = aux tz_offset_s t in
           Unary_op (get_search_space t, op, t) )
-    | Binary_op (_, op, t1, t2) -> (
-        let t1 = aux tz_offset_s t1 in
-        let t2 = aux tz_offset_s t2 in
-        let t1_search_space = get_search_space t1 in
-        let t2_search_space = get_search_space t2 in
-        match op with
-        | Inter ->
-          let space =
-            Intervals.inter ~skip_check:true
-              ( t1_search_space
-                |> List.to_seq
-                |> Intervals.Normalize.normalize ~skip_sort:true )
-              ( t2_search_space
-                |> List.to_seq
-                |> Intervals.Normalize.normalize ~skip_sort:true )
-            |> List.of_seq
-          in
-          Binary_op (space, Inter, t1, t2) )
+    | Inter_list (_, l) -> (
+        let l =
+          List.map (aux tz_offset_s) l
+        in
+        let space =
+          l
+          |> List.to_seq
+          |> Seq.map get_search_space
+          |> Seq.map List.to_seq
+          |> Seq.map (Intervals.Normalize.normalize ~skip_sort:true)
+          |> Intervals.Inter.inter_multi_seq ~skip_check:true
+          |> List.of_seq
+        in
+        Inter_list (space, l) )
     | Interval_exc (_, start, end_exc) ->
       let space = [ (start, end_exc) ] in
       Interval_exc (space, start, end_exc)
@@ -793,7 +789,7 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
 let propagate_search_space_top_down (time : Time.t) : Time.t =
   let open Time in
   let restrict_search_space (parent : search_space) (cur : search_space) =
-    Intervals.inter ~skip_check:true (List.to_seq parent) (List.to_seq cur)
+    Intervals.Inter.inter ~skip_check:true (List.to_seq parent) (List.to_seq cur)
     |> List.of_seq
   in
   let rec aux parent_search_space time =
@@ -807,9 +803,6 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
     | Unary_op (cur, op, t) ->
       let space = restrict_search_space parent_search_space cur in
       Unary_op (space, op, aux space t)
-    | Binary_op (cur, op, t1, t2) ->
-      let space = restrict_search_space parent_search_space cur in
-      Binary_op (space, op, aux space t1, aux space t2)
     | Interval_exc (cur, p1, p2) ->
       let space = restrict_search_space parent_search_space cur in
       Interval_exc (space, p1, p2)
@@ -819,6 +812,9 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
     | Round_robin_pick_list (cur, l) ->
       let space = restrict_search_space parent_search_space cur in
       Round_robin_pick_list (space, aux_list space l)
+    | Inter_list (cur, l) ->
+      let space = restrict_search_space parent_search_space cur in
+      Inter_list (space, aux_list space l)
     | Merge_list (cur, l) ->
       let space = restrict_search_space parent_search_space cur in
       Merge_list (space, aux_list space l)
@@ -954,7 +950,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
            (fun param -> Resolve_pattern.matching_intervals param pat)
            params)
     | Branching (space, branching) ->
-      Intervals.inter ~skip_check:true (List.to_seq space)
+      Intervals.Inter.inter ~skip_check:true (List.to_seq space)
         (intervals_of_branching search_using_tz_offset_s branching)
     | Unary_op (space, op, t) -> (
         let search_using_tz_offset_s =
@@ -984,16 +980,15 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
           |> Intervals.Normalize.normalize ~skip_filter_empty:true
             ~skip_sort:true ~skip_filter_invalid:true
         | Tz_offset_s _ -> s )
-    | Binary_op (_, op, t1, t2) -> (
-        let s1 = aux search_using_tz_offset_s t1 in
-        let s2 = aux search_using_tz_offset_s t2 in
-        match op with Inter -> Intervals.inter ~skip_check:true s1 s2 )
     | Interval_inc (_, a, b) -> Seq.return (a, Int64.succ b)
     | Interval_exc (_, a, b) -> Seq.return (a, b)
     | Round_robin_pick_list (_, l) ->
       List.map (aux search_using_tz_offset_s) l
       |> Time.Intervals.Round_robin
          .merge_multi_list_round_robin_non_decreasing ~skip_check:true
+    | Inter_list (_, l) ->
+      List.map (aux search_using_tz_offset_s) l
+      |> Time.Intervals.Inter.inter_multi_list ~skip_check:true
     | Merge_list (_, l) ->
       List.map (aux search_using_tz_offset_s) l
       |> Time.Intervals.Merge.merge_multi_list ~skip_check:true

@@ -219,8 +219,6 @@ and mem ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
                  let y = Time.second_of_day_of_hms y in
                  x <= second_of_day && second_of_day < y)
             branching.hmss
-        | Binary_op (_, op, t1, t2) -> (
-            match op with Inter -> aux t1 timestamp && aux t2 timestamp )
         | Interval_inc (_, start, end_inc) ->
           start <= timestamp && timestamp <= end_inc
         | Interval_exc (_, start, end_inc) ->
@@ -228,6 +226,7 @@ and mem ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
         | Unary_op (_, _, _) | Round_robin_pick_list (_, _) ->
           resolve ~search_start ~search_end_exc ~tz_offset_s t
           |> OSeq.exists (fun (x, y) -> x <= timestamp && timestamp < y)
+        | Inter_list (_, l) -> List.for_all (fun t -> aux t timestamp) l
         | Merge_list (_, l) -> List.exists (fun t -> aux t timestamp) l )
   in
   aux t timestamp

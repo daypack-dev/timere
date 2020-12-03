@@ -140,12 +140,6 @@ let make_unary_op ~rng t =
   | 8 -> Time.change_tz_offset_s (rng ()) t
   | _ -> failwith "Unexpected case"
 
-let make_binary_op ~rng t1 t2 =
-  match rng () mod 2 with
-  | 0 -> Time.union t1 t2
-  | 1 -> Time.inter t1 t2
-  | _ -> failwith "Unexpected case"
-
 let make ~min_year ~height ~max_branching ~(randomness : int list) : Time.t =
   if height <= 0 then invalid_arg "make";
   let rng = make_rng ~randomness in
@@ -161,12 +155,16 @@ let make ~min_year ~height ~max_branching ~(randomness : int list) : Time.t =
     else
       match rng () mod 4 with
       | 0 -> make_unary_op ~rng (aux (pred height))
-      | 1 -> make_binary_op ~rng (aux (pred height)) (aux (pred height))
-      | 2 ->
+      | 1 ->
         OSeq.(0 -- Stdlib.min max_branching (rng ()))
         |> Seq.map (fun _ -> aux (pred height))
         |> List.of_seq
         |> Time.round_robin_pick
+      | 2 ->
+        OSeq.(0 -- Stdlib.min max_branching (rng ()))
+        |> Seq.map (fun _ -> aux (pred height))
+        |> List.of_seq
+        |> Time.inter
       | 3 ->
         OSeq.(0 -- Stdlib.min max_branching (rng ()))
         |> Seq.map (fun _ -> aux (pred height))
