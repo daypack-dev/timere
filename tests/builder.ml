@@ -85,8 +85,8 @@ let make_branching ~rng ~min_year =
         |> Seq.map (fun _ ->
             let rand = rng () mod 2 in
             if rand = 0 then
-              let start = rng () mod 31 in
-              let end_inc = min 31 (start + rng ()) in
+              let start = 1 + (rng () mod 31) in
+              let end_inc = (min 31 (start + rng ())) in
               `Range_inc (start, end_inc)
             else
                 let start = - (1 + (rng () mod 31)) in
