@@ -1939,13 +1939,13 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
   let months =
     match months with [] -> [ `Range_inc (`Jan, `Dec) ] | _ -> months
   in
-  let safe_month_day_start, safe_month_day_end_inc =
-    safe_month_day_range_inc ~years ~months
-  in
   let days =
     match days with
     | Month_days [] | Weekdays [] -> Ok (Month_days [ `Range_inc (1, 31) ])
     | Month_days days ->
+      let safe_month_day_start, safe_month_day_end_inc =
+        safe_month_day_range_inc ~years ~months
+      in
       if
         if allow_out_of_range_month_day then
           List.for_all month_day_range_is_valid_relaxed days
