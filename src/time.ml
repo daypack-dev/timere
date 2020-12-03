@@ -1671,6 +1671,26 @@ module Pattern = struct
       timestamps =
         List.sort_uniq compare (p1.timestamps @ p2.timestamps);
     }
+
+  let inter p1 p2 =
+    {
+      years =
+        List.filter (fun x -> List.mem x p2.years) p1.years;
+      months =
+        List.filter (fun x -> List.mem x p2.months) p1.months;
+      month_days =
+        List.filter (fun x -> List.mem x p2.month_days) p1.month_days;
+      weekdays =
+        List.filter (fun x -> List.mem x p2.weekdays) p1.weekdays;
+      hours =
+        List.filter (fun x -> List.mem x p2.hours) p1.hours;
+      minutes =
+        List.filter (fun x -> List.mem x p2.minutes) p1.minutes;
+      seconds =
+        List.filter (fun x -> List.mem x p2.seconds) p1.seconds;
+      timestamps =
+        List.filter (fun x -> List.mem x p2.timestamps) p1.timestamps;
+    }
 end
 
 type sign_expr =
@@ -1807,7 +1827,12 @@ let merge (l : t list) : t =
 let round_robin_pick (l : t list) : t =
   Round_robin_pick_list (default_search_space, l)
 
-let inter (a : t) (b : t) : t = Binary_op (default_search_space, Inter, a, b)
+let inter (a : t) (b : t) : t =
+  match a, b with
+  | Pattern (_, a), Pattern (_, b) ->
+    Pattern (default_search_space, Pattern.inter a b)
+  | _, _ ->
+    Binary_op (default_search_space, Inter, a, b)
 
 let union (a : t) (b : t) : t = Merge_list (default_search_space, [ a; b ])
 
