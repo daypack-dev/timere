@@ -254,7 +254,7 @@ module Qc = struct
          (l <> [] && List.for_all (fun (x, y) -> y < start || end_exc < x) l)
          || [ (start, end_exc) ] = res)
 
-  let relatvie_complement_result_disjoint_from_not_mem_of =
+  let relative_complement_result_disjoint_from_not_mem_of =
     QCheck.Test.make ~count:10_000
       ~name:"relative_complement_disjoint_from_not_mem_of"
       QCheck.(pair sorted_time_slots_maybe_gaps sorted_time_slots_maybe_gaps)
@@ -269,9 +269,9 @@ module Qc = struct
          List.length (List.sort_uniq compare (not_mem_of @ res))
          = not_mem_of_count + res_count)
 
-  let relatvie_complement_result_subset_of_mem_of =
+  let relative_complement_result_subset_of_mem_of =
     QCheck.Test.make ~count:10_000
-      ~name:"relatvie_complement_result_subset_of_mem_of"
+      ~name:"relative_complement_result_subset_of_mem_of"
       QCheck.(pair sorted_time_slots_maybe_gaps sorted_time_slots_maybe_gaps)
       (fun (mem_of, not_mem_of) ->
          let res_s =
@@ -281,8 +281,8 @@ module Qc = struct
          let res = res_s |> List.of_seq in
          Time.Intervals.inter (List.to_seq mem_of) res_s |> List.of_seq = res)
 
-  let relatvie_complement_self =
-    QCheck.Test.make ~count:10_000 ~name:"relatvie_complement_self"
+  let relative_complement_self =
+    QCheck.Test.make ~count:10_000 ~name:"relative_complement_self"
       sorted_time_slots_maybe_gaps (fun l ->
           let s = List.to_seq l in
           Time.Intervals.relative_complement ~not_mem_of:s s |> List.of_seq = [])
@@ -411,9 +411,9 @@ module Qc = struct
       join_idempotent_wrt_joined_time_slots;
       invert_disjoint_from_original;
       invert_fit_gaps;
-      relatvie_complement_result_disjoint_from_not_mem_of;
-      relatvie_complement_result_subset_of_mem_of;
-      relatvie_complement_self;
+      relative_complement_result_disjoint_from_not_mem_of;
+      relative_complement_result_subset_of_mem_of;
+      relative_complement_self;
       inter_with_self;
       inter_commutative;
       inter_associative;
