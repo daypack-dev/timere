@@ -589,7 +589,7 @@ let t_of_ast (ast : ast) : (Timere.t, string) Result.t =
             | Error msg -> Error msg
             | Ok time2 -> (
                 match op with
-                | Union -> Ok (Timere.union time1 time2)
+                | Union -> Ok (Timere.union [time1; time2])
                 | Inter -> Ok (Timere.inter [time1; time2]) ) ) )
     | Round_robin_pick l -> (
         match l |> List.map aux |> Misc_utils.get_ok_error_list with

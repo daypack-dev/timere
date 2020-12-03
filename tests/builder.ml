@@ -169,7 +169,7 @@ let make ~min_year ~height ~max_branching ~(randomness : int list) : Time.t =
         OSeq.(0 -- Stdlib.min max_branching (rng ()))
         |> Seq.map (fun _ -> aux (pred height))
         |> List.of_seq
-        |> Time.merge
+        |> Time.union
       | _ -> failwith "Unexpected case"
   in
   aux height

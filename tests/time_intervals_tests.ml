@@ -315,25 +315,25 @@ module Qc = struct
          let inter2 = Time.Intervals.Inter.(inter s1 (inter s2 s3)) |> List.of_seq in
          inter1 = inter2)
 
-  let merge_with_self =
-    QCheck.Test.make ~count:10_000 ~name:"merge_with_self"
+  let union_with_self =
+    QCheck.Test.make ~count:10_000 ~name:"union_with_self"
       sorted_time_slots_with_gaps (fun l ->
           let s = l |> List.to_seq in
-          let res = Time.Intervals.Merge.merge s s |> List.of_seq in
+          let res = Time.Intervals.Union.union s s |> List.of_seq in
           l = res)
 
-  let merge_commutative =
-    QCheck.Test.make ~count:10_000 ~name:"merge_commutative"
+  let union_commutative =
+    QCheck.Test.make ~count:10_000 ~name:"union_commutative"
       QCheck.(pair sorted_time_slots_maybe_gaps sorted_time_slots_maybe_gaps)
       (fun (l1, l2) ->
          let s1 = l1 |> List.to_seq in
          let s2 = l2 |> List.to_seq in
-         let inter1 = Time.Intervals.Merge.merge s1 s2 |> List.of_seq in
-         let inter2 = Time.Intervals.Merge.merge s2 s1 |> List.of_seq in
+         let inter1 = Time.Intervals.Union.union s1 s2 |> List.of_seq in
+         let inter2 = Time.Intervals.Union.union s2 s1 |> List.of_seq in
          inter1 = inter2)
 
-  let merge_associative =
-    QCheck.Test.make ~count:10_000 ~name:"merge_associative"
+  let union_associative =
+    QCheck.Test.make ~count:10_000 ~name:"union_associative"
       QCheck.(
         triple sorted_time_slots_with_gaps sorted_time_slots_with_gaps
           sorted_time_slots_with_gaps)
@@ -342,15 +342,15 @@ module Qc = struct
          let s2 = l2 |> List.to_seq in
          let s3 = l3 |> List.to_seq in
          let res1 =
-           Time.Intervals.(Merge.merge (Merge.merge s1 s2) s3) |> List.of_seq
+           Time.Intervals.(Union.union (Union.union s1 s2) s3) |> List.of_seq
          in
          let res2 =
-           Time.Intervals.(Merge.merge s1 (Merge.merge s2 s3)) |> List.of_seq
+           Time.Intervals.(Union.union s1 (Union.union s2 s3)) |> List.of_seq
          in
          res1 = res2)
 
-  let inter_merge_distributive1 =
-    QCheck.Test.make ~count:10_000 ~name:"inter_merge_distributive1"
+  let inter_union_distributive1 =
+    QCheck.Test.make ~count:10_000 ~name:"inter_union_distributive1"
       QCheck.(
         triple sorted_time_slots_maybe_gaps sorted_time_slots_maybe_gaps
           sorted_time_slots_maybe_gaps)
@@ -359,16 +359,16 @@ module Qc = struct
          let s2 = l2 |> List.to_seq in
          let s3 = l3 |> List.to_seq in
          let res1 =
-           Time.Intervals.(Merge.merge s1 (Inter.inter s2 s3)) |> List.of_seq
+           Time.Intervals.(Union.union s1 (Inter.inter s2 s3)) |> List.of_seq
          in
          let res2 =
-           Time.Intervals.(Inter.inter (Merge.merge s1 s2) (Merge.merge s1 s3))
+           Time.Intervals.(Inter.inter (Union.union s1 s2) (Union.union s1 s3))
            |> List.of_seq
          in
          res1 = res2)
 
-  let inter_merge_distributive2 =
-    QCheck.Test.make ~count:10_000 ~name:"inter_merge_distributive2"
+  let inter_union_distributive2 =
+    QCheck.Test.make ~count:10_000 ~name:"inter_union_distributive2"
       QCheck.(
         triple sorted_time_slots_with_gaps sorted_time_slots_maybe_gaps
           sorted_time_slots_maybe_gaps)
@@ -377,10 +377,10 @@ module Qc = struct
          let s2 = l2 |> List.to_seq in
          let s3 = l3 |> List.to_seq in
          let res1 =
-           Time.Intervals.(Inter.inter s1 (Merge.merge s2 s3)) |> List.of_seq
+           Time.Intervals.(Inter.inter s1 (Union.union s2 s3)) |> List.of_seq
          in
          let res2 =
-           Time.Intervals.(Merge.merge (Inter.inter s1 s2) (Inter.inter s1 s3))
+           Time.Intervals.(Union.union (Inter.inter s1 s2) (Inter.inter s1 s3))
            |> List.of_seq
          in
          res1 = res2)
@@ -404,10 +404,10 @@ module Qc = struct
       inter_with_self;
       inter_commutative;
       inter_associative;
-      merge_with_self;
-      merge_commutative;
-      merge_associative;
-      inter_merge_distributive1;
-      inter_merge_distributive2;
+      union_with_self;
+      union_commutative;
+      union_associative;
+      inter_union_distributive1;
+      inter_union_distributive2;
     ]
 end

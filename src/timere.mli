@@ -91,11 +91,9 @@ val change_tz_offset_s : int -> t -> t
 
 val inter : t list -> t
 
-val union : t -> t -> t
+val union : t list -> t
 
 val not : t -> t
-
-val merge : t list -> t
 
 (** {1 Discrete time points} *)
 

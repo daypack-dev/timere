@@ -284,7 +284,7 @@ let of_sexp (x : CCSexp.t) =
           interval_dt_exc (date_time_of_sexp a) (date_time_of_sexp b)
         | `Atom "round_robin" :: l -> round_robin_pick (List.map aux l)
         | `Atom "inter" :: l -> inter (List.map aux l)
-        | `Atom "merge" :: l -> merge (List.map aux l)
+        | `Atom "union" :: l -> union (List.map aux l)
         | _ ->
           invalid_data
             (Printf.sprintf "Invalid timere data: %s" (CCSexp.to_string x)) )

@@ -573,8 +573,8 @@ module Intervals = struct
       List.to_seq interval_batches |> inter_multi_seq ~skip_check
   end
 
-  module Merge = struct
-    let merge ?(skip_check = false) (intervals1 : Interval.t Seq.t)
+  module Union = struct
+    let union ?(skip_check = false) (intervals1 : Interval.t Seq.t)
         (intervals2 : Interval.t Seq.t) : Interval.t Seq.t =
       let rec aux intervals1 intervals2 =
         match (intervals1 (), intervals2 ()) with
@@ -596,15 +596,15 @@ module Intervals = struct
       aux intervals1 intervals2
       |> Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
 
-    let merge_multi_seq ?(skip_check = false)
+    let union_multi_seq ?(skip_check = false)
         (interval_batches : Interval.t Seq.t Seq.t) : Interval.t Seq.t =
       Seq.fold_left
-        (fun acc intervals -> merge ~skip_check acc intervals)
+        (fun acc intervals -> union ~skip_check acc intervals)
         Seq.empty interval_batches
 
-    let merge_multi_list ?(skip_check = false)
+    let union_multi_list ?(skip_check = false)
         (interval_batches : Interval.t Seq.t list) : Interval.t Seq.t =
-      List.to_seq interval_batches |> merge_multi_seq ~skip_check
+      List.to_seq interval_batches |> union_multi_seq ~skip_check
   end
 
   module Round_robin = struct
@@ -707,7 +707,7 @@ module Intervals = struct
    *         OSeq.(0 --^ count) |> Seq.map (fun _ -> x))
    *   in
    *   let flush_buffer_to_input buffer intervals =
-   *     Merge.merge (flatten_buffer buffer) intervals
+   *     Union.merge (flatten_buffer buffer) intervals
    *   in
    *   let rec aux (cur : ((int64 * int64) * int) option)
    *       (buffer : ((int64 * int64) * int) list) (intervals : Interval.t Seq.t) :
@@ -1664,7 +1664,7 @@ module Pattern = struct
               match check_pattern y with Error e -> Error e | Ok () -> Ok () ) )
   end
 
-  let merge p1 p2 =
+  let union p1 p2 =
     let compare_month m1 m2 =
       compare (tm_int_of_month m1) (tm_int_of_month m2)
     in
@@ -1672,19 +1672,19 @@ module Pattern = struct
       compare (tm_int_of_weekday d1) (tm_int_of_weekday d2)
     in
     let aux compare l1 l2 = List.sort_uniq compare (List.merge compare l1 l2) in
-    let merge_ints (l1 : int list) (l2 : int list) = aux compare l1 l2 in
-    let merge_int64s (l1 : int64 list) (l2 : int64 list) = aux compare l1 l2 in
-    let merge_months l1 l2 = aux compare_month l1 l2 in
-    let merge_weekdays l1 l2 = aux compare_weekday l1 l2 in
+    let union_ints (l1 : int list) (l2 : int list) = aux compare l1 l2 in
+    let union_int64s (l1 : int64 list) (l2 : int64 list) = aux compare l1 l2 in
+    let union_months l1 l2 = aux compare_month l1 l2 in
+    let union_weekdays l1 l2 = aux compare_weekday l1 l2 in
     {
-      years = merge_ints p1.years p2.years;
-      months = merge_months p1.months p2.months;
-      month_days = merge_ints p1.month_days p2.month_days;
-      weekdays = merge_weekdays p1.weekdays p2.weekdays;
-      hours = merge_ints p1.hours p2.hours;
-      minutes = merge_ints p1.minutes p2.minutes;
-      seconds = merge_ints p1.seconds p2.seconds;
-      timestamps = merge_int64s p1.timestamps p2.timestamps;
+      years = union_ints p1.years p2.years;
+      months = union_months p1.months p2.months;
+      month_days = union_ints p1.month_days p2.month_days;
+      weekdays = union_weekdays p1.weekdays p2.weekdays;
+      hours = union_ints p1.hours p2.hours;
+      minutes = union_ints p1.minutes p2.minutes;
+      seconds = union_ints p1.seconds p2.seconds;
+      timestamps = union_int64s p1.timestamps p2.timestamps;
     }
 
   let inter p1 p2 =
@@ -1751,7 +1751,7 @@ type t =
   | Interval_exc of search_space * timestamp * timestamp
   | Round_robin_pick_list of search_space * t list
   | Inter_list of search_space * t list
-  | Merge_list of search_space * t list
+  | Union_list of search_space * t list
 
 let equal t1 t2 =
   let rec aux t1 t2 =
@@ -1766,7 +1766,7 @@ let equal t1 t2 =
       x11 = x21 && x12 = x22
     | Round_robin_pick_list (_, l1), Round_robin_pick_list (_, l2)
     | Inter_list (_, l1), Inter_list (_, l2)
-    | Merge_list (_, l1), Merge_list (_, l2) ->
+    | Union_list (_, l1), Union_list (_, l2) ->
       List.for_all2 aux l1 l2
     | _ -> false
   in
@@ -1813,14 +1813,14 @@ let inter (l : t list) : t =
   let l = l |> List.to_seq |> flatten |> inter_patterns |> List.of_seq in
   Inter_list (default_search_space, l)
 
-let merge (l : t list) : t =
+let union (l : t list) : t =
   let flatten s =
     Seq.flat_map
       (fun x ->
-         match x with Merge_list (_, l) -> List.to_seq l | _ -> Seq.return x)
+         match x with Union_list (_, l) -> List.to_seq l | _ -> Seq.return x)
       s
   in
-  let merge_patterns s =
+  let union_patterns s =
     let patterns, rest =
       OSeq.partition (fun x -> match x with Pattern _ -> true | _ -> false) s
     in
@@ -1831,7 +1831,7 @@ let merge (l : t list) : t =
            | Pattern (_, pat) -> (
                match acc with
                | None -> Some pat
-               | Some acc -> Some (Pattern.merge acc pat) )
+               | Some acc -> Some (Pattern.union acc pat) )
            | _ -> acc)
         None patterns
     in
@@ -1839,13 +1839,11 @@ let merge (l : t list) : t =
     | None -> rest
     | Some pat -> OSeq.cons (Pattern (default_search_space, pat)) rest
   in
-  let l = l |> List.to_seq |> flatten |> merge_patterns |> List.of_seq in
-  Merge_list (default_search_space, l)
+  let l = l |> List.to_seq |> flatten |> union_patterns |> List.of_seq in
+  Union_list (default_search_space, l)
 
 let round_robin_pick (l : t list) : t =
   Round_robin_pick_list (default_search_space, l)
-
-let union (a : t) (b : t) : t = merge [ a; b ]
 
 let first_point (a : t) : t = Unary_op (default_search_space, Next_n_points 1, a)
 

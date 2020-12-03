@@ -666,7 +666,7 @@ let get_search_space (time : Time.t) : Time.Interval.t list =
   | Interval_inc (s, _, _) -> s
   | Round_robin_pick_list (s, _) -> s
   | Inter_list (s, _) -> s
-  | Merge_list (s, _) -> s
+  | Union_list (s, _) -> s
 
 let set_search_space space (time : Time.t) : Time.t =
   let open Time in
@@ -679,7 +679,7 @@ let set_search_space space (time : Time.t) : Time.t =
   | Interval_inc (_, x, y) -> Interval_inc (space, x, y)
   | Round_robin_pick_list (_, x) -> Round_robin_pick_list (space, x)
   | Inter_list (_, x) -> Inter_list (space, x)
-  | Merge_list (_, x) -> Merge_list (space, x)
+  | Union_list (_, x) -> Union_list (space, x)
 
 let search_space_of_year_range tz_offset_s year_range =
   let open Time in
@@ -771,15 +771,15 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
     | Round_robin_pick_list (_, l) ->
       let space, l = aux_list tz_offset_s l in
       Round_robin_pick_list (space, l)
-    | Merge_list (_, l) ->
+    | Union_list (_, l) ->
       let space, l = aux_list tz_offset_s l in
-      Merge_list (space, l)
+      Union_list (space, l)
   and aux_list tz_offset_s l =
     let l = List.map (aux tz_offset_s) l in
     let space =
       List.map get_search_space l
       |> List.map List.to_seq
-      |> Intervals.Merge.merge_multi_list
+      |> Intervals.Union.union_multi_list
       |> List.of_seq
     in
     (space, l)
@@ -815,9 +815,9 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
     | Inter_list (cur, l) ->
       let space = restrict_search_space parent_search_space cur in
       Inter_list (space, aux_list space l)
-    | Merge_list (cur, l) ->
+    | Union_list (cur, l) ->
       let space = restrict_search_space parent_search_space cur in
-      Merge_list (space, aux_list space l)
+      Union_list (space, aux_list space l)
   and aux_list parent_search_space l = List.map (aux parent_search_space) l in
   aux default_search_space time
 
@@ -945,7 +945,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
       let params =
         List.map (Search_param.make ~search_using_tz_offset_s) space
       in
-      Intervals.Merge.merge_multi_list ~skip_check:true
+      Intervals.Union.union_multi_list ~skip_check:true
         (List.map
            (fun param -> Resolve_pattern.matching_intervals param pat)
            params)
@@ -989,9 +989,9 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
     | Inter_list (_, l) ->
       List.map (aux search_using_tz_offset_s) l
       |> Time.Intervals.Inter.inter_multi_list ~skip_check:true
-    | Merge_list (_, l) ->
+    | Union_list (_, l) ->
       List.map (aux search_using_tz_offset_s) l
-      |> Time.Intervals.Merge.merge_multi_list ~skip_check:true
+      |> Time.Intervals.Union.union_multi_list ~skip_check:true
   in
   try
     aux search_using_tz_offset_s

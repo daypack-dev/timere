@@ -147,7 +147,7 @@ let to_sexp (t : Time.t) : CCSexp.t =
     | Round_robin_pick_list (_, l) ->
       CCSexp.(list (atom "round_robin" :: List.map aux l))
     | Inter_list (_, l) -> CCSexp.(list (atom "inter" :: List.map aux l))
-    | Merge_list (_, l) -> CCSexp.(list (atom "merge" :: List.map aux l))
+    | Union_list (_, l) -> CCSexp.(list (atom "union" :: List.map aux l))
   in
   aux t
 

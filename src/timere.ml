@@ -23,7 +23,7 @@ type interval = Interval.t
 module Infix = struct
   let ( & ) a b = Time.inter [a; b]
 
-  let ( ||| ) = Time.union
+  let ( ||| ) a b = Time.union [a; b]
 
   let ( -- ) = Time.interval_inc
 
