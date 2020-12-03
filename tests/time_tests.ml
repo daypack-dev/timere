@@ -16,7 +16,7 @@ let search_end_exc = Time.Date_time.to_timestamp search_end_exc_dt
 
 module Qc = struct
   let resolver_is_same_as_simple_resolver =
-    QCheck.Test.make ~count:1000 ~name:"resolver_is_same_as_simple_resolver"
+    QCheck.Test.make ~count:5 ~name:"resolver_is_same_as_simple_resolver"
       time (fun t ->
           OSeq.equal ~eq:( = )
             ( Result.get_ok
@@ -31,5 +31,7 @@ module Qc = struct
         let t' = t |> To_sexp.to_sexp |> Of_sexp.of_sexp |> Result.get_ok in
         Time.equal t t')
 
-  let suite = [ (* resolver_is_same_as_simple_resolver *) to_of_sexp ]
+  let suite = [
+    resolver_is_same_as_simple_resolver;
+    to_of_sexp ]
 end
