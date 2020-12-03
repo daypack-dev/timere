@@ -582,6 +582,7 @@ module Intervals = struct
         else intervals2 |> Check.check_if_valid |> Check.check_if_sorted
       in
       aux intervals1 intervals2
+      |> Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
 
     let merge_multi_seq ?(skip_check = false)
         (interval_batches : Interval.t Seq.t Seq.t) : Interval.t Seq.t =
@@ -613,39 +614,6 @@ module Intervals = struct
       batches
       |> List.of_seq
       |> merge_multi_list_round_robin_non_decreasing ~skip_check
-  end
-
-  module Union = struct
-    let union ?(skip_check = false) intervals1 intervals2 =
-      let intervals1 =
-        if skip_check then intervals1
-        else
-          intervals1
-          |> Check.check_if_valid
-          |> Check.check_if_disjoint
-          |> Check.check_if_sorted
-      in
-      let intervals2 =
-        if skip_check then intervals2
-        else
-          intervals2
-          |> Check.check_if_valid
-          |> Check.check_if_disjoint
-          |> Check.check_if_sorted
-      in
-      Merge.merge intervals1 intervals2
-      |> Normalize.normalize ~skip_filter_invalid:true ~skip_filter_empty:true
-        ~skip_sort:true
-
-    let union_multi_seq ?(skip_check = false)
-        (interval_batches : Interval.t Seq.t Seq.t) : Interval.t Seq.t =
-      Seq.fold_left
-        (fun acc intervals -> union ~skip_check acc intervals)
-        Seq.empty interval_batches
-
-    let union_multi_list ?(skip_check = false)
-        (interval_batches : Interval.t Seq.t list) : Interval.t Seq.t =
-      List.to_seq interval_batches |> union_multi_seq ~skip_check
   end
 
   let chunk ?(skip_check = false) ?(drop_partial = false) ~chunk_size

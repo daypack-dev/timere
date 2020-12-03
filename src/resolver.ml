@@ -768,7 +768,7 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
           Binary_op (space, Inter, t1, t2)
         | _ ->
           let space =
-            Intervals.Union.union ~skip_check:true
+            Intervals.Merge.merge ~skip_check:true
               ( t1_search_space
                 |> List.to_seq
                 |> Intervals.Normalize.normalize ~skip_sort:true )
@@ -961,7 +961,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
       let params =
         List.map (Search_param.make ~search_using_tz_offset_s) space
       in
-      Intervals.Union.union_multi_list ~skip_check:true
+      Intervals.Merge.merge_multi_list ~skip_check:true
         (List.map
            (fun param -> Resolve_pattern.matching_intervals param pat)
            params)
@@ -1000,7 +1000,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
         let s1 = aux search_using_tz_offset_s t1 in
         let s2 = aux search_using_tz_offset_s t2 in
         match op with
-        | Union -> Intervals.Union.union ~skip_check:true s1 s2
+        | Union -> Intervals.Merge.merge ~skip_check:true s1 s2
         | Inter -> Intervals.inter ~skip_check:true s1 s2 )
     | Interval_inc (_, a, b) -> Seq.return (a, Int64.succ b)
     | Interval_exc (_, a, b) -> Seq.return (a, b)
