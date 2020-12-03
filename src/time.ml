@@ -1757,7 +1757,7 @@ let equal t1 t2 =
     | Binary_op (_, op1, t11, t12), Binary_op (_, op2, t21, t22) ->
       op1 = op2 && aux t11 t21 && aux t12 t22
     | Interval_inc (_, x11, x12), Interval_inc (_, x21, x22)
-    | Interval_exc (_, x11, x12), Interval_inc (_, x21, x22) ->
+    | Interval_exc (_, x11, x12), Interval_exc (_, x21, x22) ->
       x11 = x21 && x12 = x22
     | Round_robin_pick_list (_, l1), Round_robin_pick_list (_, l2)
     | Merge_list (_, l1), Merge_list (_, l2)
