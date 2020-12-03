@@ -83,15 +83,20 @@ let make_branching ~rng ~min_year =
     Time.Month_days
       ( OSeq.(0 -- rng ())
         |> Seq.map (fun _ ->
-            let rand = rng () mod 2 in
-            if rand = 0 then
-              let start = 1 + (rng () mod 31) in
+            match rng () mod 3 with
+            | 0 -> let start = 1 + (rng () mod 31) in
               let end_inc = min 31 (start + rng ()) in
               `Range_inc (start, end_inc)
-            else
+            | 1 ->
               let start = -(1 + (rng () mod 31)) in
               let end_inc = min (-1) (start + rng ()) in
-              `Range_inc (start, end_inc))
+              `Range_inc (start, end_inc)
+            | 2 ->
+              let start = -(1 + (rng () mod 20)) in
+              let end_inc = (start + (rng () mod 32)) in
+              `Range_inc (start, end_inc)
+            | _ -> failwith "Unexpected case"
+          )
         |> List.of_seq )
   in
   let hmss =
