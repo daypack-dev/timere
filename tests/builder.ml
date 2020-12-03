@@ -120,7 +120,10 @@ let make_unary_op ~rng t =
   | 2 -> Time.skip_n (rng ()) t
   | 3 -> Time.take_n_points (rng ()) t
   | 4 -> Time.take_n (rng ()) t
-  | 5 -> Time.chunk (Result.get_ok @@ Duration.of_seconds @@ Int64.of_int (rng ())) t
+  | 5 ->
+    Time.chunk
+      (Result.get_ok @@ Duration.of_seconds @@ Int64.of_int (rng ()))
+      t
   | 6 -> Time.shift (Result.get_ok @@ Duration.make ~seconds:(rng ()) ()) t
   | 7 -> Time.lengthen (Result.get_ok @@ Duration.make ~seconds:(rng ()) ()) t
   | 8 -> Time.change_tz_offset_s (rng ()) t
