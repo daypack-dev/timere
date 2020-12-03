@@ -26,5 +26,20 @@ module Qc = struct
             (Simple_resolver.resolve ~search_start ~search_end_exc ~tz_offset_s:0
                t))
 
-  let suite = [ resolver_is_same_as_simple_resolver ]
+  let to_of_sexp =
+    QCheck.Test.make ~count:10_000 ~name:"to_of_sexp"
+      time (fun t ->
+          let t' =
+            t
+            |> To_sexp.to_sexp
+            |> Of_sexp.of_sexp
+          |> Result.get_ok
+          in
+          Time.equal t t'
+        )
+
+  let suite = [
+    (* resolver_is_same_as_simple_resolver *)
+    to_of_sexp
+              ]
 end
