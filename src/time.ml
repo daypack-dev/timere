@@ -1630,6 +1630,9 @@ module Pattern = struct
     timestamps : int64 list;
   }
 
+  let equal p1 p2 =
+    p1 = p2
+
   type error =
     | Invalid_years of int list
     | Invalid_month_days of int list
@@ -1717,6 +1720,9 @@ type branching = {
   hmss : hms Range.range list;
 }
 
+let branching_equal b1 b2 =
+  b1 = b2
+
 type search_space = Interval.t list
 
 let default_search_space_start = Date_time.(to_timestamp min)
@@ -1736,6 +1742,30 @@ type t =
   | Interval_exc of search_space * timestamp * timestamp
   | Round_robin_pick_list of search_space * t list
   | Merge_list of search_space * t list
+
+let equal t1 t2 =
+  let rec aux t1 t2 =
+    match t1, t2 with
+    | Timestamp_interval_seq (_, s1), Timestamp_interval_seq (_, s2) ->
+      OSeq.equal ~eq:( = ) s1 s2
+    | Pattern (_, p1), Pattern (_, p2) ->
+      Pattern.equal p1 p2
+    | Branching (_, b1), Branching (_, b2) ->
+      branching_equal b1 b2
+    | Unary_op (_, op1, t1), Unary_op (_, op2, t2) ->
+      op1 = op2 && aux t1 t2
+    | Binary_op (_, op1, t11, t12), Binary_op (_, op2, t21, t22) ->
+      op1 = op2 && aux t11 t21 && aux t12 t22
+    | Interval_inc (_, x11, x12), Interval_inc (_, x21, x22)
+    | Interval_exc (_, x11, x12), Interval_inc (_, x21, x22) ->
+      x11 = x21 && x12 = x22
+    | Round_robin_pick_list (_, l1), Round_robin_pick_list (_, l2)
+    | Merge_list (_, l1), Merge_list (_, l2)
+      ->
+      List.for_all2 aux l1 l2
+    | _ -> false
+  in
+  aux t1 t2
 
 let chunk ?(drop_partial = false) (chunk_size : Duration.t) (t : t) : t =
   Unary_op
@@ -1972,13 +2002,19 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
       let years =
         years
         |> List.to_seq
-        |> Year_ranges.normalize ~skip_filter_invalid:true ~skip_sort:true
+        |> Year_ranges.normalize ~skip_filter_invalid:true
         |> List.of_seq
       in
       let months =
         months
         |> List.to_seq
-        |> Month_ranges.normalize ~skip_filter_invalid:true ~skip_sort:true
+        |> Month_ranges.normalize ~skip_filter_invalid:true
+        |> List.of_seq
+      in
+      let hmss =
+        hmss
+        |> List.to_seq
+        |> Hms_ranges.normalize ~skip_filter_invalid:true
         |> List.of_seq
       in
       Branching (default_search_space, { years; months; days; hmss })
