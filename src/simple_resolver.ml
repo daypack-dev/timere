@@ -59,6 +59,19 @@ let rec resolve ~(search_start : Time.timestamp)
     ~(search_end_exc : Time.timestamp) ~tz_offset_s (t : Time.t) :
   Time.Interval.t Seq.t =
   let open Time in
+  let filter s =
+    Seq.filter_map (fun (x, y) ->
+        if y <= search_start then
+          None
+        else
+          if search_end_exc < x then
+            None
+          else
+            Some (max search_start x,
+                  min search_end_exc y
+                 )
+      ) s
+  in
   let rec aux t cur end_exc tz_offset_s =
     match t with
     | Timestamp_interval_seq (_, s) -> s
@@ -97,6 +110,7 @@ let rec resolve ~(search_start : Time.timestamp)
       |> intervals_of_timestamps
   in
   aux t search_start search_end_exc tz_offset_s
+  |> filter
   |> Time.Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_filter_empty:true ~skip_sort:true
 
 and mem ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
