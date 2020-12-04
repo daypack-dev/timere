@@ -563,9 +563,19 @@ module Intervals = struct
 
     let inter_multi_seq ?(skip_check = false)
         (interval_batches : Interval.t Seq.t Seq.t) : Interval.t Seq.t =
-      Seq.fold_left
-        (fun acc intervals -> inter ~skip_check acc intervals)
-        Seq.empty interval_batches
+      match
+        Seq.fold_left
+          (fun acc intervals ->
+             match acc with
+             | None ->
+               Some intervals
+             | Some acc ->
+               Some (inter ~skip_check acc intervals)
+          )
+          None interval_batches
+      with
+      | None -> Seq.empty
+      | Some s -> s
 
     let inter_multi_list ?(skip_check = false)
         (interval_batches : Interval.t Seq.t list) : Interval.t Seq.t =
