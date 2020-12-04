@@ -309,7 +309,7 @@ module Intervals = struct
       let rec aux cur intervals =
         match intervals () with
         | Seq.Nil -> (
-            match cur with None -> Seq.empty | Some x -> Seq.return x )
+            match cur with None -> Seq.empty | Some x -> Seq.return x)
         | Seq.Cons ((start, end_exc), rest) -> (
             match cur with
             | None -> aux (Some (start, end_exc)) rest
@@ -318,8 +318,7 @@ module Intervals = struct
                 | Some x -> aux (Some x) rest
                 | None ->
                   (* cannot be merged, add time slot being carried to the sequence *)
-                  fun () -> Seq.Cons (cur, aux (Some (start, end_exc)) rest) )
-          )
+                  fun () -> Seq.Cons (cur, aux (Some (start, end_exc)) rest)))
       in
       aux None intervals
   end
@@ -760,7 +759,7 @@ module Range = struct
     | None -> (
         match int64_range_of_range ~to_int64 t with
         | `Range_inc (x, y) -> x <= y
-        | `Range_exc (x, y) -> x <= y )
+        | `Range_exc (x, y) -> x <= y)
     | Some _ -> true
 
   module Flatten = struct
@@ -782,7 +781,7 @@ module Range = struct
                 OSeq.append
                   (Seq_utils.a_to_b_exc_int64 ~a:start ~b:modulo)
                   (Seq_utils.a_to_b_inc_int64 ~a:0L ~b:end_inc)
-                |> Seq.map of_int64 )
+                |> Seq.map of_int64)
       | `Range_exc (start, end_exc) -> (
           let start = to_int64 start in
           let end_exc = to_int64 end_exc in
@@ -797,7 +796,7 @@ module Range = struct
                 OSeq.append
                   (Seq_utils.a_to_b_exc_int64 ~a:start ~b:modulo)
                   (Seq_utils.a_to_b_exc_int64 ~a:0L ~b:end_exc)
-                |> Seq.map of_int64 )
+                |> Seq.map of_int64)
 
     let flatten_into_list (type a) ~(modulo : int64 option)
         ~(to_int64 : a -> int64) ~(of_int64 : int64 -> a) (t : a range) : a list
@@ -879,11 +878,11 @@ module Range_utils = struct
     | `Range_inc (x, y) -> (
         match (x, y) with
         | Ok x, Ok y -> Some (`Range_inc (x, y))
-        | _, _ -> None )
+        | _, _ -> None)
     | `Range_exc (x, y) -> (
         match (x, y) with
         | Ok x, Ok y -> Some (`Range_exc (x, y))
-        | _, _ -> None )
+        | _, _ -> None)
 end
 
 module Range_small = struct
@@ -1458,10 +1457,10 @@ module Date_time = struct
                 | 0 -> (
                     match compare x.minute y.minute with
                     | 0 -> compare x.second y.second
-                    | n -> n )
-                | n -> n )
-            | n -> n )
-        | n -> n )
+                    | n -> n)
+                | n -> n)
+            | n -> n)
+        | n -> n)
     | n -> n
 
   let set_to_first_sec (x : t) : t = { x with second = 0 }
@@ -1569,11 +1568,11 @@ module Pattern = struct
                       | [] -> (
                           match invalid_timestamps with
                           | [] -> Ok ()
-                          | l -> Error (Invalid_timestamps l) )
-                      | l -> Error (Invalid_seconds l) )
-                  | l -> Error (Invalid_minutes l) )
-              | l -> Error (Invalid_hours l) )
-          | l -> Error (Invalid_month_days l) )
+                          | l -> Error (Invalid_timestamps l))
+                      | l -> Error (Invalid_seconds l))
+                  | l -> Error (Invalid_minutes l))
+              | l -> Error (Invalid_hours l))
+          | l -> Error (Invalid_month_days l))
       | l -> Error (Invalid_years l)
 
     let check_range_pattern (x : range_pattern) : (unit, error) result =
@@ -1582,7 +1581,7 @@ module Pattern = struct
           match check_pattern x with
           | Error e -> Error e
           | Ok () -> (
-              match check_pattern y with Error e -> Error e | Ok () -> Ok () ) )
+              match check_pattern y with Error e -> Error e | Ok () -> Ok ()))
   end
 
   let union p1 p2 =
@@ -1723,7 +1722,7 @@ let inter (l : t list) : t =
            | Pattern (_, pat) -> (
                match acc with
                | None -> Some pat
-               | Some acc -> Some (Pattern.inter acc pat) )
+               | Some acc -> Some (Pattern.inter acc pat))
            | _ -> acc)
         None patterns
     in
@@ -1752,7 +1751,7 @@ let union (l : t list) : t =
            | Pattern (_, pat) -> (
                match acc with
                | None -> Some pat
-               | Some acc -> Some (Pattern.union acc pat) )
+               | Some acc -> Some (Pattern.union acc pat))
            | _ -> acc)
         None patterns
     in
@@ -1794,7 +1793,7 @@ let interval_inc (a : timestamp) (b : timestamp) : t =
       | Error () -> invalid_arg "interval_inc: invalid timestamp"
       | Ok _ ->
         if a <= b then Interval_inc (default_search_space, a, b)
-        else invalid_arg "interval_inc: a > b" )
+        else invalid_arg "interval_inc: a > b")
 
 let interval_exc (a : timestamp) (b : timestamp) : t =
   match Date_time.of_timestamp a with
@@ -1804,7 +1803,7 @@ let interval_exc (a : timestamp) (b : timestamp) : t =
       | Error () -> invalid_arg "interval_exc: invalid timestamp"
       | Ok _ ->
         if a <= b then Interval_exc (default_search_space, a, b)
-        else invalid_arg "interval_exc: a > b" )
+        else invalid_arg "interval_exc: a > b")
 
 let interval_dt_inc (a : Date_time.t) (b : Date_time.t) : t =
   let a = Date_time.to_timestamp a in
@@ -1973,9 +1972,9 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
         years
       && Year_ranges.Check.list_is_valid years
       && Month_ranges.Check.list_is_valid months
-      && ( match days with
+      && (match days with
           | Month_days _ -> true
-          | Weekdays days -> Weekday_ranges.Check.list_is_valid days )
+          | Weekdays days -> Weekday_ranges.Check.list_is_valid days)
       && List.for_all
         (fun hms_range ->
            match hms_range with
@@ -2035,8 +2034,8 @@ let of_sorted_intervals_seq ?(skip_invalid : bool = false)
     ( default_search_space,
       s
       |> Intervals.Filter.filter_empty
-      |> ( if skip_invalid then Intervals.Filter.filter_invalid
-           else Intervals.Check.check_if_valid )
+      |> (if skip_invalid then Intervals.Filter.filter_invalid
+          else Intervals.Check.check_if_valid)
       |> Intervals.Check.check_if_sorted
       |> Intervals.Normalize.normalize ~skip_filter_invalid:true
         ~skip_filter_empty:true ~skip_sort:true )
@@ -2050,8 +2049,8 @@ let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
     ( default_search_space,
       l
       |> Intervals.Filter.filter_empty_list
-      |> ( if skip_invalid then Intervals.Filter.filter_invalid_list
-           else Intervals.Check.check_if_valid_list )
+      |> (if skip_invalid then Intervals.Filter.filter_invalid_list
+          else Intervals.Check.check_if_valid_list)
       |> Intervals.Sort.sort_uniq_intervals_list
       |> List.to_seq
       |> Intervals.Normalize.normalize ~skip_filter_invalid:true

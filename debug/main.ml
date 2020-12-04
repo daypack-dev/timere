@@ -39,7 +39,7 @@ let debug_branching () =
             with
             | Ok s -> Printf.printf "%s\n" s
             | Error msg -> Printf.printf "Error: %s\n" msg);
-        print_newline () )
+        print_newline ())
 
 let debug_parsing () =
   let expr = "dec to jan" in
@@ -73,16 +73,11 @@ let debug_parsing () =
                 with
                 | Ok s -> Printf.printf "%s\n" s
                 | Error msg -> Printf.printf "Error: %s\n" msg);
-            print_newline () ) )
+            print_newline ()))
 
 let debug_resolver () =
-  let s =
-    {|
-(round_robin
-  (intervals ((2003 Oct 10 20 57 41 (tz_offset_s 0)) (2003 Oct 10 20 58 45 (tz_offset_s 0))) ((2009 May 21 9 41 4 (tz_offset_s 0)) (2009 May 21 9 41 28 (tz_offset_s 0))) ((2020 Oct 11 16 24 3 (tz_offset_s 0)) (2020 Oct 11 16 24 12 (tz_offset_s 0))) ((2024 Apr 10 16 20 57 (tz_offset_s 0)) (2024 Apr 10 16 21 38 (tz_offset_s 0))) ((2040 Sep 28 17 4 24 (tz_offset_s 0)) (2040 Sep 28 17 4 27 (tz_offset_s 0))) ((2041 May 25 3 9 40 (tz_offset_s 0)) (2041 May 25 3 10 0 (tz_offset_s 0))) ((2057 Jun 5 0 3 9 (tz_offset_s 0)) (2057 Jun 5 0 3 49 (tz_offset_s 0))) ((2064 Jan 4 9 40 20 (tz_offset_s 0)) (2064 Jan 4 9 41 17 (tz_offset_s 0))))
-  (intervals ((2009 May 21 9 41 4 (tz_offset_s 0)) (2009 May 21 9 41 28 (tz_offset_s 0))) ((2020 Oct 11 16 24 3 (tz_offset_s 0)) (2020 Oct 11 16 24 12 (tz_offset_s 0))) ((2024 Apr 10 16 20 57 (tz_offset_s 0)) (2024 Apr 10 16 21 38 (tz_offset_s 0))) ((2040 Sep 28 17 4 24 (tz_offset_s 0)) (2040 Sep 28 17 4 27 (tz_offset_s 0))) ((2041 May 25 3 9 40 (tz_offset_s 0)) (2041 May 25 3 10 0 (tz_offset_s 0))) ((2057 Jun 5 0 3 9 (tz_offset_s 0)) (2057 Jun 5 0 3 49 (tz_offset_s 0))) ((2064 Jan 4 9 40 20 (tz_offset_s 0)) (2064 Jan 4 9 41 17 (tz_offset_s 0)))) (intervals ((2003 Oct 10 20 57 41 (tz_offset_s 0)) (2003 Oct 10 20 58 45 (tz_offset_s 0))) ((2009 May 21 9 41 4 (tz_offset_s 0)) (2009 May 21 9 41 28 (tz_offset_s 0))) ((2020 Oct 11 16 24 3 (tz_offset_s 0)) (2020 Oct 11 16 24 12 (tz_offset_s 0))) ((2024 Apr 10 16 20 57 (tz_offset_s 0)) (2024 Apr 10 16 21 38 (tz_offset_s 0))) ((2040 Sep 28 17 4 24 (tz_offset_s 0)) (2040 Sep 28 17 4 27 (tz_offset_s 0))) ((2041 May 25 3 9 40 (tz_offset_s 0)) (2041 May 25 3 10 0 (tz_offset_s 0))) ((2057 Jun 5 0 3 9 (tz_offset_s 0)) (2057 Jun 5 0 3 49 (tz_offset_s 0))) ((2064 Jan 4 9 40 20 (tz_offset_s 0)) (2064 Jan 4 9 41 17 (tz_offset_s 0)))) (intervals ((2003 Oct 10 20 57 41 (tz_offset_s 0)) (2003 Oct 10 20 58 45 (tz_offset_s 0))) ((2009 May 21 9 41 4 (tz_offset_s 0)) (2009 May 21 9 41 28 (tz_offset_s 0))) ((2020 Oct 11 16 24 3 (tz_offset_s 0)) (2020 Oct 11 16 24 12 (tz_offset_s 0))) ((2024 Apr 10 16 20 57 (tz_offset_s 0)) (2024 Apr 10 16 21 38 (tz_offset_s 0))) ((2040 Sep 28 17 4 24 (tz_offset_s 0)) (2040 Sep 28 17 4 27 (tz_offset_s 0))) ((2041 May 25 3 9 40 (tz_offset_s 0)) (2041 May 25 3 10 0 (tz_offset_s 0))) ((2057 Jun 5 0 3 9 (tz_offset_s 0)) (2057 Jun 5 0 3 49 (tz_offset_s 0))) ((2064 Jan 4 9 40 20 (tz_offset_s 0)) (2064 Jan 4 9 41 17 (tz_offset_s 0)))) (intervals ((2003 Oct 10 20 57 41 (tz_offset_s 0)) (2003 Oct 10 20 58 45 (tz_offset_s 0))) ((2009 May 21 9 41 4 (tz_offset_s 0)) (2009 May 21 9 41 28 (tz_offset_s 0))) ((2020 Oct 11 16 24 3 (tz_offset_s 0)) (2020 Oct 11 16 24 12 (tz_offset_s 0))) ((2024 Apr 10 16 20 57 (tz_offset_s 0)) (2024 Apr 10 16 21 38 (tz_offset_s 0))) ((2040 Sep 28 17 4 24 (tz_offset_s 0)) (2040 Sep 28 17 4 27 (tz_offset_s 0))) ((2041 May 25 3 9 40 (tz_offset_s 0)) (2041 May 25 3 10 0 (tz_offset_s 0))) ((2057 Jun 5 0 3 9 (tz_offset_s 0)) (2057 Jun 5 0 3 49 (tz_offset_s 0))) ((2064 Jan 4 9 40 20 (tz_offset_s 0)) (2064 Jan 4 9 41 17 (tz_offset_s 0)))))
-|}
-  in
+  let s = {|
+|} in
   let timere = Result.get_ok @@ Timere.of_sexp_string s in
   let search_start_dt =
     Result.get_ok
@@ -96,24 +91,24 @@ let debug_resolver () =
       ~second:0 ~tz_offset_s:0
   in
   let search_end_exc = Timere.Date_time.to_timestamp search_end_exc_dt in
-  ( match
-      Timere.resolve
-        Timere.(inter [ timere; interval_exc search_start search_end_exc ])
-    with
-    | Error msg -> print_endline msg
-    | Ok s -> (
-        match s () with
-        | Seq.Nil -> print_endline "No matching time slots"
-        | Seq.Cons _ ->
-          s
-          |> OSeq.take 20
-          |> OSeq.iter (fun ts ->
-              match
-                Timere.sprintf_interval default_interval_format_string ts
-              with
-              | Ok s -> Printf.printf "%s\n" s
-              | Error msg -> Printf.printf "Error: %s\n" msg);
-          print_newline () ) );
+  (match
+     Timere.resolve
+       Timere.(inter [ timere; interval_exc search_start search_end_exc ])
+   with
+   | Error msg -> print_endline msg
+   | Ok s -> (
+       match s () with
+       | Seq.Nil -> print_endline "No matching time slots"
+       | Seq.Cons _ ->
+         s
+         |> OSeq.take 20
+         |> OSeq.iter (fun ts ->
+             match
+               Timere.sprintf_interval default_interval_format_string ts
+             with
+             | Ok s -> Printf.printf "%s\n" s
+             | Error msg -> Printf.printf "Error: %s\n" msg);
+         print_newline ()));
   let s =
     Timere.Utils.resolve_simple ~search_start ~search_end_exc ~tz_offset_s:0
       timere

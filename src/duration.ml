@@ -77,8 +77,8 @@ let make_frac ?(days = 0.0) ?(hours = 0.0) ?(minutes = 0.0) ?(seconds = 0) () :
   (t, unit) result =
   if days >= 0.0 && hours >= 0.0 && minutes >= 0.0 && seconds >= 0 then
     Ok
-      ( ({ days; hours; minutes; seconds } : raw)
-        |> seconds_of_raw
-        |> of_seconds
-        |> Result.get_ok )
+      (({ days; hours; minutes; seconds } : raw)
+       |> seconds_of_raw
+       |> of_seconds
+       |> Result.get_ok)
   else Error ()

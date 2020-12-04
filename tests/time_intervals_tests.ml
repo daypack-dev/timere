@@ -141,8 +141,8 @@ module Qc = struct
            |> Time.Intervals.invert ~start ~end_exc
            |> List.of_seq
            |> (fun inverted ->
-               ( Time.Intervals.Slice.slice ~start ~end_exc (List.to_seq l)
-                 |> List.of_seq )
+               (Time.Intervals.Slice.slice ~start ~end_exc (List.to_seq l)
+                |> List.of_seq)
                @ inverted)
            |> List.to_seq
            |> Time.Intervals.Normalize.normalize

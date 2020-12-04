@@ -45,13 +45,13 @@ let do_chunk (n : int64) drop_partial (s : Time.Interval.t Seq.t) :
 let intervals_of_timestamps (s : Time.timestamp Seq.t) : Time.Interval.t Seq.t =
   let rec aux acc s =
     match s () with
-    | Seq.Nil -> ( match acc with None -> Seq.empty | Some x -> Seq.return x )
+    | Seq.Nil -> ( match acc with None -> Seq.empty | Some x -> Seq.return x)
     | Seq.Cons (x, rest) -> (
         match acc with
         | None -> aux (Some (x, Int64.succ x)) rest
         | Some (x', y') ->
           if y' = x then aux (Some (x', Int64.succ x)) rest
-          else fun () -> Seq.Cons ((x', y'), aux None rest) )
+          else fun () -> Seq.Cons ((x', y'), aux None rest))
   in
   aux None s
 
@@ -60,17 +60,12 @@ let rec resolve ~(search_start : Time.timestamp)
   Time.Interval.t Seq.t =
   let open Time in
   let filter s =
-    Seq.filter_map (fun (x, y) ->
-        if y <= search_start then
-          None
-        else
-          if search_end_exc < x then
-            None
-          else
-            Some (max search_start x,
-                  min search_end_exc y
-                 )
-      ) s
+    Seq.filter_map
+      (fun (x, y) ->
+         if y <= search_start then None
+         else if search_end_exc < x then None
+         else Some (max search_start x, min search_end_exc y))
+      s
   in
   let rec aux t cur end_exc tz_offset_s =
     match t with
@@ -103,7 +98,7 @@ let rec resolve ~(search_start : Time.timestamp)
         | Lengthen n ->
           aux t cur end_exc tz_offset_s
           |> Seq.map (fun (x, y) -> (Int64.add n x, Int64.add n y))
-        | Tz_offset_s n -> aux t cur end_exc n )
+        | Tz_offset_s n -> aux t cur end_exc n)
     | _ ->
       Seq_utils.a_to_b_exc_int64 ~a:cur ~b:end_exc
       |> Seq.filter (mem ~search_start ~search_end_exc ~tz_offset_s t)
@@ -111,7 +106,8 @@ let rec resolve ~(search_start : Time.timestamp)
   in
   aux t search_start search_end_exc tz_offset_s
   |> filter
-  |> Time.Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_filter_empty:true ~skip_sort:true
+  |> Time.Intervals.Normalize.normalize ~skip_filter_invalid:true
+    ~skip_filter_empty:true ~skip_sort:true
 
 and mem ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
     ~tz_offset_s (t : Time.t) (timestamp : Time.timestamp) : bool =
@@ -191,7 +187,7 @@ and mem ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
                | `Range_exc (x, y) ->
                  month_le x dt.month && month_lt dt.month y)
             branching.months
-          && ( match branching.days with
+          && (match branching.days with
               | Month_days days ->
                 List.exists
                   (fun day_range ->
@@ -200,8 +196,7 @@ and mem ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
                      | `Range_exc (x, y) -> x <= dt.day && dt.day < y)
                   days
               | Weekdays days ->
-                List.mem weekday (Weekday_ranges.Flatten.flatten_list days)
-            )
+                List.mem weekday (Weekday_ranges.Flatten.flatten_list days))
           && List.exists
             (fun hmss_range ->
                match hmss_range with
@@ -222,6 +217,6 @@ and mem ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
           resolve ~search_start ~search_end_exc ~tz_offset_s t
           |> OSeq.exists (fun (x, y) -> x <= timestamp && timestamp < y)
         | Inter_list (_, l) -> List.for_all (fun t -> aux t timestamp) l
-        | Union_list (_, l) -> List.exists (fun t -> aux t timestamp) l )
+        | Union_list (_, l) -> List.exists (fun t -> aux t timestamp) l)
   in
   aux t timestamp

@@ -7,8 +7,7 @@ let month_of_sexp (x : CCSexp.t) =
   | `Atom s -> (
       match Time.month_of_abbr_string s with
       | Ok x -> x
-      | Error () -> invalid_data (Printf.sprintf "Failed to parse month: %s" s)
-    )
+      | Error () -> invalid_data (Printf.sprintf "Failed to parse month: %s" s))
   | `List _ ->
     invalid_data
       (Printf.sprintf "Expected atom for month: %s" (CCSexp.to_string x))
@@ -19,7 +18,7 @@ let weekday_of_sexp (x : CCSexp.t) =
       match Time.weekday_of_abbr_string s with
       | Ok x -> x
       | Error () ->
-        invalid_data (Printf.sprintf "Failed to parse weekday: %s" s) )
+        invalid_data (Printf.sprintf "Failed to parse weekday: %s" s))
   | `List _ ->
     invalid_data
       (Printf.sprintf "Expected atom for weekday: %s" (CCSexp.to_string x))
@@ -29,7 +28,7 @@ let int_of_sexp (x : CCSexp.t) =
   | `Atom s -> (
       try int_of_string s
       with Failure _ ->
-        invalid_data (Printf.sprintf "Failed to parse int: %s" s) )
+        invalid_data (Printf.sprintf "Failed to parse int: %s" s))
   | `List _ ->
     invalid_data
       (Printf.sprintf "Expected atom for int: %s" (CCSexp.to_string x))
@@ -39,7 +38,7 @@ let int64_of_sexp (x : CCSexp.t) =
   | `Atom s -> (
       try Int64.of_string s
       with Failure _ ->
-        invalid_data (Printf.sprintf "Failed to parse int64: %s" s) )
+        invalid_data (Printf.sprintf "Failed to parse int64: %s" s))
   | `List _ ->
     invalid_data
       (Printf.sprintf "Expected atom for int64: %s" (CCSexp.to_string x))
@@ -75,8 +74,7 @@ let date_time_of_sexp (x : CCSexp.t) =
       with
       | Ok x -> x
       | Error () ->
-        invalid_data (Printf.sprintf "Invalid date: %s" (CCSexp.to_string x))
-    )
+        invalid_data (Printf.sprintf "Invalid date: %s" (CCSexp.to_string x)))
   | _ -> invalid_data (Printf.sprintf "Invalid date: %s" (CCSexp.to_string x))
 
 let timestamp_of_sexp x = x |> date_time_of_sexp |> Time.Date_time.to_timestamp
@@ -149,10 +147,10 @@ let pattern_of_sexp (x : CCSexp.t) =
               ~seconds ~timestamps ()
           | _ ->
             invalid_data
-              (Printf.sprintf "Invalid pattern: %s" (CCSexp.to_string x)) )
+              (Printf.sprintf "Invalid pattern: %s" (CCSexp.to_string x)))
       | _ ->
         invalid_data
-          (Printf.sprintf "Invalid pattern: %s" (CCSexp.to_string x)) )
+          (Printf.sprintf "Invalid pattern: %s" (CCSexp.to_string x)))
 
 let branching_of_sexp (x : CCSexp.t) =
   match x with
@@ -213,11 +211,11 @@ let branching_of_sexp (x : CCSexp.t) =
           | _ ->
             invalid_data
               (Printf.sprintf "Unexpected expressions: %s"
-                 (l |> List.map CCSexp.to_string |> String.concat ", ")) )
+                 (l |> List.map CCSexp.to_string |> String.concat ", ")))
       | _ ->
         invalid_data
           (Printf.sprintf "Unexpected expressions: %s"
-             (l |> List.map CCSexp.to_string |> String.concat ", ")) )
+             (l |> List.map CCSexp.to_string |> String.concat ", ")))
 
 let of_sexp (x : CCSexp.t) =
   let open Time in
@@ -250,13 +248,13 @@ let of_sexp (x : CCSexp.t) =
             | Error () ->
               invalid_data
                 (Printf.sprintf "Invalid chunk size: %s" (CCSexp.to_string n))
-            | Ok n -> chunk ~drop_partial:false n (aux x) )
+            | Ok n -> chunk ~drop_partial:false n (aux x))
         | [ `Atom "chunk"; `Atom "drop_partial"; n; x ] -> (
             match Duration.of_seconds (int64_of_sexp n) with
             | Error () ->
               invalid_data
                 (Printf.sprintf "Invalid chunk size: %s" (CCSexp.to_string n))
-            | Ok n -> chunk ~drop_partial:true n (aux x) )
+            | Ok n -> chunk ~drop_partial:true n (aux x))
         | [ `Atom "shift"; n; x ] ->
           let n =
             match Duration.of_seconds (int64_of_sexp n) with
@@ -287,7 +285,7 @@ let of_sexp (x : CCSexp.t) =
         | `Atom "union" :: l -> union (List.map aux l)
         | _ ->
           invalid_data
-            (Printf.sprintf "Invalid timere data: %s" (CCSexp.to_string x)) )
+            (Printf.sprintf "Invalid timere data: %s" (CCSexp.to_string x)))
     | `Atom _ ->
       invalid_data
         (Printf.sprintf "Expected list for timere data: %s"
