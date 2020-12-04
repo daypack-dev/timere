@@ -100,11 +100,24 @@ let rec resolve ~(search_start : Time.timestamp)
         (fun acc t ->
            match acc with
            | [] -> (
-               match (aux t cur end_exc tz_offset_s) () with
+               let s =
+                 aux t cur end_exc tz_offset_s
+                 |> OSeq.drop_while (fun (x, _) ->
+                     x < cur
+                   )
+               in
+               match s () with
                | Seq.Nil -> acc
-               | Seq.Cons (x, _) -> x :: acc )
+               | Seq.Cons (x, _) -> x :: acc
+             )
            | (cur, _) :: _ -> (
-               match (aux t cur end_exc tz_offset_s) () with
+               let s =
+                 aux t cur end_exc tz_offset_s
+                 |> OSeq.drop_while (fun (x, _) ->
+                     x < cur
+                   )
+               in
+               match s () with
                | Seq.Nil -> acc
                | Seq.Cons (x, _) -> x :: acc ))
         [] l
@@ -117,6 +130,7 @@ let rec resolve ~(search_start : Time.timestamp)
         Seq.Cons (cur_batch, collect_round_robin l cur end_exc tz_offset_s)
   in
   aux t search_start search_end_exc tz_offset_s
+  |> Time.Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_filter_empty:true ~skip_sort:true
 
 and mem ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
     ~tz_offset_s (t : Time.t) (timestamp : Time.timestamp) : bool =
