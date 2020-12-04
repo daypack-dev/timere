@@ -63,8 +63,10 @@ let rec resolve ~(search_start : Time.timestamp)
     match t with
     | Timestamp_interval_seq (_, s) -> s
     | Round_robin_pick_list (_, l) ->
-      collect_round_robin l cur end_exc tz_offset_s
-      |> Seq.flat_map List.to_seq
+      l
+      |> List.map (fun t -> aux t cur end_exc tz_offset_s)
+      |> Time.Intervals.Round_robin
+         .merge_multi_list_round_robin_non_decreasing ~skip_check:true
     | Unary_op (_, op, t) -> (
         match op with
         | Not ->
@@ -93,41 +95,6 @@ let rec resolve ~(search_start : Time.timestamp)
       Seq_utils.a_to_b_exc_int64 ~a:cur ~b:end_exc
       |> Seq.filter (mem ~search_start ~search_end_exc ~tz_offset_s t)
       |> intervals_of_timestamps
-  and collect_round_robin l cur end_exc tz_offset_s : Time.Interval.t list Seq.t
-    =
-    let res =
-      List.fold_left
-        (fun acc t ->
-           match acc with
-           | [] -> (
-               let s =
-                 aux t cur end_exc tz_offset_s
-                 |> OSeq.drop_while (fun (x, _) ->
-                     x < cur
-                   )
-               in
-               match s () with
-               | Seq.Nil -> acc
-               | Seq.Cons (x, _) -> x :: acc
-             )
-           | (cur, _) :: _ -> (
-               let s =
-                 aux t cur end_exc tz_offset_s
-                 |> OSeq.drop_while (fun (x, _) ->
-                     x < cur
-                   )
-               in
-               match s () with
-               | Seq.Nil -> acc
-               | Seq.Cons (x, _) -> x :: acc ))
-        [] l
-    in
-    match res with
-    | [] -> Seq.empty
-    | (cur, _) :: _ ->
-      let cur_batch = res |> List.rev in
-      fun () ->
-        Seq.Cons (cur_batch, collect_round_robin l cur end_exc tz_offset_s)
   in
   aux t search_start search_end_exc tz_offset_s
   |> Time.Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_filter_empty:true ~skip_sort:true
