@@ -619,6 +619,7 @@ module Intervals = struct
         (batches : Interval.t Seq.t list) : Interval.t Seq.t =
       collect_round_robin_non_decreasing ~skip_check batches
       |> Seq.flat_map (fun l -> List.to_seq l |> Seq.filter_map (fun x -> x))
+      |> Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
 
     let merge_multi_seq_round_robin_non_decreasing ?(skip_check = false)
         (batches : Interval.t Seq.t Seq.t) : Interval.t Seq.t =
