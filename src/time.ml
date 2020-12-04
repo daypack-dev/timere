@@ -1658,7 +1658,7 @@ type search_space = Interval.t list
 
 let default_search_space_start = Date_time.(to_timestamp min)
 
-let default_search_space_end_exc = Int64.succ @@ Date_time.(to_timestamp max)
+let default_search_space_end_exc = Date_time.(to_timestamp max)
 
 let default_search_space : search_space =
   [ (default_search_space_start, default_search_space_end_exc) ]
