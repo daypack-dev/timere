@@ -567,11 +567,8 @@ module Intervals = struct
         Seq.fold_left
           (fun acc intervals ->
              match acc with
-             | None ->
-               Some intervals
-             | Some acc ->
-               Some (inter ~skip_check acc intervals)
-          )
+             | None -> Some intervals
+             | Some acc -> Some (inter ~skip_check acc intervals))
           None interval_batches
       with
       | None -> Seq.empty
