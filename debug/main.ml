@@ -77,7 +77,7 @@ let debug_parsing () =
 
 let debug_resolver () =
   let s = {|
-(next_n_points 27 (not (interval_inc (2084 Apr 7 21 7 40 (tz_offset_s 0)) (2084 Apr 7 21 9 4 (tz_offset_s 0)))))
+(not (interval_inc (2084 Apr 7 21 7 40 (tz_offset_s 0)) (2084 Apr 7 21 9 4 (tz_offset_s 0))))
 |} in
   let timere = Result.get_ok @@ Timere.of_sexp_string s in
   let search_start_dt =
@@ -109,12 +109,13 @@ let debug_resolver () =
              with
              | Ok s -> Printf.printf "%s\n" s
              | Error msg -> Printf.printf "Error: %s\n" msg);
-         print_newline ()));
+         ));
+  print_endline "=====";
   let s =
     Timere.Utils.resolve_simple ~search_start ~search_end_exc ~tz_offset_s:0
       timere
   in
-  match s () with
+  (match s () with
   | Seq.Nil -> print_endline "No matching time slots"
   | Seq.Cons _ ->
     s
@@ -124,7 +125,7 @@ let debug_resolver () =
           Timere.sprintf_interval default_interval_format_string ts
         with
         | Ok s -> Printf.printf "%s\n" s
-        | Error msg -> Printf.printf "Error: %s\n" msg);
+        | Error msg -> Printf.printf "Error: %s\n" msg));
     print_newline ()
 
 (* let () = debug_branching () *)
