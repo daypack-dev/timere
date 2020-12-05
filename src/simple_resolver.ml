@@ -217,22 +217,22 @@ and mem ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
                        match day_range with
                        | `Range_inc (x, y) ->
                          let x =
-                           if x < 0 then day_count_of_month + x
+                           if x < 0 then day_count_of_month + x + 1
                            else x
                          in
                          let y =
-                           if y < 0 then day_count_of_month + y
+                           if y < 0 then day_count_of_month + y + 1
                            else y
                          in
                          OSeq.(x -- y)
                          |> Seq.map (fun x -> (year, month, x))
                        | `Range_exc (x, y) ->
                          let x =
-                           if x < 0 then day_count_of_month + x
+                           if x < 0 then day_count_of_month + x + 1
                            else x
                          in
                          let y =
-                           if y < 0 then day_count_of_month + y
+                           if y < 0 then day_count_of_month + y + 1
                            else y
                          in
                          OSeq.(x --^ y)
