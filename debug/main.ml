@@ -78,9 +78,7 @@ let debug_parsing () =
 let debug_resolver () =
   let s =
     {|
-(change_tz_offset_s 32400
 (pattern (years 2002) (months Jan Mar Apr May Nov Dec) (month_days 6 10 18 23 27 28 29) (weekdays Sun Mon Tue Fri Sat) (hours 0 3 10) (minutes 11 27 ))
-)
 |}
   in
   let timere = Result.get_ok @@ Timere.of_sexp_string s in
@@ -109,7 +107,7 @@ let debug_resolver () =
          |> OSeq.take 50
          |> OSeq.iter (fun ts ->
              match
-               Timere.sprintf_interval ~display_using_tz_offset_s:32400
+               Timere.sprintf_interval ~display_using_tz_offset_s:0
                  default_interval_format_string ts
              with
              | Ok s -> Printf.printf "%s\n" s
@@ -126,7 +124,7 @@ let debug_resolver () =
      |> OSeq.take 50
      |> OSeq.iter (fun ts ->
          match
-           Timere.sprintf_interval ~display_using_tz_offset_s:32400
+           Timere.sprintf_interval ~display_using_tz_offset_s:0
              default_interval_format_string ts
          with
          | Ok s -> Printf.printf "%s\n" s
