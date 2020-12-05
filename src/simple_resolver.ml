@@ -173,28 +173,81 @@ and mem ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
           && second_is_fine
           && timestamp_is_fine
         | Branching (_, branching) ->
-          List.exists
-            (fun year_range ->
-               match year_range with
-               | `Range_inc (x, y) -> x <= dt.year && dt.year <= y
-               | `Range_exc (x, y) -> x <= dt.year && dt.year < y)
+          let years =
             branching.years
-          && List.exists
-            (fun month_range ->
-               match month_range with
-               | `Range_inc (x, y) ->
-                 month_le x dt.month && month_le dt.month y
-               | `Range_exc (x, y) ->
-                 month_le x dt.month && month_lt dt.month y)
-            branching.months
-          && (match branching.days with
+            |> List.to_seq
+            |> Seq.flat_map (fun year_range ->
+                match year_range with
+                | `Range_inc (x, y) -> OSeq.(x -- y)
+                | `Range_exc (x, y) -> OSeq.(x --^ y)
+              )
+          in
+          let year_months =
+            years
+            |> Seq.flat_map (fun year ->
+                branching.months
+                |> List.to_seq
+                |> Seq.flat_map (fun month_range ->
+                    match month_range with
+                    | `Range_inc (x, y) ->
+                      let x = tm_int_of_month x in
+                      let y = tm_int_of_month y in
+                      OSeq.(x -- y)
+                      |> Seq.map (fun x -> Result.get_ok @@ month_of_tm_int x)
+                      |> Seq.map (fun month -> year, month)
+                    | `Range_exc (x, y) ->
+                      let x = tm_int_of_month x in
+                      let y = tm_int_of_month y in
+                      OSeq.(x --^ y)
+                      |> Seq.map (fun x -> Result.get_ok @@ month_of_tm_int x)
+                      |> Seq.map (fun month -> year, month)
+                  )
+              )
+          in
+          (match branching.days with
               | Month_days days ->
-                List.exists
-                  (fun day_range ->
-                     match day_range with
-                     | `Range_inc (x, y) -> x <= dt.day && dt.day <= y
-                     | `Range_exc (x, y) -> x <= dt.day && dt.day < y)
-                  days
+                let year_month_days =
+                  year_months
+                  |> Seq.flat_map (fun (year, month) ->
+                      let day_count_of_month = day_count_of_month ~year ~month in
+                      days
+                      |> List.to_seq
+                      |> OSeq.flat_map (fun day_range ->
+                          match day_range with
+                          | `Range_inc (x, y) ->
+                            let x =
+                              if x < 0 then
+                                day_count_of_month + x
+                              else x
+                            in
+                            let y =
+                              if y < 0 then
+                                day_count_of_month + y
+                              else
+                                y
+                            in
+                            OSeq.(x -- y)
+                            |> Seq.map (fun x -> year, month, x)
+                          | `Range_exc (x, y) -> 
+                            let x =
+                              if x < 0 then
+                                day_count_of_month + x
+                              else x
+                            in
+                            let y =
+                              if y < 0 then
+                                day_count_of_month + y
+                              else
+                                y
+                            in
+                            OSeq.(x --^ y)
+                            |> Seq.map (fun x -> year, month, x)
+                        )
+                    )
+                in
+                OSeq.exists (fun (year, month, day) ->
+                    dt.year = year && dt.month = month && dt.day = day
+                  ) year_month_days
               | Weekdays days ->
                 List.mem weekday (Weekday_ranges.Flatten.flatten_list days))
           && List.exists
