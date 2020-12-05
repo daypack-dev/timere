@@ -124,7 +124,7 @@ let sexp_list_of_unary_op (op : Time.unary_op) =
     |> List.filter_map (fun x -> x)
   | Shift n -> [ CCSexp.atom "shift"; CCSexp.atom (Int64.to_string n) ]
   | Lengthen n -> [ CCSexp.atom "lengthen"; CCSexp.atom (Int64.to_string n) ]
-  | Tz_offset_s n ->
+  | Change_tz_offset_s n ->
     [ CCSexp.atom "change_tz_offset_s"; CCSexp.atom (string_of_int n) ]
 
 let to_sexp (t : Time.t) : CCSexp.t =

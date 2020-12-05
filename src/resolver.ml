@@ -742,7 +742,7 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
     | Unary_op (_, op, t) -> (
         match op with
         | Not -> Unary_op (default_search_space, op, aux tz_offset_s t)
-        | Tz_offset_s tz_offset_s ->
+        | Change_tz_offset_s tz_offset_s ->
           let t = aux tz_offset_s t in
           Unary_op (get_search_space t, op, t)
         | _ ->
@@ -953,7 +953,9 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
         (intervals_of_branching search_using_tz_offset_s branching)
     | Unary_op (space, op, t) -> (
         let search_using_tz_offset_s =
-          match op with Tz_offset_s x -> x | _ -> search_using_tz_offset_s
+          match op with
+          | Change_tz_offset_s x -> x
+          | _ -> search_using_tz_offset_s
         in
         let s = aux search_using_tz_offset_s t in
         match op with
@@ -978,7 +980,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
           |> Seq.map (fun (start, end_exc) -> (start, Int64.add end_exc n))
           |> Intervals.Normalize.normalize ~skip_filter_empty:true
             ~skip_sort:true ~skip_filter_invalid:true
-        | Tz_offset_s _ -> s)
+        | Change_tz_offset_s _ -> s)
     | Interval_inc (_, a, b) -> Seq.return (a, Int64.succ b)
     | Interval_exc (_, a, b) -> Seq.return (a, b)
     | Round_robin_pick_list (_, l) ->

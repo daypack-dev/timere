@@ -1622,7 +1622,7 @@ type unary_op =
     }
   | Shift of int64
   | Lengthen of int64
-  | Tz_offset_s of int
+  | Change_tz_offset_s of int
 
 type branching_days =
   | Month_days of int Range.range list
@@ -1804,7 +1804,7 @@ let interval_dt_exc (a : Date_time.t) (b : Date_time.t) : t =
 let not (a : t) : t = Unary_op (default_search_space, Not, a)
 
 let change_tz_offset_s offset t =
-  Unary_op (default_search_space, Tz_offset_s offset, t)
+  Unary_op (default_search_space, Change_tz_offset_s offset, t)
 
 let pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
     ?(hours = []) ?(minutes = []) ?(seconds = []) ?(timestamps = []) () : t =

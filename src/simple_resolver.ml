@@ -103,7 +103,7 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
         | Lengthen n ->
           aux t cur end_exc search_using_tz_offset_s
           |> Seq.map (fun (x, y) -> (Int64.add n x, Int64.add n y))
-        | Tz_offset_s n -> aux t cur end_exc n)
+        | Change_tz_offset_s n -> aux t cur end_exc n)
     | _ ->
       Seq_utils.a_to_b_exc_int64 ~a:cur ~b:end_exc
       |> Seq.filter
