@@ -78,7 +78,9 @@ let debug_parsing () =
 let debug_resolver () =
   let s =
     {|
-(pattern (years 2002) (months Jan Mar Apr May Nov Dec) (month_days 6 10 18 23 27 28 29) (weekdays Sun Mon Tue Fri Sat) (hours 0 2 3 4 10 22 23) (minutes 11 22 26 27 28 38 48 58) (seconds 11 22 26 27 28 38 48 58))
+(change_tz_offset_s 32400
+(pattern (years 2002) (months Jan Mar Apr May Nov Dec) (month_days 6 10 18 23 27 28 29) (weekdays Sun Mon Tue Fri Sat) (hours 0 3 10) (minutes 11 27 ))
+)
 |}
   in
   let timere = Result.get_ok @@ Timere.of_sexp_string s in
@@ -104,10 +106,10 @@ let debug_resolver () =
        | Seq.Nil -> print_endline "No matching time slots"
        | Seq.Cons _ ->
          s
-         |> OSeq.take 20
+         |> OSeq.take 50
          |> OSeq.iter (fun ts ->
              match
-               Timere.sprintf_interval default_interval_format_string ts
+               Timere.sprintf_interval ~display_using_tz_offset_s:32400 default_interval_format_string ts
              with
              | Ok s -> Printf.printf "%s\n" s
              | Error msg -> Printf.printf "Error: %s\n" msg)));
@@ -120,10 +122,10 @@ let debug_resolver () =
    | Seq.Nil -> print_endline "No matching time slots"
    | Seq.Cons _ ->
      s
-     |> OSeq.take 20
+     |> OSeq.take 50
      |> OSeq.iter (fun ts ->
          match
-           Timere.sprintf_interval default_interval_format_string ts
+           Timere.sprintf_interval ~display_using_tz_offset_s:32400 default_interval_format_string ts
          with
          | Ok s -> Printf.printf "%s\n" s
          | Error msg -> Printf.printf "Error: %s\n" msg));
