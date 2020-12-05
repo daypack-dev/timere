@@ -300,9 +300,9 @@ module Utils : sig
     weekday range list -> (weekday list, unit) result
 
   val resolve_simple :
+    ?search_using_tz_offset_s:int ->
     search_start:timestamp ->
     search_end_exc:timestamp ->
-    ?search_using_tz_offset_s:int ->
     t ->
     interval Seq.t
 end

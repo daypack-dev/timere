@@ -55,9 +55,8 @@ let intervals_of_timestamps (s : Time.timestamp Seq.t) : Time.Interval.t Seq.t =
   in
   aux None s
 
-let rec resolve ~(search_start : Time.timestamp)
-    ~(search_end_exc : Time.timestamp) ?(search_using_tz_offset_s = 0)
-    (t : Time.t) : Time.Interval.t Seq.t =
+let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
+    ~(search_end_exc : Time.timestamp) (t : Time.t) : Time.Interval.t Seq.t =
   let open Time in
   let filter s =
     Seq.filter_map
@@ -108,7 +107,7 @@ let rec resolve ~(search_start : Time.timestamp)
     | _ ->
       Seq_utils.a_to_b_exc_int64 ~a:cur ~b:end_exc
       |> Seq.filter
-        (mem ~search_start ~search_end_exc ~search_using_tz_offset_s t)
+        (mem ~search_using_tz_offset_s ~search_start ~search_end_exc t)
       |> intervals_of_timestamps
   in
   aux t search_start search_end_exc search_using_tz_offset_s
@@ -116,9 +115,9 @@ let rec resolve ~(search_start : Time.timestamp)
   |> Time.Intervals.Normalize.normalize ~skip_filter_invalid:true
     ~skip_filter_empty:true ~skip_sort:true
 
-and mem ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
-    ?(search_using_tz_offset_s = 0) (t : Time.t) (timestamp : Time.timestamp) :
-  bool =
+and mem ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
+    ~(search_end_exc : Time.timestamp) (t : Time.t) (timestamp : Time.timestamp)
+  : bool =
   let open Time in
   let rec aux t timestamp =
     match
@@ -273,7 +272,7 @@ and mem ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
         | Interval_exc (_, start, end_inc) ->
           start <= timestamp && timestamp < end_inc
         | Unary_op (_, _, _) | Round_robin_pick_list (_, _) ->
-          resolve ~search_start ~search_end_exc ~search_using_tz_offset_s t
+          resolve ~search_using_tz_offset_s ~search_start ~search_end_exc t
           |> OSeq.exists (fun (x, y) -> x <= timestamp && timestamp < y)
         | Inter_list (_, l) -> List.for_all (fun t -> aux t timestamp) l
         | Union_list (_, l) -> List.exists (fun t -> aux t timestamp) l)
