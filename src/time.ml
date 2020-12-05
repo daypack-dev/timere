@@ -429,7 +429,6 @@ module Intervals = struct
           else
             s
             |> Check.check_if_valid
-            |> Check.check_if_disjoint
             |> Check.check_if_sorted)
       |> (fun s ->
           match start with
@@ -447,7 +446,6 @@ module Intervals = struct
           else
             s
             |> Check.check_if_valid
-            |> Check.check_if_disjoint
             |> Check.check_if_sorted_rev)
       |> (fun s ->
           match start with
@@ -495,7 +493,6 @@ module Intervals = struct
       else
         mem_of
         |> Check.check_if_valid
-        |> Check.check_if_disjoint
         |> Check.check_if_sorted
     in
     let not_mem_of =
@@ -503,7 +500,6 @@ module Intervals = struct
       else
         not_mem_of
         |> Check.check_if_valid
-        |> Check.check_if_disjoint
         |> Check.check_if_sorted
     in
     aux mem_of not_mem_of
@@ -548,7 +544,6 @@ module Intervals = struct
         else
           intervals1
           |> Check.check_if_valid
-          |> Check.check_if_disjoint
           |> Check.check_if_sorted
       in
       let intervals2 =
@@ -556,7 +551,6 @@ module Intervals = struct
         else
           intervals2
           |> Check.check_if_valid
-          |> Check.check_if_disjoint
           |> Check.check_if_sorted
       in
       aux intervals1 intervals2
