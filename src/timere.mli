@@ -237,10 +237,6 @@ val of_sorted_intervals : ?skip_invalid:bool -> interval list -> t
 
 val of_sorted_intervals_seq : ?skip_invalid:bool -> interval Seq.t -> t
 
-(** {1 Sampling} *)
-
-val round_robin_pick : t list -> t
-
 (** {1 Infix operators} *)
 
 module Infix : sig

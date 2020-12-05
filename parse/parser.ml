@@ -594,7 +594,10 @@ let t_of_ast (ast : ast) : (Timere.t, string) Result.t =
     | Round_robin_pick l -> (
         match l |> List.map aux |> Misc_utils.get_ok_error_list with
         | Error msg -> Error msg
-        | Ok l -> Ok (Timere.round_robin_pick l) )
+        | Ok _l ->
+          (* Ok (Timere.round_robin_pick l) *)
+          failwith "Unimplemented"
+      )
   in
   aux ast
 

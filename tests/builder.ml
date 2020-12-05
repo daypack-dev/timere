@@ -153,23 +153,23 @@ let make ~min_year ~max_year_inc ~height ~max_branching ~(randomness : int list)
       | 4 -> make_interval_exc ~rng ~min_year ~max_year_inc
       | _ -> failwith "Unexpected case"
     else
-      match rng () mod 4 with
+      match rng () mod 3 with
       | 0 -> make_unary_op ~rng (aux (pred height))
       | 1 ->
         OSeq.(0 -- Stdlib.min max_branching (rng ()))
         |> Seq.map (fun _ -> aux (pred height))
         |> List.of_seq
-        |> Time.round_robin_pick
+        |> Time.inter
       | 2 ->
         OSeq.(0 -- Stdlib.min max_branching (rng ()))
         |> Seq.map (fun _ -> aux (pred height))
         |> List.of_seq
-        |> Time.inter
-      | 3 ->
-        OSeq.(0 -- Stdlib.min max_branching (rng ()))
-        |> Seq.map (fun _ -> aux (pred height))
-        |> List.of_seq
         |> Time.union
+      (* | 3 ->
+       *   OSeq.(0 -- Stdlib.min max_branching (rng ()))
+       *   |> Seq.map (fun _ -> aux (pred height))
+       *   |> List.of_seq
+       *   |> Time.round_robin_pick *)
       | _ -> failwith "Unexpected case"
   in
   aux height
