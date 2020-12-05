@@ -109,14 +109,15 @@ let debug_resolver () =
          |> OSeq.take 50
          |> OSeq.iter (fun ts ->
              match
-               Timere.sprintf_interval ~display_using_tz_offset_s:32400 default_interval_format_string ts
+               Timere.sprintf_interval ~display_using_tz_offset_s:32400
+                 default_interval_format_string ts
              with
              | Ok s -> Printf.printf "%s\n" s
              | Error msg -> Printf.printf "Error: %s\n" msg)));
   print_endline "=====";
   let s =
-    Timere.Utils.resolve_simple ~search_start ~search_end_exc ~search_using_tz_offset_s:0
-      timere
+    Timere.Utils.resolve_simple ~search_start ~search_end_exc
+      ~search_using_tz_offset_s:0 timere
   in
   (match s () with
    | Seq.Nil -> print_endline "No matching time slots"
@@ -125,7 +126,8 @@ let debug_resolver () =
      |> OSeq.take 50
      |> OSeq.iter (fun ts ->
          match
-           Timere.sprintf_interval ~display_using_tz_offset_s:32400 default_interval_format_string ts
+           Timere.sprintf_interval ~display_using_tz_offset_s:32400
+             default_interval_format_string ts
          with
          | Ok s -> Printf.printf "%s\n" s
          | Error msg -> Printf.printf "Error: %s\n" msg));

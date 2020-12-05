@@ -56,8 +56,8 @@ let intervals_of_timestamps (s : Time.timestamp Seq.t) : Time.Interval.t Seq.t =
   aux None s
 
 let rec resolve ~(search_start : Time.timestamp)
-    ~(search_end_exc : Time.timestamp) ?(search_using_tz_offset_s = 0) (t : Time.t) :
-  Time.Interval.t Seq.t =
+    ~(search_end_exc : Time.timestamp) ?(search_using_tz_offset_s = 0)
+    (t : Time.t) : Time.Interval.t Seq.t =
   let open Time in
   let filter s =
     Seq.filter_map
@@ -81,17 +81,23 @@ let rec resolve ~(search_start : Time.timestamp)
           Seq_utils.a_to_b_exc_int64 ~a:cur ~b:end_exc
           |> Seq.filter (fun x ->
               Stdlib.not
-                (mem ~search_start ~search_end_exc ~search_using_tz_offset_s t x))
+                (mem ~search_start ~search_end_exc
+                   ~search_using_tz_offset_s t x))
           |> intervals_of_timestamps
         | Every -> aux t cur end_exc search_using_tz_offset_s
         | Skip_n_points n ->
-          do_skip_n_points (Int64.of_int n) (aux t cur end_exc search_using_tz_offset_s)
-        | Skip_n_intervals n -> OSeq.drop n (aux t cur end_exc search_using_tz_offset_s)
+          do_skip_n_points (Int64.of_int n)
+            (aux t cur end_exc search_using_tz_offset_s)
+        | Skip_n_intervals n ->
+          OSeq.drop n (aux t cur end_exc search_using_tz_offset_s)
         | Next_n_points n ->
-          do_take_n_points (Int64.of_int n) (aux t cur end_exc search_using_tz_offset_s)
-        | Next_n_intervals n -> OSeq.take n (aux t cur end_exc search_using_tz_offset_s)
+          do_take_n_points (Int64.of_int n)
+            (aux t cur end_exc search_using_tz_offset_s)
+        | Next_n_intervals n ->
+          OSeq.take n (aux t cur end_exc search_using_tz_offset_s)
         | Chunk { chunk_size; drop_partial } ->
-          do_chunk chunk_size drop_partial (aux t cur end_exc search_using_tz_offset_s)
+          do_chunk chunk_size drop_partial
+            (aux t cur end_exc search_using_tz_offset_s)
         | Shift n ->
           aux t cur end_exc search_using_tz_offset_s
           |> Seq.map (fun (x, y) -> (Int64.add n x, Int64.add n y))
@@ -101,7 +107,8 @@ let rec resolve ~(search_start : Time.timestamp)
         | Tz_offset_s n -> aux t cur end_exc n)
     | _ ->
       Seq_utils.a_to_b_exc_int64 ~a:cur ~b:end_exc
-      |> Seq.filter (mem ~search_start ~search_end_exc ~search_using_tz_offset_s t)
+      |> Seq.filter
+        (mem ~search_start ~search_end_exc ~search_using_tz_offset_s t)
       |> intervals_of_timestamps
   in
   aux t search_start search_end_exc search_using_tz_offset_s
@@ -110,12 +117,13 @@ let rec resolve ~(search_start : Time.timestamp)
     ~skip_filter_empty:true ~skip_sort:true
 
 and mem ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
-    ?(search_using_tz_offset_s = 0) (t : Time.t) (timestamp : Time.timestamp) : bool =
+    ?(search_using_tz_offset_s = 0) (t : Time.t) (timestamp : Time.timestamp) :
+  bool =
   let open Time in
   let rec aux t timestamp =
     match
-      Time.Date_time.of_timestamp ~tz_offset_s_of_date_time:search_using_tz_offset_s
-        timestamp
+      Time.Date_time.of_timestamp
+        ~tz_offset_s_of_date_time:search_using_tz_offset_s timestamp
     with
     | Error () -> failwith (Printf.sprintf "Invalid timestamp: %Ld" timestamp)
     | Ok dt -> (
@@ -154,10 +162,14 @@ and mem ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
             match pattern.hours with [] -> true | l -> List.mem dt.hour l
           in
           let minute_is_fine =
-            match pattern.minutes with [] -> true | l -> List.mem dt.minute l
+            match pattern.minutes with
+            | [] -> true
+            | l -> List.mem dt.minute l
           in
           let second_is_fine =
-            match pattern.seconds with [] -> true | l -> List.mem dt.second l
+            match pattern.seconds with
+            | [] -> true
+            | l -> List.mem dt.second l
           in
           let timestamp_is_fine =
             match pattern.timestamps with
