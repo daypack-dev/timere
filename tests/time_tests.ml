@@ -9,7 +9,7 @@ let search_start = Time.Date_time.to_timestamp search_start_dt
 
 let search_end_exc_dt =
   Result.get_ok
-  @@ Time.Date_time.make ~year:2001 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+  @@ Time.Date_time.make ~year:2003 ~month:`Jan ~day:1 ~hour:0 ~minute:0
     ~second:0 ~tz_offset_s:0
 
 let search_end_exc = Time.Date_time.to_timestamp search_end_exc_dt

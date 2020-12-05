@@ -8,8 +8,8 @@ let make_rng ~randomness : unit -> int =
     cur := (!cur + 1) mod len;
     ret
 
-let make_date_time ~rng ~min_year =
-  let year = min_year + rng () in
+let make_date_time ~rng ~min_year ~max_year_inc =
+  let year = min max_year_inc (min_year + rng ()) in
   let month = Result.get_ok @@ Time.month_of_tm_int (rng () mod 12) in
   let day = 1 + (rng () mod Time.day_count_of_month ~year ~month) in
   let hour = rng () mod 24 in
@@ -18,12 +18,12 @@ let make_date_time ~rng ~min_year =
   Result.get_ok
   @@ Time.Date_time.make ~year ~month ~day ~hour ~minute ~second ~tz_offset_s:0
 
-let make_timestamp_intervals ~rng ~min_year =
+let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
   let len = rng () in
   OSeq.(0 -- len)
   |> Seq.map (fun _ ->
       let start =
-        make_date_time ~rng ~min_year |> Time.Date_time.to_timestamp
+        make_date_time ~rng ~min_year ~max_year_inc |> Time.Date_time.to_timestamp
       in
       let end_exc = Int64.add start (Int64.of_int (rng ())) in
       (start, end_exc))
@@ -32,9 +32,9 @@ let make_timestamp_intervals ~rng ~min_year =
   |> List.to_seq
   |> Time.of_intervals_seq
 
-let make_pattern ~rng ~min_year =
+let make_pattern ~rng ~min_year ~max_year_inc =
   let years =
-    OSeq.(0 -- rng ()) |> Seq.map (fun _ -> min_year + rng ()) |> List.of_seq
+    OSeq.(0 -- rng ()) |> Seq.map (fun _ -> min max_year_inc (min_year + rng ())) |> List.of_seq
   in
   let months =
     OSeq.(0 -- rng ())
@@ -112,14 +112,14 @@ let make_branching ~rng ~min_year =
   Time.branching ~allow_out_of_range_month_day:true ~years ~months ~days ~hmss
     ()
 
-let make_interval_inc ~rng ~min_year =
-  let start_dt = make_date_time ~rng ~min_year in
+let make_interval_inc ~rng ~min_year ~max_year_inc =
+  let start_dt = make_date_time ~rng ~min_year ~max_year_inc in
   let start = Time.Date_time.to_timestamp start_dt in
   let end_inc = Int64.add start (Int64.of_int (rng ())) in
   Time.interval_inc start end_inc
 
-let make_interval_exc ~rng ~min_year =
-  let start_dt = make_date_time ~rng ~min_year in
+let make_interval_exc ~rng ~min_year ~max_year_inc =
+  let start_dt = make_date_time ~rng ~min_year ~max_year_inc in
   let start = Time.Date_time.to_timestamp start_dt in
   let end_exc = Int64.add start (Int64.of_int (rng ())) in
   Time.interval_exc start end_exc
@@ -140,17 +140,17 @@ let make_unary_op ~rng t =
   | 8 -> Time.change_tz_offset_s (rng ()) t
   | _ -> failwith "Unexpected case"
 
-let make ~min_year ~height ~max_branching ~(randomness : int list) : Time.t =
+let make ~min_year ~max_year_inc ~height ~max_branching ~(randomness : int list) : Time.t =
   if height <= 0 then invalid_arg "make";
   let rng = make_rng ~randomness in
   let rec aux height =
     if height = 1 then
       match rng () mod 5 with
-      | 0 -> make_timestamp_intervals ~rng ~min_year
-      | 1 -> make_pattern ~rng ~min_year
+      | 0 -> make_timestamp_intervals ~rng ~min_year ~max_year_inc
+      | 1 -> make_pattern ~rng ~min_year ~max_year_inc
       | 2 -> make_branching ~rng ~min_year
-      | 3 -> make_interval_inc ~rng ~min_year
-      | 4 -> make_interval_exc ~rng ~min_year
+      | 3 -> make_interval_inc ~rng ~min_year ~max_year_inc
+      | 4 -> make_interval_exc ~rng ~min_year ~max_year_inc
       | _ -> failwith "Unexpected case"
     else
       match rng () mod 4 with
