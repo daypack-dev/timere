@@ -23,7 +23,8 @@ let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
   OSeq.(0 -- len)
   |> Seq.map (fun _ ->
       let start =
-        make_date_time ~rng ~min_year ~max_year_inc |> Time.Date_time.to_timestamp
+        make_date_time ~rng ~min_year ~max_year_inc
+        |> Time.Date_time.to_timestamp
       in
       let end_exc = Int64.add start (Int64.of_int (rng ())) in
       (start, end_exc))
@@ -34,7 +35,9 @@ let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
 
 let make_pattern ~rng ~min_year ~max_year_inc =
   let years =
-    OSeq.(0 -- rng ()) |> Seq.map (fun _ -> min max_year_inc (min_year + rng ())) |> List.of_seq
+    OSeq.(0 -- rng ())
+    |> Seq.map (fun _ -> min max_year_inc (min_year + rng ()))
+    |> List.of_seq
   in
   let months =
     OSeq.(0 -- rng ())
@@ -140,7 +143,8 @@ let make_unary_op ~rng t =
   | 8 -> Time.change_tz_offset_s (rng ()) t
   | _ -> failwith "Unexpected case"
 
-let make ~min_year ~max_year_inc ~height ~max_branching ~(randomness : int list) : Time.t =
+let make ~min_year ~max_year_inc ~height ~max_branching ~(randomness : int list)
+  : Time.t =
   if height <= 0 then invalid_arg "make";
   let rng = make_rng ~randomness in
   let rec aux height =

@@ -426,10 +426,7 @@ module Intervals = struct
       intervals
       |> (fun s ->
           if skip_check then s
-          else
-            s
-            |> Check.check_if_valid
-            |> Check.check_if_sorted)
+          else s |> Check.check_if_valid |> Check.check_if_sorted)
       |> (fun s ->
           match start with
           | None -> s
@@ -443,10 +440,7 @@ module Intervals = struct
       intervals
       |> (fun s ->
           if skip_check then s
-          else
-            s
-            |> Check.check_if_valid
-            |> Check.check_if_sorted_rev)
+          else s |> Check.check_if_valid |> Check.check_if_sorted_rev)
       |> (fun s ->
           match start with
           | None -> s
@@ -490,17 +484,11 @@ module Intervals = struct
     in
     let mem_of =
       if skip_check then mem_of
-      else
-        mem_of
-        |> Check.check_if_valid
-        |> Check.check_if_sorted
+      else mem_of |> Check.check_if_valid |> Check.check_if_sorted
     in
     let not_mem_of =
       if skip_check then not_mem_of
-      else
-        not_mem_of
-        |> Check.check_if_valid
-        |> Check.check_if_sorted
+      else not_mem_of |> Check.check_if_valid |> Check.check_if_sorted
     in
     aux mem_of not_mem_of
 
@@ -541,17 +529,11 @@ module Intervals = struct
       in
       let intervals1 =
         if skip_check then intervals1
-        else
-          intervals1
-          |> Check.check_if_valid
-          |> Check.check_if_sorted
+        else intervals1 |> Check.check_if_valid |> Check.check_if_sorted
       in
       let intervals2 =
         if skip_check then intervals2
-        else
-          intervals2
-          |> Check.check_if_valid
-          |> Check.check_if_sorted
+        else intervals2 |> Check.check_if_valid |> Check.check_if_sorted
       in
       aux intervals1 intervals2
 
