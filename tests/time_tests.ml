@@ -24,7 +24,7 @@ module Qc = struct
               Time.(
                 inter [ t; interval_dt_exc search_start_dt search_end_exc_dt ])
            )
-           (Simple_resolver.resolve ~search_start ~search_end_exc ~tz_offset_s:0
+           (Simple_resolver.resolve ~search_start ~search_end_exc ~search_using_tz_offset_s:0
               t))
 
   let to_of_sexp =

@@ -302,7 +302,7 @@ module Utils : sig
   val resolve_simple :
     search_start:timestamp ->
     search_end_exc:timestamp ->
-    tz_offset_s:int ->
+    ?search_using_tz_offset_s:int ->
     t ->
     interval Seq.t
 end

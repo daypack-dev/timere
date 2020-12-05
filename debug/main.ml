@@ -115,7 +115,7 @@ let debug_resolver () =
              | Error msg -> Printf.printf "Error: %s\n" msg)));
   print_endline "=====";
   let s =
-    Timere.Utils.resolve_simple ~search_start ~search_end_exc ~tz_offset_s:0
+    Timere.Utils.resolve_simple ~search_start ~search_end_exc ~search_using_tz_offset_s:0
       timere
   in
   (match s () with
