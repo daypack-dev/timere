@@ -154,10 +154,10 @@ and mem ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
             match pattern.hours with [] -> true | l -> List.mem dt.hour l
           in
           let minute_is_fine =
-            match pattern.hours with [] -> true | l -> List.mem dt.minute l
+            match pattern.minutes with [] -> true | l -> List.mem dt.minute l
           in
           let second_is_fine =
-            match pattern.hours with [] -> true | l -> List.mem dt.second l
+            match pattern.seconds with [] -> true | l -> List.mem dt.second l
           in
           let timestamp_is_fine =
             match pattern.timestamps with

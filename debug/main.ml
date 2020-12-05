@@ -78,7 +78,7 @@ let debug_parsing () =
 let debug_resolver () =
   let s =
     {|
-(branching (years (range_inc 2000 2001)) (months (range_inc Jan Mar)) (month_days (range_inc -13 21) (range_inc 3 15) (range_inc -13 21) (range_inc 3 15) (range_inc -13 21) (range_inc 3 15) (range_inc -13 21) (range_inc 3 15) (range_inc -13 21) (range_inc 3 15) (range_inc -13 21) (range_inc 3 15) (range_inc -13 21)) (hmss (range_inc (0 0 2) (0 0 14))))
+(pattern (years 2002) (months Jan Mar Apr May Nov Dec) (month_days 6 10 18 23 27 28 29) (weekdays Sun Mon Tue Fri Sat) (hours 0 2 3 4 10 22 23) (minutes 11 22 26 27 28 38 48 58) (seconds 11 22 26 27 28 38 48 58))
 |}
   in
   let timere = Result.get_ok @@ Timere.of_sexp_string s in
