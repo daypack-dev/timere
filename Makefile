@@ -51,7 +51,7 @@ fuzz-resolver :
 	mkdir -p fuzz-resolver-input
 	echo "abcd" > fuzz-resolver-input/dummy
 	mkdir -p fuzz-resolver-output
-	afl-fuzz -t 200 -i fuzz-resolver-input -o fuzz-resolver-output ./_build/default/fuzz/resolver_is_same_as_simple_resolver.exe @@
+	afl-fuzz -t 1000 -i fuzz-resolver-input -o fuzz-resolver-output ./_build/default/fuzz/resolver_is_same_as_simple_resolver.exe @@
 
 .PHONY : clean
 clean:
