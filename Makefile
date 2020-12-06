@@ -24,7 +24,7 @@ test :
 covtest :
 	rm -rf _coverage
 	rm -rf bisect*.coverage
-	BISECT_ENABLE=yes OCAMLRUNPARAM=b dune exec ./tests/main.exe
+	dune runtest --instrument-with bisect_ppx --force
 	bisect-ppx-report html
 
 .PHONY: debug

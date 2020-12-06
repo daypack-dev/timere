@@ -70,7 +70,7 @@
  (action  (copy %{deps} %{targets}))
 )
 
-(executable
+(test
  (flags     (-w "+a-4-9-29-37-40-42-44-48-50-32" -g))
  (name main)
  (libraries qcheck
