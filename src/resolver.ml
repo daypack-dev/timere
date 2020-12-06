@@ -934,6 +934,34 @@ type inc_or_exc =
   | Inc
   | Exc
 
+let do_skip_n_points (n : int64) (s : Time.Interval.t Seq.t) :
+  Time.Interval.t Seq.t =
+  let rec aux n s =
+    if n = 0L then s
+    else
+      match s () with
+      | Seq.Nil -> Seq.empty
+      | Seq.Cons ((x, y), rest) ->
+        let size = Int64.sub y x in
+        if size >= n then fun () -> Seq.Cons ((Int64.add n x, y), rest)
+        else aux (Int64.sub n size) rest
+  in
+  aux n s
+
+let do_take_n_points (n : int64) (s : Time.Interval.t Seq.t) :
+  Time.Interval.t Seq.t =
+  let rec aux n s =
+    if n = 0L then Seq.empty
+    else
+      match s () with
+      | Seq.Nil -> Seq.empty
+      | Seq.Cons ((x, y), rest) ->
+        let size = Int64.sub y x in
+        if size >= n then Seq.return (x, Int64.add n x)
+        else fun () -> Seq.Cons ((x, y), aux (Int64.sub n size) rest)
+  in
+  aux n s
+
 let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
   let rec aux search_using_tz_offset_s time =
@@ -964,10 +992,12 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
             (List.to_seq space)
         | Every -> s
         | Skip_n_points n ->
-          Intervals.chunk ~skip_check:true ~chunk_size:1L s |> OSeq.drop n
+          do_skip_n_points (Int64.of_int n) s
+          |> Intervals.Normalize.normalize ~skip_filter_empty:true
+            ~skip_sort:true ~skip_filter_invalid:true
         | Skip_n_intervals n -> OSeq.drop n s
         | Next_n_points n ->
-          Intervals.chunk ~skip_check:true ~chunk_size:1L s |> OSeq.take n
+          do_take_n_points (Int64.of_int n) s
         | Next_n_intervals n -> OSeq.take n s
         | Chunk { chunk_size; drop_partial } ->
           Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s

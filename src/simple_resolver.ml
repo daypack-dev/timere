@@ -1,32 +1,4 @@
-let do_skip_n_points (n : int64) (s : Time.Interval.t Seq.t) :
-  Time.Interval.t Seq.t =
-  let rec aux n s =
-    if n = 0L then s
-    else
-      match s () with
-      | Seq.Nil -> Seq.empty
-      | Seq.Cons ((x, y), rest) ->
-        let size = Int64.sub y x in
-        if size >= n then fun () -> Seq.Cons ((Int64.add n x, y), rest)
-        else aux (Int64.sub n size) rest
-  in
-  aux n s
-
-let do_take_n_points (n : int64) (s : Time.Interval.t Seq.t) :
-  Time.Interval.t Seq.t =
-  let rec aux n s =
-    if n = 0L then Seq.empty
-    else
-      match s () with
-      | Seq.Nil -> Seq.empty
-      | Seq.Cons ((x, y), rest) ->
-        let size = Int64.sub y x in
-        if size >= n then Seq.return (x, Int64.add n x)
-        else fun () -> Seq.Cons ((x, y), aux (Int64.sub n size) rest)
-  in
-  aux n s
-
-let do_chunk (n : int64) drop_partial (s : Time.Interval.t Seq.t) :
+let do_chunk ~drop_partial (n : int64) (s : Time.Interval.t Seq.t) :
   Time.Interval.t Seq.t =
   let rec aux n s =
     match s () with
@@ -100,13 +72,17 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
           |> intervals_of_timestamps
         | Every -> aux t search_using_tz_offset_s
         | Skip_n_points n ->
-          do_skip_n_points (Int64.of_int n) (aux t search_using_tz_offset_s)
+          (aux t search_using_tz_offset_s)
+          |> do_chunk ~drop_partial:false 1L |> OSeq.drop n
+          |> normalize
         | Skip_n_intervals n -> OSeq.drop n (aux t search_using_tz_offset_s)
         | Next_n_points n ->
-          do_take_n_points (Int64.of_int n) (aux t search_using_tz_offset_s)
+          (aux t search_using_tz_offset_s)
+          |> do_chunk ~drop_partial:false 1L |> OSeq.take n
+          |> normalize
         | Next_n_intervals n -> OSeq.take n (aux t search_using_tz_offset_s)
         | Chunk { chunk_size; drop_partial } ->
-          do_chunk chunk_size drop_partial (aux t search_using_tz_offset_s)
+          do_chunk ~drop_partial chunk_size (aux t search_using_tz_offset_s)
         | Shift n ->
           aux t search_using_tz_offset_s
           |> Seq.map (fun (x, y) -> (Int64.add n x, Int64.add n y))
