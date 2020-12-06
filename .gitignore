@@ -5,3 +5,5 @@ _coverage/
 *.install
 bisect*.out
 bisect*.coverage
+fuzz-*-input
+fuzz-*-output
