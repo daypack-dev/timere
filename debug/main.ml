@@ -76,18 +76,20 @@ let debug_parsing () =
             print_newline ()))
 
 let debug_resolver () =
-(*   let s =
- *     {|
- * (pattern (years 2002) (months Jan Mar Apr May Nov Dec) (month_days 6 10 18 23 27 28 29) (weekdays Sun Mon Tue Fri Sat) (hours 0 3 10) (minutes 11 27 ))
- * |}
- *   in
- *   let timere = Result.get_ok @@ Timere.of_sexp_string s in *)
-  let timere =
-    (fun height max_branching randomness ->
-       Timere.Utils.build ~min_year:2000 ~max_year_inc:2002 ~height ~max_branching
-         ~randomness)
-      2 4 [873; 865]
+  let s =
+    {|
+(next_n 33
+(next_n_points 515 (intervals ((2002 Apr 6 10 33 27 (tz_offset_s 0)) (2002 Apr 6 10 42 2 (tz_offset_s 0))) ((2002 Oct 6 11 58 33 (tz_offset_s 0)) (2002 Oct 6 12 10 0 (tz_offset_s 0))) ((2002 Nov 4 15 35 58 (tz_offset_s 0)) (2002 Nov 4 15 36 31 (tz_offset_s 0))) ((2002 Dec 16 9 27 35 (tz_offset_s 0)) (2002 Dec 16 9 34 33 (tz_offset_s 0)))))
+      )
+|}
   in
+  let timere = Result.get_ok @@ Timere.of_sexp_string s in
+  (* let timere =
+   *   (fun height max_branching randomness ->
+   *      Timere.Utils.build ~min_year:2000 ~max_year_inc:2002 ~height ~max_branching
+   *        ~randomness)
+   *     3  4  [33; 687; 515; 418]
+   * in *)
   print_endline (Timere.to_sexp_string timere);
   print_endline "=====";
   let search_start_dt =
