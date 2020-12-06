@@ -2022,8 +2022,8 @@ let of_sorted_intervals_seq ?(skip_invalid : bool = false)
       |> ( if skip_invalid then Intervals.Filter.filter_invalid
            else Intervals.Check.check_if_valid )
       |> Intervals.Check.check_if_sorted
-      |> Intervals.Normalize.normalize ~skip_filter_invalid:true
-        ~skip_sort:true )
+      |> Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
+    )
 
 let of_sorted_intervals ?(skip_invalid : bool = false)
     (l : (int64 * int64) list) : t =
@@ -2038,8 +2038,8 @@ let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
            else Intervals.Check.check_if_valid_list )
       |> Intervals.Sort.sort_uniq_intervals_list
       |> List.to_seq
-      |> Intervals.Normalize.normalize ~skip_filter_invalid:true
-        ~skip_sort:true )
+      |> Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
+    )
 
 let of_intervals_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t)
   : t =
