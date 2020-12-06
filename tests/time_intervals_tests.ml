@@ -1,5 +1,7 @@
 open Test_utils
 
+module Int64_set = Set.Make (struct type t = int64 let compare = compare end)
+
 module Alco = struct
   let round_robin_simple1 () =
     Alcotest.(check (list (pair int64 int64)))
@@ -98,6 +100,29 @@ module Qc = struct
           |> Time.Intervals.Normalize.normalize
           |> List.of_seq
              = l)
+
+  let normalize_is_lossless =
+    QCheck.Test.make ~count:10_000
+      ~name:"normalize_is_lossless" sorted_time_slots_maybe_gaps (fun l ->
+          let original_timestamps =
+            l
+            |> List.to_seq
+            |> Seq.flat_map (fun (a, b) ->
+                Seq_utils.a_to_b_exc_int64 ~a ~b
+              )
+            |> Int64_set.of_seq
+          in
+          let normalized_timestamps =
+            l
+            |> List.to_seq
+            |> Time.Intervals.Normalize.normalize ~skip_sort:true
+            |> Seq.flat_map (fun (a, b) ->
+                Seq_utils.a_to_b_exc_int64 ~a ~b
+              )
+            |> Int64_set.of_seq
+          in
+          Int64_set.equal original_timestamps normalized_timestamps
+        )
 
   let join_time_slots_are_disjoint_with_gaps =
     QCheck.Test.make ~count:10_000
@@ -312,6 +337,7 @@ module Qc = struct
       normalize_time_slots_are_unique;
       normalize_time_slots_are_disjoint_with_gaps;
       normalize_idempotent_wrt_normalized_time_slots;
+      normalize_is_lossless;
       join_time_slots_are_disjoint_with_gaps;
       join_idempotent_wrt_joined_time_slots;
       invert_disjoint_from_original;
