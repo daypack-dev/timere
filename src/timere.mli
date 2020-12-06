@@ -9,7 +9,9 @@ type 'a range =
 
 type t
 
-val any : t
+val always : t
+
+val empty : t
 
 val years : int list -> t
 

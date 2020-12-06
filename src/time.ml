@@ -2005,7 +2005,7 @@ let seconds seconds = pattern ~seconds ()
 
 let timestamps timestamps = pattern ~timestamps ()
 
-let any = pattern ()
+let always = pattern ()
 
 let date_time (date_time : Date_time.t) : t =
   date_time
@@ -2023,7 +2023,7 @@ let of_sorted_intervals_seq ?(skip_invalid : bool = false)
            else Intervals.Check.check_if_valid )
       |> Intervals.Check.check_if_sorted
       |> Intervals.Normalize.normalize ~skip_filter_invalid:true
-        ~skip_filter_empty:true ~skip_sort:true )
+        ~skip_sort:true )
 
 let of_sorted_intervals ?(skip_invalid : bool = false)
     (l : (int64 * int64) list) : t =
@@ -2039,11 +2039,13 @@ let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
       |> Intervals.Sort.sort_uniq_intervals_list
       |> List.to_seq
       |> Intervals.Normalize.normalize ~skip_filter_invalid:true
-        ~skip_filter_empty:true ~skip_sort:true )
+        ~skip_sort:true )
 
 let of_intervals_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t)
   : t =
   s |> List.of_seq |> of_intervals ~skip_invalid
+
+let empty = of_intervals []
 
 let full_string_of_weekday (wday : weekday) : string =
   match wday with

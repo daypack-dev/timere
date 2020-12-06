@@ -522,7 +522,7 @@ let pattern ?(years = []) ?(months = []) ?pos_month_days ?(month_days = [])
 
 let t_rules : (token list -> (Timere.t, string option) Result.t) list =
   [
-    (function [ (_, Star) ] -> Ok Timere.any | _ -> Error None);
+    (function [ (_, Star) ] -> Ok Timere.always | _ -> Error None);
     (function
       | [ (_, Weekday x) ] ->
         Ok (Timere.weekdays [x])
