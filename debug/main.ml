@@ -78,9 +78,9 @@ let debug_parsing () =
 let debug_resolver () =
   let s =
     {|
-(next_n 33
-(next_n_points 515 (intervals ((2002 Apr 6 10 33 27 (tz_offset_s 0)) (2002 Apr 6 10 42 2 (tz_offset_s 0))) ((2002 Oct 6 11 58 33 (tz_offset_s 0)) (2002 Oct 6 12 10 0 (tz_offset_s 0))) ((2002 Nov 4 15 35 58 (tz_offset_s 0)) (2002 Nov 4 15 36 31 (tz_offset_s 0))) ((2002 Dec 16 9 27 35 (tz_offset_s 0)) (2002 Dec 16 9 34 33 (tz_offset_s 0)))))
-      )
+(chunk 918
+(intervals ((2002 Jan 14 21 5 18 (tz_offset_s 0)) (2002 Jan 14 21 7 30 (tz_offset_s 0))) ((2002 May 24 5 18 12 (tz_offset_s 0)) (2002 May 24 5 23 4 (tz_offset_s 0))) ((2002 Jun 19 12 52 33 (tz_offset_s 0)) (2002 Jun 19 12 52 38 (tz_offset_s 0))) ((2002 Jul 9 4 33 5 (tz_offset_s 0)) (2002 Jul 9 4 48 23 (tz_offset_s 0))) ((2002 Oct 6 6 12 52 (tz_offset_s 0)) (2002 Oct 6 6 18 25 (tz_offset_s 0))))
+)
 |}
   in
   let timere = Result.get_ok @@ Timere.of_sexp_string s in
@@ -88,7 +88,7 @@ let debug_resolver () =
    *   (fun height max_branching randomness ->
    *      Timere.Utils.build ~min_year:2000 ~max_year_inc:2002 ~height ~max_branching
    *        ~randomness)
-   *     3  4  [33; 687; 515; 418]
+   *     2 5 [333; 5; 918; 132; 292]
    * in *)
   print_endline (Timere.to_sexp_string timere);
   print_endline "=====";

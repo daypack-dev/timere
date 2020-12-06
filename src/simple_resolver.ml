@@ -10,7 +10,7 @@ let do_chunk ~drop_partial (n : int64) (s : Time.Interval.t Seq.t) :
           ( (x, Int64.add n x),
             aux n (fun () -> Seq.Cons ((Int64.add n x, y), rest)) )
       else if drop_partial then aux n rest
-      else fun () -> Seq.Cons ((x, Int64.add n x), aux n rest)
+      else fun () -> Seq.Cons ((x, y), aux n rest)
   in
   aux n s
 
