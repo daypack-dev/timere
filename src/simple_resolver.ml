@@ -85,18 +85,13 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
           |> intervals_of_timestamps
         | Every -> aux t search_using_tz_offset_s
         | Skip_n_points n ->
-          do_skip_n_points (Int64.of_int n)
-            (aux t search_using_tz_offset_s)
-        | Skip_n_intervals n ->
-          OSeq.drop n (aux t search_using_tz_offset_s)
+          do_skip_n_points (Int64.of_int n) (aux t search_using_tz_offset_s)
+        | Skip_n_intervals n -> OSeq.drop n (aux t search_using_tz_offset_s)
         | Next_n_points n ->
-          do_take_n_points (Int64.of_int n)
-            (aux t search_using_tz_offset_s)
-        | Next_n_intervals n ->
-          OSeq.take n (aux t search_using_tz_offset_s)
+          do_take_n_points (Int64.of_int n) (aux t search_using_tz_offset_s)
+        | Next_n_intervals n -> OSeq.take n (aux t search_using_tz_offset_s)
         | Chunk { chunk_size; drop_partial } ->
-          do_chunk chunk_size drop_partial
-            (aux t search_using_tz_offset_s)
+          do_chunk chunk_size drop_partial (aux t search_using_tz_offset_s)
         | Shift n ->
           aux t search_using_tz_offset_s
           |> Seq.map (fun (x, y) -> (Int64.add n x, Int64.add n y))
