@@ -108,7 +108,7 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
   aux t search_using_tz_offset_s
   |> filter
   |> Time.Intervals.Normalize.normalize ~skip_filter_invalid:true
-    ~skip_filter_empty:true ~skip_sort:true
+    ~skip_sort:true
 
 and mem ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
     ~(search_end_exc : Time.timestamp) (t : Time.t) (timestamp : Time.timestamp)
