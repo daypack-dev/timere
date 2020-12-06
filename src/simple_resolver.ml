@@ -55,6 +55,21 @@ let intervals_of_timestamps (s : Time.timestamp Seq.t) : Time.Interval.t Seq.t =
   in
   aux None s
 
+let timestamps_of_intervals (s : Time.Interval.t Seq.t) : Time.timestamp Seq.t =
+  s
+  |> Seq.flat_map (fun (a, b) ->
+      Seq_utils.a_to_b_exc_int64 ~a ~b
+    )
+
+module Int64_set = Set.Make (struct type t = int64 let compare = compare end)
+
+let normalize (s : Time.Interval.t Seq.t) : Time.Interval.t Seq.t =
+  s
+  |> timestamps_of_intervals
+  |> Int64_set.of_seq
+  |> Int64_set.to_seq
+  |> intervals_of_timestamps
+
 let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
     ~(search_end_exc : Time.timestamp) (t : Time.t) : Time.Interval.t Seq.t =
   let open Time in
@@ -107,8 +122,7 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
   in
   aux t search_using_tz_offset_s
   |> filter
-  |> Time.Intervals.Normalize.normalize ~skip_filter_invalid:true
-    ~skip_sort:true
+  |> normalize
 
 and mem ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
     ~(search_end_exc : Time.timestamp) (t : Time.t) (timestamp : Time.timestamp)
