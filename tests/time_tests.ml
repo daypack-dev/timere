@@ -32,5 +32,5 @@ module Qc = struct
         let t' = t |> To_sexp.to_sexp |> Of_sexp.of_sexp |> Result.get_ok in
         Time.equal t t')
 
-  let suite = [ resolver_is_same_as_simple_resolver; to_of_sexp ]
+  let suite = [ (* resolver_is_same_as_simple_resolver; *) to_of_sexp ]
 end
