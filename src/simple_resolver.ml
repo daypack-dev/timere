@@ -73,13 +73,15 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
         | Every -> aux t search_using_tz_offset_s
         | Skip_n_points n ->
           (aux t search_using_tz_offset_s)
-          |> do_chunk ~drop_partial:false 1L |> OSeq.drop n
-          |> normalize
+          |> timestamps_of_intervals
+          |> OSeq.drop n
+          |> intervals_of_timestamps
         | Skip_n_intervals n -> OSeq.drop n (aux t search_using_tz_offset_s)
         | Next_n_points n ->
           (aux t search_using_tz_offset_s)
-          |> do_chunk ~drop_partial:false 1L |> OSeq.take n
-          |> normalize
+          |> timestamps_of_intervals
+          |> OSeq.take n
+          |> intervals_of_timestamps
         | Next_n_intervals n -> OSeq.take n (aux t search_using_tz_offset_s)
         | Chunk { chunk_size; drop_partial } ->
           do_chunk ~drop_partial chunk_size (aux t search_using_tz_offset_s)
