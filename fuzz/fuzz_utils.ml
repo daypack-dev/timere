@@ -6,5 +6,5 @@ let time =
       Crowbar.list (Crowbar.range 1000);
     ]
     (fun height max_branching randomness ->
-       Builder.make ~min_year:2000 ~max_year_inc:2002 ~height ~max_branching
+       Builder.build ~min_year:2000 ~max_year_inc:2002 ~height ~max_branching
          ~randomness)
