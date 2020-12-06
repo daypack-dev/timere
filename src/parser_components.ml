@@ -20,7 +20,7 @@ let skip_non_num_string ~end_markers =
       | c -> (
           match end_markers with
           | None -> true
-          | Some x -> not (String.contains x c)))
+          | Some x -> not (String.contains x c) ))
 
 let nat_zero : (int, unit) t =
   many1_satisfy (function '0' .. '9' -> true | _ -> false)
@@ -145,10 +145,10 @@ let result_of_mparser_result (x : 'a result) : ('a, string) Result.t =
                      | Message_error s -> Some s
                      | Compound_error (s, _) -> Some s
                      | Backtrack_error _ -> res
-                     | Unknown_error -> res))
+                     | Unknown_error -> res ))
               None msgs
           with
           | None ->
             Error
               (Printf.sprintf "Unknown error, pos: %s" (string_of_pos pos))
-          | Some s -> Error s))
+          | Some s -> Error s ) )

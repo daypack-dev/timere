@@ -65,13 +65,13 @@ let check_if_f_holds_for_immediate_neighbors (type a) ~(f : a -> a -> bool)
     ~(f_exn : a -> a -> exn) (s : a Seq.t) : a Seq.t =
   let rec aux f f_exn (cur : a option) (s : a Seq.t) : a Seq.t =
     match s () with
-    | Seq.Nil -> ( match cur with None -> Seq.empty | Some x -> Seq.return x)
+    | Seq.Nil -> ( match cur with None -> Seq.empty | Some x -> Seq.return x )
     | Seq.Cons (x, rest) -> (
         match cur with
         | None -> aux f f_exn (Some x) rest
         | Some cur ->
           if f cur x then fun () -> Seq.Cons (cur, aux f f_exn (Some x) rest)
-          else raise (f_exn cur x))
+          else raise (f_exn cur x) )
   in
   aux f f_exn None s
 
@@ -80,6 +80,6 @@ let get_ok_error_list (s : ('a, 'b) result Seq.t) : ('a list, 'b) result =
     match s () with
     | Seq.Nil -> Ok (List.rev acc)
     | Seq.Cons (x, rest) -> (
-        match x with Ok x -> aux (x :: acc) rest | Error s -> Error s)
+        match x with Ok x -> aux (x :: acc) rest | Error s -> Error s )
   in
   aux [] s

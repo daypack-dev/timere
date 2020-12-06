@@ -733,7 +733,7 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
               space_for_years
             |> List.of_seq
           in
-          Pattern (space, pat))
+          Pattern (space, pat) )
     | Branching (_, branching) ->
       let space =
         branching.years |> List.map (search_space_of_year_range tz_offset_s)
@@ -747,7 +747,7 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
           Unary_op (get_search_space t, op, t)
         | _ ->
           let t = aux tz_offset_s t in
-          Unary_op (get_search_space t, op, t))
+          Unary_op (get_search_space t, op, t) )
     | Inter_list (_, l) ->
       let l = List.map (aux tz_offset_s) l in
       let space =
@@ -853,7 +853,7 @@ let intervals_of_branching tz_offset_s (b : Time.branching) :
                       | Ok dt2 ->
                         Some
                           ( Date_time.to_timestamp dt1,
-                            Int64.succ @@ Date_time.to_timestamp dt2 )))
+                            Int64.succ @@ Date_time.to_timestamp dt2 ) ) )
               | `Range_exc (start, end_exc) -> (
                   match
                     Date_time.make ~year ~month ~day ~hour:start.hour
@@ -870,7 +870,7 @@ let intervals_of_branching tz_offset_s (b : Time.branching) :
                       | Ok dt2 ->
                         Some
                           ( Date_time.to_timestamp dt1,
-                            Date_time.to_timestamp dt2 ))))
+                            Date_time.to_timestamp dt2 ) ) ))
            hmss)
       month_days
   in
@@ -910,7 +910,7 @@ let intervals_of_branching tz_offset_s (b : Time.branching) :
          Seq.flat_map
            (fun month ->
               let month_days =
-                ({
+                ( {
                   years = [ year ];
                   months = [ month ];
                   month_days = [];
@@ -920,7 +920,7 @@ let intervals_of_branching tz_offset_s (b : Time.branching) :
                   seconds = [ 0 ];
                   timestamps = [];
                 }
-                  : Time.Pattern.pattern)
+                  : Time.Pattern.pattern )
                 |> Resolve_pattern.matching_date_times
                   (Search_param.make ~search_using_tz_offset_s:tz_offset_s
                      search_space)
@@ -1009,7 +1009,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
           |> Seq.map (fun (start, end_exc) -> (start, Int64.add end_exc n))
           |> Intervals.Normalize.normalize ~skip_filter_empty:true
             ~skip_sort:true ~skip_filter_invalid:true
-        | Change_tz_offset_s _ -> s)
+        | Change_tz_offset_s _ -> s )
     | Interval_inc (_, a, b) -> Seq.return (a, Int64.succ b)
     | Interval_exc (_, a, b) -> Seq.return (a, b)
     | Round_robin_pick_list (_, l) ->

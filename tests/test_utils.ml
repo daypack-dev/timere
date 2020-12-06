@@ -234,13 +234,13 @@ let default_interval_format_string =
    {eyear} {emon:Xxx} {emday:0X} {ewday:Xxx} {ehour:0X}:{emin:0X}:{esec:0X})"
 
 let date_time_testable : (module Alcotest.TESTABLE) =
-  (module struct
+  ( module struct
     type t = Time.Date_time.t
 
     let pp = Printer.pp_date_time default_date_time_format_string
 
     let equal = ( = )
-  end)
+  end )
 
 (* let time_pattern_testable : (module Alcotest.TESTABLE) =
  *   ( module struct

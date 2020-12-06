@@ -19,10 +19,10 @@ module Qc = struct
     QCheck.Test.make ~count:1 ~name:"resolver_is_same_as_simple_resolver" time
       (fun t ->
          OSeq.equal ~eq:( = )
-           (Result.get_ok
-            @@ Resolver.resolve
-              Time.(
-                inter [ t; interval_dt_exc search_start_dt search_end_exc_dt ])
+           ( Result.get_ok
+             @@ Resolver.resolve
+               Time.(
+                 inter [ t; interval_dt_exc search_start_dt search_end_exc_dt ])
            )
            (Simple_resolver.resolve ~search_start ~search_end_exc
               ~search_using_tz_offset_s:0 t))

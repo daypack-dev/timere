@@ -17,13 +17,13 @@ let do_chunk ~drop_partial (n : int64) (s : Time.Interval.t Seq.t) :
 let intervals_of_timestamps (s : Time.timestamp Seq.t) : Time.Interval.t Seq.t =
   let rec aux acc s =
     match s () with
-    | Seq.Nil -> ( match acc with None -> Seq.empty | Some x -> Seq.return x)
+    | Seq.Nil -> ( match acc with None -> Seq.empty | Some x -> Seq.return x )
     | Seq.Cons (x, rest) -> (
         match acc with
         | None -> aux (Some (x, Int64.succ x)) rest
         | Some (x', y') ->
           if y' = x then aux (Some (x', Int64.succ x)) rest
-          else fun () -> Seq.Cons ((x', y'), aux None s))
+          else fun () -> Seq.Cons ((x', y'), aux None s) )
   in
   aux None s
 
@@ -92,7 +92,7 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
         | Lengthen n ->
           aux t search_using_tz_offset_s
           |> Seq.map (fun (x, y) -> (x, Int64.add n y))
-        | Change_tz_offset_s n -> aux t n)
+        | Change_tz_offset_s n -> aux t n )
     | _ ->
       Seq_utils.a_to_b_exc_int64 ~a:search_start ~b:search_end_exc
       |> Seq.filter
@@ -200,47 +200,47 @@ and mem ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
                           Result.get_ok @@ month_of_tm_int x)
                       |> Seq.map (fun month -> (year, month))))
           in
-          (match branching.days with
-           | Month_days days ->
-             let year_month_days =
-               year_months
-               |> Seq.flat_map (fun (year, month) ->
-                   let day_count_of_month =
-                     day_count_of_month ~year ~month
-                   in
-                   days
-                   |> List.to_seq
-                   |> OSeq.flat_map (fun day_range ->
-                       match day_range with
-                       | `Range_inc (x, y) ->
-                         let x =
-                           if x < 0 then day_count_of_month + x + 1
-                           else x
-                         in
-                         let y =
-                           if y < 0 then day_count_of_month + y + 1
-                           else y
-                         in
-                         OSeq.(x -- y)
-                         |> Seq.map (fun x -> (year, month, x))
-                       | `Range_exc (x, y) ->
-                         let x =
-                           if x < 0 then day_count_of_month + x + 1
-                           else x
-                         in
-                         let y =
-                           if y < 0 then day_count_of_month + y + 1
-                           else y
-                         in
-                         OSeq.(x --^ y)
-                         |> Seq.map (fun x -> (year, month, x))))
-             in
-             OSeq.exists
-               (fun (year, month, day) ->
-                  dt.year = year && dt.month = month && dt.day = day)
-               year_month_days
-           | Weekdays days ->
-             List.mem weekday (Weekday_ranges.Flatten.flatten_list days))
+          ( match branching.days with
+            | Month_days days ->
+              let year_month_days =
+                year_months
+                |> Seq.flat_map (fun (year, month) ->
+                    let day_count_of_month =
+                      day_count_of_month ~year ~month
+                    in
+                    days
+                    |> List.to_seq
+                    |> OSeq.flat_map (fun day_range ->
+                        match day_range with
+                        | `Range_inc (x, y) ->
+                          let x =
+                            if x < 0 then day_count_of_month + x + 1
+                            else x
+                          in
+                          let y =
+                            if y < 0 then day_count_of_month + y + 1
+                            else y
+                          in
+                          OSeq.(x -- y)
+                          |> Seq.map (fun x -> (year, month, x))
+                        | `Range_exc (x, y) ->
+                          let x =
+                            if x < 0 then day_count_of_month + x + 1
+                            else x
+                          in
+                          let y =
+                            if y < 0 then day_count_of_month + y + 1
+                            else y
+                          in
+                          OSeq.(x --^ y)
+                          |> Seq.map (fun x -> (year, month, x))))
+              in
+              OSeq.exists
+                (fun (year, month, day) ->
+                   dt.year = year && dt.month = month && dt.day = day)
+                year_month_days
+            | Weekdays days ->
+              List.mem weekday (Weekday_ranges.Flatten.flatten_list days) )
           && List.exists
             (fun hmss_range ->
                match hmss_range with
@@ -261,6 +261,6 @@ and mem ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
           resolve ~search_using_tz_offset_s ~search_start ~search_end_exc t
           |> OSeq.exists (fun (x, y) -> x <= timestamp && timestamp < y)
         | Inter_list (_, l) -> List.for_all (fun t -> aux t timestamp) l
-        | Union_list (_, l) -> List.exists (fun t -> aux t timestamp) l)
+        | Union_list (_, l) -> List.exists (fun t -> aux t timestamp) l )
   in
   aux t timestamp

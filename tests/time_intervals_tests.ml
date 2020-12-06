@@ -10,14 +10,14 @@ module Alco = struct
   let round_robin_simple1 () =
     Alcotest.(check (list (pair int64 int64)))
       "same list" [ (0L, 1L); (4L, 5L) ]
-      ([
+      ( [
         [ (0L, 1L) ];
         [ (-10L, -9L); (-7L, -5L); (-1L, 1L); (0L, 1L); (3L, 5L) ];
         [ (4L, 5L) ];
       ]
         |> List.map List.to_seq
         |> Time.Intervals.Round_robin.merge_multi_list_round_robin_non_decreasing
-        |> List.of_seq)
+        |> List.of_seq )
 
   let suite =
     [ Alcotest.test_case "round_robin_simple1" `Quick round_robin_simple1 ]
@@ -178,8 +178,8 @@ module Qc = struct
            |> Time.Intervals.invert ~start ~end_exc
            |> List.of_seq
            |> (fun inverted ->
-               (Time.Intervals.Slice.slice ~start ~end_exc (List.to_seq l)
-                |> List.of_seq)
+               ( Time.Intervals.Slice.slice ~start ~end_exc (List.to_seq l)
+                 |> List.of_seq )
                @ inverted)
            |> List.to_seq
            |> Time.Intervals.Normalize.normalize
