@@ -13,6 +13,7 @@ bug-reports: "https://github.com/daypack-dev/timere/issues"
 dev-repo: "git+https://github.com/daypack-dev/timere"
 depends: [
   "ocaml" {>= "4.08.0"}
+  "bisect_ppx" {dev & >= "2.5.0"}
   "dune" {>= "1.11.0"}
   "oseq"
   "mparser"
