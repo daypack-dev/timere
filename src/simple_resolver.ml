@@ -66,51 +66,51 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
          else Some (max search_start x, min search_end_exc y))
       s
   in
-  let rec aux t cur end_exc search_using_tz_offset_s =
+  let rec aux t search_using_tz_offset_s =
     match t with
     | Timestamp_interval_seq (_, s) -> s
     | Round_robin_pick_list (_, l) ->
       l
-      |> List.map (fun t -> aux t cur end_exc search_using_tz_offset_s)
+      |> List.map (fun t -> aux t search_using_tz_offset_s)
       |> Time.Intervals.Round_robin
          .merge_multi_list_round_robin_non_decreasing ~skip_check:true
     | Unary_op (_, op, t) -> (
         match op with
         | Not ->
-          Seq_utils.a_to_b_exc_int64 ~a:cur ~b:end_exc
+          Seq_utils.a_to_b_exc_int64 ~a:search_start ~b:search_end_exc
           |> Seq.filter (fun x ->
               Stdlib.not
                 (mem ~search_start ~search_end_exc
                    ~search_using_tz_offset_s t x))
           |> intervals_of_timestamps
-        | Every -> aux t cur end_exc search_using_tz_offset_s
+        | Every -> aux t search_using_tz_offset_s
         | Skip_n_points n ->
           do_skip_n_points (Int64.of_int n)
-            (aux t cur end_exc search_using_tz_offset_s)
+            (aux t search_using_tz_offset_s)
         | Skip_n_intervals n ->
-          OSeq.drop n (aux t cur end_exc search_using_tz_offset_s)
+          OSeq.drop n (aux t search_using_tz_offset_s)
         | Next_n_points n ->
           do_take_n_points (Int64.of_int n)
-            (aux t cur end_exc search_using_tz_offset_s)
+            (aux t search_using_tz_offset_s)
         | Next_n_intervals n ->
-          OSeq.take n (aux t cur end_exc search_using_tz_offset_s)
+          OSeq.take n (aux t search_using_tz_offset_s)
         | Chunk { chunk_size; drop_partial } ->
           do_chunk chunk_size drop_partial
-            (aux t cur end_exc search_using_tz_offset_s)
+            (aux t search_using_tz_offset_s)
         | Shift n ->
-          aux t cur end_exc search_using_tz_offset_s
+          aux t search_using_tz_offset_s
           |> Seq.map (fun (x, y) -> (Int64.add n x, Int64.add n y))
         | Lengthen n ->
-          aux t cur end_exc search_using_tz_offset_s
+          aux t search_using_tz_offset_s
           |> Seq.map (fun (x, y) -> (x, Int64.add n y))
-        | Change_tz_offset_s n -> aux t cur end_exc n)
+        | Change_tz_offset_s n -> aux t n)
     | _ ->
-      Seq_utils.a_to_b_exc_int64 ~a:cur ~b:end_exc
+      Seq_utils.a_to_b_exc_int64 ~a:search_start ~b:search_end_exc
       |> Seq.filter
         (mem ~search_using_tz_offset_s ~search_start ~search_end_exc t)
       |> intervals_of_timestamps
   in
-  aux t search_start search_end_exc search_using_tz_offset_s
+  aux t search_using_tz_offset_s
   |> filter
   |> Time.Intervals.Normalize.normalize ~skip_filter_invalid:true
     ~skip_filter_empty:true ~skip_sort:true
