@@ -51,7 +51,7 @@ let intervals_of_timestamps (s : Time.timestamp Seq.t) : Time.Interval.t Seq.t =
         | None -> aux (Some (x, Int64.succ x)) rest
         | Some (x', y') ->
           if y' = x then aux (Some (x', Int64.succ x)) rest
-          else fun () -> Seq.Cons ((x', y'), aux None rest))
+          else fun () -> Seq.Cons ((x', y'), aux None s))
   in
   aux None s
 
