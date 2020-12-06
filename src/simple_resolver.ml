@@ -28,12 +28,13 @@ let intervals_of_timestamps (s : Time.timestamp Seq.t) : Time.Interval.t Seq.t =
   aux None s
 
 let timestamps_of_intervals (s : Time.Interval.t Seq.t) : Time.timestamp Seq.t =
-  s
-  |> Seq.flat_map (fun (a, b) ->
-      Seq_utils.a_to_b_exc_int64 ~a ~b
-    )
+  s |> Seq.flat_map (fun (a, b) -> Seq_utils.a_to_b_exc_int64 ~a ~b)
 
-module Int64_set = Set.Make (struct type t = int64 let compare = compare end)
+module Int64_set = Set.Make (struct
+    type t = int64
+
+    let compare = compare
+  end)
 
 let normalize (s : Time.Interval.t Seq.t) : Time.Interval.t Seq.t =
   s
@@ -72,13 +73,13 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
           |> intervals_of_timestamps
         | Every -> aux t search_using_tz_offset_s
         | Skip_n_points n ->
-          (aux t search_using_tz_offset_s)
+          aux t search_using_tz_offset_s
           |> timestamps_of_intervals
           |> OSeq.drop n
           |> intervals_of_timestamps
         | Skip_n_intervals n -> OSeq.drop n (aux t search_using_tz_offset_s)
         | Next_n_points n ->
-          (aux t search_using_tz_offset_s)
+          aux t search_using_tz_offset_s
           |> timestamps_of_intervals
           |> OSeq.take n
           |> intervals_of_timestamps
@@ -98,9 +99,7 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
         (mem ~search_using_tz_offset_s ~search_start ~search_end_exc t)
       |> intervals_of_timestamps
   in
-  aux t search_using_tz_offset_s
-  |> filter
-  |> normalize
+  aux t search_using_tz_offset_s |> filter |> normalize
 
 and mem ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
     ~(search_end_exc : Time.timestamp) (t : Time.t) (timestamp : Time.timestamp)

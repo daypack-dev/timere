@@ -996,8 +996,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
           |> Intervals.Normalize.normalize ~skip_filter_empty:true
             ~skip_sort:true ~skip_filter_invalid:true
         | Skip_n_intervals n -> OSeq.drop n s
-        | Next_n_points n ->
-          do_take_n_points (Int64.of_int n) s
+        | Next_n_points n -> do_take_n_points (Int64.of_int n) s
         | Next_n_intervals n -> OSeq.take n s
         | Chunk { chunk_size; drop_partial } ->
           Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s

@@ -143,8 +143,8 @@ let make_unary_op ~rng t =
   | 8 -> Time.change_tz_offset_s (rng ()) t
   | _ -> failwith "Unexpected case"
 
-let build ~min_year ~max_year_inc ~height ~max_branching ~(randomness : int list)
-  : Time.t =
+let build ~min_year ~max_year_inc ~height ~max_branching
+    ~(randomness : int list) : Time.t =
   if height <= 0 then invalid_arg "make";
   let rng = make_rng ~randomness in
   let rec aux height =
