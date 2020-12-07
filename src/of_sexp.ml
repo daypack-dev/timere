@@ -300,4 +300,8 @@ let of_sexp (x : CCSexp.t) =
   | Invalid_argument msg -> Error msg
 
 let of_sexp_string s =
-  match CCSexp.parse_string s with Error msg -> Error msg | Ok x -> of_sexp x
+  let res =
+    try CCSexp.parse_string s
+    with _ -> Error "Failed to parse string into sexp"
+  in
+  match res with Error msg -> Error msg | Ok x -> of_sexp x
