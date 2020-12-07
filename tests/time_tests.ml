@@ -28,7 +28,7 @@ module Qc = struct
               ~search_using_tz_offset_s:0 t))
 
   let to_of_sexp =
-    QCheck.Test.make ~count:100_000 ~name:"to_of_sexp" time (fun t ->
+    QCheck.Test.make ~count:10_000 ~name:"to_of_sexp" time (fun t ->
         let t' = t |> To_sexp.to_sexp |> Of_sexp.of_sexp |> Result.get_ok in
         Time.equal t t')
 
