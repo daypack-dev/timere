@@ -45,6 +45,13 @@ cinaps :
 	$(OCAMLFORMAT)
 	$(OCPINDENT)
 
+.PHONY: fuzz-sexp
+fuzz-sexp :
+	mkdir -p fuzz-sexp-input
+	echo "abcd" > fuzz-sexp-input/dummy
+	mkdir -p fuzz-sexp-output
+	afl-fuzz -t 1000 -i fuzz-sexp-input -o fuzz-sexp-output ./_build/default/fuzz/to_of_sexp.exe @@
+
 .PHONY: fuzz-resolver
 fuzz-resolver :
 	mkdir -p fuzz-resolver-input
