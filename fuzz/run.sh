@@ -1,4 +1,10 @@
+#!/bin/bash
+
 script_dir=$(dirname $(readlink -f "$0"))
+
+echo "Building"
+
+dune build @all
 
 if [[ "$1" == "" ]]; then
   echo "Please enter a fuzzing test to run"

@@ -4,7 +4,7 @@ script_dir=$(dirname $(readlink -f "$0"))
 
 echo "Building"
 
-dune build
+dune build @all
 
 echo ""
 
