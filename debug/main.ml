@@ -142,9 +142,15 @@ let debug_resolver () =
           | Error msg -> Printf.printf "Error: %s\n" msg) );
   print_newline ()
 
+let debug_ccsexp_parse_string () =
+  CCSexp.parse_string "\"\\256\""
+  |> ignore
+
 (* let () = debug_branching () *)
 
 (* let () =
  *   debug_parsing () *)
 
-let () = debug_resolver ()
+(* let () = debug_resolver () *)
+
+let () = debug_ccsexp_parse_string ()
