@@ -10,6 +10,6 @@ echo ""
 
 echo "Fuzzing tests available:"
 
-for file in $script_dir/../_build/default/fuzz/*.exe; do
-  echo "- "$(basename $file)
+for file in "$script_dir"/../_build/default/fuzz/*.exe; do
+  echo "- "$(basename $file | sed 's/\.exe$//')
 done
