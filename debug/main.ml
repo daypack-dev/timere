@@ -42,38 +42,12 @@ let debug_branching () =
         print_newline () )
 
 let debug_parsing () =
-  let expr = "dec to jan" in
-  let search_years_ahead = 5 in
+  let expr = "jan to dec" in
   match Timere_parse.timere expr with
   | Error msg -> print_endline msg
   | Ok timere -> (
-      let cur_date_time = Result.get_ok @@ Timere.Date_time.cur () in
-      let search_end_exc =
-        Result.get_ok
-        @@ Timere.Date_time.make
-          ~year:(cur_date_time.year + search_years_ahead)
-          ~month:cur_date_time.month ~day:cur_date_time.day
-          ~hour:cur_date_time.hour ~minute:cur_date_time.minute
-          ~second:cur_date_time.second ~tz_offset_s:cur_date_time.tz_offset_s
-      in
-      let timere =
-        Timere.(inter [ timere; interval_dt_exc cur_date_time search_end_exc ])
-      in
-      match Timere.resolve timere with
-      | Error msg -> print_endline msg
-      | Ok s -> (
-          match s () with
-          | Seq.Nil -> print_endline "No matching time slots"
-          | Seq.Cons _ ->
-            s
-            |> OSeq.take 100
-            |> OSeq.iter (fun ts ->
-                match
-                  Timere.sprintf_interval default_interval_format_string ts
-                with
-                | Ok s -> Printf.printf "%s\n" s
-                | Error msg -> Printf.printf "Error: %s\n" msg);
-            print_newline () ) )
+      print_endline (Timere.to_sexp_string timere)
+    )
 
 let debug_resolver () =
   (*   let s =
@@ -146,9 +120,9 @@ let debug_ccsexp_parse_string () = CCSexp.parse_string "\"\\256\"" |> ignore
 
 (* let () = debug_branching () *)
 
-(* let () =
- *   debug_parsing () *)
+let () =
+  debug_parsing ()
 
 (* let () = debug_resolver () *)
 
-let () = debug_ccsexp_parse_string ()
+(* let () = debug_ccsexp_parse_string () *)
