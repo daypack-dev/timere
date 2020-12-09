@@ -311,7 +311,7 @@ module Utils : sig
   val build :
     min_year:int ->
     max_year_inc:int ->
-    height:int ->
+    max_height:int ->
     max_branching:int ->
     randomness:int list ->
     t

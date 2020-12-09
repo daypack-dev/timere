@@ -143,10 +143,16 @@ let make_unary_op ~rng t =
   | 8 -> Time.change_tz_offset_s (rng ()) t
   | _ -> failwith "Unexpected case"
 
-let build ~min_year ~max_year_inc ~height ~max_branching
+let build ~min_year ~max_year_inc ~max_height ~max_branching
     ~(randomness : int list) : Time.t =
-  if height <= 0 then invalid_arg "make";
+  if max_height <= 0 then invalid_arg "make";
   let rng = make_rng ~randomness in
+  let new_height height =
+    let reduc =
+      1 + (rng () mod (height - 1))
+    in
+    height - reduc
+  in
   let rec aux height =
     if height = 1 then
       match rng () mod 5 with
@@ -158,22 +164,22 @@ let build ~min_year ~max_year_inc ~height ~max_branching
       | _ -> failwith "Unexpected case"
     else
       match rng () mod 3 with
-      | 0 -> make_unary_op ~rng (aux (pred height))
+      | 0 -> make_unary_op ~rng (aux (new_height height))
       | 1 ->
         OSeq.(0 -- Stdlib.min max_branching (rng ()))
-        |> Seq.map (fun _ -> aux (pred height))
+        |> Seq.map (fun _ -> aux (new_height height))
         |> List.of_seq
         |> Time.inter
       | 2 ->
         OSeq.(0 -- Stdlib.min max_branching (rng ()))
-        |> Seq.map (fun _ -> aux (pred height))
+        |> Seq.map (fun _ -> aux (new_height height))
         |> List.of_seq
         |> Time.union
       (* | 3 ->
        *   OSeq.(0 -- Stdlib.min max_branching (rng ()))
-       *   |> Seq.map (fun _ -> aux (pred height))
+       *   |> Seq.map (fun _ -> aux (new_height height))
        *   |> List.of_seq
        *   |> Time.round_robin_pick *)
       | _ -> failwith "Unexpected case"
   in
-  aux height
+  aux max_height

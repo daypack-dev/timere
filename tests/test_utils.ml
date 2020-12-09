@@ -256,8 +256,8 @@ let date_time_testable : (module Alcotest.TESTABLE) =
 let time_gen : Time.t QCheck.Gen.t =
   let open QCheck.Gen in
   map3
-    (fun height max_branching randomness ->
-       Builder.build ~min_year:2000 ~max_year_inc:2002 ~height ~max_branching
+    (fun max_height max_branching randomness ->
+       Builder.build ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching
          ~randomness)
     (int_range 1 3) (int_range 1 5)
     (list_size (int_range 1 10) (int_bound 100))
