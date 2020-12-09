@@ -148,9 +148,7 @@ let build ~min_year ~max_year_inc ~max_height ~max_branching
   if max_height <= 0 then invalid_arg "make";
   let rng = make_rng ~randomness in
   let new_height height =
-    let reduc =
-      1 + (rng () mod (height - 1))
-    in
+    let reduc = 1 + (rng () mod (height - 1)) in
     height - reduc
   in
   let rec aux height =

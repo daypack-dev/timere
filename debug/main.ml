@@ -45,9 +45,7 @@ let debug_parsing () =
   let expr = "jan to dec" in
   match Timere_parse.timere expr with
   | Error msg -> print_endline msg
-  | Ok timere -> (
-      print_endline (Timere.to_sexp_string timere)
-    )
+  | Ok timere -> print_endline (Timere.to_sexp_string timere)
 
 let debug_resolver () =
   (*   let s =
@@ -120,8 +118,7 @@ let debug_ccsexp_parse_string () = CCSexp.parse_string "\"\\256\"" |> ignore
 
 (* let () = debug_branching () *)
 
-let () =
-  debug_parsing ()
+let () = debug_parsing ()
 
 (* let () = debug_resolver () *)
 
