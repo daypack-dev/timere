@@ -42,7 +42,7 @@ let debug_branching () =
         print_newline () )
 
 let debug_parsing () =
-  let expr = "jan to dec" in
+  let expr = "jan to feb, apr" in
   match Timere_parse.timere expr with
   | Error msg -> print_endline msg
   | Ok timere -> print_endline (Timere.to_sexp_string timere)
