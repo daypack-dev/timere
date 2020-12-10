@@ -293,10 +293,14 @@ val of_sexp_string : string -> (t, string) result
 module Utils : sig
   val flatten_month_ranges : month range Seq.t -> (month Seq.t, unit) result
 
+  val flatten_month_day_ranges : int range Seq.t -> (int Seq.t, unit) result
+
   val flatten_weekday_ranges :
     weekday range Seq.t -> (weekday Seq.t, unit) result
 
   val flatten_month_range_list : month range list -> (month list, unit) result
+
+  val flatten_month_day_range_list : int range list -> (int list, unit) result
 
   val flatten_weekday_range_list :
     weekday range list -> (weekday list, unit) result

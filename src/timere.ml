@@ -61,6 +61,16 @@ module Utils = struct
     try Ok (Month_ranges.Flatten.flatten_list months)
     with Range.Range_is_invalid -> Error ()
 
+  let flatten_month_day_ranges (month_days : int range Seq.t) :
+    (int Seq.t, unit) Result.t =
+    try Ok (Month_day_ranges.Flatten.flatten month_days)
+    with Range.Range_is_invalid -> Error ()
+
+  let flatten_month_day_range_list (month_days : int range list) :
+    (int list, unit) Result.t =
+    try Ok (Month_day_ranges.Flatten.flatten_list month_days)
+    with Range.Range_is_invalid -> Error ()
+
   let flatten_weekday_ranges (weekdays : weekday range Seq.t) :
     (weekday Seq.t, unit) Result.t =
     try Ok (Weekday_ranges.Flatten.flatten weekdays)
