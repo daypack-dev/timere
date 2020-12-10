@@ -82,6 +82,4 @@ module Utils = struct
     with Range.Range_is_invalid -> Error ()
 
   let resolve_simple = Simple_resolver.resolve
-
-  let build = Builder.build
 end

@@ -311,12 +311,4 @@ module Utils : sig
     search_end_exc:timestamp ->
     t ->
     interval Seq.t
-
-  val build :
-    min_year:int ->
-    max_year_inc:int ->
-    max_height:int ->
-    max_branching:int ->
-    randomness:int list ->
-    t
 end
