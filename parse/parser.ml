@@ -189,13 +189,12 @@ module Ast_normalize = struct
     token list =
     let rec recognize_single_interval tokens : token list =
       match tokens with
-      | (pos_x, x) :: [] -> (
+      | [ (pos_x, x) ] -> (
           match extract_single x with
           | Some x ->
             (pos_x, constr_grouped [ `Range_inc (x, x) ])
             :: recognize_single_interval []
-          | _ -> recognize_fallback tokens
-        )
+          | _ -> recognize_fallback tokens )
       | (pos_x, x) :: (pos_comma, Comma) :: rest -> (
           match extract_single x with
           | Some x ->
@@ -529,7 +528,8 @@ let flatten_weekdays pos (l : Timere.weekday Timere.range list) =
 let flatten_month_days pos (l : int Timere.range list) =
   Timere.Utils.flatten_month_day_range_list l
   |> Result.map_error (fun () ->
-      Some (Printf.sprintf "%s: Invalid month day ranges" (string_of_pos pos)))
+      Some
+        (Printf.sprintf "%s: Invalid month day ranges" (string_of_pos pos)))
 
 let pattern ?(years = []) ?(months = []) ?pos_month_days ?(month_days = [])
     ?(weekdays = []) ?(hms : Timere.hms option) () =

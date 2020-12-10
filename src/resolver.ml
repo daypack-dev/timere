@@ -828,8 +828,8 @@ let optimize_search_space default_tz_offset_s t =
 let positive_day_of_zero_or_negative_day ~day_count day =
   if day <= 0 then day + 1 + day_count else day
 
-let intervals_of_branching tz_offset_s (space : Time.search_space) (b : Time.branching) :
-  Time.Interval.t Seq.t =
+let intervals_of_branching tz_offset_s (space : Time.search_space)
+    (b : Time.branching) : Time.Interval.t Seq.t =
   let open Time in
   let intervals_of_month_days year month month_days hmss =
     Seq.flat_map
@@ -877,21 +877,25 @@ let intervals_of_branching tz_offset_s (space : Time.search_space) (b : Time.bra
   let years_from_search_space =
     space
     |> List.to_seq
-    |>
-    Seq.flat_map (fun (x, y) ->
-        let dt_x = Result.get_ok @@ Time.Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s x in
-        let dt_y = Result.get_ok @@ Time.Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s y in
-        fun () -> Seq.Cons (dt_x.year, Seq.return dt_y.year)
-      )
+    |> Seq.flat_map (fun (x, y) ->
+        let dt_x =
+          Result.get_ok
+          @@ Time.Date_time.of_timestamp
+            ~tz_offset_s_of_date_time:tz_offset_s x
+        in
+        let dt_y =
+          Result.get_ok
+          @@ Time.Date_time.of_timestamp
+            ~tz_offset_s_of_date_time:tz_offset_s y
+        in
+        fun () -> Seq.Cons (dt_x.year, Seq.return dt_y.year))
     |> Int_set.of_seq
   in
   let original_years =
-    b.years |> List.to_seq |> Year_ranges.Flatten.flatten |>
-    Int_set.of_seq
+    b.years |> List.to_seq |> Year_ranges.Flatten.flatten |> Int_set.of_seq
   in
   let years =
-    Int_set.inter years_from_search_space original_years
-    |> Int_set.to_seq
+    Int_set.inter years_from_search_space original_years |> Int_set.to_seq
   in
   let months = b.months |> List.to_seq |> Month_ranges.Flatten.flatten in
   let hmss = b.hmss |> List.to_seq in
