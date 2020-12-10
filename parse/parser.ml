@@ -519,6 +519,11 @@ let flatten_weekdays pos (l : Timere.weekday Timere.range list) =
   |> Result.map_error (fun () ->
       Some (Printf.sprintf "%s: Invalid weekday ranges" (string_of_pos pos)))
 
+let flatten_month_days pos (l : int Timere.range list) =
+  Timere.Utils.flatten_month_day_range_list l
+  |> Result.map_error (fun () ->
+      Some (Printf.sprintf "%s: Invalid month day ranges" (string_of_pos pos)))
+
 let pattern ?(years = []) ?(months = []) ?pos_month_days ?(month_days = [])
     ?(weekdays = []) ?(hms : Timere.hms option) () =
   if not (List.for_all (fun x -> 1 <= x && x <= 31) month_days) then
@@ -542,6 +547,11 @@ let t_rules : (token list -> (Timere.t, string option) Result.t) list =
       | [ (_, Weekday x) ] -> Ok (Timere.weekdays [ x ])
       | [ (pos, Weekdays l) ] ->
         flatten_weekdays pos l |> Result.map (fun l -> Timere.weekdays l)
+      | _ -> Error None);
+    (function
+      | [ (_, Month_day x) ] -> Ok (Timere.month_days [ x ])
+      | [ (pos, Month_days l) ] ->
+        flatten_month_days pos l |> Result.map (fun l -> Timere.month_days l)
       | _ -> Error None);
     (function
       | [ (_, Month x) ] -> Ok (Timere.months [ x ])
