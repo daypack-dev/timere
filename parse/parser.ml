@@ -1,6 +1,10 @@
 open MParser
 open Parser_components
 
+exception Invalid_data of string
+
+let invalid_data s = raise (Invalid_data s)
+
 type guess =
   | Dot
   | Comma
@@ -244,7 +248,7 @@ module Ast_normalize = struct
       ~constr_grouped:(fun x -> Weekdays x)
       l
 
-  let recognize_month_day (l : token list) : token list =
+  let recognize_month_days (l : token list) : token list =
     let rec recognize_single tokens =
       match tokens with
       | (pos_x, Nat x) :: (_, St) :: rest
@@ -279,103 +283,102 @@ module Ast_normalize = struct
     | Hms_am
     | Hms_pm
 
-  let recognize_hms (l : token list) : (token list, string) Result.t =
+  let recognize_hmss (l : token list) : token list =
     let make_hms mode ~pos_hour ~hour ?pos_minute ?(minute = 0) ?pos_second
-        ?(second = 0) () : (token, string) Result.t =
+        ?(second = 0) () : token =
       let hour =
         match mode with
         | Hms_24 ->
-          if 0 <= hour && hour < 24 then Ok hour
+          if 0 <= hour && hour < 24 then hour
           else
-            Error
+            invalid_data
               (Printf.sprintf "%s: Invalid hour: %d" (string_of_pos pos_hour)
                  hour)
         | Hms_am ->
-          if 1 <= hour && hour <= 12 then Ok (hour mod 12)
+          if 1 <= hour && hour <= 12 then (hour mod 12)
           else
-            Error
+            invalid_data
               (Printf.sprintf "%s: Invalid hour: %d am"
                  (string_of_pos pos_hour) hour)
         | Hms_pm ->
-          if 1 <= hour && hour <= 12 then Ok ((hour mod 12) + 12)
+          if 1 <= hour && hour <= 12 then ((hour mod 12) + 12)
           else
-            Error
+            invalid_data
               (Printf.sprintf "%s: Invalid hour: %d pm"
                  (string_of_pos pos_hour) hour)
       in
-      match hour with
-      | Error msg -> Error msg
-      | Ok hour ->
         if 0 <= minute && minute < 60 then
           if 0 <= second && second < 60 then
-            Ok (pos_hour, Hms { hour; minute; second })
+            (pos_hour, Hms { hour; minute; second })
           else
-            Error
+            invalid_data
               (Printf.sprintf "%s: Invalid second: %d"
                  (string_of_pos @@ Option.get @@ pos_second)
                  minute)
         else
-          Error
+          invalid_data
             (Printf.sprintf "%s: Invalid minute: %d"
                (string_of_pos @@ Option.get @@ pos_minute)
                minute)
     in
-    let rec aux acc (l : token list) : (token list, string) Result.t =
+    let rec aux acc (l : token list) : token list =
       match l with
       | (pos_hour, Nat hour)
         :: (_, Colon)
         :: (pos_minute, Nat minute)
         :: (_, Colon) :: (pos_second, Nat second) :: (_, Am) :: rest -> (
-          match
+          let token =
             make_hms Hms_am ~pos_hour ~hour ~pos_minute ~minute ~pos_second
               ~second ()
-          with
-          | Error msg -> Error msg
-          | Ok token -> aux (token :: acc) rest )
+          in
+          aux (token :: acc) rest )
       | (pos_hour, Nat hour)
         :: (_, Colon)
         :: (pos_minute, Nat minute)
         :: (_, Colon) :: (pos_second, Nat second) :: (_, Pm) :: rest -> (
-          match
+          let token =
             make_hms Hms_pm ~pos_hour ~hour ~pos_minute ~minute ~pos_second
               ~second ()
-          with
-          | Error msg -> Error msg
-          | Ok token -> aux (token :: acc) rest )
+          in
+          aux (token :: acc) rest )
       | (pos_hour, Nat hour)
         :: (_, Colon)
         :: (pos_minute, Nat minute)
         :: (_, Colon) :: (pos_second, Nat second) :: rest -> (
-          match
+          let token =
             make_hms Hms_24 ~pos_hour ~hour ~pos_minute ~minute ~pos_second
               ~second ()
-          with
-          | Error msg -> Error msg
-          | Ok token -> aux (token :: acc) rest )
+          in
+          aux (token :: acc) rest )
       | (pos_hour, Nat hour)
         :: (_, Colon) :: (pos_minute, Nat minute) :: (_, Am) :: rest -> (
-          match make_hms Hms_am ~pos_hour ~hour ~pos_minute ~minute () with
-          | Error msg -> Error msg
-          | Ok token -> aux (token :: acc) rest )
+          let token =
+          make_hms Hms_am ~pos_hour ~hour ~pos_minute ~minute ()
+          in
+          aux (token :: acc) rest )
       | (pos_hour, Nat hour)
         :: (_, Colon) :: (pos_minute, Nat minute) :: (_, Pm) :: rest -> (
-          match make_hms Hms_pm ~pos_hour ~hour ~pos_minute ~minute () with
-          | Error msg -> Error msg
-          | Ok token -> aux (token :: acc) rest )
+          let token =
+          make_hms Hms_pm ~pos_hour ~hour ~pos_minute ~minute ()
+          in
+          aux (token :: acc) rest )
       | (pos_hour, Nat hour) :: (_, Colon) :: (pos_minute, Nat minute) :: rest
         -> (
-            match make_hms Hms_24 ~pos_hour ~hour ~pos_minute ~minute () with
-            | Error msg -> Error msg
-            | Ok token -> aux (token :: acc) rest )
+            let token =
+            make_hms Hms_24 ~pos_hour ~hour ~pos_minute ~minute ()
+              in
+            aux (token :: acc) rest )
       | (pos_hour, Nat hour) :: (_, Am) :: rest -> (
-          match make_hms Hms_am ~pos_hour ~hour () with
-          | Error msg -> Error msg
-          | Ok token -> aux (token :: acc) rest )
+          let token =
+          make_hms Hms_am ~pos_hour ~hour ()
+          in
+          aux (token :: acc) rest )
       | (pos_hour, Nat hour) :: (_, Pm) :: rest -> (
-          match make_hms Hms_pm ~pos_hour ~hour () with
-          | Error msg -> Error msg
-          | Ok token -> aux (token :: acc) rest )
-      | [] -> Ok (List.rev acc)
+          let token =
+          make_hms Hms_pm ~pos_hour ~hour ()
+          in
+          aux (token :: acc) rest )
+      | [] -> (List.rev acc)
       | token :: rest -> aux (token :: acc) rest
     in
     aux [] l
@@ -387,7 +390,7 @@ module Ast_normalize = struct
       ~constr_grouped:(fun x -> Hmss x)
       l
 
-  let recognize_duration (l : token list) : (token list, string) Result.t =
+  let recognize_durations (l : token list) : token list =
     let make_duration ~pos ~days ~hours ~minutes ~seconds =
       ( Option.get pos,
         Duration
@@ -454,40 +457,36 @@ module Ast_normalize = struct
           aux_start_with_days (token :: new_token :: acc) rest
         else aux_start_with_days (token :: acc) rest
     in
-    Ok (aux_start_with_days [] l)
+    (aux_start_with_days [] l)
 
   let process_tokens (e : ast) : (ast, string) Result.t =
     let rec aux e =
       match e with
       | Tokens l -> (
-          match recognize_hms l with
-          | Error msg -> Error msg
-          | Ok l -> (
-              match recognize_duration l with
-              | Error msg -> Error msg
-              | Ok l ->
-                let l =
-                  l
-                  |> recognize_month_day
-                  |> group_nats
-                  |> group_weekdays
-                  |> group_months
-                  |> group_hms
-                in
-                Ok (Tokens l) ) )
+          let l =
+            l
+            |> recognize_hmss
+            |> recognize_durations
+            |> recognize_month_days
+            |> group_nats
+            |> group_weekdays
+            |> group_months
+            |> group_hms
+          in
+          Tokens l
+        )
       | Binary_op (op, e1, e2) -> (
-          match aux e1 with
-          | Error msg -> Error msg
-          | Ok e1 -> (
-              match aux e2 with
-              | Error msg -> Error msg
-              | Ok e2 -> Ok (Binary_op (op, e1, e2)) ) )
+          Binary_op (op, aux e1, aux e2)
+        )
       | Round_robin_pick l ->
-        List.map aux l
-        |> Misc_utils.get_ok_error_list
-        |> Result.map (fun l -> Round_robin_pick l)
+        Round_robin_pick (
+          List.map aux l
+        )
     in
-    aux e
+    try
+      Ok (aux e)
+    with
+    | Invalid_data msg -> Error msg
 
   let flatten_round_robin_select (e : ast) : ast =
     let rec aux e =
