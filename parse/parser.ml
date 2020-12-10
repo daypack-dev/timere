@@ -150,7 +150,8 @@ let token_p : (token, unit) MParser.t =
       attempt (string "sec") >>$ Seconds;
       attempt (string "s") >>$ Seconds;
       ( attempt
-          (many1_satisfy (fun c -> c <> ' ' && Stdlib.not (String.contains symbols c)))
+          (many1_satisfy (fun c ->
+               c <> ' ' && Stdlib.not (String.contains symbols c)))
         >>= fun s ->
         fail (Printf.sprintf "%s: Unrecognized token: %s" (string_of_pos pos) s)
       );
@@ -254,29 +255,25 @@ module Ast_normalize = struct
       | (pos_x, Nat x) :: (_, St) :: rest
       | (pos_x, Nat x) :: (_, Nd) :: rest
       | (pos_x, Nat x) :: (_, Rd) :: rest
-      | (pos_x, Nat x) :: (_, Th) :: rest
-        -> (
-            (pos_x, Month_day x) :: recognize_single rest
-        )
+      | (pos_x, Nat x) :: (_, Th) :: rest ->
+        (pos_x, Month_day x) :: recognize_single rest
       | [] -> []
-      | x :: xs ->
-        x :: recognize_single xs
+      | x :: xs -> x :: recognize_single xs
     in
     let rec propagate_guesses tokens =
       match tokens with
       | (pos_x, Month_day x) :: (pos_comma, Comma) :: (pos_y, Nat y) :: rest ->
-        (pos_x, Month_day x) :: (pos_comma, Comma) ::
-        propagate_guesses ((pos_y, Month_day y) :: rest)
+        (pos_x, Month_day x)
+        :: (pos_comma, Comma)
+        :: propagate_guesses ((pos_y, Month_day y) :: rest)
       | (pos_x, Month_day x) :: (pos_to, To) :: (pos_y, Nat y) :: rest ->
-        (pos_x, Month_day x) :: (pos_to, To) ::
-        propagate_guesses ((pos_y, Month_day y) :: rest)
+        (pos_x, Month_day x)
+        :: (pos_to, To)
+        :: propagate_guesses ((pos_y, Month_day y) :: rest)
       | [] -> []
-      | x :: xs ->
-        x :: propagate_guesses xs
+      | x :: xs -> x :: propagate_guesses xs
     in
-    l
-    |> recognize_single
-    |> propagate_guesses
+    l |> recognize_single |> propagate_guesses
 
   type hms_mode =
     | Hms_24
@@ -295,90 +292,80 @@ module Ast_normalize = struct
               (Printf.sprintf "%s: Invalid hour: %d" (string_of_pos pos_hour)
                  hour)
         | Hms_am ->
-          if 1 <= hour && hour <= 12 then (hour mod 12)
+          if 1 <= hour && hour <= 12 then hour mod 12
           else
             invalid_data
               (Printf.sprintf "%s: Invalid hour: %d am"
                  (string_of_pos pos_hour) hour)
         | Hms_pm ->
-          if 1 <= hour && hour <= 12 then ((hour mod 12) + 12)
+          if 1 <= hour && hour <= 12 then (hour mod 12) + 12
           else
             invalid_data
               (Printf.sprintf "%s: Invalid hour: %d pm"
                  (string_of_pos pos_hour) hour)
       in
-        if 0 <= minute && minute < 60 then
-          if 0 <= second && second < 60 then
-            (pos_hour, Hms { hour; minute; second })
-          else
-            invalid_data
-              (Printf.sprintf "%s: Invalid second: %d"
-                 (string_of_pos @@ Option.get @@ pos_second)
-                 minute)
+      if 0 <= minute && minute < 60 then
+        if 0 <= second && second < 60 then
+          (pos_hour, Hms { hour; minute; second })
         else
           invalid_data
-            (Printf.sprintf "%s: Invalid minute: %d"
-               (string_of_pos @@ Option.get @@ pos_minute)
+            (Printf.sprintf "%s: Invalid second: %d"
+               (string_of_pos @@ Option.get @@ pos_second)
                minute)
+      else
+        invalid_data
+          (Printf.sprintf "%s: Invalid minute: %d"
+             (string_of_pos @@ Option.get @@ pos_minute)
+             minute)
     in
     let rec aux acc (l : token list) : token list =
       match l with
       | (pos_hour, Nat hour)
         :: (_, Colon)
         :: (pos_minute, Nat minute)
-        :: (_, Colon) :: (pos_second, Nat second) :: (_, Am) :: rest -> (
-          let token =
-            make_hms Hms_am ~pos_hour ~hour ~pos_minute ~minute ~pos_second
-              ~second ()
-          in
-          aux (token :: acc) rest )
+        :: (_, Colon) :: (pos_second, Nat second) :: (_, Am) :: rest ->
+        let token =
+          make_hms Hms_am ~pos_hour ~hour ~pos_minute ~minute ~pos_second
+            ~second ()
+        in
+        aux (token :: acc) rest
       | (pos_hour, Nat hour)
         :: (_, Colon)
         :: (pos_minute, Nat minute)
-        :: (_, Colon) :: (pos_second, Nat second) :: (_, Pm) :: rest -> (
-          let token =
-            make_hms Hms_pm ~pos_hour ~hour ~pos_minute ~minute ~pos_second
-              ~second ()
-          in
-          aux (token :: acc) rest )
+        :: (_, Colon) :: (pos_second, Nat second) :: (_, Pm) :: rest ->
+        let token =
+          make_hms Hms_pm ~pos_hour ~hour ~pos_minute ~minute ~pos_second
+            ~second ()
+        in
+        aux (token :: acc) rest
       | (pos_hour, Nat hour)
         :: (_, Colon)
         :: (pos_minute, Nat minute)
-        :: (_, Colon) :: (pos_second, Nat second) :: rest -> (
-          let token =
-            make_hms Hms_24 ~pos_hour ~hour ~pos_minute ~minute ~pos_second
-              ~second ()
-          in
-          aux (token :: acc) rest )
+        :: (_, Colon) :: (pos_second, Nat second) :: rest ->
+        let token =
+          make_hms Hms_24 ~pos_hour ~hour ~pos_minute ~minute ~pos_second
+            ~second ()
+        in
+        aux (token :: acc) rest
       | (pos_hour, Nat hour)
-        :: (_, Colon) :: (pos_minute, Nat minute) :: (_, Am) :: rest -> (
-          let token =
-          make_hms Hms_am ~pos_hour ~hour ~pos_minute ~minute ()
-          in
-          aux (token :: acc) rest )
+        :: (_, Colon) :: (pos_minute, Nat minute) :: (_, Am) :: rest ->
+        let token = make_hms Hms_am ~pos_hour ~hour ~pos_minute ~minute () in
+        aux (token :: acc) rest
       | (pos_hour, Nat hour)
-        :: (_, Colon) :: (pos_minute, Nat minute) :: (_, Pm) :: rest -> (
-          let token =
-          make_hms Hms_pm ~pos_hour ~hour ~pos_minute ~minute ()
-          in
-          aux (token :: acc) rest )
+        :: (_, Colon) :: (pos_minute, Nat minute) :: (_, Pm) :: rest ->
+        let token = make_hms Hms_pm ~pos_hour ~hour ~pos_minute ~minute () in
+        aux (token :: acc) rest
       | (pos_hour, Nat hour) :: (_, Colon) :: (pos_minute, Nat minute) :: rest
-        -> (
-            let token =
-            make_hms Hms_24 ~pos_hour ~hour ~pos_minute ~minute ()
-              in
-            aux (token :: acc) rest )
-      | (pos_hour, Nat hour) :: (_, Am) :: rest -> (
-          let token =
-          make_hms Hms_am ~pos_hour ~hour ()
-          in
-          aux (token :: acc) rest )
-      | (pos_hour, Nat hour) :: (_, Pm) :: rest -> (
-          let token =
-          make_hms Hms_pm ~pos_hour ~hour ()
-          in
-          aux (token :: acc) rest )
-      | [] -> (List.rev acc)
+        ->
+        let token = make_hms Hms_24 ~pos_hour ~hour ~pos_minute ~minute () in
+        aux (token :: acc) rest
+      | (pos_hour, Nat hour) :: (_, Am) :: rest ->
+        let token = make_hms Hms_am ~pos_hour ~hour () in
+        aux (token :: acc) rest
+      | (pos_hour, Nat hour) :: (_, Pm) :: rest ->
+        let token = make_hms Hms_pm ~pos_hour ~hour () in
+        aux (token :: acc) rest
+      | [] -> List.rev acc
       | token :: rest -> aux (token :: acc) rest
     in
     aux [] l
@@ -457,36 +444,27 @@ module Ast_normalize = struct
           aux_start_with_days (token :: new_token :: acc) rest
         else aux_start_with_days (token :: acc) rest
     in
-    (aux_start_with_days [] l)
+    aux_start_with_days [] l
 
   let process_tokens (e : ast) : (ast, string) Result.t =
     let rec aux e =
       match e with
-      | Tokens l -> (
-          let l =
-            l
-            |> recognize_hmss
-            |> recognize_durations
-            |> recognize_month_days
-            |> group_nats
-            |> group_weekdays
-            |> group_months
-            |> group_hms
-          in
-          Tokens l
-        )
-      | Binary_op (op, e1, e2) -> (
-          Binary_op (op, aux e1, aux e2)
-        )
-      | Round_robin_pick l ->
-        Round_robin_pick (
-          List.map aux l
-        )
+      | Tokens l ->
+        let l =
+          l
+          |> recognize_hmss
+          |> recognize_durations
+          |> recognize_month_days
+          |> group_nats
+          |> group_weekdays
+          |> group_months
+          |> group_hms
+        in
+        Tokens l
+      | Binary_op (op, e1, e2) -> Binary_op (op, aux e1, aux e2)
+      | Round_robin_pick l -> Round_robin_pick (List.map aux l)
     in
-    try
-      Ok (aux e)
-    with
-    | Invalid_data msg -> Error msg
+    try Ok (aux e) with Invalid_data msg -> Error msg
 
   let flatten_round_robin_select (e : ast) : ast =
     let rec aux e =
@@ -507,9 +485,7 @@ module Ast_normalize = struct
     aux e
 
   let normalize (e : ast) : (ast, string) Result.t =
-    e
-    |> flatten_round_robin_select
-    |> process_tokens
+    e |> flatten_round_robin_select |> process_tokens
 end
 
 let parse_into_ast (s : string) : (ast, string) Result.t =
@@ -528,14 +504,12 @@ let parse_into_ast (s : string) : (ast, string) Result.t =
 let flatten_months pos (l : Timere.month Timere.range list) =
   Timere.Utils.flatten_month_range_list l
   |> Result.map_error (fun () ->
-      Some (Printf.sprintf "%s: Invalid month ranges" (string_of_pos pos))
-    )
+      Some (Printf.sprintf "%s: Invalid month ranges" (string_of_pos pos)))
 
 let flatten_weekdays pos (l : Timere.weekday Timere.range list) =
   Timere.Utils.flatten_weekday_range_list l
   |> Result.map_error (fun () ->
-      Some (Printf.sprintf "%s: Invalid weekday ranges" (string_of_pos pos))
-    )
+      Some (Printf.sprintf "%s: Invalid weekday ranges" (string_of_pos pos)))
 
 let pattern ?(years = []) ?(months = []) ?pos_month_days ?(month_days = [])
     ?(weekdays = []) ?(hms : Timere.hms option) () =
@@ -549,21 +523,20 @@ let pattern ?(years = []) ?(months = []) ?pos_month_days ?(month_days = [])
     | None -> Ok (Timere.pattern ~years ~months ~month_days ~weekdays ())
     | Some hms ->
       Ok
-        (Timere.pattern ~years ~months ~month_days ~weekdays ~hours:[ hms.hour ]
-           ~minutes:[ hms.minute ] ~seconds:[ hms.second ] ())
+        (Timere.pattern ~years ~months ~month_days ~weekdays
+           ~hours:[ hms.hour ] ~minutes:[ hms.minute ] ~seconds:[ hms.second ]
+           ())
 
 let t_rules : (token list -> (Timere.t, string option) Result.t) list =
   [
     (function [ (_, Star) ] -> Ok Timere.always | _ -> Error None);
     (function
-      | [ (_, Weekday x) ] ->
-        Ok (Timere.weekdays [x])
+      | [ (_, Weekday x) ] -> Ok (Timere.weekdays [ x ])
       | [ (pos, Weekdays l) ] ->
         flatten_weekdays pos l |> Result.map (fun l -> Timere.weekdays l)
       | _ -> Error None);
     (function
-      | [ (_, Month x) ] ->
-        Ok (Timere.months [x])
+      | [ (_, Month x) ] -> Ok (Timere.months [ x ])
       | [ (pos, Months l) ] ->
         flatten_months pos l |> Result.map (fun l -> Timere.months l)
       | _ -> Error None);
@@ -580,8 +553,7 @@ let t_rules : (token list -> (Timere.t, string option) Result.t) list =
         when year > 31 ->
         pattern ~years:[ year ] ~months:[ month ] ~pos_month_days
           ~month_days:[ day ] ()
-      | [ (_, Nat year); (pos_month_days, Nat day); (_, Of); (_, Month month) ]
-        ->
+      | [ (_, Nat year); (pos_month_days, Nat day); (_, Of); (_, Month month) ] ->
         pattern ~years:[ year ] ~months:[ month ] ~pos_month_days
           ~month_days:[ day ] ()
       | _ -> Error None);
@@ -621,15 +593,14 @@ let t_of_ast (ast : ast) : (Timere.t, string) Result.t =
             | Error msg -> Error msg
             | Ok time2 -> (
                 match op with
-                | Union -> Ok (Timere.union [time1; time2])
-                | Inter -> Ok (Timere.inter [time1; time2]) ) ) )
+                | Union -> Ok (Timere.union [ time1; time2 ])
+                | Inter -> Ok (Timere.inter [ time1; time2 ]) ) ) )
     | Round_robin_pick l -> (
         match l |> List.map aux |> Misc_utils.get_ok_error_list with
         | Error msg -> Error msg
         | Ok _l ->
           (* Ok (Timere.round_robin_pick l) *)
-          failwith "Unimplemented"
-      )
+          failwith "Unimplemented" )
   in
   aux ast
 
