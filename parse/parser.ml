@@ -280,6 +280,9 @@ module Ast_normalize = struct
       | x :: xs -> x :: propagate_guesses xs
     in
     l |> recognize_single |> propagate_guesses
+    |> List.rev
+    |> propagate_guesses
+    |> List.rev
 
   let group_month_days (l : token list) : token list =
     group
