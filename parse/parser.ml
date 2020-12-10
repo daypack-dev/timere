@@ -189,6 +189,13 @@ module Ast_normalize = struct
     token list =
     let rec recognize_single_interval tokens : token list =
       match tokens with
+      | (pos_x, x) :: [] -> (
+          match extract_single x with
+          | Some x ->
+            (pos_x, constr_grouped [ `Range_inc (x, x) ])
+            :: recognize_single_interval []
+          | _ -> recognize_fallback tokens
+        )
       | (pos_x, x) :: (pos_comma, Comma) :: rest -> (
           match extract_single x with
           | Some x ->
