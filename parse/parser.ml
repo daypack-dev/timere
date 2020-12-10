@@ -249,7 +249,7 @@ module Ast_normalize = struct
       ~constr_grouped:(fun x -> Weekdays x)
       l
 
-  let recognize_month_days (l : token list) : token list =
+  let recognize_month_day (l : token list) : token list =
     let rec recognize_single tokens =
       match tokens with
       | (pos_x, Nat x) :: (_, St) :: rest
@@ -280,7 +280,7 @@ module Ast_normalize = struct
     | Hms_am
     | Hms_pm
 
-  let recognize_hmss (l : token list) : token list =
+  let recognize_hms (l : token list) : token list =
     let make_hms mode ~pos_hour ~hour ?pos_minute ?(minute = 0) ?pos_second
         ?(second = 0) () : token =
       let hour =
@@ -377,7 +377,7 @@ module Ast_normalize = struct
       ~constr_grouped:(fun x -> Hmss x)
       l
 
-  let recognize_durations (l : token list) : token list =
+  let recognize_duration (l : token list) : token list =
     let make_duration ~pos ~days ~hours ~minutes ~seconds =
       ( Option.get pos,
         Duration
@@ -452,9 +452,9 @@ module Ast_normalize = struct
       | Tokens l ->
         let l =
           l
-          |> recognize_hmss
-          |> recognize_durations
-          |> recognize_month_days
+          |> recognize_hms
+          |> recognize_duration
+          |> recognize_month_day
           |> group_nats
           |> group_weekdays
           |> group_months
