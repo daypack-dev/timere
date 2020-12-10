@@ -30,6 +30,8 @@ type guess =
   | Hmss of Timere.hms Timere.range list
   | Weekday of Timere.weekday
   | Weekdays of Timere.weekday Timere.range list
+  | Month_day of int
+  | Month_days of int Timere.range list
   | Month of Timere.month
   | Months of Timere.month Timere.range list
   | Duration of Timere.Duration.t
@@ -242,6 +244,36 @@ module Ast_normalize = struct
       ~constr_grouped:(fun x -> Weekdays x)
       l
 
+  let recognize_month_day (l : token list) : token list =
+    let rec recognize_single tokens =
+      match tokens with
+      | (pos_x, Nat x) :: (_, St) :: rest
+      | (pos_x, Nat x) :: (_, Nd) :: rest
+      | (pos_x, Nat x) :: (_, Rd) :: rest
+      | (pos_x, Nat x) :: (_, Th) :: rest
+        -> (
+            (pos_x, Month_day x) :: recognize_single rest
+        )
+      | [] -> []
+      | x :: xs ->
+        x :: recognize_single xs
+    in
+    let rec propagate_guesses tokens =
+      match tokens with
+      | (pos_x, Month_day x) :: (pos_comma, Comma) :: (pos_y, Nat y) :: rest ->
+        (pos_x, Month_day x) :: (pos_comma, Comma) ::
+        propagate_guesses ((pos_y, Month_day y) :: rest)
+      | (pos_x, Month_day x) :: (pos_to, To) :: (pos_y, Nat y) :: rest ->
+        (pos_x, Month_day x) :: (pos_to, To) ::
+        propagate_guesses ((pos_y, Month_day y) :: rest)
+      | [] -> []
+      | x :: xs ->
+        x :: propagate_guesses xs
+    in
+    l
+    |> recognize_single
+    |> propagate_guesses
+
   type hms_mode =
     | Hms_24
     | Hms_am
@@ -436,6 +468,7 @@ module Ast_normalize = struct
               | Ok l ->
                 let l =
                   l
+                  |> recognize_month_day
                   |> group_nats
                   |> group_weekdays
                   |> group_months
