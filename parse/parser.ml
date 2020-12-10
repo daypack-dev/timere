@@ -275,6 +275,13 @@ module Ast_normalize = struct
     in
     l |> recognize_single |> propagate_guesses
 
+  let group_month_days (l : token list) : token list =
+    group
+      ~extract_single:(function Month_day x -> Some x | _ -> None)
+      ~extract_grouped:(function Month_days l -> Some l | _ -> None)
+      ~constr_grouped:(fun x -> Month_days x)
+      l
+
   type hms_mode =
     | Hms_24
     | Hms_am
@@ -456,6 +463,7 @@ module Ast_normalize = struct
           |> recognize_duration
           |> recognize_month_day
           |> group_nats
+          |> group_month_days
           |> group_weekdays
           |> group_months
           |> group_hms
