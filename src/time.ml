@@ -1657,6 +1657,9 @@ type t =
   | Round_robin_pick_list of search_space * t list
   | Inter_list of search_space * t list
   | Union_list of search_space * t list
+  | After of search_space * t * t
+  | Between_inc of search_space * t * t * t
+  | Between_exc of search_space * t * t * t
 
 let equal t1 t2 =
   let rec aux t1 t2 =
@@ -2006,6 +2009,15 @@ let seconds seconds = pattern ~seconds ()
 let timestamps timestamps = pattern ~timestamps ()
 
 let always = pattern ()
+
+let after (t1 : t) (t2 : t) : t =
+  After (default_search_space, t1, t2)
+
+let between_inc (t1 : t) (t2 : t) (t3 : t) : t =
+  Between_inc (default_search_space, t1, t2, t3)
+
+let between_exc (t1 : t) (t2 : t) (t3 : t) : t =
+  Between_exc (default_search_space, t1, t2, t3)
 
 let date_time (date_time : Date_time.t) : t =
   date_time

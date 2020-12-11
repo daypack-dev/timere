@@ -667,6 +667,9 @@ let get_search_space (time : Time.t) : Time.Interval.t list =
   | Round_robin_pick_list (s, _) -> s
   | Inter_list (s, _) -> s
   | Union_list (s, _) -> s
+  | After (s, _, _) -> s
+  | Between_inc (s, _, _, _) -> s
+  | Between_exc (s, _, _, _) -> s
 
 let set_search_space space (time : Time.t) : Time.t =
   let open Time in
@@ -680,6 +683,9 @@ let set_search_space space (time : Time.t) : Time.t =
   | Round_robin_pick_list (_, x) -> Round_robin_pick_list (space, x)
   | Inter_list (_, x) -> Inter_list (space, x)
   | Union_list (_, x) -> Union_list (space, x)
+  | After (_, x, y) -> After (space, x, y)
+  | Between_inc (_, x, y, z) -> Between_inc (space, x, y, z)
+  | Between_exc (_, x, y, z) -> Between_exc (space, x, y, z)
 
 let search_space_of_year_range tz_offset_s year_range =
   let open Time in
@@ -772,6 +778,7 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
     | Union_list (_, l) ->
       let space, l = aux_list tz_offset_s l in
       Union_list (space, l)
+    | _ -> failwith "Unimplemented"
   and aux_list tz_offset_s l =
     let l = List.map (aux tz_offset_s) l in
     let space =
@@ -817,6 +824,7 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
     | Union_list (cur, l) ->
       let space = restrict_search_space parent_search_space cur in
       Union_list (space, aux_list space l)
+    | _ -> failwith "Unimplemented"
   and aux_list parent_search_space l = List.map (aux parent_search_space) l in
   aux default_search_space time
 
@@ -1044,6 +1052,24 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
     | Union_list (_, l) ->
       List.map (aux search_using_tz_offset_s) l
       |> Time.Intervals.Union.union_multi_list ~skip_check:true
+    | After (_, t1, t2) ->
+      let s1 =
+        aux search_using_tz_offset_s t1
+      in
+      let s2 =
+        aux search_using_tz_offset_s t2
+      in
+      s1
+      |> Seq.filter_map (fun (_, end_exc) ->
+          match 
+          OSeq.drop_while (fun (start', _) ->
+              start' < end_exc
+              ) s2 ()
+          with
+          | Seq.Nil -> None
+          | Seq.Cons (x, _) -> Some x
+        )
+    | _ -> failwith "Unimplemented"
   in
   try
     aux search_using_tz_offset_s
