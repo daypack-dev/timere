@@ -187,39 +187,40 @@ module Ast_normalize = struct
       ~(extract_grouped : guess -> a Timere.range list option)
       ~(constr_grouped : a Timere.range list -> guess) (l : token list) :
     token list =
-    let rec recognize_single_interval tokens : token list =
+    let rec recognize_single_interval first_run tokens : token list =
       match tokens with
       | [ (pos_x, x) ] -> (
           match extract_single x with
-          | Some x ->
+          | Some x when not first_run ->
             (pos_x, constr_grouped [ `Range_inc (x, x) ])
-            :: recognize_single_interval []
-          | _ -> recognize_fallback tokens )
+            :: recognize_single_interval false []
+          | _ -> recognize_fallback tokens
+        )
       | (pos_x, x) :: (pos_comma, Comma) :: rest -> (
           match extract_single x with
           | Some x ->
             (pos_x, constr_grouped [ `Range_inc (x, x) ])
             :: (pos_comma, Comma)
-            :: recognize_single_interval rest
+            :: recognize_single_interval false rest
           | _ -> recognize_fallback tokens )
       | (pos_x, x) :: (_, To) :: (_, y) :: (pos_comma, Comma) :: rest -> (
           match (extract_single x, extract_single y) with
           | Some x, Some y ->
             (pos_x, constr_grouped [ `Range_inc (x, y) ])
             :: (pos_comma, Comma)
-            :: recognize_single_interval rest
+            :: recognize_single_interval false rest
           | _, _ -> recognize_fallback tokens )
       | (pos_x, x) :: (_, To) :: (_, y) :: rest -> (
           match (extract_single x, extract_single y) with
           | Some x, Some y ->
             (pos_x, constr_grouped [ `Range_inc (x, y) ])
-            :: recognize_single_interval rest
+            :: recognize_single_interval false rest
           | _, _ -> recognize_fallback tokens )
       | _ -> recognize_fallback tokens
     and recognize_fallback l =
       match l with
       | [] -> []
-      | token :: rest -> token :: recognize_single_interval rest
+      | token :: rest -> token :: recognize_single_interval false rest
     in
     let rec merge_intervals tokens : token list =
       match tokens with
@@ -232,7 +233,7 @@ module Ast_normalize = struct
     and merge_fallback l =
       match l with [] -> [] | token :: rest -> token :: merge_intervals rest
     in
-    l |> recognize_single_interval |> merge_intervals
+    l |> recognize_single_interval true |> merge_intervals
 
   let group_nats (l : token list) : token list =
     group
