@@ -778,7 +778,33 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
     | Union_list (_, l) ->
       let space, l = aux_list tz_offset_s l in
       Union_list (space, l)
-    | _ -> failwith "Unimplemented"
+    | After (_, t1, t2) ->
+      let space =
+        [t1; t2]
+        |> List.map get_search_space
+        |> List.map List.to_seq
+        |> Intervals.Union.union_multi_list
+        |> List.of_seq
+      in
+      After (space, t1, t2)
+    | Between_inc (_, t1, t2, t3) ->
+      let space =
+        [t1; t2; t3]
+        |> List.map get_search_space
+        |> List.map List.to_seq
+        |> Intervals.Union.union_multi_list
+        |> List.of_seq
+      in
+      Between_inc (space, t1, t2, t3)
+    | Between_exc (_, t1, t2, t3) ->
+      let space =
+        [t1; t2; t3]
+        |> List.map get_search_space
+        |> List.map List.to_seq
+        |> Intervals.Union.union_multi_list
+        |> List.of_seq
+      in
+      Between_exc (space, t1, t2, t3)
   and aux_list tz_offset_s l =
     let l = List.map (aux tz_offset_s) l in
     let space =
@@ -824,7 +850,15 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
     | Union_list (cur, l) ->
       let space = restrict_search_space parent_search_space cur in
       Union_list (space, aux_list space l)
-    | _ -> failwith "Unimplemented"
+    | After (cur, t1, t2) ->
+      let space = restrict_search_space parent_search_space cur in
+      After (space, aux space t1, aux space t2)
+    | Between_inc (cur, t1, t2, t3) ->
+      let space = restrict_search_space parent_search_space cur in
+      Between_inc (space, aux space t1, aux space t2, aux space t3)
+    | Between_exc (cur, t1, t2, t3) ->
+      let space = restrict_search_space parent_search_space cur in
+      Between_exc (space, aux space t1, aux space t2, aux space t3)
   and aux_list parent_search_space l = List.map (aux parent_search_space) l in
   aux default_search_space time
 
@@ -1061,7 +1095,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
       in
       s1
       |> Seq.filter_map (fun (_, end_exc) ->
-          match 
+          match
           OSeq.drop_while (fun (start', _) ->
               start' < end_exc
               ) s2 ()
@@ -1069,6 +1103,24 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
           | Seq.Nil -> None
           | Seq.Cons (x, _) -> Some x
         )
+    | Between_inc (_, t1, t2, t3) ->
+      let s1 =
+        aux search_using_tz_offset_s t1
+      in
+      let s2 =
+        aux search_using_tz_offset_s t2
+      in
+      s1
+      |> Seq.filter_map (fun (start, end_exc) ->
+          match
+            OSeq.drop_while (fun (start', _) ->
+                start' < end_exc
+              ) s2 ()
+          with
+          | Seq.Nil -> None
+          | Seq.Cons (_, end_exc') -> Some (start, end_exc')
+        )
+      |>
     | _ -> failwith "Unimplemented"
   in
   try
