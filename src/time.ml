@@ -1884,45 +1884,6 @@ let pattern ?(strict = false) ?(years = []) ?(months = []) ?(month_days = [])
     else invalid_arg "pattern"
   else invalid_arg "pattern"
 
-(* let month_day_range_is_valid_strict ~safe_month_day_start
- *     ~safe_month_day_end_inc day_range =
- *   let min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start =
- *     if start < 0 then safe_month_day_end_inc + start + 1 else start
- *   in
- *   let min_acceptable_negative_day_end_inc ~safe_month_day_end_inc ~start =
- *     let min_acceptable_positive_day_end_inc =
- *       min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start
- *     in
- *     let days_usable =
- *       safe_month_day_end_inc - min_acceptable_positive_day_end_inc
- *     in
- *     let largest_negative_index = days_usable + 1 in
- *     -largest_negative_index
- *   in
- *   match day_range with
- *   | `Range_inc (start, d) ->
- *     start <> 0
- *     && safe_month_day_start <= start
- *     && d <> 0
- *     &&
- *     if d < 0 then
- *       min_acceptable_negative_day_end_inc ~safe_month_day_end_inc ~start <= d
- *     else
- *       min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start <= d
- *   | `Range_exc (start, d) ->
- *     start <> 0
- *     && safe_month_day_start <= start
- *     && d <> 0
- *     &&
- *     if d < 0 then
- *       min_acceptable_negative_day_end_inc ~safe_month_day_end_inc ~start < d
- *     else
- *       min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start < d
- * 
- * let month_day_range_is_valid_relaxed day_range =
- *   month_day_range_is_valid_strict ~safe_month_day_start:(-31)
- *     ~safe_month_day_end_inc:31 day_range *)
-
 let month_day_ranges_are_valid_strict ~safe_month_day_range_inc day_ranges =
   let safe_month_day_start, safe_month_day_end_inc = safe_month_day_range_inc in
   day_ranges
