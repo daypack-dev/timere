@@ -1810,32 +1810,6 @@ let not (a : t) : t = Unary_op (default_search_space, Not, a)
 let change_tz_offset_s offset t =
   Unary_op (default_search_space, Change_tz_offset_s offset, t)
 
-let pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
-    ?(hours = []) ?(minutes = []) ?(seconds = []) ?(timestamps = []) () : t =
-  if
-    List.for_all
-      (fun year -> Date_time.min.year <= year && year <= Date_time.max.year)
-      years
-    && List.for_all (fun x -> -31 <= x && x <= 31 && x <> 0) month_days
-    && List.for_all (fun x -> 0 <= x && x < 24) hours
-    && List.for_all (fun x -> 0 <= x && x < 60) minutes
-    && List.for_all (fun x -> 0 <= x && x < 60) seconds
-    && List.for_all (fun x -> x >= 0L) timestamps
-  then
-    Pattern
-      ( default_search_space,
-        {
-          Pattern.years = List.sort_uniq compare years;
-          months = List.sort_uniq compare_month months;
-          month_days = List.sort_uniq compare month_days;
-          weekdays = List.sort_uniq compare_weekday weekdays;
-          hours = List.sort_uniq compare hours;
-          minutes = List.sort_uniq compare minutes;
-          seconds = List.sort_uniq compare seconds;
-          timestamps = List.sort_uniq compare timestamps;
-        } )
-  else invalid_arg "pattern"
-
 let safe_month_day_range_inc ~years ~months =
   let contains_non_leap_year =
     years
@@ -1860,6 +1834,56 @@ let safe_month_day_range_inc ~years ~months =
       aux (max (-count) start) (min count end_inc) rest
   in
   aux (-31) 31 (Month_ranges.Flatten.flatten @@ List.to_seq @@ months)
+
+let pattern ?(strict = false) ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
+    ?(hours = []) ?(minutes = []) ?(seconds = []) ?(timestamps = []) () : t =
+  if
+    List.for_all
+      (fun year -> Date_time.min.year <= year && year <= Date_time.max.year)
+      years
+    && List.for_all (fun x -> -31 <= x && x <= 31 && x <> 0) month_days
+    && List.for_all (fun x -> 0 <= x && x < 24) hours
+    && List.for_all (fun x -> 0 <= x && x < 60) minutes
+    && List.for_all (fun x -> 0 <= x && x < 60) seconds
+    && List.for_all (fun x -> x >= 0L) timestamps
+  then (
+    let is_okay =
+      (Stdlib.not strict)
+      ||
+      let (safe_month_day_start, safe_month_day_end_inc) =
+        let years =
+          match years with
+          | [] -> [ `Range_inc (Date_time.min.year, Date_time.max.year)]
+          | _ -> Year_ranges.Of_list.range_list_of_list years
+        in
+        let months =
+          match months with
+          | [] -> [ `Range_inc (`Jan, `Dec) ]
+          | _ -> Month_ranges.Of_list.range_list_of_list months
+        in
+        safe_month_day_range_inc ~years
+          ~months
+      in
+      List.for_all (fun x ->
+          safe_month_day_start <= x && x <= safe_month_day_end_inc
+        ) month_days
+    in
+    if is_okay then
+      Pattern
+        ( default_search_space,
+          {
+            Pattern.years = List.sort_uniq compare years;
+            months = List.sort_uniq compare_month months;
+            month_days = List.sort_uniq compare month_days;
+            weekdays = List.sort_uniq compare_weekday weekdays;
+            hours = List.sort_uniq compare hours;
+            minutes = List.sort_uniq compare minutes;
+            seconds = List.sort_uniq compare seconds;
+            timestamps = List.sort_uniq compare timestamps;
+          } )
+    else invalid_arg "pattern"
+  )
+  else invalid_arg "pattern"
 
 let month_day_range_is_valid_strict ~safe_month_day_start
     ~safe_month_day_end_inc day_range =

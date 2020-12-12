@@ -53,6 +53,7 @@ val minutes : int list -> t
 val seconds : int list -> t
 
 val pattern :
+  ?strict:bool ->
   ?years:int list ->
   ?months:month list ->
   ?month_days:int list ->
