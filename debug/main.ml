@@ -48,12 +48,10 @@ let debug_parsing () =
   | Ok timere -> print_endline (Timere.to_sexp_string timere)
 
 let debug_resolver () =
-    let s =
-      {|
+  let s = {|
         (pattern (month_days -1))
-  |}
-    in
-    let timere = Result.get_ok @@ Timere.of_sexp_string s in
+  |} in
+  let timere = Result.get_ok @@ Timere.of_sexp_string s in
   (* let timere =
    *   (fun height max_branching randomness ->
    *      Timere.Utils.build ~min_year:2000 ~max_year_inc:2002 ~height ~max_branching

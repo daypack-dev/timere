@@ -259,18 +259,10 @@ module Resolve_pattern = struct
       | [] -> OSeq.(cur_branch_search_start.day -- day_count)
       | l ->
         l
-        |>
-        List.map (fun mday ->
-            if mday < 0 then
-              day_count + mday + 1
-            else
-              mday
-          )
-        |>
-        List.filter
-          (fun mday ->
-             cur_branch_search_start.day <= mday && mday <= day_count
-          )
+        |> List.map (fun mday ->
+            if mday < 0 then day_count + mday + 1 else mday)
+        |> List.filter (fun mday ->
+            cur_branch_search_start.day <= mday && mday <= day_count)
         |> List.sort_uniq compare
         |> List.to_seq
 
@@ -789,7 +781,7 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
       Union_list (space, l)
     | After (_, t1, t2) ->
       let space =
-        [t1; t2]
+        [ t1; t2 ]
         |> List.map get_search_space
         |> List.map List.to_seq
         |> Intervals.Union.union_multi_list
@@ -798,7 +790,7 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
       After (space, t1, t2)
     | Between_inc (_, t1, t2) ->
       let space =
-        [t1; t2]
+        [ t1; t2 ]
         |> List.map get_search_space
         |> List.map List.to_seq
         |> Intervals.Union.union_multi_list
@@ -807,7 +799,7 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
       Between_inc (space, t1, t2)
     | Between_exc (_, t1, t2) ->
       let space =
-        [t1; t2]
+        [ t1; t2 ]
         |> List.map get_search_space
         |> List.map List.to_seq
         |> Intervals.Union.union_multi_list
@@ -1035,12 +1027,9 @@ let do_take_n_points (n : int64) (s : Time.Interval.t Seq.t) :
   in
   aux n s
 
-let find_after ((_start, end_exc) : Time.Interval.t) (s2 : Time.Interval.t Seq.t) =
-  match
-    OSeq.drop_while (fun (start', _) ->
-        start' < end_exc
-      ) s2 ()
-  with
+let find_after ((_start, end_exc) : Time.Interval.t)
+    (s2 : Time.Interval.t Seq.t) =
+  match OSeq.drop_while (fun (start', _) -> start' < end_exc) s2 () with
   | Seq.Nil -> None
   | Seq.Cons (x, _) -> Some x
 
@@ -1105,44 +1094,23 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
       List.map (aux search_using_tz_offset_s) l
       |> Time.Intervals.Union.union_multi_list ~skip_check:true
     | After (_, t1, t2) ->
-      let s1 =
-        aux search_using_tz_offset_s t1
-      in
-      let s2 =
-        aux search_using_tz_offset_s t2
-      in
-      s1
-      |> Seq.filter_map (fun x ->
-          find_after x s2
-        )
+      let s1 = aux search_using_tz_offset_s t1 in
+      let s2 = aux search_using_tz_offset_s t2 in
+      s1 |> Seq.filter_map (fun x -> find_after x s2)
     | Between_inc (_, t1, t2) ->
-      let s1 =
-        aux search_using_tz_offset_s t1
-      in
-      let s2 =
-        aux search_using_tz_offset_s t2
-      in
+      let s1 = aux search_using_tz_offset_s t1 in
+      let s2 = aux search_using_tz_offset_s t2 in
       s1
       |> Seq.filter_map (fun (start, end_exc) ->
           find_after (start, end_exc) s2
-          |> Option.map (fun (_, end_exc') ->
-              (start, end_exc')
-            )
-        )
+          |> Option.map (fun (_, end_exc') -> (start, end_exc')))
     | Between_exc (_, t1, t2) ->
-      let s1 =
-        aux search_using_tz_offset_s t1
-      in
-      let s2 =
-        aux search_using_tz_offset_s t2
-      in
+      let s1 = aux search_using_tz_offset_s t1 in
+      let s2 = aux search_using_tz_offset_s t2 in
       s1
       |> Seq.filter_map (fun (start, end_exc) ->
           find_after (start, end_exc) s2
-          |> Option.map (fun (start', _) ->
-              (start, start')
-            )
-        )
+          |> Option.map (fun (start', _) -> (start, start')))
   in
   try
     aux search_using_tz_offset_s

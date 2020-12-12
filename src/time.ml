@@ -1835,8 +1835,9 @@ let safe_month_day_range_inc ~years ~months =
   in
   aux (-31) 31 (Month_ranges.Flatten.flatten @@ List.to_seq @@ months)
 
-let pattern ?(strict = false) ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
-    ?(hours = []) ?(minutes = []) ?(seconds = []) ?(timestamps = []) () : t =
+let pattern ?(strict = false) ?(years = []) ?(months = []) ?(month_days = [])
+    ?(weekdays = []) ?(hours = []) ?(minutes = []) ?(seconds = [])
+    ?(timestamps = []) () : t =
   if
     List.for_all
       (fun year -> Date_time.min.year <= year && year <= Date_time.max.year)
@@ -1846,14 +1847,14 @@ let pattern ?(strict = false) ?(years = []) ?(months = []) ?(month_days = []) ?(
     && List.for_all (fun x -> 0 <= x && x < 60) minutes
     && List.for_all (fun x -> 0 <= x && x < 60) seconds
     && List.for_all (fun x -> x >= 0L) timestamps
-  then (
+  then
     let is_okay =
-      (Stdlib.not strict)
+      Stdlib.not strict
       ||
-      let (safe_month_day_start, safe_month_day_end_inc) =
+      let safe_month_day_start, safe_month_day_end_inc =
         let years =
           match years with
-          | [] -> [ `Range_inc (Date_time.min.year, Date_time.max.year)]
+          | [] -> [ `Range_inc (Date_time.min.year, Date_time.max.year) ]
           | _ -> Year_ranges.Of_list.range_list_of_list years
         in
         let months =
@@ -1861,12 +1862,11 @@ let pattern ?(strict = false) ?(years = []) ?(months = []) ?(month_days = []) ?(
           | [] -> [ `Range_inc (`Jan, `Dec) ]
           | _ -> Month_ranges.Of_list.range_list_of_list months
         in
-        safe_month_day_range_inc ~years
-          ~months
+        safe_month_day_range_inc ~years ~months
       in
-      List.for_all (fun x ->
-          safe_month_day_start <= x && x <= safe_month_day_end_inc
-        ) month_days
+      List.for_all
+        (fun x -> safe_month_day_start <= x && x <= safe_month_day_end_inc)
+        month_days
     in
     if is_okay then
       Pattern
@@ -1882,7 +1882,6 @@ let pattern ?(strict = false) ?(years = []) ?(months = []) ?(month_days = []) ?(
             timestamps = List.sort_uniq compare timestamps;
           } )
     else invalid_arg "pattern"
-  )
   else invalid_arg "pattern"
 
 (* let month_day_range_is_valid_strict ~safe_month_day_start
@@ -1925,16 +1924,13 @@ let pattern ?(strict = false) ?(years = []) ?(months = []) ?(month_days = []) ?(
  *     ~safe_month_day_end_inc:31 day_range *)
 
 let month_day_ranges_are_valid_strict ~safe_month_day_range_inc day_ranges =
-  let (safe_month_day_start, safe_month_day_end_inc) =
-    safe_month_day_range_inc
-  in
+  let safe_month_day_start, safe_month_day_end_inc = safe_month_day_range_inc in
   day_ranges
   |> List.to_seq
   |> Month_day_ranges.Flatten.flatten
   |> Seq.filter (fun mday -> mday <> 0)
   |> OSeq.for_all (fun mday ->
-      safe_month_day_start <= mday && mday <= safe_month_day_end_inc
-    )
+      safe_month_day_start <= mday && mday <= safe_month_day_end_inc)
 
 let month_day_ranges_are_valid_relaxed day_range =
   month_day_ranges_are_valid_strict ~safe_month_day_range_inc:(-31, 31)
@@ -1958,7 +1954,9 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
         if allow_out_of_range_month_day then
           month_day_ranges_are_valid_relaxed days
         else
-          month_day_ranges_are_valid_strict ~safe_month_day_range_inc:(safe_month_day_range_inc ~years ~months)
+          month_day_ranges_are_valid_strict
+            ~safe_month_day_range_inc:
+              (safe_month_day_range_inc ~years ~months)
             days
       then Ok (Month_days days)
       else Error ()
@@ -2045,8 +2043,7 @@ let timestamps timestamps = pattern ~timestamps ()
 
 let always = pattern ()
 
-let after (t1 : t) (t2 : t) : t =
-  After (default_search_space, t1, t2)
+let after (t1 : t) (t2 : t) : t = After (default_search_space, t1, t2)
 
 let between_inc (t1 : t) (t2 : t) : t =
   Between_inc (default_search_space, t1, t2)

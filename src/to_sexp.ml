@@ -148,12 +148,11 @@ let to_sexp (t : Time.t) : CCSexp.t =
       CCSexp.(list (atom "round_robin" :: List.map aux l))
     | Inter_list (_, l) -> CCSexp.(list (atom "inter" :: List.map aux l))
     | Union_list (_, l) -> CCSexp.(list (atom "union" :: List.map aux l))
-    | After (_, t1, t2) ->
-      CCSexp.(list ([atom "after"; aux t1; aux t2]))
+    | After (_, t1, t2) -> CCSexp.(list [ atom "after"; aux t1; aux t2 ])
     | Between_inc (_, t1, t2) ->
-      CCSexp.(list ([atom "between_inc"; aux t1; aux t2]))
+      CCSexp.(list [ atom "between_inc"; aux t1; aux t2 ])
     | Between_exc (_, t1, t2) ->
-      CCSexp.(list ([atom "between_exc"; aux t1; aux t2]))
+      CCSexp.(list [ atom "between_exc"; aux t1; aux t2 ])
   in
   aux t
 
