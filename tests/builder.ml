@@ -45,7 +45,11 @@ let make_pattern ~rng ~min_year ~max_year_inc =
     |> List.of_seq
   in
   let month_days =
-    OSeq.(0 -- rng ()) |> Seq.map (fun _ -> 1 + (rng () mod 31)) |> List.of_seq
+    OSeq.(0 -- rng ())
+    |> Seq.map (fun _ ->
+        if rng () mod 2 = 0 then 1 + (rng () mod 31)
+        else -(1 + (rng () mod 31)))
+    |> List.of_seq
   in
   let weekdays =
     OSeq.(0 -- rng ())
