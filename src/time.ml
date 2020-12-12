@@ -1816,7 +1816,7 @@ let pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
     List.for_all
       (fun year -> Date_time.min.year <= year && year <= Date_time.max.year)
       years
-    && List.for_all (fun x -> 1 <= x && x <= 31) month_days
+    && List.for_all (fun x -> -31 <= x && x <= 31 && x <> 0) month_days
     && List.for_all (fun x -> 0 <= x && x < 24) hours
     && List.for_all (fun x -> 0 <= x && x < 60) minutes
     && List.for_all (fun x -> 0 <= x && x < 60) seconds

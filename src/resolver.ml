@@ -258,10 +258,19 @@ module Resolve_pattern = struct
       match t.month_days with
       | [] -> OSeq.(cur_branch_search_start.day -- day_count)
       | l ->
+        l
+        |>
+        List.map (fun mday ->
+            if mday < 0 then
+              day_count + mday + 1
+            else
+              mday
+          )
+        |>
         List.filter
           (fun mday ->
-             cur_branch_search_start.day <= mday && mday <= day_count)
-          l
+             cur_branch_search_start.day <= mday && mday <= day_count
+          )
         |> List.sort_uniq compare
         |> List.to_seq
 
