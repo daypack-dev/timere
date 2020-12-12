@@ -1672,6 +1672,10 @@ let equal t1 t2 =
     | Interval_inc (_, x11, x12), Interval_inc (_, x21, x22)
     | Interval_exc (_, x11, x12), Interval_exc (_, x21, x22) ->
       x11 = x21 && x12 = x22
+    | After (_, x11, x12), After (_, x21, x22)
+    | Between_inc (_, x11, x12), Between_inc (_, x21, x22)
+    | Between_exc (_, x11, x12), Between_exc (_, x21, x22) ->
+      aux x11 x21 && aux x12 x22
     | Round_robin_pick_list (_, l1), Round_robin_pick_list (_, l2)
     | Inter_list (_, l1), Inter_list (_, l2)
     | Union_list (_, l1), Union_list (_, l2) ->
