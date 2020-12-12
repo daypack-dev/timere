@@ -186,7 +186,19 @@ and mem ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
           let mday_is_fine =
             match pattern.month_days with
             | [] -> true
-            | l -> List.mem dt.day l
+            | l ->
+              let day_count =
+                day_count_of_month ~year:dt.year
+                  ~month:dt.month
+              in
+              l
+              |> List.map (fun mday ->
+                  if mday < 0 then
+                    day_count + mday + 1
+                  else
+                    mday
+                )
+              |> List.mem dt.day
           in
           let wday_is_fine =
             match pattern.weekdays with [] -> true | l -> List.mem weekday l
