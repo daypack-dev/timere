@@ -239,6 +239,14 @@ val of_sorted_intervals : ?skip_invalid:bool -> interval list -> t
 
 val of_sorted_intervals_seq : ?skip_invalid:bool -> interval Seq.t -> t
 
+(** {1 Search oriented operations} *)
+
+val after : t -> t -> t
+
+val between_inc : t -> t -> t
+
+val between_exc : t -> t -> t
+
 (** {1 Infix operators} *)
 
 module Infix : sig
