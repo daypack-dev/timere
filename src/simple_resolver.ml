@@ -43,6 +43,15 @@ let normalize (s : Time.Interval.t Seq.t) : Time.Interval.t Seq.t =
   |> Int64_set.to_seq
   |> intervals_of_timestamps
 
+let find_after ((_start, end_exc) : Time.Interval.t) (s2 : Time.Interval.t Seq.t) =
+  match
+    OSeq.drop_while (fun (start', _) ->
+        start' < end_exc
+      ) s2 ()
+  with
+  | Seq.Nil -> None
+  | Seq.Cons (x, _) -> Some x
+
 let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
     ~(search_end_exc : Time.timestamp) (t : Time.t) : Time.Interval.t Seq.t =
   let open Time in
@@ -54,12 +63,12 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
          else Some (max search_start x, min search_end_exc y))
       s
   in
-  let rec aux t search_using_tz_offset_s =
+  let rec aux (search_using_tz_offset_s : Time.tz_offset_s) t =
     match t with
     | Timestamp_interval_seq (_, s) -> s
     | Round_robin_pick_list (_, l) ->
       l
-      |> List.map (fun t -> aux t search_using_tz_offset_s)
+      |> List.map (fun t -> aux search_using_tz_offset_s t)
       |> Time.Intervals.Round_robin
          .merge_multi_list_round_robin_non_decreasing ~skip_check:true
     | Unary_op (_, op, t) -> (
@@ -71,35 +80,74 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
                 (mem ~search_start ~search_end_exc
                    ~search_using_tz_offset_s t x))
           |> intervals_of_timestamps
-        | Every -> aux t search_using_tz_offset_s
+        | Every -> aux search_using_tz_offset_s t
         | Skip_n_points n ->
-          aux t search_using_tz_offset_s
+          aux search_using_tz_offset_s t
           |> timestamps_of_intervals
           |> OSeq.drop n
           |> intervals_of_timestamps
-        | Skip_n_intervals n -> OSeq.drop n (aux t search_using_tz_offset_s)
+        | Skip_n_intervals n -> OSeq.drop n (aux search_using_tz_offset_s t)
         | Next_n_points n ->
-          aux t search_using_tz_offset_s
+          aux search_using_tz_offset_s t
           |> timestamps_of_intervals
           |> OSeq.take n
           |> intervals_of_timestamps
-        | Next_n_intervals n -> OSeq.take n (aux t search_using_tz_offset_s)
+        | Next_n_intervals n -> OSeq.take n (aux search_using_tz_offset_s t)
         | Chunk { chunk_size; drop_partial } ->
-          do_chunk ~drop_partial chunk_size (aux t search_using_tz_offset_s)
+          do_chunk ~drop_partial chunk_size (aux search_using_tz_offset_s t)
         | Shift n ->
-          aux t search_using_tz_offset_s
+          aux search_using_tz_offset_s t
           |> Seq.map (fun (x, y) -> (Int64.add n x, Int64.add n y))
         | Lengthen n ->
-          aux t search_using_tz_offset_s
+          aux search_using_tz_offset_s t
           |> Seq.map (fun (x, y) -> (x, Int64.add n y))
-        | Change_tz_offset_s n -> aux t n )
+        | Change_tz_offset_s n -> aux n t )
+    | After (_, t1, t2) ->
+      let s1 =
+        aux search_using_tz_offset_s t1
+      in
+      let s2 =
+        aux search_using_tz_offset_s t2
+      in
+      s1
+      |> Seq.filter_map (fun x ->
+          find_after x s2
+        )
+    | Between_inc (_, t1, t2) ->
+      let s1 =
+        aux search_using_tz_offset_s t1
+      in
+      let s2 =
+        aux search_using_tz_offset_s t2
+      in
+      s1
+      |> Seq.filter_map (fun (start, end_exc) ->
+          find_after (start, end_exc) s2
+          |> Option.map (fun (_, end_exc') ->
+              (start, end_exc')
+            )
+        )
+    | Between_exc (_, t1, t2) ->
+      let s1 =
+        aux search_using_tz_offset_s t1
+      in
+      let s2 =
+        aux search_using_tz_offset_s t2
+      in
+      s1
+      |> Seq.filter_map (fun (start, end_exc) ->
+          find_after (start, end_exc) s2
+          |> Option.map (fun (start', _) ->
+              (start, start')
+            )
+        )
     | _ ->
       Seq_utils.a_to_b_exc_int64 ~a:search_start ~b:search_end_exc
       |> Seq.filter
         (mem ~search_using_tz_offset_s ~search_start ~search_end_exc t)
       |> intervals_of_timestamps
   in
-  aux t search_using_tz_offset_s |> filter |> normalize
+  aux search_using_tz_offset_s t |> filter |> normalize
 
 and mem ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
     ~(search_end_exc : Time.timestamp) (t : Time.t) (timestamp : Time.timestamp)
@@ -257,10 +305,13 @@ and mem ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
           start <= timestamp && timestamp <= end_inc
         | Interval_exc (_, start, end_inc) ->
           start <= timestamp && timestamp < end_inc
-        | Unary_op (_, _, _) | Round_robin_pick_list (_, _) ->
+        | Unary_op (_, _, _) | Round_robin_pick_list (_, _) | After (_, _, _)
+        | Between_inc (_, _, _) | Between_exc (_, _, _)
+          ->
           resolve ~search_using_tz_offset_s ~search_start ~search_end_exc t
           |> OSeq.exists (fun (x, y) -> x <= timestamp && timestamp < y)
         | Inter_list (_, l) -> List.for_all (fun t -> aux t timestamp) l
-        | Union_list (_, l) -> List.exists (fun t -> aux t timestamp) l )
+        | Union_list (_, l) -> List.exists (fun t -> aux t timestamp) l
+      )
   in
   aux t timestamp

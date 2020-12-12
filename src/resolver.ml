@@ -668,8 +668,8 @@ let get_search_space (time : Time.t) : Time.Interval.t list =
   | Inter_list (s, _) -> s
   | Union_list (s, _) -> s
   | After (s, _, _) -> s
-  | Between_inc (s, _, _, _) -> s
-  | Between_exc (s, _, _, _) -> s
+  | Between_inc (s, _, _) -> s
+  | Between_exc (s, _, _) -> s
 
 let set_search_space space (time : Time.t) : Time.t =
   let open Time in
@@ -684,8 +684,8 @@ let set_search_space space (time : Time.t) : Time.t =
   | Inter_list (_, x) -> Inter_list (space, x)
   | Union_list (_, x) -> Union_list (space, x)
   | After (_, x, y) -> After (space, x, y)
-  | Between_inc (_, x, y, z) -> Between_inc (space, x, y, z)
-  | Between_exc (_, x, y, z) -> Between_exc (space, x, y, z)
+  | Between_inc (_, x, y) -> Between_inc (space, x, y)
+  | Between_exc (_, x, y) -> Between_exc (space, x, y)
 
 let search_space_of_year_range tz_offset_s year_range =
   let open Time in
@@ -787,24 +787,24 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
         |> List.of_seq
       in
       After (space, t1, t2)
-    | Between_inc (_, t1, t2, t3) ->
+    | Between_inc (_, t1, t2) ->
       let space =
-        [t1; t2; t3]
+        [t1; t2]
         |> List.map get_search_space
         |> List.map List.to_seq
         |> Intervals.Union.union_multi_list
         |> List.of_seq
       in
-      Between_inc (space, t1, t2, t3)
-    | Between_exc (_, t1, t2, t3) ->
+      Between_inc (space, t1, t2)
+    | Between_exc (_, t1, t2) ->
       let space =
-        [t1; t2; t3]
+        [t1; t2]
         |> List.map get_search_space
         |> List.map List.to_seq
         |> Intervals.Union.union_multi_list
         |> List.of_seq
       in
-      Between_exc (space, t1, t2, t3)
+      Between_exc (space, t1, t2)
   and aux_list tz_offset_s l =
     let l = List.map (aux tz_offset_s) l in
     let space =
@@ -853,12 +853,12 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
     | After (cur, t1, t2) ->
       let space = restrict_search_space parent_search_space cur in
       After (space, aux space t1, aux space t2)
-    | Between_inc (cur, t1, t2, t3) ->
+    | Between_inc (cur, t1, t2) ->
       let space = restrict_search_space parent_search_space cur in
-      Between_inc (space, aux space t1, aux space t2, aux space t3)
-    | Between_exc (cur, t1, t2, t3) ->
+      Between_inc (space, aux space t1, aux space t2)
+    | Between_exc (cur, t1, t2) ->
       let space = restrict_search_space parent_search_space cur in
-      Between_exc (space, aux space t1, aux space t2, aux space t3)
+      Between_exc (space, aux space t1, aux space t2)
   and aux_list parent_search_space l = List.map (aux parent_search_space) l in
   aux default_search_space time
 
@@ -1026,6 +1026,15 @@ let do_take_n_points (n : int64) (s : Time.Interval.t Seq.t) :
   in
   aux n s
 
+let find_after ((_start, end_exc) : Time.Interval.t) (s2 : Time.Interval.t Seq.t) =
+  match
+    OSeq.drop_while (fun (start', _) ->
+        start' < end_exc
+      ) s2 ()
+  with
+  | Seq.Nil -> None
+  | Seq.Cons (x, _) -> Some x
+
 let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
   let rec aux search_using_tz_offset_s time =
@@ -1094,16 +1103,10 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
         aux search_using_tz_offset_s t2
       in
       s1
-      |> Seq.filter_map (fun (_, end_exc) ->
-          match
-          OSeq.drop_while (fun (start', _) ->
-              start' < end_exc
-              ) s2 ()
-          with
-          | Seq.Nil -> None
-          | Seq.Cons (x, _) -> Some x
+      |> Seq.filter_map (fun x ->
+          find_after x s2
         )
-    | Between_inc (_, t1, t2, t3) ->
+    | Between_inc (_, t1, t2) ->
       let s1 =
         aux search_using_tz_offset_s t1
       in
@@ -1112,16 +1115,25 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
       in
       s1
       |> Seq.filter_map (fun (start, end_exc) ->
-          match
-            OSeq.drop_while (fun (start', _) ->
-                start' < end_exc
-              ) s2 ()
-          with
-          | Seq.Nil -> None
-          | Seq.Cons (_, end_exc') -> Some (start, end_exc')
+          find_after (start, end_exc) s2
+          |> Option.map (fun (_, end_exc') ->
+              (start, end_exc')
+            )
         )
-      |>
-    | _ -> failwith "Unimplemented"
+    | Between_exc (_, t1, t2) ->
+      let s1 =
+        aux search_using_tz_offset_s t1
+      in
+      let s2 =
+        aux search_using_tz_offset_s t2
+      in
+      s1
+      |> Seq.filter_map (fun (start, end_exc) ->
+          find_after (start, end_exc) s2
+          |> Option.map (fun (start', _) ->
+              (start, start')
+            )
+        )
   in
   try
     aux search_using_tz_offset_s
