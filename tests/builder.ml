@@ -165,7 +165,7 @@ let build ~min_year ~max_year_inc ~max_height ~max_branching
       | 4 -> make_interval_exc ~rng ~min_year ~max_year_inc
       | _ -> failwith "Unexpected case"
     else
-      match rng () mod 3 with
+      match rng () mod 6 with
       | 0 -> make_unary_op ~rng (aux (new_height height))
       | 1 ->
         OSeq.(0 -- Stdlib.min max_branching (rng ()))
@@ -177,6 +177,11 @@ let build ~min_year ~max_year_inc ~max_height ~max_branching
         |> Seq.map (fun _ -> aux (new_height height))
         |> List.of_seq
         |> Time.union
+      | 3 -> Time.after (aux (new_height height)) (aux (new_height height))
+      | 4 ->
+        Time.between_inc (aux (new_height height)) (aux (new_height height))
+      | 5 ->
+        Time.between_exc (aux (new_height height)) (aux (new_height height))
       (* | 3 ->
        *   OSeq.(0 -- Stdlib.min max_branching (rng ()))
        *   |> Seq.map (fun _ -> aux (new_height height))
