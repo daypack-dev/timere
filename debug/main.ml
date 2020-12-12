@@ -9,7 +9,7 @@ let debug_branching () =
   let timere =
     Timere.branching
       ~months:[ `Range_inc (`Jan, `Mar) ]
-      ~days:(Timere.Month_days [ `Range_inc (-2, -1) ])
+      ~days:(Timere.Month_days [ `Range_inc (-28, -1) ])
       ()
   in
   let search_years_ahead = 5 in
@@ -48,21 +48,19 @@ let debug_parsing () =
   | Ok timere -> print_endline (Timere.to_sexp_string timere)
 
 let debug_resolver () =
-  (*   let s =
-   *     {|
-   * (chunk 918
-   * (intervals ((2002 Jan 14 21 5 18 (tz_offset_s 0)) (2002 Jan 14 21 7 30 (tz_offset_s 0))) ((2002 May 24 5 18 12 (tz_offset_s 0)) (2002 May 24 5 23 4 (tz_offset_s 0))) ((2002 Jun 19 12 52 33 (tz_offset_s 0)) (2002 Jun 19 12 52 38 (tz_offset_s 0))) ((2002 Jul 9 4 33 5 (tz_offset_s 0)) (2002 Jul 9 4 48 23 (tz_offset_s 0))) ((2002 Oct 6 6 12 52 (tz_offset_s 0)) (2002 Oct 6 6 18 25 (tz_offset_s 0))))
-   * )
-   * |}
-   *   in
-   *   let timere = Result.get_ok @@ Timere.of_sexp_string s in *)
+    let s =
+      {|
+        (pattern (month_days -1))
+  |}
+    in
+    let timere = Result.get_ok @@ Timere.of_sexp_string s in
   (* let timere =
    *   (fun height max_branching randomness ->
    *      Timere.Utils.build ~min_year:2000 ~max_year_inc:2002 ~height ~max_branching
    *        ~randomness)
    *     2 5 [333; 5; 918; 132; 292]
    * in *)
-  let timere = Timere.empty in
+  (* let timere = Timere.empty in *)
   print_endline (Timere.to_sexp_string timere);
   print_endline "=====";
   let search_start_dt =
@@ -118,8 +116,8 @@ let debug_ccsexp_parse_string () = CCSexp.parse_string "\"\\256\"" |> ignore
 
 (* let () = debug_branching () *)
 
-let () = debug_parsing ()
+(* let () = debug_parsing () *)
 
-(* let () = debug_resolver () *)
+let () = debug_resolver ()
 
 (* let () = debug_ccsexp_parse_string () *)
