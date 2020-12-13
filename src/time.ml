@@ -1524,7 +1524,6 @@ module Pattern = struct
     hours : Int_set.t;
     minutes : Int_set.t;
     seconds : Int_set.t;
-    timestamps : Int64_set.t;
   }
 
   let equal p1 p2 =
@@ -1535,7 +1534,6 @@ module Pattern = struct
     && Int_set.equal p1.hours p2.hours
     && Int_set.equal p1.minutes p2.minutes
     && Int_set.equal p1.seconds p2.seconds
-    && Int64_set.equal p1.timestamps p2.timestamps
 
   type error =
     | Invalid_years of Int_set.t
@@ -1543,7 +1541,6 @@ module Pattern = struct
     | Invalid_hours of Int_set.t
     | Invalid_minutes of Int_set.t
     | Invalid_seconds of Int_set.t
-    | Invalid_timestamps of Int64_set.t
 
   type range_pattern = pattern Range.range
 
@@ -1560,18 +1557,12 @@ module Pattern = struct
       let invalid_seconds =
         Int_set.filter (fun x -> x < 0 || 59 < x) x.seconds
       in
-      let invalid_timestamps =
-        Int64_set.filter
-          (fun x -> Result.is_error (Date_time.of_timestamp x))
-          x.timestamps
-      in
       if Int_set.is_empty invalid_years then
         if Int_set.is_empty invalid_month_days then
           if Int_set.is_empty invalid_hours then
             if Int_set.is_empty invalid_minutes then
               if Int_set.is_empty invalid_seconds then
-                if Int64_set.is_empty invalid_timestamps then Ok ()
-                else Error (Invalid_timestamps invalid_timestamps)
+                Ok ()
               else Error (Invalid_seconds invalid_seconds)
             else Error (Invalid_minutes invalid_minutes)
           else Error (Invalid_hours invalid_hours)
@@ -1596,7 +1587,6 @@ module Pattern = struct
       hours = Int_set.union p1.hours p2.hours;
       minutes = Int_set.union p1.minutes p2.minutes;
       seconds = Int_set.union p1.seconds p2.seconds;
-      timestamps = Int64_set.union p1.timestamps p2.timestamps;
     }
 
   let inter p1 p2 =
@@ -1608,7 +1598,6 @@ module Pattern = struct
       hours = Int_set.inter p1.hours p2.hours;
       minutes = Int_set.inter p1.minutes p2.minutes;
       seconds = Int_set.inter p1.seconds p2.seconds;
-      timestamps = Int64_set.inter p1.timestamps p2.timestamps;
     }
 end
 
@@ -1862,7 +1851,7 @@ let safe_month_day_range_inc ~years ~months =
 
 let pattern ?(strict = false) ?(years = []) ?(months = []) ?(month_days = [])
     ?(weekdays = []) ?(hours = []) ?(minutes = []) ?(seconds = [])
-    ?(timestamps = []) () : t =
+    () : t =
   if
     List.for_all
       (fun year -> Date_time.min.year <= year && year <= Date_time.max.year)
@@ -1871,7 +1860,6 @@ let pattern ?(strict = false) ?(years = []) ?(months = []) ?(month_days = [])
     && List.for_all (fun x -> 0 <= x && x < 24) hours
     && List.for_all (fun x -> 0 <= x && x < 60) minutes
     && List.for_all (fun x -> 0 <= x && x < 60) seconds
-    && List.for_all (fun x -> x >= 0L) timestamps
   then
     let years = Int_set.of_list years in
     let months = Month_set.of_list months in
@@ -1900,7 +1888,6 @@ let pattern ?(strict = false) ?(years = []) ?(months = []) ?(month_days = [])
       let hours = Int_set.of_list hours in
       let minutes = Int_set.of_list minutes in
       let seconds = Int_set.of_list seconds in
-      let timestamps = Int64_set.of_list timestamps in
       Pattern
         ( default_search_space,
           {
@@ -1911,7 +1898,6 @@ let pattern ?(strict = false) ?(years = []) ?(months = []) ?(month_days = [])
             hours;
             minutes;
             seconds;
-            timestamps;
           } )
     else invalid_arg "pattern"
   else invalid_arg "pattern"
@@ -2058,8 +2044,6 @@ let minutes minutes = pattern ~minutes ()
 
 let seconds seconds = pattern ~seconds ()
 
-let timestamps timestamps = pattern ~timestamps ()
-
 let always = pattern ()
 
 let after (t1 : t) (t2 : t) : t = After (default_search_space, t1, t2)
@@ -2084,6 +2068,13 @@ let of_sorted_intervals_seq ?(skip_invalid : bool = false)
       |> Intervals.Filter.filter_empty
       |> ( if skip_invalid then Intervals.Filter.filter_invalid
            else Intervals.Check.check_if_valid )
+      |> Seq.filter_map (fun (x, y) ->
+          match Date_time.of_timestamp x, Date_time.of_timestamp (Int64.pred y) with
+          | Ok _, Ok _ -> Some (x, y)
+          | _, _ ->
+            if skip_invalid then None
+            else raise Interval_is_invalid
+        )
       |> Intervals.Check.check_if_sorted
       |> Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
     )
@@ -2099,6 +2090,13 @@ let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
       |> Intervals.Filter.filter_empty_list
       |> ( if skip_invalid then Intervals.Filter.filter_invalid_list
            else Intervals.Check.check_if_valid_list )
+      |> List.filter_map (fun (x, y) ->
+          match Date_time.of_timestamp x, Date_time.of_timestamp (Int64.pred y) with
+          | Ok _, Ok _ -> Some (x, y)
+          | _, _ ->
+            if skip_invalid then None
+            else raise Interval_is_invalid
+        )
       |> Intervals.Sort.sort_uniq_intervals_list
       |> List.to_seq
       |> Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
@@ -2109,6 +2107,16 @@ let of_intervals_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t)
   s |> List.of_seq |> of_intervals ~skip_invalid
 
 let empty = of_intervals []
+
+let of_timestamps_seq timestamps =
+  timestamps
+  |> Seq.map (fun x -> (x, Int64.succ x))
+  |> of_intervals_seq
+
+let of_timestamps timestamps =
+  timestamps
+  |> List.map (fun x -> (x, Int64.succ x))
+  |> of_intervals
 
 let full_string_of_weekday (wday : weekday) : string =
   match wday with
