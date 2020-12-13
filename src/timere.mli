@@ -64,6 +64,18 @@ val pattern :
   unit ->
   t
 
+val pattern_ranged :
+  ?strict:bool ->
+  ?years:int range list ->
+  ?months:month range list ->
+  ?month_days:int range list ->
+  ?weekdays:weekday range list ->
+  ?hours:int range list ->
+  ?minutes:int range list ->
+  ?seconds:int range list ->
+  unit ->
+  t
+
 type hms = {
   hour : int;
   minute : int;
