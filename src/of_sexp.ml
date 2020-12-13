@@ -139,8 +139,8 @@ let pattern_of_sexp (x : CCSexp.t) =
           in
           match l with
           | [] ->
-            Time.pattern ~years ~months ~month_days ~weekdays ~hours ~minutes
-              ~seconds ()
+            Time.pattern ~strict:false ~years ~months ~month_days ~weekdays
+              ~hours ~minutes ~seconds ()
           | _ ->
             invalid_data
               (Printf.sprintf "Invalid pattern: %s" (CCSexp.to_string x)) )
