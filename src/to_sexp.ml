@@ -28,23 +28,12 @@ let sexp_of_range ~(f : 'a -> CCSexp.t) (r : 'a Time.Range.range) =
   | `Range_exc (x, y) -> CCSexp.(list [ atom "range_exc"; f x; f y ])
 
 let sexp_of_pattern (pat : Time.Pattern.pattern) : CCSexp.t =
-  let years =
-    pat.years
-    |> Int_set.to_seq
-    |> List.of_seq
-    |> sexp_list_of_ints
-  in
+  let years = pat.years |> Int_set.to_seq |> List.of_seq |> sexp_list_of_ints in
   let months =
-    pat.months
-    |> Time.Month_set.to_seq
-    |> List.of_seq
-    |> List.map sexp_of_month
+    pat.months |> Time.Month_set.to_seq |> List.of_seq |> List.map sexp_of_month
   in
   let month_days =
-    pat.month_days
-    |> Int_set.to_seq
-    |> List.of_seq
-    |> sexp_list_of_ints
+    pat.month_days |> Int_set.to_seq |> List.of_seq |> sexp_list_of_ints
   in
   let weekdays =
     pat.weekdays
@@ -52,23 +41,12 @@ let sexp_of_pattern (pat : Time.Pattern.pattern) : CCSexp.t =
     |> List.of_seq
     |> List.map sexp_of_weekday
   in
-  let hours =
-    pat.hours
-    |> Int_set.to_seq
-    |> List.of_seq
-    |> sexp_list_of_ints
-  in
+  let hours = pat.hours |> Int_set.to_seq |> List.of_seq |> sexp_list_of_ints in
   let minutes =
-    pat.minutes
-    |> Int_set.to_seq
-    |> List.of_seq
-    |> sexp_list_of_ints
+    pat.minutes |> Int_set.to_seq |> List.of_seq |> sexp_list_of_ints
   in
   let seconds =
-    pat.seconds
-    |> Int_set.to_seq
-    |> List.of_seq
-    |> sexp_list_of_ints
+    pat.seconds |> Int_set.to_seq |> List.of_seq |> sexp_list_of_ints
   in
   let timestamps =
     pat.timestamps

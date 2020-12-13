@@ -120,11 +120,11 @@ let month_gt m1 m2 = tm_int_of_month m1 > tm_int_of_month m2
 
 let month_ge m1 m2 = tm_int_of_month m1 >= tm_int_of_month m2
 
-module Month_set = Set.Make (
-  struct type t = month
-           let compare = compare_month
-         end
-  )
+module Month_set = Set.Make (struct
+    type t = month
+
+    let compare = compare_month
+  end)
 
 let compare_weekday (d1 : weekday) (d2 : weekday) : int =
   compare (tm_int_of_weekday d1) (tm_int_of_weekday d2)
@@ -139,11 +139,11 @@ let weekday_ge d1 d2 = tm_int_of_weekday d1 >= tm_int_of_weekday d2
 
 let zero_tm_sec tm = Unix.{ tm with tm_sec = 0 }
 
-module Weekday_set = Set.Make (
-  struct type t = weekday
+module Weekday_set = Set.Make (struct
+    type t = weekday
+
     let compare = compare_weekday
-  end
-  )
+  end)
 
 let is_leap_year ~year =
   assert (year >= 0);
@@ -1546,33 +1546,29 @@ module Pattern = struct
         Int_set.filter (fun x -> x < 1 || 31 < x) x.month_days
       in
       let invalid_hours = Int_set.filter (fun x -> x < 0 || 23 < x) x.hours in
-      let invalid_minutes = Int_set.filter (fun x -> x < 0 || 59 < x) x.minutes in
-      let invalid_seconds = Int_set.filter (fun x -> x < 0 || 59 < x) x.seconds in
+      let invalid_minutes =
+        Int_set.filter (fun x -> x < 0 || 59 < x) x.minutes
+      in
+      let invalid_seconds =
+        Int_set.filter (fun x -> x < 0 || 59 < x) x.seconds
+      in
       let invalid_timestamps =
         Int64_set.filter
           (fun x -> Result.is_error (Date_time.of_timestamp x))
           x.timestamps
       in
-      if Int_set.is_empty invalid_years then (
+      if Int_set.is_empty invalid_years then
         if Int_set.is_empty invalid_month_days then
           if Int_set.is_empty invalid_hours then
             if Int_set.is_empty invalid_minutes then
               if Int_set.is_empty invalid_seconds then
-                if Int64_set.is_empty invalid_timestamps then
-                  Ok ()
-                else
-                  Error (Invalid_timestamps invalid_timestamps)
-              else
-                Error (Invalid_seconds invalid_seconds)
-            else
-              Error (Invalid_minutes invalid_minutes)
-          else
-            Error (Invalid_hours invalid_hours)
-        else
-          Error (Invalid_month_days invalid_month_days)
-      )
-      else
-        Error (Invalid_years invalid_years)
+                if Int64_set.is_empty invalid_timestamps then Ok ()
+                else Error (Invalid_timestamps invalid_timestamps)
+              else Error (Invalid_seconds invalid_seconds)
+            else Error (Invalid_minutes invalid_minutes)
+          else Error (Invalid_hours invalid_hours)
+        else Error (Invalid_month_days invalid_month_days)
+      else Error (Invalid_years invalid_years)
 
     let check_range_pattern (x : range_pattern) : (unit, error) result =
       match x with
@@ -1864,14 +1860,11 @@ let pattern ?(strict = false) ?(years = []) ?(months = []) ?(month_days = [])
         let years =
           if Int_set.is_empty years then
             [ `Range_inc (Date_time.min.year, Date_time.max.year) ]
-          else
-            Year_ranges.Of_seq.range_list_of_seq @@ Int_set.to_seq years
+          else Year_ranges.Of_seq.range_list_of_seq @@ Int_set.to_seq years
         in
         let months =
-          if Month_set.is_empty months then
-            [ `Range_inc (`Jan, `Dec) ]
-          else
-            Month_ranges.Of_seq.range_list_of_seq @@ Month_set.to_seq months
+          if Month_set.is_empty months then [ `Range_inc (`Jan, `Dec) ]
+          else Month_ranges.Of_seq.range_list_of_seq @@ Month_set.to_seq months
         in
         safe_month_day_range_inc ~years ~months
       in

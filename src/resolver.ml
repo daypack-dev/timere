@@ -72,8 +72,7 @@ module Resolve_pattern = struct
       if Int_set.is_empty t.seconds then
         Seq.return
           (`Range_inc
-             ( cur_branch_search_start,
-               Time.Date_time.set_to_last_sec cur_branch ))
+             (cur_branch_search_start, Time.Date_time.set_to_last_sec cur_branch))
       else
         t.seconds
         |> Int_set.to_seq
@@ -207,8 +206,8 @@ module Resolve_pattern = struct
       else
         t.hours
         |> Int_set.to_seq
-        |> Seq.filter
-          (fun hour -> cur_branch_search_start.hour <= hour && hour < 24)
+        |> Seq.filter (fun hour ->
+            cur_branch_search_start.hour <= hour && hour < 24)
         |> Time.Hour_ranges.Of_seq.range_seq_of_seq
         |> Seq.map
           (Time.Range.map
@@ -256,8 +255,7 @@ module Resolve_pattern = struct
       else
         t.month_days
         |> Int_set.to_seq
-        |> Seq.map (fun mday ->
-            if mday < 0 then day_count + mday + 1 else mday)
+        |> Seq.map (fun mday -> if mday < 0 then day_count + mday + 1 else mday)
         |> Seq.filter (fun mday ->
             cur_branch_search_start.day <= mday && mday <= day_count)
 
@@ -309,7 +307,9 @@ module Resolve_pattern = struct
       in
       let f_inc = range_map_inc ~cur_branch_search_start in
       let f_exc = range_map_exc ~cur_branch_search_start in
-      match (Int_set.is_empty t.month_days, Time.Weekday_set.is_empty t.weekdays) with
+      match
+        (Int_set.is_empty t.month_days, Time.Weekday_set.is_empty t.weekdays)
+      with
       | true, true ->
         Seq.return
           (`Range_inc
@@ -346,16 +346,14 @@ module Resolve_pattern = struct
       in
       if Time.Month_set.is_empty t.months then
         OSeq.(start_month_int -- 12)
-        |> Seq.map (fun month ->
-            Time.month_of_human_int month |> Result.get_ok)
+        |> Seq.map (fun month -> Time.month_of_human_int month |> Result.get_ok)
         |> Seq.map (fun month -> { cur_branch_search_start with month })
       else
         t.months
         |> Time.Month_set.to_seq
         |> Seq.map Time.human_int_of_month
         |> Seq.filter (fun month -> start_month_int <= month && month <= 12)
-        |> Seq.map (fun month ->
-            Time.month_of_human_int month |> Result.get_ok)
+        |> Seq.map (fun month -> Time.month_of_human_int month |> Result.get_ok)
         |> Seq.map (fun month -> { cur_branch_search_start with month })
 
     let matching_month_ranges (t : Time.Pattern.pattern)
@@ -395,8 +393,7 @@ module Resolve_pattern = struct
         |> Time.Month_set.to_seq
         |> Seq.map Time.human_int_of_month
         |> Seq.filter (fun month -> start_month_int <= month && month <= 12)
-        |> Seq.map (fun month ->
-            Time.month_of_human_int month |> Result.get_ok)
+        |> Seq.map (fun month -> Time.month_of_human_int month |> Result.get_ok)
         |> Time.Month_ranges.Of_seq.range_seq_of_seq
         |> Seq.map
           (Time.Range.map
@@ -541,20 +538,41 @@ module Resolve_pattern = struct
       Matching_years.matching_years ~overall_search_start ~end_year_inc t
       |> Seq.flat_map
         (Matching_months.matching_month_ranges t ~overall_search_start)
-    | _years_is_empty, _months_is_empty, _month_days_is_empty, _weekdays_is_empty, true, true, true, true ->
+    | ( _years_is_empty,
+        _months_is_empty,
+        _month_days_is_empty,
+        _weekdays_is_empty,
+        true,
+        true,
+        true,
+        true ) ->
       Matching_years.matching_years ~overall_search_start ~end_year_inc t
       |> Seq.flat_map
         (Matching_months.matching_months t ~overall_search_start)
       |> Seq.flat_map
         (Matching_days.matching_day_ranges t ~overall_search_start)
-    | _years_is_empty, _months_is_empty, _month_days_is_empty, _weekdays_is_empty, _hours_is_empty, true, true, true ->
+    | ( _years_is_empty,
+        _months_is_empty,
+        _month_days_is_empty,
+        _weekdays_is_empty,
+        _hours_is_empty,
+        true,
+        true,
+        true ) ->
       Matching_years.matching_years ~overall_search_start ~end_year_inc t
       |> Seq.flat_map
         (Matching_months.matching_months t ~overall_search_start)
       |> Seq.flat_map (Matching_days.matching_days t ~overall_search_start)
       |> Seq.flat_map
         (Matching_hours.matching_hour_ranges t ~overall_search_start)
-    | _years_is_empty, _months_is_empty, _month_days_is_empty, _weekdays_is_empty, _hours_is_empty, _minutes_is_empty, true, true ->
+    | ( _years_is_empty,
+        _months_is_empty,
+        _month_days_is_empty,
+        _weekdays_is_empty,
+        _hours_is_empty,
+        _minutes_is_empty,
+        true,
+        true ) ->
       Matching_years.matching_years ~overall_search_start ~end_year_inc t
       |> Seq.flat_map
         (Matching_months.matching_months t ~overall_search_start)
@@ -562,7 +580,14 @@ module Resolve_pattern = struct
       |> Seq.flat_map (Matching_hours.matching_hours t ~overall_search_start)
       |> Seq.flat_map
         (Matching_minutes.matching_minute_ranges t ~overall_search_start)
-    | _years_is_empty, _months_is_empty, _month_days_is_empty, _weekdays_is_empty, _hours_is_empty, _minutes_is_empty, _seconds_is_empty, true ->
+    | ( _years_is_empty,
+        _months_is_empty,
+        _month_days_is_empty,
+        _weekdays_is_empty,
+        _hours_is_empty,
+        _minutes_is_empty,
+        _seconds_is_empty,
+        true ) ->
       Matching_years.matching_years ~overall_search_start ~end_year_inc t
       |> Seq.flat_map
         (Matching_months.matching_months t ~overall_search_start)
@@ -712,12 +737,18 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
       )
     | Pattern (_, pat) -> (
         let space_for_years =
-          pat.years |> Int_set.to_seq |> Seq.map (search_space_of_year tz_offset_s)
+          pat.years
+          |> Int_set.to_seq
+          |> Seq.map (search_space_of_year tz_offset_s)
         in
         let space_for_timestamps =
-          pat.timestamps |> Int64_set.to_seq |> Seq.map (fun x -> (x, Int64.succ x))
+          pat.timestamps
+          |> Int64_set.to_seq
+          |> Seq.map (fun x -> (x, Int64.succ x))
         in
-        match (Int_set.is_empty pat.years, Int64_set.is_empty pat.timestamps) with
+        match
+          (Int_set.is_empty pat.years, Int64_set.is_empty pat.timestamps)
+        with
         | true, true -> time
         | false, true -> Pattern (List.of_seq space_for_years, pat)
         | true, false -> Pattern (List.of_seq space_for_timestamps, pat)

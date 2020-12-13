@@ -149,47 +149,39 @@ and mem ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
         | Pattern (_, pattern) ->
           let year_is_fine =
             Int_set.is_empty pattern.years
-            ||
-            (Int_set.mem dt.year pattern.years)
+            || Int_set.mem dt.year pattern.years
           in
           let month_is_fine =
             Time.Month_set.is_empty pattern.months
-            ||
-            (Time.Month_set.mem dt.month pattern.months)
+            || Time.Month_set.mem dt.month pattern.months
           in
           let mday_is_fine =
             Int_set.is_empty pattern.month_days
             ||
-            (
-              let day_count =
-                day_count_of_month ~year:dt.year ~month:dt.month
-              in
-              pattern.month_days
-              |> Int_set.to_seq
-              |> Seq.map (fun mday ->
-                  if mday < 0 then day_count + mday + 1 else mday)
-              |> OSeq.mem ~eq:( = ) dt.day
-            )
+            let day_count =
+              day_count_of_month ~year:dt.year ~month:dt.month
+            in
+            pattern.month_days
+            |> Int_set.to_seq
+            |> Seq.map (fun mday ->
+                if mday < 0 then day_count + mday + 1 else mday)
+            |> OSeq.mem ~eq:( = ) dt.day
           in
           let wday_is_fine =
             Time.Weekday_set.is_empty pattern.weekdays
-            ||
-            (Time.Weekday_set.mem weekday pattern.weekdays)
+            || Time.Weekday_set.mem weekday pattern.weekdays
           in
           let hour_is_fine =
             Int_set.is_empty pattern.hours
-            ||
-            (Int_set.mem dt.hour pattern.hours)
+            || Int_set.mem dt.hour pattern.hours
           in
           let minute_is_fine =
             Int_set.is_empty pattern.minutes
-            ||
-            Int_set.mem dt.minute pattern.minutes
+            || Int_set.mem dt.minute pattern.minutes
           in
           let second_is_fine =
             Int_set.is_empty pattern.seconds
-            ||
-            Int_set.mem dt.second pattern.seconds
+            || Int_set.mem dt.second pattern.seconds
           in
           let timestamp_is_fine =
             Int64_set.is_empty pattern.timestamps
