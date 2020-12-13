@@ -49,7 +49,7 @@ let debug_parsing () =
 
 let debug_resolver () =
   let s = {|
-        (pattern (month_days -1))
+        (pattern (month_days 31))
   |} in
   let timere = Result.get_ok @@ Timere.of_sexp_string s in
   (* let timere =
@@ -58,7 +58,7 @@ let debug_resolver () =
    *        ~randomness)
    *     2 5 [333; 5; 918; 132; 292]
    * in *)
-  (* let timere = Timere.empty in *)
+  (* let timere = Timere.pattern ~strict:true ~months:[`Mar] ~month_days:[31] () in *)
   print_endline (Timere.to_sexp_string timere);
   print_endline "=====";
   let search_start_dt =
