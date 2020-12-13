@@ -1568,25 +1568,54 @@ module Pattern = struct
   end
 
   let union p1 p2 =
+    let union_sets (type a) ~(is_empty : a -> bool) ~(union : a -> a -> a)
+        ~(empty : a) (a : a) (b : a) =
+      if is_empty a || is_empty b then empty else union a b
+    in
+    let union_int_sets a b =
+      union_sets ~is_empty:Int_set.is_empty ~union:Int_set.union
+        ~empty:Int_set.empty a b
+    in
+    let union_month_sets a b =
+      union_sets ~is_empty:Month_set.is_empty ~union:Month_set.union
+        ~empty:Month_set.empty a b
+    in
+    let union_weekday_sets a b =
+      union_sets ~is_empty:Weekday_set.is_empty ~union:Weekday_set.union
+        ~empty:Weekday_set.empty a b
+    in
     {
-      years = Int_set.union p1.years p2.years;
-      months = Month_set.union p1.months p2.months;
-      month_days = Int_set.union p1.month_days p2.month_days;
-      weekdays = Weekday_set.union p1.weekdays p2.weekdays;
-      hours = Int_set.union p1.hours p2.hours;
-      minutes = Int_set.union p1.minutes p2.minutes;
-      seconds = Int_set.union p1.seconds p2.seconds;
+      years = union_int_sets p1.years p2.years;
+      months = union_month_sets p1.months p2.months;
+      month_days = union_int_sets p1.month_days p2.month_days;
+      weekdays = union_weekday_sets p1.weekdays p2.weekdays;
+      hours = union_int_sets p1.hours p2.hours;
+      minutes = union_int_sets p1.minutes p2.minutes;
+      seconds = union_int_sets p1.seconds p2.seconds;
     }
 
   let inter p1 p2 =
+    let inter_sets (type a) ~(is_empty : a -> bool) ~(inter : a -> a -> a)
+        (a : a) (b : a) =
+      if is_empty a then b else if is_empty b then a else inter a b
+    in
+    let inter_int_sets a b =
+      inter_sets ~is_empty:Int_set.is_empty ~inter:Int_set.inter a b
+    in
+    let inter_month_sets a b =
+      inter_sets ~is_empty:Month_set.is_empty ~inter:Month_set.inter a b
+    in
+    let inter_weekday_sets a b =
+      inter_sets ~is_empty:Weekday_set.is_empty ~inter:Weekday_set.inter a b
+    in
     {
-      years = Int_set.inter p1.years p2.years;
-      months = Month_set.inter p1.months p2.months;
-      month_days = Int_set.inter p1.month_days p2.month_days;
-      weekdays = Weekday_set.inter p1.weekdays p2.weekdays;
-      hours = Int_set.inter p1.hours p2.hours;
-      minutes = Int_set.inter p1.minutes p2.minutes;
-      seconds = Int_set.inter p1.seconds p2.seconds;
+      years = inter_int_sets p1.years p2.years;
+      months = inter_month_sets p1.months p2.months;
+      month_days = inter_int_sets p1.month_days p2.month_days;
+      weekdays = inter_weekday_sets p1.weekdays p2.weekdays;
+      hours = inter_int_sets p1.hours p2.hours;
+      minutes = inter_int_sets p1.minutes p2.minutes;
+      seconds = inter_int_sets p1.seconds p2.seconds;
     }
 end
 
