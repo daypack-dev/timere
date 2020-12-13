@@ -1527,7 +1527,15 @@ module Pattern = struct
     timestamps : Int64_set.t;
   }
 
-  let equal p1 p2 = p1 = p2
+  let equal p1 p2 =
+    Int_set.equal p1.years p2.years
+    && Month_set.equal p1.months p2.months
+    && Int_set.equal p1.month_days p2.month_days
+    && Weekday_set.equal p1.weekdays p2.weekdays
+    && Int_set.equal p1.hours p2.hours
+    && Int_set.equal p1.minutes p2.minutes
+    && Int_set.equal p1.seconds p2.seconds
+    && Int64_set.equal p1.timestamps p2.timestamps
 
   type error =
     | Invalid_years of Int_set.t
