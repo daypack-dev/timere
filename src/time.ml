@@ -1852,6 +1852,8 @@ let pattern ?(strict = false) ?(years = []) ?(months = []) ?(month_days = [])
     && List.for_all (fun x -> 0 <= x && x < 60) seconds
     && List.for_all (fun x -> x >= 0L) timestamps
   then
+    let years = List.sort_uniq compare years in
+    let months = List.sort_uniq compare_month months in
     let is_okay =
       Stdlib.not strict
       ||
@@ -1876,8 +1878,8 @@ let pattern ?(strict = false) ?(years = []) ?(months = []) ?(month_days = [])
       Pattern
         ( default_search_space,
           {
-            Pattern.years = List.sort_uniq compare years;
-            months = List.sort_uniq compare_month months;
+            Pattern.years;
+            months;
             month_days = List.sort_uniq compare month_days;
             weekdays = List.sort_uniq compare_weekday weekdays;
             hours = List.sort_uniq compare hours;
