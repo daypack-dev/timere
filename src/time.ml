@@ -1559,8 +1559,7 @@ module Pattern = struct
         if Int_set.is_empty invalid_month_days then
           if Int_set.is_empty invalid_hours then
             if Int_set.is_empty invalid_minutes then
-              if Int_set.is_empty invalid_seconds then
-                Ok ()
+              if Int_set.is_empty invalid_seconds then Ok ()
               else Error (Invalid_seconds invalid_seconds)
             else Error (Invalid_minutes invalid_minutes)
           else Error (Invalid_hours invalid_hours)
@@ -1629,7 +1628,10 @@ type 'a recur_spec =
 
 type recur_day =
   | Month_day of int recur_spec
-  | Weekday of { every_nth : int; weekday : weekday }
+  | Weekday of {
+      every_nth : int;
+      weekday : weekday;
+    }
 
 type recur = {
   start : Date_time_set.t;
@@ -1840,8 +1842,7 @@ let safe_month_day_range_inc ~years ~months =
   aux (-31) 31 (Month_ranges.Flatten.flatten @@ List.to_seq @@ months)
 
 let pattern ?(strict = false) ?(years = []) ?(months = []) ?(month_days = [])
-    ?(weekdays = []) ?(hours = []) ?(minutes = []) ?(seconds = [])
-    () : t =
+    ?(weekdays = []) ?(hours = []) ?(minutes = []) ?(seconds = []) () : t =
   if
     List.for_all
       (fun year -> Date_time.min.year <= year && year <= Date_time.max.year)
@@ -1892,31 +1893,18 @@ let pattern ?(strict = false) ?(years = []) ?(months = []) ?(month_days = [])
     else invalid_arg "pattern"
   else invalid_arg "pattern"
 
-let pattern_ranged ?(strict = false) ?(years = []) ?(months = []) ?(month_days = [])
-    ?(weekdays = []) ?(hours = []) ?(minutes = []) ?(seconds = [])
-    () : t =
-  let years =
-    Year_ranges.Flatten.flatten_list years
-  in
-  let months =
-    Month_ranges.Flatten.flatten_list months
-  in
-  let month_days =
-    Month_day_ranges.Flatten.flatten_list month_days
-  in
-  let weekdays =
-    Weekday_ranges.Flatten.flatten_list weekdays
-  in
-  let hours =
-    Hour_ranges.Flatten.flatten_list hours
-  in
-  let minutes =
-    Minute_ranges.Flatten.flatten_list minutes
-  in
-  let seconds =
-    Second_ranges.Flatten.flatten_list seconds
-  in
-  pattern ~strict ~years ~months ~month_days ~weekdays ~hours ~minutes ~seconds ()
+let pattern_ranged ?(strict = false) ?(years = []) ?(months = [])
+    ?(month_days = []) ?(weekdays = []) ?(hours = []) ?(minutes = [])
+    ?(seconds = []) () : t =
+  let years = Year_ranges.Flatten.flatten_list years in
+  let months = Month_ranges.Flatten.flatten_list months in
+  let month_days = Month_day_ranges.Flatten.flatten_list month_days in
+  let weekdays = Weekday_ranges.Flatten.flatten_list weekdays in
+  let hours = Hour_ranges.Flatten.flatten_list hours in
+  let minutes = Minute_ranges.Flatten.flatten_list minutes in
+  let seconds = Second_ranges.Flatten.flatten_list seconds in
+  pattern ~strict ~years ~months ~month_days ~weekdays ~hours ~minutes ~seconds
+    ()
 
 let month_day_ranges_are_valid_strict ~safe_month_day_range_inc day_ranges =
   let safe_month_day_start, safe_month_day_end_inc = safe_month_day_range_inc in
@@ -2059,12 +2047,11 @@ let of_sorted_intervals_seq ?(skip_invalid : bool = false)
       |> ( if skip_invalid then Intervals.Filter.filter_invalid
            else Intervals.Check.check_if_valid )
       |> Seq.filter_map (fun (x, y) ->
-          match Date_time.of_timestamp x, Date_time.of_timestamp (Int64.pred y) with
+          match
+            (Date_time.of_timestamp x, Date_time.of_timestamp (Int64.pred y))
+          with
           | Ok _, Ok _ -> Some (x, y)
-          | _, _ ->
-            if skip_invalid then None
-            else raise Interval_is_invalid
-        )
+          | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
       |> Intervals.Check.check_if_sorted
       |> Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
     )
@@ -2081,12 +2068,11 @@ let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
       |> ( if skip_invalid then Intervals.Filter.filter_invalid_list
            else Intervals.Check.check_if_valid_list )
       |> List.filter_map (fun (x, y) ->
-          match Date_time.of_timestamp x, Date_time.of_timestamp (Int64.pred y) with
+          match
+            (Date_time.of_timestamp x, Date_time.of_timestamp (Int64.pred y))
+          with
           | Ok _, Ok _ -> Some (x, y)
-          | _, _ ->
-            if skip_invalid then None
-            else raise Interval_is_invalid
-        )
+          | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
       |> Intervals.Sort.sort_uniq_intervals_list
       |> List.to_seq
       |> Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
@@ -2099,14 +2085,10 @@ let of_intervals_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t)
 let empty = of_intervals []
 
 let of_timestamps_seq timestamps =
-  timestamps
-  |> Seq.map (fun x -> (x, Int64.succ x))
-  |> of_intervals_seq
+  timestamps |> Seq.map (fun x -> (x, Int64.succ x)) |> of_intervals_seq
 
 let of_timestamps timestamps =
-  timestamps
-  |> List.map (fun x -> (x, Int64.succ x))
-  |> of_intervals
+  timestamps |> List.map (fun x -> (x, Int64.succ x)) |> of_intervals
 
 let full_string_of_weekday (wday : weekday) : string =
   match wday with
