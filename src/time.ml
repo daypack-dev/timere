@@ -1516,7 +1516,7 @@ let next_hour_minute ~(hour : int) ~(minute : int) : (int * int, unit) result =
   else Error ()
 
 module Pattern = struct
-  type pattern = {
+  type t = {
     years : Int_set.t;
     months : Month_set.t;
     month_days : Int_set.t;
@@ -1542,10 +1542,8 @@ module Pattern = struct
     | Invalid_minutes of Int_set.t
     | Invalid_seconds of Int_set.t
 
-  type range_pattern = pattern Range.range
-
   module Check = struct
-    let check_pattern (x : pattern) : (unit, error) result =
+    let check_pattern (x : t) : (unit, error) result =
       let invalid_years = Int_set.filter (fun x -> x < 0 || 9999 < x) x.years in
       let invalid_month_days =
         Int_set.filter (fun x -> x < 1 || 31 < x) x.month_days
@@ -1568,14 +1566,6 @@ module Pattern = struct
           else Error (Invalid_hours invalid_hours)
         else Error (Invalid_month_days invalid_month_days)
       else Error (Invalid_years invalid_years)
-
-    let check_range_pattern (x : range_pattern) : (unit, error) result =
-      match x with
-      | `Range_inc (x, y) | `Range_exc (x, y) -> (
-          match check_pattern x with
-          | Error e -> Error e
-          | Ok () -> (
-              match check_pattern y with Error e -> Error e | Ok () -> Ok () ) )
   end
 
   let union p1 p2 =
@@ -1659,7 +1649,7 @@ let default_search_space : search_space =
 
 type t =
   | Timestamp_interval_seq of search_space * (int64 * int64) Seq.t
-  | Pattern of search_space * Pattern.pattern
+  | Pattern of search_space * Pattern.t
   | Branching of search_space * branching
   | Unary_op of search_space * unary_op * t
   | Interval_inc of search_space * timestamp * timestamp

@@ -61,7 +61,6 @@ val pattern :
   ?hours:int list ->
   ?minutes:int list ->
   ?seconds:int list ->
-  ?timestamps:timestamp list ->
   unit ->
   t
 

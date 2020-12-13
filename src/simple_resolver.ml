@@ -183,10 +183,6 @@ and mem ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
             Int_set.is_empty pattern.seconds
             || Int_set.mem dt.second pattern.seconds
           in
-          let timestamp_is_fine =
-            Int64_set.is_empty pattern.timestamps
-            || Int64_set.mem timestamp pattern.timestamps
-          in
           year_is_fine
           && month_is_fine
           && mday_is_fine
@@ -194,7 +190,6 @@ and mem ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
           && hour_is_fine
           && minute_is_fine
           && second_is_fine
-          && timestamp_is_fine
         | Branching (_, branching) ->
           let years =
             branching.years
