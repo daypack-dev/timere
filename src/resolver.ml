@@ -1007,7 +1007,7 @@ let intervals_of_branching tz_offset_s (space : Time.search_space)
                 |> Resolve_pattern.matching_date_times
                   (Search_param.make ~search_using_tz_offset_s:tz_offset_s
                      search_space)
-                |> Seq.map (fun Date_time.{ day; _ } -> day)
+                |> Seq.map (fun { Date_time.day; _ } -> day)
               in
               intervals_of_month_days year month month_days hmss)
            months)

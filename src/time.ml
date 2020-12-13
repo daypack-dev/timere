@@ -1644,6 +1644,21 @@ type branching = {
 
 let branching_equal b1 b2 = b1 = b2
 
+type 'a recur_spec =
+  | Match of 'a list
+  | Arith_seq of int
+
+type recur_day =
+  | Month_day of int recur_spec
+  | Weekday of { every_nth : int; weekday : weekday }
+
+type recur = {
+  start : Date_time_set.t;
+  year : int recur_spec;
+  month : month recur_spec;
+  day : recur_day;
+}
+
 type search_space = Interval.t list
 
 let default_search_space_start = Date_time.(to_timestamp min)
