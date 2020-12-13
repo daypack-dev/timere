@@ -1916,6 +1916,32 @@ let pattern ?(strict = false) ?(years = []) ?(months = []) ?(month_days = [])
     else invalid_arg "pattern"
   else invalid_arg "pattern"
 
+let pattern_ranged ?(strict = false) ?(years = []) ?(months = []) ?(month_days = [])
+    ?(weekdays = []) ?(hours = []) ?(minutes = []) ?(seconds = [])
+    () : t =
+  let years =
+    Year_ranges.Flatten.flatten_list years
+  in
+  let months =
+    Month_ranges.Flatten.flatten_list months
+  in
+  let month_days =
+    Month_day_ranges.Flatten.flatten_list month_days
+  in
+  let weekdays =
+    Weekday_ranges.Flatten.flatten_list weekdays
+  in
+  let hours =
+    Hour_ranges.Flatten.flatten_list hours
+  in
+  let minutes =
+    Minute_ranges.Flatten.flatten_list minutes
+  in
+  let seconds =
+    Second_ranges.Flatten.flatten_list seconds
+  in
+  pattern ~strict ~years ~months ~month_days ~weekdays ~hours ~minutes ~seconds ()
+
 let month_day_ranges_are_valid_strict ~safe_month_day_range_inc day_ranges =
   let safe_month_day_start, safe_month_day_end_inc = safe_month_day_range_inc in
   day_ranges
