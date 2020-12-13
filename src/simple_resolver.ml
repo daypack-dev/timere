@@ -30,12 +30,6 @@ let intervals_of_timestamps (s : Time.timestamp Seq.t) : Time.Interval.t Seq.t =
 let timestamps_of_intervals (s : Time.Interval.t Seq.t) : Time.timestamp Seq.t =
   s |> Seq.flat_map (fun (a, b) -> Seq_utils.a_to_b_exc_int64 ~a ~b)
 
-module Int64_set = Set.Make (struct
-    type t = int64
-
-    let compare = compare
-  end)
-
 let normalize (s : Time.Interval.t Seq.t) : Time.Interval.t Seq.t =
   s
   |> timestamps_of_intervals
@@ -154,43 +148,52 @@ and mem ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
             s
         | Pattern (_, pattern) ->
           let year_is_fine =
-            match pattern.years with [] -> true | l -> List.mem dt.year l
+            Int_set.is_empty pattern.years
+            ||
+            (Int_set.mem dt.year pattern.years)
           in
           let month_is_fine =
-            match pattern.months with [] -> true | l -> List.mem dt.month l
+            Time.Month_set.is_empty pattern.months
+            ||
+            (Time.Month_set.mem dt.month pattern.months)
           in
           let mday_is_fine =
-            match pattern.month_days with
-            | [] -> true
-            | l ->
+            Int_set.is_empty pattern.month_days
+            ||
+            (
               let day_count =
                 day_count_of_month ~year:dt.year ~month:dt.month
               in
-              l
-              |> List.map (fun mday ->
+              pattern.month_days
+              |> Int_set.to_seq
+              |> Seq.map (fun mday ->
                   if mday < 0 then day_count + mday + 1 else mday)
-              |> List.mem dt.day
+              |> OSeq.mem ~eq:( = ) dt.day
+            )
           in
           let wday_is_fine =
-            match pattern.weekdays with [] -> true | l -> List.mem weekday l
+            Time.Weekday_set.is_empty pattern.weekdays
+            ||
+            (Time.Weekday_set.mem weekday pattern.weekdays)
           in
           let hour_is_fine =
-            match pattern.hours with [] -> true | l -> List.mem dt.hour l
+            Int_set.is_empty pattern.hours
+            ||
+            (Int_set.mem dt.hour pattern.hours)
           in
           let minute_is_fine =
-            match pattern.minutes with
-            | [] -> true
-            | l -> List.mem dt.minute l
+            Int_set.is_empty pattern.minutes
+            ||
+            Int_set.mem dt.minute pattern.minutes
           in
           let second_is_fine =
-            match pattern.seconds with
-            | [] -> true
-            | l -> List.mem dt.second l
+            Int_set.is_empty pattern.seconds
+            ||
+            Int_set.mem dt.second pattern.seconds
           in
           let timestamp_is_fine =
-            match pattern.timestamps with
-            | [] -> true
-            | l -> List.mem timestamp l
+            Int64_set.is_empty pattern.timestamps
+            || Int64_set.mem timestamp pattern.timestamps
           in
           year_is_fine
           && month_is_fine
