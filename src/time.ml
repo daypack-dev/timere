@@ -1025,39 +1025,39 @@ module Ranges = struct
   end
 
   module Of_seq = struct
-    let range_seq_of_seq (type a) ?(skip_filter_invalid = false)
+    let range_seq_of_seq (type a)
         ?(skip_filter_empty = false) ?(skip_sort = false)
         ~(modulo : int64 option) ~(to_int64 : a -> int64)
         ~(of_int64 : int64 -> a) (s : a Seq.t) : a Range.range Seq.t =
       s
       |> Seq.map (fun x -> `Range_inc (x, x))
-      |> normalize ~skip_filter_invalid ~skip_filter_empty ~skip_sort ~modulo
+      |> normalize ~skip_filter_invalid:true ~skip_filter_empty ~skip_sort ~modulo
         ~to_int64 ~of_int64
 
-    let range_list_of_seq (type a) ?(skip_filter_invalid = false)
+    let range_list_of_seq (type a)
         ?(skip_filter_empty = false) ?(skip_sort = false)
         ~(modulo : int64 option) ~(to_int64 : a -> int64)
         ~(of_int64 : int64 -> a) (s : a Seq.t) : a Range.range list =
-      range_seq_of_seq ~skip_filter_invalid ~skip_filter_empty ~skip_sort
+      range_seq_of_seq ~skip_filter_empty ~skip_sort
         ~modulo ~to_int64 ~of_int64 s
       |> List.of_seq
   end
 
   module Of_list = struct
-    let range_seq_of_list (type a) ?(skip_filter_invalid = false)
+    let range_seq_of_list (type a)
         ?(skip_filter_empty = false) ?(skip_sort = false)
         ~(modulo : int64 option) ~(to_int64 : a -> int64)
         ~(of_int64 : int64 -> a) (l : a list) : a Range.range Seq.t =
       List.to_seq l
-      |> Of_seq.range_seq_of_seq ~skip_filter_invalid ~skip_filter_empty
+      |> Of_seq.range_seq_of_seq ~skip_filter_empty
         ~skip_sort ~modulo ~to_int64 ~of_int64
 
-    let range_list_of_list (type a) ?(skip_filter_invalid = false)
+    let range_list_of_list (type a)
         ?(skip_filter_empty = false) ?(skip_sort = false)
         ~(modulo : int64 option) ~(to_int64 : a -> int64)
         ~(of_int64 : int64 -> a) (l : a list) : a Range.range list =
       List.to_seq l
-      |> Of_seq.range_seq_of_seq ~skip_filter_invalid ~skip_filter_empty
+      |> Of_seq.range_seq_of_seq ~skip_filter_empty
         ~skip_sort ~modulo ~to_int64 ~of_int64
       |> List.of_seq
   end
@@ -1085,15 +1085,15 @@ module Ranges = struct
     end
 
     module Of_seq : sig
-      val range_seq_of_seq : t Seq.t -> t Range.range Seq.t
+      val range_seq_of_seq : ?skip_sort:bool ->t Seq.t -> t Range.range Seq.t
 
-      val range_list_of_seq : t Seq.t -> t Range.range list
+      val range_list_of_seq : ?skip_sort:bool ->t Seq.t -> t Range.range list
     end
 
     module Of_list : sig
-      val range_seq_of_list : t list -> t Range.range Seq.t
+      val range_seq_of_list : ?skip_sort:bool ->t list -> t Range.range Seq.t
 
-      val range_list_of_list : t list -> t Range.range list
+      val range_list_of_list : ?skip_sort:bool ->t list -> t Range.range list
     end
   end
 
@@ -1120,19 +1120,19 @@ module Ranges = struct
     end
 
     module Of_seq = struct
-      let range_seq_of_seq (s : t Seq.t) : t Range.range Seq.t =
-        Of_seq.range_seq_of_seq ~modulo ~to_int64 ~of_int64 s
+      let range_seq_of_seq ?(skip_sort = false) (s : t Seq.t) : t Range.range Seq.t =
+        Of_seq.range_seq_of_seq ~skip_sort ~modulo ~to_int64 ~of_int64 s
 
-      let range_list_of_seq (s : t Seq.t) : t Range.range list =
-        Of_seq.range_list_of_seq ~modulo ~to_int64 ~of_int64 s
+      let range_list_of_seq ?(skip_sort = false) (s : t Seq.t) : t Range.range list =
+        Of_seq.range_list_of_seq ~skip_sort ~modulo ~to_int64 ~of_int64 s
     end
 
     module Of_list = struct
-      let range_seq_of_list (l : t list) : t Range.range Seq.t =
-        List.to_seq l |> Of_seq.range_seq_of_seq
+      let range_seq_of_list ?(skip_sort = false) (l : t list) : t Range.range Seq.t =
+        List.to_seq l |> Of_seq.range_seq_of_seq ~skip_sort
 
-      let range_list_of_list (l : t list) : t Range.range list =
-        List.to_seq l |> Of_seq.range_seq_of_seq |> List.of_seq
+      let range_list_of_list ?(skip_sort = false) (l : t list) : t Range.range list =
+        List.to_seq l |> Of_seq.range_seq_of_seq ~skip_sort |> List.of_seq
     end
   end
 end
@@ -1236,19 +1236,19 @@ module Ranges_small = struct
     end
 
     module Of_seq = struct
-      let range_seq_of_seq (s : t Seq.t) : t Range.range Seq.t =
-        Of_seq.range_seq_of_seq ~modulo ~to_int ~of_int s
+      let range_seq_of_seq ?(skip_sort = false) (s : t Seq.t) : t Range.range Seq.t =
+        Of_seq.range_seq_of_seq ~skip_sort ~modulo ~to_int ~of_int s
 
-      let range_list_of_seq (s : t Seq.t) : t Range.range list =
-        Of_seq.range_list_of_seq ~modulo ~to_int ~of_int s
+      let range_list_of_seq ?(skip_sort = false)  (s : t Seq.t) : t Range.range list =
+        Of_seq.range_list_of_seq ~skip_sort ~modulo ~to_int ~of_int s
     end
 
     module Of_list = struct
-      let range_seq_of_list (l : t list) : t Range.range Seq.t =
-        List.to_seq l |> Of_seq.range_seq_of_seq
+      let range_seq_of_list ?(skip_sort = false) (l : t list) : t Range.range Seq.t =
+        List.to_seq l |> Of_seq.range_seq_of_seq ~skip_sort
 
-      let range_list_of_list (l : t list) : t Range.range list =
-        List.to_seq l |> Of_seq.range_seq_of_seq |> List.of_seq
+      let range_list_of_list ?(skip_sort = false) (l : t list) : t Range.range list =
+        List.to_seq l |> Of_seq.range_seq_of_seq ~skip_sort |> List.of_seq
     end
   end
 end
