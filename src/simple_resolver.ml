@@ -142,6 +142,8 @@ and mem ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
           |> second_of_day_of_hms
         in
         match t with
+        | All -> true
+        | Empty -> false
         | Timestamp_interval_seq (_, s) ->
           OSeq.exists
             (fun (start, end_exc) ->

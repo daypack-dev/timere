@@ -606,6 +606,8 @@ end
 let get_search_space (time : Time.t) : Time.Interval.t list =
   let open Time in
   match time with
+  | All -> default_search_space
+  | Empty -> []
   | Timestamp_interval_seq (s, _) -> s
   | Pattern (s, _) -> s
   | Branching (s, _) -> s
@@ -623,6 +625,8 @@ let get_search_space (time : Time.t) : Time.Interval.t list =
 let set_search_space space (time : Time.t) : Time.t =
   let open Time in
   match time with
+  | All -> All
+  | Empty -> Empty
   | Timestamp_interval_seq (_, x) -> Timestamp_interval_seq (space, x)
   | Pattern (_, x) -> Pattern (space, x)
   | Branching (_, x) -> Branching (space, x)
@@ -666,6 +670,8 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
   let open Time in
   let rec aux tz_offset_s time =
     match time with
+    | All -> All
+    | Empty -> Empty
     | Timestamp_interval_seq (_, s) -> (
         match s () with
         | Seq.Nil -> time
@@ -769,6 +775,8 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
   in
   let rec aux parent_search_space time =
     match time with
+    | All -> All
+    | Empty -> Empty
     | Timestamp_interval_seq (cur, s) ->
       Timestamp_interval_seq (restrict_search_space parent_search_space cur, s)
     | Pattern (cur, pat) ->
@@ -1082,6 +1090,8 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
   let rec aux search_using_tz_offset_s time =
     let open Time in
     match time with
+    | Empty -> Seq.empty
+    | All -> Seq.return Date_time.(to_timestamp min, Int64.succ @@ to_timestamp max)
     | Timestamp_interval_seq (_, s) -> s
     | Pattern (space, pat) ->
       let params =

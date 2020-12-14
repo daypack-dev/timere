@@ -1721,6 +1721,8 @@ let default_search_space : search_space =
   [ (default_search_space_start, default_search_space_end_exc) ]
 
 type t =
+  | Empty
+  | All
   | Timestamp_interval_seq of search_space * (int64 * int64) Seq.t
   | Pattern of search_space * Pattern.t
   | Branching of search_space * branching
@@ -1738,6 +1740,8 @@ type t =
 let equal t1 t2 =
   let rec aux t1 t2 =
     match (t1, t2) with
+    | Empty, Empty -> true
+    | All, All -> true
     | Timestamp_interval_seq (_, s1), Timestamp_interval_seq (_, s2) ->
       OSeq.equal ~eq:( = ) s1 s2
     | Pattern (_, p1), Pattern (_, p2) -> Pattern.equal p1 p2
@@ -1770,7 +1774,9 @@ let shift (offset : Duration.t) (t : t) : t =
 let lengthen (x : Duration.t) (t : t) : t =
   Unary_op (default_search_space, Lengthen (Duration.to_seconds x), t)
 
-let empty = Timestamp_interval_seq (default_search_space, Seq.empty)
+let empty = Empty
+
+let always = All
 
 let inter (l : t list) : t =
   let flatten s =
@@ -1807,7 +1813,11 @@ let inter (l : t list) : t =
   in
   match l |> List.to_seq |> flatten |> inter_patterns with
   | None -> empty
-  | Some s -> Inter_list (default_search_space, List.of_seq s)
+  | Some s ->
+    if OSeq.mem ~eq:equal Empty s then
+      Empty
+    else
+      Inter_list (default_search_space, List.of_seq s)
 
 let union (l : t list) : t =
   let flatten s =
@@ -1816,33 +1826,15 @@ let union (l : t list) : t =
          match x with Union_list (_, l) -> List.to_seq l | _ -> Seq.return x)
       s
   in
-  (* let union_patterns s =
-   *   let patterns, rest =
-   *     OSeq.partition (fun x -> match x with Pattern _ -> true | _ -> false) s
-   *   in
-   *   let pattern =
-   *     Seq.fold_left
-   *       (fun acc x ->
-   *          match x with
-   *          | Pattern (_, pat) -> (
-   *              match acc with
-   *              | None -> Some pat
-   *              | Some acc -> Some (Pattern.union acc pat) )
-   *          | _ -> acc)
-   *       None patterns
-   *   in
-   *   match pattern with
-   *   | None -> rest
-   *   | Some pat -> OSeq.cons (Pattern (default_search_space, pat)) rest
-   * in *)
-  let l =
+  let s =
     l
     |> List.to_seq
     |> flatten
-    (* |> union_patterns *)
-    |> List.of_seq
   in
-  Union_list (default_search_space, l)
+  if OSeq.mem ~eq:equal All s then
+    All
+  else
+    Union_list (default_search_space, List.of_seq s)
 
 let round_robin_pick (l : t list) : t =
   Round_robin_pick_list (default_search_space, l)
@@ -1949,6 +1941,9 @@ let pattern ?(strict = false) ?(years = []) ?(year_ranges = []) ?(months = [])
   let hours = hours @ Hour_ranges.Flatten.flatten_list hour_ranges in
   let minutes = minutes @ Minute_ranges.Flatten.flatten_list minute_ranges in
   let seconds = seconds @ Second_ranges.Flatten.flatten_list second_ranges in
+  match years, months, month_days, weekdays, hours, minutes, seconds with
+  | [], [], [], [], [], [], [] -> All
+  | _ ->
   if
     List.for_all
       (fun year -> Date_time.min.year <= year && year <= Date_time.max.year)
@@ -2148,8 +2143,6 @@ let minutes minutes = pattern ~minutes ()
 
 let seconds seconds = pattern ~seconds ()
 
-let always = pattern ()
-
 let after (t1 : t) (t2 : t) : t = After (default_search_space, t1, t2)
 
 let between_inc (t1 : t) (t2 : t) : t =
@@ -2166,43 +2159,49 @@ let date_time (date_time : Date_time.t) : t =
 
 let of_sorted_intervals_seq ?(skip_invalid : bool = false)
     (s : (int64 * int64) Seq.t) : t =
-  Timestamp_interval_seq
-    ( default_search_space,
-      s
-      |> Intervals.Filter.filter_empty
-      |> ( if skip_invalid then Intervals.Filter.filter_invalid
-           else Intervals.Check.check_if_valid )
-      |> Seq.filter_map (fun (x, y) ->
-          match
-            (Date_time.of_timestamp x, Date_time.of_timestamp (Int64.pred y))
-          with
-          | Ok _, Ok _ -> Some (x, y)
-          | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
-      |> Intervals.Check.check_if_sorted
-      |> Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
-    )
+  match s () with
+  | Seq.Nil -> Empty
+  | _ ->
+    Timestamp_interval_seq
+      ( default_search_space,
+        s
+        |> Intervals.Filter.filter_empty
+        |> ( if skip_invalid then Intervals.Filter.filter_invalid
+             else Intervals.Check.check_if_valid )
+        |> Seq.filter_map (fun (x, y) ->
+            match
+              (Date_time.of_timestamp x, Date_time.of_timestamp (Int64.pred y))
+            with
+            | Ok _, Ok _ -> Some (x, y)
+            | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
+        |> Intervals.Check.check_if_sorted
+        |> Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
+      )
 
 let of_sorted_intervals ?(skip_invalid : bool = false)
     (l : (int64 * int64) list) : t =
   l |> List.to_seq |> of_sorted_intervals_seq ~skip_invalid
 
 let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
-  Timestamp_interval_seq
-    ( default_search_space,
-      l
-      |> Intervals.Filter.filter_empty_list
-      |> ( if skip_invalid then Intervals.Filter.filter_invalid_list
-           else Intervals.Check.check_if_valid_list )
-      |> List.filter_map (fun (x, y) ->
-          match
-            (Date_time.of_timestamp x, Date_time.of_timestamp (Int64.pred y))
-          with
-          | Ok _, Ok _ -> Some (x, y)
-          | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
-      |> Intervals.Sort.sort_uniq_intervals_list
-      |> List.to_seq
-      |> Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
-    )
+  match l with
+  | [] -> Empty
+  | _ ->
+    Timestamp_interval_seq
+      ( default_search_space,
+        l
+        |> Intervals.Filter.filter_empty_list
+        |> ( if skip_invalid then Intervals.Filter.filter_invalid_list
+             else Intervals.Check.check_if_valid_list )
+        |> List.filter_map (fun (x, y) ->
+            match
+              (Date_time.of_timestamp x, Date_time.of_timestamp (Int64.pred y))
+            with
+            | Ok _, Ok _ -> Some (x, y)
+            | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
+        |> Intervals.Sort.sort_uniq_intervals_list
+        |> List.to_seq
+        |> Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
+      )
 
 let of_intervals_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t)
   : t =
