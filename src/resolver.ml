@@ -998,6 +998,16 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
   let years = Year_ranges.Flatten.flatten year_ranges in
   match (r.month, r.day) with
   | None, None -> pattern ~year_ranges:(List.of_seq year_ranges) ()
+  | None, Some (Day (Match month_days)) ->
+    pattern ~year_ranges:(List.of_seq year_ranges) ~month_days ()
+  | None, Some (Day (Every_nth n)) ->
+    pattern ~year_ranges:(List.of_seq year_ranges) ()
+    |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
+    |> take_nth n
+  | None, Some (Weekday { every_nth; weekday }) ->
+    pattern ~year_ranges:(List.of_seq year_ranges) ~weekdays:[weekday] ()
+    |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
+    |> take_nth every_nth
   | Some (Match months), None ->
     pattern ~year_ranges:(List.of_seq year_ranges) ~months ()
   | Some (Match months), Some (Day (Match month_days)) ->
@@ -1045,7 +1055,30 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
             pattern ~years:[ year ] ~months:[ month ] ~month_days ()))
     |> List.of_seq
     |> union
-  | _, _ -> failwith "Unimplemented"
+  | Some (Every_nth month_n), Some (Day (Every_nth day_n)) ->
+    year_inc_ranges
+    |> Seq.flat_map (fun (year_start, year_end_inc) ->
+        resolve_year_arith_month_pairs ~year_start ~year_end_inc
+          ~month_start:r.start.month month_n
+        |> Seq.map (fun (year, month) ->
+            pattern ~years:[ year ] ~months:[ month ] ()
+            |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
+            |> take_nth day_n
+          ))
+    |> List.of_seq
+    |> union
+  | Some (Every_nth month_n), Some (Weekday { every_nth; weekday }) ->
+    year_inc_ranges
+    |> Seq.flat_map (fun (year_start, year_end_inc) ->
+        resolve_year_arith_month_pairs ~year_start ~year_end_inc
+          ~month_start:r.start.month month_n
+        |> Seq.map (fun (year, month) ->
+            pattern ~years:[ year ] ~months:[ month ] ~weekdays:[weekday] ()
+            |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
+            |> take_nth every_nth
+          ))
+    |> List.of_seq
+    |> union
 
 type inc_or_exc =
   | Inc
