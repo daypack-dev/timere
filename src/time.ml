@@ -1811,11 +1811,13 @@ let inter_seq (s : t Seq.t) : t =
     | Some (Ok pat) ->
       Some (OSeq.cons (Pattern (default_search_space, pat)) rest)
   in
-  match s |> flatten |> inter_patterns with
-  | None -> empty
-  | Some s ->
-    if OSeq.mem ~eq:equal Empty s then Empty
-    else Inter_seq (default_search_space, s)
+  let s = flatten s in
+  if OSeq.mem ~eq:equal Empty s then Empty
+  else
+    match inter_patterns s with
+    | None -> empty
+    | Some s ->
+      Inter_seq (default_search_space, s)
 
 let inter (l : t list) : t =
   inter_seq (List.to_seq l)

@@ -1035,8 +1035,7 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
              |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
              |> take_nth n)
           months)
-    |> List.of_seq
-    |> union
+    |> union_seq
   | Some (Match months), Some (Weekday_nth ( n, weekday )) ->
     let months = List.to_seq months in
     years
@@ -1048,8 +1047,7 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
              |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
              |> nth n)
           months)
-    |> List.of_seq
-    |> union
+    |> union_seq
   | Some (Every_nth n), None ->
     year_inc_ranges
     |> Seq.flat_map (fun (year_start, year_end_inc) ->
@@ -1057,8 +1055,7 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
           ~month_start:r.start.month n
         |> Seq.map (fun (year, month) ->
             pattern ~years:[ year ] ~months:[ month ] ()))
-    |> List.of_seq
-    |> union
+    |> union_seq
   | Some (Every_nth n), Some (Day (Match month_days)) ->
     year_inc_ranges
     |> Seq.flat_map (fun (year_start, year_end_inc) ->
@@ -1066,8 +1063,7 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
           ~month_start:r.start.month n
         |> Seq.map (fun (year, month) ->
             pattern ~years:[ year ] ~months:[ month ] ~month_days ()))
-    |> List.of_seq
-    |> union
+    |> union_seq
   | Some (Every_nth month_n), Some (Day (Every_nth day_n)) ->
     year_inc_ranges
     |> Seq.flat_map (fun (year_start, year_end_inc) ->
@@ -1078,8 +1074,7 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
             |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
             |> take_nth day_n
           ))
-    |> List.of_seq
-    |> union
+    |> union_seq
   | Some (Every_nth month_n), Some (Weekday_every_nth ( n, weekday )) ->
     year_inc_ranges
     |> Seq.flat_map (fun (year_start, year_end_inc) ->
