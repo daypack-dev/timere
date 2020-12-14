@@ -988,37 +988,75 @@ let t_of_recur (space : Time.search_space)
       | Weekday { weekday; _} ->
         pattern ~weekdays:[weekday] ()
   in
-  let patterns =
-    match r.month with
-    | None ->
-      [pattern ~year_ranges:(List.of_seq year_ranges) ()]
-    | Some (Match months) ->
-      [pattern ~year_ranges:(List.of_seq year_ranges) ~months ()]
-    | Some (Every_nth n) ->
-      year_ranges
-      |> Seq.flat_map (fun year_range ->
-          let year_start, year_end_inc =
-            match year_range with
-            | `Range_inc (x, y) -> (x, y)
-            | `Range_exc (x, y) -> (x, pred y)
-          in
-          resolve_year_arith_month_pairs ~year_start ~year_end_inc ~month_start:r.start.month n
-          |> Seq.map (fun (year, month) ->
-              pattern ~years:[year] ~months:[month] ()
-            )
-        )
-      |> List.of_seq
+  let year_inc_ranges =
+    year_ranges
+    |> Seq.map (fun year_range ->
+        match year_range with
+        | `Range_inc (x, y) -> (x, y)
+        | `Range_exc (x, y) -> (x, pred y)
+      )
   in
-  inter [union patterns; day_pattern]
-  |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
-  |> (match r.day with
-      | None -> fun x -> x
-      | Some day -> match day with
-        | Day (Match _) -> fun x -> x
-        | Day (Every_nth n) -> take_nth n
-        | Weekday { every_nth; _} ->
-          take_nth every_nth
-    )
+  let years =
+    Year_ranges.Flatten.flatten year_ranges
+  in
+  match r.month, r.day with
+  | None, None ->
+    pattern ~year_ranges:(List.of_seq year_ranges) ()
+  | Some (Match months), None ->
+    pattern ~year_ranges:(List.of_seq year_ranges) ~months ()
+  | Some (Match months), Some (Day (Match month_days)) ->
+    pattern ~year_ranges:(List.of_seq year_ranges) ~months ~month_days ()
+  | Some (Match months), Some (Day (Every_nth n)) ->
+    let months = List.to_seq months in
+    years
+    |> Seq.flat_map (fun year ->
+        Seq.map (fun month ->
+            pattern ~years:[year] ~months:[month]
+              ()
+            |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
+            |> take_nth n
+          )
+          months
+      )
+    |> List.of_seq
+    |> union
+  | Some (Match months), Some (Weekday { every_nth; weekday }) ->
+    let months = List.to_seq months in
+    years
+    |> Seq.flat_map (fun year ->
+        Seq.map (fun month ->
+            pattern ~years:[year] ~months:[month]
+              ~weekdays:[weekday] ()
+            |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
+            |> take_nth every_nth
+          )
+          months
+      )
+    |> List.of_seq
+    |> union
+  | Some (Every_nth n), None ->
+    year_inc_ranges
+    |> Seq.flat_map (fun (year_start, year_end_inc) ->
+        resolve_year_arith_month_pairs ~year_start ~year_end_inc
+          ~month_start:r.start.month n
+        |> Seq.map (fun (year, month) ->
+            pattern ~years:[year] ~months:[month] ()
+          )
+      )
+    |> List.of_seq
+    |> union
+  | Some (Every_nth n), Some (Day (Match month_days)) ->
+    year_inc_ranges
+    |> Seq.flat_map (fun (year_start, year_end_inc) ->
+        resolve_year_arith_month_pairs ~year_start ~year_end_inc
+          ~month_start:r.start.month n
+        |> Seq.map (fun (year, month) ->
+            pattern ~years:[year] ~months:[month] ()
+          )
+      )
+    |> List.of_seq
+    |> union
+  | _, _ -> failwith "Unimplemented"
 
 type inc_or_exc =
   | Inc
