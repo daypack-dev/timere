@@ -2101,21 +2101,34 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
       Branching (default_search_space, { years; months; days; hmss })
     else invalid_arg "branching"
 
-let every_nth_year n : recur_year = Every_nth n
+let every_nth_year n : recur_year =
+  if n <= 0 then invalid_arg "every_nth_year: n <= 0"
+  else Every_nth n
 
-let every_nth_month n : recur_month = Every_nth n
+let every_nth_month n : recur_month =
+  if n <= 0 then invalid_arg "every_nth_month: n <= 0"
+  else Every_nth n
 
-let every_nth_day n : recur_day = Day (Every_nth n)
+let every_nth_day n : recur_day =
+  if n <= 0 then invalid_arg "every_nth_day: n <= 0"
+  else Day (Every_nth n)
 
 let every_nth_weekday n weekday : recur_day =
-  Weekday_every_nth ( n, weekday )
+  if n <= 0 then invalid_arg "every_nth_weekday: n <= 0"
+  else Weekday_every_nth ( n, weekday )
 
 let nth_weekday n weekday : recur_day =
-  Weekday_nth ( n, weekday )
+  if n < 0 then invalid_arg "nth_weekday: n < 0"
+  else Weekday_nth ( n, weekday )
 
-let match_years l : recur_year = Match l
+let match_years l : recur_year =
+  if List.for_all (fun x -> Date_time.min.year <= x && x <= Date_time.max.year) l then
+    Match (List.sort_uniq compare l)
+  else
+    invalid_arg "match_years"
 
-let match_months l : recur_month = Match l
+let match_months l : recur_month =
+  Match (List.sort_uniq compare_month l)
 
 let recur ?(year : int recur_spec option) ?(month : month recur_spec option)
     ?(day : recur_day option) ?(hms : recur_hms option) (start : Date_time.t) :

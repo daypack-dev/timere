@@ -976,13 +976,12 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
         match year with
         | Match l ->
           l
-          |> List.to_seq
-          |> Seq.filter (fun x -> r.start.year <= x)
-          |> Year_ranges.Of_seq.range_seq_of_seq
+          |> List.filter (fun x -> r.start.year <= x)
+          |> Year_ranges.Of_list.range_seq_of_list ~skip_sort:true
         | Every_nth n ->
           OSeq.(r.start.year -- Date_time.max.year)
           |> OSeq.take_nth n
-          |> Year_ranges.Of_seq.range_seq_of_seq )
+          |> Year_ranges.Of_seq.range_seq_of_seq ~skip_sort:true )
   in
   let year_inc_ranges =
     year_ranges
@@ -1181,7 +1180,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
         | Next_n_points n -> do_take_n_points (Int64.of_int n) s
         | Next_n_intervals n -> OSeq.take n s
         | Every_nth n -> OSeq.take_nth n s
-        | Nth n -> s |> OSeq.drop (pred n) |> OSeq.take 1
+        | Nth n -> s |> OSeq.drop n |> OSeq.take 1
         | Chunk { chunk_size; drop_partial } ->
           Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
         | Shift n ->
