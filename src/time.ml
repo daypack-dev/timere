@@ -1599,7 +1599,10 @@ module Pattern = struct
   let inter p1 p2 =
     let inter_sets (type a) ~(is_empty : a -> bool) ~(inter : a -> a -> a)
         (a : a) (b : a) =
-      if is_empty a then b else if is_empty b then a else inter a b
+      if is_empty a then Some b else if is_empty b then Some a else
+        let s = inter a b in
+        if is_empty s then None
+        else Some s
     in
     let inter_int_sets a b =
       inter_sets ~is_empty:Int_set.is_empty ~inter:Int_set.inter a b
@@ -1610,15 +1613,36 @@ module Pattern = struct
     let inter_weekday_sets a b =
       inter_sets ~is_empty:Weekday_set.is_empty ~inter:Weekday_set.inter a b
     in
-    {
-      years = inter_int_sets p1.years p2.years;
-      months = inter_month_sets p1.months p2.months;
-      month_days = inter_int_sets p1.month_days p2.month_days;
-      weekdays = inter_weekday_sets p1.weekdays p2.weekdays;
-      hours = inter_int_sets p1.hours p2.hours;
-      minutes = inter_int_sets p1.minutes p2.minutes;
-      seconds = inter_int_sets p1.seconds p2.seconds;
-    }
+    match inter_int_sets p1.years p2.years with
+    | None -> None
+    | Some years ->
+      match inter_month_sets p1.months p2.months with
+      | None -> None
+      | Some months ->
+        match inter_int_sets p1.month_days p2.month_days with
+        | None -> None
+        | Some month_days ->
+          match inter_weekday_sets p1.weekdays p2.weekdays with
+          | None -> None
+          | Some weekdays ->
+            match inter_int_sets p1.hours p2.hours with
+            | None -> None
+            | Some hours ->
+              match inter_int_sets p1.minutes p2.minutes with
+              | None -> None
+              | Some minutes ->
+                match inter_int_sets p1.seconds p2.seconds with
+                | None -> None
+                | Some seconds ->
+                  Some {
+                    years;
+                    months;
+                    month_days;
+                    weekdays;
+                    hours;
+                    minutes;
+                    seconds;
+                  }
 end
 
 type sign_expr =
@@ -1744,6 +1768,9 @@ let shift (offset : Duration.t) (t : t) : t =
 let lengthen (x : Duration.t) (t : t) : t =
   Unary_op (default_search_space, Lengthen (Duration.to_seconds x), t)
 
+let empty =
+  Timestamp_interval_seq (default_search_space, Seq.empty)
+
 let inter (l : t list) : t =
   let flatten s =
     Seq.flat_map
@@ -1761,17 +1788,26 @@ let inter (l : t list) : t =
            match x with
            | Pattern (_, pat) -> (
                match acc with
-               | None -> Some pat
-               | Some acc -> Some (Pattern.inter acc pat) )
+               | None -> Some (Ok pat)
+               | Some (Error ()) -> acc
+               | Some (Ok acc) -> Some (match Pattern.inter acc pat with
+                   | None -> Error ()
+                   | Some pat -> Ok pat
+                 ) )
            | _ -> acc)
         None patterns
     in
     match pattern with
-    | None -> rest
-    | Some pat -> OSeq.cons (Pattern (default_search_space, pat)) rest
+    | None -> Some rest
+    | Some (Error ()) -> None
+    | Some (Ok pat) -> Some (
+        OSeq.cons (Pattern (default_search_space, pat)) rest
+      )
   in
-  let l = l |> List.to_seq |> flatten |> inter_patterns |> List.of_seq in
-  Inter_list (default_search_space, l)
+  match l |> List.to_seq |> flatten |> inter_patterns with
+  | None -> empty
+  | Some s ->
+    Inter_list (default_search_space, List.of_seq s)
 
 let union (l : t list) : t =
   let flatten s =
@@ -2177,8 +2213,6 @@ let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
 let of_intervals_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t)
   : t =
   s |> List.of_seq |> of_intervals ~skip_invalid
-
-let empty = of_intervals []
 
 let of_timestamps_seq ?(skip_invalid = false) timestamps =
   timestamps
