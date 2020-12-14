@@ -1780,26 +1780,28 @@ let union (l : t list) : t =
          match x with Union_list (_, l) -> List.to_seq l | _ -> Seq.return x)
       s
   in
-  let union_patterns s =
-    let patterns, rest =
-      OSeq.partition (fun x -> match x with Pattern _ -> true | _ -> false) s
-    in
-    let pattern =
-      Seq.fold_left
-        (fun acc x ->
-           match x with
-           | Pattern (_, pat) -> (
-               match acc with
-               | None -> Some pat
-               | Some acc -> Some (Pattern.union acc pat) )
-           | _ -> acc)
-        None patterns
-    in
-    match pattern with
-    | None -> rest
-    | Some pat -> OSeq.cons (Pattern (default_search_space, pat)) rest
-  in
-  let l = l |> List.to_seq |> flatten |> union_patterns |> List.of_seq in
+  (* let union_patterns s =
+   *   let patterns, rest =
+   *     OSeq.partition (fun x -> match x with Pattern _ -> true | _ -> false) s
+   *   in
+   *   let pattern =
+   *     Seq.fold_left
+   *       (fun acc x ->
+   *          match x with
+   *          | Pattern (_, pat) -> (
+   *              match acc with
+   *              | None -> Some pat
+   *              | Some acc -> Some (Pattern.union acc pat) )
+   *          | _ -> acc)
+   *       None patterns
+   *   in
+   *   match pattern with
+   *   | None -> rest
+   *   | Some pat -> OSeq.cons (Pattern (default_search_space, pat)) rest
+   * in *)
+  let l = l |> List.to_seq |> flatten
+          (* |> union_patterns *)
+          |> List.of_seq in
   Union_list (default_search_space, l)
 
 let round_robin_pick (l : t list) : t =
