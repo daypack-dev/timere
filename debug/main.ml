@@ -48,10 +48,10 @@ let debug_parsing () =
   | Ok timere -> print_endline (Timere.to_sexp_string timere)
 
 let debug_resolver () =
-  let s = {|
-        (pattern (month_days 31))
-  |} in
-  let timere = Result.get_ok @@ Timere.of_sexp_string s in
+  (* let s = {|
+   *       (pattern (month_days 31))
+   * |} in
+   * let timere = Result.get_ok @@ Timere.of_sexp_string s in *)
   (* let timere =
    *   (fun height max_branching randomness ->
    *      Timere.Utils.build ~min_year:2000 ~max_year_inc:2002 ~height ~max_branching
@@ -59,6 +59,13 @@ let debug_resolver () =
    *     2 5 [333; 5; 918; 132; 292]
    * in *)
   (* let timere = Timere.pattern ~strict:true ~months:[`Mar] ~month_days:[31] () in *)
+  let timere =
+    let open Timere in
+    let open Recur in
+    recur ~year:(every_nth_year 3) ~month:(every_nth_month 4)
+      ~day:(every_nth_weekday 1 `Mon)
+      (Date_time.min)
+  in
   print_endline (Timere.to_sexp_string timere);
   print_endline "=====";
   let search_start_dt =
