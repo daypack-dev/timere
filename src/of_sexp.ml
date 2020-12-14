@@ -137,16 +137,10 @@ let pattern_of_sexp (x : CCSexp.t) =
               (List.map int_of_sexp seconds, l)
             | _ -> ([], l)
           in
-          let timestamps, l =
-            match l with
-            | `List (`Atom "timestamps" :: timestamps) :: l ->
-              (List.map timestamp_of_sexp timestamps, l)
-            | _ -> ([], l)
-          in
           match l with
           | [] ->
-            Time.pattern ~years ~months ~month_days ~weekdays ~hours ~minutes
-              ~seconds ~timestamps ()
+            Time.pattern ~strict:false ~years ~months ~month_days ~weekdays
+              ~hours ~minutes ~seconds ()
           | _ ->
             invalid_data
               (Printf.sprintf "Invalid pattern: %s" (CCSexp.to_string x)) )
@@ -285,6 +279,9 @@ let of_sexp (x : CCSexp.t) =
         | `Atom "round_robin" :: l -> round_robin_pick (List.map aux l)
         | `Atom "inter" :: l -> inter (List.map aux l)
         | `Atom "union" :: l -> union (List.map aux l)
+        | [ `Atom "after"; a; b ] -> after (aux a) (aux b)
+        | [ `Atom "between_inc"; a; b ] -> between_inc (aux a) (aux b)
+        | [ `Atom "between_exc"; a; b ] -> between_exc (aux a) (aux b)
         | _ ->
           invalid_data
             (Printf.sprintf "Invalid timere data: %s" (CCSexp.to_string x)) )

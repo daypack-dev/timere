@@ -27,15 +27,27 @@ let sexp_of_range ~(f : 'a -> CCSexp.t) (r : 'a Time.Range.range) =
   | `Range_inc (x, y) -> CCSexp.(list [ atom "range_inc"; f x; f y ])
   | `Range_exc (x, y) -> CCSexp.(list [ atom "range_exc"; f x; f y ])
 
-let sexp_of_pattern (pat : Time.Pattern.pattern) : CCSexp.t =
-  let years = sexp_list_of_ints pat.years in
-  let months = List.map sexp_of_month pat.months in
-  let month_days = sexp_list_of_ints pat.month_days in
-  let weekdays = List.map sexp_of_weekday pat.weekdays in
-  let hours = sexp_list_of_ints pat.hours in
-  let minutes = sexp_list_of_ints pat.minutes in
-  let seconds = sexp_list_of_ints pat.seconds in
-  let timestamps = List.map sexp_of_timestamp pat.timestamps in
+let sexp_of_pattern (pat : Time.Pattern.t) : CCSexp.t =
+  let years = pat.years |> Int_set.to_seq |> List.of_seq |> sexp_list_of_ints in
+  let months =
+    pat.months |> Time.Month_set.to_seq |> List.of_seq |> List.map sexp_of_month
+  in
+  let month_days =
+    pat.month_days |> Int_set.to_seq |> List.of_seq |> sexp_list_of_ints
+  in
+  let weekdays =
+    pat.weekdays
+    |> Time.Weekday_set.to_seq
+    |> List.of_seq
+    |> List.map sexp_of_weekday
+  in
+  let hours = pat.hours |> Int_set.to_seq |> List.of_seq |> sexp_list_of_ints in
+  let minutes =
+    pat.minutes |> Int_set.to_seq |> List.of_seq |> sexp_list_of_ints
+  in
+  let seconds =
+    pat.seconds |> Int_set.to_seq |> List.of_seq |> sexp_list_of_ints
+  in
   let open CCSexp in
   [
     Some (atom "pattern");
@@ -54,9 +66,6 @@ let sexp_of_pattern (pat : Time.Pattern.pattern) : CCSexp.t =
     ( match seconds with
       | [] -> None
       | _ -> Some (list (atom "seconds" :: seconds)) );
-    ( match timestamps with
-      | [] -> None
-      | _ -> Some (list (atom "timestamps" :: timestamps)) );
   ]
   |> List.filter_map (fun x -> x)
   |> list
@@ -148,6 +157,11 @@ let to_sexp (t : Time.t) : CCSexp.t =
       CCSexp.(list (atom "round_robin" :: List.map aux l))
     | Inter_list (_, l) -> CCSexp.(list (atom "inter" :: List.map aux l))
     | Union_list (_, l) -> CCSexp.(list (atom "union" :: List.map aux l))
+    | After (_, t1, t2) -> CCSexp.(list [ atom "after"; aux t1; aux t2 ])
+    | Between_inc (_, t1, t2) ->
+      CCSexp.(list [ atom "between_inc"; aux t1; aux t2 ])
+    | Between_exc (_, t1, t2) ->
+      CCSexp.(list [ atom "between_exc"; aux t1; aux t2 ])
   in
   aux t
 

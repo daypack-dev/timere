@@ -4,6 +4,8 @@ type timestamp = int64
 
 let tz_offset_s_utc = 0
 
+exception Invalid_timestamp
+
 exception Interval_is_invalid
 
 exception Interval_is_empty
@@ -120,6 +122,12 @@ let month_gt m1 m2 = tm_int_of_month m1 > tm_int_of_month m2
 
 let month_ge m1 m2 = tm_int_of_month m1 >= tm_int_of_month m2
 
+module Month_set = Set.Make (struct
+    type t = month
+
+    let compare = compare_month
+  end)
+
 let compare_weekday (d1 : weekday) (d2 : weekday) : int =
   compare (tm_int_of_weekday d1) (tm_int_of_weekday d2)
 
@@ -132,6 +140,12 @@ let weekday_gt d1 d2 = tm_int_of_weekday d1 > tm_int_of_weekday d2
 let weekday_ge d1 d2 = tm_int_of_weekday d1 >= tm_int_of_weekday d2
 
 let zero_tm_sec tm = Unix.{ tm with tm_sec = 0 }
+
+module Weekday_set = Set.Make (struct
+    type t = weekday
+
+    let compare = compare_weekday
+  end)
 
 let is_leap_year ~year =
   assert (year >= 0);
@@ -1504,105 +1518,106 @@ let next_hour_minute ~(hour : int) ~(minute : int) : (int * int, unit) result =
   else Error ()
 
 module Pattern = struct
-  type pattern = {
-    years : int list;
-    months : month list;
-    month_days : int list;
-    weekdays : weekday list;
-    hours : int list;
-    minutes : int list;
-    seconds : int list;
-    timestamps : int64 list;
+  type t = {
+    years : Int_set.t;
+    months : Month_set.t;
+    month_days : Int_set.t;
+    weekdays : Weekday_set.t;
+    hours : Int_set.t;
+    minutes : Int_set.t;
+    seconds : Int_set.t;
   }
 
-  let equal p1 p2 = p1 = p2
+  let equal p1 p2 =
+    Int_set.equal p1.years p2.years
+    && Month_set.equal p1.months p2.months
+    && Int_set.equal p1.month_days p2.month_days
+    && Weekday_set.equal p1.weekdays p2.weekdays
+    && Int_set.equal p1.hours p2.hours
+    && Int_set.equal p1.minutes p2.minutes
+    && Int_set.equal p1.seconds p2.seconds
 
   type error =
-    | Invalid_years of int list
-    | Invalid_month_days of int list
-    | Invalid_hours of int list
-    | Invalid_minutes of int list
-    | Invalid_seconds of int list
-    | Invalid_timestamps of int64 list
-
-  type range_pattern = pattern Range.range
+    | Invalid_years of Int_set.t
+    | Invalid_month_days of Int_set.t
+    | Invalid_hours of Int_set.t
+    | Invalid_minutes of Int_set.t
+    | Invalid_seconds of Int_set.t
 
   module Check = struct
-    let check_pattern (x : pattern) : (unit, error) result =
-      let invalid_years = List.filter (fun x -> x < 0 || 9999 < x) x.years in
+    let check_pattern (x : t) : (unit, error) result =
+      let invalid_years = Int_set.filter (fun x -> x < 0 || 9999 < x) x.years in
       let invalid_month_days =
-        List.filter (fun x -> x < 1 || 31 < x) x.month_days
+        Int_set.filter (fun x -> x < 1 || 31 < x) x.month_days
       in
-      let invalid_hours = List.filter (fun x -> x < 0 || 23 < x) x.hours in
-      let invalid_minutes = List.filter (fun x -> x < 0 || 59 < x) x.minutes in
-      let invalid_seconds = List.filter (fun x -> x < 0 || 59 < x) x.seconds in
-      let invalid_timestamps =
-        List.filter
-          (fun x -> Result.is_error (Date_time.of_timestamp x))
-          x.timestamps
+      let invalid_hours = Int_set.filter (fun x -> x < 0 || 23 < x) x.hours in
+      let invalid_minutes =
+        Int_set.filter (fun x -> x < 0 || 59 < x) x.minutes
       in
-      match invalid_years with
-      | [] -> (
-          match invalid_month_days with
-          | [] -> (
-              match invalid_hours with
-              | [] -> (
-                  match invalid_minutes with
-                  | [] -> (
-                      match invalid_seconds with
-                      | [] -> (
-                          match invalid_timestamps with
-                          | [] -> Ok ()
-                          | l -> Error (Invalid_timestamps l) )
-                      | l -> Error (Invalid_seconds l) )
-                  | l -> Error (Invalid_minutes l) )
-              | l -> Error (Invalid_hours l) )
-          | l -> Error (Invalid_month_days l) )
-      | l -> Error (Invalid_years l)
-
-    let check_range_pattern (x : range_pattern) : (unit, error) result =
-      match x with
-      | `Range_inc (x, y) | `Range_exc (x, y) -> (
-          match check_pattern x with
-          | Error e -> Error e
-          | Ok () -> (
-              match check_pattern y with Error e -> Error e | Ok () -> Ok () ) )
+      let invalid_seconds =
+        Int_set.filter (fun x -> x < 0 || 59 < x) x.seconds
+      in
+      if Int_set.is_empty invalid_years then
+        if Int_set.is_empty invalid_month_days then
+          if Int_set.is_empty invalid_hours then
+            if Int_set.is_empty invalid_minutes then
+              if Int_set.is_empty invalid_seconds then Ok ()
+              else Error (Invalid_seconds invalid_seconds)
+            else Error (Invalid_minutes invalid_minutes)
+          else Error (Invalid_hours invalid_hours)
+        else Error (Invalid_month_days invalid_month_days)
+      else Error (Invalid_years invalid_years)
   end
 
   let union p1 p2 =
-    let compare_month m1 m2 =
-      compare (tm_int_of_month m1) (tm_int_of_month m2)
+    let union_sets (type a) ~(is_empty : a -> bool) ~(union : a -> a -> a)
+        ~(empty : a) (a : a) (b : a) =
+      if is_empty a || is_empty b then empty else union a b
     in
-    let compare_weekday d1 d2 =
-      compare (tm_int_of_weekday d1) (tm_int_of_weekday d2)
+    let union_int_sets a b =
+      union_sets ~is_empty:Int_set.is_empty ~union:Int_set.union
+        ~empty:Int_set.empty a b
     in
-    let aux compare l1 l2 = List.sort_uniq compare (List.merge compare l1 l2) in
-    let union_ints (l1 : int list) (l2 : int list) = aux compare l1 l2 in
-    let union_int64s (l1 : int64 list) (l2 : int64 list) = aux compare l1 l2 in
-    let union_months l1 l2 = aux compare_month l1 l2 in
-    let union_weekdays l1 l2 = aux compare_weekday l1 l2 in
+    let union_month_sets a b =
+      union_sets ~is_empty:Month_set.is_empty ~union:Month_set.union
+        ~empty:Month_set.empty a b
+    in
+    let union_weekday_sets a b =
+      union_sets ~is_empty:Weekday_set.is_empty ~union:Weekday_set.union
+        ~empty:Weekday_set.empty a b
+    in
     {
-      years = union_ints p1.years p2.years;
-      months = union_months p1.months p2.months;
-      month_days = union_ints p1.month_days p2.month_days;
-      weekdays = union_weekdays p1.weekdays p2.weekdays;
-      hours = union_ints p1.hours p2.hours;
-      minutes = union_ints p1.minutes p2.minutes;
-      seconds = union_ints p1.seconds p2.seconds;
-      timestamps = union_int64s p1.timestamps p2.timestamps;
+      years = union_int_sets p1.years p2.years;
+      months = union_month_sets p1.months p2.months;
+      month_days = union_int_sets p1.month_days p2.month_days;
+      weekdays = union_weekday_sets p1.weekdays p2.weekdays;
+      hours = union_int_sets p1.hours p2.hours;
+      minutes = union_int_sets p1.minutes p2.minutes;
+      seconds = union_int_sets p1.seconds p2.seconds;
     }
 
   let inter p1 p2 =
-    let aux l1 l2 = List.filter (fun x -> List.mem x l2) l1 in
+    let inter_sets (type a) ~(is_empty : a -> bool) ~(inter : a -> a -> a)
+        (a : a) (b : a) =
+      if is_empty a then b else if is_empty b then a else inter a b
+    in
+    let inter_int_sets a b =
+      inter_sets ~is_empty:Int_set.is_empty ~inter:Int_set.inter a b
+    in
+    let inter_month_sets a b =
+      inter_sets ~is_empty:Month_set.is_empty ~inter:Month_set.inter a b
+    in
+    let inter_weekday_sets a b =
+      inter_sets ~is_empty:Weekday_set.is_empty ~inter:Weekday_set.inter a b
+    in
     {
-      years = aux p1.years p2.years;
-      months = aux p1.months p2.months;
-      month_days = aux p1.month_days p2.month_days;
-      weekdays = aux p1.weekdays p2.weekdays;
-      hours = aux p1.hours p2.hours;
-      minutes = aux p1.minutes p2.minutes;
-      seconds = aux p1.seconds p2.seconds;
-      timestamps = aux p1.timestamps p2.timestamps;
+      years = inter_int_sets p1.years p2.years;
+      months = inter_month_sets p1.months p2.months;
+      month_days = inter_int_sets p1.month_days p2.month_days;
+      weekdays = inter_weekday_sets p1.weekdays p2.weekdays;
+      hours = inter_int_sets p1.hours p2.hours;
+      minutes = inter_int_sets p1.minutes p2.minutes;
+      seconds = inter_int_sets p1.seconds p2.seconds;
     }
 end
 
@@ -1638,6 +1653,24 @@ type branching = {
 
 let branching_equal b1 b2 = b1 = b2
 
+type 'a recur_spec =
+  | Match of 'a list
+  | Arith_seq of int
+
+type recur_day =
+  | Month_day of int recur_spec
+  | Weekday of {
+      every_nth : int;
+      weekday : weekday;
+    }
+
+type recur = {
+  start : Date_time_set.t;
+  year : int recur_spec;
+  month : month recur_spec;
+  day : recur_day;
+}
+
 type search_space = Interval.t list
 
 let default_search_space_start = Date_time.(to_timestamp min)
@@ -1649,7 +1682,7 @@ let default_search_space : search_space =
 
 type t =
   | Timestamp_interval_seq of search_space * (int64 * int64) Seq.t
-  | Pattern of search_space * Pattern.pattern
+  | Pattern of search_space * Pattern.t
   | Branching of search_space * branching
   | Unary_op of search_space * unary_op * t
   | Interval_inc of search_space * timestamp * timestamp
@@ -1657,6 +1690,9 @@ type t =
   | Round_robin_pick_list of search_space * t list
   | Inter_list of search_space * t list
   | Union_list of search_space * t list
+  | After of search_space * t * t
+  | Between_inc of search_space * t * t
+  | Between_exc of search_space * t * t
 
 let equal t1 t2 =
   let rec aux t1 t2 =
@@ -1669,6 +1705,10 @@ let equal t1 t2 =
     | Interval_inc (_, x11, x12), Interval_inc (_, x21, x22)
     | Interval_exc (_, x11, x12), Interval_exc (_, x21, x22) ->
       x11 = x21 && x12 = x22
+    | After (_, x11, x12), After (_, x21, x22)
+    | Between_inc (_, x11, x12), Between_inc (_, x21, x22)
+    | Between_exc (_, x11, x12), Between_exc (_, x21, x22) ->
+      aux x11 x21 && aux x12 x22
     | Round_robin_pick_list (_, l1), Round_robin_pick_list (_, l2)
     | Inter_list (_, l1), Inter_list (_, l2)
     | Union_list (_, l1), Union_list (_, l2) ->
@@ -1807,32 +1847,6 @@ let not (a : t) : t = Unary_op (default_search_space, Not, a)
 let change_tz_offset_s offset t =
   Unary_op (default_search_space, Change_tz_offset_s offset, t)
 
-let pattern ?(years = []) ?(months = []) ?(month_days = []) ?(weekdays = [])
-    ?(hours = []) ?(minutes = []) ?(seconds = []) ?(timestamps = []) () : t =
-  if
-    List.for_all
-      (fun year -> Date_time.min.year <= year && year <= Date_time.max.year)
-      years
-    && List.for_all (fun x -> 1 <= x && x <= 31) month_days
-    && List.for_all (fun x -> 0 <= x && x < 24) hours
-    && List.for_all (fun x -> 0 <= x && x < 60) minutes
-    && List.for_all (fun x -> 0 <= x && x < 60) seconds
-    && List.for_all (fun x -> x >= 0L) timestamps
-  then
-    Pattern
-      ( default_search_space,
-        {
-          Pattern.years = List.sort_uniq compare years;
-          months = List.sort_uniq compare_month months;
-          month_days = List.sort_uniq compare month_days;
-          weekdays = List.sort_uniq compare_weekday weekdays;
-          hours = List.sort_uniq compare hours;
-          minutes = List.sort_uniq compare minutes;
-          seconds = List.sort_uniq compare seconds;
-          timestamps = List.sort_uniq compare timestamps;
-        } )
-  else invalid_arg "pattern"
-
 let safe_month_day_range_inc ~years ~months =
   let contains_non_leap_year =
     years
@@ -1858,44 +1872,83 @@ let safe_month_day_range_inc ~years ~months =
   in
   aux (-31) 31 (Month_ranges.Flatten.flatten @@ List.to_seq @@ months)
 
-let month_day_range_is_valid_strict ~safe_month_day_start
-    ~safe_month_day_end_inc day_range =
-  let min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start =
-    if start < 0 then safe_month_day_end_inc + start + 1 else start
-  in
-  let min_acceptable_negative_day_end_inc ~safe_month_day_end_inc ~start =
-    let min_acceptable_positive_day_end_inc =
-      min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start
+let pattern ?(strict = false) ?(years = []) ?(months = []) ?(month_days = [])
+    ?(weekdays = []) ?(hours = []) ?(minutes = []) ?(seconds = []) () : t =
+  if
+    List.for_all
+      (fun year -> Date_time.min.year <= year && year <= Date_time.max.year)
+      years
+    && List.for_all (fun x -> -31 <= x && x <= 31 && x <> 0) month_days
+    && List.for_all (fun x -> 0 <= x && x < 24) hours
+    && List.for_all (fun x -> 0 <= x && x < 60) minutes
+    && List.for_all (fun x -> 0 <= x && x < 60) seconds
+  then
+    let years = Int_set.of_list years in
+    let months = Month_set.of_list months in
+    let month_days = Int_set.of_list month_days in
+    let is_okay =
+      Stdlib.not strict
+      ||
+      let safe_month_day_start, safe_month_day_end_inc =
+        let years =
+          if Int_set.is_empty years then
+            [ `Range_inc (Date_time.min.year, Date_time.max.year) ]
+          else Year_ranges.Of_seq.range_list_of_seq @@ Int_set.to_seq years
+        in
+        let months =
+          if Month_set.is_empty months then [ `Range_inc (`Jan, `Dec) ]
+          else Month_ranges.Of_seq.range_list_of_seq @@ Month_set.to_seq months
+        in
+        safe_month_day_range_inc ~years ~months
+      in
+      Int_set.for_all
+        (fun x -> safe_month_day_start <= x && x <= safe_month_day_end_inc)
+        month_days
     in
-    let days_usable =
-      safe_month_day_end_inc - min_acceptable_positive_day_end_inc
-    in
-    let largest_negative_index = days_usable + 1 in
-    -largest_negative_index
-  in
-  match day_range with
-  | `Range_inc (start, d) ->
-    start <> 0
-    && safe_month_day_start <= start
-    && d <> 0
-    &&
-    if d < 0 then
-      min_acceptable_negative_day_end_inc ~safe_month_day_end_inc ~start <= d
-    else
-      min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start <= d
-  | `Range_exc (start, d) ->
-    start <> 0
-    && safe_month_day_start <= start
-    && d <> 0
-    &&
-    if d < 0 then
-      min_acceptable_negative_day_end_inc ~safe_month_day_end_inc ~start < d
-    else
-      min_acceptable_positive_day_end_inc ~safe_month_day_end_inc ~start < d
+    if is_okay then
+      let weekdays = Weekday_set.of_list weekdays in
+      let hours = Int_set.of_list hours in
+      let minutes = Int_set.of_list minutes in
+      let seconds = Int_set.of_list seconds in
+      Pattern
+        ( default_search_space,
+          {
+            Pattern.years;
+            months;
+            month_days;
+            weekdays;
+            hours;
+            minutes;
+            seconds;
+          } )
+    else invalid_arg "pattern"
+  else invalid_arg "pattern"
 
-let month_day_range_is_valid_relaxed day_range =
-  month_day_range_is_valid_strict ~safe_month_day_start:(-31)
-    ~safe_month_day_end_inc:31 day_range
+let pattern_ranged ?(strict = false) ?(years = []) ?(months = [])
+    ?(month_days = []) ?(weekdays = []) ?(hours = []) ?(minutes = [])
+    ?(seconds = []) () : t =
+  let years = Year_ranges.Flatten.flatten_list years in
+  let months = Month_ranges.Flatten.flatten_list months in
+  let month_days = Month_day_ranges.Flatten.flatten_list month_days in
+  let weekdays = Weekday_ranges.Flatten.flatten_list weekdays in
+  let hours = Hour_ranges.Flatten.flatten_list hours in
+  let minutes = Minute_ranges.Flatten.flatten_list minutes in
+  let seconds = Second_ranges.Flatten.flatten_list seconds in
+  pattern ~strict ~years ~months ~month_days ~weekdays ~hours ~minutes ~seconds
+    ()
+
+let month_day_ranges_are_valid_strict ~safe_month_day_range_inc day_ranges =
+  let safe_month_day_start, safe_month_day_end_inc = safe_month_day_range_inc in
+  day_ranges
+  |> List.to_seq
+  |> Month_day_ranges.Flatten.flatten
+  |> Seq.filter (fun mday -> mday <> 0)
+  |> OSeq.for_all (fun mday ->
+      safe_month_day_start <= mday && mday <= safe_month_day_end_inc)
+
+let month_day_ranges_are_valid_relaxed day_range =
+  month_day_ranges_are_valid_strict ~safe_month_day_range_inc:(-31, 31)
+    day_range
 
 let branching ?(allow_out_of_range_month_day = false) ?(years = [])
     ?(months = []) ?(days = Month_days []) ?(hmss = []) () : t =
@@ -1911,16 +1964,13 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
     match days with
     | Month_days [] | Weekdays [] -> Ok (Month_days [ `Range_inc (1, 31) ])
     | Month_days days ->
-      let safe_month_day_start, safe_month_day_end_inc =
-        safe_month_day_range_inc ~years ~months
-      in
       if
         if allow_out_of_range_month_day then
-          List.for_all month_day_range_is_valid_relaxed days
+          month_day_ranges_are_valid_relaxed days
         else
-          List.for_all
-            (month_day_range_is_valid_strict ~safe_month_day_start
-               ~safe_month_day_end_inc)
+          month_day_ranges_are_valid_strict
+            ~safe_month_day_range_inc:
+              (safe_month_day_range_inc ~years ~months)
             days
       then Ok (Month_days days)
       else Error ()
@@ -2003,9 +2053,15 @@ let minutes minutes = pattern ~minutes ()
 
 let seconds seconds = pattern ~seconds ()
 
-let timestamps timestamps = pattern ~timestamps ()
-
 let always = pattern ()
+
+let after (t1 : t) (t2 : t) : t = After (default_search_space, t1, t2)
+
+let between_inc (t1 : t) (t2 : t) : t =
+  Between_inc (default_search_space, t1, t2)
+
+let between_exc (t1 : t) (t2 : t) : t =
+  Between_exc (default_search_space, t1, t2)
 
 let date_time (date_time : Date_time.t) : t =
   date_time
@@ -2021,6 +2077,12 @@ let of_sorted_intervals_seq ?(skip_invalid : bool = false)
       |> Intervals.Filter.filter_empty
       |> ( if skip_invalid then Intervals.Filter.filter_invalid
            else Intervals.Check.check_if_valid )
+      |> Seq.filter_map (fun (x, y) ->
+          match
+            (Date_time.of_timestamp x, Date_time.of_timestamp (Int64.pred y))
+          with
+          | Ok _, Ok _ -> Some (x, y)
+          | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
       |> Intervals.Check.check_if_sorted
       |> Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
     )
@@ -2036,6 +2098,12 @@ let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
       |> Intervals.Filter.filter_empty_list
       |> ( if skip_invalid then Intervals.Filter.filter_invalid_list
            else Intervals.Check.check_if_valid_list )
+      |> List.filter_map (fun (x, y) ->
+          match
+            (Date_time.of_timestamp x, Date_time.of_timestamp (Int64.pred y))
+          with
+          | Ok _, Ok _ -> Some (x, y)
+          | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
       |> Intervals.Sort.sort_uniq_intervals_list
       |> List.to_seq
       |> Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
@@ -2046,6 +2114,24 @@ let of_intervals_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t)
   s |> List.of_seq |> of_intervals ~skip_invalid
 
 let empty = of_intervals []
+
+let of_timestamps_seq ?(skip_invalid = false) timestamps =
+  timestamps
+  |> Seq.filter_map (fun x ->
+      match Date_time.of_timestamp x with
+      | Ok _ -> Some x
+      | Error () -> if skip_invalid then None else raise Invalid_timestamp)
+  |> Seq.map (fun x -> (x, Int64.succ x))
+  |> of_intervals_seq
+
+let of_timestamps ?(skip_invalid = false) timestamps =
+  timestamps
+  |> List.filter_map (fun x ->
+      match Date_time.of_timestamp x with
+      | Ok _ -> Some x
+      | Error () -> if skip_invalid then None else raise Invalid_timestamp)
+  |> List.map (fun x -> (x, Int64.succ x))
+  |> of_intervals
 
 let full_string_of_weekday (wday : weekday) : string =
   match wday with

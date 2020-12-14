@@ -53,6 +53,7 @@ val minutes : int list -> t
 val seconds : int list -> t
 
 val pattern :
+  ?strict:bool ->
   ?years:int list ->
   ?months:month list ->
   ?month_days:int list ->
@@ -60,7 +61,18 @@ val pattern :
   ?hours:int list ->
   ?minutes:int list ->
   ?seconds:int list ->
-  ?timestamps:timestamp list ->
+  unit ->
+  t
+
+val pattern_ranged :
+  ?strict:bool ->
+  ?years:int range list ->
+  ?months:month range list ->
+  ?month_days:int range list ->
+  ?weekdays:weekday range list ->
+  ?hours:int range list ->
+  ?minutes:int range list ->
+  ?seconds:int range list ->
   unit ->
   t
 
@@ -99,7 +111,13 @@ val not : t -> t
 
 (** {1 Discrete time points} *)
 
+exception Invalid_timestamp
+
 val cur_timestamp : unit -> int64
+
+val of_timestamps : ?skip_invalid:bool -> timestamp list -> t
+
+val of_timestamps_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
 
 module Date_time : sig
   exception Invalid_date_time
@@ -238,6 +256,14 @@ val of_intervals_seq : ?skip_invalid:bool -> interval Seq.t -> t
 val of_sorted_intervals : ?skip_invalid:bool -> interval list -> t
 
 val of_sorted_intervals_seq : ?skip_invalid:bool -> interval Seq.t -> t
+
+(** {1 Search oriented operations} *)
+
+val after : t -> t -> t
+
+val between_inc : t -> t -> t
+
+val between_exc : t -> t -> t
 
 (** {1 Infix operators} *)
 
