@@ -186,8 +186,8 @@ let to_sexp (t : Time.t) : CCSexp.t =
   let open Time in
   let rec aux t =
     match t with
-    | All -> CCSexp.(list [atom "all"])
-    | Empty -> CCSexp.(list [atom "empty"])
+    | All -> CCSexp.(list [ atom "all" ])
+    | Empty -> CCSexp.(list [ atom "empty" ])
     | Timestamp_interval_seq (_, s) ->
       let l =
         s

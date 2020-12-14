@@ -1091,7 +1091,8 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
     let open Time in
     match time with
     | Empty -> Seq.empty
-    | All -> Seq.return Date_time.(to_timestamp min, Int64.succ @@ to_timestamp max)
+    | All ->
+      Seq.return Date_time.(to_timestamp min, Int64.succ @@ to_timestamp max)
     | Timestamp_interval_seq (_, s) -> s
     | Pattern (space, pat) ->
       let params =
