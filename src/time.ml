@@ -1881,29 +1881,19 @@ let safe_month_day_range_inc ~years ~months =
   in
   aux (-31) 31 (Month_ranges.Flatten.flatten @@ List.to_seq @@ months)
 
-let pattern ?(strict = false) ?(years = [])
-    ?(year_ranges = [])
-    ?(months = [])
-    ?(month_ranges = [])
-    ?(month_days = [])
-    ?(month_day_ranges = [])
-    ?(weekdays = [])
-    ?(weekday_ranges = [])
-    ?(hours = [])
-    ?(hour_ranges = [])
-    ?(minutes = [])
-    ?(minute_ranges = [])
-    ?(seconds = [])
-    ?(second_ranges = [])
+let pattern ?(strict = false) ?(years = []) ?(year_ranges = []) ?(months = [])
+    ?(month_ranges = []) ?(month_days = []) ?(month_day_ranges = [])
+    ?(weekdays = []) ?(weekday_ranges = []) ?(hours = []) ?(hour_ranges = [])
+    ?(minutes = []) ?(minute_ranges = []) ?(seconds = []) ?(second_ranges = [])
     () : t =
-  let years =
-    years @ Year_ranges.Flatten.flatten_list year_ranges
+  let years = years @ Year_ranges.Flatten.flatten_list year_ranges in
+  let months = months @ Month_ranges.Flatten.flatten_list month_ranges in
+  let month_days =
+    month_days @ Month_day_ranges.Flatten.flatten_list month_day_ranges
   in
-  let months =
-    months @ Month_ranges.Flatten.flatten_list month_ranges
+  let weekdays =
+    weekdays @ Weekday_ranges.Flatten.flatten_list weekday_ranges
   in
-  let month_days = month_days @ Month_day_ranges.Flatten.flatten_list month_day_ranges in
-  let weekdays = weekdays @ Weekday_ranges.Flatten.flatten_list weekday_ranges in
   let hours = hours @ Hour_ranges.Flatten.flatten_list hour_ranges in
   let minutes = minutes @ Minute_ranges.Flatten.flatten_list minute_ranges in
   let seconds = seconds @ Second_ranges.Flatten.flatten_list second_ranges in
