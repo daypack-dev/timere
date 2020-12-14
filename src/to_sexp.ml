@@ -132,6 +132,9 @@ let sexp_list_of_unary_op (op : Time.unary_op) =
   | Change_tz_offset_s n ->
     [ CCSexp.atom "change_tz_offset_s"; CCSexp.atom (string_of_int n) ]
 
+let sexp_of_recur (r : Time.recur) : CCSexp.t =
+  failwith "Unimpelemented"
+
 let to_sexp (t : Time.t) : CCSexp.t =
   let open Time in
   let rec aux t =
@@ -146,6 +149,7 @@ let to_sexp (t : Time.t) : CCSexp.t =
       CCSexp.list (CCSexp.atom "intervals" :: l)
     | Pattern (_, pat) -> sexp_of_pattern pat
     | Branching (_, b) -> sexp_of_branching b
+    | Recur (_, r) -> sexp_of_recur r
     | Unary_op (_, op, t) -> CCSexp.list (sexp_list_of_unary_op op @ [ aux t ])
     | Interval_inc (_, a, b) ->
       let open CCSexp in

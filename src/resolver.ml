@@ -609,6 +609,7 @@ let get_search_space (time : Time.t) : Time.Interval.t list =
   | Timestamp_interval_seq (s, _) -> s
   | Pattern (s, _) -> s
   | Branching (s, _) -> s
+  | Recur (s, _) -> s
   | Unary_op (s, _, _) -> s
   | Interval_exc (s, _, _) -> s
   | Interval_inc (s, _, _) -> s
@@ -625,6 +626,7 @@ let set_search_space space (time : Time.t) : Time.t =
   | Timestamp_interval_seq (_, x) -> Timestamp_interval_seq (space, x)
   | Pattern (_, x) -> Pattern (space, x)
   | Branching (_, x) -> Branching (space, x)
+  | Recur (_, x) -> Recur (space, x)
   | Unary_op (_, op, x) -> Unary_op (space, op, x)
   | Interval_exc (_, x, y) -> Interval_exc (space, x, y)
   | Interval_inc (_, x, y) -> Interval_inc (space, x, y)
@@ -685,6 +687,8 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
         branching.years |> List.map (search_space_of_year_range tz_offset_s)
       in
       Branching (space, branching)
+    | Recur (_, recur) ->
+      Recur (default_search_space, recur)
     | Unary_op (_, op, t) -> (
         match op with
         | Not -> Unary_op (default_search_space, op, aux tz_offset_s t)
@@ -772,6 +776,8 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
       Pattern (restrict_search_space parent_search_space cur, pat)
     | Branching (cur, branching) ->
       Branching (restrict_search_space parent_search_space cur, branching)
+    | Recur (cur, recur) ->
+      Recur (restrict_search_space parent_search_space cur, recur)
     | Unary_op (cur, op, t) ->
       let space = restrict_search_space parent_search_space cur in
       Unary_op (space, op, aux space t)
@@ -932,6 +938,10 @@ let intervals_of_branching tz_offset_s (space : Time.search_space)
            months)
       years
 
+let intervals_of_recur tz_offset_s (space : Time.search_space)
+    (b : Time.recur) : Time.Interval.t Seq.t =
+  Seq.empty
+
 type inc_or_exc =
   | Inc
   | Exc
@@ -987,6 +997,9 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
     | Branching (space, branching) ->
       Intervals.Inter.inter ~skip_check:true (List.to_seq space)
         (intervals_of_branching search_using_tz_offset_s space branching)
+    | Recur (space, recur) ->
+      Intervals.Inter.inter ~skip_check:true (List.to_seq space)
+        (intervals_of_recur search_using_tz_offset_s space recur)
     | Unary_op (space, op, t) -> (
         let search_using_tz_offset_s =
           match op with

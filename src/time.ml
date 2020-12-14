@@ -1658,7 +1658,7 @@ type 'a recur_spec =
   | Arith_seq of int
 
 type recur_day =
-  | Month_day of int recur_spec
+  | Day of int recur_spec
   | Weekday of {
       every_nth : int;
       weekday : weekday;
@@ -1674,10 +1674,10 @@ type recur_hms =
 
 type recur = {
   start : Date_time_set.t;
-  year : int recur_spec;
-  month : month recur_spec;
-  day : recur_day;
-  hmss : recur_hms;
+  year : int recur_spec option;
+  month : month recur_spec option;
+  day : recur_day option;
+  hmss : recur_hms option;
 }
 
 type search_space = Interval.t list
@@ -1693,6 +1693,7 @@ type t =
   | Timestamp_interval_seq of search_space * (int64 * int64) Seq.t
   | Pattern of search_space * Pattern.t
   | Branching of search_space * branching
+  | Recur of search_space * recur
   | Unary_op of search_space * unary_op * t
   | Interval_inc of search_space * timestamp * timestamp
   | Interval_exc of search_space * timestamp * timestamp
@@ -2061,6 +2062,28 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
       in
       Branching (default_search_space, { years; months; days; hmss })
     else invalid_arg "branching"
+
+module Recur = struct
+  let every_nth_int n : int recur_spec =
+    Arith_seq n
+
+  let every_nth_year = every_nth_int
+
+  let every_nth_day n : recur_day =
+    Day (every_nth_int n)
+
+  let every_nth_weekday every_nth weekday : recur_day =
+    Weekday { every_nth; weekday }
+end
+
+let recur ?(year : int recur_spec option) ?(month : month recur_spec option) ?(day : recur_day option) ?(hmss : recur_hms option) start : recur =
+  {
+    start;
+    year;
+    month;
+    day;
+    hmss
+  }
 
 let years years = pattern ~years ()
 
