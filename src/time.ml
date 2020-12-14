@@ -1026,38 +1026,38 @@ module Ranges = struct
 
   module Of_seq = struct
     let range_seq_of_seq (type a)
-        ?(skip_filter_empty = false) ?(skip_sort = false)
+        ?(skip_sort = false)
         ~(modulo : int64 option) ~(to_int64 : a -> int64)
         ~(of_int64 : int64 -> a) (s : a Seq.t) : a Range.range Seq.t =
       s
       |> Seq.map (fun x -> `Range_inc (x, x))
-      |> normalize ~skip_filter_invalid:true ~skip_filter_empty ~skip_sort ~modulo
+      |> normalize ~skip_filter_invalid:true ~skip_filter_empty:true ~skip_sort ~modulo
         ~to_int64 ~of_int64
 
     let range_list_of_seq (type a)
-        ?(skip_filter_empty = false) ?(skip_sort = false)
+        ?(skip_sort = false)
         ~(modulo : int64 option) ~(to_int64 : a -> int64)
         ~(of_int64 : int64 -> a) (s : a Seq.t) : a Range.range list =
-      range_seq_of_seq ~skip_filter_empty ~skip_sort
+      range_seq_of_seq ~skip_sort
         ~modulo ~to_int64 ~of_int64 s
       |> List.of_seq
   end
 
   module Of_list = struct
     let range_seq_of_list (type a)
-        ?(skip_filter_empty = false) ?(skip_sort = false)
+        ?(skip_sort = false)
         ~(modulo : int64 option) ~(to_int64 : a -> int64)
         ~(of_int64 : int64 -> a) (l : a list) : a Range.range Seq.t =
       List.to_seq l
-      |> Of_seq.range_seq_of_seq ~skip_filter_empty
+      |> Of_seq.range_seq_of_seq
         ~skip_sort ~modulo ~to_int64 ~of_int64
 
     let range_list_of_list (type a)
-        ?(skip_filter_empty = false) ?(skip_sort = false)
+        ?(skip_sort = false)
         ~(modulo : int64 option) ~(to_int64 : a -> int64)
         ~(of_int64 : int64 -> a) (l : a list) : a Range.range list =
       List.to_seq l
-      |> Of_seq.range_seq_of_seq ~skip_filter_empty
+      |> Of_seq.range_seq_of_seq
         ~skip_sort ~modulo ~to_int64 ~of_int64
       |> List.of_seq
   end
@@ -1176,39 +1176,36 @@ module Ranges_small = struct
   end
 
   module Of_seq = struct
-    let range_seq_of_seq (type a) ?(skip_filter_invalid = false)
-        ?(skip_filter_empty = false) ?(skip_sort = false) ~(modulo : int option)
+    let range_seq_of_seq (type a)
+        ?(skip_sort = false) ~(modulo : int option)
         ~(to_int : a -> int) ~(of_int : int -> a) (s : a Seq.t) :
       a Range.range Seq.t =
       s
       |> Seq.map (fun x -> `Range_inc (x, x))
-      |> normalize ~skip_filter_invalid ~skip_filter_empty ~skip_sort ~modulo
+      |> normalize ~skip_filter_invalid:true ~skip_filter_empty:true ~skip_sort ~modulo
         ~to_int ~of_int
 
-    let range_list_of_seq (type a) ?(skip_filter_invalid = false)
-        ?(skip_filter_empty = false) ?(skip_sort = false) ~(modulo : int option)
+    let range_list_of_seq (type a) ?(skip_sort = false) ~(modulo : int option)
         ~(to_int : a -> int) ~(of_int : int -> a) (s : a Seq.t) :
       a Range.range list =
-      range_seq_of_seq ~skip_filter_invalid ~skip_filter_empty ~skip_sort
+      range_seq_of_seq ~skip_sort
         ~modulo ~to_int ~of_int s
       |> List.of_seq
   end
 
   module Of_list = struct
-    let range_seq_of_list (type a) ?(skip_filter_invalid = false)
-        ?(skip_filter_empty = false) ?(skip_sort = false) ~(modulo : int option)
+    let range_seq_of_list (type a) ?(skip_sort = false) ~(modulo : int option)
         ~(to_int : a -> int) ~(of_int : int -> a) (l : a list) :
       a Range.range Seq.t =
       List.to_seq l
-      |> Of_seq.range_seq_of_seq ~skip_filter_invalid ~skip_filter_empty
+      |> Of_seq.range_seq_of_seq
         ~skip_sort ~modulo ~to_int ~of_int
 
-    let range_list_of_list (type a) ?(skip_filter_invalid = false)
-        ?(skip_filter_empty = false) ?(skip_sort = false) ~(modulo : int option)
+    let range_list_of_list (type a) ?(skip_sort = false) ~(modulo : int option)
         ~(to_int : a -> int) ~(of_int : int -> a) (l : a list) :
       a Range.range list =
       List.to_seq l
-      |> Of_seq.range_seq_of_seq ~skip_filter_invalid ~skip_filter_empty
+      |> Of_seq.range_seq_of_seq
         ~skip_sort ~modulo ~to_int ~of_int
       |> List.of_seq
   end
@@ -1812,12 +1809,10 @@ let inter_seq (s : t Seq.t) : t =
       Some (OSeq.cons (Pattern (default_search_space, pat)) rest)
   in
   let s = flatten s in
-  if OSeq.mem ~eq:equal Empty s then Empty
-  else
-    match inter_patterns s with
-    | None -> empty
-    | Some s ->
-      Inter_seq (default_search_space, s)
+  match inter_patterns s with
+  | None -> empty
+  | Some s ->
+    Inter_seq (default_search_space, s)
 
 let inter (l : t list) : t =
   inter_seq (List.to_seq l)
@@ -1830,8 +1825,7 @@ let union_seq (s : t Seq.t) : t =
       s
   in
   let s = flatten s in
-  if OSeq.mem ~eq:equal All s then All
-  else Union_seq (default_search_space, s)
+  Union_seq (default_search_space, s)
 
 let union (l : t list) : t =
   union_seq (List.to_seq l)

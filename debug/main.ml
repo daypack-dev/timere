@@ -67,8 +67,11 @@ let debug_resolver () =
    * in *)
   let timere =
     let open Timere in
-    recur ~year:(every_nth_year 3)
+    recur
+      ~year:(every_nth_year 3)
+      (* ~year:(match_years [2000]) *)
       ~month:(every_nth_month 4)
+      (* ~month:(match_months [`Jan; `Mar]) *)
       (* ~day:(every_nth_weekday 1 `Mon) *)
       (Result.get_ok
        @@ Timere.Date_time.make ~year:2000 ~month:`Jan ~day:1 ~hour:0 ~minute:0

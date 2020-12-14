@@ -951,7 +951,7 @@ let intervals_of_branching tz_offset_s (space : Time.search_space)
       years
 
 let resolve_arith_year_month_pairs ~year_start ~year_end_inc
-    ~(month_start : Time.month) n : (int * Time.month) Seq.t =
+    ~(start : Time.Date_time.t) n : (int * Time.month) Seq.t =
   let rec aux year year_end_inc month n =
     if year > year_end_inc then Seq.empty
     else
@@ -964,6 +964,12 @@ let resolve_arith_year_month_pairs ~year_start ~year_end_inc
         Seq.Cons
           ( (year, Result.get_ok @@ Time.month_of_tm_int month),
             aux next_year year_end_inc next_month n )
+  in
+  let month_start =
+    if year_start = start.year then
+      start.month
+    else
+      `Jan
   in
   aux year_start year_end_inc (Time.tm_int_of_month month_start) n
 
@@ -979,7 +985,8 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
           |> List.filter (fun x -> r.start.year <= x)
           |> Year_ranges.Of_list.range_seq_of_list ~skip_sort:true
         | Every_nth n ->
-          OSeq.(r.start.year -- Date_time.max.year)
+          (* OSeq.(r.start.year -- Date_time.max.year) *)
+          OSeq.(r.start.year -- 6000)
           |> OSeq.take_nth n
           |> Year_ranges.Of_seq.range_seq_of_seq ~skip_sort:true )
   in
@@ -990,6 +997,9 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
         | `Range_inc (x, y) -> (x, y)
         | `Range_exc (x, y) -> (x, pred y))
   in
+  let one_day =
+    Result.get_ok @@ Duration.make ~days:1 ()
+  in
   let years = Year_ranges.Flatten.flatten year_ranges in
   match (r.month, r.day) with
   | None, None -> pattern ~year_ranges:(List.of_seq year_ranges) ()
@@ -997,15 +1007,15 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
     pattern ~year_ranges:(List.of_seq year_ranges) ~month_days ()
   | None, Some (Day (Every_nth n)) ->
     pattern ~year_ranges:(List.of_seq year_ranges) ()
-    |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
+    |> chunk one_day
     |> take_nth n
   | None, Some (Weekday_every_nth (n, weekday)) ->
     pattern ~year_ranges:(List.of_seq year_ranges) ~weekdays:[weekday] ()
-    |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
+    |> chunk one_day
     |> take_nth n
   | None, Some (Weekday_nth (n, weekday)) ->
     pattern ~year_ranges:(List.of_seq year_ranges) ~weekdays:[weekday] ()
-    |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
+    |> chunk one_day
     |> nth n
   | Some (Match months), None ->
     pattern ~year_ranges:(List.of_seq year_ranges) ~months ()
@@ -1018,7 +1028,7 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
         Seq.map
           (fun month ->
              pattern ~years:[ year ] ~months:[ month ] ()
-             |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
+             |> chunk one_day
              |> take_nth n)
           months)
     |> union_seq
@@ -1030,7 +1040,7 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
           (fun month ->
              pattern ~years:[ year ] ~months:[ month ] ~weekdays:[ weekday ]
                ()
-             |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
+             |> chunk one_day
              |> take_nth n)
           months)
     |> union_seq
@@ -1042,7 +1052,7 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
           (fun month ->
              pattern ~years:[ year ] ~months:[ month ] ~weekdays:[ weekday ]
                ()
-             |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
+             |> chunk one_day
              |> nth n)
           months)
     |> union_seq
@@ -1050,7 +1060,7 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
     year_inc_ranges
     |> Seq.flat_map (fun (year_start, year_end_inc) ->
         resolve_arith_year_month_pairs ~year_start ~year_end_inc
-          ~month_start:r.start.month n
+          ~start:r.start n
         |> Seq.map (fun (year, month) ->
             pattern ~years:[ year ] ~months:[ month ] ()))
     |> union_seq
@@ -1058,7 +1068,7 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
     year_inc_ranges
     |> Seq.flat_map (fun (year_start, year_end_inc) ->
         resolve_arith_year_month_pairs ~year_start ~year_end_inc
-          ~month_start:r.start.month n
+          ~start:r.start n
         |> Seq.map (fun (year, month) ->
             pattern ~years:[ year ] ~months:[ month ] ~month_days ()))
     |> union_seq
@@ -1066,10 +1076,10 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
     year_inc_ranges
     |> Seq.flat_map (fun (year_start, year_end_inc) ->
         resolve_arith_year_month_pairs ~year_start ~year_end_inc
-          ~month_start:r.start.month month_n
+          ~start:r.start month_n
         |> Seq.map (fun (year, month) ->
             pattern ~years:[ year ] ~months:[ month ] ()
-            |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
+            |> chunk one_day
             |> take_nth day_n
           ))
     |> union_seq
@@ -1077,10 +1087,10 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
     year_inc_ranges
     |> Seq.flat_map (fun (year_start, year_end_inc) ->
         resolve_arith_year_month_pairs ~year_start ~year_end_inc
-          ~month_start:r.start.month month_n
+          ~start:r.start month_n
         |> Seq.map (fun (year, month) ->
             pattern ~years:[ year ] ~months:[ month ] ~weekdays:[weekday] ()
-            |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
+            |> chunk one_day
             |> take_nth n
           ))
     |> List.of_seq
@@ -1089,10 +1099,10 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
     year_inc_ranges
     |> Seq.flat_map (fun (year_start, year_end_inc) ->
         resolve_arith_year_month_pairs ~year_start ~year_end_inc
-          ~month_start:r.start.month month_n
+          ~start:r.start month_n
         |> Seq.map (fun (year, month) ->
             pattern ~years:[ year ] ~months:[ month ] ~weekdays:[weekday] ()
-            |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
+            |> chunk one_day
             |> nth n
           ))
     |> List.of_seq
