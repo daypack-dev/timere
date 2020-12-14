@@ -58,14 +58,20 @@ let debug_resolver () =
    *        ~randomness)
    *     2 5 [333; 5; 918; 132; 292]
    * in *)
-  (* let timere = Timere.pattern ~strict:true ~months:[`Mar] ~month_days:[31] () in *)
   let timere =
-    let open Timere in
-    let open Recur in
-    recur ~year:(every_nth_year 3) ~month:(every_nth_month 4)
-      ~day:(every_nth_weekday 1 `Mon)
-      Date_time.min
+    Timere.inter
+      [
+        Timere.empty;
+        Timere.pattern ~strict:true ~months:[ `Mar ] ~month_days:[ 31 ] ();
+      ]
   in
+  (* let timere =
+   *   let open Timere in
+   *   let open Recur in
+   *   recur ~year:(every_nth_year 3) ~month:(every_nth_month 4)
+   *     ~day:(every_nth_weekday 1 `Mon)
+   *     Date_time.min
+   * in *)
   print_endline (Timere.to_sexp_string timere);
   print_endline "=====";
   let search_start_dt =
