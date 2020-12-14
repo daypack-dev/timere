@@ -1656,7 +1656,7 @@ let branching_equal b1 b2 = b1 = b2
 
 type 'a recur_spec =
   | Match of 'a list
-  | Arith_seq of int
+  | Every_nth of int
 
 type recur_year = int recur_spec
 
@@ -1670,7 +1670,7 @@ type recur_day =
     }
 
 type recur_hms =
-  | Arith_seq of {
+  | Every_nth of {
       hour : int option;
       minute : int option;
       second : int option;
@@ -2074,13 +2074,13 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
 
 module Recur = struct
   let every_nth_year n : recur_year =
-    Arith_seq n
+    Every_nth n
 
   let every_nth_month n : recur_month =
-    Arith_seq n
+    Every_nth n
 
   let every_nth_day n : recur_day =
-    Day (Arith_seq n)
+    Day (Every_nth n)
 
   let every_nth_weekday every_nth weekday : recur_day =
     Weekday { every_nth; weekday }

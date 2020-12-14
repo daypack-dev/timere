@@ -974,7 +974,7 @@ let t_of_recur (space : Time.search_space)
             r.start.year <= x
           )
         |> Year_ranges.Of_seq.range_seq_of_seq
-      | Arith_seq n ->
+      | Every_nth n ->
         OSeq.(r.start.year -- Date_time.max.year)
         |> OSeq.take_nth n
         |> Year_ranges.Of_seq.range_seq_of_seq
@@ -984,7 +984,7 @@ let t_of_recur (space : Time.search_space)
     | None -> always
     | Some day -> match day with
       | Day (Match l) -> pattern ~month_days:l ()
-      | Day (Arith_seq _) -> always
+      | Day (Every_nth _) -> always
       | Weekday { weekday; _} ->
         pattern ~weekdays:[weekday] ()
   in
@@ -994,7 +994,7 @@ let t_of_recur (space : Time.search_space)
       [pattern ~year_ranges:(List.of_seq year_ranges) ()]
     | Some (Match months) ->
       [pattern ~year_ranges:(List.of_seq year_ranges) ~months ()]
-    | Some (Arith_seq n) ->
+    | Some (Every_nth n) ->
       year_ranges
       |> Seq.flat_map (fun year_range ->
           let year_start, year_end_inc =
@@ -1015,7 +1015,7 @@ let t_of_recur (space : Time.search_space)
       | None -> fun x -> x
       | Some day -> match day with
         | Day (Match _) -> fun x -> x
-        | Day (Arith_seq n) -> take_nth n
+        | Day (Every_nth n) -> take_nth n
         | Weekday { every_nth; _} ->
           take_nth every_nth
     )
