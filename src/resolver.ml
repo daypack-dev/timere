@@ -1042,7 +1042,7 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
         resolve_year_arith_month_pairs ~year_start ~year_end_inc
           ~month_start:r.start.month n
         |> Seq.map (fun (year, month) ->
-            pattern ~years:[ year ] ~months:[ month ] ()))
+            pattern ~years:[ year ] ~months:[ month ] ~month_days ()))
     |> List.of_seq
     |> union
   | _, _ -> failwith "Unimplemented"
