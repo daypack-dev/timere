@@ -217,8 +217,8 @@ let to_sexp (t : Time.t) : CCSexp.t =
       list [ atom "interval_exc"; sexp_of_timestamp a; sexp_of_timestamp b ]
     | Round_robin_pick_list (_, l) ->
       CCSexp.(list (atom "round_robin" :: List.map aux l))
-    | Inter_list (_, l) -> CCSexp.(list (atom "inter" :: List.map aux l))
-    | Union_list (_, l) -> CCSexp.(list (atom "union" :: List.map aux l))
+    | Inter_seq (_, s) -> CCSexp.(list (atom "inter" :: (s |> Seq.map aux |> List.of_seq) ))
+    | Union_seq (_, s) -> CCSexp.(list (atom "union" :: (s |> Seq.map aux |> List.of_seq) ))
     | After (_, t1, t2) -> CCSexp.(list [ atom "after"; aux t1; aux t2 ])
     | Between_inc (_, t1, t2) ->
       CCSexp.(list [ atom "between_inc"; aux t1; aux t2 ])

@@ -1730,8 +1730,8 @@ type t =
   | Interval_inc of search_space * timestamp * timestamp
   | Interval_exc of search_space * timestamp * timestamp
   | Round_robin_pick_list of search_space * t list
-  | Inter_list of search_space * t list
-  | Union_list of search_space * t list
+  | Inter_seq of search_space * t Seq.t
+  | Union_seq of search_space * t Seq.t
   | After of search_space * t * t
   | Between_inc of search_space * t * t
   | Between_exc of search_space * t * t
@@ -1753,10 +1753,11 @@ let equal t1 t2 =
     | Between_inc (_, x11, x12), Between_inc (_, x21, x22)
     | Between_exc (_, x11, x12), Between_exc (_, x21, x22) ->
       aux x11 x21 && aux x12 x22
-    | Round_robin_pick_list (_, l1), Round_robin_pick_list (_, l2)
-    | Inter_list (_, l1), Inter_list (_, l2)
-    | Union_list (_, l1), Union_list (_, l2) ->
+    | Round_robin_pick_list (_, l1), Round_robin_pick_list (_, l2) ->
       List.for_all2 aux l1 l2
+    | Inter_seq (_, s1), Inter_seq (_, s2)
+    | Union_seq (_, s1), Union_seq (_, s2) ->
+      OSeq.for_all2 aux s1 s2
     | _ -> false
   in
   aux t1 t2
@@ -1777,11 +1778,11 @@ let empty = Empty
 
 let always = All
 
-let inter (l : t list) : t =
+let inter_seq (s : t Seq.t) : t =
   let flatten s =
     Seq.flat_map
       (fun x ->
-         match x with Inter_list (_, l) -> List.to_seq l | _ -> Seq.return x)
+         match x with Inter_seq (_, s) -> s | _ -> Seq.return x)
       s
   in
   let inter_patterns s =
@@ -1810,22 +1811,28 @@ let inter (l : t list) : t =
     | Some (Ok pat) ->
       Some (OSeq.cons (Pattern (default_search_space, pat)) rest)
   in
-  match l |> List.to_seq |> flatten |> inter_patterns with
+  match s |> flatten |> inter_patterns with
   | None -> empty
   | Some s ->
     if OSeq.mem ~eq:equal Empty s then Empty
-    else Inter_list (default_search_space, List.of_seq s)
+    else Inter_seq (default_search_space, s)
 
-let union (l : t list) : t =
+let inter (l : t list) : t =
+  inter_seq (List.to_seq l)
+
+let union_seq (s : t Seq.t) : t =
   let flatten s =
     Seq.flat_map
       (fun x ->
-         match x with Union_list (_, l) -> List.to_seq l | _ -> Seq.return x)
+         match x with Union_seq (_, s) -> s | _ -> Seq.return x)
       s
   in
-  let s = l |> List.to_seq |> flatten in
+  let s = flatten s in
   if OSeq.mem ~eq:equal All s then All
-  else Union_list (default_search_space, List.of_seq s)
+  else Union_seq (default_search_space, s)
+
+let union (l : t list) : t =
+  union_seq (List.to_seq l)
 
 let round_robin_pick (l : t list) : t =
   Round_robin_pick_list (default_search_space, l)

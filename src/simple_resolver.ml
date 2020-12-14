@@ -291,7 +291,7 @@ and mem ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
         | Between_exc (_, _, _) ->
           resolve ~search_using_tz_offset_s ~search_start ~search_end_exc t
           |> OSeq.exists (fun (x, y) -> x <= timestamp && timestamp < y)
-        | Inter_list (_, l) -> List.for_all (fun t -> aux t timestamp) l
-        | Union_list (_, l) -> List.exists (fun t -> aux t timestamp) l )
+        | Inter_seq (_, s) -> OSeq.for_all (fun t -> aux t timestamp) s
+        | Union_seq (_, s) -> OSeq.exists (fun t -> aux t timestamp) s )
   in
   aux t timestamp
