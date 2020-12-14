@@ -113,6 +113,10 @@ val not : t -> t
 
 val cur_timestamp : unit -> int64
 
+val of_timestamps : timestamp list -> t
+
+val of_timestamps_seq : timestamp Seq.t -> t
+
 module Date_time : sig
   exception Invalid_date_time
 
@@ -242,10 +246,6 @@ exception Intervals_are_not_sorted
 exception Intervals_are_not_disjoint
 
 type interval = timestamp * timestamp
-
-val of_timestamps : timestamp list -> t
-
-val of_timestamps_seq : timestamp Seq.t -> t
 
 val of_intervals : ?skip_invalid:bool -> interval list -> t
 
