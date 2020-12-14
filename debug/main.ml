@@ -64,7 +64,7 @@ let debug_resolver () =
     let open Recur in
     recur ~year:(every_nth_year 3) ~month:(every_nth_month 4)
       ~day:(every_nth_weekday 1 `Mon)
-      (Date_time.min)
+      Date_time.min
   in
   print_endline (Timere.to_sexp_string timere);
   print_endline "=====";

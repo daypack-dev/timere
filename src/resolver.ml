@@ -687,8 +687,7 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
         branching.years |> List.map (search_space_of_year_range tz_offset_s)
       in
       Branching (space, branching)
-    | Recur (_, recur) ->
-      Recur (default_search_space, recur)
+    | Recur (_, recur) -> Recur (default_search_space, recur)
     | Unary_op (_, op, t) -> (
         match op with
         | Not -> Unary_op (default_search_space, op, aux tz_offset_s t)
@@ -938,70 +937,59 @@ let intervals_of_branching tz_offset_s (space : Time.search_space)
            months)
       years
 
-let resolve_year_arith_month_pairs ~year_start ~year_end_inc ~(month_start : Time.month) n
-  : (int * Time.month) Seq.t =
+let resolve_year_arith_month_pairs ~year_start ~year_end_inc
+    ~(month_start : Time.month) n : (int * Time.month) Seq.t =
   let rec aux year year_end_inc month n =
-    if year > year_end_inc then
-      Seq.empty
+    if year > year_end_inc then Seq.empty
     else
       let next_month = month + n in
       let next_year, next_month =
-        if next_month < 12 then
-          year, next_month
-        else
-          (succ year),
-            (next_month mod 12)
+        if next_month < 12 then (year, next_month)
+        else (succ year, next_month mod 12)
       in
       fun () ->
-        Seq.Cons ((year, Result.get_ok @@ Time.month_of_tm_int month),
-                    aux next_year year_end_inc next_month n
-                 )
+        Seq.Cons
+          ( (year, Result.get_ok @@ Time.month_of_tm_int month),
+            aux next_year year_end_inc next_month n )
   in
   aux year_start year_end_inc (Time.tm_int_of_month month_start) n
 
-let t_of_recur (space : Time.search_space)
-    (r : Time.recur) : Time.t =
+let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
   let open Time in
   let year_ranges =
     match r.year with
-    | None ->
-      Seq.return (`Range_inc (r.start.year, Date_time.max.year))
-    | Some year -> match year with
-      | Match l ->
-        l
-        |> List.to_seq
-        |> Seq.filter (fun x ->
-            r.start.year <= x
-          )
-        |> Year_ranges.Of_seq.range_seq_of_seq
-      | Every_nth n ->
-        OSeq.(r.start.year -- Date_time.max.year)
-        |> OSeq.take_nth n
-        |> Year_ranges.Of_seq.range_seq_of_seq
+    | None -> Seq.return (`Range_inc (r.start.year, Date_time.max.year))
+    | Some year -> (
+        match year with
+        | Match l ->
+          l
+          |> List.to_seq
+          |> Seq.filter (fun x -> r.start.year <= x)
+          |> Year_ranges.Of_seq.range_seq_of_seq
+        | Every_nth n ->
+          OSeq.(r.start.year -- Date_time.max.year)
+          |> OSeq.take_nth n
+          |> Year_ranges.Of_seq.range_seq_of_seq )
   in
   let day_pattern =
     match r.day with
     | None -> always
-    | Some day -> match day with
-      | Day (Match l) -> pattern ~month_days:l ()
-      | Day (Every_nth _) -> always
-      | Weekday { weekday; _} ->
-        pattern ~weekdays:[weekday] ()
+    | Some day -> (
+        match day with
+        | Day (Match l) -> pattern ~month_days:l ()
+        | Day (Every_nth _) -> always
+        | Weekday { weekday; _ } -> pattern ~weekdays:[ weekday ] () )
   in
   let year_inc_ranges =
     year_ranges
     |> Seq.map (fun year_range ->
         match year_range with
         | `Range_inc (x, y) -> (x, y)
-        | `Range_exc (x, y) -> (x, pred y)
-      )
+        | `Range_exc (x, y) -> (x, pred y))
   in
-  let years =
-    Year_ranges.Flatten.flatten year_ranges
-  in
-  match r.month, r.day with
-  | None, None ->
-    pattern ~year_ranges:(List.of_seq year_ranges) ()
+  let years = Year_ranges.Flatten.flatten year_ranges in
+  match (r.month, r.day) with
+  | None, None -> pattern ~year_ranges:(List.of_seq year_ranges) ()
   | Some (Match months), None ->
     pattern ~year_ranges:(List.of_seq year_ranges) ~months ()
   | Some (Match months), Some (Day (Match month_days)) ->
@@ -1010,28 +998,25 @@ let t_of_recur (space : Time.search_space)
     let months = List.to_seq months in
     years
     |> Seq.flat_map (fun year ->
-        Seq.map (fun month ->
-            pattern ~years:[year] ~months:[month]
-              ()
-            |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
-            |> take_nth n
-          )
-          months
-      )
+        Seq.map
+          (fun month ->
+             pattern ~years:[ year ] ~months:[ month ] ()
+             |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
+             |> take_nth n)
+          months)
     |> List.of_seq
     |> union
   | Some (Match months), Some (Weekday { every_nth; weekday }) ->
     let months = List.to_seq months in
     years
     |> Seq.flat_map (fun year ->
-        Seq.map (fun month ->
-            pattern ~years:[year] ~months:[month]
-              ~weekdays:[weekday] ()
-            |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
-            |> take_nth every_nth
-          )
-          months
-      )
+        Seq.map
+          (fun month ->
+             pattern ~years:[ year ] ~months:[ month ] ~weekdays:[ weekday ]
+               ()
+             |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
+             |> take_nth every_nth)
+          months)
     |> List.of_seq
     |> union
   | Some (Every_nth n), None ->
@@ -1040,9 +1025,7 @@ let t_of_recur (space : Time.search_space)
         resolve_year_arith_month_pairs ~year_start ~year_end_inc
           ~month_start:r.start.month n
         |> Seq.map (fun (year, month) ->
-            pattern ~years:[year] ~months:[month] ()
-          )
-      )
+            pattern ~years:[ year ] ~months:[ month ] ()))
     |> List.of_seq
     |> union
   | Some (Every_nth n), Some (Day (Match month_days)) ->
@@ -1051,9 +1034,7 @@ let t_of_recur (space : Time.search_space)
         resolve_year_arith_month_pairs ~year_start ~year_end_inc
           ~month_start:r.start.month n
         |> Seq.map (fun (year, month) ->
-            pattern ~years:[year] ~months:[month] ()
-          )
-      )
+            pattern ~years:[ year ] ~months:[ month ] ()))
     |> List.of_seq
     |> union
   | _, _ -> failwith "Unimplemented"

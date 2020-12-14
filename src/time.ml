@@ -1599,10 +1599,11 @@ module Pattern = struct
   let inter p1 p2 =
     let inter_sets (type a) ~(is_empty : a -> bool) ~(inter : a -> a -> a)
         (a : a) (b : a) =
-      if is_empty a then Some b else if is_empty b then Some a else
+      if is_empty a then Some b
+      else if is_empty b then Some a
+      else
         let s = inter a b in
-        if is_empty s then None
-        else Some s
+        if is_empty s then None else Some s
     in
     let inter_int_sets a b =
       inter_sets ~is_empty:Int_set.is_empty ~inter:Int_set.inter a b
@@ -1615,34 +1616,35 @@ module Pattern = struct
     in
     match inter_int_sets p1.years p2.years with
     | None -> None
-    | Some years ->
-      match inter_month_sets p1.months p2.months with
-      | None -> None
-      | Some months ->
-        match inter_int_sets p1.month_days p2.month_days with
+    | Some years -> (
+        match inter_month_sets p1.months p2.months with
         | None -> None
-        | Some month_days ->
-          match inter_weekday_sets p1.weekdays p2.weekdays with
-          | None -> None
-          | Some weekdays ->
-            match inter_int_sets p1.hours p2.hours with
+        | Some months -> (
+            match inter_int_sets p1.month_days p2.month_days with
             | None -> None
-            | Some hours ->
-              match inter_int_sets p1.minutes p2.minutes with
-              | None -> None
-              | Some minutes ->
-                match inter_int_sets p1.seconds p2.seconds with
+            | Some month_days -> (
+                match inter_weekday_sets p1.weekdays p2.weekdays with
                 | None -> None
-                | Some seconds ->
-                  Some {
-                    years;
-                    months;
-                    month_days;
-                    weekdays;
-                    hours;
-                    minutes;
-                    seconds;
-                  }
+                | Some weekdays -> (
+                    match inter_int_sets p1.hours p2.hours with
+                    | None -> None
+                    | Some hours -> (
+                        match inter_int_sets p1.minutes p2.minutes with
+                        | None -> None
+                        | Some minutes -> (
+                            match inter_int_sets p1.seconds p2.seconds with
+                            | None -> None
+                            | Some seconds ->
+                              Some
+                                {
+                                  years;
+                                  months;
+                                  month_days;
+                                  weekdays;
+                                  hours;
+                                  minutes;
+                                  seconds;
+                                } ) ) ) ) ) )
 end
 
 type sign_expr =
@@ -1768,8 +1770,7 @@ let shift (offset : Duration.t) (t : t) : t =
 let lengthen (x : Duration.t) (t : t) : t =
   Unary_op (default_search_space, Lengthen (Duration.to_seconds x), t)
 
-let empty =
-  Timestamp_interval_seq (default_search_space, Seq.empty)
+let empty = Timestamp_interval_seq (default_search_space, Seq.empty)
 
 let inter (l : t list) : t =
   let flatten s =
@@ -1790,24 +1791,23 @@ let inter (l : t list) : t =
                match acc with
                | None -> Some (Ok pat)
                | Some (Error ()) -> acc
-               | Some (Ok acc) -> Some (match Pattern.inter acc pat with
-                   | None -> Error ()
-                   | Some pat -> Ok pat
-                 ) )
+               | Some (Ok acc) ->
+                 Some
+                   ( match Pattern.inter acc pat with
+                     | None -> Error ()
+                     | Some pat -> Ok pat ) )
            | _ -> acc)
         None patterns
     in
     match pattern with
     | None -> Some rest
     | Some (Error ()) -> None
-    | Some (Ok pat) -> Some (
-        OSeq.cons (Pattern (default_search_space, pat)) rest
-      )
+    | Some (Ok pat) ->
+      Some (OSeq.cons (Pattern (default_search_space, pat)) rest)
   in
   match l |> List.to_seq |> flatten |> inter_patterns with
   | None -> empty
-  | Some s ->
-    Inter_list (default_search_space, List.of_seq s)
+  | Some s -> Inter_list (default_search_space, List.of_seq s)
 
 let union (l : t list) : t =
   let flatten s =
@@ -1835,9 +1835,13 @@ let union (l : t list) : t =
    *   | None -> rest
    *   | Some pat -> OSeq.cons (Pattern (default_search_space, pat)) rest
    * in *)
-  let l = l |> List.to_seq |> flatten
-          (* |> union_patterns *)
-          |> List.of_seq in
+  let l =
+    l
+    |> List.to_seq
+    |> flatten
+    (* |> union_patterns *)
+    |> List.of_seq
+  in
   Union_list (default_search_space, l)
 
 let round_robin_pick (l : t list) : t =
@@ -2111,34 +2115,24 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
     else invalid_arg "branching"
 
 module Recur = struct
-  let every_nth_year n : recur_year =
-    Every_nth n
+  let every_nth_year n : recur_year = Every_nth n
 
-  let every_nth_month n : recur_month =
-    Every_nth n
+  let every_nth_month n : recur_month = Every_nth n
 
-  let every_nth_day n : recur_day =
-    Day (Every_nth n)
+  let every_nth_day n : recur_day = Day (Every_nth n)
 
   let every_nth_weekday every_nth weekday : recur_day =
     Weekday { every_nth; weekday }
 
-  let match_years l : recur_year =
-    Match l
+  let match_years l : recur_year = Match l
 
-  let match_months l : recur_month =
-    Match l
+  let match_months l : recur_month = Match l
 end
 
-let recur ?(year : int recur_spec option) ?(month : month recur_spec option) ?(day : recur_day option) ?(hms : recur_hms option) (start : Date_time.t) : t =
-  Recur (default_search_space, {
-    start;
-    year;
-    month;
-    day;
-    hms
-  }
-    )
+let recur ?(year : int recur_spec option) ?(month : month recur_spec option)
+    ?(day : recur_day option) ?(hms : recur_hms option) (start : Date_time.t) :
+  t =
+  Recur (default_search_space, { start; year; month; day; hms })
 
 let years years = pattern ~years ()
 

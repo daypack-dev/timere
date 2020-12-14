@@ -275,8 +275,7 @@ and mem ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
                  let y = Time.second_of_day_of_hms y in
                  x <= second_of_day && second_of_day < y)
             branching.hmss
-        | Recur (_, recur) ->
-          failwith "Unimplemented"
+        | Recur (_, recur) -> failwith "Unimplemented"
         | Interval_inc (_, start, end_inc) ->
           start <= timestamp && timestamp <= end_inc
         | Interval_exc (_, start, end_inc) ->
