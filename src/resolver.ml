@@ -1022,8 +1022,7 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
              |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
              |> take_nth n)
           months)
-    |> List.of_seq
-    |> union
+    |> union_seq
   | Some (Match months), Some (Weekday_every_nth ( n, weekday )) ->
     let months = List.to_seq months in
     years
