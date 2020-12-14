@@ -1093,8 +1093,7 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
             |> chunk one_day
             |> take_nth n
           ))
-    |> List.of_seq
-    |> union
+    |> union_seq
   | Some (Every_nth month_n), Some (Weekday_nth ( n, weekday )) ->
     year_inc_ranges
     |> Seq.flat_map (fun (year_start, year_end_inc) ->
@@ -1105,8 +1104,7 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
             |> chunk one_day
             |> nth n
           ))
-    |> List.of_seq
-    |> union
+    |> union_seq
 
 type inc_or_exc =
   | Inc
