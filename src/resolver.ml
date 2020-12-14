@@ -1167,6 +1167,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
       Intervals.Inter.inter ~skip_check:true (List.to_seq space)
         (intervals_of_branching search_using_tz_offset_s space branching)
     | Recur (space, recur) ->
+      (* failwith "Unexpected case" *)
       t_of_recur space recur
       |> aux search_using_tz_offset_s
       |> Intervals.Inter.inter ~skip_check:true (List.to_seq space)
@@ -1235,8 +1236,9 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
           |> Option.map (fun (start', _) -> (start, start')))
   in
   try
-    aux search_using_tz_offset_s
-      (optimize_search_space search_using_tz_offset_s time)
+    time
+    |> optimize_search_space search_using_tz_offset_s
+    |> aux search_using_tz_offset_s
     |> Time.Intervals.Normalize.normalize ~skip_filter_invalid:true
       ~skip_sort:true
     |> Result.ok
