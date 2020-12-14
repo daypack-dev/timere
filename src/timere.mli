@@ -111,11 +111,13 @@ val not : t -> t
 
 (** {1 Discrete time points} *)
 
+exception Invalid_timestamp
+
 val cur_timestamp : unit -> int64
 
-val of_timestamps : timestamp list -> t
+val of_timestamps : ?skip_invalid:bool -> timestamp list -> t
 
-val of_timestamps_seq : timestamp Seq.t -> t
+val of_timestamps_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
 
 module Date_time : sig
   exception Invalid_date_time

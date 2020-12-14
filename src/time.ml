@@ -4,6 +4,8 @@ type timestamp = int64
 
 let tz_offset_s_utc = 0
 
+exception Invalid_timestamp
+
 exception Interval_is_invalid
 
 exception Interval_is_empty
@@ -2113,11 +2115,23 @@ let of_intervals_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t)
 
 let empty = of_intervals []
 
-let of_timestamps_seq timestamps =
-  timestamps |> Seq.map (fun x -> (x, Int64.succ x)) |> of_intervals_seq
+let of_timestamps_seq ?(skip_invalid = false) timestamps =
+  timestamps
+  |> Seq.filter_map (fun x ->
+      match Date_time.of_timestamp x with
+      | Ok _ -> Some x
+      | Error () -> if skip_invalid then None else raise Invalid_timestamp)
+  |> Seq.map (fun x -> (x, Int64.succ x))
+  |> of_intervals_seq
 
-let of_timestamps timestamps =
-  timestamps |> List.map (fun x -> (x, Int64.succ x)) |> of_intervals
+let of_timestamps ?(skip_invalid = false) timestamps =
+  timestamps
+  |> List.filter_map (fun x ->
+      match Date_time.of_timestamp x with
+      | Ok _ -> Some x
+      | Error () -> if skip_invalid then None else raise Invalid_timestamp)
+  |> List.map (fun x -> (x, Int64.succ x))
+  |> of_intervals
 
 let full_string_of_weekday (wday : weekday) : string =
   match wday with
