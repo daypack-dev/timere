@@ -1658,6 +1658,10 @@ type 'a recur_spec =
   | Match of 'a list
   | Arith_seq of int
 
+type recur_year = int recur_spec
+
+type recur_month = month recur_spec
+
 type recur_day =
   | Day of int recur_spec
   | Weekday of {
@@ -1675,10 +1679,10 @@ type recur_hms =
 
 type recur = {
   start : Date_time.t;
-  year : int recur_spec option;
-  month : month recur_spec option;
+  year : recur_year option;
+  month : recur_month option;
   day : recur_day option;
-  hmss : recur_hms option;
+  hms : recur_hms option;
 }
 
 type search_space = Interval.t list
@@ -2069,26 +2073,34 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
     else invalid_arg "branching"
 
 module Recur = struct
-  let every_nth_int n : int recur_spec =
+  let every_nth_year n : recur_year =
     Arith_seq n
 
-  let every_nth_year = every_nth_int
+  let every_nth_month n : recur_month =
+    Arith_seq n
 
   let every_nth_day n : recur_day =
-    Day (every_nth_int n)
+    Day (Arith_seq n)
 
   let every_nth_weekday every_nth weekday : recur_day =
     Weekday { every_nth; weekday }
+
+  let match_years l : recur_year =
+    Match l
+
+  let match_months l : recur_month =
+    Match l
 end
 
-let recur ?(year : int recur_spec option) ?(month : month recur_spec option) ?(day : recur_day option) ?(hmss : recur_hms option) start : recur =
-  {
+let recur ?(year : int recur_spec option) ?(month : month recur_spec option) ?(day : recur_day option) ?(hms : recur_hms option) (start : Date_time.t) : t =
+  Recur (default_search_space, {
     start;
     year;
     month;
     day;
-    hmss
+    hms
   }
+    )
 
 let years years = pattern ~years ()
 
