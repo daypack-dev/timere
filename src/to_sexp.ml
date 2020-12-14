@@ -135,7 +135,53 @@ let sexp_list_of_unary_op (op : Time.unary_op) =
     [ CCSexp.atom "change_tz_offset_s"; CCSexp.atom (string_of_int n) ]
 
 let sexp_of_recur (r : Time.recur) : CCSexp.t =
-  failwith "Unimpelemented"
+  let open Time in
+  CCSexp.(list (
+      List.filter_map (fun x -> x)
+        [
+          Some (atom "recur");
+          Some (list [atom "start"; sexp_of_date_time r.start]);
+          Option.map (fun year ->
+              list [
+                atom "year";
+                (match year with
+                 | Match l -> list (
+                     atom "match" :: sexp_list_of_ints l
+                   )
+                 | Every_nth n ->
+                   list [atom "every_nth"; sexp_of_int n]
+                )
+              ]
+            ) r.year;
+          Option.map (fun month ->
+              list [
+                atom "month";
+                (match month with
+                 | Match l -> list (
+                     atom "match" :: List.map sexp_of_month l
+                   )
+                 | Every_nth n ->
+                   list [atom "every_nth"; sexp_of_int n]
+                )
+              ]
+            ) r.month;
+          Option.map (fun day ->
+              list [
+                atom "day";
+                (match day with
+                 | Day (Match l) -> list (
+                     atom "match" :: sexp_list_of_ints l
+                   )
+                 | Day (Every_nth n) ->
+                   list [atom "every_nth"; sexp_of_int n]
+                 | Weekday { every_nth; weekday } ->
+                   list [atom "every_nth_weekday"; sexp_of_int every_nth; sexp_of_weekday weekday]
+                )
+              ]
+            ) r.day;
+        ]
+    )
+    )
 
 let to_sexp (t : Time.t) : CCSexp.t =
   let open Time in
