@@ -185,19 +185,19 @@ type recur_day
 
 type recur_hms
 
-module Recur : sig
-  val every_nth_year : int -> recur_year
+val every_nth_year : int -> recur_year
 
-  val every_nth_month : int -> recur_month
+val every_nth_month : int -> recur_month
 
-  val every_nth_day : int -> recur_day
+val every_nth_day : int -> recur_day
 
-  val every_nth_weekday : int -> weekday -> recur_day
+val every_nth_weekday : int -> weekday -> recur_day
 
-  val match_years : int list -> recur_year
+val nth_weekday : int -> weekday -> recur_day
 
-  val match_months : month list -> recur_month
-end
+val match_years : int list -> recur_year
+
+val match_months : month list -> recur_month
 
 val recur :
   ?year:recur_year ->

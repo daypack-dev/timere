@@ -120,7 +120,8 @@ let sexp_list_of_unary_op (op : Time.unary_op) =
     [ CCSexp.atom "next_n_points"; CCSexp.atom (string_of_int n) ]
   | Next_n_intervals n ->
     [ CCSexp.atom "next_n"; CCSexp.atom (string_of_int n) ]
-  | Every_nth n -> [ CCSexp.atom "every_n"; CCSexp.atom (string_of_int n) ]
+  | Every_nth n -> [ CCSexp.atom "every_nth"; CCSexp.atom (string_of_int n) ]
+  | Nth n -> [CCSexp.atom "nth"; CCSexp.atom (string_of_int n)]
   | Chunk { chunk_size; drop_partial } ->
     [
       Some (CCSexp.atom "chunk");
@@ -171,13 +172,21 @@ let sexp_of_recur (r : Time.recur) : CCSexp.t =
                       | Day (Match l) -> list (atom "match" :: sexp_list_of_ints l)
                       | Day (Every_nth n) ->
                         list [ atom "every_nth"; sexp_of_int n ]
-                      | Weekday { every_nth; weekday } ->
+                      | Weekday_every_nth (n, weekday) ->
                         list
                           [
-                            atom "every_nth_weekday";
-                            sexp_of_int every_nth;
+                            atom "weekday_every_nth";
+                            sexp_of_int n;
                             sexp_of_weekday weekday;
-                          ] );
+                          ]
+                      | Weekday_nth (n, weekday) ->
+                        list
+                          [
+                            atom "weekday_nth";
+                            sexp_of_int n;
+                            sexp_of_weekday weekday;
+                          ]
+                    );
                   ])
              r.day;
          ]))

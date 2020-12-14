@@ -979,15 +979,6 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
           |> OSeq.take_nth n
           |> Year_ranges.Of_seq.range_seq_of_seq )
   in
-  let day_pattern =
-    match r.day with
-    | None -> always
-    | Some day -> (
-        match day with
-        | Day (Match l) -> pattern ~month_days:l ()
-        | Day (Every_nth _) -> always
-        | Weekday { weekday; _ } -> pattern ~weekdays:[ weekday ] () )
-  in
   let year_inc_ranges =
     year_ranges
     |> Seq.map (fun year_range ->
@@ -1004,10 +995,14 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
     pattern ~year_ranges:(List.of_seq year_ranges) ()
     |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
     |> take_nth n
-  | None, Some (Weekday { every_nth; weekday }) ->
+  | None, Some (Weekday_every_nth (n, weekday)) ->
     pattern ~year_ranges:(List.of_seq year_ranges) ~weekdays:[weekday] ()
     |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
-    |> take_nth every_nth
+    |> take_nth n
+  | None, Some (Weekday_nth (n, weekday)) ->
+    pattern ~year_ranges:(List.of_seq year_ranges) ~weekdays:[weekday] ()
+    |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
+    |> nth n
   | Some (Match months), None ->
     pattern ~year_ranges:(List.of_seq year_ranges) ~months ()
   | Some (Match months), Some (Day (Match month_days)) ->
@@ -1024,7 +1019,7 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
           months)
     |> List.of_seq
     |> union
-  | Some (Match months), Some (Weekday { every_nth; weekday }) ->
+  | Some (Match months), Some (Weekday_every_nth ( n, weekday )) ->
     let months = List.to_seq months in
     years
     |> Seq.flat_map (fun year ->
@@ -1033,7 +1028,20 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
              pattern ~years:[ year ] ~months:[ month ] ~weekdays:[ weekday ]
                ()
              |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
-             |> take_nth every_nth)
+             |> take_nth n)
+          months)
+    |> List.of_seq
+    |> union
+  | Some (Match months), Some (Weekday_nth ( n, weekday )) ->
+    let months = List.to_seq months in
+    years
+    |> Seq.flat_map (fun year ->
+        Seq.map
+          (fun month ->
+             pattern ~years:[ year ] ~months:[ month ] ~weekdays:[ weekday ]
+               ()
+             |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
+             |> nth n)
           months)
     |> List.of_seq
     |> union
@@ -1067,7 +1075,7 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
           ))
     |> List.of_seq
     |> union
-  | Some (Every_nth month_n), Some (Weekday { every_nth; weekday }) ->
+  | Some (Every_nth month_n), Some (Weekday_every_nth ( n, weekday )) ->
     year_inc_ranges
     |> Seq.flat_map (fun (year_start, year_end_inc) ->
         resolve_year_arith_month_pairs ~year_start ~year_end_inc
@@ -1075,7 +1083,19 @@ let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
         |> Seq.map (fun (year, month) ->
             pattern ~years:[ year ] ~months:[ month ] ~weekdays:[weekday] ()
             |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
-            |> take_nth every_nth
+            |> take_nth n
+          ))
+    |> List.of_seq
+    |> union
+  | Some (Every_nth month_n), Some (Weekday_nth ( n, weekday )) ->
+    year_inc_ranges
+    |> Seq.flat_map (fun (year_start, year_end_inc) ->
+        resolve_year_arith_month_pairs ~year_start ~year_end_inc
+          ~month_start:r.start.month month_n
+        |> Seq.map (fun (year, month) ->
+            pattern ~years:[ year ] ~months:[ month ] ~weekdays:[weekday] ()
+            |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
+            |> nth n
           ))
     |> List.of_seq
     |> union
@@ -1162,6 +1182,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
         | Next_n_points n -> do_take_n_points (Int64.of_int n) s
         | Next_n_intervals n -> OSeq.take n s
         | Every_nth n -> OSeq.take_nth n s
+        | Nth n -> s |> OSeq.drop (pred n) |> OSeq.take 1
         | Chunk { chunk_size; drop_partial } ->
           Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
         | Shift n ->

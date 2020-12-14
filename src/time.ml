@@ -1659,6 +1659,7 @@ type unary_op =
   | Next_n_points of int
   | Next_n_intervals of int
   | Every_nth of int
+  | Nth of int
   | Chunk of {
       chunk_size : int64;
       drop_partial : bool;
@@ -1690,10 +1691,8 @@ type recur_month = month recur_spec
 
 type recur_day =
   | Day of int recur_spec
-  | Weekday of {
-      every_nth : int;
-      weekday : weekday;
-    }
+  | Weekday_every_nth of int * weekday
+  | Weekday_nth of int * weekday
 
 type recur_hms =
   | Every_nth of {
@@ -1850,6 +1849,10 @@ let take_n (n : int) (t : t) : t =
 let take_nth (n : int) (t : t) : t =
   if n < 0 then invalid_arg "take_nth: n < 0"
   else Unary_op (default_search_space, Every_nth n, t)
+
+let nth (n : int) (t : t) : t =
+  if n < 0 then invalid_arg "nth: n < 0"
+  else Unary_op (default_search_space, Nth n, t)
 
 let skip_n (n : int) (t : t) : t =
   if n < 0 then invalid_arg "skip_n: n < 0"
@@ -2089,20 +2092,21 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
       Branching (default_search_space, { years; months; days; hmss })
     else invalid_arg "branching"
 
-module Recur = struct
-  let every_nth_year n : recur_year = Every_nth n
+let every_nth_year n : recur_year = Every_nth n
 
-  let every_nth_month n : recur_month = Every_nth n
+let every_nth_month n : recur_month = Every_nth n
 
-  let every_nth_day n : recur_day = Day (Every_nth n)
+let every_nth_day n : recur_day = Day (Every_nth n)
 
-  let every_nth_weekday every_nth weekday : recur_day =
-    Weekday { every_nth; weekday }
+let every_nth_weekday n weekday : recur_day =
+  Weekday_every_nth ( n, weekday )
 
-  let match_years l : recur_year = Match l
+let nth_weekday n weekday : recur_day =
+  Weekday_nth ( n, weekday )
 
-  let match_months l : recur_month = Match l
-end
+let match_years l : recur_year = Match l
+
+let match_months l : recur_month = Match l
 
 let recur ?(year : int recur_spec option) ?(month : month recur_spec option)
     ?(day : recur_day option) ?(hms : recur_hms option) (start : Date_time.t) :
