@@ -55,24 +55,19 @@ val seconds : int list -> t
 val pattern :
   ?strict:bool ->
   ?years:int list ->
+  ?year_ranges:int range list ->
   ?months:month list ->
+  ?month_ranges:month range list ->
   ?month_days:int list ->
+  ?month_day_ranges:int range list ->
   ?weekdays:weekday list ->
+  ?weekday_ranges:weekday range list ->
   ?hours:int list ->
+  ?hour_ranges:int range list ->
   ?minutes:int list ->
+  ?minute_ranges:int range list ->
   ?seconds:int list ->
-  unit ->
-  t
-
-val pattern_ranged :
-  ?strict:bool ->
-  ?years:int range list ->
-  ?months:month range list ->
-  ?month_days:int range list ->
-  ?weekdays:weekday range list ->
-  ?hours:int range list ->
-  ?minutes:int range list ->
-  ?seconds:int range list ->
+  ?second_ranges:int range list ->
   unit ->
   t
 
