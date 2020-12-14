@@ -938,9 +938,87 @@ let intervals_of_branching tz_offset_s (space : Time.search_space)
            months)
       years
 
-let intervals_of_recur tz_offset_s (space : Time.search_space)
-    (b : Time.recur) : Time.Interval.t Seq.t =
-  Seq.empty
+let resolve_year_arith_month_pairs ~year_start ~year_end_inc ~(month_start : Time.month) n
+  : (int * Time.month) Seq.t =
+  let rec aux year year_end_inc month n =
+    if year > year_end_inc then
+      Seq.empty
+    else
+      let next_month = month + n in
+      let next_year, next_month =
+        if next_month < 12 then
+          year, next_month
+        else
+          (succ year),
+            (next_month mod 12)
+      in
+      fun () ->
+        Seq.Cons ((year, Result.get_ok @@ Time.month_of_tm_int month),
+                    aux next_year year_end_inc next_month n
+                 )
+  in
+  aux year_start year_end_inc (Time.tm_int_of_month month_start) n
+
+let t_of_recur (space : Time.search_space)
+    (r : Time.recur) : Time.t =
+  let open Time in
+  let year_ranges =
+    match r.year with
+    | None ->
+      Seq.return (`Range_inc (r.start.year, Date_time.max.year))
+    | Some year -> match year with
+      | Match l ->
+        l
+        |> List.to_seq
+        |> Seq.filter (fun x ->
+            r.start.year <= x
+          )
+        |> Year_ranges.Of_seq.range_seq_of_seq
+      | Arith_seq n ->
+        OSeq.(r.start.year -- Date_time.max.year)
+        |> OSeq.take_nth n
+        |> Year_ranges.Of_seq.range_seq_of_seq
+  in
+  let day_pattern =
+    match r.day with
+    | None -> always
+    | Some day -> match day with
+      | Day (Match l) -> pattern ~month_days:l ()
+      | Day (Arith_seq _) -> always
+      | Weekday { weekday; _} ->
+        pattern ~weekdays:[weekday] ()
+  in
+  let patterns =
+    match r.month with
+    | None ->
+      [pattern ~year_ranges:(List.of_seq year_ranges) ()]
+    | Some (Match months) ->
+      [pattern ~year_ranges:(List.of_seq year_ranges) ~months ()]
+    | Some (Arith_seq n) ->
+      year_ranges
+      |> Seq.flat_map (fun year_range ->
+          let year_start, year_end_inc =
+            match year_range with
+            | `Range_inc (x, y) -> (x, y)
+            | `Range_exc (x, y) -> (x, pred y)
+          in
+          resolve_year_arith_month_pairs ~year_start ~year_end_inc ~month_start:r.start.month n
+          |> Seq.map (fun (year, month) ->
+              pattern ~years:[year] ~months:[month] ()
+            )
+        )
+      |> List.of_seq
+  in
+  inter [union patterns; day_pattern]
+  |> chunk (Result.get_ok @@ Duration.make ~days:1 ())
+  |> (match r.day with
+      | None -> fun x -> x
+      | Some day -> match day with
+        | Day (Match _) -> fun x -> x
+        | Day (Arith_seq n) -> take_nth n
+        | Weekday { every_nth; _} ->
+          take_nth every_nth
+    )
 
 type inc_or_exc =
   | Inc
@@ -998,8 +1076,9 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
       Intervals.Inter.inter ~skip_check:true (List.to_seq space)
         (intervals_of_branching search_using_tz_offset_s space branching)
     | Recur (space, recur) ->
-      Intervals.Inter.inter ~skip_check:true (List.to_seq space)
-        (intervals_of_recur search_using_tz_offset_s space recur)
+      t_of_recur space recur
+      |> aux search_using_tz_offset_s
+      |> Intervals.Inter.inter ~skip_check:true (List.to_seq space)
     | Unary_op (space, op, t) -> (
         let search_using_tz_offset_s =
           match op with
@@ -1019,6 +1098,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
         | Skip_n_intervals n -> OSeq.drop n s
         | Next_n_points n -> do_take_n_points (Int64.of_int n) s
         | Next_n_intervals n -> OSeq.take n s
+        | Every_nth n -> OSeq.take_nth n s
         | Chunk { chunk_size; drop_partial } ->
           Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
         | Shift n ->

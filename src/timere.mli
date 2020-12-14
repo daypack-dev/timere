@@ -224,6 +224,8 @@ val first : t -> t
 
 val take_n : int -> t -> t
 
+val take_nth : int -> t -> t
+
 val skip_n : int -> t -> t
 
 val first_point : t -> t

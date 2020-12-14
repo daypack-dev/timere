@@ -1632,6 +1632,7 @@ type unary_op =
   | Skip_n_intervals of int
   | Next_n_points of int
   | Next_n_intervals of int
+  | Every_nth of int
   | Chunk of {
       chunk_size : int64;
       drop_partial : bool;
@@ -1673,7 +1674,7 @@ type recur_hms =
   | Hmss of hms Range.range list
 
 type recur = {
-  start : Date_time_set.t;
+  start : Date_time.t;
   year : int recur_spec option;
   month : month recur_spec option;
   day : recur_day option;
@@ -1815,6 +1816,10 @@ let first (t : t) : t = Unary_op (default_search_space, Next_n_intervals 1, t)
 let take_n (n : int) (t : t) : t =
   if n < 0 then invalid_arg "take_n: n < 0"
   else Unary_op (default_search_space, Next_n_intervals n, t)
+
+let take_nth (n : int) (t : t) : t =
+  if n < 0 then invalid_arg "take_nth: n < 0"
+  else Unary_op (default_search_space, Every_nth n, t)
 
 let skip_n (n : int) (t : t) : t =
   if n < 0 then invalid_arg "skip_n: n < 0"

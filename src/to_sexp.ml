@@ -120,6 +120,8 @@ let sexp_list_of_unary_op (op : Time.unary_op) =
     [ CCSexp.atom "next_n_points"; CCSexp.atom (string_of_int n) ]
   | Next_n_intervals n ->
     [ CCSexp.atom "next_n"; CCSexp.atom (string_of_int n) ]
+  | Every_nth n ->
+    [ CCSexp.atom "every_n"; CCSexp.atom (string_of_int n)]
   | Chunk { chunk_size; drop_partial } ->
     [
       Some (CCSexp.atom "chunk");
