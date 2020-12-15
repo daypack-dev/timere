@@ -89,6 +89,7 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
           aux search_using_tz_offset_s t |> OSeq.drop (pred n) |> OSeq.take 1
         | Chunk { chunk_size; drop_partial } ->
           do_chunk ~drop_partial chunk_size (aux search_using_tz_offset_s t)
+        | Chunk_by_month -> failwith "Unimplemented"
         | Shift n ->
           aux search_using_tz_offset_s t
           |> Seq.map (fun (x, y) -> (Int64.add n x, Int64.add n y))

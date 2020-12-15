@@ -1656,6 +1656,7 @@ type unary_op =
       chunk_size : int64;
       drop_partial : bool;
     }
+  | Chunk_by_month
   | Shift of int64
   | Lengthen of int64
   | Change_tz_offset_s of int

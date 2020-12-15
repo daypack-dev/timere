@@ -1225,42 +1225,42 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
       let one_day_in_seconds = Duration.to_seconds one_day in
       t_of_start_of_days_of_recur search_using_tz_offset_s space recur
       |> aux search_using_tz_offset_s
-      |> (
-          match recur.hms with
-          | None -> Seq.map (fun (x, _) -> (x, Int64.add x one_day_in_seconds))
-          | Some hms ->
-            let dt = Result.get_ok @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:search_using_tz_offset_s x in
-            match hms with
-            | Every_nth { hour; minute; second } ->
-              failwith "Unimplemented"
-            | Hmss ranges ->
-              let f (x, y) =
-                second_of_day_of_hms x, second_of_day_of_hms y
-              in
-              let second_of_day_ranges_exc =
-                ranges
-                |> List.map (
-                  Range.map ~f_inc:f ~f_exc:f
-                  )
-                |> List.map (fun range ->
-                    match range with
-                    | `Range_exc (x, y) -> (x, y)
-                    | `Range_inc (x, y) -> (x, succ y)
-                  )
-                |> List.map (fun (x, y) ->
-                    Int64.of_int x, Int64.of_int y
-                  )
-              in
-              Seq.flat_map (fun (x, _) ->
-                  second_of_day_ranges_exc
-                  |> List.map (fun (second_of_day_start, second_of_day_end_exc) ->
-                      (Int64.add x second_of_day_start,
-                       Int64.add x second_of_day_end_exc
-                      )
-                    )
-                  |> List.to_seq
-                )
-        )
+      (* |> (
+       *     match recur.hms with
+       *     | None -> Seq.map (fun (x, _) -> (x, Int64.add x one_day_in_seconds))
+       *     | Some hms ->
+       *       let dt = Result.get_ok @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:search_using_tz_offset_s x in
+       *       match hms with
+       *       | Every_nth { hour; minute; second } ->
+       *         failwith "Unimplemented"
+       *       | Hmss ranges ->
+       *         let f (x, y) =
+       *           second_of_day_of_hms x, second_of_day_of_hms y
+       *         in
+       *         let second_of_day_ranges_exc =
+       *           ranges
+       *           |> List.map (
+       *             Range.map ~f_inc:f ~f_exc:f
+       *             )
+       *           |> List.map (fun range ->
+       *               match range with
+       *               | `Range_exc (x, y) -> (x, y)
+       *               | `Range_inc (x, y) -> (x, succ y)
+       *             )
+       *           |> List.map (fun (x, y) ->
+       *               Int64.of_int x, Int64.of_int y
+       *             )
+       *         in
+       *         Seq.flat_map (fun (x, _) ->
+       *             second_of_day_ranges_exc
+       *             |> List.map (fun (second_of_day_start, second_of_day_end_exc) ->
+       *                 (Int64.add x second_of_day_start,
+       *                  Int64.add x second_of_day_end_exc
+       *                 )
+       *               )
+       *             |> List.to_seq
+       *           )
+       *   ) *)
       |> Intervals.Inter.inter ~skip_check:true (List.to_seq space)
     | Unary_op (space, op, t) -> (
         let search_using_tz_offset_s =
@@ -1285,6 +1285,8 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
         | Nth n -> s |> OSeq.drop n |> OSeq.take 1
         | Chunk { chunk_size; drop_partial } ->
           Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
+        | Chunk_by_month ->
+          failwith "Unimplemented"
         | Shift n ->
           Seq.map
             (fun (start, end_exc) -> (Int64.add start n, Int64.add end_exc n))
