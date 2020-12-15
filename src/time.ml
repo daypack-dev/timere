@@ -1761,6 +1761,13 @@ let chunk ?(drop_partial = false) (chunk_size : Duration.t) (t : t) : t =
       Chunk { chunk_size = Duration.to_seconds chunk_size; drop_partial },
       t )
 
+let chunk_by_month (t : t) : t =
+  Unary_op
+    (default_search_space,
+     Chunk_by_month,
+     t
+    )
+
 let shift (offset : Duration.t) (t : t) : t =
   Unary_op (default_search_space, Shift (Duration.to_seconds offset), t)
 

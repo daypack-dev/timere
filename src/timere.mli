@@ -252,6 +252,8 @@ val lengthen : Duration.t -> t -> t
 
 val chunk : ?drop_partial:bool -> Duration.t -> t -> t
 
+val chunk_by_month : t -> t
+
 val first : t -> t
 
 val take_n : int -> t -> t
