@@ -295,7 +295,6 @@ and mem ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
           |> OSeq.exists (fun (x, y) -> x <= timestamp && timestamp < y)
         | Inter_seq (_, s) -> OSeq.for_all (fun t -> aux t timestamp) s
         | Union_seq (_, s) -> OSeq.exists (fun t -> aux t timestamp) s
-        | Unchunk _ -> failwith "Unimplemented"
-      )
+        | Unchunk _ -> failwith "Unimplemented" )
   in
   aux t timestamp

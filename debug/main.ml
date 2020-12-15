@@ -78,10 +78,7 @@ let debug_resolver () =
    * in *)
   let timere =
     let open Timere in
-    chunk_by_month
-      (pattern ~years:[2000] ())
-    |> take_nth 2
-    |> unchunk
+    chunk_by_month (pattern ~years:[ 2000 ] ()) |> take_nth 2 |> unchunk
   in
   print_endline (Timere.to_sexp_string timere);
   print_endline "=====";

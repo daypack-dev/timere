@@ -1766,20 +1766,17 @@ let equal t1 t2 =
   in
   aux t1 t2
 
-let unchunk (chunked : chunked) : t =
-  Unchunk chunked
+let unchunk (chunked : chunked) : t = Unchunk chunked
 
-let chunk_as_is (t : t) : chunked =
-  Unary_op_on_t (Chunk_as_is, t)
+let chunk_as_is (t : t) : chunked = Unary_op_on_t (Chunk_as_is, t)
 
 let chunk ?(drop_partial = false) (chunk_size : Duration.t) (t : t) : chunked =
-  Unary_op_on_t (Chunk { chunk_size = Duration.to_seconds chunk_size; drop_partial; }, t)
+  Unary_op_on_t
+    (Chunk { chunk_size = Duration.to_seconds chunk_size; drop_partial }, t)
 
-let chunk_by_year (t : t) : chunked =
-  Unary_op_on_t (Chunk_by_year, t)
+let chunk_by_year (t : t) : chunked = Unary_op_on_t (Chunk_by_year, t)
 
-let chunk_by_month (t : t) : chunked =
-  Unary_op_on_t (Chunk_by_month, t)
+let chunk_by_month (t : t) : chunked = Unary_op_on_t (Chunk_by_month, t)
 
 let shift (offset : Duration.t) (t : t) : t =
   Unary_op (default_search_space, Shift (Duration.to_seconds offset), t)
@@ -1865,8 +1862,7 @@ let take_nth (n : int) (c : chunked) : chunked =
   else Unary_op_on_chunked (Every_nth n, c)
 
 let nth (n : int) (c : chunked) : chunked =
-  if n < 0 then invalid_arg "nth: n < 0"
-  else Unary_op_on_chunked (Nth n, c)
+  if n < 0 then invalid_arg "nth: n < 0" else Unary_op_on_chunked (Nth n, c)
 
 let skip_n (n : int) (c : chunked) : chunked =
   if n < 0 then invalid_arg "skip_n: n < 0"

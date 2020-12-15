@@ -227,8 +227,7 @@ let to_sexp (t : Time.t) : CCSexp.t =
       CCSexp.(list [ atom "between_inc"; aux t1; aux t2 ])
     | Between_exc (_, t1, t2) ->
       CCSexp.(list [ atom "between_exc"; aux t1; aux t2 ])
-    | Unchunk _ ->
-      failwith "Unimplemented"
+    | Unchunk _ -> failwith "Unimplemented"
   in
   aux t
 
