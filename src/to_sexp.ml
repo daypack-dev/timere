@@ -114,23 +114,23 @@ let sexp_list_of_unary_op (op : Time.unary_op) =
   | Every -> [ CCSexp.atom "every" ]
   | Skip_n_points n ->
     [ CCSexp.atom "skip_n_points"; CCSexp.atom (string_of_int n) ]
-  | Skip_n_intervals n ->
-    [ CCSexp.atom "skip_n"; CCSexp.atom (string_of_int n) ]
+  (* | Skip_n_intervals n ->
+   *   [ CCSexp.atom "skip_n"; CCSexp.atom (string_of_int n) ] *)
   | Next_n_points n ->
     [ CCSexp.atom "next_n_points"; CCSexp.atom (string_of_int n) ]
-  | Next_n_intervals n ->
-    [ CCSexp.atom "next_n"; CCSexp.atom (string_of_int n) ]
-  | Every_nth n -> [ CCSexp.atom "every_nth"; CCSexp.atom (string_of_int n) ]
-  | Nth n -> [ CCSexp.atom "nth"; CCSexp.atom (string_of_int n) ]
-  | Chunk { chunk_size; drop_partial } ->
-    [
-      Some (CCSexp.atom "chunk");
-      (if drop_partial then Some (CCSexp.atom "drop_partial") else None);
-      Some (CCSexp.atom (Int64.to_string chunk_size));
-    ]
-    |> List.filter_map (fun x -> x)
-  | Chunk_by_year -> [ CCSexp.atom "chunk_by_year"]
-  | Chunk_by_month -> [ CCSexp.atom "chunk_by_month"]
+  (* | Next_n_intervals n ->
+   *   [ CCSexp.atom "next_n"; CCSexp.atom (string_of_int n) ] *)
+  (* | Every_nth n -> [ CCSexp.atom "every_nth"; CCSexp.atom (string_of_int n) ]
+   * | Nth n -> [ CCSexp.atom "nth"; CCSexp.atom (string_of_int n) ]
+   * | Chunk { chunk_size; drop_partial } ->
+   *   [
+   *     Some (CCSexp.atom "chunk");
+   *     (if drop_partial then Some (CCSexp.atom "drop_partial") else None);
+   *     Some (CCSexp.atom (Int64.to_string chunk_size));
+   *   ]
+   *   |> List.filter_map (fun x -> x)
+   * | Chunk_by_year -> [ CCSexp.atom "chunk_by_year"]
+   * | Chunk_by_month -> [ CCSexp.atom "chunk_by_month"] *)
   | Shift n -> [ CCSexp.atom "shift"; CCSexp.atom (Int64.to_string n) ]
   | Lengthen n -> [ CCSexp.atom "lengthen"; CCSexp.atom (Int64.to_string n) ]
   | Change_tz_offset_s n ->
@@ -227,6 +227,8 @@ let to_sexp (t : Time.t) : CCSexp.t =
       CCSexp.(list [ atom "between_inc"; aux t1; aux t2 ])
     | Between_exc (_, t1, t2) ->
       CCSexp.(list [ atom "between_exc"; aux t1; aux t2 ])
+    | Unchunk _ ->
+      failwith "Unimplemented"
   in
   aux t
 

@@ -77,20 +77,20 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
           |> timestamps_of_intervals
           |> OSeq.drop n
           |> intervals_of_timestamps
-        | Skip_n_intervals n -> OSeq.drop n (aux search_using_tz_offset_s t)
+        (* | Skip_n_intervals n -> OSeq.drop n (aux search_using_tz_offset_s t) *)
         | Next_n_points n ->
           aux search_using_tz_offset_s t
           |> timestamps_of_intervals
           |> OSeq.take n
           |> intervals_of_timestamps
-        | Next_n_intervals n -> OSeq.take n (aux search_using_tz_offset_s t)
-        | Every_nth n -> OSeq.take_nth n (aux search_using_tz_offset_s t)
-        | Nth n ->
-          aux search_using_tz_offset_s t |> OSeq.drop (pred n) |> OSeq.take 1
-        | Chunk { chunk_size; drop_partial } ->
-          do_chunk ~drop_partial chunk_size (aux search_using_tz_offset_s t)
-        | Chunk_by_year -> failwith "Unimplemented"
-        | Chunk_by_month -> failwith "Unimplemented"
+        (* | Next_n_intervals n -> OSeq.take n (aux search_using_tz_offset_s t) *)
+        (* | Every_nth n -> OSeq.take_nth n (aux search_using_tz_offset_s t)
+         * | Nth n ->
+         *   aux search_using_tz_offset_s t |> OSeq.drop (pred n) |> OSeq.take 1
+         * | Chunk { chunk_size; drop_partial } ->
+         *   do_chunk ~drop_partial chunk_size (aux search_using_tz_offset_s t)
+         * | Chunk_by_year -> failwith "Unimplemented"
+         * | Chunk_by_month -> failwith "Unimplemented" *)
         | Shift n ->
           aux search_using_tz_offset_s t
           |> Seq.map (fun (x, y) -> (Int64.add n x, Int64.add n y))
@@ -294,6 +294,8 @@ and mem ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
           resolve ~search_using_tz_offset_s ~search_start ~search_end_exc t
           |> OSeq.exists (fun (x, y) -> x <= timestamp && timestamp < y)
         | Inter_seq (_, s) -> OSeq.for_all (fun t -> aux t timestamp) s
-        | Union_seq (_, s) -> OSeq.exists (fun t -> aux t timestamp) s )
+        | Union_seq (_, s) -> OSeq.exists (fun t -> aux t timestamp) s
+        | Unchunk _ -> failwith "Unimplemented"
+      )
   in
   aux t timestamp

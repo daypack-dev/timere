@@ -9,6 +9,8 @@ type 'a range =
 
 type t
 
+type chunked
+
 val always : t
 
 val empty : t
@@ -250,19 +252,19 @@ val lengthen : Duration.t -> t -> t
 
 (** {1 List and Filtering operations} *)
 
-val chunk : ?drop_partial:bool -> Duration.t -> t -> t
+val chunk : ?drop_partial:bool -> Duration.t -> t -> chunked
 
-val chunk_by_year : t -> t
+val chunk_by_year : t -> chunked
 
-val chunk_by_month : t -> t
+val chunk_by_month : t -> chunked
 
-val first : t -> t
+val first : chunked -> chunked
 
-val take_n : int -> t -> t
+val take_n : int -> chunked -> chunked
 
-val take_nth : int -> t -> t
+val take_nth : int -> chunked -> chunked
 
-val skip_n : int -> t -> t
+val skip_n : int -> chunked -> chunked
 
 val first_point : t -> t
 
