@@ -1251,9 +1251,7 @@ let do_chunk_by_month tz_offset_s (s : Time.Interval.t Seq.t) =
   in
   aux s
 
-exception Failed_resolution of string
-
-let rec resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
+let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
   let rec aux search_using_tz_offset_s time =
     let open Time in
@@ -1374,10 +1372,30 @@ let rec resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
           find_after (start, end_exc) s2
           |> Option.map (fun (start', _) -> (start, start')))
     | Unchunk c ->
-      match resolve_chunked ~search_using_tz_offset_s c with
-      | Error msg -> raise (Failed_resolution msg)
-      | Ok s ->
-        s
+      aux_chunked search_using_tz_offset_s c
+  and aux_chunked search_using_tz_offset_s (chunked : Time.chunked) =
+    let open Time in
+    match chunked with
+    | Unary_op_on_t (op, t) -> (
+        let s = aux search_using_tz_offset_s t in
+        match op with
+        | Chunk_as_is -> s
+        | Chunk { chunk_size; drop_partial } ->
+          Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
+        | Chunk_by_year ->
+          do_chunk_by_year search_using_tz_offset_s s
+        | Chunk_by_month ->
+          do_chunk_by_month search_using_tz_offset_s s
+      )
+    | Unary_op_on_chunked (op, c) ->
+      let s =
+        aux_chunked search_using_tz_offset_s c
+      in
+      match op with
+      | Nth n -> s |> OSeq.drop n |> OSeq.take 1
+      | Skip_n n -> OSeq.drop n s
+      | Next_n n -> OSeq.take n s
+      | Every_nth n -> OSeq.take_nth n s
   in
   try
     time
@@ -1387,40 +1405,5 @@ let rec resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
       ~skip_sort:true
     |> Result.ok
   with
-  | Failed_resolution msg -> Error msg
   | Time.Interval_is_invalid -> Error "Invalid interval"
   | Time.Intervals_are_not_sorted -> Error "Intervals are not sorted"
-
-and resolve_chunked ?(search_using_tz_offset_s = 0) (chunked : Time.chunked) :
-  (Time.Interval.t Seq.t, string) result =
-  let open Time in
-  let rec aux search_using_tz_offset_s chunked =
-    match chunked with
-    | Unary_op_on_t (op, t) -> (
-        match resolve ~search_using_tz_offset_s t with
-        | Error msg -> raise (Failed_resolution msg)
-        | Ok s ->
-          match op with
-          | Chunk_as_is -> s
-          | Chunk { chunk_size; drop_partial } ->
-            Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
-          | Chunk_by_year ->
-            do_chunk_by_year search_using_tz_offset_s s
-          | Chunk_by_month ->
-            do_chunk_by_month search_using_tz_offset_s s
-      )
-    | Unary_op_on_chunked (op, c) ->
-      let s =
-        aux search_using_tz_offset_s c
-      in
-      match op with
-      | Nth n -> s |> OSeq.drop n |> OSeq.take 1
-      | Skip_n n -> OSeq.drop n s
-      | Next_n n -> OSeq.take n s
-      | Every_nth n -> OSeq.take_nth n s
-  in
-  try
-    aux search_using_tz_offset_s chunked
-    |> Result.ok
-  with
-  | Failed_resolution msg -> Error msg
