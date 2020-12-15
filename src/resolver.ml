@@ -693,7 +693,8 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
         branching.years |> List.map (search_space_of_year_range tz_offset_s)
       in
       Branching (space, branching)
-    | Recur (_, recur) -> Recur (default_search_space, recur)
+    | Recur (_, recur) ->
+      Recur (default_search_space, recur)
     | Unary_op (_, op, t) -> (
         match op with
         | Not -> Unary_op (default_search_space, op, aux tz_offset_s t)
@@ -976,18 +977,14 @@ let resolve_arith_year_month_pairs ~year_start ~year_end_inc
 let t_of_recur tz_offset_s (space : Time.search_space) (r : Time.recur) : Time.t =
   let open Time in
   let year_inc_range_from_space =
-    space
-    |> List.fold_left (fun acc (x, y) ->
-        match acc with
-        | None -> Some (x, y)
-        | Some (x', y') -> Some (min x x', max y y')
-      )
-      None
-    |> Option.map (fun (x, y) ->
-          let dt_x = Result.get_ok @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s x in
-          let dt_y = Result.get_ok @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s y in
-          (dt_x.year, dt_y.year)
-      )
+    match space with
+    | [] -> None
+    | l ->
+      let (start, _) = List.hd l in
+      let (_, end_exc) = List.hd @@ List.rev l in
+      let dt_x = Result.get_ok @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s start in
+      let dt_y = Result.get_ok @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s (Int64.pred end_exc) in
+      Some (dt_x.year, dt_y.year)
   in
   match year_inc_range_from_space with
   | None -> empty
