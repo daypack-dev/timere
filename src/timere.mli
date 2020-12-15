@@ -252,6 +252,8 @@ val lengthen : Duration.t -> t -> t
 
 (** {1 List and Filtering operations} *)
 
+val unchunk : chunked -> t
+
 val chunk : ?drop_partial:bool -> Duration.t -> t -> chunked
 
 val chunk_by_year : t -> chunked

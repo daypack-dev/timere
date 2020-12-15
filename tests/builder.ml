@@ -132,19 +132,19 @@ let make_interval_exc ~rng ~min_year ~max_year_inc =
   Time.interval_exc start end_exc
 
 let make_unary_op ~rng t =
-  match rng () mod 9 with
+  match rng () mod 6 with
   | 0 -> Time.not t
   | 1 -> Time.skip_n_points (rng ()) t
-  | 2 -> Time.skip_n (rng ()) t
-  | 3 -> Time.take_n_points (rng ()) t
-  | 4 -> Time.take_n (rng ()) t
-  | 5 ->
-    Time.chunk
-      (Result.get_ok @@ Duration.of_seconds @@ Int64.of_int (rng ()))
-      t
-  | 6 -> Time.shift (Result.get_ok @@ Duration.make ~seconds:(rng ()) ()) t
-  | 7 -> Time.lengthen (Result.get_ok @@ Duration.make ~seconds:(rng ()) ()) t
-  | 8 -> Time.change_tz_offset_s (rng ()) t
+  (* | 2 -> Time.skip_n (rng ()) t *)
+  | 2 -> Time.take_n_points (rng ()) t
+  (* | 4 -> Time.take_n (rng ()) t *)
+  (* | 5 ->
+   *   Time.chunk
+   *     (Result.get_ok @@ Duration.of_seconds @@ Int64.of_int (rng ()))
+   *     t *)
+  | 3 -> Time.shift (Result.get_ok @@ Duration.make ~seconds:(rng ()) ()) t
+  | 4 -> Time.lengthen (Result.get_ok @@ Duration.make ~seconds:(rng ()) ()) t
+  | 5 -> Time.change_tz_offset_s (rng ()) t
   | _ -> failwith "Unexpected case"
 
 let build ~min_year ~max_year_inc ~max_height ~max_branching

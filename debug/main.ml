@@ -65,18 +65,23 @@ let debug_resolver () =
    *       Timere.pattern ~strict:true ~months:[ `Mar ] ~month_days:[ 31 ] ();
    *     ]
    * in *)
+  (* let timere =
+   *   let open Timere in
+   *   recur
+   *     ~year:(every_nth_year 3)
+   *     ~month:
+   *       (every_nth_month 3)
+   *     ~day:(every_nth_day 10)
+   *     ( Result.get_ok
+   *       @@ Timere.Date_time.make ~year:2000 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+   *         ~second:0 ~tz_offset_s:0 )
+   * in *)
   let timere =
     let open Timere in
-    recur
-      ~year:(every_nth_year 3)
-      (* ~year:(match_years [2000]) *)
-      ~month:(every_nth_month 4)
-      (* ~month:(match_months [`Jan; `Mar]) *)
-      (* ~day:(every_nth_weekday 1 `Mon) *)
-      (Result.get_ok
-       @@ Timere.Date_time.make ~year:2000 ~month:`Jan ~day:1 ~hour:0 ~minute:0
-         ~second:0 ~tz_offset_s:0
-      )
+    chunk_by_month
+      (pattern ~years:[2000] ())
+    |> take_nth 2
+    |> unchunk
   in
   print_endline (Timere.to_sexp_string timere);
   print_endline "=====";

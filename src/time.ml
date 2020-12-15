@@ -1766,6 +1766,9 @@ let equal t1 t2 =
   in
   aux t1 t2
 
+let unchunk (chunked : chunked) : t =
+  Unchunk chunked
+
 let chunk_as_is (t : t) : chunked =
   Unary_op_on_t (Chunk_as_is, t)
 
