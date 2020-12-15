@@ -693,8 +693,24 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
         branching.years |> List.map (search_space_of_year_range tz_offset_s)
       in
       Branching (space, branching)
-    | Recur (_, recur) ->
-      Recur (default_search_space, recur)
+    | Recur (_, recur) -> (
+        let space =
+          match recur.year with
+          | None ->
+            default_search_space
+          | Some year -> (
+              match year with
+              | Match l ->
+                l
+                |> Time.Year_ranges.Of_list.range_seq_of_list ~skip_sort:true
+                |> Seq.map (search_space_of_year_range tz_offset_s)
+                |> List.of_seq
+              | Every_nth _ ->
+                default_search_space
+            )
+        in
+        Recur (space, recur)
+      )
     | Unary_op (_, op, t) -> (
         match op with
         | Not -> Unary_op (default_search_space, op, aux tz_offset_s t)
@@ -1005,7 +1021,6 @@ let t_of_recur tz_offset_s (space : Time.search_space) (r : Time.recur) : Time.t
           |> Year_ranges.Of_list.range_seq_of_list ~skip_sort:true
         | Every_nth n ->
           OSeq.(year_start -- year_end_inc_from_space)
-          (* OSeq.(r.start.year -- 3000) *)
           |> OSeq.take_nth n
           |> Year_ranges.Of_seq.range_seq_of_seq ~skip_sort:true )
   in
