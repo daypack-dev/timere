@@ -1211,8 +1211,10 @@ let do_chunk_by_month tz_offset_s (s : Time.Interval.t Seq.t) =
       if dt1.year = dt2.year && dt1.month = dt2.month then
         fun () -> Seq.Cons ((t1, t2), aux rest)
       else
-        let dt' = Date_time.set_to_last_day_hour_min_sec dt1 in
-        let t' = Int64.succ @@ Date_time.to_timestamp dt' in
+        let t' =
+          Date_time.set_to_last_day_hour_min_sec dt1
+          |> Date_time.to_timestamp
+          |> Int64.succ in
         OSeq.cons (t1, t')
           (aux (OSeq.cons (t', t2) rest))
   in
