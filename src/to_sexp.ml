@@ -129,6 +129,7 @@ let sexp_list_of_unary_op (op : Time.unary_op) =
       Some (CCSexp.atom (Int64.to_string chunk_size));
     ]
     |> List.filter_map (fun x -> x)
+  | Chunk_by_year -> [ CCSexp.atom "chunk_by_year"]
   | Chunk_by_month -> [ CCSexp.atom "chunk_by_month"]
   | Shift n -> [ CCSexp.atom "shift"; CCSexp.atom (Int64.to_string n) ]
   | Lengthen n -> [ CCSexp.atom "lengthen"; CCSexp.atom (Int64.to_string n) ]

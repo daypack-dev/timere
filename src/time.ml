@@ -1656,6 +1656,7 @@ type unary_op =
       chunk_size : int64;
       drop_partial : bool;
     }
+  | Chunk_by_year
   | Chunk_by_month
   | Shift of int64
   | Lengthen of int64
@@ -1760,6 +1761,13 @@ let chunk ?(drop_partial = false) (chunk_size : Duration.t) (t : t) : t =
     ( default_search_space,
       Chunk { chunk_size = Duration.to_seconds chunk_size; drop_partial },
       t )
+
+let chunk_by_year (t : t) : t =
+  Unary_op
+    (default_search_space,
+     Chunk_by_year,
+     t
+    )
 
 let chunk_by_month (t : t) : t =
   Unary_op

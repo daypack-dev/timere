@@ -1200,6 +1200,26 @@ let find_after ((_start, end_exc) : Time.Interval.t)
   | Seq.Nil -> None
   | Seq.Cons (x, _) -> Some x
 
+let do_chunk_by_year tz_offset_s (s : Time.Interval.t Seq.t) =
+  let open Time in
+  let rec aux s =
+    match s () with
+    | Seq.Nil -> Seq.empty
+    | Seq.Cons ((t1, t2), rest) ->
+      let dt1 = Result.get_ok @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s t1 in
+      let dt2 = Result.get_ok @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s t2 in
+      if dt1.year = dt2.year && dt1.month = dt2.month then
+        fun () -> Seq.Cons ((t1, t2), aux rest)
+      else
+        let t' =
+          Date_time.set_to_last_day_hour_min_sec dt1
+          |> Date_time.to_timestamp
+          |> Int64.succ in
+        OSeq.cons (t1, t')
+          (aux (OSeq.cons (t', t2) rest))
+  in
+  aux s
+
 let do_chunk_by_month tz_offset_s (s : Time.Interval.t Seq.t) =
   let open Time in
   let rec aux s =
@@ -1305,6 +1325,8 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
         | Nth n -> s |> OSeq.drop n |> OSeq.take 1
         | Chunk { chunk_size; drop_partial } ->
           Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
+        | Chunk_by_year ->
+          do_chunk_by_year search_using_tz_offset_s s
         | Chunk_by_month ->
           do_chunk_by_month search_using_tz_offset_s s
         | Shift n ->
