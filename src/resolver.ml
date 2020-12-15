@@ -1251,7 +1251,7 @@ let do_chunk_by_month tz_offset_s (s : Time.Interval.t Seq.t) =
   in
   aux s
 
-let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
+let rec resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
   let rec aux search_using_tz_offset_s time =
     let open Time in
@@ -1330,17 +1330,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
           do_skip_n_points (Int64.of_int n) s
           |> Intervals.Normalize.normalize ~skip_filter_empty:true
             ~skip_sort:true ~skip_filter_invalid:true
-        (* | Skip_n_intervals n -> OSeq.drop n s *)
         | Next_n_points n -> do_take_n_points (Int64.of_int n) s
-        (* | Next_n_intervals n -> OSeq.take n s *)
-        (* | Every_nth n -> OSeq.take_nth n s *)
-        (* | Nth n -> s |> OSeq.drop n |> OSeq.take 1
-         * | Chunk { chunk_size; drop_partial } ->
-         *   Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
-         * | Chunk_by_year ->
-         *   do_chunk_by_year search_using_tz_offset_s s
-         * | Chunk_by_month ->
-         *   do_chunk_by_month search_using_tz_offset_s s *)
         | Shift n ->
           Seq.map
             (fun (start, end_exc) -> (Int64.add start n, Int64.add end_exc n))
@@ -1394,3 +1384,38 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
   with
   | Time.Interval_is_invalid -> Error "Invalid interval"
   | Time.Intervals_are_not_sorted -> Error "Intervals are not sorted"
+
+and resolve_chunked ?(search_using_tz_offset_s = 0) (chunked : Time.chunked) :
+  (Time.Interval.t Seq.t, string) result =
+  let open Time in
+  let exception Failed_resolution of string in
+  let rec aux search_using_tz_offset_s chunked =
+    match chunked with
+    | Unary_op_on_t (op, t) -> (
+        match resolve ~search_using_tz_offset_s t with
+        | Error msg -> raise (Failed_resolution msg)
+        | Ok s ->
+          match op with
+          | Chunk_as_is -> s
+          | Chunk { chunk_size; drop_partial } ->
+            Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
+          | Chunk_by_year ->
+            do_chunk_by_year search_using_tz_offset_s s
+          | Chunk_by_month ->
+            do_chunk_by_month search_using_tz_offset_s s
+      )
+    | Unary_op_on_chunked (op, c) ->
+      let s =
+        aux search_using_tz_offset_s c
+      in
+      match op with
+      | Nth n -> s |> OSeq.drop n |> OSeq.take 1
+      | Skip_n n -> OSeq.drop n s
+      | Next_n n -> OSeq.take n s
+      | Every_nth n -> OSeq.take_nth n s
+  in
+  try
+    aux search_using_tz_offset_s chunked
+    |> Result.ok
+  with
+  | Failed_resolution msg -> Error msg
