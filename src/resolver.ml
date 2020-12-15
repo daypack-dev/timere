@@ -973,20 +973,42 @@ let resolve_arith_year_month_pairs ~year_start ~year_end_inc
   in
   aux year_start year_end_inc (Time.tm_int_of_month month_start) n
 
-let t_of_recur (space : Time.search_space) (r : Time.recur) : Time.t =
+let t_of_recur tz_offset_s (space : Time.search_space) (r : Time.recur) : Time.t =
   let open Time in
+  let year_inc_range_from_space =
+    space
+    |> List.fold_left (fun acc (x, y) ->
+        match acc with
+        | None -> Some (x, y)
+        | Some (x', y') -> Some (min x x', max y y')
+      )
+      None
+    |> Option.map (fun (x, y) ->
+          let dt_x = Result.get_ok @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s x in
+          let dt_y = Result.get_ok @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s y in
+          (dt_x.year, dt_y.year)
+      )
+  in
+  match year_inc_range_from_space with
+  | None -> empty
+  | Some (year_start_from_space, year_end_inc_from_space) ->
   let year_ranges =
+    let year_start =
+      max r.start.year year_start_from_space
+      |> min year_end_inc_from_space
+    in
     match r.year with
-    | None -> Seq.return (`Range_inc (r.start.year, Date_time.max.year))
+    | None ->
+      Seq.return (`Range_inc (year_start, year_end_inc_from_space))
     | Some year -> (
         match year with
         | Match l ->
           l
-          |> List.filter (fun x -> r.start.year <= x)
+          |> List.filter (fun x -> year_start <= x && x <= year_end_inc_from_space)
           |> Year_ranges.Of_list.range_seq_of_list ~skip_sort:true
         | Every_nth n ->
-          (* OSeq.(r.start.year -- Date_time.max.year) *)
-          OSeq.(r.start.year -- 6000)
+          OSeq.(year_start -- year_end_inc_from_space)
+          (* OSeq.(r.start.year -- 3000) *)
           |> OSeq.take_nth n
           |> Year_ranges.Of_seq.range_seq_of_seq ~skip_sort:true )
   in
@@ -1166,7 +1188,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
         (intervals_of_branching search_using_tz_offset_s space branching)
     | Recur (space, recur) ->
       (* failwith "Unexpected case" *)
-      t_of_recur space recur
+      t_of_recur search_using_tz_offset_s space recur
       |> aux search_using_tz_offset_s
       |> Intervals.Inter.inter ~skip_check:true (List.to_seq space)
     | Unary_op (space, op, t) -> (
