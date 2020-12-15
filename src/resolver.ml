@@ -1251,6 +1251,8 @@ let do_chunk_by_month tz_offset_s (s : Time.Interval.t Seq.t) =
   in
   aux s
 
+exception Failed_resolution of string
+
 let rec resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
   let rec aux search_using_tz_offset_s time =
@@ -1371,8 +1373,11 @@ let rec resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
       |> Seq.filter_map (fun (start, end_exc) ->
           find_after (start, end_exc) s2
           |> Option.map (fun (start', _) -> (start, start')))
-    | Unchunk _ ->
-      failwith "Unimplemented"
+    | Unchunk c ->
+      match resolve_chunked ~search_using_tz_offset_s c with
+      | Error msg -> raise (Failed_resolution msg)
+      | Ok s ->
+        s
   in
   try
     time
@@ -1382,13 +1387,13 @@ let rec resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
       ~skip_sort:true
     |> Result.ok
   with
+  | Failed_resolution msg -> Error msg
   | Time.Interval_is_invalid -> Error "Invalid interval"
   | Time.Intervals_are_not_sorted -> Error "Intervals are not sorted"
 
 and resolve_chunked ?(search_using_tz_offset_s = 0) (chunked : Time.chunked) :
   (Time.Interval.t Seq.t, string) result =
   let open Time in
-  let exception Failed_resolution of string in
   let rec aux search_using_tz_offset_s chunked =
     match chunked with
     | Unary_op_on_t (op, t) -> (
