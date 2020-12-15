@@ -85,8 +85,8 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
           |> intervals_of_timestamps
         | Next_n_intervals n -> OSeq.take n (aux search_using_tz_offset_s t)
         | Every_nth n -> OSeq.take_nth n (aux search_using_tz_offset_s t)
-        | Nth n -> (aux search_using_tz_offset_s t) |> OSeq.drop (pred n)
-        |> OSeq.take 1
+        | Nth n ->
+          aux search_using_tz_offset_s t |> OSeq.drop (pred n) |> OSeq.take 1
         | Chunk { chunk_size; drop_partial } ->
           do_chunk ~drop_partial chunk_size (aux search_using_tz_offset_s t)
         | Shift n ->

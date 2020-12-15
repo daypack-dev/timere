@@ -121,7 +121,7 @@ let sexp_list_of_unary_op (op : Time.unary_op) =
   | Next_n_intervals n ->
     [ CCSexp.atom "next_n"; CCSexp.atom (string_of_int n) ]
   | Every_nth n -> [ CCSexp.atom "every_nth"; CCSexp.atom (string_of_int n) ]
-  | Nth n -> [CCSexp.atom "nth"; CCSexp.atom (string_of_int n)]
+  | Nth n -> [ CCSexp.atom "nth"; CCSexp.atom (string_of_int n) ]
   | Chunk { chunk_size; drop_partial } ->
     [
       Some (CCSexp.atom "chunk");
@@ -185,8 +185,7 @@ let sexp_of_recur (r : Time.recur) : CCSexp.t =
                             atom "weekday_nth";
                             sexp_of_int n;
                             sexp_of_weekday weekday;
-                          ]
-                    );
+                          ] );
                   ])
              r.day;
          ]))
@@ -217,8 +216,10 @@ let to_sexp (t : Time.t) : CCSexp.t =
       list [ atom "interval_exc"; sexp_of_timestamp a; sexp_of_timestamp b ]
     | Round_robin_pick_list (_, l) ->
       CCSexp.(list (atom "round_robin" :: List.map aux l))
-    | Inter_seq (_, s) -> CCSexp.(list (atom "inter" :: (s |> Seq.map aux |> List.of_seq) ))
-    | Union_seq (_, s) -> CCSexp.(list (atom "union" :: (s |> Seq.map aux |> List.of_seq) ))
+    | Inter_seq (_, s) ->
+      CCSexp.(list (atom "inter" :: (s |> Seq.map aux |> List.of_seq)))
+    | Union_seq (_, s) ->
+      CCSexp.(list (atom "union" :: (s |> Seq.map aux |> List.of_seq)))
     | After (_, t1, t2) -> CCSexp.(list [ atom "after"; aux t1; aux t2 ])
     | Between_inc (_, t1, t2) ->
       CCSexp.(list [ atom "between_inc"; aux t1; aux t2 ])

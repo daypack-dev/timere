@@ -1025,40 +1025,32 @@ module Ranges = struct
   end
 
   module Of_seq = struct
-    let range_seq_of_seq (type a)
-        ?(skip_sort = false)
-        ~(modulo : int64 option) ~(to_int64 : a -> int64)
-        ~(of_int64 : int64 -> a) (s : a Seq.t) : a Range.range Seq.t =
+    let range_seq_of_seq (type a) ?(skip_sort = false) ~(modulo : int64 option)
+        ~(to_int64 : a -> int64) ~(of_int64 : int64 -> a) (s : a Seq.t) :
+      a Range.range Seq.t =
       s
       |> Seq.map (fun x -> `Range_inc (x, x))
-      |> normalize ~skip_filter_invalid:true ~skip_filter_empty:true ~skip_sort ~modulo
-        ~to_int64 ~of_int64
+      |> normalize ~skip_filter_invalid:true ~skip_filter_empty:true ~skip_sort
+        ~modulo ~to_int64 ~of_int64
 
-    let range_list_of_seq (type a)
-        ?(skip_sort = false)
-        ~(modulo : int64 option) ~(to_int64 : a -> int64)
-        ~(of_int64 : int64 -> a) (s : a Seq.t) : a Range.range list =
-      range_seq_of_seq ~skip_sort
-        ~modulo ~to_int64 ~of_int64 s
-      |> List.of_seq
+    let range_list_of_seq (type a) ?(skip_sort = false) ~(modulo : int64 option)
+        ~(to_int64 : a -> int64) ~(of_int64 : int64 -> a) (s : a Seq.t) :
+      a Range.range list =
+      range_seq_of_seq ~skip_sort ~modulo ~to_int64 ~of_int64 s |> List.of_seq
   end
 
   module Of_list = struct
-    let range_seq_of_list (type a)
-        ?(skip_sort = false)
-        ~(modulo : int64 option) ~(to_int64 : a -> int64)
-        ~(of_int64 : int64 -> a) (l : a list) : a Range.range Seq.t =
+    let range_seq_of_list (type a) ?(skip_sort = false) ~(modulo : int64 option)
+        ~(to_int64 : a -> int64) ~(of_int64 : int64 -> a) (l : a list) :
+      a Range.range Seq.t =
       List.to_seq l
-      |> Of_seq.range_seq_of_seq
-        ~skip_sort ~modulo ~to_int64 ~of_int64
+      |> Of_seq.range_seq_of_seq ~skip_sort ~modulo ~to_int64 ~of_int64
 
-    let range_list_of_list (type a)
-        ?(skip_sort = false)
+    let range_list_of_list (type a) ?(skip_sort = false)
         ~(modulo : int64 option) ~(to_int64 : a -> int64)
         ~(of_int64 : int64 -> a) (l : a list) : a Range.range list =
       List.to_seq l
-      |> Of_seq.range_seq_of_seq
-        ~skip_sort ~modulo ~to_int64 ~of_int64
+      |> Of_seq.range_seq_of_seq ~skip_sort ~modulo ~to_int64 ~of_int64
       |> List.of_seq
   end
 
@@ -1085,15 +1077,15 @@ module Ranges = struct
     end
 
     module Of_seq : sig
-      val range_seq_of_seq : ?skip_sort:bool ->t Seq.t -> t Range.range Seq.t
+      val range_seq_of_seq : ?skip_sort:bool -> t Seq.t -> t Range.range Seq.t
 
-      val range_list_of_seq : ?skip_sort:bool ->t Seq.t -> t Range.range list
+      val range_list_of_seq : ?skip_sort:bool -> t Seq.t -> t Range.range list
     end
 
     module Of_list : sig
-      val range_seq_of_list : ?skip_sort:bool ->t list -> t Range.range Seq.t
+      val range_seq_of_list : ?skip_sort:bool -> t list -> t Range.range Seq.t
 
-      val range_list_of_list : ?skip_sort:bool ->t list -> t Range.range list
+      val range_list_of_list : ?skip_sort:bool -> t list -> t Range.range list
     end
   end
 
@@ -1120,18 +1112,22 @@ module Ranges = struct
     end
 
     module Of_seq = struct
-      let range_seq_of_seq ?(skip_sort = false) (s : t Seq.t) : t Range.range Seq.t =
+      let range_seq_of_seq ?(skip_sort = false) (s : t Seq.t) :
+        t Range.range Seq.t =
         Of_seq.range_seq_of_seq ~skip_sort ~modulo ~to_int64 ~of_int64 s
 
-      let range_list_of_seq ?(skip_sort = false) (s : t Seq.t) : t Range.range list =
+      let range_list_of_seq ?(skip_sort = false) (s : t Seq.t) :
+        t Range.range list =
         Of_seq.range_list_of_seq ~skip_sort ~modulo ~to_int64 ~of_int64 s
     end
 
     module Of_list = struct
-      let range_seq_of_list ?(skip_sort = false) (l : t list) : t Range.range Seq.t =
+      let range_seq_of_list ?(skip_sort = false) (l : t list) :
+        t Range.range Seq.t =
         List.to_seq l |> Of_seq.range_seq_of_seq ~skip_sort
 
-      let range_list_of_list ?(skip_sort = false) (l : t list) : t Range.range list =
+      let range_list_of_list ?(skip_sort = false) (l : t list) :
+        t Range.range list =
         List.to_seq l |> Of_seq.range_seq_of_seq ~skip_sort |> List.of_seq
     end
   end
@@ -1176,21 +1172,18 @@ module Ranges_small = struct
   end
 
   module Of_seq = struct
-    let range_seq_of_seq (type a)
-        ?(skip_sort = false) ~(modulo : int option)
+    let range_seq_of_seq (type a) ?(skip_sort = false) ~(modulo : int option)
         ~(to_int : a -> int) ~(of_int : int -> a) (s : a Seq.t) :
       a Range.range Seq.t =
       s
       |> Seq.map (fun x -> `Range_inc (x, x))
-      |> normalize ~skip_filter_invalid:true ~skip_filter_empty:true ~skip_sort ~modulo
-        ~to_int ~of_int
+      |> normalize ~skip_filter_invalid:true ~skip_filter_empty:true ~skip_sort
+        ~modulo ~to_int ~of_int
 
     let range_list_of_seq (type a) ?(skip_sort = false) ~(modulo : int option)
         ~(to_int : a -> int) ~(of_int : int -> a) (s : a Seq.t) :
       a Range.range list =
-      range_seq_of_seq ~skip_sort
-        ~modulo ~to_int ~of_int s
-      |> List.of_seq
+      range_seq_of_seq ~skip_sort ~modulo ~to_int ~of_int s |> List.of_seq
   end
 
   module Of_list = struct
@@ -1198,15 +1191,13 @@ module Ranges_small = struct
         ~(to_int : a -> int) ~(of_int : int -> a) (l : a list) :
       a Range.range Seq.t =
       List.to_seq l
-      |> Of_seq.range_seq_of_seq
-        ~skip_sort ~modulo ~to_int ~of_int
+      |> Of_seq.range_seq_of_seq ~skip_sort ~modulo ~to_int ~of_int
 
     let range_list_of_list (type a) ?(skip_sort = false) ~(modulo : int option)
         ~(to_int : a -> int) ~(of_int : int -> a) (l : a list) :
       a Range.range list =
       List.to_seq l
-      |> Of_seq.range_seq_of_seq
-        ~skip_sort ~modulo ~to_int ~of_int
+      |> Of_seq.range_seq_of_seq ~skip_sort ~modulo ~to_int ~of_int
       |> List.of_seq
   end
 
@@ -1233,18 +1224,22 @@ module Ranges_small = struct
     end
 
     module Of_seq = struct
-      let range_seq_of_seq ?(skip_sort = false) (s : t Seq.t) : t Range.range Seq.t =
+      let range_seq_of_seq ?(skip_sort = false) (s : t Seq.t) :
+        t Range.range Seq.t =
         Of_seq.range_seq_of_seq ~skip_sort ~modulo ~to_int ~of_int s
 
-      let range_list_of_seq ?(skip_sort = false)  (s : t Seq.t) : t Range.range list =
+      let range_list_of_seq ?(skip_sort = false) (s : t Seq.t) :
+        t Range.range list =
         Of_seq.range_list_of_seq ~skip_sort ~modulo ~to_int ~of_int s
     end
 
     module Of_list = struct
-      let range_seq_of_list ?(skip_sort = false) (l : t list) : t Range.range Seq.t =
+      let range_seq_of_list ?(skip_sort = false) (l : t list) :
+        t Range.range Seq.t =
         List.to_seq l |> Of_seq.range_seq_of_seq ~skip_sort
 
-      let range_list_of_list ?(skip_sort = false) (l : t list) : t Range.range list =
+      let range_list_of_list ?(skip_sort = false) (l : t list) :
+        t Range.range list =
         List.to_seq l |> Of_seq.range_seq_of_seq ~skip_sort |> List.of_seq
     end
   end
@@ -1752,8 +1747,8 @@ let equal t1 t2 =
       aux x11 x21 && aux x12 x22
     | Round_robin_pick_list (_, l1), Round_robin_pick_list (_, l2) ->
       List.for_all2 aux l1 l2
-    | Inter_seq (_, s1), Inter_seq (_, s2)
-    | Union_seq (_, s1), Union_seq (_, s2) ->
+    | Inter_seq (_, s1), Inter_seq (_, s2) | Union_seq (_, s1), Union_seq (_, s2)
+      ->
       OSeq.for_all2 aux s1 s2
     | _ -> false
   in
@@ -1778,8 +1773,7 @@ let always = All
 let inter_seq (s : t Seq.t) : t =
   let flatten s =
     Seq.flat_map
-      (fun x ->
-         match x with Inter_seq (_, s) -> s | _ -> Seq.return x)
+      (fun x -> match x with Inter_seq (_, s) -> s | _ -> Seq.return x)
       s
   in
   let inter_patterns s =
@@ -1811,24 +1805,20 @@ let inter_seq (s : t Seq.t) : t =
   let s = flatten s in
   match inter_patterns s with
   | None -> empty
-  | Some s ->
-    Inter_seq (default_search_space, s)
+  | Some s -> Inter_seq (default_search_space, s)
 
-let inter (l : t list) : t =
-  inter_seq (List.to_seq l)
+let inter (l : t list) : t = inter_seq (List.to_seq l)
 
 let union_seq (s : t Seq.t) : t =
   let flatten s =
     Seq.flat_map
-      (fun x ->
-         match x with Union_seq (_, s) -> s | _ -> Seq.return x)
+      (fun x -> match x with Union_seq (_, s) -> s | _ -> Seq.return x)
       s
   in
   let s = flatten s in
   Union_seq (default_search_space, s)
 
-let union (l : t list) : t =
-  union_seq (List.to_seq l)
+let union (l : t list) : t = union_seq (List.to_seq l)
 
 let round_robin_pick (l : t list) : t =
   Round_robin_pick_list (default_search_space, l)
@@ -2096,33 +2086,28 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
     else invalid_arg "branching"
 
 let every_nth_year n : recur_year =
-  if n <= 0 then invalid_arg "every_nth_year: n <= 0"
-  else Every_nth n
+  if n <= 0 then invalid_arg "every_nth_year: n <= 0" else Every_nth n
 
 let every_nth_month n : recur_month =
-  if n <= 0 then invalid_arg "every_nth_month: n <= 0"
-  else Every_nth n
+  if n <= 0 then invalid_arg "every_nth_month: n <= 0" else Every_nth n
 
 let every_nth_day n : recur_day =
-  if n <= 0 then invalid_arg "every_nth_day: n <= 0"
-  else Day (Every_nth n)
+  if n <= 0 then invalid_arg "every_nth_day: n <= 0" else Day (Every_nth n)
 
 let every_nth_weekday n weekday : recur_day =
   if n <= 0 then invalid_arg "every_nth_weekday: n <= 0"
-  else Weekday_every_nth ( n, weekday )
+  else Weekday_every_nth (n, weekday)
 
 let nth_weekday n weekday : recur_day =
-  if n < 0 then invalid_arg "nth_weekday: n < 0"
-  else Weekday_nth ( n, weekday )
+  if n < 0 then invalid_arg "nth_weekday: n < 0" else Weekday_nth (n, weekday)
 
 let match_years l : recur_year =
-  if List.for_all (fun x -> Date_time.min.year <= x && x <= Date_time.max.year) l then
-    Match (List.sort_uniq compare l)
-  else
-    invalid_arg "match_years"
+  if
+    List.for_all (fun x -> Date_time.min.year <= x && x <= Date_time.max.year) l
+  then Match (List.sort_uniq compare l)
+  else invalid_arg "match_years"
 
-let match_months l : recur_month =
-  Match (List.sort_uniq compare_month l)
+let match_months l : recur_month = Match (List.sort_uniq compare_month l)
 
 let recur ?(year : int recur_spec option) ?(month : month recur_spec option)
     ?(day : recur_day option) ?(hms : recur_hms option) (start : Date_time.t) :
