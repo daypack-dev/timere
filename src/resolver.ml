@@ -1336,7 +1336,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
           Intervals.relative_complement ~skip_check:true ~not_mem_of:s
             (List.to_seq space)
         | Every -> s
-        | Skip_n_points n ->
+        | Drop_n_points n ->
           do_skip_n_points (Int64.of_int n) s
           |> Intervals.Normalize.normalize ~skip_filter_empty:true
             ~skip_sort:true ~skip_filter_invalid:true
@@ -1403,9 +1403,9 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
         let s = aux_chunked search_using_tz_offset_s c in
         match op with
         | Nth n -> s |> OSeq.drop n |> OSeq.take 1
-        | Skip_n n -> OSeq.drop n s
-        | Take_n n -> OSeq.take n s
-        | Every_nth n -> OSeq.take_nth n s
+        | Drop n -> OSeq.drop n s
+        | Take n -> OSeq.take n s
+        | Take_nth n -> OSeq.take_nth n s
         | Chunk_again op -> chunk_based_on_op_on_t op s )
   in
   try

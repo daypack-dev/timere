@@ -122,10 +122,10 @@ let sexp_list_of_unary_op (op : Time.unary_op) =
   match op with
   | Not -> [ CCSexp.atom "not" ]
   | Every -> [ CCSexp.atom "every" ]
-  | Skip_n_points n ->
+  | Drop_n_points n ->
     [ CCSexp.atom "skip_n_points"; CCSexp.atom (string_of_int n) ]
   | Take_n_points n ->
-    [ CCSexp.atom "next_n_points"; CCSexp.atom (string_of_int n) ]
+    [ CCSexp.atom "take_n_points"; CCSexp.atom (string_of_int n) ]
   (* | Every_nth n -> [ CCSexp.atom "every_nth"; CCSexp.atom (string_of_int n) ]
    * | Nth n -> [ CCSexp.atom "nth"; CCSexp.atom (string_of_int n) ]
    * | Chunk { chunk_size; drop_partial } ->
@@ -258,10 +258,10 @@ let to_sexp (t : Time.t) : CCSexp.t =
       CCSexp.(
         list
           ( match op with
-            | Skip_n n -> [ atom "skip_n"; sexp_of_int n; aux_chunked chunked ]
-            | Take_n n -> [ atom "take_n"; sexp_of_int n; aux_chunked chunked ]
-            | Every_nth n ->
-              [ atom "every_nth"; sexp_of_int n; aux_chunked chunked ]
+            | Drop n -> [ atom "drop"; sexp_of_int n; aux_chunked chunked ]
+            | Take n -> [ atom "drop"; sexp_of_int n; aux_chunked chunked ]
+            | Take_nth n ->
+              [ atom "take_nth"; sexp_of_int n; aux_chunked chunked ]
             | Nth n -> [ atom "nth"; sexp_of_int n; aux_chunked chunked ]
             | Chunk_again op ->
               [

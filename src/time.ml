@@ -1653,7 +1653,7 @@ type sign_expr =
 type unary_op =
   | Not
   | Every
-  | Skip_n_points of int
+  | Drop_n_points of int
   | Take_n_points of int
   | Shift of int64
   | Lengthen of int64
@@ -1720,9 +1720,9 @@ type chunked_unary_op_on_t =
     }
 
 type chunked_unary_op_on_chunked =
-  | Skip_n of int
-  | Take_n of int
-  | Every_nth of int
+  | Drop of int
+  | Take of int
+  | Take_nth of int
   | Nth of int
   | Chunk_again of chunked_unary_op_on_t
 
@@ -1913,24 +1913,24 @@ let take_n_points (n : int) (t : t) : t =
 
 let skip_n_points (n : int) (t : t) : t =
   if n < 0 then invalid_arg "skip_n_points: n < 0"
-  else Unary_op (default_search_space, Skip_n_points n, t)
+  else Unary_op (default_search_space, Drop_n_points n, t)
 
-let first (c : chunked) : chunked = Unary_op_on_chunked (Take_n 1, c)
+let first (c : chunked) : chunked = Unary_op_on_chunked (Take 1, c)
 
 let take (n : int) (c : chunked) : chunked =
   if n < 0 then invalid_arg "take_n: n < 0"
-  else Unary_op_on_chunked (Take_n n, c)
+  else Unary_op_on_chunked (Take n, c)
 
 let take_nth (n : int) (c : chunked) : chunked =
   if n < 0 then invalid_arg "take_nth: n < 0"
-  else Unary_op_on_chunked (Every_nth n, c)
+  else Unary_op_on_chunked (Take_nth n, c)
 
 let nth (n : int) (c : chunked) : chunked =
   if n < 0 then invalid_arg "nth: n < 0" else Unary_op_on_chunked (Nth n, c)
 
 let drop (n : int) (c : chunked) : chunked =
   if n < 0 then invalid_arg "skip_n: n < 0"
-  else Unary_op_on_chunked (Skip_n n, c)
+  else Unary_op_on_chunked (Drop n, c)
 
 let interval_inc (a : timestamp) (b : timestamp) : t =
   match Date_time.of_timestamp a with

@@ -124,7 +124,7 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
                    ~search_using_tz_offset_s t x))
           |> intervals_of_timestamps
         | Every -> aux search_using_tz_offset_s t
-        | Skip_n_points n ->
+        | Drop_n_points n ->
           aux search_using_tz_offset_s t
           |> timestamps_of_intervals
           |> OSeq.drop n
@@ -184,9 +184,9 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
         let s = aux_chunked search_using_tz_offset_s c in
         match op with
         | Nth n -> s |> OSeq.drop n |> OSeq.take 1
-        | Skip_n n -> OSeq.drop n s
-        | Take_n n -> OSeq.take n s
-        | Every_nth n -> OSeq.take_nth n s
+        | Drop n -> OSeq.drop n s
+        | Take n -> OSeq.take n s
+        | Take_nth n -> OSeq.take_nth n s
         | Chunk_again op -> chunk_based_on_op_on_t op s )
   in
   aux search_using_tz_offset_s t |> filter |> normalize
