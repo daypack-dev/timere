@@ -131,6 +131,40 @@ let make_interval_exc ~rng ~min_year ~max_year_inc =
   let end_exc = Int64.add start (Int64.of_int (rng ())) in
   Time.interval_exc start end_exc
 
+let new_height ~rng height =
+  let reduc = 1 + (rng () mod (height - 1)) in
+  height - reduc
+
+let make_duration ~rng =
+  Result.get_ok @@ Duration.make ~seconds:(rng ()) ()
+
+let make_chunking ~rng : Time.chunking =
+  match rng () mod 5 with
+  | 0 -> `As_is
+  | 1 -> `By_duration (make_duration ~rng)
+  | 2 -> `By_duration_drop_partial (make_duration ~rng)
+  | 3 -> `At_year_boundary
+  | 4 -> `At_month_boundary
+  | _ -> failwith "Unexpected case"
+
+let make_chunk_selector ~rng : Time.chunked -> Time.chunked =
+  let rec aux f height =
+    if height = 1 then
+      f
+    else
+      let f =
+        match rng () mod 1 with
+        | 0 -> fun x -> x |> f |> Time.chunk_again (make_chunking ~rng)
+        | 1 -> fun x -> x |> f |> Time.first
+        | 2 -> fun x -> x |> f |> Time.take (rng ())
+        | 3 -> fun x -> x |> f |> Time.take_nth (rng ())
+        | 4 -> fun x -> x |> f |> Time.drop (rng ())
+        | _ -> failwith "Unexpected case"
+      in
+      aux f (new_height ~rng height)
+  in
+  aux (fun x -> x) 10
+
 let make_unary_op ~rng t =
   match rng () mod 6 with
   | 0 -> Time.not t
@@ -142,8 +176,8 @@ let make_unary_op ~rng t =
    *   Time.chunk
    *     (Result.get_ok @@ Duration.of_seconds @@ Int64.of_int (rng ()))
    *     t *)
-  | 3 -> Time.shift (Result.get_ok @@ Duration.make ~seconds:(rng ()) ()) t
-  | 4 -> Time.lengthen (Result.get_ok @@ Duration.make ~seconds:(rng ()) ()) t
+  | 3 -> Time.shift (make_duration ~rng) t
+  | 4 -> Time.lengthen (make_duration ~rng) t
   | 5 -> Time.change_tz_offset_s (rng ()) t
   | _ -> failwith "Unexpected case"
 
@@ -151,10 +185,6 @@ let build ~min_year ~max_year_inc ~max_height ~max_branching
     ~(randomness : int list) : Time.t =
   if max_height <= 0 then invalid_arg "make";
   let rng = make_rng ~randomness in
-  let new_height height =
-    let reduc = 1 + (rng () mod (height - 1)) in
-    height - reduc
-  in
   let rec aux height =
     if height = 1 then
       match rng () mod 5 with
@@ -166,22 +196,22 @@ let build ~min_year ~max_year_inc ~max_height ~max_branching
       | _ -> failwith "Unexpected case"
     else
       match rng () mod 6 with
-      | 0 -> make_unary_op ~rng (aux (new_height height))
+      | 0 -> make_unary_op ~rng (aux (new_height ~rng height))
       | 1 ->
         OSeq.(0 -- Stdlib.min max_branching (rng ()))
-        |> Seq.map (fun _ -> aux (new_height height))
+        |> Seq.map (fun _ -> aux (new_height ~rng height))
         |> List.of_seq
         |> Time.inter
       | 2 ->
         OSeq.(0 -- Stdlib.min max_branching (rng ()))
-        |> Seq.map (fun _ -> aux (new_height height))
+        |> Seq.map (fun _ -> aux (new_height ~rng height))
         |> List.of_seq
         |> Time.union
-      | 3 -> Time.after (aux (new_height height)) (aux (new_height height))
+      | 3 -> Time.after (aux (new_height ~rng height)) (aux (new_height ~rng height))
       | 4 ->
-        Time.between_inc (aux (new_height height)) (aux (new_height height))
+        Time.between_inc (aux (new_height ~rng height)) (aux (new_height ~rng height))
       | 5 ->
-        Time.between_exc (aux (new_height height)) (aux (new_height height))
+        Time.between_exc (aux (new_height ~rng height)) (aux (new_height ~rng height))
       (* | 3 ->
        *   OSeq.(0 -- Stdlib.min max_branching (rng ()))
        *   |> Seq.map (fun _ -> aux (new_height height))
