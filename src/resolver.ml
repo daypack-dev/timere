@@ -1282,8 +1282,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
     | Branching (space, branching) ->
       Intervals.Inter.inter ~skip_check:true (List.to_seq space)
         (intervals_of_branching search_using_tz_offset_s space branching)
-    | Recur (space, recur) ->
-      failwith "Unimplemented"
+    | Recur (space, recur) -> failwith "Unimplemented"
     (* let one_day = Result.get_ok @@ Duration.make ~days:1 () in
      * let one_day_in_seconds = Duration.to_seconds one_day in
      * t_of_start_of_days_of_recur search_using_tz_offset_s space recur
@@ -1382,23 +1381,24 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
       |> Seq.filter_map (fun (start, end_exc) ->
           find_after (start, end_exc) s2
           |> Option.map (fun (start', _) -> (start, start')))
-    | Unchunk c -> aux_chunked search_using_tz_offset_s c
-                   |> Intervals.Normalize.normalize ~skip_filter_invalid:true
-                     ~skip_sort:true
+    | Unchunk c ->
+      aux_chunked search_using_tz_offset_s c
+      |> Intervals.Normalize.normalize ~skip_filter_invalid:true
+        ~skip_sort:true
   and aux_chunked search_using_tz_offset_s (chunked : chunked) =
     let chunk_based_on_op_on_t op s =
       match op with
       | Chunk_as_is -> s
       | Chunk_by_duration { chunk_size; drop_partial } ->
         Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
-      | Chunk_at_year_boundary -> do_chunk_at_year_boundary search_using_tz_offset_s s
-      | Chunk_at_month_boundary -> do_chunk_at_month_boundary search_using_tz_offset_s s
+      | Chunk_at_year_boundary ->
+        do_chunk_at_year_boundary search_using_tz_offset_s s
+      | Chunk_at_month_boundary ->
+        do_chunk_at_month_boundary search_using_tz_offset_s s
     in
     match chunked with
-    | Unary_op_on_t (op, t) -> (
-        aux search_using_tz_offset_s t
-        |> chunk_based_on_op_on_t op
-      )
+    | Unary_op_on_t (op, t) ->
+      aux search_using_tz_offset_s t |> chunk_based_on_op_on_t op
     | Unary_op_on_chunked (op, c) -> (
         let s = aux_chunked search_using_tz_offset_s c in
         match op with
@@ -1406,16 +1406,13 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
         | Skip_n n -> OSeq.drop n s
         | Next_n n -> OSeq.take n s
         | Every_nth n -> OSeq.take_nth n s
-        | Chunk_again op ->
-          chunk_based_on_op_on_t op s
-      )
+        | Chunk_again op -> chunk_based_on_op_on_t op s )
   in
   try
     time
     |> optimize_search_space search_using_tz_offset_s
     |> aux search_using_tz_offset_s
-    |> Intervals.Normalize.normalize ~skip_filter_invalid:true
-      ~skip_sort:true
+    |> Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
     |> Result.ok
   with
   | Interval_is_invalid -> Error "Invalid interval"

@@ -1767,60 +1767,62 @@ let equal t1 t2 =
   in
   aux t1 t2
 
-type chunking = [
-  | `As_is
+type chunking =
+  [ `As_is
   | `By_duration of Duration.t
   | `By_duration_drop_partial of Duration.t
   | `At_year_boundary
   | `At_month_boundary
-]
+  ]
 
 let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
   match chunking with
-  | `As_is ->
-    Unchunk (
-      f (
-        Unary_op_on_t (Chunk_as_is, t)
-      )
-    )
+  | `As_is -> Unchunk (f (Unary_op_on_t (Chunk_as_is, t)))
   | `By_duration duration ->
     Unchunk
-      (
-        f (
-          Unary_op_on_t
-            (Chunk_by_duration { chunk_size = Duration.to_seconds duration; drop_partial = false }, t)
-        )
-      )
+      (f
+         (Unary_op_on_t
+            ( Chunk_by_duration
+                {
+                  chunk_size = Duration.to_seconds duration;
+                  drop_partial = false;
+                },
+              t )))
   | `By_duration_drop_partial duration ->
     Unchunk
-      (
-        f (
-          Unary_op_on_t
-            (Chunk_by_duration { chunk_size = Duration.to_seconds duration; drop_partial = true }, t)
-        )
-      )
-  | `At_year_boundary ->
-    Unchunk
-      (
-        f (
-          Unary_op_on_t (Chunk_at_year_boundary, t)
-        )
-      )
+      (f
+         (Unary_op_on_t
+            ( Chunk_by_duration
+                {
+                  chunk_size = Duration.to_seconds duration;
+                  drop_partial = true;
+                },
+              t )))
+  | `At_year_boundary -> Unchunk (f (Unary_op_on_t (Chunk_at_year_boundary, t)))
   | `At_month_boundary ->
-    Unchunk (
-      f (
-        Unary_op_on_t (Chunk_at_month_boundary, t)
-      )
-    )
+    Unchunk (f (Unary_op_on_t (Chunk_at_month_boundary, t)))
 
 let chunk_again (chunking : chunking) chunked : chunked =
   match chunking with
-  | `As_is ->
-    Unary_op_on_chunked (Chunk_again Chunk_as_is, chunked)
+  | `As_is -> Unary_op_on_chunked (Chunk_again Chunk_as_is, chunked)
   | `By_duration duration ->
-    Unary_op_on_chunked (Chunk_again (Chunk_by_duration { chunk_size = Duration.to_seconds duration; drop_partial = false }), chunked)
+    Unary_op_on_chunked
+      ( Chunk_again
+          (Chunk_by_duration
+             {
+               chunk_size = Duration.to_seconds duration;
+               drop_partial = false;
+             }),
+        chunked )
   | `By_duration_drop_partial duration ->
-    Unary_op_on_chunked (Chunk_again (Chunk_by_duration { chunk_size = Duration.to_seconds duration; drop_partial = true }), chunked)
+    Unary_op_on_chunked
+      ( Chunk_again
+          (Chunk_by_duration
+             {
+               chunk_size = Duration.to_seconds duration;
+               drop_partial = true;
+             }),
+        chunked )
   | `At_year_boundary ->
     Unary_op_on_chunked (Chunk_again Chunk_at_year_boundary, chunked)
   | `At_month_boundary ->
