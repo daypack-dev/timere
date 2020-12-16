@@ -43,6 +43,58 @@ let find_after ((_start, end_exc) : Time.Interval.t)
   | Seq.Nil -> None
   | Seq.Cons (x, _) -> Some x
 
+let do_chunk_at_year_boundary tz_offset_s (s : Time.Interval.t Seq.t) =
+  let open Time in
+  let rec aux s =
+    match s () with
+    | Seq.Nil -> Seq.empty
+    | Seq.Cons ((t1, t2), rest) ->
+      let dt1 =
+        Result.get_ok
+        @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s t1
+      in
+      let dt2 =
+        Result.get_ok
+        @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s t2
+      in
+      if dt1.year = dt2.year && dt1.month = dt2.month then fun () ->
+        Seq.Cons ((t1, t2), aux rest)
+      else
+        let t' =
+          Date_time.set_to_last_day_hour_min_sec dt1
+          |> Date_time.to_timestamp
+          |> Int64.succ
+        in
+        OSeq.cons (t1, t') (aux (OSeq.cons (t', t2) rest))
+  in
+  aux s
+
+let do_chunk_at_month_boundary tz_offset_s (s : Time.Interval.t Seq.t) =
+  let open Time in
+  let rec aux s =
+    match s () with
+    | Seq.Nil -> Seq.empty
+    | Seq.Cons ((t1, t2), rest) ->
+      let dt1 =
+        Result.get_ok
+        @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s t1
+      in
+      let dt2 =
+        Result.get_ok
+        @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s t2
+      in
+      if dt1.year = dt2.year && dt1.month = dt2.month then fun () ->
+        Seq.Cons ((t1, t2), aux rest)
+      else
+        let t' =
+          Date_time.set_to_last_day_hour_min_sec dt1
+          |> Date_time.to_timestamp
+          |> Int64.succ
+        in
+        OSeq.cons (t1, t') (aux (OSeq.cons (t', t2) rest))
+  in
+  aux s
+
 let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
     ~(search_end_exc : Time.timestamp) (t : Time.t) : Time.Interval.t Seq.t =
   let open Time in
@@ -77,20 +129,11 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
           |> timestamps_of_intervals
           |> OSeq.drop n
           |> intervals_of_timestamps
-        | Skip_n_intervals n -> OSeq.drop n (aux search_using_tz_offset_s t)
         | Next_n_points n ->
           aux search_using_tz_offset_s t
           |> timestamps_of_intervals
           |> OSeq.take n
           |> intervals_of_timestamps
-        | Next_n_intervals n -> OSeq.take n (aux search_using_tz_offset_s t)
-        | Every_nth n -> OSeq.take_nth n (aux search_using_tz_offset_s t)
-        | Nth n ->
-          aux search_using_tz_offset_s t |> OSeq.drop (pred n) |> OSeq.take 1
-        | Chunk { chunk_size; drop_partial } ->
-          do_chunk ~drop_partial chunk_size (aux search_using_tz_offset_s t)
-        | Chunk_by_year -> failwith "Unimplemented"
-        | Chunk_by_month -> failwith "Unimplemented"
         | Shift n ->
           aux search_using_tz_offset_s t
           |> Seq.map (fun (x, y) -> (Int64.add n x, Int64.add n y))
@@ -116,11 +159,39 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
       |> Seq.filter_map (fun (start, end_exc) ->
           find_after (start, end_exc) s2
           |> Option.map (fun (start', _) -> (start, start')))
+    | Unchunk chunked ->
+      aux_chunked search_using_tz_offset_s chunked
+      |> normalize
     | _ ->
       Seq_utils.a_to_b_exc_int64 ~a:search_start ~b:search_end_exc
       |> Seq.filter
         (mem ~search_using_tz_offset_s ~search_start ~search_end_exc t)
       |> intervals_of_timestamps
+  and aux_chunked search_using_tz_offset_s chunked =
+    let chunk_based_on_op_on_t op s =
+      match op with
+      | Chunk_as_is -> s
+      | Chunk_by_duration { chunk_size; drop_partial } ->
+        do_chunk ~drop_partial chunk_size s
+      | Chunk_at_year_boundary -> do_chunk_at_year_boundary search_using_tz_offset_s s
+      | Chunk_at_month_boundary ->
+        do_chunk_at_month_boundary search_using_tz_offset_s s
+    in
+    match chunked with
+    | Unary_op_on_t (op, t) -> (
+        aux search_using_tz_offset_s t
+        |> chunk_based_on_op_on_t op
+      )
+    | Unary_op_on_chunked (op, c) -> (
+        let s = aux_chunked search_using_tz_offset_s c in
+        match op with
+        | Nth n -> s |> OSeq.drop n |> OSeq.take 1
+        | Skip_n n -> OSeq.drop n s
+        | Next_n n -> OSeq.take n s
+        | Every_nth n -> OSeq.take_nth n s
+        | Chunk_again op ->
+          chunk_based_on_op_on_t op s
+      )
   in
   aux search_using_tz_offset_s t |> filter |> normalize
 
@@ -290,10 +361,13 @@ and mem ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
         | Round_robin_pick_list (_, _)
         | After (_, _, _)
         | Between_inc (_, _, _)
-        | Between_exc (_, _, _) ->
+        | Between_exc (_, _, _)
+        | Unchunk _
+          ->
           resolve ~search_using_tz_offset_s ~search_start ~search_end_exc t
           |> OSeq.exists (fun (x, y) -> x <= timestamp && timestamp < y)
         | Inter_seq (_, s) -> OSeq.for_all (fun t -> aux t timestamp) s
-        | Union_seq (_, s) -> OSeq.exists (fun t -> aux t timestamp) s )
+        | Union_seq (_, s) -> OSeq.exists (fun t -> aux t timestamp) s
+      )
   in
   aux t timestamp

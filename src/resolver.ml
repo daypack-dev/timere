@@ -603,7 +603,7 @@ module Resolve_pattern = struct
     match s () with Seq.Nil -> None | Seq.Cons (x, _) -> Some x
 end
 
-let get_search_space (time : Time.t) : Time.Interval.t list =
+let rec get_search_space (time : Time.t) : Time.Interval.t list =
   let open Time in
   match time with
   | All -> default_search_space
@@ -621,6 +621,13 @@ let get_search_space (time : Time.t) : Time.Interval.t list =
   | After (s, _, _) -> s
   | Between_inc (s, _, _) -> s
   | Between_exc (s, _, _) -> s
+  | Unchunk c -> get_search_space_chunked c
+
+and get_search_space_chunked (chunked : Time.chunked) =
+  let open Time in
+  match chunked with
+  | Unary_op_on_t (_, t) -> get_search_space t
+  | Unary_op_on_chunked (_, c) -> get_search_space_chunked c
 
 let set_search_space space (time : Time.t) : Time.t =
   let open Time in
@@ -640,6 +647,7 @@ let set_search_space space (time : Time.t) : Time.t =
   | After (_, x, y) -> After (space, x, y)
   | Between_inc (_, x, y) -> Between_inc (space, x, y)
   | Between_exc (_, x, y) -> Between_exc (space, x, y)
+  | Unchunk c -> Unchunk c
 
 let search_space_of_year_range tz_offset_s year_range =
   let open Time in
@@ -766,6 +774,7 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
         |> List.of_seq
       in
       Between_exc (space, t1, t2)
+    | Unchunk c -> Unchunk c
   and aux_seq tz_offset_s s =
     let s = Seq.map (aux tz_offset_s) s in
     let space =
@@ -829,6 +838,7 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
     | Between_exc (cur, t1, t2) ->
       let space = restrict_search_space parent_search_space cur in
       Between_exc (space, aux space t1, aux space t2)
+    | Unchunk c -> Unchunk c
   and aux_list parent_search_space l = List.map (aux parent_search_space) l
   and aux_seq parent_search_space l = Seq.map (aux parent_search_space) l in
   aux default_search_space time
@@ -981,186 +991,186 @@ let resolve_arith_year_month_pairs ~year_start ~year_end_inc
   let month_start = if year_start = start.year then start.month else `Jan in
   aux year_start year_end_inc (Time.tm_int_of_month month_start) n
 
-let t_of_start_of_days_of_recur tz_offset_s (space : Time.search_space) (r : Time.recur) : Time.t
-  =
-  let open Time in
-  let year_inc_range_from_space =
-    match space with
-    | [] -> None
-    | l ->
-      let start, _ = List.hd l in
-      let _, end_exc = List.hd @@ List.rev l in
-      let dt_x =
-        Result.get_ok
-        @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s start
-      in
-      let dt_y =
-        Result.get_ok
-        @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s
-          (Int64.pred end_exc)
-      in
-      Some (dt_x.year, dt_y.year)
-  in
-  match year_inc_range_from_space with
-  | None -> empty
-  | Some (year_start_from_space, year_end_inc_from_space) -> (
-      let year_ranges =
-        let year_start =
-          max r.start.year year_start_from_space |> min year_end_inc_from_space
-        in
-        match r.year with
-        | None -> Seq.return (`Range_inc (year_start, year_end_inc_from_space))
-        | Some year -> (
-            match year with
-            | Match l ->
-              l
-              |> List.filter (fun x ->
-                  year_start <= x && x <= year_end_inc_from_space)
-              |> Year_ranges.Of_list.range_seq_of_list ~skip_sort:true
-            | Every_nth n ->
-              OSeq.(year_start -- year_end_inc_from_space)
-              |> OSeq.take_nth n
-              |> Year_ranges.Of_seq.range_seq_of_seq ~skip_sort:true )
-      in
-      let year_inc_ranges =
-        year_ranges
-        |> Seq.map (fun year_range ->
-            match year_range with
-            | `Range_inc (x, y) -> (x, y)
-            | `Range_exc (x, y) -> (x, pred y))
-      in
-      let one_day = Result.get_ok @@ Duration.make ~days:1 () in
-      let years = Year_ranges.Flatten.flatten year_ranges in
-      let hours = [ 0 ] in
-      let minutes = [ 0 ] in
-      let seconds = [ 0 ] in
-      match (r.month, r.day) with
-      | None, None -> pattern ~year_ranges:(List.of_seq year_ranges) ~hours ~minutes ~seconds ()
-      | None, Some (Day (Match month_days)) ->
-        pattern ~year_ranges:(List.of_seq year_ranges) ~month_days ~hours ~minutes ~seconds ()
-      | None, Some (Day (Every_nth n)) ->
-        pattern ~year_ranges:(List.of_seq year_ranges) ~hours ~minutes ~seconds ()
-        |> chunk one_day
-        |> take_nth n
-      | None, Some (Weekday_every_nth (n, weekday)) ->
-        pattern ~year_ranges:(List.of_seq year_ranges) ~weekdays:[ weekday ]
-          ~hours ~minutes ~seconds
-          ()
-        |> chunk one_day
-        |> take_nth n
-      | None, Some (Weekday_nth (n, weekday)) ->
-        pattern ~year_ranges:(List.of_seq year_ranges) ~weekdays:[ weekday ]
-          ~hours ~minutes ~seconds
-          ()
-        |> chunk one_day
-        |> nth n
-      | Some (Match months), None ->
-        pattern ~year_ranges:(List.of_seq year_ranges) ~months
-          ~hours ~minutes ~seconds
-          ()
-      | Some (Match months), Some (Day (Match month_days)) ->
-        pattern ~year_ranges:(List.of_seq year_ranges) ~months ~month_days
-          ~hours ~minutes ~seconds
-          ()
-      | Some (Match months), Some (Day (Every_nth n)) ->
-        let months = List.to_seq months in
-        years
-        |> Seq.flat_map (fun year ->
-            Seq.map
-              (fun month ->
-                 pattern ~years:[ year ] ~months:[ month ]
-                   ~hours ~minutes ~seconds
-                   ()
-                 |> chunk one_day
-                 |> take_nth n)
-              months)
-        |> union_seq
-      | Some (Match months), Some (Weekday_every_nth (n, weekday)) ->
-        let months = List.to_seq months in
-        years
-        |> Seq.flat_map (fun year ->
-            Seq.map
-              (fun month ->
-                 pattern ~years:[ year ] ~months:[ month ]
-                   ~weekdays:[ weekday ]
-                   ~hours ~minutes ~seconds
-                   ()
-                 |> chunk one_day
-                 |> take_nth n)
-              months)
-        |> union_seq
-      | Some (Match months), Some (Weekday_nth (n, weekday)) ->
-        let months = List.to_seq months in
-        years
-        |> Seq.flat_map (fun year ->
-            Seq.map
-              (fun month ->
-                 pattern ~years:[ year ] ~months:[ month ]
-                   ~weekdays:[ weekday ]
-                   ~hours ~minutes ~seconds
-                   ()
-                 |> chunk one_day
-                 |> nth n)
-              months)
-        |> union_seq
-      | Some (Every_nth n), None ->
-        year_inc_ranges
-        |> Seq.flat_map (fun (year_start, year_end_inc) ->
-            resolve_arith_year_month_pairs ~year_start ~year_end_inc
-              ~start:r.start n
-            |> Seq.map (fun (year, month) ->
-                pattern ~years:[ year ] ~months:[ month ]
-                  ~hours ~minutes ~seconds
-                  ()))
-        |> union_seq
-      | Some (Every_nth n), Some (Day (Match month_days)) ->
-        year_inc_ranges
-        |> Seq.flat_map (fun (year_start, year_end_inc) ->
-            resolve_arith_year_month_pairs ~year_start ~year_end_inc
-              ~start:r.start n
-            |> Seq.map (fun (year, month) ->
-                pattern ~years:[ year ] ~months:[ month ] ~month_days
-                  ~hours ~minutes ~seconds
-                  ()))
-        |> union_seq
-      | Some (Every_nth month_n), Some (Day (Every_nth day_n)) ->
-        year_inc_ranges
-        |> Seq.flat_map (fun (year_start, year_end_inc) ->
-            resolve_arith_year_month_pairs ~year_start ~year_end_inc
-              ~start:r.start month_n
-            |> Seq.map (fun (year, month) ->
-                pattern ~years:[ year ] ~months:[ month ]
-                  ~hours ~minutes ~seconds
-                  ()
-                |> chunk one_day
-                |> take_nth day_n))
-        |> union_seq
-      | Some (Every_nth month_n), Some (Weekday_every_nth (n, weekday)) ->
-        year_inc_ranges
-        |> Seq.flat_map (fun (year_start, year_end_inc) ->
-            resolve_arith_year_month_pairs ~year_start ~year_end_inc
-              ~start:r.start month_n
-            |> Seq.map (fun (year, month) ->
-                pattern ~years:[ year ] ~months:[ month ]
-                  ~weekdays:[ weekday ]
-                  ~hours ~minutes ~seconds
-                  ()
-                |> chunk one_day
-                |> take_nth n))
-        |> union_seq
-      | Some (Every_nth month_n), Some (Weekday_nth (n, weekday)) ->
-        year_inc_ranges
-        |> Seq.flat_map (fun (year_start, year_end_inc) ->
-            resolve_arith_year_month_pairs ~year_start ~year_end_inc
-              ~start:r.start month_n
-            |> Seq.map (fun (year, month) ->
-                pattern ~years:[ year ] ~months:[ month ]
-                  ~weekdays:[ weekday ]
-                  ~hours ~minutes ~seconds
-                  ()
-                |> chunk one_day
-                |> nth n))
-        |> union_seq )
+(* let t_of_start_of_days_of_recur tz_offset_s (space : Time.search_space) (r : Time.recur) : Time.t
+ *   =
+ *   let open Time in
+ *   let year_inc_range_from_space =
+ *     match space with
+ *     | [] -> None
+ *     | l ->
+ *       let start, _ = List.hd l in
+ *       let _, end_exc = List.hd @@ List.rev l in
+ *       let dt_x =
+ *         Result.get_ok
+ *         @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s start
+ *       in
+ *       let dt_y =
+ *         Result.get_ok
+ *         @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s
+ *           (Int64.pred end_exc)
+ *       in
+ *       Some (dt_x.year, dt_y.year)
+ *   in
+ *   match year_inc_range_from_space with
+ *   | None -> empty
+ *   | Some (year_start_from_space, year_end_inc_from_space) -> (
+ *       let year_ranges =
+ *         let year_start =
+ *           max r.start.year year_start_from_space |> min year_end_inc_from_space
+ *         in
+ *         match r.year with
+ *         | None -> Seq.return (`Range_inc (year_start, year_end_inc_from_space))
+ *         | Some year -> (
+ *             match year with
+ *             | Match l ->
+ *               l
+ *               |> List.filter (fun x ->
+ *                   year_start <= x && x <= year_end_inc_from_space)
+ *               |> Year_ranges.Of_list.range_seq_of_list ~skip_sort:true
+ *             | Every_nth n ->
+ *               OSeq.(year_start -- year_end_inc_from_space)
+ *               |> OSeq.take_nth n
+ *               |> Year_ranges.Of_seq.range_seq_of_seq ~skip_sort:true )
+ *       in
+ *       let year_inc_ranges =
+ *         year_ranges
+ *         |> Seq.map (fun year_range ->
+ *             match year_range with
+ *             | `Range_inc (x, y) -> (x, y)
+ *             | `Range_exc (x, y) -> (x, pred y))
+ *       in
+ *       let one_day = Result.get_ok @@ Duration.make ~days:1 () in
+ *       let years = Year_ranges.Flatten.flatten year_ranges in
+ *       let hours = [ 0 ] in
+ *       let minutes = [ 0 ] in
+ *       let seconds = [ 0 ] in
+ *       match (r.month, r.day) with
+ *       | None, None -> pattern ~year_ranges:(List.of_seq year_ranges) ~hours ~minutes ~seconds ()
+ *       | None, Some (Day (Match month_days)) ->
+ *         pattern ~year_ranges:(List.of_seq year_ranges) ~month_days ~hours ~minutes ~seconds ()
+ *       | None, Some (Day (Every_nth n)) ->
+ *         pattern ~year_ranges:(List.of_seq year_ranges) ~hours ~minutes ~seconds ()
+ *         |> chunk one_day
+ *         |> take_nth n
+ *       | None, Some (Weekday_every_nth (n, weekday)) ->
+ *         pattern ~year_ranges:(List.of_seq year_ranges) ~weekdays:[ weekday ]
+ *           ~hours ~minutes ~seconds
+ *           ()
+ *         |> chunk one_day
+ *         |> take_nth n
+ *       | None, Some (Weekday_nth (n, weekday)) ->
+ *         pattern ~year_ranges:(List.of_seq year_ranges) ~weekdays:[ weekday ]
+ *           ~hours ~minutes ~seconds
+ *           ()
+ *         |> chunk one_day
+ *         |> nth n
+ *       | Some (Match months), None ->
+ *         pattern ~year_ranges:(List.of_seq year_ranges) ~months
+ *           ~hours ~minutes ~seconds
+ *           ()
+ *       | Some (Match months), Some (Day (Match month_days)) ->
+ *         pattern ~year_ranges:(List.of_seq year_ranges) ~months ~month_days
+ *           ~hours ~minutes ~seconds
+ *           ()
+ *       | Some (Match months), Some (Day (Every_nth n)) ->
+ *         let months = List.to_seq months in
+ *         years
+ *         |> Seq.flat_map (fun year ->
+ *             Seq.map
+ *               (fun month ->
+ *                  pattern ~years:[ year ] ~months:[ month ]
+ *                    ~hours ~minutes ~seconds
+ *                    ()
+ *                  |> chunk one_day
+ *                  |> take_nth n)
+ *               months)
+ *         |> union_seq
+ *       | Some (Match months), Some (Weekday_every_nth (n, weekday)) ->
+ *         let months = List.to_seq months in
+ *         years
+ *         |> Seq.flat_map (fun year ->
+ *             Seq.map
+ *               (fun month ->
+ *                  pattern ~years:[ year ] ~months:[ month ]
+ *                    ~weekdays:[ weekday ]
+ *                    ~hours ~minutes ~seconds
+ *                    ()
+ *                  |> chunk one_day
+ *                  |> take_nth n)
+ *               months)
+ *         |> union_seq
+ *       | Some (Match months), Some (Weekday_nth (n, weekday)) ->
+ *         let months = List.to_seq months in
+ *         years
+ *         |> Seq.flat_map (fun year ->
+ *             Seq.map
+ *               (fun month ->
+ *                  pattern ~years:[ year ] ~months:[ month ]
+ *                    ~weekdays:[ weekday ]
+ *                    ~hours ~minutes ~seconds
+ *                    ()
+ *                  |> chunk one_day
+ *                  |> nth n)
+ *               months)
+ *         |> union_seq
+ *       | Some (Every_nth n), None ->
+ *         year_inc_ranges
+ *         |> Seq.flat_map (fun (year_start, year_end_inc) ->
+ *             resolve_arith_year_month_pairs ~year_start ~year_end_inc
+ *               ~start:r.start n
+ *             |> Seq.map (fun (year, month) ->
+ *                 pattern ~years:[ year ] ~months:[ month ]
+ *                   ~hours ~minutes ~seconds
+ *                   ()))
+ *         |> union_seq
+ *       | Some (Every_nth n), Some (Day (Match month_days)) ->
+ *         year_inc_ranges
+ *         |> Seq.flat_map (fun (year_start, year_end_inc) ->
+ *             resolve_arith_year_month_pairs ~year_start ~year_end_inc
+ *               ~start:r.start n
+ *             |> Seq.map (fun (year, month) ->
+ *                 pattern ~years:[ year ] ~months:[ month ] ~month_days
+ *                   ~hours ~minutes ~seconds
+ *                   ()))
+ *         |> union_seq
+ *       | Some (Every_nth month_n), Some (Day (Every_nth day_n)) ->
+ *         year_inc_ranges
+ *         |> Seq.flat_map (fun (year_start, year_end_inc) ->
+ *             resolve_arith_year_month_pairs ~year_start ~year_end_inc
+ *               ~start:r.start month_n
+ *             |> Seq.map (fun (year, month) ->
+ *                 pattern ~years:[ year ] ~months:[ month ]
+ *                   ~hours ~minutes ~seconds
+ *                   ()
+ *                 |> chunk one_day
+ *                 |> take_nth day_n))
+ *         |> union_seq
+ *       | Some (Every_nth month_n), Some (Weekday_every_nth (n, weekday)) ->
+ *         year_inc_ranges
+ *         |> Seq.flat_map (fun (year_start, year_end_inc) ->
+ *             resolve_arith_year_month_pairs ~year_start ~year_end_inc
+ *               ~start:r.start month_n
+ *             |> Seq.map (fun (year, month) ->
+ *                 pattern ~years:[ year ] ~months:[ month ]
+ *                   ~weekdays:[ weekday ]
+ *                   ~hours ~minutes ~seconds
+ *                   ()
+ *                 |> chunk one_day
+ *                 |> take_nth n))
+ *         |> union_seq
+ *       | Some (Every_nth month_n), Some (Weekday_nth (n, weekday)) ->
+ *         year_inc_ranges
+ *         |> Seq.flat_map (fun (year_start, year_end_inc) ->
+ *             resolve_arith_year_month_pairs ~year_start ~year_end_inc
+ *               ~start:r.start month_n
+ *             |> Seq.map (fun (year, month) ->
+ *                 pattern ~years:[ year ] ~months:[ month ]
+ *                   ~weekdays:[ weekday ]
+ *                   ~hours ~minutes ~seconds
+ *                   ()
+ *                 |> chunk one_day
+ *                 |> nth n))
+ *         |> union_seq ) *)
 
 type inc_or_exc =
   | Inc
@@ -1200,50 +1210,62 @@ let find_after ((_start, end_exc) : Time.Interval.t)
   | Seq.Nil -> None
   | Seq.Cons (x, _) -> Some x
 
-let do_chunk_by_year tz_offset_s (s : Time.Interval.t Seq.t) =
+let do_chunk_at_year_boundary tz_offset_s (s : Time.Interval.t Seq.t) =
   let open Time in
   let rec aux s =
     match s () with
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((t1, t2), rest) ->
-      let dt1 = Result.get_ok @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s t1 in
-      let dt2 = Result.get_ok @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s t2 in
-      if dt1.year = dt2.year && dt1.month = dt2.month then
-        fun () -> Seq.Cons ((t1, t2), aux rest)
+      let dt1 =
+        Result.get_ok
+        @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s t1
+      in
+      let dt2 =
+        Result.get_ok
+        @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s t2
+      in
+      if dt1.year = dt2.year && dt1.month = dt2.month then fun () ->
+        Seq.Cons ((t1, t2), aux rest)
       else
         let t' =
           Date_time.set_to_last_day_hour_min_sec dt1
           |> Date_time.to_timestamp
-          |> Int64.succ in
-        OSeq.cons (t1, t')
-          (aux (OSeq.cons (t', t2) rest))
+          |> Int64.succ
+        in
+        OSeq.cons (t1, t') (aux (OSeq.cons (t', t2) rest))
   in
   aux s
 
-let do_chunk_by_month tz_offset_s (s : Time.Interval.t Seq.t) =
+let do_chunk_at_month_boundary tz_offset_s (s : Time.Interval.t Seq.t) =
   let open Time in
   let rec aux s =
     match s () with
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((t1, t2), rest) ->
-      let dt1 = Result.get_ok @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s t1 in
-      let dt2 = Result.get_ok @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s t2 in
-      if dt1.year = dt2.year && dt1.month = dt2.month then
-        fun () -> Seq.Cons ((t1, t2), aux rest)
+      let dt1 =
+        Result.get_ok
+        @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s t1
+      in
+      let dt2 =
+        Result.get_ok
+        @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s t2
+      in
+      if dt1.year = dt2.year && dt1.month = dt2.month then fun () ->
+        Seq.Cons ((t1, t2), aux rest)
       else
         let t' =
           Date_time.set_to_last_day_hour_min_sec dt1
           |> Date_time.to_timestamp
-          |> Int64.succ in
-        OSeq.cons (t1, t')
-          (aux (OSeq.cons (t', t2) rest))
+          |> Int64.succ
+        in
+        OSeq.cons (t1, t') (aux (OSeq.cons (t', t2) rest))
   in
   aux s
 
 let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
+  let open Time in
   let rec aux search_using_tz_offset_s time =
-    let open Time in
     match time with
     | Empty -> Seq.empty
     | All ->
@@ -1261,47 +1283,48 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
       Intervals.Inter.inter ~skip_check:true (List.to_seq space)
         (intervals_of_branching search_using_tz_offset_s space branching)
     | Recur (space, recur) ->
-      let one_day = Result.get_ok @@ Duration.make ~days:1 () in
-      let one_day_in_seconds = Duration.to_seconds one_day in
-      t_of_start_of_days_of_recur search_using_tz_offset_s space recur
-      |> aux search_using_tz_offset_s
-      (* |> (
-       *     match recur.hms with
-       *     | None -> Seq.map (fun (x, _) -> (x, Int64.add x one_day_in_seconds))
-       *     | Some hms ->
-       *       let dt = Result.get_ok @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:search_using_tz_offset_s x in
-       *       match hms with
-       *       | Every_nth { hour; minute; second } ->
-       *         failwith "Unimplemented"
-       *       | Hmss ranges ->
-       *         let f (x, y) =
-       *           second_of_day_of_hms x, second_of_day_of_hms y
-       *         in
-       *         let second_of_day_ranges_exc =
-       *           ranges
-       *           |> List.map (
-       *             Range.map ~f_inc:f ~f_exc:f
-       *             )
-       *           |> List.map (fun range ->
-       *               match range with
-       *               | `Range_exc (x, y) -> (x, y)
-       *               | `Range_inc (x, y) -> (x, succ y)
-       *             )
-       *           |> List.map (fun (x, y) ->
-       *               Int64.of_int x, Int64.of_int y
-       *             )
-       *         in
-       *         Seq.flat_map (fun (x, _) ->
-       *             second_of_day_ranges_exc
-       *             |> List.map (fun (second_of_day_start, second_of_day_end_exc) ->
-       *                 (Int64.add x second_of_day_start,
-       *                  Int64.add x second_of_day_end_exc
-       *                 )
-       *               )
-       *             |> List.to_seq
-       *           )
-       *   ) *)
-      |> Intervals.Inter.inter ~skip_check:true (List.to_seq space)
+      failwith "Unimplemented"
+    (* let one_day = Result.get_ok @@ Duration.make ~days:1 () in
+     * let one_day_in_seconds = Duration.to_seconds one_day in
+     * t_of_start_of_days_of_recur search_using_tz_offset_s space recur
+     * |> aux search_using_tz_offset_s *)
+    (* |> (
+     *     match recur.hms with
+     *     | None -> Seq.map (fun (x, _) -> (x, Int64.add x one_day_in_seconds))
+     *     | Some hms ->
+     *       let dt = Result.get_ok @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:search_using_tz_offset_s x in
+     *       match hms with
+     *       | Every_nth { hour; minute; second } ->
+     *         failwith "Unimplemented"
+     *       | Hmss ranges ->
+     *         let f (x, y) =
+     *           second_of_day_of_hms x, second_of_day_of_hms y
+     *         in
+     *         let second_of_day_ranges_exc =
+     *           ranges
+     *           |> List.map (
+     *             Range.map ~f_inc:f ~f_exc:f
+     *             )
+     *           |> List.map (fun range ->
+     *               match range with
+     *               | `Range_exc (x, y) -> (x, y)
+     *               | `Range_inc (x, y) -> (x, succ y)
+     *             )
+     *           |> List.map (fun (x, y) ->
+     *               Int64.of_int x, Int64.of_int y
+     *             )
+     *         in
+     *         Seq.flat_map (fun (x, _) ->
+     *             second_of_day_ranges_exc
+     *             |> List.map (fun (second_of_day_start, second_of_day_end_exc) ->
+     *                 (Int64.add x second_of_day_start,
+     *                  Int64.add x second_of_day_end_exc
+     *                 )
+     *               )
+     *             |> List.to_seq
+     *           )
+     *   ) *)
+    (* |> Intervals.Inter.inter ~skip_check:true (List.to_seq space) *)
     | Unary_op (space, op, t) -> (
         let search_using_tz_offset_s =
           match op with
@@ -1318,17 +1341,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
           do_skip_n_points (Int64.of_int n) s
           |> Intervals.Normalize.normalize ~skip_filter_empty:true
             ~skip_sort:true ~skip_filter_invalid:true
-        | Skip_n_intervals n -> OSeq.drop n s
         | Next_n_points n -> do_take_n_points (Int64.of_int n) s
-        | Next_n_intervals n -> OSeq.take n s
-        | Every_nth n -> OSeq.take_nth n s
-        | Nth n -> s |> OSeq.drop n |> OSeq.take 1
-        | Chunk { chunk_size; drop_partial } ->
-          Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
-        | Chunk_by_year ->
-          do_chunk_by_year search_using_tz_offset_s s
-        | Chunk_by_month ->
-          do_chunk_by_month search_using_tz_offset_s s
         | Shift n ->
           Seq.map
             (fun (start, end_exc) -> (Int64.add start n, Int64.add end_exc n))
@@ -1369,14 +1382,41 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
       |> Seq.filter_map (fun (start, end_exc) ->
           find_after (start, end_exc) s2
           |> Option.map (fun (start', _) -> (start, start')))
+    | Unchunk c -> aux_chunked search_using_tz_offset_s c
+                   |> Intervals.Normalize.normalize ~skip_filter_invalid:true
+                     ~skip_sort:true
+  and aux_chunked search_using_tz_offset_s (chunked : chunked) =
+    let chunk_based_on_op_on_t op s =
+      match op with
+      | Chunk_as_is -> s
+      | Chunk_by_duration { chunk_size; drop_partial } ->
+        Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
+      | Chunk_at_year_boundary -> do_chunk_at_year_boundary search_using_tz_offset_s s
+      | Chunk_at_month_boundary -> do_chunk_at_month_boundary search_using_tz_offset_s s
+    in
+    match chunked with
+    | Unary_op_on_t (op, t) -> (
+        aux search_using_tz_offset_s t
+        |> chunk_based_on_op_on_t op
+      )
+    | Unary_op_on_chunked (op, c) -> (
+        let s = aux_chunked search_using_tz_offset_s c in
+        match op with
+        | Nth n -> s |> OSeq.drop n |> OSeq.take 1
+        | Skip_n n -> OSeq.drop n s
+        | Next_n n -> OSeq.take n s
+        | Every_nth n -> OSeq.take_nth n s
+        | Chunk_again op ->
+          chunk_based_on_op_on_t op s
+      )
   in
   try
     time
     |> optimize_search_space search_using_tz_offset_s
     |> aux search_using_tz_offset_s
-    |> Time.Intervals.Normalize.normalize ~skip_filter_invalid:true
+    |> Intervals.Normalize.normalize ~skip_filter_invalid:true
       ~skip_sort:true
     |> Result.ok
   with
-  | Time.Interval_is_invalid -> Error "Invalid interval"
-  | Time.Intervals_are_not_sorted -> Error "Intervals are not sorted"
+  | Interval_is_invalid -> Error "Invalid interval"
+  | Intervals_are_not_sorted -> Error "Intervals are not sorted"

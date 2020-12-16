@@ -1647,17 +1647,7 @@ type unary_op =
   | Not
   | Every
   | Skip_n_points of int
-  | Skip_n_intervals of int
   | Next_n_points of int
-  | Next_n_intervals of int
-  | Every_nth of int
-  | Nth of int
-  | Chunk of {
-      chunk_size : int64;
-      drop_partial : bool;
-    }
-  | Chunk_by_year
-  | Chunk_by_month
   | Shift of int64
   | Lengthen of int64
   | Change_tz_offset_s of int
@@ -1713,6 +1703,22 @@ let default_search_space_end_exc = Date_time.(to_timestamp max)
 let default_search_space : search_space =
   [ (default_search_space_start, default_search_space_end_exc) ]
 
+type chunked_unary_op_on_t =
+  | Chunk_as_is
+  | Chunk_at_year_boundary
+  | Chunk_at_month_boundary
+  | Chunk_by_duration of {
+      chunk_size : int64;
+      drop_partial : bool;
+    }
+
+type chunked_unary_op_on_chunked =
+  | Skip_n of int
+  | Next_n of int
+  | Every_nth of int
+  | Nth of int
+  | Chunk_again of chunked_unary_op_on_t
+
 type t =
   | Empty
   | All
@@ -1729,6 +1735,11 @@ type t =
   | After of search_space * t * t
   | Between_inc of search_space * t * t
   | Between_exc of search_space * t * t
+  | Unchunk of chunked
+
+and chunked =
+  | Unary_op_on_t of chunked_unary_op_on_t * t
+  | Unary_op_on_chunked of chunked_unary_op_on_chunked * chunked
 
 let equal t1 t2 =
   let rec aux t1 t2 =
@@ -1756,25 +1767,64 @@ let equal t1 t2 =
   in
   aux t1 t2
 
-let chunk ?(drop_partial = false) (chunk_size : Duration.t) (t : t) : t =
-  Unary_op
-    ( default_search_space,
-      Chunk { chunk_size = Duration.to_seconds chunk_size; drop_partial },
-      t )
+type chunking = [
+  | `As_is
+  | `By_duration of Duration.t
+  | `By_duration_drop_partial of Duration.t
+  | `At_year_boundary
+  | `At_month_boundary
+]
 
-let chunk_by_year (t : t) : t =
-  Unary_op
-    (default_search_space,
-     Chunk_by_year,
-     t
+let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
+  match chunking with
+  | `As_is ->
+    Unchunk (
+      f (
+        Unary_op_on_t (Chunk_as_is, t)
+      )
+    )
+  | `By_duration duration ->
+    Unchunk
+      (
+        f (
+          Unary_op_on_t
+            (Chunk_by_duration { chunk_size = Duration.to_seconds duration; drop_partial = false }, t)
+        )
+      )
+  | `By_duration_drop_partial duration ->
+    Unchunk
+      (
+        f (
+          Unary_op_on_t
+            (Chunk_by_duration { chunk_size = Duration.to_seconds duration; drop_partial = true }, t)
+        )
+      )
+  | `At_year_boundary ->
+    Unchunk
+      (
+        f (
+          Unary_op_on_t (Chunk_at_year_boundary, t)
+        )
+      )
+  | `At_month_boundary ->
+    Unchunk (
+      f (
+        Unary_op_on_t (Chunk_at_month_boundary, t)
+      )
     )
 
-let chunk_by_month (t : t) : t =
-  Unary_op
-    (default_search_space,
-     Chunk_by_month,
-     t
-    )
+let chunk_again (chunking : chunking) chunked : chunked =
+  match chunking with
+  | `As_is ->
+    Unary_op_on_chunked (Chunk_again Chunk_as_is, chunked)
+  | `By_duration duration ->
+    Unary_op_on_chunked (Chunk_again (Chunk_by_duration { chunk_size = Duration.to_seconds duration; drop_partial = false }), chunked)
+  | `By_duration_drop_partial duration ->
+    Unary_op_on_chunked (Chunk_again (Chunk_by_duration { chunk_size = Duration.to_seconds duration; drop_partial = true }), chunked)
+  | `At_year_boundary ->
+    Unary_op_on_chunked (Chunk_again Chunk_at_year_boundary, chunked)
+  | `At_month_boundary ->
+    Unary_op_on_chunked (Chunk_again Chunk_at_year_boundary, chunked)
 
 let shift (offset : Duration.t) (t : t) : t =
   Unary_op (default_search_space, Shift (Duration.to_seconds offset), t)
@@ -1849,23 +1899,22 @@ let skip_n_points (n : int) (t : t) : t =
   if n < 0 then invalid_arg "skip_n_points: n < 0"
   else Unary_op (default_search_space, Skip_n_points n, t)
 
-let first (t : t) : t = Unary_op (default_search_space, Next_n_intervals 1, t)
+let first (c : chunked) : chunked = Unary_op_on_chunked (Next_n 1, c)
 
-let take_n (n : int) (t : t) : t =
+let take_n (n : int) (c : chunked) : chunked =
   if n < 0 then invalid_arg "take_n: n < 0"
-  else Unary_op (default_search_space, Next_n_intervals n, t)
+  else Unary_op_on_chunked (Next_n n, c)
 
-let take_nth (n : int) (t : t) : t =
+let take_nth (n : int) (c : chunked) : chunked =
   if n < 0 then invalid_arg "take_nth: n < 0"
-  else Unary_op (default_search_space, Every_nth n, t)
+  else Unary_op_on_chunked (Every_nth n, c)
 
-let nth (n : int) (t : t) : t =
-  if n < 0 then invalid_arg "nth: n < 0"
-  else Unary_op (default_search_space, Nth n, t)
+let nth (n : int) (c : chunked) : chunked =
+  if n < 0 then invalid_arg "nth: n < 0" else Unary_op_on_chunked (Nth n, c)
 
-let skip_n (n : int) (t : t) : t =
+let skip_n (n : int) (c : chunked) : chunked =
   if n < 0 then invalid_arg "skip_n: n < 0"
-  else Unary_op (default_search_space, Skip_n_intervals n, t)
+  else Unary_op_on_chunked (Skip_n n, c)
 
 let interval_inc (a : timestamp) (b : timestamp) : t =
   match Date_time.of_timestamp a with
