@@ -348,15 +348,17 @@ let of_sexp (x : CCSexp.t) =
         ] ->
           aux_chunked
             (fun x ->
-               f x
+               x
                |> chunk_again
-                 (`By_duration_drop_partial (duration_of_sexp duration)))
+                 (`By_duration_drop_partial (duration_of_sexp duration))
+               |> f
+            )
             chunked
         | [ `Atom "chunk_again"; `List [`Atom "chunk_by_duration"; duration; chunked ] ]
           ->
           aux_chunked
             (fun x ->
-               f x |> chunk_again (`By_duration (duration_of_sexp duration)))
+               x |> chunk_again (`By_duration (duration_of_sexp duration)) |> f)
             chunked
         | _ ->
           invalid_data
