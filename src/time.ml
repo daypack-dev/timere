@@ -1791,7 +1791,8 @@ type chunking =
 
 let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
   match chunking with
-  | `Disjoint_interval -> Unchunk (f (Unary_op_on_t (Chunk_disjoint_interval, t)))
+  | `Disjoint_interval ->
+    Unchunk (f (Unary_op_on_t (Chunk_disjoint_interval, t)))
   | `By_duration duration ->
     Unchunk
       (f
@@ -1818,7 +1819,8 @@ let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
 
 let chunk_again (chunking : chunking) chunked : chunked =
   match chunking with
-  | `Disjoint_interval -> Unary_op_on_chunked (Chunk_again Chunk_disjoint_interval, chunked)
+  | `Disjoint_interval ->
+    Unary_op_on_chunked (Chunk_again Chunk_disjoint_interval, chunked)
   | `By_duration duration ->
     Unary_op_on_chunked
       ( Chunk_again
@@ -2087,9 +2089,7 @@ let hms_interval_exc (hms_a : hms) (hms_b : hms) : t =
           (Duration.make ~days:1 () |> Result.get_ok |> Duration.to_seconds)
           (Int64.of_int (a - b))
     in
-    let gap_in_seconds_minus_one =
-      Int64.pred gap_in_seconds
-    in
+    let gap_in_seconds_minus_one = Int64.pred gap_in_seconds in
     let gap_to_use =
       gap_in_seconds_minus_one |> Duration.of_seconds |> Result.get_ok
     in
@@ -2259,21 +2259,16 @@ let of_sorted_intervals_seq ?(skip_invalid : bool = false)
          else Intervals.Check.check_if_valid )
     |> Seq.filter_map (fun (x, y) ->
         match
-          ( Date_time.of_timestamp x,
-            Date_time.of_timestamp (Int64.pred y) )
+          (Date_time.of_timestamp x, Date_time.of_timestamp (Int64.pred y))
         with
         | Ok _, Ok _ -> Some (x, y)
-        | _, _ ->
-          if skip_invalid then None else raise Interval_is_invalid)
+        | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
     |> Intervals.Check.check_if_sorted
-    |> Intervals.Normalize.normalize ~skip_filter_invalid:true
-      ~skip_sort:true
+    |> Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
   in
   match s () with
   | Seq.Nil -> Empty
-  | _ ->
-    Timestamp_interval_seq
-      ( default_search_space, s)
+  | _ -> Timestamp_interval_seq (default_search_space, s)
 
 let of_sorted_intervals ?(skip_invalid : bool = false)
     (l : (int64 * int64) list) : t =
@@ -2287,20 +2282,17 @@ let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
          else Intervals.Check.check_if_valid_list )
     |> List.filter_map (fun (x, y) ->
         match
-          ( Date_time.of_timestamp x,
-            Date_time.of_timestamp (Int64.pred y) )
+          (Date_time.of_timestamp x, Date_time.of_timestamp (Int64.pred y))
         with
         | Ok _, Ok _ -> Some (x, y)
-        | _, _ ->
-          if skip_invalid then None else raise Interval_is_invalid)
+        | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
     |> Intervals.Sort.sort_uniq_intervals_list
     |> List.to_seq
-    |> Intervals.Normalize.normalize ~skip_filter_invalid:true
-      ~skip_sort:true
+    |> Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
   in
   match s () with
   | Seq.Nil -> Empty
-  | _ -> Timestamp_interval_seq ( default_search_space, s )
+  | _ -> Timestamp_interval_seq (default_search_space, s)
 
 let of_intervals_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t)
   : t =
