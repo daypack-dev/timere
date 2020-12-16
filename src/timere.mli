@@ -189,6 +189,10 @@ val interval_inc : timestamp -> timestamp -> t
 
 val interval_exc : timestamp -> timestamp -> t
 
+val hms_interval_inc : hms -> hms -> t
+
+val hms_interval_exc : hms -> hms -> t
+
 (** {1 Recurrence} *)
 
 type recur_year
@@ -311,6 +315,8 @@ val of_intervals_seq : ?skip_invalid:bool -> interval Seq.t -> t
 val of_sorted_intervals : ?skip_invalid:bool -> interval list -> t
 
 val of_sorted_intervals_seq : ?skip_invalid:bool -> interval Seq.t -> t
+
+val of_hms_intervals : (hms * hms) Seq.t -> t
 
 (** {1 Search oriented operations} *)
 

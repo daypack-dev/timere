@@ -2077,6 +2077,40 @@ let month_day_ranges_are_valid_relaxed day_range =
   month_day_ranges_are_valid_strict ~safe_month_day_range_inc:(-31, 31)
     day_range
 
+let hms_interval_exc (hms_a : hms) (hms_b : hms) : t =
+  let a = second_of_day_of_hms hms_a in
+  let b = second_of_day_of_hms hms_b in
+  let gap =
+    if a <= b then
+      Duration.of_seconds (Int64.of_int (b - a))
+      |> Result.get_ok
+    else
+      Int64.sub
+        (Duration.make ~days:1 () |> Result.get_ok |> Duration.to_seconds)
+        ((Int64.of_int (a - b)))
+      |> Duration.of_seconds
+      |> Result.get_ok
+  in
+  lengthen
+    gap
+    (pattern ~hours:[hms_a.hour] ~minutes:[hms_a.minute] ~seconds:[hms_a.second] ())
+
+let hms_interval_inc (hms_a : hms) (hms_b : hms) : t =
+  let hms_b =
+    hms_b
+    |> second_of_day_of_hms
+    |> succ
+    |> hms_of_second_of_day
+  in
+  hms_interval_exc hms_a hms_b
+
+let of_hms_intervals (s : (hms * hms) Seq.t) : t =
+  s
+  |> Seq.map (fun (a, b) ->
+      hms_interval_exc a b
+    )
+  |> union_seq
+
 let branching ?(allow_out_of_range_month_day = false) ?(years = [])
     ?(months = []) ?(days = Month_days []) ?(hmss = []) () : t =
   let years =
