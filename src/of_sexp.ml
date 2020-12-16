@@ -233,6 +233,10 @@ let of_sexp (x : CCSexp.t) =
     match x with
     | `List l -> (
         match l with
+        | [ `Atom "all" ] ->
+          always
+        | [ `Atom "empty" ] ->
+          empty
         | `Atom "intervals" :: l ->
           l
           |> List.map (fun x ->
@@ -320,25 +324,27 @@ let of_sexp (x : CCSexp.t) =
         | [ `Atom "chunk_by_duration"; duration; x ] ->
           chunk (`By_duration (duration_of_sexp duration)) f (aux x)
         | [ `Atom "drop"; n; chunked ] ->
-          aux_chunked (fun x -> f x |> drop (int_of_sexp n)) chunked
+          aux_chunked (fun x -> x |> drop (int_of_sexp n) |> f) chunked
         | [ `Atom "take"; n; chunked ] ->
-          aux_chunked (fun x -> f x |> take (int_of_sexp n)) chunked
+          aux_chunked (fun x -> x |> take (int_of_sexp n) |> f) chunked
         | [ `Atom "take_nth"; n; chunked ] ->
-          aux_chunked (fun x -> f x |> take_nth (int_of_sexp n)) chunked
+          aux_chunked (fun x -> x |> take_nth (int_of_sexp n) |> f) chunked
         | [ `Atom "nth"; n; chunked ] ->
-          aux_chunked (fun x -> f x |> nth (int_of_sexp n)) chunked
-        | [ `Atom "chunk_again"; `Atom "chunk_as_is"; chunked ] ->
-          aux_chunked (fun x -> f x |> chunk_again `As_is) chunked
-        | [ `Atom "chunk_again"; `Atom "chunk_at_year_boundary"; chunked ] ->
-          aux_chunked (fun x -> f x |> chunk_again `At_year_boundary) chunked
-        | [ `Atom "chunk_again"; `Atom "chunk_at_month_boundary"; chunked ] ->
-          aux_chunked (fun x -> f x |> chunk_again `At_month_boundary) chunked
+          aux_chunked (fun x -> x |> nth (int_of_sexp n) |> f) chunked
+        | [ `Atom "chunk_again"; `List [`Atom "chunk_as_is"; chunked] ] ->
+          aux_chunked (fun x -> x |> chunk_again `As_is |> f) chunked
+        | [ `Atom "chunk_again"; `List [`Atom "chunk_at_year_boundary"; chunked ] ] ->
+          aux_chunked (fun x -> x |> chunk_again `At_year_boundary |> f) chunked
+        | [ `Atom "chunk_again"; `List [`Atom "chunk_at_month_boundary"; chunked ] ] ->
+          aux_chunked (fun x -> x |> chunk_again `At_month_boundary |> f) chunked
         | [
           `Atom "chunk_again";
-          `Atom "chunk_by_duration";
-          duration;
-          `Atom "drop_partial";
-          chunked;
+          `List [
+            `Atom "chunk_by_duration";
+            duration;
+            `Atom "drop_partial";
+            chunked;
+          ]
         ] ->
           aux_chunked
             (fun x ->
@@ -346,7 +352,7 @@ let of_sexp (x : CCSexp.t) =
                |> chunk_again
                  (`By_duration_drop_partial (duration_of_sexp duration)))
             chunked
-        | [ `Atom "chunk_again"; `Atom "chunk_by_duration"; duration; chunked ]
+        | [ `Atom "chunk_again"; `List [`Atom "chunk_by_duration"; duration; chunked ] ]
           ->
           aux_chunked
             (fun x ->
