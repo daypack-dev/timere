@@ -1264,8 +1264,8 @@ let do_chunk_at_month_boundary tz_offset_s (s : Time.Interval.t Seq.t) =
 
 let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
+  let open Time in
   let rec aux search_using_tz_offset_s time =
-    let open Time in
     match time with
     | Empty -> Seq.empty
     | All ->
@@ -1383,8 +1383,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
           find_after (start, end_exc) s2
           |> Option.map (fun (start', _) -> (start, start')))
     | Unchunk c -> aux_chunked search_using_tz_offset_s c
-  and aux_chunked search_using_tz_offset_s (chunked : Time.chunked) =
-    let open Time in
+  and aux_chunked search_using_tz_offset_s (chunked : chunked) =
     match chunked with
     | Unary_op_on_t (op, t) -> (
         let s = aux search_using_tz_offset_s t in
@@ -1406,9 +1405,9 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
     time
     |> optimize_search_space search_using_tz_offset_s
     |> aux search_using_tz_offset_s
-    |> Time.Intervals.Normalize.normalize ~skip_filter_invalid:true
+    |> Intervals.Normalize.normalize ~skip_filter_invalid:true
       ~skip_sort:true
     |> Result.ok
   with
-  | Time.Interval_is_invalid -> Error "Invalid interval"
-  | Time.Intervals_are_not_sorted -> Error "Intervals are not sorted"
+  | Interval_is_invalid -> Error "Invalid interval"
+  | Intervals_are_not_sorted -> Error "Intervals are not sorted"
