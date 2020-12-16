@@ -1672,35 +1672,6 @@ type branching = {
 
 let branching_equal b1 b2 = b1 = b2
 
-type 'a recur_spec =
-  | Match of 'a list
-  | Every_nth of int
-
-type recur_year = int recur_spec
-
-type recur_month = month recur_spec
-
-type recur_day =
-  | Day of int recur_spec
-  | Weekday_every_nth of int * weekday
-  | Weekday_nth of int * weekday
-
-type recur_hms =
-  | Every_nth of {
-      hour : int option;
-      minute : int option;
-      second : int option;
-    }
-  | Hmss of hms Range.range list
-
-type recur = {
-  start : Date_time.t;
-  year : recur_year option;
-  month : recur_month option;
-  day : recur_day option;
-  hms : recur_hms option;
-}
-
 type search_space = Interval.t list
 
 let default_search_space_start = Date_time.(to_timestamp min)
@@ -1732,7 +1703,6 @@ type t =
   | Timestamp_interval_seq of search_space * (int64 * int64) Seq.t
   | Pattern of search_space * Pattern.t
   | Branching of search_space * branching
-  | Recur of search_space * recur
   | Unary_op of search_space * unary_op * t
   | Interval_inc of search_space * timestamp * timestamp
   | Interval_exc of search_space * timestamp * timestamp
@@ -2192,35 +2162,6 @@ let branching ?(allow_out_of_range_month_day = false) ?(years = [])
       in
       Branching (default_search_space, { years; months; days; hmss })
     else invalid_arg "branching"
-
-let every_nth_year n : recur_year =
-  if n <= 0 then invalid_arg "every_nth_year: n <= 0" else Every_nth n
-
-let every_nth_month n : recur_month =
-  if n <= 0 then invalid_arg "every_nth_month: n <= 0" else Every_nth n
-
-let every_nth_day n : recur_day =
-  if n <= 0 then invalid_arg "every_nth_day: n <= 0" else Day (Every_nth n)
-
-let every_nth_weekday n weekday : recur_day =
-  if n <= 0 then invalid_arg "every_nth_weekday: n <= 0"
-  else Weekday_every_nth (n, weekday)
-
-let nth_weekday n weekday : recur_day =
-  if n < 0 then invalid_arg "nth_weekday: n < 0" else Weekday_nth (n, weekday)
-
-let match_years l : recur_year =
-  if
-    List.for_all (fun x -> Date_time.min.year <= x && x <= Date_time.max.year) l
-  then Match (List.sort_uniq compare l)
-  else invalid_arg "match_years"
-
-let match_months l : recur_month = Match (List.sort_uniq compare_month l)
-
-let recur ?(year : int recur_spec option) ?(month : month recur_spec option)
-    ?(day : recur_day option) ?(hms : recur_hms option) (start : Date_time.t) :
-  t =
-  Recur (default_search_space, { start; year; month; day; hms })
 
 let years years = pattern ~years ()
 

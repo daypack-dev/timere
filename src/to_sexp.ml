@@ -142,62 +142,6 @@ let sexp_list_of_unary_op (op : Time.unary_op) =
   | Change_tz_offset_s n ->
     [ CCSexp.atom "change_tz_offset_s"; CCSexp.atom (string_of_int n) ]
 
-let sexp_of_recur (r : Time.recur) : CCSexp.t =
-  let open Time in
-  CCSexp.(
-    list
-      (List.filter_map
-         (fun x -> x)
-         [
-           Some (atom "recur");
-           Some (list [ atom "start"; sexp_of_date_time r.start ]);
-           Option.map
-             (fun year ->
-                list
-                  [
-                    atom "year";
-                    ( match year with
-                      | Match l -> list (atom "match" :: sexp_list_of_ints l)
-                      | Every_nth n -> list [ atom "every_nth"; sexp_of_int n ] );
-                  ])
-             r.year;
-           Option.map
-             (fun month ->
-                list
-                  [
-                    atom "month";
-                    ( match month with
-                      | Match l -> list (atom "match" :: List.map sexp_of_month l)
-                      | Every_nth n -> list [ atom "every_nth"; sexp_of_int n ] );
-                  ])
-             r.month;
-           Option.map
-             (fun day ->
-                list
-                  [
-                    atom "day";
-                    ( match day with
-                      | Day (Match l) -> list (atom "match" :: sexp_list_of_ints l)
-                      | Day (Every_nth n) ->
-                        list [ atom "every_nth"; sexp_of_int n ]
-                      | Weekday_every_nth (n, weekday) ->
-                        list
-                          [
-                            atom "weekday_every_nth";
-                            sexp_of_int n;
-                            sexp_of_weekday weekday;
-                          ]
-                      | Weekday_nth (n, weekday) ->
-                        list
-                          [
-                            atom "weekday_nth";
-                            sexp_of_int n;
-                            sexp_of_weekday weekday;
-                          ] );
-                  ])
-             r.day;
-         ]))
-
 let to_sexp (t : Time.t) : CCSexp.t =
   let open Time in
   let rec aux t =
@@ -214,7 +158,6 @@ let to_sexp (t : Time.t) : CCSexp.t =
       CCSexp.list (CCSexp.atom "intervals" :: l)
     | Pattern (_, pat) -> sexp_of_pattern pat
     | Branching (_, b) -> sexp_of_branching b
-    | Recur (_, r) -> sexp_of_recur r
     | Unary_op (_, op, t) -> CCSexp.list (sexp_list_of_unary_op op @ [ aux t ])
     | Interval_inc (_, a, b) ->
       let open CCSexp in

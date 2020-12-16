@@ -185,38 +185,6 @@ val hms_interval_inc : hms -> hms -> t
 
 val hms_interval_exc : hms -> hms -> t
 
-(** {1 Recurrence} *)
-
-type recur_year
-
-type recur_month
-
-type recur_day
-
-type recur_hms
-
-val every_nth_year : int -> recur_year
-
-val every_nth_month : int -> recur_month
-
-val every_nth_day : int -> recur_day
-
-val every_nth_weekday : int -> weekday -> recur_day
-
-val nth_weekday : int -> weekday -> recur_day
-
-val match_years : int list -> recur_year
-
-val match_months : month list -> recur_month
-
-val recur :
-  ?year:recur_year ->
-  ?month:recur_month ->
-  ?day:recur_day ->
-  ?hms:recur_hms ->
-  Date_time.t ->
-  t
-
 (** {1 Durations} *)
 
 module Duration : sig
