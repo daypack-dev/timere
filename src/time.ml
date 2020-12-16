@@ -2087,10 +2087,13 @@ let hms_interval_exc (hms_a : hms) (hms_b : hms) : t =
           (Duration.make ~days:1 () |> Result.get_ok |> Duration.to_seconds)
           (Int64.of_int (a - b))
     in
-    let gap =
-      gap_in_seconds |> Int64.pred |> Duration.of_seconds |> Result.get_ok
+    let gap_in_seconds_minus_one =
+      Int64.pred gap_in_seconds
     in
-    lengthen gap
+    let gap_to_use =
+      gap_in_seconds_minus_one |> Duration.of_seconds |> Result.get_ok
+    in
+    lengthen gap_to_use
       (pattern ~hours:[ hms_a.hour ] ~minutes:[ hms_a.minute ]
          ~seconds:[ hms_a.second ] ())
 
