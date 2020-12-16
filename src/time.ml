@@ -1292,6 +1292,13 @@ let make_hms ~hour ~minute ~second =
   then Ok { hour; minute; second }
   else Error ()
 
+exception Invalid_hms
+
+let make_hms_exn ~hour ~minute ~second =
+  match make_hms ~hour ~minute ~second with
+  | Ok x -> x
+  | Error () -> raise Invalid_hms
+
 let second_of_day_of_hms x =
   Duration.make ~hours:x.hour ~minutes:x.minute ~seconds:x.second ()
   |> Result.get_ok
