@@ -116,15 +116,18 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
         (mem ~search_using_tz_offset_s ~search_start ~search_end_exc t)
       |> intervals_of_timestamps
   and aux_chunked search_using_tz_offset_s chunked =
+    let chunk_based_on_op_on_t op s =
+      match op with
+      | Chunk_as_is -> s
+      | Chunk_by_duration { chunk_size; drop_partial } ->
+        do_chunk ~drop_partial chunk_size s
+      | Chunk_at_year_boundary -> failwith "Unimplemented"
+      | Chunk_at_month_boundary -> failwith "Unimplemented"
+    in
     match chunked with
     | Unary_op_on_t (op, t) -> (
-        let s = aux search_using_tz_offset_s t in
-        match op with
-        | Chunk_as_is -> s
-        | Chunk_by_duration { chunk_size; drop_partial } ->
-          do_chunk ~drop_partial chunk_size s
-        | Chunk_at_year_boundary -> failwith "Unimplemented"
-        | Chunk_at_month_boundary -> failwith "Unimplemented"
+        aux search_using_tz_offset_s t
+        |> chunk_based_on_op_on_t op
       )
     | Unary_op_on_chunked (op, c) -> (
         let s = aux_chunked search_using_tz_offset_s c in
@@ -133,6 +136,8 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
         | Skip_n n -> OSeq.drop n s
         | Next_n n -> OSeq.take n s
         | Every_nth n -> OSeq.take_nth n s
+        | Chunk_again op ->
+          chunk_based_on_op_on_t op s
       )
   in
   aux search_using_tz_offset_s t |> filter |> normalize

@@ -1717,6 +1717,7 @@ type chunked_unary_op_on_chunked =
   | Next_n of int
   | Every_nth of int
   | Nth of int
+  | Chunk_again of chunked_unary_op_on_t
 
 type t =
   | Empty
@@ -1811,6 +1812,19 @@ let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
         Unary_op_on_t (Chunk_at_month_boundary, t)
       )
     )
+
+let chunk_again (chunking : chunking) chunked : chunked =
+  match chunking with
+  | `As_is ->
+    Unary_op_on_chunked (Chunk_again Chunk_as_is, chunked)
+  | `By_duration duration ->
+    Unary_op_on_chunked (Chunk_again (Chunk_by_duration { chunk_size = Duration.to_seconds duration; drop_partial = false }), chunked)
+  | `By_duration_drop_partial duration ->
+    Unary_op_on_chunked (Chunk_again (Chunk_by_duration { chunk_size = Duration.to_seconds duration; drop_partial = true }), chunked)
+  | `At_year_boundary ->
+    Unary_op_on_chunked (Chunk_again Chunk_at_year_boundary, chunked)
+  | `At_month_boundary ->
+    Unary_op_on_chunked (Chunk_again Chunk_at_year_boundary, chunked)
 
 let shift (offset : Duration.t) (t : t) : t =
   Unary_op (default_search_space, Shift (Duration.to_seconds offset), t)

@@ -262,6 +262,8 @@ type chunking = [
 
 val chunk : chunking -> (chunked -> chunked) -> t -> t
 
+val chunk_again : chunking -> chunked -> chunked
+
 val first : chunked -> chunked
 
 val take_n : int -> chunked -> chunked
