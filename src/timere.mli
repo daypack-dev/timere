@@ -71,11 +71,25 @@ val pattern :
   unit ->
   t
 
-type hms = {
+exception Invalid_hms
+
+type hms = private {
   hour : int;
   minute : int;
   second : int;
 }
+
+val make_hms :
+  hour:int ->
+  minute:int ->
+  second:int ->
+  (hms, unit) result
+
+val make_hms_exn :
+  hour:int ->
+  minute:int ->
+  second:int ->
+  hms
 
 type branching_days =
   | Month_days of int range list
@@ -174,6 +188,10 @@ val interval_dt_exc : Date_time.t -> Date_time.t -> t
 val interval_inc : timestamp -> timestamp -> t
 
 val interval_exc : timestamp -> timestamp -> t
+
+val hms_interval_inc : hms -> hms -> t
+
+val hms_interval_exc : hms -> hms -> t
 
 (** {1 Recurrence} *)
 
@@ -297,6 +315,8 @@ val of_intervals_seq : ?skip_invalid:bool -> interval Seq.t -> t
 val of_sorted_intervals : ?skip_invalid:bool -> interval list -> t
 
 val of_sorted_intervals_seq : ?skip_invalid:bool -> interval Seq.t -> t
+
+val of_hms_intervals : (hms * hms) Seq.t -> t
 
 (** {1 Search oriented operations} *)
 

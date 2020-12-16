@@ -78,7 +78,10 @@ let debug_resolver () =
    * in *)
   let timere =
     let open Timere in
-    chunk `At_month_boundary (take_nth 2) (pattern ~years:[ 2000 ] ())
+    (* chunk `At_month_boundary (take_nth 2) (pattern ~years:[ 2000 ] ()) *)
+    hms_interval_exc
+      (make_hms_exn ~hour:23 ~minute:0 ~second:0)
+      (make_hms_exn ~hour:3 ~minute:0 ~second:0)
   in
   print_endline (Timere.to_sexp_string timere);
   print_endline "=====";
