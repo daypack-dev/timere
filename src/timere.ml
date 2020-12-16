@@ -80,6 +80,4 @@ module Utils = struct
     (weekday list, unit) Result.t =
     try Ok (Weekday_ranges.Flatten.flatten_list weekdays)
     with Range.Range_is_invalid -> Error ()
-
-  let resolve_simple = Simple_resolver.resolve
 end

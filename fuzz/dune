@@ -72,7 +72,7 @@
 
 (rule
  (targets simple_resolver.ml)
- (deps    ../src/simple_resolver.ml)
+ (deps    ../tests/simple_resolver.ml)
  (action  (copy %{deps} %{targets}))
 )
 
