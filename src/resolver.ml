@@ -1340,7 +1340,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
           do_skip_n_points (Int64.of_int n) s
           |> Intervals.Normalize.normalize ~skip_filter_empty:true
             ~skip_sort:true ~skip_filter_invalid:true
-        | Next_n_points n -> do_take_n_points (Int64.of_int n) s
+        | Take_n_points n -> do_take_n_points (Int64.of_int n) s
         | Shift n ->
           Seq.map
             (fun (start, end_exc) -> (Int64.add start n, Int64.add end_exc n))
@@ -1404,7 +1404,7 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
         match op with
         | Nth n -> s |> OSeq.drop n |> OSeq.take 1
         | Skip_n n -> OSeq.drop n s
-        | Next_n n -> OSeq.take n s
+        | Take_n n -> OSeq.take n s
         | Every_nth n -> OSeq.take_nth n s
         | Chunk_again op -> chunk_based_on_op_on_t op s )
   in

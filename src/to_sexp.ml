@@ -123,7 +123,7 @@ let sexp_list_of_unary_op (op : Time.unary_op) =
   | Every -> [ CCSexp.atom "every" ]
   | Skip_n_points n ->
     [ CCSexp.atom "skip_n_points"; CCSexp.atom (string_of_int n) ]
-  | Next_n_points n ->
+  | Take_n_points n ->
     [ CCSexp.atom "next_n_points"; CCSexp.atom (string_of_int n) ]
   (* | Every_nth n -> [ CCSexp.atom "every_nth"; CCSexp.atom (string_of_int n) ]
    * | Nth n -> [ CCSexp.atom "nth"; CCSexp.atom (string_of_int n) ]
@@ -259,8 +259,8 @@ let to_sexp (t : Time.t) : CCSexp.t =
                 (match op with
                  | Skip_n n ->
                    [ atom "skip_n"; sexp_of_int n; aux_chunked chunked ]
-                 | Next_n n ->
-                   [ atom "next_n"; sexp_of_int n; aux_chunked chunked ]
+                 | Take_n n ->
+                   [ atom "take_n"; sexp_of_int n; aux_chunked chunked ]
                  | Every_nth n -> [ atom "every_nth"; sexp_of_int n; aux_chunked chunked ]
                  | Nth n -> [ atom "nth"; sexp_of_int n; aux_chunked chunked ]
                  | Chunk_again op ->

@@ -1647,7 +1647,7 @@ type unary_op =
   | Not
   | Every
   | Skip_n_points of int
-  | Next_n_points of int
+  | Take_n_points of int
   | Shift of int64
   | Lengthen of int64
   | Change_tz_offset_s of int
@@ -1714,7 +1714,7 @@ type chunked_unary_op_on_t =
 
 type chunked_unary_op_on_chunked =
   | Skip_n of int
-  | Next_n of int
+  | Take_n of int
   | Every_nth of int
   | Nth of int
   | Chunk_again of chunked_unary_op_on_t
@@ -1891,21 +1891,21 @@ let union (l : t list) : t = union_seq (List.to_seq l)
 let round_robin_pick (l : t list) : t =
   Round_robin_pick_list (default_search_space, l)
 
-let first_point (a : t) : t = Unary_op (default_search_space, Next_n_points 1, a)
+let first_point (a : t) : t = Unary_op (default_search_space, Take_n_points 1, a)
 
 let take_n_points (n : int) (t : t) : t =
   if n < 0 then invalid_arg "take_n_points: n < 0"
-  else Unary_op (default_search_space, Next_n_points n, t)
+  else Unary_op (default_search_space, Take_n_points n, t)
 
 let skip_n_points (n : int) (t : t) : t =
   if n < 0 then invalid_arg "skip_n_points: n < 0"
   else Unary_op (default_search_space, Skip_n_points n, t)
 
-let first (c : chunked) : chunked = Unary_op_on_chunked (Next_n 1, c)
+let first (c : chunked) : chunked = Unary_op_on_chunked (Take_n 1, c)
 
 let take_n (n : int) (c : chunked) : chunked =
   if n < 0 then invalid_arg "take_n: n < 0"
-  else Unary_op_on_chunked (Next_n n, c)
+  else Unary_op_on_chunked (Take_n n, c)
 
 let take_nth (n : int) (c : chunked) : chunked =
   if n < 0 then invalid_arg "take_nth: n < 0"
