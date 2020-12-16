@@ -211,11 +211,6 @@ and mem ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
           @@ Time.weekday_of_month_day ~year:dt.year ~month:dt.month
             ~mday:dt.day
         in
-        let second_of_day =
-          make_hms ~hour:dt.hour ~minute:dt.minute ~second:dt.second
-          |> Result.get_ok
-          |> second_of_day_of_hms
-        in
         match t with
         | All -> true
         | Empty -> false
