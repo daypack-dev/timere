@@ -263,7 +263,7 @@ val lengthen : Duration.t -> t -> t
 type chunked
 
 type chunking =
-  [ `As_is
+  [ `Disjoint_interval
   | `By_duration of Duration.t
   | `By_duration_drop_partial of Duration.t
   | `At_year_boundary

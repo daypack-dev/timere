@@ -1711,7 +1711,7 @@ let default_search_space : search_space =
   [ (default_search_space_start, default_search_space_end_exc) ]
 
 type chunked_unary_op_on_t =
-  | Chunk_as_is
+  | Chunk_disjoint_interval
   | Chunk_at_year_boundary
   | Chunk_at_month_boundary
   | Chunk_by_duration of {
@@ -1782,7 +1782,7 @@ let equal t1 t2 =
   aux t1 t2
 
 type chunking =
-  [ `As_is
+  [ `Disjoint_interval
   | `By_duration of Duration.t
   | `By_duration_drop_partial of Duration.t
   | `At_year_boundary
@@ -1791,7 +1791,7 @@ type chunking =
 
 let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
   match chunking with
-  | `As_is -> Unchunk (f (Unary_op_on_t (Chunk_as_is, t)))
+  | `Disjoint_interval -> Unchunk (f (Unary_op_on_t (Chunk_disjoint_interval, t)))
   | `By_duration duration ->
     Unchunk
       (f
@@ -1818,7 +1818,7 @@ let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
 
 let chunk_again (chunking : chunking) chunked : chunked =
   match chunking with
-  | `As_is -> Unary_op_on_chunked (Chunk_again Chunk_as_is, chunked)
+  | `Disjoint_interval -> Unary_op_on_chunked (Chunk_again Chunk_disjoint_interval, chunked)
   | `By_duration duration ->
     Unary_op_on_chunked
       ( Chunk_again
