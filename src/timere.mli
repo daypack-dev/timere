@@ -83,21 +83,6 @@ val make_hms : hour:int -> minute:int -> second:int -> (hms, unit) result
 
 val make_hms_exn : hour:int -> minute:int -> second:int -> hms
 
-type branching_days =
-  | Month_days of int range list
-  | Weekdays of weekday range list
-
-exception Month_day_ranges_are_invalid
-
-val branching :
-  ?allow_out_of_range_month_day:bool ->
-  ?years:int range list ->
-  ?months:month range list ->
-  ?days:branching_days ->
-  ?hmss:hms range list ->
-  unit ->
-  t
-
 (** {1 Timezone change} *)
 
 val change_tz_offset_s : int -> t -> t

@@ -14,8 +14,6 @@ exception Intervals_are_not_sorted
 
 exception Intervals_are_not_disjoint
 
-exception Month_day_ranges_are_invalid
-
 type weekday =
   [ `Sun
   | `Mon
@@ -1659,19 +1657,6 @@ type unary_op =
   | Lengthen of int64
   | Change_tz_offset_s of int
 
-type branching_days =
-  | Month_days of int Range.range list
-  | Weekdays of weekday Range.range list
-
-type branching = {
-  years : int Range.range list;
-  months : month Range.range list;
-  days : branching_days;
-  hmss : hms Range.range list;
-}
-
-let branching_equal b1 b2 = b1 = b2
-
 type search_space = Interval.t list
 
 let default_search_space_start = Date_time.(to_timestamp min)
@@ -1702,7 +1687,6 @@ type t =
   | All
   | Timestamp_interval_seq of search_space * (int64 * int64) Seq.t
   | Pattern of search_space * Pattern.t
-  | Branching of search_space * branching
   | Unary_op of search_space * unary_op * t
   | Interval_inc of search_space * timestamp * timestamp
   | Interval_exc of search_space * timestamp * timestamp
@@ -1726,7 +1710,6 @@ let equal t1 t2 =
     | Timestamp_interval_seq (_, s1), Timestamp_interval_seq (_, s2) ->
       OSeq.equal ~eq:( = ) s1 s2
     | Pattern (_, p1), Pattern (_, p2) -> Pattern.equal p1 p2
-    | Branching (_, b1), Branching (_, b2) -> branching_equal b1 b2
     | Unary_op (_, op1, t1), Unary_op (_, op2, t2) -> op1 = op2 && aux t1 t2
     | Interval_inc (_, x11, x12), Interval_inc (_, x21, x22)
     | Interval_exc (_, x11, x12), Interval_exc (_, x21, x22) ->
@@ -2073,95 +2056,6 @@ let hms_interval_inc (hms_a : hms) (hms_b : hms) : t =
 
 let of_hms_intervals (s : (hms * hms) Seq.t) : t =
   s |> Seq.map (fun (a, b) -> hms_interval_exc a b) |> union_seq
-
-let branching ?(allow_out_of_range_month_day = false) ?(years = [])
-    ?(months = []) ?(days = Month_days []) ?(hmss = []) () : t =
-  let years =
-    match years with
-    | [] -> [ `Range_inc (Date_time.min.year, Date_time.max.year) ]
-    | _ -> years
-  in
-  let months =
-    match months with [] -> [ `Range_inc (`Jan, `Dec) ] | _ -> months
-  in
-  let days =
-    match days with
-    | Month_days [] | Weekdays [] -> Ok (Month_days [ `Range_inc (1, 31) ])
-    | Month_days days ->
-      if
-        if allow_out_of_range_month_day then
-          month_day_ranges_are_valid_relaxed days
-        else
-          month_day_ranges_are_valid_strict
-            ~safe_month_day_range_inc:
-              (safe_month_day_range_inc ~years ~months)
-            days
-      then Ok (Month_days days)
-      else Error ()
-    | Weekdays _ -> Ok days
-  in
-  let hmss =
-    match hmss with
-    | [] ->
-      [
-        `Range_inc
-          ( { hour = 0; minute = 0; second = 0 },
-            { hour = 23; minute = 59; second = 59 } );
-      ]
-    | _ -> hmss
-  in
-  let p_year year = Date_time.min.year <= year && year <= Date_time.max.year in
-  let p_hms hms =
-    0 <= hms.hour
-    && hms.hour <= 23
-    && 0 <= hms.minute
-    && hms.minute < 60
-    && 0 <= hms.second
-    && hms.second < 60
-  in
-  match days with
-  | Error () -> raise Month_day_ranges_are_invalid
-  | Ok days ->
-    if
-      List.for_all
-        (fun year_range ->
-           match year_range with
-           | `Range_inc (y1, y2) | `Range_exc (y1, y2) ->
-             p_year y1 && p_year y2)
-        years
-      && Year_ranges.Check.list_is_valid years
-      && Month_ranges.Check.list_is_valid months
-      && ( match days with
-          | Month_days _ -> true
-          | Weekdays days -> Weekday_ranges.Check.list_is_valid days )
-      && List.for_all
-        (fun hms_range ->
-           match hms_range with
-           | `Range_inc (hms1, hms2) | `Range_exc (hms1, hms2) ->
-             p_hms hms1 && p_hms hms2)
-        hmss
-      && Hms_ranges.Check.list_is_valid hmss
-    then
-      let years =
-        years
-        |> List.to_seq
-        |> Year_ranges.normalize ~skip_filter_invalid:true
-        |> List.of_seq
-      in
-      let months =
-        months
-        |> List.to_seq
-        |> Month_ranges.normalize ~skip_filter_invalid:true
-        |> List.of_seq
-      in
-      let hmss =
-        hmss
-        |> List.to_seq
-        |> Hms_ranges.normalize ~skip_filter_invalid:true
-        |> List.of_seq
-      in
-      Branching (default_search_space, { years; months; days; hmss })
-    else invalid_arg "branching"
 
 let years years = pattern ~years ()
 

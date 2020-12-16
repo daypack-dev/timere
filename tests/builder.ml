@@ -67,58 +67,6 @@ let make_pattern ~rng ~min_year ~max_year_inc =
   in
   Time.pattern ~years ~months ~month_days ~weekdays ~hours ~minutes ~seconds ()
 
-let make_branching ~rng ~min_year =
-  let years =
-    OSeq.(0 -- rng ())
-    |> Seq.map (fun _ ->
-        let start = min_year + rng () in
-        let end_inc = start + rng () in
-        `Range_inc (start, end_inc))
-    |> List.of_seq
-  in
-  let months =
-    OSeq.(0 -- rng ())
-    |> Seq.map (fun _ ->
-        let start_int = rng () mod 12 in
-        let end_inc_int = min 11 (start_int + rng ()) in
-        let start = Result.get_ok @@ Time.month_of_tm_int start_int in
-        let end_inc = Result.get_ok @@ Time.month_of_tm_int end_inc_int in
-        `Range_inc (start, end_inc))
-    |> List.of_seq
-  in
-  let days =
-    Time.Month_days
-      ( OSeq.(0 -- rng ())
-        |> Seq.map (fun _ ->
-            match rng () mod 3 with
-            | 0 ->
-              let start = 1 + (rng () mod 31) in
-              let end_inc = min 31 (start + rng ()) in
-              `Range_inc (start, end_inc)
-            | 1 ->
-              let start = -(1 + (rng () mod 31)) in
-              let end_inc = min (-1) (start + rng ()) in
-              `Range_inc (start, end_inc)
-            | 2 ->
-              let start = -(1 + (rng () mod 31)) in
-              let end_inc = min 31 (31 + start + 1 + rng ()) in
-              `Range_inc (start, end_inc)
-            | _ -> failwith "Unexpected case")
-        |> List.of_seq )
-  in
-  let hmss =
-    OSeq.(0 -- rng ())
-    |> Seq.map (fun _ ->
-        let start_int = rng () mod (24 * 60 * 60) in
-        let end_inc_int = min (24 * 60 * 60) (start_int + rng ()) in
-        let start = Time.hms_of_second_of_day start_int in
-        let end_inc = Time.hms_of_second_of_day end_inc_int in
-        `Range_inc (start, end_inc))
-    |> List.of_seq
-  in
-  Time.branching ~allow_out_of_range_month_day:true ~years ~months ~days ~hmss
-    ()
-
 let make_interval_inc ~rng ~min_year ~max_year_inc =
   let start_dt = make_date_time ~rng ~min_year ~max_year_inc in
   let start = Time.Date_time.to_timestamp start_dt in
@@ -179,14 +127,13 @@ let build ~min_year ~max_year_inc ~max_height ~max_branching
   let rng = make_rng ~randomness in
   let rec aux height =
     if height = 1 then
-      match rng () mod 7 with
+      match rng () mod 6 with
       | 0 -> Time.empty
       | 1 -> Time.always
       | 2 -> make_timestamp_intervals ~rng ~min_year ~max_year_inc
       | 3 -> make_pattern ~rng ~min_year ~max_year_inc
-      | 4 -> make_branching ~rng ~min_year
-      | 5 -> make_interval_inc ~rng ~min_year ~max_year_inc
-      | 6 -> make_interval_exc ~rng ~min_year ~max_year_inc
+      | 4 -> make_interval_inc ~rng ~min_year ~max_year_inc
+      | 5 -> make_interval_exc ~rng ~min_year ~max_year_inc
       | _ -> failwith "Unexpected case"
     else
       match rng () mod 7 with

@@ -80,43 +80,6 @@ let sexp_of_pattern (pat : Time.Pattern.t) : CCSexp.t =
   |> List.filter_map (fun x -> x)
   |> list
 
-let sexp_of_branching (b : Time.branching) : CCSexp.t =
-  let open Time in
-  let years = List.map (sexp_of_range ~f:sexp_of_int) b.years in
-  let months = List.map (sexp_of_range ~f:sexp_of_month) b.months in
-  let days =
-    match b.days with
-    | Month_days days -> (
-        match days with
-        | [] -> []
-        | _ ->
-          CCSexp.atom "month_days"
-          :: List.map (sexp_of_range ~f:sexp_of_int) days )
-    | Weekdays days -> (
-        match days with
-        | [] -> []
-        | _ ->
-          CCSexp.atom "weekdays"
-          :: List.map (sexp_of_range ~f:sexp_of_weekday) days )
-  in
-  let hmss =
-    List.map
-      (sexp_of_range ~f:(fun { hour; minute; second } ->
-           let open CCSexp in
-           list [ sexp_of_int hour; sexp_of_int minute; sexp_of_int second ]))
-      b.hmss
-  in
-  let open CCSexp in
-  [
-    Some (atom "branching");
-    (match years with [] -> None | _ -> Some (list (atom "years" :: years)));
-    (match months with [] -> None | _ -> Some (list (atom "months" :: months)));
-    (match days with [] -> None | _ -> Some (list days));
-    (match hmss with [] -> None | _ -> Some (list (atom "hmss" :: hmss)));
-  ]
-  |> List.filter_map (fun x -> x)
-  |> list
-
 let sexp_list_of_unary_op (op : Time.unary_op) =
   let open Time in
   match op with
@@ -157,7 +120,6 @@ let to_sexp (t : Time.t) : CCSexp.t =
       in
       CCSexp.list (CCSexp.atom "intervals" :: l)
     | Pattern (_, pat) -> sexp_of_pattern pat
-    | Branching (_, b) -> sexp_of_branching b
     | Unary_op (_, op, t) -> CCSexp.list (sexp_list_of_unary_op op @ [ aux t ])
     | Interval_inc (_, a, b) ->
       let open CCSexp in

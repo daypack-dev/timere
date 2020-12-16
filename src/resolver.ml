@@ -610,7 +610,6 @@ let rec get_search_space (time : Time.t) : Time.Interval.t list =
   | Empty -> []
   | Timestamp_interval_seq (s, _) -> s
   | Pattern (s, _) -> s
-  | Branching (s, _) -> s
   | Unary_op (s, _, _) -> s
   | Interval_exc (s, _, _) -> s
   | Interval_inc (s, _, _) -> s
@@ -635,7 +634,6 @@ let set_search_space space (time : Time.t) : Time.t =
   | Empty -> Empty
   | Timestamp_interval_seq (_, x) -> Timestamp_interval_seq (space, x)
   | Pattern (_, x) -> Pattern (space, x)
-  | Branching (_, x) -> Branching (space, x)
   | Unary_op (_, op, x) -> Unary_op (space, op, x)
   | Interval_exc (_, x, y) -> Interval_exc (space, x, y)
   | Interval_inc (_, x, y) -> Interval_inc (space, x, y)
@@ -694,11 +692,6 @@ let propagate_search_space_bottom_up default_tz_offset_s (time : Time.t) :
           |> List.of_seq
         in
         Pattern (space, pat)
-    | Branching (_, branching) ->
-      let space =
-        branching.years |> List.map (search_space_of_year_range tz_offset_s)
-      in
-      Branching (space, branching)
     | Unary_op (_, op, t) -> (
         match op with
         | Not -> Unary_op (default_search_space, op, aux tz_offset_s t)
@@ -791,8 +784,6 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
       Timestamp_interval_seq (restrict_search_space parent_search_space cur, s)
     | Pattern (cur, pat) ->
       Pattern (restrict_search_space parent_search_space cur, pat)
-    | Branching (cur, branching) ->
-      Branching (restrict_search_space parent_search_space cur, branching)
     | Unary_op (cur, op, t) ->
       let space = restrict_search_space parent_search_space cur in
       Unary_op (space, op, aux space t)
@@ -832,128 +823,6 @@ let optimize_search_space default_tz_offset_s t =
 
 let positive_day_of_zero_or_negative_day ~day_count day =
   if day <= 0 then day + 1 + day_count else day
-
-let intervals_of_branching tz_offset_s (space : Time.search_space)
-    (b : Time.branching) : Time.Interval.t Seq.t =
-  let open Time in
-  let intervals_of_month_days year month month_days hmss =
-    Seq.flat_map
-      (fun day ->
-         Seq.filter_map
-           (fun hms_range ->
-              match hms_range with
-              | `Range_inc (start, end_inc) -> (
-                  match
-                    Date_time.make ~year ~month ~day ~hour:start.hour
-                      ~minute:start.minute ~second:start.second ~tz_offset_s
-                  with
-                  | Error () -> None
-                  | Ok dt1 -> (
-                      match
-                        Date_time.make ~year ~month ~day ~hour:end_inc.hour
-                          ~minute:end_inc.minute ~second:end_inc.second
-                          ~tz_offset_s
-                      with
-                      | Error () -> None
-                      | Ok dt2 ->
-                        Some
-                          ( Date_time.to_timestamp dt1,
-                            Int64.succ @@ Date_time.to_timestamp dt2 ) ) )
-              | `Range_exc (start, end_exc) -> (
-                  match
-                    Date_time.make ~year ~month ~day ~hour:start.hour
-                      ~minute:start.minute ~second:start.second ~tz_offset_s
-                  with
-                  | Error () -> None
-                  | Ok dt1 -> (
-                      match
-                        Date_time.make ~year ~month ~day ~hour:end_exc.hour
-                          ~minute:end_exc.minute ~second:end_exc.second
-                          ~tz_offset_s
-                      with
-                      | Error () -> None
-                      | Ok dt2 ->
-                        Some
-                          ( Date_time.to_timestamp dt1,
-                            Date_time.to_timestamp dt2 ) ) ))
-           hmss)
-      month_days
-  in
-  let years_from_search_space =
-    space
-    |> List.to_seq
-    |> Seq.flat_map (fun (x, y) ->
-        let dt_x =
-          Result.get_ok
-          @@ Time.Date_time.of_timestamp
-            ~tz_offset_s_of_date_time:tz_offset_s x
-        in
-        let dt_y =
-          Result.get_ok
-          @@ Time.Date_time.of_timestamp
-            ~tz_offset_s_of_date_time:tz_offset_s y
-        in
-        fun () -> Seq.Cons (dt_x.year, Seq.return dt_y.year))
-    |> Int_set.of_seq
-  in
-  let original_years =
-    b.years |> List.to_seq |> Year_ranges.Flatten.flatten |> Int_set.of_seq
-  in
-  let years =
-    Int_set.inter years_from_search_space original_years |> Int_set.to_seq
-  in
-  let months = b.months |> List.to_seq |> Month_ranges.Flatten.flatten in
-  let hmss = b.hmss |> List.to_seq in
-  match b.days with
-  | Month_days days ->
-    Seq.flat_map
-      (fun year ->
-         Seq.flat_map
-           (fun month ->
-              let day_count = day_count_of_month ~year ~month in
-              let f_inc (x, y) =
-                ( positive_day_of_zero_or_negative_day ~day_count x,
-                  positive_day_of_zero_or_negative_day ~day_count y )
-              in
-              let f_exc (x, y) =
-                ( positive_day_of_zero_or_negative_day ~day_count x,
-                  positive_day_of_zero_or_negative_day ~day_count y )
-              in
-              let days =
-                days
-                |> List.to_seq
-                |> Seq.map (Range.map ~f_inc ~f_exc)
-                |> Month_day_ranges.normalize ~skip_filter_invalid:true
-                |> Month_day_ranges.Flatten.flatten
-              in
-              intervals_of_month_days year month days hmss)
-           months)
-      years
-  | Weekdays days ->
-    let days = days |> Weekday_ranges.Flatten.flatten_list in
-    Seq.flat_map
-      (fun year ->
-         let search_space = search_space_of_year tz_offset_s year in
-         Seq.flat_map
-           (fun month ->
-              let month_days =
-                {
-                  Time.Pattern.years = Int_set.of_list [ year ];
-                  months = Month_set.of_list [ month ];
-                  month_days = Int_set.empty;
-                  weekdays = Weekday_set.of_list days;
-                  hours = Int_set.of_list [ 0 ];
-                  minutes = Int_set.of_list [ 0 ];
-                  seconds = Int_set.of_list [ 0 ];
-                }
-                |> Resolve_pattern.matching_date_times
-                  (Search_param.make ~search_using_tz_offset_s:tz_offset_s
-                     search_space)
-                |> Seq.map (fun { Date_time.day; _ } -> day)
-              in
-              intervals_of_month_days year month month_days hmss)
-           months)
-      years
 
 let resolve_arith_year_month_pairs ~year_start ~year_end_inc
     ~(start : Time.Date_time.t) n : (int * Time.month) Seq.t =
@@ -1084,9 +953,6 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
         (List.map
            (fun param -> Resolve_pattern.matching_intervals param pat)
            params)
-    | Branching (space, branching) ->
-      Intervals.Inter.inter ~skip_check:true (List.to_seq space)
-        (intervals_of_branching search_using_tz_offset_s space branching)
     | Unary_op (space, op, t) -> (
         let search_using_tz_offset_s =
           match op with
