@@ -79,17 +79,9 @@ type hms = private {
   second : int;
 }
 
-val make_hms :
-  hour:int ->
-  minute:int ->
-  second:int ->
-  (hms, unit) result
+val make_hms : hour:int -> minute:int -> second:int -> (hms, unit) result
 
-val make_hms_exn :
-  hour:int ->
-  minute:int ->
-  second:int ->
-  hms
+val make_hms_exn : hour:int -> minute:int -> second:int -> hms
 
 type branching_days =
   | Month_days of int range list

@@ -1918,8 +1918,7 @@ let skip_n_points (n : int) (t : t) : t =
 let first (c : chunked) : chunked = Unary_op_on_chunked (Take 1, c)
 
 let take (n : int) (c : chunked) : chunked =
-  if n < 0 then invalid_arg "take_n: n < 0"
-  else Unary_op_on_chunked (Take n, c)
+  if n < 0 then invalid_arg "take_n: n < 0" else Unary_op_on_chunked (Take n, c)
 
 let take_nth (n : int) (c : chunked) : chunked =
   if n < 0 then invalid_arg "take_nth: n < 0"
@@ -1929,8 +1928,7 @@ let nth (n : int) (c : chunked) : chunked =
   if n < 0 then invalid_arg "nth: n < 0" else Unary_op_on_chunked (Nth n, c)
 
 let drop (n : int) (c : chunked) : chunked =
-  if n < 0 then invalid_arg "skip_n: n < 0"
-  else Unary_op_on_chunked (Drop n, c)
+  if n < 0 then invalid_arg "skip_n: n < 0" else Unary_op_on_chunked (Drop n, c)
 
 let interval_inc (a : timestamp) (b : timestamp) : t =
   match Date_time.of_timestamp a with
@@ -2080,44 +2078,28 @@ let month_day_ranges_are_valid_relaxed day_range =
 let hms_interval_exc (hms_a : hms) (hms_b : hms) : t =
   let a = second_of_day_of_hms hms_a in
   let b = second_of_day_of_hms hms_b in
-  if a = b then
-    empty
+  if a = b then empty
   else
     let gap_in_seconds =
-      (
-        if a < b then
-          Int64.of_int (b - a)
-        else
-          Int64.sub
-            (Duration.make ~days:1 () |> Result.get_ok |> Duration.to_seconds)
-            ((Int64.of_int (a - b)))
-      )
+      if a < b then Int64.of_int (b - a)
+      else
+        Int64.sub
+          (Duration.make ~days:1 () |> Result.get_ok |> Duration.to_seconds)
+          (Int64.of_int (a - b))
     in
     let gap =
-      gap_in_seconds
-      |> Int64.pred
-      |> Duration.of_seconds
-      |> Result.get_ok
+      gap_in_seconds |> Int64.pred |> Duration.of_seconds |> Result.get_ok
     in
-    lengthen
-      gap
-      (pattern ~hours:[hms_a.hour] ~minutes:[hms_a.minute] ~seconds:[hms_a.second] ())
+    lengthen gap
+      (pattern ~hours:[ hms_a.hour ] ~minutes:[ hms_a.minute ]
+         ~seconds:[ hms_a.second ] ())
 
 let hms_interval_inc (hms_a : hms) (hms_b : hms) : t =
-  let hms_b =
-    hms_b
-    |> second_of_day_of_hms
-    |> succ
-    |> hms_of_second_of_day
-  in
+  let hms_b = hms_b |> second_of_day_of_hms |> succ |> hms_of_second_of_day in
   hms_interval_exc hms_a hms_b
 
 let of_hms_intervals (s : (hms * hms) Seq.t) : t =
-  s
-  |> Seq.map (fun (a, b) ->
-      hms_interval_exc a b
-    )
-  |> union_seq
+  s |> Seq.map (fun (a, b) -> hms_interval_exc a b) |> union_seq
 
 let branching ?(allow_out_of_range_month_day = false) ?(years = [])
     ?(months = []) ?(days = Month_days []) ?(hmss = []) () : t =

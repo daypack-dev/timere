@@ -324,7 +324,7 @@ module Ast_normalize = struct
       in
       if 0 <= minute && minute < 60 then
         if 0 <= second && second < 60 then
-          (pos_hour, Hms ( Timere.make_hms_exn ~hour ~minute ~second ))
+          (pos_hour, Hms (Timere.make_hms_exn ~hour ~minute ~second))
         else
           invalid_data
             (Printf.sprintf "%s: Invalid second: %d"

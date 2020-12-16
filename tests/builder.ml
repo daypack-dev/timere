@@ -135,8 +135,7 @@ let new_height ~rng height =
   let reduc = 1 + (rng () mod (height - 1)) in
   height - reduc
 
-let make_duration ~rng =
-  Result.get_ok @@ Duration.make ~seconds:(rng ()) ()
+let make_duration ~rng = Result.get_ok @@ Duration.make ~seconds:(rng ()) ()
 
 let make_chunking ~rng : Time.chunking =
   match rng () mod 5 with
@@ -149,8 +148,7 @@ let make_chunking ~rng : Time.chunking =
 
 let make_chunk_selector ~rng : Time.chunked -> Time.chunked =
   let rec aux f height =
-    if height = 1 then
-      f
+    if height = 1 then f
     else
       let f =
         match rng () mod 1 with
@@ -203,11 +201,18 @@ let build ~min_year ~max_year_inc ~max_height ~max_branching
         |> Seq.map (fun _ -> aux (new_height ~rng height))
         |> List.of_seq
         |> Time.union
-      | 3 -> Time.after (aux (new_height ~rng height)) (aux (new_height ~rng height))
+      | 3 ->
+        Time.after
+          (aux (new_height ~rng height))
+          (aux (new_height ~rng height))
       | 4 ->
-        Time.between_inc (aux (new_height ~rng height)) (aux (new_height ~rng height))
+        Time.between_inc
+          (aux (new_height ~rng height))
+          (aux (new_height ~rng height))
       | 5 ->
-        Time.between_exc (aux (new_height ~rng height)) (aux (new_height ~rng height))
+        Time.between_exc
+          (aux (new_height ~rng height))
+          (aux (new_height ~rng height))
       | 6 ->
         Time.chunk (make_chunking ~rng) (make_chunk_selector ~rng)
           (aux (new_height ~rng height))
