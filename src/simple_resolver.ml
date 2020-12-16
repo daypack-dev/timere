@@ -173,7 +173,7 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
   and aux_chunked search_using_tz_offset_s chunked =
     let chunk_based_on_op_on_t op s =
       match op with
-      | Chunk_disjoint_interval -> s |> normalize
+      | Chunk_disjoint_interval -> normalize s
       | Chunk_by_duration { chunk_size; drop_partial } ->
         do_chunk ~drop_partial chunk_size s
       | Chunk_at_year_boundary ->

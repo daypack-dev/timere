@@ -1393,9 +1393,8 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
     let chunk_based_on_op_on_t op s =
       match op with
       | Chunk_disjoint_interval ->
-        s
-        |> Intervals.Normalize.normalize ~skip_filter_invalid:true
-          ~skip_sort:true
+        Intervals.Normalize.normalize ~skip_filter_invalid:true
+          ~skip_sort:true s
       | Chunk_by_duration { chunk_size; drop_partial } ->
         Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
       | Chunk_at_year_boundary ->
