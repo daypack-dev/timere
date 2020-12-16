@@ -1210,7 +1210,7 @@ let find_after ((_start, end_exc) : Time.Interval.t)
   | Seq.Nil -> None
   | Seq.Cons (x, _) -> Some x
 
-let do_chunk_by_year tz_offset_s (s : Time.Interval.t Seq.t) =
+let do_chunk_at_year_boundary tz_offset_s (s : Time.Interval.t Seq.t) =
   let open Time in
   let rec aux s =
     match s () with
@@ -1236,7 +1236,7 @@ let do_chunk_by_year tz_offset_s (s : Time.Interval.t Seq.t) =
   in
   aux s
 
-let do_chunk_by_month tz_offset_s (s : Time.Interval.t Seq.t) =
+let do_chunk_at_month_boundary tz_offset_s (s : Time.Interval.t Seq.t) =
   let open Time in
   let rec aux s =
     match s () with
@@ -1392,8 +1392,8 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
         | Chunk_as_is -> s
         | Chunk_by_duration { chunk_size; drop_partial } ->
           Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
-        | Chunk_at_year_boundary -> do_chunk_by_year search_using_tz_offset_s s
-        | Chunk_at_month_boundary -> do_chunk_by_month search_using_tz_offset_s s )
+        | Chunk_at_year_boundary -> do_chunk_at_year_boundary search_using_tz_offset_s s
+        | Chunk_at_month_boundary -> do_chunk_at_month_boundary search_using_tz_offset_s s )
     | Unary_op_on_chunked (op, c) -> (
         let s = aux_chunked search_using_tz_offset_s c in
         match op with
