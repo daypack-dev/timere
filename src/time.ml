@@ -2080,20 +2080,28 @@ let month_day_ranges_are_valid_relaxed day_range =
 let hms_interval_exc (hms_a : hms) (hms_b : hms) : t =
   let a = second_of_day_of_hms hms_a in
   let b = second_of_day_of_hms hms_b in
-  let gap =
-    if a <= b then
-      Duration.of_seconds (Int64.of_int (b - a))
-      |> Result.get_ok
-    else
-      Int64.sub
-        (Duration.make ~days:1 () |> Result.get_ok |> Duration.to_seconds)
-        ((Int64.of_int (a - b)))
+  if a = b then
+    empty
+  else
+    let gap_in_seconds =
+      (
+        if a < b then
+          Int64.of_int (b - a)
+        else
+          Int64.sub
+            (Duration.make ~days:1 () |> Result.get_ok |> Duration.to_seconds)
+            ((Int64.of_int (a - b)))
+      )
+    in
+    let gap =
+      gap_in_seconds
+      |> Int64.pred
       |> Duration.of_seconds
       |> Result.get_ok
-  in
-  lengthen
-    gap
-    (pattern ~hours:[hms_a.hour] ~minutes:[hms_a.minute] ~seconds:[hms_a.second] ())
+    in
+    lengthen
+      gap
+      (pattern ~hours:[hms_a.hour] ~minutes:[hms_a.minute] ~seconds:[hms_a.second] ())
 
 let hms_interval_inc (hms_a : hms) (hms_b : hms) : t =
   let hms_b =
