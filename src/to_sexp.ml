@@ -19,6 +19,15 @@ let sexp_of_date_time (x : Time.Date_time.t) =
       list [ atom "tz_offset_s"; sexp_of_int x.tz_offset_s ];
     ]
 
+let sexp_of_duration (x : Duration.t) =
+  let open CCSexp in
+  list [
+    sexp_of_int x.days;
+    sexp_of_int x.hours;
+    sexp_of_int x.minutes;
+    sexp_of_int x.seconds;
+  ]
+
 let sexp_of_timestamp x =
   x |> Time.Date_time.of_timestamp |> Result.get_ok |> sexp_of_date_time
 
@@ -114,12 +123,8 @@ let sexp_list_of_unary_op (op : Time.unary_op) =
   | Every -> [ CCSexp.atom "every" ]
   | Skip_n_points n ->
     [ CCSexp.atom "skip_n_points"; CCSexp.atom (string_of_int n) ]
-  (* | Skip_n_intervals n ->
-   *   [ CCSexp.atom "skip_n"; CCSexp.atom (string_of_int n) ] *)
   | Next_n_points n ->
     [ CCSexp.atom "next_n_points"; CCSexp.atom (string_of_int n) ]
-  (* | Next_n_intervals n ->
-   *   [ CCSexp.atom "next_n"; CCSexp.atom (string_of_int n) ] *)
   (* | Every_nth n -> [ CCSexp.atom "every_nth"; CCSexp.atom (string_of_int n) ]
    * | Nth n -> [ CCSexp.atom "nth"; CCSexp.atom (string_of_int n) ]
    * | Chunk { chunk_size; drop_partial } ->
@@ -227,7 +232,49 @@ let to_sexp (t : Time.t) : CCSexp.t =
       CCSexp.(list [ atom "between_inc"; aux t1; aux t2 ])
     | Between_exc (_, t1, t2) ->
       CCSexp.(list [ atom "between_exc"; aux t1; aux t2 ])
-    | Unchunk _ -> failwith "Unimplemented"
+    | Unchunk chunked ->
+      CCSexp.(list [atom "unchunk"; aux_chunked chunked])
+  and aux_chunked chunked =
+    let sexp_list_of_unary_op_on_t op =
+      let open CCSexp in
+      match op with
+       | Chunk_as_is -> [atom "chunk_as_is"]
+       | Chunk_at_year_boundary -> [atom "chunk_at_year_boundary"]
+       | Chunk_at_month_boundary -> [atom "chunk_at_month_boundary"]
+       | Chunk_by_duration { chunk_size; drop_partial } ->
+         [Some (atom "chunk_by_duration"); Some (sexp_of_duration (Result.get_ok @@ Duration.of_seconds chunk_size)); if drop_partial then Some (atom "drop_partial") else None]
+         |> List.filter_map (fun x -> x)
+    in
+    match chunked with
+    | Unary_op_on_t (op, t) ->
+      CCSexp.(list
+                (
+                  sexp_list_of_unary_op_on_t op
+                    @
+                    [ aux t]
+                )
+             )
+    | Unary_op_on_chunked (op, chunked) ->
+      CCSexp.(list
+                (match op with
+                 | Skip_n n ->
+                   [ atom "skip_n"; sexp_of_int n; aux_chunked chunked ]
+                 | Next_n n ->
+                   [ atom "next_n"; sexp_of_int n; aux_chunked chunked ]
+                 | Every_nth n -> [ atom "every_nth"; sexp_of_int n; aux_chunked chunked ]
+                 | Nth n -> [ atom "nth"; sexp_of_int n; aux_chunked chunked ]
+                 | Chunk_again op ->
+                   [
+                     atom "chunk_again";
+                     list
+                     (
+                       sexp_list_of_unary_op_on_t op
+                       @
+                       [ aux_chunked chunked]
+                     )
+                   ]
+                )
+        )
   in
   aux t
 
