@@ -371,4 +371,11 @@ module Utils : sig
 
   val flatten_weekday_range_list :
     weekday range list -> (weekday list, unit) result
+
+  val resolve_simple :
+    ?search_using_tz_offset_s:int ->
+    search_start:timestamp ->
+    search_end_exc:timestamp ->
+    t ->
+    interval Seq.t
 end
