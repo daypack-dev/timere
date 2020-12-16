@@ -1705,9 +1705,9 @@ let default_search_space : search_space =
 
 type chunked_unary_op_on_t =
   | Chunk_as_is
-  | Chunk_by_year
-  | Chunk_by_month
-  | Chunk of {
+  | Chunk_at_year_boundary
+  | Chunk_at_month_boundary
+  | Chunk_by_duration of {
       chunk_size : int64;
       drop_partial : bool;
     }
@@ -1766,17 +1766,51 @@ let equal t1 t2 =
   in
   aux t1 t2
 
-let unchunk (chunked : chunked) : t = Unchunk chunked
+type chunking = [
+  | `As_is
+  | `By_duration of Duration.t
+  | `By_duration_drop_partial of Duration.t
+  | `At_year_boundary
+  | `At_month_boundary
+]
 
-let chunk_as_is (t : t) : chunked = Unary_op_on_t (Chunk_as_is, t)
-
-let chunk ?(drop_partial = false) (chunk_size : Duration.t) (t : t) : chunked =
-  Unary_op_on_t
-    (Chunk { chunk_size = Duration.to_seconds chunk_size; drop_partial }, t)
-
-let chunk_by_year (t : t) : chunked = Unary_op_on_t (Chunk_by_year, t)
-
-let chunk_by_month (t : t) : chunked = Unary_op_on_t (Chunk_by_month, t)
+let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
+  match chunking with
+  | `As_is ->
+    Unchunk (
+      f (
+        Unary_op_on_t (Chunk_as_is, t)
+      )
+    )
+  | `By_duration duration ->
+    Unchunk
+      (
+        f (
+          Unary_op_on_t
+            (Chunk_by_duration { chunk_size = Duration.to_seconds duration; drop_partial = false }, t)
+        )
+      )
+  | `By_duration_drop_partial duration ->
+    Unchunk
+      (
+        f (
+          Unary_op_on_t
+            (Chunk_by_duration { chunk_size = Duration.to_seconds duration; drop_partial = true }, t)
+        )
+      )
+  | `At_year_boundary ->
+    Unchunk
+      (
+        f (
+          Unary_op_on_t (Chunk_at_year_boundary, t)
+        )
+      )
+  | `At_month_boundary ->
+    Unchunk (
+      f (
+        Unary_op_on_t (Chunk_at_month_boundary, t)
+      )
+    )
 
 let shift (offset : Duration.t) (t : t) : t =
   Unary_op (default_search_space, Shift (Duration.to_seconds offset), t)

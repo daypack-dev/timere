@@ -1390,10 +1390,10 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
         let s = aux search_using_tz_offset_s t in
         match op with
         | Chunk_as_is -> s
-        | Chunk { chunk_size; drop_partial } ->
+        | Chunk_by_duration { chunk_size; drop_partial } ->
           Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
-        | Chunk_by_year -> do_chunk_by_year search_using_tz_offset_s s
-        | Chunk_by_month -> do_chunk_by_month search_using_tz_offset_s s )
+        | Chunk_at_year_boundary -> do_chunk_by_year search_using_tz_offset_s s
+        | Chunk_at_month_boundary -> do_chunk_by_month search_using_tz_offset_s s )
     | Unary_op_on_chunked (op, c) -> (
         let s = aux_chunked search_using_tz_offset_s c in
         match op with
