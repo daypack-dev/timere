@@ -253,22 +253,8 @@ let of_sexp (x : CCSexp.t) =
         | [ `Atom "every"; x ] -> aux x
         | [ `Atom "skip_n_points"; n; x ] ->
           skip_n_points (int_of_sexp n) (aux x)
-        (* | [ `Atom "skip_n"; n; x ] -> drop (int_of_sexp n) (aux x) *)
-        | [ `Atom "next_n_points"; n; x ] ->
+        | [ `Atom "take_n_points"; n; x ] ->
           take_n_points (int_of_sexp n) (aux x)
-        (* | [ `Atom "next_n"; n; x ] -> take (int_of_sexp n) (aux x) *)
-        (* | [ `Atom "chunk"; n; x ] -> (
-         *     match Duration.of_seconds (int64_of_sexp n) with
-         *     | Error () ->
-         *       invalid_data
-         *         (Printf.sprintf "Invalid chunk size: %s" (CCSexp.to_string n))
-         *     | Ok n -> chunk ~drop_partial:false n (aux x) )
-         * | [ `Atom "chunk"; `Atom "drop_partial"; n; x ] -> (
-         *     match Duration.of_seconds (int64_of_sexp n) with
-         *     | Error () ->
-         *       invalid_data
-         *         (Printf.sprintf "Invalid chunk size: %s" (CCSexp.to_string n))
-         *     | Ok n -> chunk ~drop_partial:true n (aux x) ) *)
         | [ `Atom "shift"; n; x ] ->
           let n =
             match Duration.of_seconds (int64_of_sexp n) with
