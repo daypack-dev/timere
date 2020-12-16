@@ -1383,6 +1383,8 @@ let resolve ?(search_using_tz_offset_s = 0) (time : Time.t) :
           find_after (start, end_exc) s2
           |> Option.map (fun (start', _) -> (start, start')))
     | Unchunk c -> aux_chunked search_using_tz_offset_s c
+                   |> Intervals.Normalize.normalize ~skip_filter_invalid:true
+                     ~skip_sort:true
   and aux_chunked search_using_tz_offset_s (chunked : chunked) =
     let chunk_based_on_op_on_t op s =
       match op with

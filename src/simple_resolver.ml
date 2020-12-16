@@ -110,6 +110,7 @@ let rec resolve ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
           |> Option.map (fun (start', _) -> (start, start')))
     | Unchunk chunked ->
       aux_chunked search_using_tz_offset_s chunked
+      |> normalize
     | _ ->
       Seq_utils.a_to_b_exc_int64 ~a:search_start ~b:search_end_exc
       |> Seq.filter
@@ -308,11 +309,13 @@ and mem ?(search_using_tz_offset_s = 0) ~(search_start : Time.timestamp)
         | Round_robin_pick_list (_, _)
         | After (_, _, _)
         | Between_inc (_, _, _)
-        | Between_exc (_, _, _) ->
+        | Between_exc (_, _, _)
+        | Unchunk _
+          ->
           resolve ~search_using_tz_offset_s ~search_start ~search_end_exc t
           |> OSeq.exists (fun (x, y) -> x <= timestamp && timestamp < y)
         | Inter_seq (_, s) -> OSeq.for_all (fun t -> aux t timestamp) s
         | Union_seq (_, s) -> OSeq.exists (fun t -> aux t timestamp) s
-        | Unchunk _ -> failwith "Unimplemented" )
+      )
   in
   aux t timestamp
