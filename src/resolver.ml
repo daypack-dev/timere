@@ -1221,8 +1221,10 @@ let do_chunk_at_year_boundary tz_offset_s (s : Time.Interval.t Seq.t) =
         @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s t1
       in
       let dt2 =
-        Result.get_ok
-        @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s t2
+        t2
+        |> Int64.pred
+        |> Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s
+        |> Result.get_ok
       in
       if dt1.year = dt2.year && dt1.month = dt2.month then fun () ->
         Seq.Cons ((t1, t2), aux rest)
@@ -1247,8 +1249,10 @@ let do_chunk_at_month_boundary tz_offset_s (s : Time.Interval.t Seq.t) =
         @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s t1
       in
       let dt2 =
-        Result.get_ok
-        @@ Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s t2
+        t2
+        |> Int64.pred
+        |> Date_time.of_timestamp ~tz_offset_s_of_date_time:tz_offset_s
+        |> Result.get_ok
       in
       if dt1.year = dt2.year && dt1.month = dt2.month then fun () ->
         Seq.Cons ((t1, t2), aux rest)
