@@ -288,7 +288,7 @@ val take_n : int -> chunked -> chunked
 
 val take_nth : int -> chunked -> chunked
 
-val skip_n : int -> chunked -> chunked
+val drop : int -> chunked -> chunked
 
 val first_point : t -> t
 

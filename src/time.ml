@@ -1928,7 +1928,7 @@ let take_nth (n : int) (c : chunked) : chunked =
 let nth (n : int) (c : chunked) : chunked =
   if n < 0 then invalid_arg "nth: n < 0" else Unary_op_on_chunked (Nth n, c)
 
-let skip_n (n : int) (c : chunked) : chunked =
+let drop (n : int) (c : chunked) : chunked =
   if n < 0 then invalid_arg "skip_n: n < 0"
   else Unary_op_on_chunked (Skip_n n, c)
 

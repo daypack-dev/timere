@@ -249,7 +249,7 @@ let of_sexp (x : CCSexp.t) =
         | [ `Atom "every"; x ] -> aux x
         | [ `Atom "skip_n_points"; n; x ] ->
           skip_n_points (int_of_sexp n) (aux x)
-        (* | [ `Atom "skip_n"; n; x ] -> skip_n (int_of_sexp n) (aux x) *)
+        (* | [ `Atom "skip_n"; n; x ] -> drop (int_of_sexp n) (aux x) *)
         | [ `Atom "next_n_points"; n; x ] ->
           take_n_points (int_of_sexp n) (aux x)
         (* | [ `Atom "next_n"; n; x ] -> take_n (int_of_sexp n) (aux x) *)
@@ -320,7 +320,7 @@ let of_sexp (x : CCSexp.t) =
         | [ `Atom "chunk_by_duration"; duration; x ] ->
           chunk (`By_duration (duration_of_sexp duration)) f (aux x)
         | [ `Atom "skip_n"; n; chunked ] ->
-          aux_chunked (fun x -> f x |> skip_n (int_of_sexp n)) chunked
+          aux_chunked (fun x -> f x |> drop (int_of_sexp n)) chunked
         | [ `Atom "take_n"; n; chunked ] ->
           aux_chunked (fun x -> f x |> take_n (int_of_sexp n)) chunked
         | [ `Atom "every_nth"; n; chunked ] ->
