@@ -284,7 +284,7 @@ val chunk_again : chunking -> chunked -> chunked
 
 val first : chunked -> chunked
 
-val take_n : int -> chunked -> chunked
+val take : int -> chunked -> chunked
 
 val take_nth : int -> chunked -> chunked
 

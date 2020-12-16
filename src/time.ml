@@ -1917,7 +1917,7 @@ let skip_n_points (n : int) (t : t) : t =
 
 let first (c : chunked) : chunked = Unary_op_on_chunked (Take_n 1, c)
 
-let take_n (n : int) (c : chunked) : chunked =
+let take (n : int) (c : chunked) : chunked =
   if n < 0 then invalid_arg "take_n: n < 0"
   else Unary_op_on_chunked (Take_n n, c)
 
