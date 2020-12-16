@@ -169,13 +169,7 @@ let make_unary_op ~rng t =
   match rng () mod 6 with
   | 0 -> Time.not t
   | 1 -> Time.skip_n_points (rng ()) t
-  (* | 2 -> Time.skip_n (rng ()) t *)
   | 2 -> Time.take_n_points (rng ()) t
-  (* | 4 -> Time.take_n (rng ()) t *)
-  (* | 5 ->
-   *   Time.chunk
-   *     (Result.get_ok @@ Duration.of_seconds @@ Int64.of_int (rng ()))
-   *     t *)
   | 3 -> Time.shift (make_duration ~rng) t
   | 4 -> Time.lengthen (make_duration ~rng) t
   | 5 -> Time.change_tz_offset_s (rng ()) t
@@ -187,15 +181,17 @@ let build ~min_year ~max_year_inc ~max_height ~max_branching
   let rng = make_rng ~randomness in
   let rec aux height =
     if height = 1 then
-      match rng () mod 5 with
-      | 0 -> make_timestamp_intervals ~rng ~min_year ~max_year_inc
-      | 1 -> make_pattern ~rng ~min_year ~max_year_inc
-      | 2 -> make_branching ~rng ~min_year
-      | 3 -> make_interval_inc ~rng ~min_year ~max_year_inc
-      | 4 -> make_interval_exc ~rng ~min_year ~max_year_inc
+      match rng () mod 7 with
+      | 0 -> Time.empty
+      | 1 -> Time.always
+      | 2 -> make_timestamp_intervals ~rng ~min_year ~max_year_inc
+      | 3 -> make_pattern ~rng ~min_year ~max_year_inc
+      | 4 -> make_branching ~rng ~min_year
+      | 5 -> make_interval_inc ~rng ~min_year ~max_year_inc
+      | 6 -> make_interval_exc ~rng ~min_year ~max_year_inc
       | _ -> failwith "Unexpected case"
     else
-      match rng () mod 6 with
+      match rng () mod 7 with
       | 0 -> make_unary_op ~rng (aux (new_height ~rng height))
       | 1 ->
         OSeq.(0 -- Stdlib.min max_branching (rng ()))
@@ -212,6 +208,9 @@ let build ~min_year ~max_year_inc ~max_height ~max_branching
         Time.between_inc (aux (new_height ~rng height)) (aux (new_height ~rng height))
       | 5 ->
         Time.between_exc (aux (new_height ~rng height)) (aux (new_height ~rng height))
+      | 6 ->
+        Time.chunk (make_chunking ~rng) (make_chunk_selector ~rng)
+          (aux (new_height ~rng height))
       (* | 3 ->
        *   OSeq.(0 -- Stdlib.min max_branching (rng ()))
        *   |> Seq.map (fun _ -> aux (new_height height))
