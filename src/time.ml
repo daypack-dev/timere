@@ -1763,13 +1763,11 @@ let equal t1 t2 =
     | Inter_seq (_, s1), Inter_seq (_, s2) | Union_seq (_, s1), Union_seq (_, s2)
       ->
       OSeq.for_all2 aux s1 s2
-    | Unchunk c1, Unchunk c2 ->
-      aux_chunked c1 c2
+    | Unchunk c1, Unchunk c2 -> aux_chunked c1 c2
     | _, _ -> false
   and aux_chunked c1 c2 =
-    match c1, c2 with
-    | Unary_op_on_t (op1, t1), Unary_op_on_t (op2, t2) ->
-      op1 = op2 && aux t1 t2
+    match (c1, c2) with
+    | Unary_op_on_t (op1, t1), Unary_op_on_t (op2, t2) -> op1 = op2 && aux t1 t2
     | Unary_op_on_chunked (op1, c1), Unary_op_on_chunked (op2, c2) ->
       op1 = op2 && aux_chunked c1 c2
     | _, _ -> false

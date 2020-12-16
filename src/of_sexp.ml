@@ -53,20 +53,12 @@ let ints_of_sexp_list (x : CCSexp.t) =
 
 let duration_of_sexp (x : CCSexp.t) =
   match x with
-  | `List
-      [
-        days;
-        hours;
-        minutes;
-        seconds;
-      ] -> (
+  | `List [ days; hours; minutes; seconds ] -> (
       let days = int_of_sexp days in
       let hours = int_of_sexp hours in
       let minutes = int_of_sexp minutes in
       let seconds = int_of_sexp seconds in
-      match
-        Duration.make ~days ~hours ~minutes ~seconds ()
-      with
+      match Duration.make ~days ~hours ~minutes ~seconds () with
       | Ok x -> x
       | Error () ->
         invalid_data (Printf.sprintf "Invalid date: %s" (CCSexp.to_string x))
@@ -304,12 +296,10 @@ let of_sexp (x : CCSexp.t) =
         | [ `Atom "after"; a; b ] -> after (aux a) (aux b)
         | [ `Atom "between_inc"; a; b ] -> between_inc (aux a) (aux b)
         | [ `Atom "between_exc"; a; b ] -> between_exc (aux a) (aux b)
-        | [ `Atom "unchunk"; x] ->
-          aux_chunked (fun x -> x) x
+        | [ `Atom "unchunk"; x ] -> aux_chunked (fun x -> x) x
         | _ ->
           invalid_data
-            (Printf.sprintf "Invalid timere data: %s" (CCSexp.to_string x))
-      )
+            (Printf.sprintf "Invalid timere data: %s" (CCSexp.to_string x)) )
     | `Atom _ ->
       invalid_data
         (Printf.sprintf "Expected list for timere data: %s"
@@ -318,14 +308,15 @@ let of_sexp (x : CCSexp.t) =
     match x with
     | `List l -> (
         match l with
-        | [ `Atom "chunk_as_is"; x ] ->
-          chunk `As_is f (aux x)
+        | [ `Atom "chunk_as_is"; x ] -> chunk `As_is f (aux x)
         | [ `Atom "chunk_at_year_boundary"; x ] ->
           chunk `At_year_boundary f (aux x)
         | [ `Atom "chunk_at_month_boundary"; x ] ->
           chunk `At_month_boundary f (aux x)
         | [ `Atom "chunk_by_duration"; duration; `Atom "drop_partial"; x ] ->
-          chunk (`By_duration_drop_partial (duration_of_sexp duration)) f (aux x)
+          chunk
+            (`By_duration_drop_partial (duration_of_sexp duration))
+            f (aux x)
         | [ `Atom "chunk_by_duration"; duration; x ] ->
           chunk (`By_duration (duration_of_sexp duration)) f (aux x)
         | [ `Atom "skip_n"; n; chunked ] ->
@@ -342,14 +333,28 @@ let of_sexp (x : CCSexp.t) =
           aux_chunked (fun x -> f x |> chunk_again `At_year_boundary) chunked
         | [ `Atom "chunk_again"; `Atom "chunk_at_month_boundary"; chunked ] ->
           aux_chunked (fun x -> f x |> chunk_again `At_month_boundary) chunked
-        | [ `Atom "chunk_again"; `Atom "chunk_by_duration"; duration; `Atom "drop_partial"; chunked ] ->
-          aux_chunked (fun x -> f x |> chunk_again (`By_duration_drop_partial (duration_of_sexp duration))) chunked
-        | [ `Atom "chunk_again"; `Atom "chunk_by_duration"; duration; chunked ] ->
-          aux_chunked (fun x -> f x |> chunk_again (`By_duration (duration_of_sexp duration))) chunked
+        | [
+          `Atom "chunk_again";
+          `Atom "chunk_by_duration";
+          duration;
+          `Atom "drop_partial";
+          chunked;
+        ] ->
+          aux_chunked
+            (fun x ->
+               f x
+               |> chunk_again
+                 (`By_duration_drop_partial (duration_of_sexp duration)))
+            chunked
+        | [ `Atom "chunk_again"; `Atom "chunk_by_duration"; duration; chunked ]
+          ->
+          aux_chunked
+            (fun x ->
+               f x |> chunk_again (`By_duration (duration_of_sexp duration)))
+            chunked
         | _ ->
           invalid_data
-            (Printf.sprintf "Invalid timere data: %s" (CCSexp.to_string x))
-      )
+            (Printf.sprintf "Invalid timere data: %s" (CCSexp.to_string x)) )
     | `Atom _ ->
       invalid_data
         (Printf.sprintf "Expected list for timere data: %s"
