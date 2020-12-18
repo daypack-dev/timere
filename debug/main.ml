@@ -5,42 +5,6 @@ let default_interval_format_string =
   "[{syear} {smon:Xxx} {smday:0X} {swday:Xxx} {shour:0X}:{smin:0X}:{ssec:0X}, \
    {eyear} {emon:Xxx} {emday:0X} {ewday:Xxx} {ehour:0X}:{emin:0X}:{esec:0X})"
 
-let debug_branching () =
-  let timere =
-    Timere.branching
-      ~months:[ `Range_inc (`Jan, `Mar) ]
-      ~days:(Timere.Month_days [ `Range_inc (-28, -1) ])
-      ()
-  in
-  let search_years_ahead = 5 in
-  let cur_date_time = Result.get_ok @@ Timere.Date_time.cur () in
-  let search_end_exc =
-    Result.get_ok
-    @@ Timere.Date_time.make
-      ~year:(cur_date_time.year + search_years_ahead)
-      ~month:cur_date_time.month ~day:cur_date_time.day
-      ~hour:cur_date_time.hour ~minute:cur_date_time.minute
-      ~second:cur_date_time.second ~tz_offset_s:cur_date_time.tz_offset_s
-  in
-  let timere =
-    Timere.(inter [ timere; interval_dt_exc cur_date_time search_end_exc ])
-  in
-  match Timere.resolve timere with
-  | Error msg -> print_endline msg
-  | Ok s -> (
-      match s () with
-      | Seq.Nil -> print_endline "No matching time slots"
-      | Seq.Cons _ ->
-        s
-        |> OSeq.take 20
-        |> OSeq.iter (fun ts ->
-            match
-              Timere.sprintf_interval default_interval_format_string ts
-            with
-            | Ok s -> Printf.printf "%s\n" s
-            | Error msg -> Printf.printf "Error: %s\n" msg);
-        print_newline () )
-
 let debug_parsing () =
   let expr = "jan to feb, apr" in
   match Timere_parse.timere expr with
