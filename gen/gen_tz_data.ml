@@ -312,19 +312,6 @@ let gen () =
         in
         (s, l))
   in
-  (* let tables_local : transition_table =
-   *   List.combine all_time_zones transitions
-   *   |> List.map (fun (s, l) ->
-   *       Printf.printf
-   *         "Constructing transition table (local) for time_zone: %s\n" s;
-   *       flush stdout;
-   *       let l =
-   *         l
-   *         |> List.map transition_record_indexed_by_local_of_transition
-   *         |> process_overlapping_transition_records
-   *       in
-   *       (s, l))
-   * in *)
   print_newline ();
   Printf.printf "Number of time_zones in table: %d\n"
     (List.length all_time_zones);
@@ -343,80 +330,14 @@ let gen () =
       write_line "";
       write_line "let db : db =";
       write_line "  String_map.empty";
-      List.iter (fun (s, l) ->
-          write_line (Printf.sprintf "  |> String_map.add \"%s\" [|" s);
-          List.iter (fun r ->
-              write_line (Printf.sprintf "    ((%LdL), { is_dst = %b; offset = (%d) });" r.start r.is_dst r.offset);
-            ) l;
-          write_line "  |]";
-        )
-        tables_utc
-      (* write_line
-       *   "let compare_entry e1 e2 = match compare e1.offset e2.offset with";
-       * write_line "  | 0 -> compare e1.is_dst e2.is_dst";
-       * write_line "  | n -> n";
-       * write_line "";
-       * write_line "type table = entry Int64_map.t";
-       * write_line "";
-       * write_line "module Multi_table = CCMultiMap.Make";
-       * write_line "  (struct type t = int64 let compare = Int64.compare end)";
-       * write_line "  (struct type t = entry let compare = compare_entry end)";
-       * write_line "";
-       * write_line "type db_utc = table String_map.t";
-       * write_line "";
-       * write_line "type db_local = (Multi_table.t * Multi_table.t) String_map.t";
-       * write_line "";
-       * write_line "let db_utc : db_utc =";
-       * write_line "  String_map.empty";
-       * List.iter
-       *   (fun (s, l) ->
-       *      write_line (Printf.sprintf "  |> String_map.add \"%s\" (" s);
-       *      write_line "        Int64_map.empty";
-       *      List.iter
-       *        (fun r ->
-       *           write_line
-       *             (Printf.sprintf "        |> Int64_map.add (%LdL)" r.start);
-       *           write_line "           {";
-       *           write_line (Printf.sprintf "             is_dst = %b;" r.is_dst);
-       *           write_line (Printf.sprintf "             offset = %d;" r.offset);
-       *           write_line "           }")
-       *        l;
-       *      write_line "     )")
-       *   tables_utc;
-       * write_line "let local_indexed_by_start : db_local =";
-       * write_line "  String_map.empty";
-       * List.iter
-       *   (fun (s, l) ->
-       *      write_line (Printf.sprintf "  |> String_map.add \"%s\" (" s);
-       *      write_line "        let indexed_by_start =";
-       *      write_line "          Multi_table.empty";
-       *      List.iter
-       *        (fun r ->
-       *           write_line
-       *             (Printf.sprintf
-       *                "          |> (fun t -> Multi_table.add t (%LdL)" r.start);
-       *           write_line "             {";
-       *           write_line (Printf.sprintf "               is_dst = %b;" r.is_dst);
-       *           write_line (Printf.sprintf "               offset = %d;" r.offset);
-       *           write_line "             }";
-       *           write_line "          )")
-       *        l;
-       *      write_line "        in";
-       *      write_line "        let indexed_by_end_exc =";
-       *      write_line "          Multi_table.empty";
-       *      List.iter
-       *        (fun r ->
-       *           write_line
-       *             (Printf.sprintf
-       *                "          |> (fun t -> Multi_table.add t (%LdL)" r.end_exc);
-       *           write_line "             {";
-       *           write_line (Printf.sprintf "               is_dst = %b;" r.is_dst);
-       *           write_line (Printf.sprintf "               offset = %d;" r.offset);
-       *           write_line "             }";
-       *           write_line "          )")
-       *        l;
-       *      write_line "        in";
-       *      write_line "        (indexed_by_start, indexed_by_end_exc)";
-       *      write_line "     )")
-       *   tables_local *)
-    )
+      List.iter
+        (fun (s, l) ->
+           write_line (Printf.sprintf "  |> String_map.add \"%s\" [|" s);
+           List.iter
+             (fun r ->
+                write_line
+                  (Printf.sprintf "    ((%LdL), { is_dst = %b; offset = (%d) });"
+                     r.start r.is_dst r.offset))
+             l;
+           write_line "  |]")
+        tables_utc)
