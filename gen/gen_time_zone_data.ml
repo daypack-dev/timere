@@ -43,7 +43,7 @@ type transition_record = {
 
 type transition_table = (string * transition_record list) list
 
-let output_file_name = "src/tz_data.ml"
+let output_file_name = "src/time_zone_data.ml"
 
 let year_start = 1850
 
@@ -301,8 +301,7 @@ let gen () =
   let tables_utc : transition_table =
     List.combine all_time_zones transitions
     |> List.map (fun (s, l) ->
-        Printf.printf
-          "Constructing transition table (UTC) for time_zone: %s\n" s;
+        Printf.printf "Constructing transition table for time_zone: %s\n" s;
         flush stdout;
         let l =
           l

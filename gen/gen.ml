@@ -1,1 +1,1 @@
-let () = Gen_tz_data.gen ()
+let () = Gen_time_zone_data.gen ()
