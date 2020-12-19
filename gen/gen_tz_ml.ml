@@ -60,26 +60,20 @@ module Parser = struct
             digit >>= (fun h1 ->
                 digit >>= (fun h2 ->
                     let hour = int_of_string (Printf.sprintf "%c%c" h1 h2) in
-                    digit >>= (fun m1 ->
+                    (digit >>= (fun m1 ->
                         digit |>> (fun m2 ->
                             let minute = int_of_string (Printf.sprintf "%c%c" m1 m2) in
                             Int (mul * (hour * 60 + minute))
                           )
                       )
+                    )
+                    <|>
+                    (
+                      return (Int (mul * (hour * 60)))
+                    )
                   )
               )
           )
-      )
-      )
-    <|> (attempt (
-        ((char '+' >>$ 1) <|> (char '-' >>$ -1)) >>= (fun mul ->
-            digit >>= (fun h1 ->
-                digit |>> (fun h2 ->
-                    let hour = int_of_string (Printf.sprintf "%c%c" h1 h2) in
-                    Int (mul * (hour * 60))
-              )
-          )
-      )
       )
       )
 
@@ -139,12 +133,19 @@ let transitions_of_zdump_lines (l : zdump_line list) : transition list =
           rest
       )
   in
-  let line_num, l =
-    match l with
-    | x :: y :: rest when x.date_time_local.tz <> y.date_time_local.tz -> 1, y :: rest
-    | _ -> 0, l
+  let preprocess l =
+    let rec aux line_num l =
+      match l with
+      | x :: y :: rest when x.date_time_local.tz = String "LMT" && y.date_time_local.tz = String "LMT" -> aux (succ line_num) rest
+      | x :: y :: rest when x.date_time_local.tz <> y.date_time_local.tz -> aux (succ line_num) (y :: rest)
+      | _ -> line_num, l
+    in
+    aux 0 l
   in
-  aux [] line_num l
+  l
+  |> preprocess
+  |> (fun (line_num, l) ->
+    aux [] line_num l)
 
 let gen () =
   let zoneinfo_file_dir =
