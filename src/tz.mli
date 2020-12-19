@@ -5,6 +5,8 @@ type entry = private {
   offset : int;
 }
 
+val is_utc : t -> bool
+
 val make : string -> t
 
 val available_time_zones : string list
