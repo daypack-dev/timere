@@ -1,2 +1,1 @@
-let () =
-  Gen_tz_ml.gen ()
+let () = Gen_tz_ml.gen ()
