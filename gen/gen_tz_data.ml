@@ -260,7 +260,6 @@ let gen () =
   let zoneinfo_file_dir = "/usr/share/zoneinfo/posix" in
   let all_zoneinfo_file_paths =
     FileUtil.(find Is_file zoneinfo_file_dir (fun x y -> y :: x) [])
-    |> CCList.take 1
   in
   let all_time_zones =
     all_zoneinfo_file_paths
