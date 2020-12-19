@@ -2,19 +2,20 @@ include Tz_data
 
 type t = {
   name : string;
-  table : table;
+  table_utc : table;
+
 }
 
 let is_utc t = t.name = "UTC"
 
 let available_time_zones =
-  String_map.bindings db
+  String_map.bindings db_utc
   |> List.map (fun (k, _) -> k)
 
 let make name : t =
-  match String_map.find_opt name db with
-  | Some table ->
-    { name; table }
+  match String_map.find_opt name db_utc with
+  | Some table_utc ->
+    { name; table_utc }
   | None ->
     failwith "make: Invalid time zone name"
 
@@ -22,7 +23,7 @@ let lookup_timestamp (t : t) timestamp =
   if is_utc t then
     Some { is_dst = false; offset = 0; }
   else
-    let (l, exact, _r) = Int64_map.split timestamp t.table in
+    let (l, exact, _r) = Int64_map.split timestamp t.table_utc in
     match exact with
     | Some x -> Some x
     | None ->
@@ -38,5 +39,5 @@ let transitions (t : t) : ((int64 * int64) * entry) list =
     | (k1, entry1) :: (k2, entry2) :: rest ->
       aux (((k1, k2), entry1) :: acc) ((k2, entry2) :: rest)
   in
-  Int64_map.bindings t.table
+  Int64_map.bindings t.table_utc
   |> aux []

@@ -26,6 +26,8 @@ type zdump_line = {
 type transition = {
   start_utc : date_time;
   end_inc_utc : date_time option;
+  start_local : date_time;
+  end_inc_local : date_time option;
   tz : tz;
   is_dst : bool;
   offset : int;
@@ -141,6 +143,8 @@ let transitions_of_zdump_lines (l : zdump_line list) : transition list =
         ( {
           start_utc = x.date_time_utc;
           end_inc_utc = None;
+          start_local = x.date_time_local;
+          end_inc_local = None;
           tz = x.date_time_local.tz;
           is_dst = x.is_dst;
           offset = x.offset;
@@ -159,6 +163,8 @@ let transitions_of_zdump_lines (l : zdump_line list) : transition list =
           ( {
             start_utc = x.date_time_utc;
             end_inc_utc = Some y.date_time_utc;
+            start_local = x.date_time_utc;
+            end_inc_local = Some y.date_time_utc;
             tz = x.date_time_local.tz;
             is_dst = x.is_dst;
             offset = x.offset;
@@ -189,7 +195,7 @@ let timestamp_of_date_time_utc (x : date_time) : int64 =
   |> Ptime.to_float_s
   |> Int64.of_float
 
-let transition_record_of_transition (x : transition) : transition_record =
+let transition_record_indexed_by_utc_of_transition (x : transition) : transition_record =
   let start = timestamp_of_date_time_utc x.start_utc in
   let end_exc =
     match x.end_inc_utc with
@@ -252,7 +258,7 @@ let gen () =
         transitions_of_zdump_lines l)
   in
   print_newline ();
-  let table =
+  let tables_utc =
     List.combine all_time_zones transitions
     |> List.map (fun (s, l) ->
         Printf.printf
@@ -260,14 +266,14 @@ let gen () =
         flush stdout;
         let l =
           l
-          |> List.map transition_record_of_transition
+          |> List.map transition_record_indexed_by_utc_of_transition
           |> check_transition_records_are_contiguous
         in
         (s, l)
       )
   in
   print_newline ();
-  Printf.printf "Number of time_zones in table: %d\n" (List.length table);
+  Printf.printf "Number of time_zones in table: %d\n" (List.length all_time_zones);
   print_newline ();
   Printf.printf "Generating %s\n" output_file_name;
   CCIO.with_out ~flags:[Open_creat; Open_trunc] output_file_name
@@ -280,9 +286,9 @@ let gen () =
        write_line "";
        write_line "type table = entry Int64_map.t";
        write_line "";
-       write_line "type db = table String_map.t";
+       write_line "type db_utc = table String_map.t";
        write_line "";
-       write_line "let db : db =";
+       write_line "let db_utc : db_utc =";
        write_line "  String_map.empty";
        List.iter (fun (s, l) ->
            write_line (Printf.sprintf "  |> String_map.add \"%s\" (" s);
@@ -296,5 +302,5 @@ let gen () =
              ) l;
            write_line "     )";
          )
-         table
+         tables_utc
     )
