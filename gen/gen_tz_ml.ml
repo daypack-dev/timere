@@ -168,7 +168,7 @@ let gen () =
   let zdump_lines =
     all_zoneinfo_file_paths
     |> List.map (fun s ->
-        Printf.printf "Processing zdump output of file: %s\n" s;
+        Printf.printf "Parsing zdump output of file: %s\n" s;
         flush stdout;
         let ic = Unix.open_process_in (Printf.sprintf "zdump -V %s" s) in
         let lines = CCIO.read_lines_l ic in
@@ -185,7 +185,10 @@ let gen () =
       )
   in
   let transitions =
-    zdump_lines
-    |> List.map (transitions_of_zdump_lines)
+    List.combine all_zoneinfo_file_paths zdump_lines
+    |> List.map (fun (s, l) ->
+        Printf.printf "Processing zdump output into transition table for file: %s\n" s;
+        flush stdout;
+        transitions_of_zdump_lines l)
   in
   ()
