@@ -122,25 +122,29 @@ let parse_zdump_line (s : string) : (zdump_line, string) result =
   |> Parser_components.result_of_mparser_result
 
 let transitions_of_zdump_lines (l : zdump_line list) : transition list =
-  let rec aux acc l =
+  let rec aux acc line_num l =
     match l with
     | [] -> List.rev acc
     | [x] ->
-      aux ({ start_utc = x.date_time_utc; end_inc_utc = None; tz = x.date_time_local.tz; is_dst = x.is_dst; offset = x.offset} :: acc)
+      aux ({ start_utc = x.date_time_utc; end_inc_utc = None; tz = x.date_time_local.tz; is_dst = x.is_dst; offset = x.offset} :: acc) (succ line_num)
         []
     | x :: y :: rest ->
-      assert (x.date_time_local.tz = y.date_time_local.tz);
-      assert (x.is_dst = y.is_dst);
-      assert (x.offset = y.offset);
-      aux ({ start_utc = x.date_time_utc; end_inc_utc = Some (y.date_time_utc); tz = x.date_time_local.tz; is_dst = x.is_dst; offset = x.offset} :: acc)
-        rest
+      if x.date_time_local.tz <> y.date_time_local.tz then
+        failwith (Printf.sprintf "line: %d, local date times do not match in timezone" line_num)
+      else (
+        assert (x.is_dst = y.is_dst);
+        assert (x.offset = y.offset);
+        aux ({ start_utc = x.date_time_utc; end_inc_utc = Some (y.date_time_utc); tz = x.date_time_local.tz; is_dst = x.is_dst; offset = x.offset} :: acc)
+          (succ line_num)
+          rest
+      )
   in
-  let l =
+  let line_num, l =
     match l with
-    | x :: rest when x.date_time_local.tz = String "LMT" -> rest
-    | _ -> l
+    | x :: y :: rest when x.date_time_local.tz <> y.date_time_local.tz -> 1, y :: rest
+    | _ -> 0, l
   in
-  aux [] l
+  aux [] line_num l
 
 let gen () =
   let zoneinfo_file_dir =
@@ -163,6 +167,7 @@ let gen () =
         flush stdout;
         let ic = Unix.open_process_in (Printf.sprintf "zdump -V %s" s) in
         let lines = CCIO.read_lines_l ic in
+        close_in ic;
         List.map (fun s ->
             match parse_zdump_line s with
             | Ok x -> x
