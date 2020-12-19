@@ -45,6 +45,10 @@ type transition_table = (string * transition_record list) list
 
 let output_file_name = "src/tz_data.ml"
 
+let year_start = 1850
+
+let year_end_exc = 2100
+
 let human_int_of_month s =
   match s with
   | "Jan" -> 1
@@ -190,31 +194,65 @@ let transitions_of_zdump_lines (l : zdump_line list) : transition list =
 let timestamp_of_date_time_utc (x : date_time) : int64 =
   assert (x.tz = String "UT");
   let offset = 0 in
-  Ptime.of_date_time ((x.year, x.month, x.day), ((x.hour, x.minute, x.second), offset))
+  Ptime.of_date_time
+    ((x.year, x.month, x.day), ((x.hour, x.minute, x.second), offset))
   |> Option.get
   |> Ptime.to_float_s
   |> Int64.of_float
 
-let transition_record_indexed_by_utc_of_transition (x : transition) : transition_record =
+let timestamp_of_date_time_local (x : date_time) : int64 =
+  let offset = 0 in
+  Ptime.of_date_time
+    ((x.year, x.month, x.day), ((x.hour, x.minute, x.second), offset))
+  |> Option.get
+  |> Ptime.to_float_s
+  |> Int64.of_float
+
+let transition_record_indexed_by_utc_of_transition (x : transition) :
+  transition_record =
   let start = timestamp_of_date_time_utc x.start_utc in
   let end_exc =
     match x.end_inc_utc with
-    | None ->
-      Ptime.(max |> to_float_s |> Int64.of_float)
-    | Some end_inc_utc ->
-      timestamp_of_date_time_utc end_inc_utc |> Int64.succ
+    | None -> Ptime.(max |> to_float_s |> Int64.of_float)
+    | Some end_inc_utc -> timestamp_of_date_time_utc end_inc_utc |> Int64.succ
   in
   { start; end_exc; tz = x.tz; is_dst = x.is_dst; offset = x.offset }
 
-let check_transition_records_are_contiguous (l : transition_record list) : transition_record list =
+let transition_record_indexed_by_local_of_transition (x : transition) :
+  transition_record =
+  let start = timestamp_of_date_time_local x.start_local in
+  let end_exc =
+    match x.end_inc_local with
+    | None -> Ptime.(max |> to_float_s |> Int64.of_float)
+    | Some end_inc_local ->
+      timestamp_of_date_time_local end_inc_local |> Int64.succ
+  in
+  { start; end_exc; tz = x.tz; is_dst = x.is_dst; offset = x.offset }
+
+let check_transition_records_are_contiguous (l : transition_record list) :
+  transition_record list =
   let rec aux l =
     match l with
-    | [] | [_] -> l
+    | [] | [ _ ] -> l
     | x :: y :: xs ->
-      if x.end_exc = y.start then
-        x :: aux (y :: xs)
-      else
-        failwith "Transition records are not contiguous"
+      if x.end_exc = y.start then x :: aux (y :: xs)
+      else failwith "Transition records are not contiguous"
+  in
+  aux l
+
+let process_overlapping_transition_records (l : transition_record list) :
+  transition_record list =
+  let rec aux l =
+    match l with
+    | [] | [ _ ] -> l
+    | x :: y :: xs ->
+      if y.start < x.end_exc then
+        let z1 = { x with start = x.start; end_exc = y.start } in
+        let z2 = { x with start = y.start; end_exc = x.end_exc } in
+        let z3 = { y with start = y.start; end_exc = x.end_exc } in
+        let z4 = { y with start = x.end_exc; end_exc = y.end_exc } in
+        z1 :: z2 :: z3 :: aux (z4 :: xs)
+      else x :: aux (y :: xs)
   in
   aux l
 
@@ -236,7 +274,11 @@ let gen () =
         Printf.printf "Parsing zdump output of file:\n";
         Printf.printf "  %s\n" s;
         flush stdout;
-        let ic = Unix.open_process_in (Printf.sprintf "zdump -V %s" s) in
+        let ic =
+          Unix.open_process_in
+            (Printf.sprintf "zdump -V -c %d,%d %s" year_start year_end_exc s)
+            (* (Printf.sprintf "zdump -V %s" s) *)
+        in
         let lines = CCIO.read_lines_l ic in
         close_in ic;
         List.map
@@ -251,56 +293,130 @@ let gen () =
   let transitions =
     List.combine all_zoneinfo_file_paths zdump_lines
     |> List.map (fun (s, l) ->
-        Printf.printf
-          "Processing zdump output into transitions for file:\n";
+        Printf.printf "Processing zdump output into transitions for file:\n";
         Printf.printf "  %s\n" s;
         flush stdout;
         transitions_of_zdump_lines l)
   in
   print_newline ();
-  let tables_utc =
+  let tables_utc : transition_table =
     List.combine all_time_zones transitions
     |> List.map (fun (s, l) ->
         Printf.printf
-          "Constructing transition table for time_zone: %s\n" s;
+          "Constructing transition table (UTC) for time_zone: %s\n" s;
         flush stdout;
         let l =
           l
           |> List.map transition_record_indexed_by_utc_of_transition
           |> check_transition_records_are_contiguous
         in
-        (s, l)
-      )
+        (s, l))
   in
+  (* let tables_local : transition_table =
+   *   List.combine all_time_zones transitions
+   *   |> List.map (fun (s, l) ->
+   *       Printf.printf
+   *         "Constructing transition table (local) for time_zone: %s\n" s;
+   *       flush stdout;
+   *       let l =
+   *         l
+   *         |> List.map transition_record_indexed_by_local_of_transition
+   *         |> process_overlapping_transition_records
+   *       in
+   *       (s, l))
+   * in *)
   print_newline ();
-  Printf.printf "Number of time_zones in table: %d\n" (List.length all_time_zones);
+  Printf.printf "Number of time_zones in table: %d\n"
+    (List.length all_time_zones);
   print_newline ();
   Printf.printf "Generating %s\n" output_file_name;
-  CCIO.with_out ~flags:[Open_creat; Open_trunc] output_file_name
-    (fun oc ->
-       let write_line = CCIO.write_line oc in
-       write_line "type entry = {";
-       write_line "  is_dst : bool;";
-       write_line "  offset : int;";
-       write_line "}";
-       write_line "";
-       write_line "type table = entry Int64_map.t";
-       write_line "";
-       write_line "type db_utc = table String_map.t";
-       write_line "";
-       write_line "let db_utc : db_utc =";
-       write_line "  String_map.empty";
-       List.iter (fun (s, l) ->
-           write_line (Printf.sprintf "  |> String_map.add \"%s\" (" s);
-           write_line "        Int64_map.empty";
-           List.iter (fun r ->
-               write_line (Printf.sprintf "        |> Int64_map.add (%LdL)" r.start);
-               write_line "           {";
-               write_line (Printf.sprintf "             is_dst = %b;" r.is_dst);
-               write_line (Printf.sprintf "             offset = %d;" r.offset);
-               write_line "           }";
-             ) l;
-           write_line "     )";
-         )
-         tables_utc
+  CCIO.with_out ~flags:[ Open_creat; Open_trunc ] output_file_name (fun oc ->
+      let write_line = CCIO.write_line oc in
+      write_line "type entry = {";
+      write_line "  is_dst : bool;";
+      write_line "  offset : int;";
+      write_line "}";
+      write_line "";
+      write_line "type table = (int64 * entry) array";
+      write_line "";
+      write_line "type db = table String_map.t";
+      write_line "";
+      write_line "let db : db =";
+      write_line "  String_map.empty";
+      List.iter (fun (s, l) ->
+          write_line (Printf.sprintf "  |> String_map.add \"%s\" [|" s);
+          List.iter (fun r ->
+              write_line (Printf.sprintf "    ((%LdL), { is_dst = %b; offset = (%d) });" r.start r.is_dst r.offset);
+            ) l;
+          write_line "  |]";
+        )
+        tables_utc
+      (* write_line
+       *   "let compare_entry e1 e2 = match compare e1.offset e2.offset with";
+       * write_line "  | 0 -> compare e1.is_dst e2.is_dst";
+       * write_line "  | n -> n";
+       * write_line "";
+       * write_line "type table = entry Int64_map.t";
+       * write_line "";
+       * write_line "module Multi_table = CCMultiMap.Make";
+       * write_line "  (struct type t = int64 let compare = Int64.compare end)";
+       * write_line "  (struct type t = entry let compare = compare_entry end)";
+       * write_line "";
+       * write_line "type db_utc = table String_map.t";
+       * write_line "";
+       * write_line "type db_local = (Multi_table.t * Multi_table.t) String_map.t";
+       * write_line "";
+       * write_line "let db_utc : db_utc =";
+       * write_line "  String_map.empty";
+       * List.iter
+       *   (fun (s, l) ->
+       *      write_line (Printf.sprintf "  |> String_map.add \"%s\" (" s);
+       *      write_line "        Int64_map.empty";
+       *      List.iter
+       *        (fun r ->
+       *           write_line
+       *             (Printf.sprintf "        |> Int64_map.add (%LdL)" r.start);
+       *           write_line "           {";
+       *           write_line (Printf.sprintf "             is_dst = %b;" r.is_dst);
+       *           write_line (Printf.sprintf "             offset = %d;" r.offset);
+       *           write_line "           }")
+       *        l;
+       *      write_line "     )")
+       *   tables_utc;
+       * write_line "let local_indexed_by_start : db_local =";
+       * write_line "  String_map.empty";
+       * List.iter
+       *   (fun (s, l) ->
+       *      write_line (Printf.sprintf "  |> String_map.add \"%s\" (" s);
+       *      write_line "        let indexed_by_start =";
+       *      write_line "          Multi_table.empty";
+       *      List.iter
+       *        (fun r ->
+       *           write_line
+       *             (Printf.sprintf
+       *                "          |> (fun t -> Multi_table.add t (%LdL)" r.start);
+       *           write_line "             {";
+       *           write_line (Printf.sprintf "               is_dst = %b;" r.is_dst);
+       *           write_line (Printf.sprintf "               offset = %d;" r.offset);
+       *           write_line "             }";
+       *           write_line "          )")
+       *        l;
+       *      write_line "        in";
+       *      write_line "        let indexed_by_end_exc =";
+       *      write_line "          Multi_table.empty";
+       *      List.iter
+       *        (fun r ->
+       *           write_line
+       *             (Printf.sprintf
+       *                "          |> (fun t -> Multi_table.add t (%LdL)" r.end_exc);
+       *           write_line "             {";
+       *           write_line (Printf.sprintf "               is_dst = %b;" r.is_dst);
+       *           write_line (Printf.sprintf "               offset = %d;" r.offset);
+       *           write_line "             }";
+       *           write_line "          )")
+       *        l;
+       *      write_line "        in";
+       *      write_line "        (indexed_by_start, indexed_by_end_exc)";
+       *      write_line "     )")
+       *   tables_local *)
     )

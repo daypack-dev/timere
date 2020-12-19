@@ -8,5 +8,6 @@
             re
             mparser
             containers
+            containers-data
  )
 )
