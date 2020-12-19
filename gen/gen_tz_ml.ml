@@ -160,6 +160,7 @@ let gen () =
     all_zoneinfo_file_paths
     |> List.map (fun s ->
         Printf.printf "Processing file: %s\n" s;
+        flush stdout;
         let ic = Unix.open_process_in (Printf.sprintf "zdump -V %s" s) in
         let lines = CCIO.read_lines_l ic in
         List.map (fun s ->
