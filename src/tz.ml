@@ -8,11 +8,11 @@ type t = {
 let is_utc t = t.name = "UTC"
 
 let available_time_zones =
-  String_map.bindings db
+  String_map.bindings db_utc
   |> List.map (fun (k, _) -> k)
 
 let make name : t =
-  match String_map.find_opt name db with
+  match String_map.find_opt name db_utc with
   | Some table ->
     { name; table }
   | None ->
