@@ -1,3 +1,7 @@
+type tz =
+  | String of string
+  | Int of int
+
 type date_time = {
   year : int;
   month : int;
@@ -5,7 +9,7 @@ type date_time = {
   hour : int;
   minute : int;
   second : int;
-  tz_string : string;
+  tz : tz;
 }
 
 type zdump_line = {
@@ -18,7 +22,7 @@ type zdump_line = {
 type transition = {
   start_utc : date_time;
   end_inc_utc : date_time option;
-  tz_string : string;
+  tz : tz;
   is_dst : bool;
   offset : int;
 }
@@ -49,6 +53,36 @@ module Parser = struct
   open MParser
   open Parser_components
 
+  let tz_p =
+    (attempt alpha_string |>> (fun s -> String s))
+    <|> (attempt (
+        ((char '+' >>$ 1) <|> (char '-' >>$ -1)) >>= (fun mul ->
+            digit >>= (fun h1 ->
+                digit >>= (fun h2 ->
+                    let hour = int_of_string (Printf.sprintf "%c%c" h1 h2) in
+                    digit >>= (fun m1 ->
+                        digit |>> (fun m2 ->
+                            let minute = int_of_string (Printf.sprintf "%c%c" m1 m2) in
+                            Int (mul * (hour * 60 + minute))
+                          )
+                      )
+                  )
+              )
+          )
+      )
+      )
+    <|> (attempt (
+        ((char '+' >>$ 1) <|> (char '-' >>$ -1)) >>= (fun mul ->
+            digit >>= (fun h1 ->
+                digit |>> (fun h2 ->
+                    let hour = int_of_string (Printf.sprintf "%c%c" h1 h2) in
+                    Int (mul * (hour * 60))
+              )
+          )
+      )
+      )
+      )
+
   let date_time_p =
     non_space_string >> spaces1 >>
     alpha_string >>= (fun month ->
@@ -58,8 +92,8 @@ module Parser = struct
                 char ':' >> nat_zero >>= (fun minute ->
                     char ':' >> nat_zero >>= (fun second ->
                         spaces1 >> nat_zero >>= (fun year ->
-                            spaces1 >> alpha_string |>> (fun tz_string ->
-                                {year; month; day; hour; minute; second; tz_string}
+                            spaces1 >> tz_p |>> (fun tz ->
+                                {year; month; day; hour; minute; second; tz}
                               )
                           )
                       )
@@ -71,7 +105,7 @@ module Parser = struct
   let zdump_line =
     non_space_string >> spaces1 >>
     date_time_p >>= (fun date_time_utc ->
-        assert (date_time_utc.tz_string = "UT");
+        assert (date_time_utc.tz = String "UT");
         spaces1 >> char '=' >> spaces1 >> date_time_p >>= (fun date_time_local ->
             spaces1 >> string "isdst=" >> ((char '0' >>$ false) <|> (char '1' >>$ true)) >>= (fun is_dst ->
                 spaces1 >> string "gmtoff=" >> (nat_zero <|> (char '-' >> nat_zero |>> fun x -> -x))
@@ -83,28 +117,27 @@ module Parser = struct
       )
 end
 
-let parse_zdump_line (s : string) : zdump_line =
+let parse_zdump_line (s : string) : (zdump_line, string) result =
   MParser.parse_string Parser.zdump_line s ()
   |> Parser_components.result_of_mparser_result
-  |> Result.get_ok
 
 let transitions_of_zdump_lines (l : zdump_line list) : transition list =
   let rec aux acc l =
     match l with
     | [] -> List.rev acc
     | [x] ->
-      aux ({ start_utc = x.date_time_utc; end_inc_utc = None; tz_string = x.date_time_local.tz_string; is_dst = x.is_dst; offset = x.offset} :: acc)
+      aux ({ start_utc = x.date_time_utc; end_inc_utc = None; tz = x.date_time_local.tz; is_dst = x.is_dst; offset = x.offset} :: acc)
         []
     | x :: y :: rest ->
-      assert (x.date_time_local.tz_string = y.date_time_local.tz_string);
+      assert (x.date_time_local.tz = y.date_time_local.tz);
       assert (x.is_dst = y.is_dst);
       assert (x.offset = y.offset);
-      aux ({ start_utc = x.date_time_utc; end_inc_utc = Some (y.date_time_utc); tz_string = x.date_time_local.tz_string; is_dst = x.is_dst; offset = x.offset} :: acc)
+      aux ({ start_utc = x.date_time_utc; end_inc_utc = Some (y.date_time_utc); tz = x.date_time_local.tz; is_dst = x.is_dst; offset = x.offset} :: acc)
         rest
   in
   let l =
     match l with
-    | x :: rest when x.date_time_local.tz_string = "LMT" -> rest
+    | x :: rest when x.date_time_local.tz = String "LMT" -> rest
     | _ -> l
   in
   aux [] l
@@ -126,10 +159,19 @@ let gen () =
   let zdump_lines =
     all_zoneinfo_file_paths
     |> List.map (fun s ->
+        Printf.printf "Processing file: %s\n" s;
         let ic = Unix.open_process_in (Printf.sprintf "zdump -V %s" s) in
-        CCIO.read_lines_l ic
+        let lines = CCIO.read_lines_l ic in
+        List.map (fun s ->
+            match parse_zdump_line s with
+            | Ok x -> x
+            | Error msg ->
+              failwith (
+                Printf.sprintf "For line: %s, error: %s\n" s msg;
+              )
+          )
+          lines
       )
-    |> List.map (List.map parse_zdump_line)
   in
   let transitions =
     zdump_lines
