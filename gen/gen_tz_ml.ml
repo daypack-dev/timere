@@ -1,6 +1,10 @@
+type sign =
+  | Plus
+  | Minus
+
 type tz =
   | String of string
-  | Int of int
+  | Offset of sign * int
 
 type date_time = {
   year : int;
@@ -56,20 +60,20 @@ module Parser = struct
   let tz_p =
     (attempt alpha_string |>> (fun s -> String s))
     <|> (attempt (
-        ((char '+' >>$ 1) <|> (char '-' >>$ -1)) >>= (fun mul ->
+        ((char '+' >>$ Plus) <|> (char '-' >>$ Minus)) >>= (fun sign ->
             digit >>= (fun h1 ->
                 digit >>= (fun h2 ->
                     let hour = int_of_string (Printf.sprintf "%c%c" h1 h2) in
                     (digit >>= (fun m1 ->
                         digit |>> (fun m2 ->
                             let minute = int_of_string (Printf.sprintf "%c%c" m1 m2) in
-                            Int (mul * (hour * 60 + minute))
+                            Offset (sign, hour * 60 + minute)
                           )
                       )
                     )
                     <|>
                     (
-                      return (Int (mul * (hour * 60)))
+                      return (Offset (sign, hour * 60))
                     )
                   )
               )
@@ -164,7 +168,7 @@ let gen () =
   let zdump_lines =
     all_zoneinfo_file_paths
     |> List.map (fun s ->
-        Printf.printf "Processing file: %s\n" s;
+        Printf.printf "Processing zdump output of file: %s\n" s;
         flush stdout;
         let ic = Unix.open_process_in (Printf.sprintf "zdump -V %s" s) in
         let lines = CCIO.read_lines_l ic in
