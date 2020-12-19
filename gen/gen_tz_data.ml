@@ -23,7 +23,7 @@ type zdump_line = {
   offset : int;
 }
 
-type transition_indexed_by_utc = {
+type transition = {
   start_utc : date_time;
   end_inc_utc : date_time option;
   tz : tz;
@@ -31,7 +31,7 @@ type transition_indexed_by_utc = {
   offset : int;
 }
 
-type transition_record_indexed_by_utc = {
+type transition_record = {
   start : int64;
   end_exc : int64;
   tz : tz;
@@ -39,7 +39,7 @@ type transition_record_indexed_by_utc = {
   offset : int;
 }
 
-type transition_table_indexed_by_utc = (string * transition_record_indexed_by_utc list) list
+type transition_table = (string * transition_record list) list
 
 let output_file_name = "src/tz_data.ml"
 
@@ -132,7 +132,7 @@ let parse_zdump_line (s : string) : (zdump_line, string) result =
   MParser.parse_string Parser.zdump_line s ()
   |> Parser_components.result_of_mparser_result
 
-let transitions_indexed_by_utc_of_zdump_lines (l : zdump_line list) : transition_indexed_by_utc list =
+let transitions_of_zdump_lines (l : zdump_line list) : transition list =
   let rec aux acc line_num l =
     match l with
     | [] -> List.rev acc
@@ -189,7 +189,7 @@ let timestamp_of_date_time_utc (x : date_time) : int64 =
   |> Ptime.to_float_s
   |> Int64.of_float
 
-let transition_record_of_transition_indexed_by_utc (x : transition_indexed_by_utc) : transition_record_indexed_by_utc =
+let transition_record_of_transition (x : transition) : transition_record =
   let start = timestamp_of_date_time_utc x.start_utc in
   let end_exc =
     match x.end_inc_utc with
@@ -200,7 +200,7 @@ let transition_record_of_transition_indexed_by_utc (x : transition_indexed_by_ut
   in
   { start; end_exc; tz = x.tz; is_dst = x.is_dst; offset = x.offset }
 
-let check_transition_records_indexed_by_utc_are_contiguous (l : transition_record_indexed_by_utc list) : transition_record_indexed_by_utc list =
+let check_transition_records_are_contiguous (l : transition_record list) : transition_record list =
   let rec aux l =
     match l with
     | [] | [_] -> l
@@ -249,7 +249,7 @@ let gen () =
           "Processing zdump output into transitions for file:\n";
         Printf.printf "  %s\n" s;
         flush stdout;
-        transitions_indexed_by_utc_of_zdump_lines l)
+        transitions_of_zdump_lines l)
   in
   print_newline ();
   let table =
@@ -260,8 +260,8 @@ let gen () =
         flush stdout;
         let l =
           l
-          |> List.map transition_record_of_transition_indexed_by_utc
-          |> check_transition_records_indexed_by_utc_are_contiguous
+          |> List.map transition_record_of_transition
+          |> check_transition_records_are_contiguous
         in
         (s, l)
       )
@@ -280,11 +280,9 @@ let gen () =
        write_line "";
        write_line "type table = entry Int64_map.t";
        write_line "";
-       write_line "type db_utc = table String_map.t";
+       write_line "type db = table String_map.t";
        write_line "";
-       write_line "type db_local = (table * table) String_map.t";
-       write_line "";
-       write_line "let db_utc : db_utc =";
+       write_line "let db : db =";
        write_line "  String_map.empty";
        List.iter (fun (s, l) ->
            write_line (Printf.sprintf "  |> String_map.add \"%s\" (" s);

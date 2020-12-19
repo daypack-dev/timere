@@ -5,11 +5,9 @@ type entry = {
 
 type table = entry Int64_map.t
 
-type db_utc = table String_map.t
+type db = table String_map.t
 
-type db_local = (table * table) String_map.t
-
-let db_utc : db_utc =
+let db : db =
   String_map.empty
   |> String_map.add "Cuba" (
         Int64_map.empty
