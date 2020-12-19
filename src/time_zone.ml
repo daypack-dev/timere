@@ -1,4 +1,4 @@
-include Tz_data
+include Time_zone_data
 
 type t = {
   name : string;
@@ -12,7 +12,7 @@ let available_time_zones = String_map.bindings db |> List.map (fun (k, _) -> k)
 let make name : t =
   match String_map.find_opt name db with
   | Some table -> { name; table }
-  | None -> failwith "make: Invalid time zone name"
+  | None -> invalid_arg "make: Invalid time zone name"
 
 let dummy_entry : entry = { is_dst = false; offset = 0 }
 

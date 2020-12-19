@@ -1,5 +1,9 @@
 include Time
 
+module Time_zone = struct
+  include Time_zone
+end
+
 module Date_time = struct
   include Date_time
 

@@ -83,7 +83,15 @@ val make_hms : hour:int -> minute:int -> second:int -> (hms, unit) result
 
 val make_hms_exn : hour:int -> minute:int -> second:int -> hms
 
-(** {1 Timezone change} *)
+(** {1 Time zone} *)
+
+module Time_zone : sig
+  type t
+
+  val make : string -> t
+end
+
+(** {1 Time zone change} *)
 
 val change_tz_offset_s : int -> t -> t
 
