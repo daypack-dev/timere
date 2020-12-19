@@ -39,6 +39,11 @@ format :
 	$(OCAMLFORMAT)
 	$(OCPINDENT)
 
+.PHONY: gen
+gen :
+	cd gen/ && dune build gen.exe
+	dune exec gen/gen.exe
+
 .PHONY: cinaps
 cinaps :
 	cinaps -i $(SRCFILES)

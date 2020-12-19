@@ -10,8 +10,8 @@
  (libraries oseq
             re
             mparser
-            timere
             containers
             fileutils
+            ptime
  )
 )

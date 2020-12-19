@@ -31,11 +31,17 @@ type transition = {
   offset : int;
 }
 
-type tz_record = {
-  orig_name : string list;
-  normalized_name : string list;
-  transitions : transition list;
+type transition_record = {
+  start : int64;
+  end_exc : int64;
+  tz : tz;
+  is_dst : bool;
+  offset : int;
 }
+
+type transition_table = (string * transition_record list) list
+
+let output_file_name = "src/tz_data.ml"
 
 let human_int_of_month s =
   match s with
@@ -145,7 +151,7 @@ let transitions_of_zdump_lines (l : zdump_line list) : transition list =
       if x.date_time_local.tz <> y.date_time_local.tz then
         failwith
           (Printf.sprintf
-             "line: %d, local date times do not match in timezone" line_num)
+             "line: %d, local date times do not match in time_zone" line_num)
       else (
         assert (x.is_dst = y.is_dst);
         assert (x.offset = y.offset);
@@ -175,15 +181,48 @@ let transitions_of_zdump_lines (l : zdump_line list) : transition list =
   in
   l |> preprocess |> fun (line_num, l) -> aux [] line_num l
 
+let timestamp_of_date_time_utc (x : date_time) : int64 =
+  assert (x.tz = String "UT");
+  let offset = 0 in
+  Ptime.of_date_time ((x.year, x.month, x.day), ((x.hour, x.minute, x.second), offset))
+  |> Option.get
+  |> Ptime.to_float_s
+  |> Int64.of_float
+
+let transition_record_of_transition (x : transition) : transition_record =
+  let start = timestamp_of_date_time_utc x.start_utc in
+  let end_exc =
+    match x.end_inc_utc with
+    | None ->
+      Ptime.(max |> to_float_s |> Int64.of_float)
+    | Some end_inc_utc ->
+      timestamp_of_date_time_utc end_inc_utc |> Int64.succ
+  in
+  { start; end_exc; tz = x.tz; is_dst = x.is_dst; offset = x.offset }
+
+let check_transition_records_are_contiguous (l : transition_record list) : transition_record list =
+  let rec aux l =
+    match l with
+    | [] | [_] -> l
+    | x :: y :: xs ->
+      if x.end_exc = y.start then
+        x :: aux (y :: xs)
+      else
+        failwith "Transition records are not contiguous"
+  in
+  aux l
+
 let gen () =
   let zoneinfo_file_dir = "/usr/share/zoneinfo/posix" in
   let all_zoneinfo_file_paths =
     FileUtil.(find Is_file zoneinfo_file_dir (fun x y -> y :: x) [])
+    |> CCList.take 1
   in
-  let all_timezones =
+  let all_time_zones =
     all_zoneinfo_file_paths
     |> List.map (fun s -> String.split_on_char '/' s)
     |> List.map (CCList.drop 5)
+    |> List.map (String.concat "/")
   in
   let zdump_lines =
     all_zoneinfo_file_paths
@@ -202,13 +241,60 @@ let gen () =
                failwith (Printf.sprintf "For line: %s, error: %s\n" s msg))
           lines)
   in
+  print_newline ();
   let transitions =
     List.combine all_zoneinfo_file_paths zdump_lines
     |> List.map (fun (s, l) ->
         Printf.printf
-          "Processing zdump output into transition table for file:\n";
+          "Processing zdump output into transitions for file:\n";
         Printf.printf "  %s\n" s;
         flush stdout;
         transitions_of_zdump_lines l)
   in
-  ()
+  print_newline ();
+  let table =
+    List.combine all_time_zones transitions
+    |> List.map (fun (s, l) ->
+        Printf.printf
+          "Constructing transition table for time_zone: %s\n" s;
+        flush stdout;
+        let l =
+          l
+          |> List.map transition_record_of_transition
+          |> check_transition_records_are_contiguous
+        in
+        (s, l)
+      )
+  in
+  print_newline ();
+  Printf.printf "Number of time_zones in table: %d\n" (List.length table);
+  print_newline ();
+  Printf.printf "Generating %s\n" output_file_name;
+  CCIO.with_out ~flags:[Open_creat; Open_trunc] output_file_name
+    (fun oc ->
+       let write_line = CCIO.write_line oc in
+       write_line "type entry = {";
+       write_line "  is_dst : bool;";
+       write_line "  offset : int;";
+       write_line "}";
+       write_line "";
+       write_line "type table = entry Int64_map.t";
+       write_line "";
+       write_line "type db = table String_map.t";
+       write_line "";
+       write_line "let db : db =";
+       write_line "  String_map.empty";
+       List.iter (fun (s, l) ->
+           write_line (Printf.sprintf "  |> String_map.add \"%s\" (" s);
+           write_line "        Int64_map.empty";
+           List.iter (fun r ->
+               write_line (Printf.sprintf "        |> Int64_map.add (%LdL)" r.start);
+               write_line "           {";
+               write_line (Printf.sprintf "             is_dst = %b;" r.is_dst);
+               write_line (Printf.sprintf "             offset = %d;" r.offset);
+               write_line "           }";
+             ) l;
+           write_line "     )";
+         )
+         table
+    )
