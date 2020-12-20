@@ -1,5 +1,5 @@
 # Timere
-Time reasoning library in OCaml with NLP-style parsing
+OCaml time reasoning library with time zone support and NLP-style parsing 
 
 ## Acknowledgement
 
