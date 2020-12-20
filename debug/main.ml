@@ -19,7 +19,7 @@ let debug_resolver () =
     (fun max_height max_branching randomness ->
        Builder.build ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching
          ~randomness)
-      3 1 [497]
+      3 1 [ 497 ]
   in
   (* let timere =
    *   Time.inter
@@ -82,8 +82,7 @@ let debug_resolver () =
           |> OSeq.take 50
           |> OSeq.iter (fun ts ->
               match
-                Printer.sprintf_interval
-                  ~display_using_tz:Time_zone.utc
+                Printer.sprintf_interval ~display_using_tz:Time_zone.utc
                   default_interval_format_string ts
               with
               | Ok s -> Printf.printf "%s\n" s
