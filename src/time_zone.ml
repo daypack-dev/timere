@@ -35,7 +35,7 @@ let lookup_timestamp_utc (t : t) timestamp =
         (timestamp, dummy_entry) t.table
     with
     | `At i -> Some (snd t.table.(i))
-    | `All_lower -> None
+    | `All_lower -> Some (snd t.table.(Array.length t.table - 1))
     | `All_bigger -> None
     | `Just_after i -> Some (snd t.table.(i))
     | `Empty -> None
