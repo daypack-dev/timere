@@ -215,18 +215,6 @@ end
 
 (* val date_time : Date_time.t -> t *)
 
-val interval_dt_inc : Date_time.t -> Date_time.t -> t
-
-val interval_dt_exc : Date_time.t -> Date_time.t -> t
-
-val interval_inc : timestamp -> timestamp -> t
-
-val interval_exc : timestamp -> timestamp -> t
-
-val hms_interval_inc : hms -> hms -> t
-
-val hms_interval_exc : hms -> hms -> t
-
 (** {1 Durations} *)
 
 module Duration : sig
@@ -299,6 +287,18 @@ val take_n_points : int -> t -> t
 val skip_n_points : int -> t -> t
 
 (** {1 Manual intervals} *)
+
+val interval_dt_inc : Date_time.t -> Date_time.t -> t
+
+val interval_dt_exc : Date_time.t -> Date_time.t -> t
+
+val interval_inc : timestamp -> timestamp -> t
+
+val interval_exc : timestamp -> timestamp -> t
+
+val hms_interval_inc : hms -> hms -> t
+
+val hms_interval_exc : hms -> hms -> t
 
 exception Interval_is_invalid
 
