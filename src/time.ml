@@ -1709,7 +1709,7 @@ type unary_op =
   | Take_n_points of int
   | Shift of int64
   | Lengthen of int64
-  | Change_tz_offset_s of int
+  | Change_tz of Time_zone.t
 
 type search_space = Interval.t list
 
@@ -1973,8 +1973,8 @@ let interval_dt_exc (a : Date_time.t) (b : Date_time.t) : t =
 
 let not (a : t) : t = Unary_op (default_search_space, Not, a)
 
-let change_tz_offset_s offset t =
-  Unary_op (default_search_space, Change_tz_offset_s offset, t)
+let change_tz offset t =
+  Unary_op (default_search_space, Change_tz offset, t)
 
 let safe_month_day_range_inc ~years ~months =
   let contains_non_leap_year =

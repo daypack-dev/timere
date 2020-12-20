@@ -98,15 +98,28 @@ let lookup_timestamp_local (t : t) timestamp : entry local_result =
     | None, Some x, Some y -> `Ambiguous (x, y)
     | Some _, Some _, Some _ -> failwith "Unexpected"
 
-let transitions (t : t) : ((int64 * int64) * entry) list =
-  let rec aux acc l =
-    match l with
-    | [] -> List.rev acc
-    | [ (k, entry) ] ->
-      aux
-        (((k, Ptime.(max |> to_float_s |> Int64.of_float)), entry) :: acc)
-        []
-    | (k1, entry1) :: (k2, entry2) :: rest ->
-      aux (((k1, k2), entry1) :: acc) ((k2, entry2) :: rest)
+let transition_seq (t : t) : ((int64 * int64) * entry) Seq.t =
+  let rec aux s =
+    match s () with
+    | Seq.Nil -> Seq.empty
+    | Seq.Cons ((k1, entry1), s) -> (
+        match s () with
+        | Seq.Nil ->
+          OSeq.cons
+            ((k1, Ptime.(max |> to_float_s |> Int64.of_float)), entry1)
+            (
+              aux
+                Seq.empty
+            )
+        | Seq.Cons ((k2, entry2), rest) ->
+          OSeq.cons ((k1, k2), entry1)
+            (
+              aux
+                (OSeq.cons (k2, entry2) rest)
+            )
+      )
   in
-  Array.to_list t.table |> aux []
+  Array.to_seq t.table |> aux
+
+let transitions (t : t) : ((int64 * int64) * entry) list =
+  List.of_seq @@ transition_seq t
