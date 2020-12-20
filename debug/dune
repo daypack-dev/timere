@@ -1,8 +1,115 @@
+(rule
+ (targets time.ml)
+ (deps    ../src/time.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets string_map.ml)
+ (deps    ../src/string_map.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets time_zone.ml)
+ (deps    ../src/time_zone.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets time_zone_data.ml)
+ (deps    ../src/time_zone_data.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets int64_utils.ml)
+ (deps    ../src/int64_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets seq_utils.ml)
+ (deps    ../src/seq_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets misc_utils.ml)
+ (deps    ../src/misc_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets duration.ml)
+ (deps    ../src/duration.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets to_sexp.ml)
+ (deps    ../src/to_sexp.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets of_sexp.ml)
+ (deps    ../src/of_sexp.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets printer.ml)
+ (deps    ../src/printer.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets parser_components.ml)
+ (deps    ../src/parser_components.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets int_set.ml)
+ (deps    ../src/int_set.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets int64_set.ml)
+ (deps    ../src/int64_set.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets resolver.ml)
+ (deps    ../src/resolver.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets simple_resolver.ml)
+ (deps    ../src/simple_resolver.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets builder.ml)
+ (deps    ../tests/builder.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
 (executable
    (flags     (-g -w "+a-4-9-29-37-40-42-44-48-50-32"))
    (name main)
-   (libraries timere
-      timere-parse
+   (libraries 
+            unix
+            ptime
+            oseq
+            re
+            mparser
+            containers
       ptime.clock.os
    )
 )
