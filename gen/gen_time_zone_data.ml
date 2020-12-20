@@ -43,7 +43,9 @@ type transition_record = {
 
 type transition_table = (string * transition_record list) list
 
-let output_file_name = "gen_artifacts/time_zone_data.ml"
+let output_dir = "gen_artifacts/"
+
+let output_file_name = output_dir ^ "time_zone_data.ml"
 
 let year_start = 1850
 
@@ -314,6 +316,7 @@ let gen () =
   Printf.printf "Number of time_zones in table: %d\n"
     (List.length all_time_zones);
   print_newline ();
+  FileUtil.mkdir ~parent:true output_dir;
   Printf.printf "Generating %s\n" output_file_name;
   CCIO.with_out ~flags:[ Open_creat; Open_trunc ] output_file_name (fun oc ->
       let write_line = CCIO.write_line oc in
