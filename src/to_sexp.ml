@@ -11,31 +11,22 @@ let sexp_of_tz t = CCSexp.atom (Time_zone.name t)
 let sexp_of_date_time (x : Time.Date_time.t) =
   let open CCSexp in
   list
-    ([
+    [
       sexp_of_int x.year;
       sexp_of_month x.month;
       sexp_of_int x.day;
       sexp_of_int x.hour;
       sexp_of_int x.minute;
       sexp_of_int x.second;
-      list (List.filter_map (fun x -> x)
-              [
-                Some (atom "tz");
-                Option.map
-                    sexp_of_tz
-                  x.tz;
-              ]
-           );
-      list (List.filter_map (fun x -> x)
-              [
-                Some (atom "tz_offset_s");
-                Option.map
-                  sexp_of_int
-                  x.tz_offset_s;
-              ]
-           );
+      list
+        (List.filter_map
+           (fun x -> x)
+           [ Some (atom "tz"); Option.map sexp_of_tz x.tz ]);
+      list
+        (List.filter_map
+           (fun x -> x)
+           [ Some (atom "tz_offset_s"); Option.map sexp_of_int x.tz_offset_s ]);
     ]
-    )
 
 let sexp_of_duration (x : Duration.t) =
   let open CCSexp in

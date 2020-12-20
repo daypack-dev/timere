@@ -668,12 +668,12 @@ let search_space_of_year_range tz year_range =
       |> Int64.succ )
   | `Range_exc (start, end_exc) ->
     ( Date_time.set_to_first_month_day_hour_min_sec
-        { Date_time.min with year = start; tz = Some tz}
+        { Date_time.min with year = start; tz = Some tz }
       |> Date_time.to_timestamp
       |> Date_time.min_of_timestamp_local_result
       |> Option.get,
       Date_time.set_to_last_month_day_hour_min_sec
-        { Date_time.min with year = end_exc; tz = Some tz}
+        { Date_time.min with year = end_exc; tz = Some tz }
       |> Date_time.to_timestamp
       |> Date_time.min_of_timestamp_local_result
       |> Option.get )

@@ -32,9 +32,7 @@ let bsearch_table timestamp (table : table) =
     (timestamp, dummy_entry) table
 
 let lookup_timestamp_utc (t : t) timestamp =
-  match
-    bsearch_table timestamp t.table
-  with
+  match bsearch_table timestamp t.table with
   | `At i -> Some (snd t.table.(i))
   | `All_lower -> Some (snd t.table.(Array.length t.table - 1))
   | `All_bigger -> None
@@ -55,9 +53,7 @@ let interval_mem ((x, y) : int64 * int64) (t : int64) = x <= t && t < y
 
 let lookup_timestamp_local (t : t) timestamp : entry local_result =
   let index =
-    match
-      bsearch_table timestamp t.table
-    with
+    match bsearch_table timestamp t.table with
     | `At i -> Some i
     | `All_lower -> Some (Array.length t.table - 1)
     | `All_bigger -> None

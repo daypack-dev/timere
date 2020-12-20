@@ -1404,7 +1404,17 @@ module Date_time = struct
          Ptime.date * Ptime.time) : (t, unit) result =
     match month_of_human_int month with
     | Ok month ->
-      Ok { year; month; day; hour; minute; second; tz = Some Time_zone.utc; tz_offset_s = Some 0 }
+      Ok
+        {
+          year;
+          month;
+          day;
+          hour;
+          minute;
+          second;
+          tz = Some Time_zone.utc;
+          tz_offset_s = Some 0;
+        }
     | Error () -> Error ()
 
   type timestamps =
@@ -1427,18 +1437,17 @@ module Date_time = struct
       |> Ptime.to_float_s
       |> Int64.of_float
     in
-    match x.tz, x.tz_offset_s with
+    match (x.tz, x.tz_offset_s) with
     | None, None -> failwith "Unexpected case"
-    | _, Some offset ->
-      `Exact (Int64.sub timestamp (Int64.of_int offset))
-    | Some tz, None ->
-      match Time_zone.lookup_timestamp_local tz timestamp with
-      | `None -> `None
-      | `Exact e -> `Exact (Int64.sub timestamp (Int64.of_int e.offset))
-      | `Ambiguous (e1, e2) ->
-        let x1 = Int64.sub timestamp (Int64.of_int e1.offset) in
-        let x2 = Int64.sub timestamp (Int64.of_int e2.offset) in
-        `Ambiguous (min x1 x2, max x1 x2)
+    | _, Some offset -> `Exact (Int64.sub timestamp (Int64.of_int offset))
+    | Some tz, None -> (
+        match Time_zone.lookup_timestamp_local tz timestamp with
+        | `None -> `None
+        | `Exact e -> `Exact (Int64.sub timestamp (Int64.of_int e.offset))
+        | `Ambiguous (e1, e2) ->
+          let x1 = Int64.sub timestamp (Int64.of_int e1.offset) in
+          let x2 = Int64.sub timestamp (Int64.of_int e2.offset) in
+          `Ambiguous (min x1 x2, max x1 x2) )
 
   let to_timestamp_force_offset ~offset (x : t) =
     to_ptime_date_time_utc x
@@ -1459,10 +1468,26 @@ module Date_time = struct
           x
           |> Ptime.to_date_time ~tz_offset_s:entry.offset
           |> of_ptime_date_time_utc
-          |> Result.map (fun t -> { t with tz = Some tz_of_date_time; tz_offset_s = Some entry.offset }) )
+          |> Result.map (fun t ->
+              {
+                t with
+                tz = Some tz_of_date_time;
+                tz_offset_s = Some entry.offset;
+              }) )
 
   let make ~year ~month ~day ~hour ~minute ~second ~tz =
-    let dt = { year; month; day; hour; minute; second; tz = Some tz; tz_offset_s = None } in
+    let dt =
+      {
+        year;
+        month;
+        day;
+        hour;
+        minute;
+        second;
+        tz = Some tz;
+        tz_offset_s = None;
+      }
+    in
     match to_timestamp dt with `None -> Error () | _ -> Ok dt
 
   let make_exn ~year ~month ~day ~hour ~minute ~second ~tz =
@@ -1471,18 +1496,31 @@ module Date_time = struct
     | Ok x -> x
 
   let make_precise ?tz ~year ~month ~day ~hour ~minute ~second ~tz_offset_s () =
-    let dt = { year; month; day; hour; minute; second; tz; tz_offset_s = Some tz_offset_s } in
+    let dt =
+      {
+        year;
+        month;
+        day;
+        hour;
+        minute;
+        second;
+        tz;
+        tz_offset_s = Some tz_offset_s;
+      }
+    in
     match to_timestamp dt with `None -> Error () | _ -> Ok dt
 
-  let make_precise_exn ?tz ~year ~month ~day ~hour ~minute ~second ~tz_offset_s () =
+  let make_precise_exn ?tz ~year ~month ~day ~hour ~minute ~second ~tz_offset_s
+      () =
     let x =
       match tz with
-      | None -> make_precise ~year ~month ~day ~hour ~minute ~second ~tz_offset_s ()
-      | Some tz -> make_precise ~tz ~year ~month ~day ~hour ~minute ~second ~tz_offset_s ()
+      | None ->
+        make_precise ~year ~month ~day ~hour ~minute ~second ~tz_offset_s ()
+      | Some tz ->
+        make_precise ~tz ~year ~month ~day ~hour ~minute ~second ~tz_offset_s
+          ()
     in
-    match x with
-    | Error () -> raise Invalid_date_time
-    | Ok x -> x
+    match x with Error () -> raise Invalid_date_time | Ok x -> x
 
   let min_timestamp = Ptime.min |> Ptime.to_float_s |> Int64.of_float
 
