@@ -540,8 +540,10 @@ let db : db =
     ((4096573200L), { is_dst = false; offset = (7200) });
   |]
   |> String_map.add "GMT-0" [|
+    ((-62167219200L), { is_dst = false; offset = (0) });
   |]
   |> String_map.add "EST" [|
+    ((-62167219200L), { is_dst = false; offset = (-18000) });
   |]
   |> String_map.add "ROK" [|
     ((-1948782472L), { is_dst = false; offset = (30600) });
@@ -593,74 +595,109 @@ let db : db =
     ((745934400L), { is_dst = false; offset = (43200) });
   |]
   |> String_map.add "Etc/GMT+3" [|
+    ((-62167219200L), { is_dst = false; offset = (10800) });
   |]
   |> String_map.add "Etc/GMT-0" [|
+    ((-62167219200L), { is_dst = false; offset = (0) });
   |]
   |> String_map.add "Etc/GMT+6" [|
+    ((-62167219200L), { is_dst = false; offset = (21600) });
   |]
   |> String_map.add "Etc/GMT+5" [|
+    ((-62167219200L), { is_dst = false; offset = (18000) });
   |]
   |> String_map.add "Etc/GMT-2" [|
+    ((-62167219200L), { is_dst = false; offset = (-7200) });
   |]
   |> String_map.add "Etc/GMT+9" [|
+    ((-62167219200L), { is_dst = false; offset = (32400) });
   |]
   |> String_map.add "Etc/GMT-13" [|
+    ((-62167219200L), { is_dst = false; offset = (-46800) });
   |]
   |> String_map.add "Etc/GMT+2" [|
+    ((-62167219200L), { is_dst = false; offset = (7200) });
   |]
   |> String_map.add "Etc/GMT+11" [|
+    ((-62167219200L), { is_dst = false; offset = (39600) });
   |]
   |> String_map.add "Etc/Zulu" [|
+    ((-62167219200L), { is_dst = false; offset = (0) });
   |]
   |> String_map.add "Etc/GMT-6" [|
+    ((-62167219200L), { is_dst = false; offset = (-21600) });
   |]
   |> String_map.add "Etc/GMT-12" [|
+    ((-62167219200L), { is_dst = false; offset = (-43200) });
   |]
   |> String_map.add "Etc/GMT+1" [|
+    ((-62167219200L), { is_dst = false; offset = (3600) });
   |]
   |> String_map.add "Etc/GMT+0" [|
+    ((-62167219200L), { is_dst = false; offset = (0) });
   |]
   |> String_map.add "Etc/GMT-11" [|
+    ((-62167219200L), { is_dst = false; offset = (-39600) });
   |]
   |> String_map.add "Etc/GMT+8" [|
+    ((-62167219200L), { is_dst = false; offset = (28800) });
   |]
   |> String_map.add "Etc/GMT-10" [|
+    ((-62167219200L), { is_dst = false; offset = (-36000) });
   |]
   |> String_map.add "Etc/GMT+12" [|
+    ((-62167219200L), { is_dst = false; offset = (43200) });
   |]
   |> String_map.add "Etc/Universal" [|
+    ((-62167219200L), { is_dst = false; offset = (0) });
   |]
   |> String_map.add "Etc/UCT" [|
+    ((-62167219200L), { is_dst = false; offset = (0) });
   |]
   |> String_map.add "Etc/GMT-1" [|
+    ((-62167219200L), { is_dst = false; offset = (-3600) });
   |]
   |> String_map.add "Etc/GMT-5" [|
+    ((-62167219200L), { is_dst = false; offset = (-18000) });
   |]
   |> String_map.add "Etc/GMT-9" [|
+    ((-62167219200L), { is_dst = false; offset = (-32400) });
   |]
   |> String_map.add "Etc/UTC" [|
+    ((-62167219200L), { is_dst = false; offset = (0) });
   |]
   |> String_map.add "Etc/GMT+4" [|
+    ((-62167219200L), { is_dst = false; offset = (14400) });
   |]
   |> String_map.add "Etc/GMT+7" [|
+    ((-62167219200L), { is_dst = false; offset = (25200) });
   |]
   |> String_map.add "Etc/Greenwich" [|
+    ((-62167219200L), { is_dst = false; offset = (0) });
   |]
   |> String_map.add "Etc/GMT-7" [|
+    ((-62167219200L), { is_dst = false; offset = (-25200) });
   |]
   |> String_map.add "Etc/GMT" [|
+    ((-62167219200L), { is_dst = false; offset = (0) });
   |]
   |> String_map.add "Etc/GMT-8" [|
+    ((-62167219200L), { is_dst = false; offset = (-28800) });
   |]
   |> String_map.add "Etc/GMT-3" [|
+    ((-62167219200L), { is_dst = false; offset = (-10800) });
   |]
   |> String_map.add "Etc/GMT-4" [|
+    ((-62167219200L), { is_dst = false; offset = (-14400) });
   |]
   |> String_map.add "Etc/GMT+10" [|
+    ((-62167219200L), { is_dst = false; offset = (36000) });
   |]
   |> String_map.add "Etc/GMT0" [|
+    ((-62167219200L), { is_dst = false; offset = (0) });
   |]
   |> String_map.add "Etc/GMT-14" [|
+    ((-62167219200L), { is_dst = false; offset = (-50400) });
   |]
   |> String_map.add "Navajo" [|
     ((-2717643600L), { is_dst = false; offset = (-25200) });
@@ -947,6 +984,7 @@ let db : db =
     ((4097203200L), { is_dst = false; offset = (-25200) });
   |]
   |> String_map.add "HST" [|
+    ((-62167219200L), { is_dst = false; offset = (-36000) });
   |]
   |> String_map.add "Jamaica" [|
     ((-2524503170L), { is_dst = false; offset = (-18430) });
@@ -4178,6 +4216,7 @@ let db : db =
     ((4096566000L), { is_dst = false; offset = (7200) });
   |]
   |> String_map.add "Factory" [|
+    ((-62167219200L), { is_dst = false; offset = (0) });
   |]
   |> String_map.add "Hongkong" [|
     ((-2056690800L), { is_dst = false; offset = (28800) });
@@ -4689,6 +4728,7 @@ let db : db =
     ((1382659200L), { is_dst = false; offset = (7200) });
   |]
   |> String_map.add "Zulu" [|
+    ((-62167219200L), { is_dst = false; offset = (0) });
   |]
   |> String_map.add "Mexico/General" [|
     ((-1514739600L), { is_dst = false; offset = (-25200) });
@@ -5876,6 +5916,7 @@ let db : db =
     ((1384056000L), { is_dst = false; offset = (-18000) });
   |]
   |> String_map.add "MST" [|
+    ((-62167219200L), { is_dst = false; offset = (-25200) });
   |]
   |> String_map.add "Poland" [|
     ((-2840145840L), { is_dst = false; offset = (5040) });
@@ -6516,6 +6557,7 @@ let db : db =
     ((4096573200L), { is_dst = false; offset = (0) });
   |]
   |> String_map.add "GMT+0" [|
+    ((-62167219200L), { is_dst = false; offset = (0) });
   |]
   |> String_map.add "Asia/Kathmandu" [|
     ((-1577943676L), { is_dst = false; offset = (19800) });
@@ -17665,6 +17707,7 @@ let db : db =
     ((1414274400L), { is_dst = false; offset = (10800) });
   |]
   |> String_map.add "Universal" [|
+    ((-62167219200L), { is_dst = false; offset = (0) });
   |]
   |> String_map.add "America/Adak" [|
     ((-2188944802L), { is_dst = false; offset = (-39600) });
@@ -41856,6 +41899,7 @@ let db : db =
     ((1601740860L), { is_dst = false; offset = (39600) });
   |]
   |> String_map.add "UCT" [|
+    ((-62167219200L), { is_dst = false; offset = (0) });
   |]
   |> String_map.add "Iran" [|
     ((-1704165944L), { is_dst = false; offset = (12344) });
@@ -48518,10 +48562,13 @@ let db : db =
     ((4097206800L), { is_dst = false; offset = (-28800) });
   |]
   |> String_map.add "UTC" [|
+    ((-62167219200L), { is_dst = false; offset = (0) });
   |]
   |> String_map.add "Greenwich" [|
+    ((-62167219200L), { is_dst = false; offset = (0) });
   |]
   |> String_map.add "GMT" [|
+    ((-62167219200L), { is_dst = false; offset = (0) });
   |]
   |> String_map.add "NZ" [|
     ((-3192435544L), { is_dst = false; offset = (41400) });
@@ -66314,6 +66361,7 @@ let db : db =
     ((-1806674504L), { is_dst = false; offset = (-36000) });
   |]
   |> String_map.add "GMT0" [|
+    ((-62167219200L), { is_dst = false; offset = (0) });
   |]
   |> String_map.add "CET" [|
     ((-1693706400L), { is_dst = true; offset = (7200) });
