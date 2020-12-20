@@ -93,7 +93,7 @@ end
 
 (** {1 Time zone change} *)
 
-val change_tz_offset_s : int -> t -> t
+val change_tz : Time_zone.t -> t -> t
 
 (** {1 Algebraic operations} *)
 
@@ -113,6 +113,12 @@ val of_timestamps : ?skip_invalid:bool -> timestamp list -> t
 
 val of_timestamps_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
 
+type 'a local_result = [
+  | `None
+  | `Exact of 'a
+  | `Ambiguous of 'a * 'a
+]
+
 module Date_time : sig
   exception Invalid_date_time
 
@@ -123,7 +129,7 @@ module Date_time : sig
     hour : int;
     minute : int;
     second : int;
-    tz_offset_s : int;
+    tz : Time_zone.t;
   }
 
   val make :
@@ -133,7 +139,7 @@ module Date_time : sig
     hour:int ->
     minute:int ->
     second:int ->
-    tz_offset_s:int ->
+    tz:Time_zone.t ->
     (t, unit) result
 
   val make_exn :
@@ -143,13 +149,13 @@ module Date_time : sig
     hour:int ->
     minute:int ->
     second:int ->
-    tz_offset_s:int ->
+    tz:Time_zone.t ->
     t
 
-  val to_timestamp : t -> timestamp
+  val to_timestamp : t -> timestamp local_result
 
   val of_timestamp :
-    ?tz_offset_s_of_date_time:tz_offset_s -> timestamp -> (t, unit) result
+    ?tz_of_date_time:Time_zone.t -> timestamp -> (t, unit) result
 
   val compare : t -> t -> int
 
@@ -157,14 +163,14 @@ module Date_time : sig
 
   val max : t
 
-  val cur : ?tz_offset_s_of_date_time:tz_offset_s -> unit -> (t, unit) result
+  val cur : ?tz_of_date_time:Time_zone.t -> unit -> (t, unit) result
 
   val sprintf : string -> t -> (string, string) result
 
   val pp : string -> Format.formatter -> t -> unit
 end
 
-val date_time : Date_time.t -> t
+(* val date_time : Date_time.t -> t *)
 
 val interval_dt_inc : Date_time.t -> Date_time.t -> t
 
@@ -288,31 +294,31 @@ module Infix : sig
 end
 
 val resolve :
-  ?search_using_tz_offset_s:tz_offset_s -> t -> (interval Seq.t, string) result
+  ?search_using_tz:Time_zone.t -> t -> (interval Seq.t, string) result
 
 (** {1 Pretty printers} *)
 
 val sprintf_timestamp :
-  ?display_using_tz_offset_s:tz_offset_s ->
+  ?display_using_tz:Time_zone.t ->
   string ->
   timestamp ->
   (string, string) result
 
 val pp_timestamp :
-  ?display_using_tz_offset_s:tz_offset_s ->
+  ?display_using_tz:Time_zone.t ->
   string ->
   Format.formatter ->
   timestamp ->
   unit
 
 val sprintf_interval :
-  ?display_using_tz_offset_s:tz_offset_s ->
+  ?display_using_tz:Time_zone.t ->
   string ->
   interval ->
   (string, string) result
 
 val pp_interval :
-  ?display_using_tz_offset_s:tz_offset_s ->
+  ?display_using_tz:Time_zone.t ->
   string ->
   Format.formatter ->
   interval ->
@@ -346,7 +352,7 @@ module Utils : sig
     weekday range list -> (weekday list, unit) result
 
   val resolve_simple :
-    ?search_using_tz_offset_s:int ->
+    ?search_using_tz:Time_zone.t ->
     search_start:timestamp ->
     search_end_exc:timestamp ->
     t ->

@@ -4,6 +4,8 @@ module Time_zone = struct
   include Time_zone
 end
 
+type 'a local_result = 'a Time_zone.local_result
+
 module Date_time = struct
   include Date_time
 
