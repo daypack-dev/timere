@@ -290,7 +290,7 @@ let of_sexp (x : CCSexp.t) =
         | [ `Atom "nth"; n; chunked ] ->
           aux_chunked (fun x -> x |> nth (int_of_sexp n) |> f) chunked
         | [
-          `Atom "chunk_again"; `List [ `Atom "chunk_disjoint_interval"; chunked ];
+          `Atom "chunk_again"; `List [ `Atom "chunk_disjoint_intervals"; chunked ];
         ] ->
           aux_chunked
             (fun x -> x |> chunk_again `Disjoint_intervals |> f)

@@ -12,15 +12,16 @@ let default_interval_format_string =
  *   | Ok timere -> print_endline (Time.to_sexp_string timere) *)
 
 let debug_resolver () =
-  (* let s = {|
-   * |} in
-   * let timere = Result.get_ok @@ Time.of_sexp_string s in *)
-  let timere =
-    (fun max_height max_branching randomness ->
-       Builder.build ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching
-         ~randomness)
-      3 1 [ 497 ]
-  in
+  let s = {|
+(unchunk (chunk_again (chunk_at_year_boundary (chunk_again (chunk_disjoint_intervals (chunk_again (chunk_at_year_boundary (chunk_disjoint_intervals (empty)))))))))
+  |} in
+  let timere = Result.get_ok @@ Of_sexp.of_sexp_string s in
+  (* let timere =
+   *   (fun max_height max_branching randomness ->
+   *      Builder.build ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching
+   *        ~randomness)
+   *     3 1 [ 497 ]
+   * in *)
   (* let timere =
    *   Time.inter
    *     [
