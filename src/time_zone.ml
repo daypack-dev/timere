@@ -26,11 +26,14 @@ let is_utc t = List.mem t.name [ "UTC"; "UCT" ]
 
 let dummy_entry : entry = { is_dst = false; offset = 0 }
 
+let bsearch_table timestamp (table : table) =
+  CCArray.bsearch
+    ~cmp:(fun (k1, _) (k2, _) -> Int64.compare k1 k2)
+    (timestamp, dummy_entry) table
+
 let lookup_timestamp_utc (t : t) timestamp =
   match
-    CCArray.bsearch
-      ~cmp:(fun (k1, _) (k2, _) -> Int64.compare k1 k2)
-      (timestamp, dummy_entry) t.table
+    bsearch_table timestamp t.table
   with
   | `At i -> Some (snd t.table.(i))
   | `All_lower -> Some (snd t.table.(Array.length t.table - 1))
@@ -53,9 +56,7 @@ let interval_mem ((x, y) : int64 * int64) (t : int64) = x <= t && t < y
 let lookup_timestamp_local (t : t) timestamp : entry local_result =
   let index =
     match
-      CCArray.bsearch
-        ~cmp:(fun (k1, _) (k2, _) -> Int64.compare k1 k2)
-        (timestamp, dummy_entry) t.table
+      bsearch_table timestamp t.table
     with
     | `At i -> Some i
     | `All_lower -> Some (Array.length t.table - 1)
