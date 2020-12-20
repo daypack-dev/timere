@@ -642,8 +642,7 @@ let parse_timere s =
       | Error msg -> Error msg
       | Ok ast -> t_of_ast ast )
 
-let date_time_t_of_ast ~tz (ast : ast) :
-  (Timere.Date_time.t, string) Result.t =
+let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) Result.t =
   match ast with
   | Tokens [ (_, Nat year); (_, Month month); (_, Nat day); (_, Hms hms) ]
     when year > 31 ->

@@ -50,8 +50,7 @@ let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) =
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((t1, t2), rest) ->
       let dt1 =
-        Result.get_ok
-        @@ Date_time.of_timestamp ~tz_of_date_time:tz t1
+        Result.get_ok @@ Date_time.of_timestamp ~tz_of_date_time:tz t1
       in
       let dt2 =
         t2
@@ -80,8 +79,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((t1, t2), rest) ->
       let dt1 =
-        Result.get_ok
-        @@ Date_time.of_timestamp ~tz_of_date_time:tz t1
+        Result.get_ok @@ Date_time.of_timestamp ~tz_of_date_time:tz t1
       in
       let dt2 =
         t2
@@ -103,8 +101,9 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
   in
   aux s
 
-let rec resolve ?(search_using_tz = Time_zone.utc) ~(search_start : Time.timestamp)
-    ~(search_end_exc : Time.timestamp) (t : Time.t) : Time.Interval.t Seq.t =
+let rec resolve ?(search_using_tz = Time_zone.utc)
+    ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
+    (t : Time.t) : Time.Interval.t Seq.t =
   let open Time in
   let filter s =
     Seq.filter_map
@@ -128,8 +127,7 @@ let rec resolve ?(search_using_tz = Time_zone.utc) ~(search_start : Time.timesta
           Seq_utils.a_to_b_exc_int64 ~a:search_start ~b:search_end_exc
           |> Seq.filter (fun x ->
               Stdlib.not
-                (mem ~search_start ~search_end_exc
-                   ~search_using_tz t x))
+                (mem ~search_start ~search_end_exc ~search_using_tz t x))
           |> intervals_of_timestamps
         | Every -> aux search_using_tz t
         | Drop_n_points n ->
@@ -146,8 +144,7 @@ let rec resolve ?(search_using_tz = Time_zone.utc) ~(search_start : Time.timesta
           aux search_using_tz t
           |> Seq.map (fun (x, y) -> (Int64.add n x, Int64.add n y))
         | Lengthen n ->
-          aux search_using_tz t
-          |> Seq.map (fun (x, y) -> (x, Int64.add n y))
+          aux search_using_tz t |> Seq.map (fun (x, y) -> (x, Int64.add n y))
         | Change_tz tz -> aux tz t )
     | After (_, t1, t2) ->
       let s1 = aux search_using_tz t1 in
@@ -167,12 +164,10 @@ let rec resolve ?(search_using_tz = Time_zone.utc) ~(search_start : Time.timesta
       |> Seq.filter_map (fun (start, end_exc) ->
           find_after (start, end_exc) s2
           |> Option.map (fun (start', _) -> (start, start')))
-    | Unchunk chunked ->
-      aux_chunked search_using_tz chunked |> normalize
+    | Unchunk chunked -> aux_chunked search_using_tz chunked |> normalize
     | _ ->
       Seq_utils.a_to_b_exc_int64 ~a:search_start ~b:search_end_exc
-      |> Seq.filter
-        (mem ~search_using_tz ~search_start ~search_end_exc t)
+      |> Seq.filter (mem ~search_using_tz ~search_start ~search_end_exc t)
       |> intervals_of_timestamps
   and aux_chunked search_using_tz chunked =
     let chunk_based_on_op_on_t op s =
@@ -180,10 +175,8 @@ let rec resolve ?(search_using_tz = Time_zone.utc) ~(search_start : Time.timesta
       | Chunk_disjoint_interval -> normalize s
       | Chunk_by_duration { chunk_size; drop_partial } ->
         do_chunk ~drop_partial chunk_size s
-      | Chunk_at_year_boundary ->
-        do_chunk_at_year_boundary search_using_tz s
-      | Chunk_at_month_boundary ->
-        do_chunk_at_month_boundary search_using_tz s
+      | Chunk_at_year_boundary -> do_chunk_at_year_boundary search_using_tz s
+      | Chunk_at_month_boundary -> do_chunk_at_month_boundary search_using_tz s
     in
     match chunked with
     | Unary_op_on_t (op, t) ->
@@ -205,8 +198,7 @@ and mem ?(search_using_tz = Time_zone.utc) ~(search_start : Time.timestamp)
   let open Time in
   let rec aux t timestamp =
     match
-      Time.Date_time.of_timestamp
-        ~tz_of_date_time:search_using_tz timestamp
+      Time.Date_time.of_timestamp ~tz_of_date_time:search_using_tz timestamp
     with
     | Error () -> failwith (Printf.sprintf "Invalid timestamp: %Ld" timestamp)
     | Ok dt -> (

@@ -10,12 +10,10 @@ module Pattern_search_param = struct
       search_using_tz_offset_s;
       start =
         Result.get_ok
-        @@ Time.Date_time.of_timestamp
-          ~tz_of_date_time:Time_zone.utc start;
+        @@ Time.Date_time.of_timestamp ~tz_of_date_time:Time_zone.utc start;
       end_inc =
         Result.get_ok
-        @@ Time.Date_time.of_timestamp
-          ~tz_of_date_time:Time_zone.utc
+        @@ Time.Date_time.of_timestamp ~tz_of_date_time:Time_zone.utc
           (Int64.pred end_exc);
     }
 end
@@ -451,13 +449,11 @@ module Resolve_pattern = struct
              ~f_exc:(range_map_exc ~overall_search_start))
   end
 
-  let date_time_range_seq_of_timestamps ~search_using_tz
-      (s : int64 Seq.t) : Time.Date_time.t Time.Range.range Seq.t =
+  let date_time_range_seq_of_timestamps ~search_using_tz (s : int64 Seq.t) :
+    Time.Date_time.t Time.Range.range Seq.t =
     let f (x, y) =
-      ( Time.Date_time.of_timestamp
-          ~tz_of_date_time:search_using_tz x,
-        Time.Date_time.of_timestamp
-          ~tz_of_date_time:search_using_tz y )
+      ( Time.Date_time.of_timestamp ~tz_of_date_time:search_using_tz x,
+        Time.Date_time.of_timestamp ~tz_of_date_time:search_using_tz y )
     in
     s
     |> Time.Ranges.Of_seq.range_seq_of_seq ~modulo:None
@@ -468,8 +464,8 @@ module Resolve_pattern = struct
 
   type error = Time.Pattern.error
 
-  let matching_date_times (search_param : Pattern_search_param.t) (pat : Time.Pattern.t)
-    : Time.Date_time.t Seq.t =
+  let matching_date_times (search_param : Pattern_search_param.t)
+      (pat : Time.Pattern.t) : Time.Date_time.t Seq.t =
     let overall_search_start = search_param.start in
     Matching_years.matching_years ~overall_search_start
       ~end_year_inc:search_param.end_inc.year pat
@@ -557,14 +553,18 @@ module Resolve_pattern = struct
       |> Seq.flat_map
         (Matching_seconds.matching_second_ranges t ~overall_search_start)
 
-  let matching_intervals (search_param : Pattern_search_param.t) (t : Time.Pattern.t) :
-    (int64 * int64) Seq.t =
+  let matching_intervals (search_param : Pattern_search_param.t)
+      (t : Time.Pattern.t) : (int64 * int64) Seq.t =
     let f (x, y) =
       let x =
-        Option.get Time.Date_time.(min_of_timestamp_local_result @@Time.Date_time.to_timestamp x)
+        Option.get
+          Time.Date_time.(
+            min_of_timestamp_local_result @@ Time.Date_time.to_timestamp x)
       in
       let y =
-        Option.get Time.Date_time.(max_of_timestamp_local_result @@Time.Date_time.to_timestamp y)
+        Option.get
+          Time.Date_time.(
+            max_of_timestamp_local_result @@ Time.Date_time.to_timestamp y)
       in
       (x, y)
     in
@@ -659,8 +659,7 @@ let search_space_of_year_range tz year_range =
         { Date_time.min with year = start; tz }
       |> Date_time.to_timestamp
       |> Date_time.min_of_timestamp_local_result
-      |> Option.get
-      ,
+      |> Option.get,
       Date_time.set_to_last_month_day_hour_min_sec
         { Date_time.min with year = end_inc; tz }
       |> Date_time.to_timestamp
@@ -672,22 +671,19 @@ let search_space_of_year_range tz year_range =
         { Date_time.min with year = start; tz }
       |> Date_time.to_timestamp
       |> Date_time.min_of_timestamp_local_result
-      |> Option.get
-      ,
+      |> Option.get,
       Date_time.set_to_last_month_day_hour_min_sec
         { Date_time.min with year = end_exc; tz }
       |> Date_time.to_timestamp
       |> Date_time.min_of_timestamp_local_result
-      |> Option.get
-    )
+      |> Option.get )
 
 let search_space_of_year tz_offset_s year =
   search_space_of_year_range tz_offset_s (`Range_inc (year, year))
 
 let empty_search_space = []
 
-let propagate_search_space_bottom_up default_tz (time : Time.t) :
-  Time.t =
+let propagate_search_space_bottom_up default_tz (time : Time.t) : Time.t =
   let open Time in
   let rec aux tz time =
     match time with
@@ -904,8 +900,7 @@ let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) =
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((t1, t2), rest) ->
       let dt1 =
-        Result.get_ok
-        @@ Date_time.of_timestamp ~tz_of_date_time:tz t1
+        Result.get_ok @@ Date_time.of_timestamp ~tz_of_date_time:tz t1
       in
       let dt2 =
         t2
@@ -934,8 +929,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((t1, t2), rest) ->
       let dt1 =
-        Result.get_ok
-        @@ Date_time.of_timestamp ~tz_of_date_time:tz t1
+        Result.get_ok @@ Date_time.of_timestamp ~tz_of_date_time:tz t1
       in
       let dt2 =
         t2
@@ -963,39 +957,38 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
   let rec aux search_using_tz time =
     match time with
     | Empty -> Seq.empty
-    | All ->
-      Seq.return Date_time.(min_timestamp, Int64.succ @@ max_timestamp)
+    | All -> Seq.return Date_time.(min_timestamp, Int64.succ @@ max_timestamp)
     | Timestamp_interval_seq (_, s) -> s
     | Pattern (space, pat) ->
       if Time_zone.is_utc search_using_tz then
         let params =
-          List.map (Pattern_search_param.make ~search_using_tz_offset_s:0) space
+          List.map
+            (Pattern_search_param.make ~search_using_tz_offset_s:0)
+            space
         in
         Intervals.Union.union_multi_list ~skip_check:true
           (List.map
              (fun param -> Resolve_pattern.matching_intervals param pat)
              params)
       else
-      let transitions =
-        Time_zone.transition_seq search_using_tz
-      in
-      transitions
-      |> Seq.flat_map (fun ((x, y), entry) ->
-          let params =
-            List.map (Pattern_search_param.make ~search_using_tz_offset_s:Time_zone.(entry.offset)) space
-          in
-          Intervals.Union.union_multi_list ~skip_check:true
-            (List.map
-               (fun param -> Resolve_pattern.matching_intervals param pat)
-               params)
-          |> Intervals.Inter.inter
-            (Seq.return (x, y))
-        )
+        let transitions = Time_zone.transition_seq search_using_tz in
+        transitions
+        |> Seq.flat_map (fun ((x, y), entry) ->
+            let params =
+              List.map
+                (Pattern_search_param.make
+                   ~search_using_tz_offset_s:Time_zone.(entry.offset))
+                space
+            in
+            Intervals.Union.union_multi_list ~skip_check:true
+              (List.map
+                 (fun param ->
+                    Resolve_pattern.matching_intervals param pat)
+                 params)
+            |> Intervals.Inter.inter (Seq.return (x, y)))
     | Unary_op (space, op, t) -> (
         let search_using_tz =
-          match op with
-          | Change_tz x -> x
-          | _ -> search_using_tz
+          match op with Change_tz x -> x | _ -> search_using_tz
         in
         let s = aux search_using_tz t in
         match op with

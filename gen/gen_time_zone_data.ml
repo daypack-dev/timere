@@ -313,8 +313,7 @@ let gen () =
         (s, l))
   in
   print_newline ();
-  Printf.printf "Number of time_zones: %d\n"
-    (List.length all_time_zones);
+  Printf.printf "Number of time_zones: %d\n" (List.length all_time_zones);
   print_newline ();
   FileUtil.mkdir ~parent:true output_dir;
   Printf.printf "Generating %s\n" output_file_name;

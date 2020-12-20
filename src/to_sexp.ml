@@ -6,8 +6,7 @@ let sexp_of_int x = CCSexp.atom @@ string_of_int x
 
 let sexp_list_of_ints l = List.map sexp_of_int l
 
-let sexp_of_tz t =
-  CCSexp.atom (Time_zone.name t)
+let sexp_of_tz t = CCSexp.atom (Time_zone.name t)
 
 let sexp_of_date_time (x : Time.Date_time.t) =
   let open CCSexp in
@@ -105,8 +104,7 @@ let sexp_list_of_unary_op (op : Time.unary_op) =
    * | Chunk_by_month -> [ CCSexp.atom "chunk_by_month"] *)
   | Shift n -> [ CCSexp.atom "shift"; CCSexp.atom (Int64.to_string n) ]
   | Lengthen n -> [ CCSexp.atom "lengthen"; CCSexp.atom (Int64.to_string n) ]
-  | Change_tz tz ->
-    [ CCSexp.atom "change_tz"; CCSexp.atom (Time_zone.name tz) ]
+  | Change_tz tz -> [ CCSexp.atom "change_tz"; CCSexp.atom (Time_zone.name tz) ]
 
 let to_sexp (t : Time.t) : CCSexp.t =
   let open Time in

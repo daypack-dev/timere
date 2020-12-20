@@ -53,17 +53,20 @@ let debug_resolver () =
       ~second:0 ~tz:Timere.Time_zone.utc
     |> Result.get_ok
   in
-  let search_start = Timere.Date_time.to_timestamp search_start_dt
-                     |> Timere.Date_time.min_of_timestamp_local_result
-                     |> Option.get
+  let search_start =
+    Timere.Date_time.to_timestamp search_start_dt
+    |> Timere.Date_time.min_of_timestamp_local_result
+    |> Option.get
   in
   let search_end_exc_dt =
     Timere.Date_time.make ~year:2003 ~month:`Jan ~day:1 ~hour:0 ~minute:0
       ~second:0 ~tz:Timere.Time_zone.utc
     |> Result.get_ok
   in
-  let search_end_exc = Timere.Date_time.to_timestamp search_end_exc_dt |> Timere.Date_time.max_of_timestamp_local_result
-                       |> Option.get
+  let search_end_exc =
+    Timere.Date_time.to_timestamp search_end_exc_dt
+    |> Timere.Date_time.max_of_timestamp_local_result
+    |> Option.get
   in
   ( match
       Timere.resolve
@@ -78,7 +81,8 @@ let debug_resolver () =
           |> OSeq.take 50
           |> OSeq.iter (fun ts ->
               match
-                Timere.sprintf_interval ~display_using_tz:Timere.Time_zone.utc
+                Timere.sprintf_interval
+                  ~display_using_tz:Timere.Time_zone.utc
                   default_interval_format_string ts
               with
               | Ok s -> Printf.printf "%s\n" s

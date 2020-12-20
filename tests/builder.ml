@@ -71,13 +71,21 @@ let make_pattern ~rng ~min_year ~max_year_inc =
 
 let make_interval_inc ~rng ~min_year ~max_year_inc =
   let start_dt = make_date_time ~rng ~min_year ~max_year_inc in
-  let start = Time.Date_time.to_timestamp start_dt |> Time.Date_time.min_of_timestamp_local_result |> Option.get in
+  let start =
+    Time.Date_time.to_timestamp start_dt
+    |> Time.Date_time.min_of_timestamp_local_result
+    |> Option.get
+  in
   let end_inc = Int64.add start (Int64.of_int (rng ())) in
   Time.interval_inc start end_inc
 
 let make_interval_exc ~rng ~min_year ~max_year_inc =
   let start_dt = make_date_time ~rng ~min_year ~max_year_inc in
-  let start = Time.Date_time.to_timestamp start_dt |> Time.Date_time.min_of_timestamp_local_result |> Option.get in
+  let start =
+    Time.Date_time.to_timestamp start_dt
+    |> Time.Date_time.min_of_timestamp_local_result
+    |> Option.get
+  in
   let end_exc = Int64.add start (Int64.of_int (rng ())) in
   Time.interval_exc start end_exc
 
@@ -122,11 +130,11 @@ let make_unary_op ~rng t =
   | 4 -> Time.lengthen (make_duration ~rng) t
   | 5 ->
     let available_time_zone_count =
-      List.length
-        Time_zone.available_time_zones
+      List.length Time_zone.available_time_zones
     in
     let tz =
-      List.nth Time_zone.available_time_zones (rng () mod available_time_zone_count)
+      List.nth Time_zone.available_time_zones
+        (rng () mod available_time_zone_count)
       |> Time_zone.make
     in
     Time.change_tz tz t

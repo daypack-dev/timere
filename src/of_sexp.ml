@@ -53,8 +53,7 @@ let ints_of_sexp_list (x : CCSexp.t) =
 
 let tz_of_sexp (x : CCSexp.t) =
   match x with
-  | `Atom s ->
-  Time_zone.make s
+  | `Atom s -> Time_zone.make s
   | `List _ ->
     invalid_data
       (Printf.sprintf "Expected atom for time zone: %s" (CCSexp.to_string x))
@@ -75,16 +74,7 @@ let duration_of_sexp (x : CCSexp.t) =
 
 let date_time_of_sexp (x : CCSexp.t) =
   match x with
-  | `List
-      [
-        year;
-        month;
-        day;
-        hour;
-        minute;
-        second;
-        tz;
-      ] -> (
+  | `List [ year; month; day; hour; minute; second; tz ] -> (
       let year = int_of_sexp year in
       let month = month_of_sexp month in
       let day = int_of_sexp day in
@@ -92,9 +82,7 @@ let date_time_of_sexp (x : CCSexp.t) =
       let minute = int_of_sexp minute in
       let second = int_of_sexp second in
       let tz = tz_of_sexp tz in
-      match
-        Time.Date_time.make ~year ~month ~day ~hour ~minute ~second ~tz
-      with
+      match Time.Date_time.make ~year ~month ~day ~hour ~minute ~second ~tz with
       | Ok x -> x
       | Error () ->
         invalid_data (Printf.sprintf "Invalid date: %s" (CCSexp.to_string x))
@@ -108,10 +96,10 @@ let timestamp_of_sexp x =
     | `Exact x -> x
     | _ -> failwith "Unexpected case"
   else
-    invalid_data (Printf.sprintf "Expected time zone %s, but got %s instead"
-                    (Time_zone.name Time_zone.utc)
-                    (Time_zone.name dt.tz)
-                 )
+    invalid_data
+      (Printf.sprintf "Expected time zone %s, but got %s instead"
+         (Time_zone.name Time_zone.utc)
+         (Time_zone.name dt.tz))
 
 let range_of_sexp ~(f : CCSexp.t -> 'a) (x : CCSexp.t) =
   match x with

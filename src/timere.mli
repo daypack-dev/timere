@@ -121,11 +121,11 @@ val of_timestamps : ?skip_invalid:bool -> timestamp list -> t
 
 val of_timestamps_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
 
-type 'a local_result = [
-  | `None
+type 'a local_result =
+  [ `None
   | `Exact of 'a
   | `Ambiguous of 'a * 'a
-]
+  ]
 
 module Date_time : sig
   exception Invalid_date_time
@@ -324,10 +324,7 @@ val pp_timestamp :
   unit
 
 val sprintf_interval :
-  ?display_using_tz:Time_zone.t ->
-  string ->
-  interval ->
-  (string, string) result
+  ?display_using_tz:Time_zone.t -> string -> interval -> (string, string) result
 
 val pp_interval :
   ?display_using_tz:Time_zone.t ->

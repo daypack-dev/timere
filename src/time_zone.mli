@@ -5,11 +5,11 @@ type entry = private {
   offset : int;
 }
 
-type 'a local_result = [
-  | `None
+type 'a local_result =
+  [ `None
   | `Exact of 'a
   | `Ambiguous of 'a * 'a
-]
+  ]
 
 val name : t -> string
 

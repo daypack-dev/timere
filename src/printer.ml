@@ -130,12 +130,9 @@ let pp_date_time format formatter x =
   | Error msg -> invalid_arg msg
   | Ok s -> Format.fprintf formatter "%s" s
 
-let sprintf_timestamp ?(display_using_tz = Time_zone.utc) format (time : int64) :
-  (string, string) result =
-  match
-    Time.Date_time.of_timestamp
-      ~tz_of_date_time:display_using_tz time
-  with
+let sprintf_timestamp ?(display_using_tz = Time_zone.utc) format (time : int64)
+  : (string, string) result =
+  match Time.Date_time.of_timestamp ~tz_of_date_time:display_using_tz time with
   | Error () -> Error "Invalid unix second"
   | Ok dt -> sprintf_date_time format dt
 
@@ -166,16 +163,10 @@ let sprintf_interval ?(display_using_tz = Time_zone.utc) (format : string)
     : (string list, unit) t =
     many (single start_date_time end_date_time)
   in
-  match
-    Time.Date_time.of_timestamp
-      ~tz_of_date_time:display_using_tz s
-  with
+  match Time.Date_time.of_timestamp ~tz_of_date_time:display_using_tz s with
   | Error () -> Error "Invalid start unix time"
   | Ok s -> (
-      match
-        Time.Date_time.of_timestamp
-          ~tz_of_date_time:display_using_tz e
-      with
+      match Time.Date_time.of_timestamp ~tz_of_date_time:display_using_tz e with
       | Error () -> Error "Invalid end unix time"
       | Ok e ->
         parse_string
