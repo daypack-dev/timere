@@ -12,10 +12,10 @@ let default_interval_format_string =
  *   | Ok timere -> print_endline (Time.to_sexp_string timere) *)
 
 let debug_resolver () =
-  let s = {|
-(unchunk (chunk_again (chunk_at_year_boundary (chunk_again (chunk_disjoint_intervals (chunk_again (chunk_at_year_boundary (chunk_disjoint_intervals (empty)))))))))
-  |} in
-  let timere = Result.get_ok @@ Of_sexp.of_sexp_string s in
+  (*   let s = {|
+   * (unchunk (chunk_again (chunk_at_year_boundary (chunk_again (chunk_disjoint_intervals (chunk_again (chunk_at_year_boundary (chunk_disjoint_intervals (empty)))))))))
+   *   |} in *)
+  (* let timere = Result.get_ok @@ Of_sexp.of_sexp_string s in *)
   (* let timere =
    *   (fun max_height max_branching randomness ->
    *      Builder.build ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching
@@ -40,14 +40,18 @@ let debug_resolver () =
    *       @@ Time.Date_time.make ~year:2000 ~month:`Jan ~day:1 ~hour:0 ~minute:0
    *         ~second:0 ~tz_offset_s:0 )
    * in *)
-  (* let timere =
-   *   let open Time in
-   *   (\* hms_interval_exc
-   *    *   (make_hms_exn ~hour:23 ~minute:0 ~second:0)
-   *    *   (make_hms_exn ~hour:3 ~minute:0 ~second:0) *\)
-   *   change_tz (Time.Time_zone.make "Australia/Sydney")
-   *     (months [`Jun])
-   * in *)
+  let timere =
+    let open Time in
+    change_tz
+      (Time_zone.make "Australia/Sydney")
+      (inter
+         [
+           hms_interval_exc
+             (make_hms_exn ~hour:23 ~minute:0 ~second:0)
+             (make_hms_exn ~hour:5 ~minute:0 ~second:0);
+           months [ `Mar ];
+         ])
+  in
   print_endline (To_sexp.to_sexp_string timere);
   print_endline "=====";
   let search_start_dt =
