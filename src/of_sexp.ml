@@ -51,6 +51,14 @@ let ints_of_sexp_list (x : CCSexp.t) =
       (Printf.sprintf "Expected list for ints: %s" (CCSexp.to_string x))
   | `List l -> List.map int_of_sexp l
 
+let tz_of_sexp (x : CCSexp.t) =
+  match x with
+  | `Atom s ->
+  Time_zone.make s
+  | `List _ ->
+    invalid_data
+      (Printf.sprintf "Expected atom for time zone: %s" (CCSexp.to_string x))
+
 let duration_of_sexp (x : CCSexp.t) =
   match x with
   | `List [ days; hours; minutes; seconds ] -> (
@@ -75,7 +83,7 @@ let date_time_of_sexp (x : CCSexp.t) =
         hour;
         minute;
         second;
-        `List [ `Atom "tz_offset_s"; tz_offset_s ];
+        tz;
       ] -> (
       let year = int_of_sexp year in
       let month = month_of_sexp month in
@@ -83,9 +91,9 @@ let date_time_of_sexp (x : CCSexp.t) =
       let hour = int_of_sexp hour in
       let minute = int_of_sexp minute in
       let second = int_of_sexp second in
-      let tz_offset_s = int_of_sexp tz_offset_s in
+      let tz = tz_of_sexp tz in
       match
-        Time.Date_time.make ~year ~month ~day ~hour ~minute ~second ~tz_offset_s
+        Time.Date_time.make ~year ~month ~day ~hour ~minute ~second ~tz
       with
       | Ok x -> x
       | Error () ->
@@ -93,7 +101,17 @@ let date_time_of_sexp (x : CCSexp.t) =
     )
   | _ -> invalid_data (Printf.sprintf "Invalid date: %s" (CCSexp.to_string x))
 
-let timestamp_of_sexp x = x |> date_time_of_sexp |> Time.Date_time.to_timestamp
+let timestamp_of_sexp x =
+  let dt = date_time_of_sexp x in
+  if Time_zone.is_utc dt.tz then
+    match Time.Date_time.to_timestamp dt with
+    | `Exact x -> x
+    | _ -> failwith "Unexpected case"
+  else
+    invalid_data (Printf.sprintf "Expected time zone %s, but got %s instead"
+                    (Time_zone.name Time_zone.utc)
+                    (Time_zone.name dt.tz)
+                 )
 
 let range_of_sexp ~(f : CCSexp.t -> 'a) (x : CCSexp.t) =
   match x with
@@ -205,9 +223,9 @@ let of_sexp (x : CCSexp.t) =
             | Ok n -> n
           in
           lengthen n (aux x)
-        | [ `Atom "change_tz_offset_s"; n; x ] ->
-          let n = int_of_sexp n in
-          change_tz_offset_s n (aux x)
+        | [ `Atom "change_tz"; n; x ] ->
+          let tz = tz_of_sexp n in
+          change_tz tz (aux x)
         | [ `Atom "interval_inc"; a; b ] ->
           interval_dt_inc (date_time_of_sexp a) (date_time_of_sexp b)
         | [ `Atom "interval_exc"; a; b ] ->
