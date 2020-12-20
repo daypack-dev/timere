@@ -1442,7 +1442,7 @@ module Date_time = struct
     |> Option.get
     |> Ptime.to_float_s
     |> Int64.of_float
-    |> Int64.sub (Int64.of_int offset)
+    |> fun x -> Int64.sub x (Int64.of_int offset)
 
   let of_timestamp ?(tz_of_date_time = Time_zone.utc) (x : int64) :
     (t, unit) result =
