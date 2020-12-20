@@ -5,6 +5,24 @@
 )
 
 (rule
+ (targets string_map.ml)
+ (deps    ../src/string_map.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets time_zone.ml)
+ (deps    ../src/time_zone.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets time_zone_data.ml)
+ (deps    ../src/time_zone_data.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
  (targets int64_utils.ml)
  (deps    ../src/int64_utils.ml)
  (action  (copy %{deps} %{targets}))
