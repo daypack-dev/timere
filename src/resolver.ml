@@ -1,21 +1,21 @@
 module Search_param = struct
   type t = {
-    search_using_tz_offset_s : Time.tz_offset_s;
+    search_using_tz : Time_zone.t;
     start : Time.Date_time.t;
     end_inc : Time.Date_time.t;
   }
 
-  let make ~search_using_tz_offset_s ((start, end_exc) : Time.Interval.t) : t =
+  let make ~search_using_tz ((start, end_exc) : Time.Interval.t) : t =
     {
-      search_using_tz_offset_s;
+      search_using_tz;
       start =
         Result.get_ok
         @@ Time.Date_time.of_timestamp
-          ~tz_offset_s_of_date_time:search_using_tz_offset_s start;
+          ~tz_of_date_time:search_using_tz start;
       end_inc =
         Result.get_ok
         @@ Time.Date_time.of_timestamp
-          ~tz_offset_s_of_date_time:search_using_tz_offset_s
+          ~tz_of_date_time:search_using_tz
           (Int64.pred end_exc);
     }
 end
@@ -451,13 +451,13 @@ module Resolve_pattern = struct
              ~f_exc:(range_map_exc ~overall_search_start))
   end
 
-  let date_time_range_seq_of_timestamps ~search_using_tz_offset_s
+  let date_time_range_seq_of_timestamps ~search_using_tz
       (s : int64 Seq.t) : Time.Date_time.t Time.Range.range Seq.t =
     let f (x, y) =
       ( Time.Date_time.of_timestamp
-          ~tz_offset_s_of_date_time:search_using_tz_offset_s x,
+          ~tz_of_date_time:search_using_tz x,
         Time.Date_time.of_timestamp
-          ~tz_offset_s_of_date_time:search_using_tz_offset_s y )
+          ~tz_of_date_time:search_using_tz y )
     in
     s
     |> Time.Ranges.Of_seq.range_seq_of_seq ~modulo:None
@@ -560,7 +560,13 @@ module Resolve_pattern = struct
   let matching_intervals (search_param : Search_param.t) (t : Time.Pattern.t) :
     (int64 * int64) Seq.t =
     let f (x, y) =
-      (Time.Date_time.to_timestamp x, Time.Date_time.to_timestamp y)
+      let x =
+        Option.get Time.Date_time.(min_of_timestamp_local_result @@Time.Date_time.to_timestamp x)
+      in
+      let y =
+        Option.get Time.Date_time.(max_of_timestamp_local_result @@Time.Date_time.to_timestamp y)
+      in
+      (x, y)
     in
     matching_date_time_ranges search_param t
     |> Seq.map (Time.Range.map ~f_inc:f ~f_exc:f)
@@ -591,11 +597,11 @@ module Resolve_pattern = struct
     let s = matching_date_times search_param t in
     match s () with Seq.Nil -> None | Seq.Cons (x, _) -> Some x
 
-  let next_match_timestamp (search_param : Search_param.t) (t : Time.Pattern.t)
-    : int64 option =
-    match next_match_date_time search_param t with
-    | None -> None
-    | Some x -> Some (Time.Date_time.to_timestamp x)
+  (* let next_match_timestamp (search_param : Search_param.t) (t : Time.Pattern.t)
+   *   : int64 option =
+   *   match next_match_date_time search_param t with
+   *   | None -> None
+   *   | Some x -> Some (Time.Date_time.to_timestamp x) *)
 
   let next_match_interval (search_param : Search_param.t) (t : Time.Pattern.t) :
     (int64 * int64) option =
@@ -645,24 +651,35 @@ let set_search_space space (time : Time.t) : Time.t =
   | Between_exc (_, x, y) -> Between_exc (space, x, y)
   | Unchunk c -> Unchunk c
 
-let search_space_of_year_range tz_offset_s year_range =
+let search_space_of_year_range tz year_range =
   let open Time in
   match year_range with
   | `Range_inc (start, end_inc) ->
     ( Date_time.set_to_first_month_day_hour_min_sec
-        { Date_time.min with year = start; tz_offset_s }
-      |> Date_time.to_timestamp,
-      Date_time.set_to_last_month_day_hour_min_sec
-        { Date_time.min with year = end_inc; tz_offset_s }
+        { Date_time.min with year = start; tz }
       |> Date_time.to_timestamp
+      |> Date_time.min_of_timestamp_local_result
+      |> Option.get
+      ,
+      Date_time.set_to_last_month_day_hour_min_sec
+        { Date_time.min with year = end_inc; tz }
+      |> Date_time.to_timestamp
+      |> Date_time.max_of_timestamp_local_result
+      |> Option.get
       |> Int64.succ )
   | `Range_exc (start, end_exc) ->
     ( Date_time.set_to_first_month_day_hour_min_sec
-        { Date_time.min with year = start; tz_offset_s }
-      |> Date_time.to_timestamp,
+        { Date_time.min with year = start; tz }
+      |> Date_time.to_timestamp
+      |> Date_time.min_of_timestamp_local_result
+      |> Option.get
+      ,
       Date_time.set_to_last_month_day_hour_min_sec
-        { Date_time.min with year = end_exc; tz_offset_s }
-      |> Date_time.to_timestamp )
+        { Date_time.min with year = end_exc; tz }
+      |> Date_time.to_timestamp
+      |> Date_time.min_of_timestamp_local_result
+      |> Option.get
+    )
 
 let search_space_of_year tz_offset_s year =
   search_space_of_year_range tz_offset_s (`Range_inc (year, year))

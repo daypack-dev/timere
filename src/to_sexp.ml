@@ -16,7 +16,7 @@ let sexp_of_date_time (x : Time.Date_time.t) =
       sexp_of_int x.hour;
       sexp_of_int x.minute;
       sexp_of_int x.second;
-      list [ atom "tz_offset_s"; sexp_of_int x.tz_offset_s ];
+      list [ atom "tz"; atom (Time_zone.name x.tz) ];
     ]
 
 let sexp_of_duration (x : Duration.t) =

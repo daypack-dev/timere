@@ -1411,6 +1411,18 @@ module Date_time = struct
     | `Two of int64 * int64
   ]
 
+  let min_of_timestamp_local_result r : int64 option =
+    match r with
+    | `None -> None
+    | `Exact x
+    | `Ambiguous (x, _) -> Some x
+
+  let max_of_timestamp_local_result r : int64 option =
+    match r with
+    | `None -> None
+    | `Exact x
+    | `Ambiguous (_, x) -> Some x
+
   let to_timestamp (x : t) : timestamp Time_zone.local_result =
     let timestamp =
       to_ptime_date_time_utc x
@@ -1430,6 +1442,14 @@ module Date_time = struct
         min x1 x2,
         max x1 x2
       )
+
+  let to_timestamp_force_offset ~offset (x : t) =
+    to_ptime_date_time_utc x
+    |> Ptime.of_date_time
+    |> Option.get
+    |> Ptime.to_float_s
+    |> Int64.of_float
+    |> Int64.sub (Int64.of_int offset)
 
   let of_timestamp ?(tz_of_date_time = Time_zone.utc) (x : int64) :
     (t, unit) result =
@@ -1940,20 +1960,14 @@ let interval_exc (a : timestamp) (b : timestamp) : t =
         else invalid_arg "interval_exc: a > b" )
 
 let interval_dt_inc (a : Date_time.t) (b : Date_time.t) : t =
-  match Date_time.to_timestamp a with
-  | `None -> failwith "Unexpected case"
-  | `Exact a
-  | `Ambiguous (a, _) ->
-    match Date_time.to_timestamp b with
-    | `None -> failwith "Unexpected case"
-    | `Exact b
-    | `Ambiguous (_, b) ->
-      if a <= b then Interval_inc (default_search_space, a, b)
-      else invalid_arg "interval_dt_inc: a > b"
+  let a = Option.get Date_time.(min_of_timestamp_local_result @@ to_timestamp a) in
+  let b = Option.get Date_time.(max_of_timestamp_local_result @@ to_timestamp b) in
+  if a <= b then Interval_inc (default_search_space, a, b)
+  else invalid_arg "interval_dt_inc: a > b"
 
 let interval_dt_exc (a : Date_time.t) (b : Date_time.t) : t =
-  let a = Date_time.to_timestamp a in
-  let b = Date_time.to_timestamp b in
+  let a = Option.get Date_time.(min_of_timestamp_local_result @@ to_timestamp a) in
+  let b = Option.get Date_time.(max_of_timestamp_local_result @@ to_timestamp b) in
   if a <= b then Interval_exc (default_search_space, a, b)
   else invalid_arg "interval_dt_exc: a > b"
 
@@ -2119,11 +2133,11 @@ let between_inc (t1 : t) (t2 : t) : t =
 let between_exc (t1 : t) (t2 : t) : t =
   Between_exc (default_search_space, t1, t2)
 
-let date_time (date_time : Date_time.t) : t =
-  date_time
-  |> Date_time.to_timestamp
-  |> fun x ->
-  Timestamp_interval_seq (default_search_space, Seq.return (x, Int64.succ x))
+(* let date_time (date_time : Date_time.t) : t =
+ *   date_time
+ *   |> Date_time.to_timestamp
+ *   |> fun x ->
+ *   Timestamp_interval_seq (default_search_space, Seq.return (x, Int64.succ x)) *)
 
 let of_sorted_intervals_seq ?(skip_invalid : bool = false)
     (s : (int64 * int64) Seq.t) : t =

@@ -92,8 +92,8 @@ module Format_string_parsers = struct
           ( string "sec:"
             >> padding
             >>= fun padding -> return (pad_int padding date_time.second) );
-        string "unix"
-        >> return (Int64.to_string (Time.Date_time.to_timestamp date_time));
+        (* string "unix"
+         * >> return (Int64.to_string (Time.Date_time.to_timestamp date_time)); *)
       ]
 end
 
@@ -130,21 +130,21 @@ let pp_date_time format formatter x =
   | Error msg -> invalid_arg msg
   | Ok s -> Format.fprintf formatter "%s" s
 
-let sprintf_timestamp ?(display_using_tz_offset_s = 0) format (time : int64) :
+let sprintf_timestamp ?(display_using_tz = Time_zone.utc) format (time : int64) :
   (string, string) result =
   match
     Time.Date_time.of_timestamp
-      ~tz_offset_s_of_date_time:display_using_tz_offset_s time
+      ~tz_of_date_time:display_using_tz time
   with
   | Error () -> Error "Invalid unix second"
   | Ok dt -> sprintf_date_time format dt
 
-let pp_timestamp ?(display_using_tz_offset_s = 0) format formatter x =
-  match sprintf_timestamp ~display_using_tz_offset_s format x with
+let pp_timestamp ?(display_using_tz = Time_zone.utc) format formatter x =
+  match sprintf_timestamp ~display_using_tz format x with
   | Error msg -> invalid_arg msg
   | Ok s -> Format.fprintf formatter "%s" s
 
-let sprintf_interval ?(display_using_tz_offset_s = 0) (format : string)
+let sprintf_interval ?(display_using_tz = Time_zone.utc) (format : string)
     ((s, e) : Time.Interval.t) : (string, string) result =
   let open MParser in
   let open Parser_components in
@@ -168,13 +168,13 @@ let sprintf_interval ?(display_using_tz_offset_s = 0) (format : string)
   in
   match
     Time.Date_time.of_timestamp
-      ~tz_offset_s_of_date_time:display_using_tz_offset_s s
+      ~tz_of_date_time:display_using_tz s
   with
   | Error () -> Error "Invalid start unix time"
   | Ok s -> (
       match
         Time.Date_time.of_timestamp
-          ~tz_offset_s_of_date_time:display_using_tz_offset_s e
+          ~tz_of_date_time:display_using_tz e
       with
       | Error () -> Error "Invalid end unix time"
       | Ok e ->
@@ -192,8 +192,8 @@ let sprintf_interval ?(display_using_tz_offset_s = 0) (format : string)
         |> result_of_mparser_result
         |> Result.map (fun l -> String.concat "" l) )
 
-let pp_interval ?(display_using_tz_offset_s = 0) format formatter interval =
-  match sprintf_interval ~display_using_tz_offset_s format interval with
+let pp_interval ?(display_using_tz = Time_zone.utc) format formatter interval =
+  match sprintf_interval ~display_using_tz format interval with
   | Error msg -> invalid_arg msg
   | Ok s -> Format.fprintf formatter "%s" s
 

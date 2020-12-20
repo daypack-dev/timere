@@ -11,6 +11,8 @@ type 'a local_result = [
   | `Ambiguous of 'a * 'a
 ]
 
+let name t = t.name
+
 let utc = { name = "UTC"; table = [||] }
 
 let is_utc t = t.name = utc.name
