@@ -59,8 +59,8 @@
 )
 
 (rule
- (targets printer.ml)
- (deps    ../src/printer.ml)
+ (targets printers.ml)
+ (deps    ../src/printers.ml)
  (action  (copy %{deps} %{targets}))
 )
 

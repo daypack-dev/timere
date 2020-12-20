@@ -9,17 +9,17 @@ type 'a local_result = 'a Time_zone.local_result
 module Date_time = struct
   include Date_time
 
-  let sprintf = Printer.sprintf_date_time
+  let sprintf = Printers.sprintf_date_time
 
-  let pp = Printer.pp_date_time
+  let pp = Printers.pp_date_time
 end
 
 module Duration = struct
   include Duration
 
-  let sprint = Printer.sprint_duration
+  let sprint = Printers.sprint_duration
 
-  let pp = Printer.pp_duration
+  let pp = Printers.pp_duration
 end
 
 type 'a range = 'a Range.range
@@ -38,17 +38,17 @@ end
 
 let resolve = Resolver.resolve
 
-let sprintf_timestamp = Printer.sprintf_timestamp
+let sprintf_timestamp = Printers.sprintf_timestamp
 
-let pp_timestamp = Printer.pp_timestamp
+let pp_timestamp = Printers.pp_timestamp
 
-let sprintf_interval = Printer.sprintf_interval
+let sprintf_interval = Printers.sprintf_interval
 
-let pp_interval = Printer.pp_interval
+let pp_interval = Printers.pp_interval
 
 let to_sexp = To_sexp.to_sexp
 
-let pp_sexp = Printer.pp_sexp
+let pp_sexp = Printers.pp_sexp
 
 let to_sexp_string = To_sexp.to_sexp_string
 

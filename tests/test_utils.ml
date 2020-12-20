@@ -237,7 +237,7 @@ let date_time_testable : (module Alcotest.TESTABLE) =
   ( module struct
     type t = Time.Date_time.t
 
-    let pp = Printer.pp_date_time default_date_time_format_string
+    let pp = Printers.pp_date_time default_date_time_format_string
 
     let equal = ( = )
   end )

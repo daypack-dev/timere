@@ -82,7 +82,7 @@ let debug_resolver () =
           |> OSeq.take 50
           |> OSeq.iter (fun ts ->
               match
-                Printer.sprintf_interval ~display_using_tz:Time_zone.utc
+                Printers.sprintf_interval ~display_using_tz:Time_zone.utc
                   default_interval_format_string ts
               with
               | Ok s -> Printf.printf "%s\n" s
@@ -99,7 +99,7 @@ let debug_resolver () =
       |> OSeq.take 50
       |> OSeq.iter (fun ts ->
           match
-            Printer.sprintf_interval ~display_using_tz:Time_zone.utc
+            Printers.sprintf_interval ~display_using_tz:Time_zone.utc
               default_interval_format_string ts
           with
           | Ok s -> Printf.printf "%s\n" s
