@@ -957,7 +957,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
   let rec aux search_using_tz time =
     match time with
     | Empty -> Seq.empty
-    | All -> Seq.return Date_time.(min_timestamp, Int64.succ @@ max_timestamp)
+    | All -> Seq.return (min_timestamp, Int64.succ @@ max_timestamp)
     | Timestamp_interval_seq (_, s) -> s
     | Pattern (space, pat) ->
       if Time_zone.is_utc search_using_tz then

@@ -1380,6 +1380,10 @@ module Year_ranges = Ranges_small.Make (struct
 
 let cur_timestamp () : int64 = Unix.time () |> Int64.of_float
 
+let min_timestamp = Ptime.min |> Ptime.to_float_s |> Int64.of_float
+
+let max_timestamp = Ptime.max |> Ptime.to_float_s |> Int64.of_float
+
 module Date_time = struct
   exception Invalid_date_time
 
@@ -1521,15 +1525,11 @@ module Date_time = struct
     in
     match x with Error () -> raise Invalid_date_time | Ok x -> x
 
-  let min_timestamp = Ptime.min |> Ptime.to_float_s |> Int64.of_float
-
   let min =
-    Ptime.min |> Ptime.to_date_time |> of_ptime_date_time_utc |> Result.get_ok
-
-  let max_timestamp = Ptime.max |> Ptime.to_float_s |> Int64.of_float
+    Result.get_ok @@ of_timestamp min_timestamp
 
   let max =
-    Ptime.max |> Ptime.to_date_time |> of_ptime_date_time_utc |> Result.get_ok
+    Result.get_ok @@ of_timestamp max_timestamp
 
   let cur ?(tz_of_date_time = Time_zone.utc) () : (t, unit) result =
     cur_timestamp () |> of_timestamp ~tz_of_date_time
@@ -1753,9 +1753,9 @@ type unary_op =
 
 type search_space = Interval.t list
 
-let default_search_space_start = Date_time.min_timestamp
+let default_search_space_start = min_timestamp
 
-let default_search_space_end_exc = Date_time.max_timestamp
+let default_search_space_end_exc = max_timestamp
 
 let default_search_space : search_space =
   [ (default_search_space_start, default_search_space_end_exc) ]

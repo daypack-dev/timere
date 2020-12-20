@@ -117,6 +117,10 @@ exception Invalid_timestamp
 
 val cur_timestamp : unit -> int64
 
+val min_timestamp : int64
+
+val max_timestamp : int64
+
 val of_timestamps : ?skip_invalid:bool -> timestamp list -> t
 
 val of_timestamps_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
