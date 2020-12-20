@@ -1741,6 +1741,15 @@ and chunked =
   | Unary_op_on_t of chunked_unary_op_on_t * t
   | Unary_op_on_chunked of chunked_unary_op_on_chunked * chunked
 
+let equal_unary_op op1 op2 =
+  match (op1, op2) with
+  | Not, Not | Every, Every -> true
+  | Drop_n_points n1, Drop_n_points n2 | Take_n_points n1, Take_n_points n2 ->
+    n1 = n2
+  | Shift n1, Shift n2 | Lengthen n1, Lengthen n2 -> n1 = n2
+  | Change_tz tz1, Change_tz tz2 -> Time_zone.name tz1 = Time_zone.name tz2
+  | _, _ -> false
+
 let equal t1 t2 =
   let rec aux t1 t2 =
     match (t1, t2) with
@@ -1749,7 +1758,8 @@ let equal t1 t2 =
     | Timestamp_interval_seq (_, s1), Timestamp_interval_seq (_, s2) ->
       OSeq.equal ~eq:( = ) s1 s2
     | Pattern (_, p1), Pattern (_, p2) -> Pattern.equal p1 p2
-    | Unary_op (_, op1, t1), Unary_op (_, op2, t2) -> op1 = op2 && aux t1 t2
+    | Unary_op (_, op1, t1), Unary_op (_, op2, t2) ->
+      equal_unary_op op1 op2 && aux t1 t2
     | Interval_inc (_, x11, x12), Interval_inc (_, x21, x22)
     | Interval_exc (_, x11, x12), Interval_exc (_, x21, x22) ->
       x11 = x21 && x12 = x22
