@@ -1426,8 +1426,6 @@ module Date_time = struct
       |> Ptime.to_float_s
       |> Int64.of_float
     in
-    if Time_zone.is_utc x.tz then `Exact timestamp
-    else
       match Time_zone.lookup_timestamp_local x.tz timestamp with
       | `None -> `None
       | `Exact e -> `Exact (Int64.sub timestamp (Int64.of_int e.offset))

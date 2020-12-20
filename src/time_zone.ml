@@ -13,10 +13,6 @@ type 'a local_result =
 
 let name t = t.name
 
-let utc = { name = "UTC"; table = [||] }
-
-let is_utc t = t.name = utc.name
-
 let available_time_zones = String_map.bindings db |> List.map (fun (k, _) -> k)
 
 let make name : t =
@@ -24,21 +20,27 @@ let make name : t =
   | Some table -> { name; table }
   | None -> invalid_arg "make: Invalid time zone name"
 
+let utc = make "UTC"
+
+let is_utc t =
+  List.mem t.name
+    [
+      "UTC"; "UCT"
+    ]
+
 let dummy_entry : entry = { is_dst = false; offset = 0 }
 
 let lookup_timestamp_utc (t : t) timestamp =
-  if is_utc t then Some { is_dst = false; offset = 0 }
-  else
-    match
-      CCArray.bsearch
-        ~cmp:(fun (k1, _) (k2, _) -> Int64.compare k1 k2)
-        (timestamp, dummy_entry) t.table
-    with
-    | `At i -> Some (snd t.table.(i))
-    | `All_lower -> Some (snd t.table.(Array.length t.table - 1))
-    | `All_bigger -> None
-    | `Just_after i -> Some (snd t.table.(i))
-    | `Empty -> None
+  match
+    CCArray.bsearch
+      ~cmp:(fun (k1, _) (k2, _) -> Int64.compare k1 k2)
+      (timestamp, dummy_entry) t.table
+  with
+  | `At i -> Some (snd t.table.(i))
+  | `All_lower -> Some (snd t.table.(Array.length t.table - 1))
+  | `All_bigger -> None
+  | `Just_after i -> Some (snd t.table.(i))
+  | `Empty -> None
 
 let local_interval_of_table (table : table) (i : int) =
   let start_utc, entry = table.(i) in
