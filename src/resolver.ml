@@ -574,6 +574,8 @@ module Resolve_pattern = struct
         match r with
         | `Range_inc (x, y) -> (x, Int64.succ y)
         | `Range_exc (x, y) -> (x, y))
+    |> Time.Intervals.Normalize.normalize ~skip_filter_invalid:true
+      ~skip_sort:true
 
   (* let matching_intervals_round_robin_non_decreasing
    *     (search_param : Search_param.t) (l : Time.Pattern.t list) :
