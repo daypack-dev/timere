@@ -656,24 +656,24 @@ let search_space_of_year_range tz year_range =
   match year_range with
   | `Range_inc (start, end_inc) ->
     ( Date_time.set_to_first_month_day_hour_min_sec
-        { Date_time.min with year = start; tz }
+        { Date_time.min with year = start; tz = Some tz }
       |> Date_time.to_timestamp
       |> Date_time.min_of_timestamp_local_result
       |> Option.get,
       Date_time.set_to_last_month_day_hour_min_sec
-        { Date_time.min with year = end_inc; tz }
+        { Date_time.min with year = end_inc; tz = Some tz }
       |> Date_time.to_timestamp
       |> Date_time.max_of_timestamp_local_result
       |> Option.get
       |> Int64.succ )
   | `Range_exc (start, end_exc) ->
     ( Date_time.set_to_first_month_day_hour_min_sec
-        { Date_time.min with year = start; tz }
+        { Date_time.min with year = start; tz = Some tz}
       |> Date_time.to_timestamp
       |> Date_time.min_of_timestamp_local_result
       |> Option.get,
       Date_time.set_to_last_month_day_hour_min_sec
-        { Date_time.min with year = end_exc; tz }
+        { Date_time.min with year = end_exc; tz = Some tz}
       |> Date_time.to_timestamp
       |> Date_time.min_of_timestamp_local_result
       |> Option.get )
@@ -685,7 +685,7 @@ let empty_search_space = []
 
 let propagate_search_space_bottom_up default_tz (time : Time.t) : Time.t =
   let open Time in
-  let rec aux tz time =
+  let rec aux (tz : Time_zone.t) time =
     match time with
     | All -> All
     | Empty -> Empty

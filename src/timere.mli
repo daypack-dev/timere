@@ -137,7 +137,8 @@ module Date_time : sig
     hour : int;
     minute : int;
     second : int;
-    tz : Time_zone.t;
+    tz : Time_zone.t option;
+    tz_offset_s : int option;
   }
 
   val make :
@@ -158,6 +159,30 @@ module Date_time : sig
     minute:int ->
     second:int ->
     tz:Time_zone.t ->
+    t
+
+  val make_precise :
+    ?tz:Time_zone.t ->
+    year:int ->
+    month:month ->
+    day:int ->
+    hour:int ->
+    minute:int ->
+    second:int ->
+    tz_offset_s:int ->
+    unit ->
+    (t, unit) result
+
+  val make_precise_exn :
+    ?tz:Time_zone.t ->
+    year:int ->
+    month:month ->
+    day:int ->
+    hour:int ->
+    minute:int ->
+    second:int ->
+    tz_offset_s:int ->
+    unit ->
     t
 
   val to_timestamp : t -> timestamp local_result
