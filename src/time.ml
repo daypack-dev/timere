@@ -1398,47 +1398,81 @@ module Date_time = struct
     ( (x.year, human_int_of_month x.month, x.day),
       ((x.hour, x.minute, x.second), 0) )
 
-  (* let of_ptime_date_time
-   *     (((year, month, day), ((hour, minute, second), tz_offset_s)) :
-   *        Ptime.date * Ptime.time) : (t, unit) result =
-   *   match month_of_human_int month with
-   *   | Ok month -> Ok { year; month; day; hour; minute; second; tz_offset_s }
-   *   | Error () -> Error () *)
+  let of_ptime_date_time_utc
+      (((year, month, day), ((hour, minute, second), _tz_offset_s)) :
+         Ptime.date * Ptime.time) : (t, unit) result =
+    match month_of_human_int month with
+    | Ok month -> Ok { year; month; day; hour; minute; second; tz = Time_zone.utc }
+    | Error () -> Error ()
 
-  let to_timestamps (x : t) : int64 list =
-    Ptime.of_date_time (to_ptime_date_time_utc x)
-    |> Option.get
-    |> Ptime.to_float_s
-    |> Int64.of_float
+  type timestamps = [
+    | `None
+    | `One of int64
+    | `Two of int64 * int64
+  ]
 
-  let of_timestamp ?(tz_offset_s_of_date_time = 0) (x : int64) :
+  let to_timestamp (x : t) : timestamp Time_zone.local_result =
+    let timestamp =
+      to_ptime_date_time_utc x
+      |> Ptime.of_date_time
+      |> Option.get
+      |> Ptime.to_float_s
+      |> Int64.of_float
+    in
+    match Time_zone.lookup_timestamp_local x.tz timestamp with
+    | `None -> `None
+    | `Exact e ->
+      `Exact (Int64.sub timestamp (Int64.of_int e.offset))
+    | `Ambiguous (e1, e2) ->
+      let x1 = Int64.sub timestamp (Int64.of_int e1.offset) in
+      let x2 = Int64.sub timestamp (Int64.of_int e2.offset) in
+      `Ambiguous (
+        min x1 x2,
+        max x1 x2
+      )
+
+  let of_timestamp ?(tz_of_date_time = Time_zone.utc) (x : int64) :
     (t, unit) result =
-    match Ptime.of_float_s (Int64.to_float x) with
+    match
+      Time_zone.lookup_timestamp_utc tz_of_date_time x
+    with
     | None -> Error ()
-    | Some x ->
-      x
-      |> Ptime.to_date_time ~tz_offset_s:tz_offset_s_of_date_time
-      |> of_ptime_date_time
+    | Some entry ->
+      match Ptime.of_float_s (Int64.to_float x) with
+      | None -> Error ()
+      | Some x ->
+        x
+        |> Ptime.to_date_time ~tz_offset_s:entry.offset
+        |> of_ptime_date_time_utc
+        |> Result.map (fun t ->
+            { t with tz = tz_of_date_time }
+          )
 
-  let make ~year ~month ~day ~hour ~minute ~second ~tz_offset_s =
-    let dt = { year; month; day; hour; minute; second; tz_offset_s } in
-    match Ptime.of_date_time (to_ptime_date_time dt) with
-    | None -> Error ()
-    | Some _ -> Ok dt
+  let make ~year ~month ~day ~hour ~minute ~second ~tz =
+    let dt = { year; month; day; hour; minute; second; tz } in
+    match to_timestamp dt with
+    | `None -> Error ()
+    | _ -> Ok dt
 
-  let make_exn ~year ~month ~day ~hour ~minute ~second ~tz_offset_s =
-    match make ~year ~month ~day ~hour ~minute ~second ~tz_offset_s with
+  let make_exn ~year ~month ~day ~hour ~minute ~second ~tz =
+    match make ~year ~month ~day ~hour ~minute ~second ~tz with
     | Error () -> raise Invalid_date_time
     | Ok x -> x
 
+  let min_timestamp =
+    Ptime.min |> Ptime.to_float_s |> Int64.of_float
+
   let min =
-    Ptime.min |> Ptime.to_date_time |> of_ptime_date_time |> Result.get_ok
+    Ptime.min |> Ptime.to_date_time |> of_ptime_date_time_utc |> Result.get_ok
+
+  let max_timestamp =
+    Ptime.max |> Ptime.to_float_s |> Int64.of_float
 
   let max =
-    Ptime.max |> Ptime.to_date_time |> of_ptime_date_time |> Result.get_ok
+    Ptime.max |> Ptime.to_date_time |> of_ptime_date_time_utc |> Result.get_ok
 
-  let cur ?(tz_offset_s_of_date_time = 0) () : (t, unit) result =
-    cur_timestamp () |> of_timestamp ~tz_offset_s_of_date_time
+  let cur ?(tz_of_date_time = Time_zone.utc) () : (t, unit) result =
+    cur_timestamp () |> of_timestamp ~tz_of_date_time
 
   let compare (x : t) (y : t) : int =
     match compare x.year y.year with
@@ -1659,9 +1693,9 @@ type unary_op =
 
 type search_space = Interval.t list
 
-let default_search_space_start = Date_time.(to_timestamp min)
+let default_search_space_start = Date_time.min_timestamp
 
-let default_search_space_end_exc = Date_time.(to_timestamp max)
+let default_search_space_end_exc = Date_time.max_timestamp
 
 let default_search_space : search_space =
   [ (default_search_space_start, default_search_space_end_exc) ]
@@ -1906,10 +1940,16 @@ let interval_exc (a : timestamp) (b : timestamp) : t =
         else invalid_arg "interval_exc: a > b" )
 
 let interval_dt_inc (a : Date_time.t) (b : Date_time.t) : t =
-  let a = Date_time.to_timestamp a in
-  let b = Date_time.to_timestamp b in
-  if a <= b then Interval_inc (default_search_space, a, b)
-  else invalid_arg "interval_dt_inc: a > b"
+  match Date_time.to_timestamp a with
+  | `None -> failwith "Unexpected case"
+  | `Exact a
+  | `Ambiguous (a, _) ->
+    match Date_time.to_timestamp b with
+    | `None -> failwith "Unexpected case"
+    | `Exact b
+    | `Ambiguous (_, b) ->
+      if a <= b then Interval_inc (default_search_space, a, b)
+      else invalid_arg "interval_dt_inc: a > b"
 
 let interval_dt_exc (a : Date_time.t) (b : Date_time.t) : t =
   let a = Date_time.to_timestamp a in
