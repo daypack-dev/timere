@@ -1391,22 +1391,22 @@ module Date_time = struct
     hour : int;
     minute : int;
     second : int;
-    tz_offset_s : int;
+    tz : Time_zone.t;
   }
 
-  let to_ptime_date_time (x : t) : Ptime.date * Ptime.time =
+  let to_ptime_date_time_utc (x : t) : Ptime.date * Ptime.time =
     ( (x.year, human_int_of_month x.month, x.day),
-      ((x.hour, x.minute, x.second), x.tz_offset_s) )
+      ((x.hour, x.minute, x.second), 0) )
 
-  let of_ptime_date_time
-      (((year, month, day), ((hour, minute, second), tz_offset_s)) :
-         Ptime.date * Ptime.time) : (t, unit) result =
-    match month_of_human_int month with
-    | Ok month -> Ok { year; month; day; hour; minute; second; tz_offset_s }
-    | Error () -> Error ()
+  (* let of_ptime_date_time
+   *     (((year, month, day), ((hour, minute, second), tz_offset_s)) :
+   *        Ptime.date * Ptime.time) : (t, unit) result =
+   *   match month_of_human_int month with
+   *   | Ok month -> Ok { year; month; day; hour; minute; second; tz_offset_s }
+   *   | Error () -> Error () *)
 
-  let to_timestamp (x : t) : int64 =
-    Ptime.of_date_time (to_ptime_date_time x)
+  let to_timestamps (x : t) : int64 list =
+    Ptime.of_date_time (to_ptime_date_time_utc x)
     |> Option.get
     |> Ptime.to_float_s
     |> Int64.of_float

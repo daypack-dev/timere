@@ -43,7 +43,7 @@ type transition_record = {
 
 type transition_table = (string * transition_record list) list
 
-let output_file_name = "src/time_zone_data.ml"
+let output_file_name = "gen_artifacts/time_zone_data.ml"
 
 let year_start = 1850
 
