@@ -162,6 +162,10 @@ module Date_time : sig
 
   val to_timestamp : t -> timestamp local_result
 
+  val min_of_timestamp_local_result : timestamp local_result -> timestamp option
+
+  val max_of_timestamp_local_result : timestamp local_result -> timestamp option
+
   val of_timestamp :
     ?tz_of_date_time:Time_zone.t -> timestamp -> (t, unit) result
 

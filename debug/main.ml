@@ -49,17 +49,22 @@ let debug_resolver () =
   print_endline (Timere.to_sexp_string timere);
   print_endline "=====";
   let search_start_dt =
-    Result.get_ok
-    @@ Timere.Date_time.make ~year:2000 ~month:`Jan ~day:1 ~hour:0 ~minute:0
-      ~second:0 ~tz_offset_s:0
+    Timere.Date_time.make ~year:2000 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+      ~second:0 ~tz:Timere.Time_zone.utc
+    |> Result.get_ok
   in
-  let search_start = Timere.Date_time.to_timestamp search_start_dt in
+  let search_start = Timere.Date_time.to_timestamp search_start_dt
+                     |> Timere.Date_time.min_of_timestamp_local_result
+                     |> Option.get
+  in
   let search_end_exc_dt =
-    Result.get_ok
-    @@ Timere.Date_time.make ~year:2003 ~month:`Jan ~day:1 ~hour:0 ~minute:0
-      ~second:0 ~tz_offset_s:0
+    Timere.Date_time.make ~year:2003 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+      ~second:0 ~tz:Timere.Time_zone.utc
+    |> Result.get_ok
   in
-  let search_end_exc = Timere.Date_time.to_timestamp search_end_exc_dt in
+  let search_end_exc = Timere.Date_time.to_timestamp search_end_exc_dt |> Timere.Date_time.max_of_timestamp_local_result
+                       |> Option.get
+  in
   ( match
       Timere.resolve
         Timere.(inter [ timere; interval_exc search_start search_end_exc ])
@@ -73,7 +78,7 @@ let debug_resolver () =
           |> OSeq.take 50
           |> OSeq.iter (fun ts ->
               match
-                Timere.sprintf_interval ~display_using_tz_offset_s:0
+                Timere.sprintf_interval ~display_using_tz:Timere.Time_zone.utc
                   default_interval_format_string ts
               with
               | Ok s -> Printf.printf "%s\n" s
@@ -81,7 +86,7 @@ let debug_resolver () =
   print_endline "=====";
   let s =
     Timere.Utils.resolve_simple ~search_start ~search_end_exc
-      ~search_using_tz_offset_s:0 timere
+      ~search_using_tz:Timere.Time_zone.utc timere
   in
   ( match s () with
     | Seq.Nil -> print_endline "No matching time slots"
@@ -90,7 +95,7 @@ let debug_resolver () =
       |> OSeq.take 50
       |> OSeq.iter (fun ts ->
           match
-            Timere.sprintf_interval ~display_using_tz_offset_s:0
+            Timere.sprintf_interval ~display_using_tz:Timere.Time_zone.utc
               default_interval_format_string ts
           with
           | Ok s -> Printf.printf "%s\n" s
