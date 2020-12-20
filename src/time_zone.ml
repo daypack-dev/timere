@@ -22,11 +22,7 @@ let make name : t =
 
 let utc = make "UTC"
 
-let is_utc t =
-  List.mem t.name
-    [
-      "UTC"; "UCT"
-    ]
+let is_utc t = List.mem t.name [ "UTC"; "UCT" ]
 
 let dummy_entry : entry = { is_dst = false; offset = 0 }
 

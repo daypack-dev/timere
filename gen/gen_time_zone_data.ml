@@ -321,71 +321,61 @@ let gen () =
   print_newline ();
   FileUtil.mkdir ~parent:true output_dir;
   Printf.printf "Generating %s\n" output_file_name;
-  CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ] output_file_name (fun oc ->
-      let write_line = CCIO.write_line oc in
-      write_line "type entry = {";
-      write_line "  is_dst : bool;";
-      write_line "  offset : int;";
-      write_line "}";
-      write_line "";
-      write_line "type table = (int64 * entry) array";
-      write_line "";
-      write_line "type db = table String_map.t";
-      write_line "";
-      write_line "let db : db =";
-      write_line "  String_map.empty";
-      List.iter
-        (fun (s, l) ->
-           let l =
-             match l with
-             | [] -> (
-                 let base =
-                   { start = min_timestamp;
-                     end_exc = max_timestamp;
-                     tz = String s;
-                     is_dst = false;
-                     offset = 0 }
-                 in
-                 match s with
-                 | "UTC"
-                 | "UCT"
-                 | "GMT"
-                 | "GMT-0"
-                 | "GMT+0"
-                 | "GMT0"
-                 | "Universal"
-                 | "Greenwich"
-                 | "Zulu"
-                 | "Factory"
-                 | "Etc/GMT"
-                 | "Etc/GMT0"
-                 | "Etc/UTC"
-                 | "Etc/UCT"
-                 | "Etc/Universal"
-                 | "Etc/Greenwich"
-                 | "Etc/Zulu"
-                   -> [ base ]
-                 | "EST" -> [ { base with offset = -5 * 60 * 60; }]
-                 | "HST" -> [ { base with offset = -10 * 60 * 60; }]
-                 | "MST" -> [ { base with offset = -7 * 60 * 60; }]
-                 | s ->
-                   try
-                     Scanf.sscanf s "Etc/GMT%d" (fun x ->
-                         [ { base with offset = x * 60 * 60 } ])
-                   with
-                   | _ ->
-                     failwith (Printf.sprintf "Unrecognized time zone during special case handling: %s"
-                                 s
-                              )
-               )
-             | _ -> l
-           in
-           write_line (Printf.sprintf "  |> String_map.add \"%s\" [|" s);
-           List.iter
-             (fun r ->
-                write_line
-                  (Printf.sprintf "    ((%LdL), { is_dst = %b; offset = (%d) });"
-                     r.start r.is_dst r.offset))
-             l;
-           write_line "  |]")
-        tables_utc)
+  CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
+    output_file_name (fun oc ->
+        let write_line = CCIO.write_line oc in
+        write_line "type entry = {";
+        write_line "  is_dst : bool;";
+        write_line "  offset : int;";
+        write_line "}";
+        write_line "";
+        write_line "type table = (int64 * entry) array";
+        write_line "";
+        write_line "type db = table String_map.t";
+        write_line "";
+        write_line "let db : db =";
+        write_line "  String_map.empty";
+        List.iter
+          (fun (s, l) ->
+             let l =
+               match l with
+               | [] -> (
+                   let base =
+                     {
+                       start = min_timestamp;
+                       end_exc = max_timestamp;
+                       tz = String s;
+                       is_dst = false;
+                       offset = 0;
+                     }
+                   in
+                   match s with
+                   | "UTC" | "UCT" | "GMT" | "GMT-0" | "GMT+0" | "GMT0"
+                   | "Universal" | "Greenwich" | "Zulu" | "Factory" | "Etc/GMT"
+                   | "Etc/GMT0" | "Etc/UTC" | "Etc/UCT" | "Etc/Universal"
+                   | "Etc/Greenwich" | "Etc/Zulu" ->
+                     [ base ]
+                   | "EST" -> [ { base with offset = -5 * 60 * 60 } ]
+                   | "HST" -> [ { base with offset = -10 * 60 * 60 } ]
+                   | "MST" -> [ { base with offset = -7 * 60 * 60 } ]
+                   | s -> (
+                       try
+                         Scanf.sscanf s "Etc/GMT%d" (fun x ->
+                             [ { base with offset = x * 60 * 60 } ])
+                       with _ ->
+                         failwith
+                           (Printf.sprintf
+                              "Unrecognized time zone during special case \
+                               handling: %s"
+                              s) ) )
+               | _ -> l
+             in
+             write_line (Printf.sprintf "  |> String_map.add \"%s\" [|" s);
+             List.iter
+               (fun r ->
+                  write_line
+                    (Printf.sprintf "    ((%LdL), { is_dst = %b; offset = (%d) });"
+                       r.start r.is_dst r.offset))
+               l;
+             write_line "  |]")
+          tables_utc)
