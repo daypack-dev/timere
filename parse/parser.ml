@@ -642,18 +642,18 @@ let parse_timere s =
       | Error msg -> Error msg
       | Ok ast -> t_of_ast ast )
 
-let date_time_t_of_ast ~tz_offset_s (ast : ast) :
+let date_time_t_of_ast ~tz (ast : ast) :
   (Timere.Date_time.t, string) Result.t =
   match ast with
   | Tokens [ (_, Nat year); (_, Month month); (_, Nat day); (_, Hms hms) ]
     when year > 31 ->
     Timere.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
-      ~second:hms.second ~tz_offset_s
+      ~second:hms.second ~tz
     |> Result.map_error (fun () -> "Invalid date time")
   | Tokens [ (_, Nat day); (_, Month month); (_, Nat year); (_, Hms hms) ]
     when year > 31 ->
     Timere.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
-      ~second:hms.second ~tz_offset_s
+      ~second:hms.second ~tz
     |> Result.map_error (fun () -> "Invalid date time")
   | Tokens
       [ (_, Nat year); (_, Month month); (_, Nat day); (_, St); (_, Hms hms) ]
@@ -665,17 +665,17 @@ let date_time_t_of_ast ~tz_offset_s (ast : ast) :
       [ (_, Nat year); (_, Month month); (_, Nat day); (_, Th); (_, Hms hms) ]
     ->
     Timere.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
-      ~second:hms.second ~tz_offset_s
+      ~second:hms.second ~tz
     |> Result.map_error (fun () -> "Invalid date time")
   | _ -> Error "Unrecognized pattern"
 
-let parse_date_time ?(tz_offset_s = 0) s =
+let parse_date_time ?(tz = Timere.Time_zone.utc) s =
   match parse_into_ast s with
   | Error msg -> Error msg
   | Ok ast -> (
       match Ast_normalize.normalize ast with
       | Error msg -> Error msg
-      | Ok ast -> date_time_t_of_ast ~tz_offset_s ast )
+      | Ok ast -> date_time_t_of_ast ~tz ast )
 
 let duration_t_of_ast (ast : ast) : (Timere.Duration.t, string) Result.t =
   match ast with
