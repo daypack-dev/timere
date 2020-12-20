@@ -321,7 +321,7 @@ module Intervals = struct
       let rec aux cur intervals =
         match intervals () with
         | Seq.Nil -> (
-            match cur with None -> Seq.empty | Some x -> Seq.return x )
+            match cur with None -> Seq.empty | Some x -> Seq.return x)
         | Seq.Cons ((start, end_exc), rest) -> (
             match cur with
             | None -> aux (Some (start, end_exc)) rest
@@ -330,8 +330,7 @@ module Intervals = struct
                 | Some x -> aux (Some x) rest
                 | None ->
                   (* cannot be merged, add time slot being carried to the sequence *)
-                  fun () -> Seq.Cons (cur, aux (Some (start, end_exc)) rest) )
-          )
+                  fun () -> Seq.Cons (cur, aux (Some (start, end_exc)) rest)))
       in
       aux None intervals
   end
@@ -756,7 +755,7 @@ module Range = struct
     | None -> (
         match int64_range_of_range ~to_int64 t with
         | `Range_inc (x, y) -> x <= y
-        | `Range_exc (x, y) -> x <= y )
+        | `Range_exc (x, y) -> x <= y)
     | Some _ -> true
 
   module Flatten = struct
@@ -778,7 +777,7 @@ module Range = struct
                 OSeq.append
                   (Seq_utils.a_to_b_exc_int64 ~a:start ~b:modulo)
                   (Seq_utils.a_to_b_inc_int64 ~a:0L ~b:end_inc)
-                |> Seq.map of_int64 )
+                |> Seq.map of_int64)
       | `Range_exc (start, end_exc) -> (
           let start = to_int64 start in
           let end_exc = to_int64 end_exc in
@@ -793,7 +792,7 @@ module Range = struct
                 OSeq.append
                   (Seq_utils.a_to_b_exc_int64 ~a:start ~b:modulo)
                   (Seq_utils.a_to_b_exc_int64 ~a:0L ~b:end_exc)
-                |> Seq.map of_int64 )
+                |> Seq.map of_int64)
 
     let flatten_into_list (type a) ~(modulo : int64 option)
         ~(to_int64 : a -> int64) ~(of_int64 : int64 -> a) (t : a range) : a list
@@ -875,11 +874,11 @@ module Range_utils = struct
     | `Range_inc (x, y) -> (
         match (x, y) with
         | Ok x, Ok y -> Some (`Range_inc (x, y))
-        | _, _ -> None )
+        | _, _ -> None)
     | `Range_exc (x, y) -> (
         match (x, y) with
         | Ok x, Ok y -> Some (`Range_exc (x, y))
-        | _, _ -> None )
+        | _, _ -> None)
 end
 
 module Range_small = struct
@@ -1447,7 +1446,7 @@ module Date_time = struct
         | `Ambiguous (e1, e2) ->
           let x1 = Int64.sub timestamp (Int64.of_int e1.offset) in
           let x2 = Int64.sub timestamp (Int64.of_int e2.offset) in
-          `Ambiguous (min x1 x2, max x1 x2) )
+          `Ambiguous (min x1 x2, max x1 x2))
 
   let to_timestamp_force_offset ~offset (x : t) =
     to_ptime_date_time_utc x
@@ -1473,7 +1472,7 @@ module Date_time = struct
                 t with
                 tz = Some tz_of_date_time;
                 tz_offset_s = Some entry.offset;
-              }) )
+              }))
 
   let make ~year ~month ~day ~hour ~minute ~second ~tz =
     let dt =
@@ -1548,10 +1547,10 @@ module Date_time = struct
                 | 0 -> (
                     match compare x.minute y.minute with
                     | 0 -> compare x.second y.second
-                    | n -> n )
-                | n -> n )
-            | n -> n )
-        | n -> n )
+                    | n -> n)
+                | n -> n)
+            | n -> n)
+        | n -> n)
     | n -> n
 
   let set_to_first_sec (x : t) : t = { x with second = 0 }
@@ -1736,7 +1735,7 @@ module Pattern = struct
                                   hours;
                                   minutes;
                                   seconds;
-                                } ) ) ) ) ) )
+                                }))))))
 end
 
 type sign_expr =
@@ -1932,9 +1931,9 @@ let inter_seq (s : t Seq.t) : t =
                | Some (Error ()) -> acc
                | Some (Ok acc) ->
                  Some
-                   ( match Pattern.inter acc pat with
-                     | None -> Error ()
-                     | Some pat -> Ok pat ) )
+                   (match Pattern.inter acc pat with
+                    | None -> Error ()
+                    | Some pat -> Ok pat))
            | _ -> acc)
         None patterns
     in
@@ -1998,7 +1997,7 @@ let interval_inc (a : timestamp) (b : timestamp) : t =
       | Error () -> invalid_arg "interval_inc: invalid timestamp"
       | Ok _ ->
         if a <= b then Interval_inc (default_search_space, a, b)
-        else invalid_arg "interval_inc: a > b" )
+        else invalid_arg "interval_inc: a > b")
 
 let interval_exc (a : timestamp) (b : timestamp) : t =
   match Date_time.of_timestamp a with
@@ -2008,7 +2007,7 @@ let interval_exc (a : timestamp) (b : timestamp) : t =
       | Error () -> invalid_arg "interval_exc: invalid timestamp"
       | Ok _ ->
         if a <= b then Interval_exc (default_search_space, a, b)
-        else invalid_arg "interval_exc: a > b" )
+        else invalid_arg "interval_exc: a > b")
 
 let interval_dt_inc (a : Date_time.t) (b : Date_time.t) : t =
   let a =
@@ -2202,8 +2201,8 @@ let of_sorted_intervals_seq ?(skip_invalid : bool = false)
   let s =
     s
     |> Intervals.Filter.filter_empty
-    |> ( if skip_invalid then Intervals.Filter.filter_invalid
-         else Intervals.Check.check_if_valid )
+    |> (if skip_invalid then Intervals.Filter.filter_invalid
+        else Intervals.Check.check_if_valid)
     |> Seq.filter_map (fun (x, y) ->
         match
           (Date_time.of_timestamp x, Date_time.of_timestamp (Int64.pred y))
@@ -2225,8 +2224,8 @@ let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
   let s =
     l
     |> Intervals.Filter.filter_empty_list
-    |> ( if skip_invalid then Intervals.Filter.filter_invalid_list
-         else Intervals.Check.check_if_valid_list )
+    |> (if skip_invalid then Intervals.Filter.filter_invalid_list
+        else Intervals.Check.check_if_valid_list)
     |> List.filter_map (fun (x, y) ->
         match
           (Date_time.of_timestamp x, Date_time.of_timestamp (Int64.pred y))

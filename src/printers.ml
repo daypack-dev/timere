@@ -45,53 +45,53 @@ module Format_string_parsers = struct
 
   let padding : (char option, unit) t =
     attempt
-      ( satisfy (fun _ -> true)
-        >>= fun padding -> char 'X' >> return (Some padding) )
+      (satisfy (fun _ -> true)
+       >>= fun padding -> char 'X' >> return (Some padding))
     <|> (char 'X' >> return None)
 
   let date_time_inner (date_time : Time.Date_time.t) : (string, unit) t =
     choice
       [
         attempt (string "year") >> return (string_of_int date_time.year);
-        ( attempt (string "mon:")
-          >> size_and_casing
-          >>= fun x ->
-          return
-            (map_string_to_size_and_casing x
-               (Time.full_string_of_month date_time.month)) );
-        ( attempt (string "mday:")
-          >> padding
-          >>= fun padding -> return (pad_int padding date_time.day) );
-        ( attempt (string "wday:")
-          >> size_and_casing
-          >>= fun x ->
-          match
-            Time.weekday_of_month_day ~year:date_time.year ~month:date_time.month
-              ~mday:date_time.day
-          with
-          | Error () -> fail "Invalid date time"
-          | Ok wday ->
-            return
-              (map_string_to_size_and_casing x
-                 (Time.full_string_of_weekday wday)) );
+        (attempt (string "mon:")
+         >> size_and_casing
+         >>= fun x ->
+         return
+           (map_string_to_size_and_casing x
+              (Time.full_string_of_month date_time.month)));
+        (attempt (string "mday:")
+         >> padding
+         >>= fun padding -> return (pad_int padding date_time.day));
+        (attempt (string "wday:")
+         >> size_and_casing
+         >>= fun x ->
+         match
+           Time.weekday_of_month_day ~year:date_time.year ~month:date_time.month
+             ~mday:date_time.day
+         with
+         | Error () -> fail "Invalid date time"
+         | Ok wday ->
+           return
+             (map_string_to_size_and_casing x
+                (Time.full_string_of_weekday wday)));
         attempt
-          ( string "hour:"
-            >> padding
-            >>= fun padding -> return (pad_int padding date_time.hour) );
+          (string "hour:"
+           >> padding
+           >>= fun padding -> return (pad_int padding date_time.hour));
         attempt
-          ( string "12hour:"
-            >> padding
-            >>= fun padding ->
-            let hour = if date_time.hour = 0 then 12 else date_time.hour mod 12 in
-            return (pad_int padding hour) );
+          (string "12hour:"
+           >> padding
+           >>= fun padding ->
+           let hour = if date_time.hour = 0 then 12 else date_time.hour mod 12 in
+           return (pad_int padding hour));
         attempt
-          ( string "min:"
-            >> padding
-            >>= fun padding -> return (pad_int padding date_time.minute) );
+          (string "min:"
+           >> padding
+           >>= fun padding -> return (pad_int padding date_time.minute));
         attempt
-          ( string "sec:"
-            >> padding
-            >>= fun padding -> return (pad_int padding date_time.second) );
+          (string "sec:"
+           >> padding
+           >>= fun padding -> return (pad_int padding date_time.second));
         (* string "unix"
          * >> return (Int64.to_string (Time.Date_time.to_timestamp date_time)); *)
       ]
@@ -150,13 +150,13 @@ let sprintf_interval ?(display_using_tz = Time_zone.utc) (format : string)
     choice
       [
         attempt (string "{{" >> return "{");
-        ( attempt (char '{')
-          >> ( attempt (char 's' >> return start_date_time)
-               <|> (char 'e' >> return end_date_time) )
-          >>= fun date_time ->
-          Format_string_parsers.date_time_inner date_time << char '}' );
-        ( many1_satisfy (function '{' -> false | _ -> true)
-          >>= fun s -> return s );
+        (attempt (char '{')
+         >> (attempt (char 's' >> return start_date_time)
+             <|> (char 'e' >> return end_date_time))
+         >>= fun date_time ->
+         Format_string_parsers.date_time_inner date_time << char '}');
+        (many1_satisfy (function '{' -> false | _ -> true)
+         >>= fun s -> return s);
       ]
   in
   let p (start_date_time : Time.Date_time.t) (end_date_time : Time.Date_time.t)
@@ -170,18 +170,17 @@ let sprintf_interval ?(display_using_tz = Time_zone.utc) (format : string)
       | Error () -> Error "Invalid end unix time"
       | Ok e ->
         parse_string
-          ( p s e
-            >>= fun s ->
-            get_pos
-            >>= fun pos ->
-            attempt eof
-            >> return s
-               <|> fail
-                 (Printf.sprintf "Expected EOI, pos: %s" (string_of_pos pos))
-          )
+          (p s e
+           >>= fun s ->
+           get_pos
+           >>= fun pos ->
+           attempt eof
+           >> return s
+              <|> fail
+                (Printf.sprintf "Expected EOI, pos: %s" (string_of_pos pos)))
           format ()
         |> result_of_mparser_result
-        |> Result.map (fun l -> String.concat "" l) )
+        |> Result.map (fun l -> String.concat "" l))
 
 let pp_interval ?(display_using_tz = Time_zone.utc) format formatter interval =
   match sprintf_interval ~display_using_tz format interval with

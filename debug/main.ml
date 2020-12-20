@@ -69,41 +69,41 @@ let debug_resolver () =
     |> Time.Date_time.max_of_timestamp_local_result
     |> Option.get
   in
-  ( match
-      Resolver.resolve
-        Time.(inter [ timere; interval_exc search_start search_end_exc ])
-    with
-    | Error msg -> print_endline msg
-    | Ok s -> (
-        match s () with
-        | Seq.Nil -> print_endline "No matching time slots"
-        | Seq.Cons _ ->
-          s
-          |> OSeq.take 50
-          |> OSeq.iter (fun ts ->
-              match
-                Printers.sprintf_interval ~display_using_tz:Time_zone.utc
-                  default_interval_format_string ts
-              with
-              | Ok s -> Printf.printf "%s\n" s
-              | Error msg -> Printf.printf "Error: %s\n" msg) ) );
+  (match
+     Resolver.resolve
+       Time.(inter [ timere; interval_exc search_start search_end_exc ])
+   with
+   | Error msg -> print_endline msg
+   | Ok s -> (
+       match s () with
+       | Seq.Nil -> print_endline "No matching time slots"
+       | Seq.Cons _ ->
+         s
+         |> OSeq.take 50
+         |> OSeq.iter (fun ts ->
+             match
+               Printers.sprintf_interval ~display_using_tz:Time_zone.utc
+                 default_interval_format_string ts
+             with
+             | Ok s -> Printf.printf "%s\n" s
+             | Error msg -> Printf.printf "Error: %s\n" msg)));
   print_endline "=====";
   let s =
     Simple_resolver.resolve ~search_start ~search_end_exc
       ~search_using_tz:Time_zone.utc timere
   in
-  ( match s () with
-    | Seq.Nil -> print_endline "No matching time slots"
-    | Seq.Cons _ ->
-      s
-      |> OSeq.take 50
-      |> OSeq.iter (fun ts ->
-          match
-            Printers.sprintf_interval ~display_using_tz:Time_zone.utc
-              default_interval_format_string ts
-          with
-          | Ok s -> Printf.printf "%s\n" s
-          | Error msg -> Printf.printf "Error: %s\n" msg) );
+  (match s () with
+   | Seq.Nil -> print_endline "No matching time slots"
+   | Seq.Cons _ ->
+     s
+     |> OSeq.take 50
+     |> OSeq.iter (fun ts ->
+         match
+           Printers.sprintf_interval ~display_using_tz:Time_zone.utc
+             default_interval_format_string ts
+         with
+         | Ok s -> Printf.printf "%s\n" s
+         | Error msg -> Printf.printf "Error: %s\n" msg));
   print_newline ()
 
 let debug_ccsexp_parse_string () = CCSexp.parse_string "\"\\256\"" |> ignore

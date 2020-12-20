@@ -4,3 +4,4 @@ field-space = loose
 let-and = sparse
 sequence-style = terminator
 type-decl = sparse
+indicate-multiline-delimiters=no

@@ -149,12 +149,11 @@ let token_p : (token, unit) MParser.t =
       attempt (string "secs") >>$ Seconds;
       attempt (string "sec") >>$ Seconds;
       attempt (string "s") >>$ Seconds;
-      ( attempt
-          (many1_satisfy (fun c ->
-               c <> ' ' && Stdlib.not (String.contains symbols c)))
-        >>= fun s ->
-        fail (Printf.sprintf "%s: Unrecognized token: %s" (string_of_pos pos) s)
-      );
+      (attempt
+         (many1_satisfy (fun c ->
+              c <> ' ' && Stdlib.not (String.contains symbols c)))
+       >>= fun s ->
+       fail (Printf.sprintf "%s: Unrecognized token: %s" (string_of_pos pos) s));
     ]
   >>= fun guess -> spaces >> return (pos, guess)
 
@@ -194,27 +193,27 @@ module Ast_normalize = struct
           | Some x when not first_run ->
             (pos_x, constr_grouped [ `Range_inc (x, x) ])
             :: recognize_single_interval false []
-          | _ -> recognize_fallback tokens )
+          | _ -> recognize_fallback tokens)
       | (pos_x, x) :: (pos_comma, Comma) :: rest -> (
           match extract_single x with
           | Some x ->
             (pos_x, constr_grouped [ `Range_inc (x, x) ])
             :: (pos_comma, Comma)
             :: recognize_single_interval false rest
-          | _ -> recognize_fallback tokens )
+          | _ -> recognize_fallback tokens)
       | (pos_x, x) :: (_, To) :: (_, y) :: (pos_comma, Comma) :: rest -> (
           match (extract_single x, extract_single y) with
           | Some x, Some y ->
             (pos_x, constr_grouped [ `Range_inc (x, y) ])
             :: (pos_comma, Comma)
             :: recognize_single_interval false rest
-          | _, _ -> recognize_fallback tokens )
+          | _, _ -> recognize_fallback tokens)
       | (pos_x, x) :: (_, To) :: (_, y) :: rest -> (
           match (extract_single x, extract_single y) with
           | Some x, Some y ->
             (pos_x, constr_grouped [ `Range_inc (x, y) ])
             :: recognize_single_interval false rest
-          | _, _ -> recognize_fallback tokens )
+          | _, _ -> recognize_fallback tokens)
       | _ -> recognize_fallback tokens
     and recognize_fallback l =
       match l with
@@ -227,7 +226,7 @@ module Ast_normalize = struct
           match (extract_grouped x, extract_grouped y) with
           | Some l1, Some l2 ->
             merge_intervals ((pos_x, constr_grouped (l1 @ l2)) :: rest)
-          | _, _ -> merge_fallback tokens )
+          | _, _ -> merge_fallback tokens)
       | _ -> merge_fallback tokens
     and merge_fallback l =
       match l with [] -> [] | token :: rest -> token :: merge_intervals rest
@@ -509,14 +508,14 @@ end
 
 let parse_into_ast (s : string) : (ast, string) Result.t =
   parse_string
-    ( expr
-      << spaces
-      >>= fun e ->
-      get_pos
-      >>= fun pos ->
-      attempt eof
-      >> return e
-         <|> fail (Printf.sprintf "Expected EOI, pos: %s" (string_of_pos pos)) )
+    (expr
+     << spaces
+     >>= fun e ->
+     get_pos
+     >>= fun pos ->
+     attempt eof
+     >> return e
+        <|> fail (Printf.sprintf "Expected EOI, pos: %s" (string_of_pos pos)))
     s ()
   |> result_of_mparser_result
 
@@ -607,7 +606,7 @@ let t_of_tokens (tokens : token list) : (Timere.t, string) Result.t =
         match rule tokens with
         | Ok time -> Ok time
         | Error None -> aux tokens rest
-        | Error (Some msg) -> Error msg )
+        | Error (Some msg) -> Error msg)
   in
   aux tokens t_rules
 
@@ -624,13 +623,13 @@ let t_of_ast (ast : ast) : (Timere.t, string) Result.t =
             | Ok time2 -> (
                 match op with
                 | Union -> Ok (Timere.union [ time1; time2 ])
-                | Inter -> Ok (Timere.inter [ time1; time2 ]) ) ) )
+                | Inter -> Ok (Timere.inter [ time1; time2 ]))))
     | Round_robin_pick l -> (
         match l |> List.map aux |> Misc_utils.get_ok_error_list with
         | Error msg -> Error msg
         | Ok _l ->
           (* Ok (Timere.round_robin_pick l) *)
-          failwith "Unimplemented" )
+          failwith "Unimplemented")
   in
   aux ast
 
@@ -640,7 +639,7 @@ let parse_timere s =
   | Ok ast -> (
       match Ast_normalize.normalize ast with
       | Error msg -> Error msg
-      | Ok ast -> t_of_ast ast )
+      | Ok ast -> t_of_ast ast)
 
 let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) Result.t =
   match ast with
@@ -674,7 +673,7 @@ let parse_date_time ?(tz = Timere.Time_zone.utc) s =
   | Ok ast -> (
       match Ast_normalize.normalize ast with
       | Error msg -> Error msg
-      | Ok ast -> date_time_t_of_ast ~tz ast )
+      | Ok ast -> date_time_t_of_ast ~tz ast)
 
 let duration_t_of_ast (ast : ast) : (Timere.Duration.t, string) Result.t =
   match ast with
@@ -687,4 +686,4 @@ let parse_duration s =
   | Ok ast -> (
       match Ast_normalize.normalize ast with
       | Error msg -> Error msg
-      | Ok ast -> duration_t_of_ast ast )
+      | Ok ast -> duration_t_of_ast ast)

@@ -713,7 +713,7 @@ let propagate_search_space_bottom_up default_tz (time : Time.t) : Time.t =
           Unary_op (get_search_space t, op, t)
         | _ ->
           let t = aux tz t in
-          Unary_op (get_search_space t, op, t) )
+          Unary_op (get_search_space t, op, t))
     | Inter_seq (_, s) ->
       let s = Seq.map (aux tz) s in
       let space =
@@ -1010,7 +1010,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
           |> Seq.map (fun (start, end_exc) -> (start, Int64.add end_exc n))
           |> Intervals.Normalize.normalize ~skip_filter_empty:true
             ~skip_sort:true ~skip_filter_invalid:true
-        | Change_tz _ -> s )
+        | Change_tz _ -> s)
     | Interval_inc (_, a, b) -> Seq.return (a, Int64.succ b)
     | Interval_exc (_, a, b) -> Seq.return (a, b)
     | Round_robin_pick_list (_, l) ->
@@ -1068,7 +1068,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
         | Drop n -> OSeq.drop n s
         | Take n -> OSeq.take n s
         | Take_nth n -> OSeq.take_nth n s
-        | Chunk_again op -> chunk_based_on_op_on_t op s )
+        | Chunk_again op -> chunk_based_on_op_on_t op s)
   in
   try
     time

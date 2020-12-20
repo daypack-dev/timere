@@ -7,8 +7,7 @@ let month_of_sexp (x : CCSexp.t) =
   | `Atom s -> (
       match Time.month_of_abbr_string s with
       | Ok x -> x
-      | Error () -> invalid_data (Printf.sprintf "Failed to parse month: %s" s)
-    )
+      | Error () -> invalid_data (Printf.sprintf "Failed to parse month: %s" s))
   | `List _ ->
     invalid_data
       (Printf.sprintf "Expected atom for month: %s" (CCSexp.to_string x))
@@ -19,7 +18,7 @@ let weekday_of_sexp (x : CCSexp.t) =
       match Time.weekday_of_abbr_string s with
       | Ok x -> x
       | Error () ->
-        invalid_data (Printf.sprintf "Failed to parse weekday: %s" s) )
+        invalid_data (Printf.sprintf "Failed to parse weekday: %s" s))
   | `List _ ->
     invalid_data
       (Printf.sprintf "Expected atom for weekday: %s" (CCSexp.to_string x))
@@ -29,7 +28,7 @@ let int_of_sexp (x : CCSexp.t) =
   | `Atom s -> (
       try int_of_string s
       with Failure _ ->
-        invalid_data (Printf.sprintf "Failed to parse int: %s" s) )
+        invalid_data (Printf.sprintf "Failed to parse int: %s" s))
   | `List _ ->
     invalid_data
       (Printf.sprintf "Expected atom for int: %s" (CCSexp.to_string x))
@@ -39,7 +38,7 @@ let int64_of_sexp (x : CCSexp.t) =
   | `Atom s -> (
       try Int64.of_string s
       with Failure _ ->
-        invalid_data (Printf.sprintf "Failed to parse int64: %s" s) )
+        invalid_data (Printf.sprintf "Failed to parse int64: %s" s))
   | `List _ ->
     invalid_data
       (Printf.sprintf "Expected atom for int64: %s" (CCSexp.to_string x))
@@ -68,8 +67,7 @@ let duration_of_sexp (x : CCSexp.t) =
       match Duration.make ~days ~hours ~minutes ~seconds () with
       | Ok x -> x
       | Error () ->
-        invalid_data (Printf.sprintf "Invalid date: %s" (CCSexp.to_string x))
-    )
+        invalid_data (Printf.sprintf "Invalid date: %s" (CCSexp.to_string x)))
   | _ -> invalid_data (Printf.sprintf "Invalid date: %s" (CCSexp.to_string x))
 
 let date_time_of_sexp (x : CCSexp.t) =
@@ -106,20 +104,20 @@ let date_time_of_sexp (x : CCSexp.t) =
                 ~tz_offset_s ()
             with
             | Ok x -> x
-            | Error () -> invalid_data () )
+            | Error () -> invalid_data ())
         | Some tz, None -> (
             match
               Time.Date_time.make ~year ~month ~day ~hour ~minute ~second ~tz
             with
             | Ok x -> x
-            | Error () -> invalid_data () )
+            | Error () -> invalid_data ())
         | Some tz, Some tz_offset_s -> (
             match
               Time.Date_time.make_precise ~tz ~year ~month ~day ~hour ~minute
                 ~second ~tz_offset_s ()
             with
             | Ok x -> x
-            | Error () -> invalid_data () ) )
+            | Error () -> invalid_data ()))
   | _ -> invalid_data ()
 
 let timestamp_of_sexp x =
@@ -198,10 +196,10 @@ let pattern_of_sexp (x : CCSexp.t) =
               ~hours ~minutes ~seconds ()
           | _ ->
             invalid_data
-              (Printf.sprintf "Invalid pattern: %s" (CCSexp.to_string x)) )
+              (Printf.sprintf "Invalid pattern: %s" (CCSexp.to_string x)))
       | _ ->
         invalid_data
-          (Printf.sprintf "Invalid pattern: %s" (CCSexp.to_string x)) )
+          (Printf.sprintf "Invalid pattern: %s" (CCSexp.to_string x)))
 
 let of_sexp (x : CCSexp.t) =
   let open Time in
@@ -262,7 +260,7 @@ let of_sexp (x : CCSexp.t) =
         | [ `Atom "unchunk"; x ] -> aux_chunked (fun x -> x) x
         | _ ->
           invalid_data
-            (Printf.sprintf "Invalid timere data: %s" (CCSexp.to_string x)) )
+            (Printf.sprintf "Invalid timere data: %s" (CCSexp.to_string x)))
     | `Atom _ ->
       invalid_data
         (Printf.sprintf "Expected list for timere data: %s"
@@ -333,7 +331,7 @@ let of_sexp (x : CCSexp.t) =
             chunked
         | _ ->
           invalid_data
-            (Printf.sprintf "Invalid timere data: %s" (CCSexp.to_string x)) )
+            (Printf.sprintf "Invalid timere data: %s" (CCSexp.to_string x)))
     | `Atom _ ->
       invalid_data
         (Printf.sprintf "Expected list for timere data: %s"

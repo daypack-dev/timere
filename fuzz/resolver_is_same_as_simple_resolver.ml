@@ -24,10 +24,9 @@ let () =
   Crowbar.add_test ~name:"resolver_is_same_as_simple_resolver" [ time ]
     (fun t ->
        Crowbar.check_eq ~eq:(OSeq.equal ~eq:( = ))
-         ( Result.get_ok
-           @@ Resolver.resolve
-             Time.(
-               inter [ t; interval_dt_exc search_start_dt search_end_exc_dt ])
-         )
+         (Result.get_ok
+          @@ Resolver.resolve
+            Time.(
+              inter [ t; interval_dt_exc search_start_dt search_end_exc_dt ]))
          (Simple_resolver.resolve ~search_start ~search_end_exc
             ~search_using_tz:Time_zone.utc t))

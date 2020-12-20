@@ -75,22 +75,22 @@ module Parser = struct
     attempt alpha_string
     |>> (fun s -> String s)
         <|> attempt
-          ( char '+'
-            >>$ Plus
-                <|> (char '-' >>$ Minus)
-            >>= fun sign ->
-            digit
-            >>= fun h1 ->
-            digit
-            >>= fun h2 ->
-            let hour = int_of_string (Printf.sprintf "%c%c" h1 h2) in
-            digit
-            >>= (fun m1 ->
-                digit
-                |>> fun m2 ->
-                let minute = int_of_string (Printf.sprintf "%c%c" m1 m2) in
-                Offset (sign, (hour * 60) + minute))
-                <|> return (Offset (sign, hour * 60)) )
+          (char '+'
+           >>$ Plus
+               <|> (char '-' >>$ Minus)
+           >>= fun sign ->
+           digit
+           >>= fun h1 ->
+           digit
+           >>= fun h2 ->
+           let hour = int_of_string (Printf.sprintf "%c%c" h1 h2) in
+           digit
+           >>= (fun m1 ->
+               digit
+               |>> fun m2 ->
+               let minute = int_of_string (Printf.sprintf "%c%c" m1 m2) in
+               Offset (sign, (hour * 60) + minute))
+               <|> return (Offset (sign, hour * 60)))
 
   let date_time_p =
     non_space_string
@@ -146,7 +146,7 @@ let transitions_of_zdump_lines (l : zdump_line list) : transition list =
     | [] -> List.rev acc
     | [ x ] ->
       aux
-        ( {
+        ({
           start_utc = x.date_time_utc;
           end_inc_utc = None;
           start_local = x.date_time_local;
@@ -155,7 +155,7 @@ let transitions_of_zdump_lines (l : zdump_line list) : transition list =
           is_dst = x.is_dst;
           offset = x.offset;
         }
-          :: acc )
+          :: acc)
         (succ line_num) []
     | x :: y :: rest ->
       if x.date_time_local.tz <> y.date_time_local.tz then
@@ -166,7 +166,7 @@ let transitions_of_zdump_lines (l : zdump_line list) : transition list =
         assert (x.is_dst = y.is_dst);
         assert (x.offset = y.offset);
         aux
-          ( {
+          ({
             start_utc = x.date_time_utc;
             end_inc_utc = Some y.date_time_utc;
             start_local = x.date_time_utc;
@@ -175,8 +175,8 @@ let transitions_of_zdump_lines (l : zdump_line list) : transition list =
             is_dst = x.is_dst;
             offset = x.offset;
           }
-            :: acc )
-          (succ line_num) rest )
+            :: acc)
+          (succ line_num) rest)
   in
   let preprocess l =
     let rec aux line_num l =
@@ -367,7 +367,7 @@ let gen () =
                            (Printf.sprintf
                               "Unrecognized time zone during special case \
                                handling: %s"
-                              s) ) )
+                              s)))
                | _ -> l
              in
              write_line (Printf.sprintf "  |> String_map.add \"%s\" [|" s);

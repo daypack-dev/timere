@@ -17,13 +17,13 @@ let do_chunk ~drop_partial (n : int64) (s : Time.Interval.t Seq.t) :
 let intervals_of_timestamps (s : Time.timestamp Seq.t) : Time.Interval.t Seq.t =
   let rec aux acc s =
     match s () with
-    | Seq.Nil -> ( match acc with None -> Seq.empty | Some x -> Seq.return x )
+    | Seq.Nil -> ( match acc with None -> Seq.empty | Some x -> Seq.return x)
     | Seq.Cons (x, rest) -> (
         match acc with
         | None -> aux (Some (x, Int64.succ x)) rest
         | Some (x', y') ->
           if y' = x then aux (Some (x', Int64.succ x)) rest
-          else fun () -> Seq.Cons ((x', y'), aux None s) )
+          else fun () -> Seq.Cons ((x', y'), aux None s))
   in
   aux None s
 
@@ -145,7 +145,7 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
           |> Seq.map (fun (x, y) -> (Int64.add n x, Int64.add n y))
         | Lengthen n ->
           aux search_using_tz t |> Seq.map (fun (x, y) -> (x, Int64.add n y))
-        | Change_tz tz -> aux tz t )
+        | Change_tz tz -> aux tz t)
     | After (_, t1, t2) ->
       let s1 = aux search_using_tz t1 in
       let s2 = aux search_using_tz t2 in
@@ -188,7 +188,7 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
         | Drop n -> OSeq.drop n s
         | Take n -> OSeq.take n s
         | Take_nth n -> OSeq.take_nth n s
-        | Chunk_again op -> chunk_based_on_op_on_t op s )
+        | Chunk_again op -> chunk_based_on_op_on_t op s)
   in
   aux search_using_tz t |> filter |> normalize
 
@@ -272,6 +272,6 @@ and mem ?(search_using_tz = Time_zone.utc) ~(search_start : Time.timestamp)
           resolve ~search_using_tz ~search_start ~search_end_exc t
           |> OSeq.exists (fun (x, y) -> x <= timestamp && timestamp < y)
         | Inter_seq (_, s) -> OSeq.for_all (fun t -> aux t timestamp) s
-        | Union_seq (_, s) -> OSeq.exists (fun t -> aux t timestamp) s )
+        | Union_seq (_, s) -> OSeq.exists (fun t -> aux t timestamp) s)
   in
   aux t timestamp

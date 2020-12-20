@@ -71,20 +71,22 @@ let sexp_of_pattern (pat : Time.Pattern.t) : CCSexp.t =
   [
     Some (atom "pattern");
     (match years with [] -> None | _ -> Some (list (atom "years" :: years)));
-    (match months with [] -> None | _ -> Some (list (atom "months" :: months)));
-    ( match month_days with
-      | [] -> None
-      | _ -> Some (list (atom "month_days" :: month_days)) );
-    ( match weekdays with
-      | [] -> None
-      | _ -> Some (list (atom "weekdays" :: weekdays)) );
+    (match months with
+     | [] -> None
+     | _ -> Some (list (atom "months" :: months)));
+    (match month_days with
+     | [] -> None
+     | _ -> Some (list (atom "month_days" :: month_days)));
+    (match weekdays with
+     | [] -> None
+     | _ -> Some (list (atom "weekdays" :: weekdays)));
     (match hours with [] -> None | _ -> Some (list (atom "hours" :: hours)));
-    ( match minutes with
-      | [] -> None
-      | _ -> Some (list (atom "minutes" :: minutes)) );
-    ( match seconds with
-      | [] -> None
-      | _ -> Some (list (atom "seconds" :: seconds)) );
+    (match minutes with
+     | [] -> None
+     | _ -> Some (list (atom "minutes" :: minutes)));
+    (match seconds with
+     | [] -> None
+     | _ -> Some (list (atom "seconds" :: seconds)));
   ]
   |> List.filter_map (fun x -> x)
   |> list
@@ -170,17 +172,17 @@ let to_sexp (t : Time.t) : CCSexp.t =
     | Unary_op_on_chunked (op, chunked) ->
       CCSexp.(
         list
-          ( match op with
-            | Drop n -> [ atom "drop"; sexp_of_int n; aux_chunked chunked ]
-            | Take n -> [ atom "drop"; sexp_of_int n; aux_chunked chunked ]
-            | Take_nth n ->
-              [ atom "take_nth"; sexp_of_int n; aux_chunked chunked ]
-            | Nth n -> [ atom "nth"; sexp_of_int n; aux_chunked chunked ]
-            | Chunk_again op ->
-              [
-                atom "chunk_again";
-                list (sexp_list_of_unary_op_on_t op @ [ aux_chunked chunked ]);
-              ] ))
+          (match op with
+           | Drop n -> [ atom "drop"; sexp_of_int n; aux_chunked chunked ]
+           | Take n -> [ atom "drop"; sexp_of_int n; aux_chunked chunked ]
+           | Take_nth n ->
+             [ atom "take_nth"; sexp_of_int n; aux_chunked chunked ]
+           | Nth n -> [ atom "nth"; sexp_of_int n; aux_chunked chunked ]
+           | Chunk_again op ->
+             [
+               atom "chunk_again";
+               list (sexp_list_of_unary_op_on_t op @ [ aux_chunked chunked ]);
+             ]))
   in
   aux t
 
