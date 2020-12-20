@@ -125,12 +125,6 @@ val of_timestamps : ?skip_invalid:bool -> timestamp list -> t
 
 val of_timestamps_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
 
-type 'a local_result =
-  [ `None
-  | `Exact of 'a
-  | `Ambiguous of 'a * 'a
-  ]
-
 module Date_time : sig
   exception Invalid_date_time
 
@@ -188,6 +182,12 @@ module Date_time : sig
     tz_offset_s:int ->
     unit ->
     t
+
+  type 'a local_result =
+    [ `None
+    | `Exact of 'a
+    | `Ambiguous of 'a * 'a
+    ]
 
   val to_timestamp : t -> timestamp local_result
 

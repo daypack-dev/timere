@@ -1525,11 +1525,9 @@ module Date_time = struct
     in
     match x with Error () -> raise Invalid_date_time | Ok x -> x
 
-  let min =
-    Result.get_ok @@ of_timestamp min_timestamp
+  let min = Result.get_ok @@ of_timestamp min_timestamp
 
-  let max =
-    Result.get_ok @@ of_timestamp max_timestamp
+  let max = Result.get_ok @@ of_timestamp max_timestamp
 
   let cur ?(tz_of_date_time = Time_zone.utc) () : (t, unit) result =
     cur_timestamp () |> of_timestamp ~tz_of_date_time

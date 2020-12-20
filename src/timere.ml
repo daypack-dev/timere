@@ -1,13 +1,10 @@
 include Time
-
-module Time_zone = struct
-  include Time_zone
-end
-
-type 'a local_result = 'a Time_zone.local_result
+module Time_zone = Time_zone
 
 module Date_time = struct
   include Date_time
+
+  type 'a local_result = 'a Time_zone.local_result
 
   let sprintf = Printers.sprintf_date_time
 
