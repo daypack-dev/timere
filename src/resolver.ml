@@ -557,14 +557,12 @@ module Resolve_pattern = struct
       (t : Time.Pattern.t) : (int64 * int64) Seq.t =
     let f (x, y) =
       let x =
-        Option.get
-          Time.Date_time.(
-            min_of_timestamp_local_result @@ Time.Date_time.to_timestamp x)
+        Time.Date_time.to_timestamp_force_offset
+          ~offset:search_param.search_using_tz_offset_s x
       in
       let y =
-        Option.get
-          Time.Date_time.(
-            max_of_timestamp_local_result @@ Time.Date_time.to_timestamp y)
+        Time.Date_time.to_timestamp_force_offset
+          ~offset:search_param.search_using_tz_offset_s y
       in
       (x, y)
     in
