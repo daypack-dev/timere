@@ -153,7 +153,7 @@ let to_sexp (t : Time.t) : CCSexp.t =
     let sexp_list_of_unary_op_on_t op =
       let open CCSexp in
       match op with
-      | Chunk_disjoint_interval -> [ atom "chunk_disjoint_interval" ]
+      | Chunk_disjoint_interval -> [ atom "chunk_disjoint_intervals" ]
       | Chunk_at_year_boundary -> [ atom "chunk_at_year_boundary" ]
       | Chunk_at_month_boundary -> [ atom "chunk_at_month_boundary" ]
       | Chunk_by_duration { chunk_size; drop_partial } ->

@@ -269,8 +269,8 @@ let of_sexp (x : CCSexp.t) =
     match x with
     | `List l -> (
         match l with
-        | [ `Atom "chunk_disjoint_interval"; x ] ->
-          chunk `Disjoint_interval f (aux x)
+        | [ `Atom "chunk_disjoint_intervals"; x ] ->
+          chunk `Disjoint_intervals f (aux x)
         | [ `Atom "chunk_at_year_boundary"; x ] ->
           chunk `At_year_boundary f (aux x)
         | [ `Atom "chunk_at_month_boundary"; x ] ->
@@ -293,7 +293,7 @@ let of_sexp (x : CCSexp.t) =
           `Atom "chunk_again"; `List [ `Atom "chunk_disjoint_interval"; chunked ];
         ] ->
           aux_chunked
-            (fun x -> x |> chunk_again `Disjoint_interval |> f)
+            (fun x -> x |> chunk_again `Disjoint_intervals |> f)
             chunked
         | [
           `Atom "chunk_again"; `List [ `Atom "chunk_at_year_boundary"; chunked ];

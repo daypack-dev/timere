@@ -97,7 +97,7 @@ let make_duration ~rng = Result.get_ok @@ Duration.make ~seconds:(rng ()) ()
 
 let make_chunking ~rng : Time.chunking =
   match rng () mod 5 with
-  | 0 -> `Disjoint_interval
+  | 0 -> `Disjoint_intervals
   | 1 -> `By_duration (make_duration ~rng)
   | 2 -> `By_duration_drop_partial (make_duration ~rng)
   | 3 -> `At_year_boundary
