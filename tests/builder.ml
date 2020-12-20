@@ -15,8 +15,8 @@ let make_date_time ~rng ~min_year ~max_year_inc =
   let hour = rng () mod 24 in
   let minute = rng () mod 60 in
   let second = rng () mod 60 in
-  Result.get_ok
-  @@ Time.Date_time.make ~year ~month ~day ~hour ~minute ~second ~tz_offset_s:0
+  Time.Date_time.make ~year ~month ~day ~hour ~minute ~second ~tz:Time_zone.utc
+  |> Result.get_ok
 
 let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
   let len = rng () in
@@ -25,6 +25,8 @@ let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
       let start =
         make_date_time ~rng ~min_year ~max_year_inc
         |> Time.Date_time.to_timestamp
+        |> Time.Date_time.min_of_timestamp_local_result
+        |> Option.get
       in
       let end_exc = Int64.add start (Int64.of_int (rng ())) in
       (start, end_exc))
@@ -69,13 +71,13 @@ let make_pattern ~rng ~min_year ~max_year_inc =
 
 let make_interval_inc ~rng ~min_year ~max_year_inc =
   let start_dt = make_date_time ~rng ~min_year ~max_year_inc in
-  let start = Time.Date_time.to_timestamp start_dt in
+  let start = Time.Date_time.to_timestamp start_dt |> Time.Date_time.min_of_timestamp_local_result |> Option.get in
   let end_inc = Int64.add start (Int64.of_int (rng ())) in
   Time.interval_inc start end_inc
 
 let make_interval_exc ~rng ~min_year ~max_year_inc =
   let start_dt = make_date_time ~rng ~min_year ~max_year_inc in
-  let start = Time.Date_time.to_timestamp start_dt in
+  let start = Time.Date_time.to_timestamp start_dt |> Time.Date_time.min_of_timestamp_local_result |> Option.get in
   let end_exc = Int64.add start (Int64.of_int (rng ())) in
   Time.interval_exc start end_exc
 
@@ -118,7 +120,16 @@ let make_unary_op ~rng t =
   | 2 -> Time.take_n_points (rng ()) t
   | 3 -> Time.shift (make_duration ~rng) t
   | 4 -> Time.lengthen (make_duration ~rng) t
-  | 5 -> Time.change_tz_offset_s (rng ()) t
+  | 5 ->
+    let available_time_zone_count =
+      List.length
+        Time_zone.available_time_zones
+    in
+    let tz =
+      List.nth Time_zone.available_time_zones (rng () mod available_time_zone_count)
+      |> Time_zone.make
+    in
+    Time.change_tz tz t
   | _ -> failwith "Unexpected case"
 
 let build ~min_year ~max_year_inc ~max_height ~max_branching
