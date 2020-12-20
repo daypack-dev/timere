@@ -60,7 +60,7 @@ let lookup_timestamp_local (t : t) timestamp : entry local_result =
         (timestamp, dummy_entry) t.table
     with
     | `At i -> Some i
-    | `All_lower -> None
+    | `All_lower -> Some (Array.length t.table - 1)
     | `All_bigger -> None
     | `Just_after i -> Some i
     | `Empty -> None
