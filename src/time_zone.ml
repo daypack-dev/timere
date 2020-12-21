@@ -13,7 +13,7 @@ type 'a local_result =
 
 let name t = t.name
 
-let available_time_zones = String_map.bindings db |> List.map (fun (k, _) -> k)
+let available_tzs = String_map.bindings db |> List.map (fun (k, _) -> k)
 
 let make name : t =
   match String_map.find_opt name db with

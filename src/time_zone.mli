@@ -19,7 +19,7 @@ val is_utc : t -> bool
 
 val make : string -> t
 
-val available_time_zones : string list
+val available_tzs : string list
 
 val lookup_timestamp_utc : t -> int64 -> entry option
 
