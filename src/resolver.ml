@@ -675,7 +675,7 @@ let search_space_of_year_range tz year_range =
       Date_time.set_to_last_month_day_hour_min_sec
         { Date_time.min with year = end_exc; tz = Some tz }
       |> Date_time.to_timestamp
-      |> Date_time.min_of_timestamp_local_result
+      |> Date_time.max_of_timestamp_local_result
       |> Option.get )
 
 let search_space_of_year tz_offset_s year =
@@ -992,7 +992,8 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
             (List.map
                (fun param -> Resolve_pattern.matching_intervals param pat)
                params)
-          |> Intervals.Inter.inter (Seq.return (x, y)))
+          |> Intervals.Inter.inter (Seq.return (x, y))
+        )
       |> normalize
     | Unary_op (space, op, t) -> (
         let search_using_tz =
