@@ -2190,8 +2190,7 @@ let date_time (date_time : Date_time.t) : t =
   | `None -> invalid_arg "date_time: date time does not map to any timestamp"
   | `Exact x ->
     Timestamp_interval_seq (default_search_space, Seq.return (x, Int64.succ x))
-  | `Ambiguous _ ->
-    invalid_arg "date_time: date time maps to two timestamps"
+  | `Ambiguous _ -> invalid_arg "date_time: date time maps to two timestamps"
 
 let of_sorted_interval_seq ?(skip_invalid : bool = false)
     (s : (int64 * int64) Seq.t) : t =
@@ -2237,8 +2236,8 @@ let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
   | Seq.Nil -> Empty
   | _ -> Timestamp_interval_seq (default_search_space, s)
 
-let of_interval_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t)
-  : t =
+let of_interval_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t) :
+  t =
   s |> List.of_seq |> of_intervals ~skip_invalid
 
 let of_timestamp_seq ?(skip_invalid = false) timestamps =
