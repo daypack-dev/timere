@@ -97,7 +97,7 @@ end
 
 (** {1 Time zone change} *)
 
-val change_tz : Time_zone.t -> t -> t
+val with_tz : Time_zone.t -> t -> t
 
 (** {1 Algebraic operations} *)
 

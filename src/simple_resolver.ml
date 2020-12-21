@@ -145,7 +145,7 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
           |> Seq.map (fun (x, y) -> (Int64.add n x, Int64.add n y))
         | Lengthen n ->
           aux search_using_tz t |> Seq.map (fun (x, y) -> (x, Int64.add n y))
-        | Change_tz tz -> aux tz t)
+        | With_tz tz -> aux tz t)
     | After (_, t1, t2) ->
       let s1 = aux search_using_tz t1 in
       let s2 = aux search_using_tz t2 in

@@ -248,9 +248,9 @@ let of_sexp (x : CCSexp.t) =
             | Ok n -> n
           in
           lengthen n (aux x)
-        | [ `Atom "change_tz"; n; x ] ->
+        | [ `Atom "with_tz"; n; x ] ->
           let tz = tz_of_sexp n in
-          change_tz tz (aux x)
+          with_tz tz (aux x)
         | [ `Atom "interval_inc"; a; b ] ->
           interval_dt_inc (date_time_of_sexp a) (date_time_of_sexp b)
         | [ `Atom "interval_exc"; a; b ] ->

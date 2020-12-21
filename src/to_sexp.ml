@@ -113,7 +113,7 @@ let sexp_list_of_unary_op (op : Time.unary_op) =
    * | Chunk_by_month -> [ CCSexp.atom "chunk_by_month"] *)
   | Shift n -> [ CCSexp.atom "shift"; CCSexp.atom (Int64.to_string n) ]
   | Lengthen n -> [ CCSexp.atom "lengthen"; CCSexp.atom (Int64.to_string n) ]
-  | Change_tz tz -> [ CCSexp.atom "change_tz"; CCSexp.atom (Time_zone.name tz) ]
+  | With_tz tz -> [ CCSexp.atom "with_tz"; CCSexp.atom (Time_zone.name tz) ]
 
 let to_sexp (t : Time.t) : CCSexp.t =
   let open Time in

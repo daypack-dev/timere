@@ -708,7 +708,7 @@ let propagate_search_space_bottom_up default_tz (time : Time.t) : Time.t =
     | Unary_op (_, op, t) -> (
         match op with
         | Not -> Unary_op (default_search_space, op, aux tz t)
-        | Change_tz tz ->
+        | With_tz tz ->
           let t = aux tz t in
           Unary_op (get_search_space t, op, t)
         | _ ->
@@ -976,7 +976,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
           |> Intervals.Inter.inter (Seq.return (x, y)))
     | Unary_op (space, op, t) -> (
         let search_using_tz =
-          match op with Change_tz x -> x | _ -> search_using_tz
+          match op with With_tz x -> x | _ -> search_using_tz
         in
         let s = aux search_using_tz t in
         match op with
@@ -998,7 +998,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
           |> Seq.map (fun (start, end_exc) -> (start, Int64.add end_exc n))
           |> Intervals.Normalize.normalize ~skip_filter_empty:true
             ~skip_sort:true ~skip_filter_invalid:true
-        | Change_tz _ -> s)
+        | With_tz _ -> s)
     | Interval_inc (_, a, b) -> Seq.return (a, Int64.succ b)
     | Interval_exc (_, a, b) -> Seq.return (a, b)
     | Round_robin_pick_list (_, l) ->
