@@ -135,7 +135,7 @@ let make_unary_op ~rng t =
     let tz =
       List.nth Time_zone.available_time_zones
         (rng () mod available_time_zone_count)
-      |> Time_zone.make
+      |> Time_zone.make_exn
     in
     Time.change_tz tz t
   | _ -> failwith "Unexpected case"

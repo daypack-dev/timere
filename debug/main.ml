@@ -43,7 +43,7 @@ let debug_resolver () =
   let timere =
     let open Time in
     change_tz
-      (Time_zone.make "Australia/Sydney")
+      (Time_zone.make_exn "Australia/Sydney")
       (inter
          [
            hms_interval_exc

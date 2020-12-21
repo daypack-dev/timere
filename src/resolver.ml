@@ -960,32 +960,21 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
     | All -> Seq.return (min_timestamp, Int64.succ @@ max_timestamp)
     | Timestamp_interval_seq (_, s) -> s
     | Pattern (space, pat) ->
-      if Time_zone.is_utc search_using_tz then
-        let params =
-          List.map
-            (Pattern_search_param.make ~search_using_tz_offset_s:0)
-            space
-        in
-        Intervals.Union.union_multi_list ~skip_check:true
-          (List.map
-             (fun param -> Resolve_pattern.matching_intervals param pat)
-             params)
-      else
-        let transitions = Time_zone.transition_seq search_using_tz in
-        transitions
-        |> Seq.flat_map (fun ((x, y), entry) ->
-            let params =
-              List.map
-                (Pattern_search_param.make
-                   ~search_using_tz_offset_s:Time_zone.(entry.offset))
-                space
-            in
-            Intervals.Union.union_multi_list ~skip_check:true
-              (List.map
-                 (fun param ->
-                    Resolve_pattern.matching_intervals param pat)
-                 params)
-            |> Intervals.Inter.inter (Seq.return (x, y)))
+      let transitions = Time_zone.transition_seq search_using_tz in
+      transitions
+      |> Seq.flat_map (fun ((x, y), entry) ->
+          let params =
+            List.map
+              (Pattern_search_param.make
+                 ~search_using_tz_offset_s:Time_zone.(entry.offset))
+              space
+          in
+          Intervals.Union.union_multi_list ~skip_check:true
+            (List.map
+               (fun param ->
+                  Resolve_pattern.matching_intervals param pat)
+               params)
+          |> Intervals.Inter.inter (Seq.return (x, y)))
     | Unary_op (space, op, t) -> (
         let search_using_tz =
           match op with Change_tz x -> x | _ -> search_using_tz

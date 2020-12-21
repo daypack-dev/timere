@@ -15,9 +15,9 @@ val name : t -> string
 
 val utc : t
 
-val is_utc : t -> bool
+val make : string -> (t, unit) result
 
-val make : string -> t
+val make_exn : string -> t
 
 val available_time_zones : string list
 

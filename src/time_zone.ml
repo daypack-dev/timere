@@ -15,14 +15,17 @@ let name t = t.name
 
 let available_time_zones = String_map.bindings db |> List.map (fun (k, _) -> k)
 
-let make name : t =
+let make name : (t, unit) result =
   match String_map.find_opt name db with
-  | Some table -> { name; table }
-  | None -> invalid_arg "make: Invalid time zone name"
+  | Some table -> Ok { name; table }
+  | None -> Error ()
 
-let utc = make "UTC"
+let make_exn name : t =
+  match make name with
+  | Ok x -> x
+  | Error () -> invalid_arg "make_exn"
 
-let is_utc t = List.mem t.name [ "UTC"; "UCT" ]
+let utc = make_exn "UTC"
 
 let dummy_entry : entry = { is_dst = false; offset = 0 }
 

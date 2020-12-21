@@ -86,13 +86,11 @@ val make_hms_exn : hour:int -> minute:int -> second:int -> hms
 module Time_zone : sig
   type t
 
-  val make : string -> t
+  val make : string -> (t, unit) result
 
   val name : t -> string
 
   val utc : t
-
-  val is_utc : t -> bool
 
   val available_time_zones : string list
 end
