@@ -5,7 +5,8 @@ module Pattern_search_param = struct
     end_inc : Time.Date_time.t;
   }
 
-  let make ~search_using_tz_offset_s ~search_using_tz ((start, end_exc) : Time.Interval.t) : t =
+  let make ~search_using_tz_offset_s ~search_using_tz
+      ((start, end_exc) : Time.Interval.t) : t =
     {
       search_using_tz_offset_s;
       start =
@@ -978,19 +979,19 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
              (x, y))
           space
       in
-      let transitions = Time_zone.transition_seq search_using_tz
-                        (* |> OSeq.take 66 *)
-                        (* |> OSeq.drop 66
-                         * |> OSeq.take 1 *)
-                        (* |> OSeq.drop 65
-                         * |> OSeq.take 2 *)
+      let transitions =
+        Time_zone.transition_seq search_using_tz
+        (* |> OSeq.take 66 *)
+        (* |> OSeq.drop 66
+         * |> OSeq.take 1 *)
+        (* |> OSeq.drop 65
+         * |> OSeq.take 2 *)
       in
       transitions
       |> Seq.flat_map (fun ((x, y), entry) ->
           let params =
             List.map
-              (Pattern_search_param.make
-                 ~search_using_tz
+              (Pattern_search_param.make ~search_using_tz
                  ~search_using_tz_offset_s:Time_zone.(entry.offset))
               space
               (* widened_search_space *)
@@ -999,8 +1000,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
             (List.map
                (fun param -> Resolve_pattern.matching_intervals param pat)
                params)
-          |> Intervals.Inter.inter (Seq.return (x, y))
-        )
+          |> Intervals.Inter.inter (Seq.return (x, y)))
       |> normalize
     | Unary_op (space, op, t) -> (
         let search_using_tz =
