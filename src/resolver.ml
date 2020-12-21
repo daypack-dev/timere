@@ -963,7 +963,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
     | All -> Seq.return (min_timestamp, Int64.succ @@ max_timestamp)
     | Timestamp_interval_seq (_, s) -> s
     | Pattern (space, pat) ->
-      let one_day = Duration.(make_exn ~days:1 () |> to_seconds) in
+      let one_day = Duration.(make_exn ~days:2 () |> to_seconds) in
       let widened_search_space =
         List.map
           (fun (x, y) ->
@@ -978,7 +978,13 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
              (x, y))
           space
       in
-      let transitions = Time_zone.transition_seq search_using_tz in
+      let transitions = Time_zone.transition_seq search_using_tz
+                        (* |> OSeq.take 66 *)
+                        (* |> OSeq.drop 66
+                         * |> OSeq.take 1 *)
+                        (* |> OSeq.drop 65
+                         * |> OSeq.take 2 *)
+      in
       transitions
       |> Seq.flat_map (fun ((x, y), entry) ->
           let params =
