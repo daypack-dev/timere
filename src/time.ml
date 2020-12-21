@@ -1449,6 +1449,15 @@ module Date_time = struct
           let x2 = Int64.sub timestamp (Int64.of_int e2.offset) in
           `Ambiguous (min x1 x2, max x1 x2))
 
+  let to_timestamp_exact (x : t) : timestamp =
+    match to_timestamp x with
+    | `None ->
+      invalid_arg
+        "to_timestamp_exact: date time does not map to any timestamp"
+    | `Exact x -> x
+    | `Ambiguous _ ->
+      invalid_arg "to_timestamp_exact: date time maps to two timestamps"
+
   let to_timestamp_force_offset ~offset (x : t) =
     to_ptime_date_time_utc x
     |> Ptime.of_date_time
@@ -2184,13 +2193,6 @@ let between_inc (t1 : t) (t2 : t) : t =
 
 let between_exc (t1 : t) (t2 : t) : t =
   Between_exc (default_search_space, t1, t2)
-
-let date_time (date_time : Date_time.t) : t =
-  match Date_time.to_timestamp date_time with
-  | `None -> invalid_arg "date_time: date time does not map to any timestamp"
-  | `Exact x ->
-    Timestamp_interval_seq (default_search_space, Seq.return (x, Int64.succ x))
-  | `Ambiguous _ -> invalid_arg "date_time: date time maps to two timestamps"
 
 let of_sorted_interval_seq ?(skip_invalid : bool = false)
     (s : (int64 * int64) Seq.t) : t =

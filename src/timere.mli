@@ -187,6 +187,8 @@ module Date_time : sig
 
   val to_timestamp : t -> timestamp local_result
 
+  val to_timestamp_exact : t -> timestamp
+
   val to_timestamp_force_offset : offset:int -> t -> timestamp
 
   val min_of_timestamp_local_result : timestamp local_result -> timestamp option
@@ -208,8 +210,6 @@ module Date_time : sig
 
   val pp : string -> Format.formatter -> t -> unit
 end
-
-val date_time : Date_time.t -> t
 
 (** {1 Durations} *)
 
