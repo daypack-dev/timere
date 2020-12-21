@@ -971,8 +971,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
           in
           Intervals.Union.union_multi_list ~skip_check:true
             (List.map
-               (fun param ->
-                  Resolve_pattern.matching_intervals param pat)
+               (fun param -> Resolve_pattern.matching_intervals param pat)
                params)
           |> Intervals.Inter.inter (Seq.return (x, y)))
     | Unary_op (space, op, t) -> (

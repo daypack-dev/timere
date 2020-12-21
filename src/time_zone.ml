@@ -21,9 +21,7 @@ let make name : (t, unit) result =
   | None -> Error ()
 
 let make_exn name : t =
-  match make name with
-  | Ok x -> x
-  | Error () -> invalid_arg "make_exn"
+  match make name with Ok x -> x | Error () -> invalid_arg "make_exn"
 
 let utc = make_exn "UTC"
 

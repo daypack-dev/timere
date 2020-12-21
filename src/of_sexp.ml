@@ -52,10 +52,10 @@ let ints_of_sexp_list (x : CCSexp.t) =
 
 let tz_of_sexp (x : CCSexp.t) =
   match x with
-  | `Atom s -> (match Time_zone.make s with
+  | `Atom s -> (
+      match Time_zone.make s with
       | Ok x -> x
-      | Error () ->
-        invalid_data (Printf.sprintf "Unrecognized time zone: %s" s)
+      | Error () -> invalid_data (Printf.sprintf "Unrecognized time zone: %s" s)
     )
   | `List _ ->
     invalid_data
