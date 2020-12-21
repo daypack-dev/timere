@@ -137,7 +137,7 @@ let make_unary_op ~rng t =
         (rng () mod available_time_zone_count)
       |> Time_zone.make_exn
     in
-    Time.change_tz tz t
+    Time.with_tz tz t
   | _ -> failwith "Unexpected case"
 
 let build ~min_year ~max_year_inc ~max_height ~max_branching
