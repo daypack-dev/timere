@@ -355,7 +355,10 @@ val pp_timestamp :
   unit
 
 val sprintf_interval :
-  ?display_using_tz:Time_zone.t -> ?format:string -> interval -> (string, string) result
+  ?display_using_tz:Time_zone.t ->
+  ?format:string ->
+  interval ->
+  (string, string) result
 
 val pp_interval :
   ?display_using_tz:Time_zone.t ->

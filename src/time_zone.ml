@@ -13,8 +13,7 @@ type 'a local_result =
 
 let name t = t.name
 
-let equal t1 t2 =
-  t1.name = t2.name
+let equal t1 t2 = t1.name = t2.name
 
 let available_time_zones = String_map.bindings db |> List.map (fun (k, _) -> k)
 
@@ -104,9 +103,7 @@ let transition_seq (t : t) : ((int64 * int64) * entry) Seq.t =
     | Seq.Cons ((k1, entry1), s) -> (
         match s () with
         | Seq.Nil ->
-          OSeq.cons
-            ((k1, Constants.max_timestamp), entry1)
-            (aux Seq.empty)
+          OSeq.cons ((k1, Constants.max_timestamp), entry1) (aux Seq.empty)
         | Seq.Cons ((k2, entry2), rest) ->
           OSeq.cons ((k1, k2), entry1) (aux (OSeq.cons (k2, entry2) rest)))
   in

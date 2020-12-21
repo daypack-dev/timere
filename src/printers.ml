@@ -98,11 +98,7 @@ module Format_string_parsers = struct
            match date_time.tz_offset_s with
            | None -> return "N/A"
            | Some tz_offset_s ->
-             if tz_offset_s >= 0 then
-               return "+"
-             else
-               return "-"
-          );
+             if tz_offset_s >= 0 then return "+" else return "-");
         attempt
           (string "tzoff-hour:"
            >> padding
@@ -111,10 +107,10 @@ module Format_string_parsers = struct
            | None -> return "N/A"
            | Some tz_offset_s ->
              let d =
-               Result.get_ok @@ Duration.of_seconds (Int64.of_int (abs tz_offset_s))
+               Result.get_ok
+               @@ Duration.of_seconds (Int64.of_int (abs tz_offset_s))
              in
-             return (pad_int padding d.hours)
-          );
+             return (pad_int padding d.hours));
         attempt
           (string "tzoff-min:"
            >> padding
@@ -123,10 +119,10 @@ module Format_string_parsers = struct
            | None -> return "N/A"
            | Some tz_offset_s ->
              let d =
-               Result.get_ok @@ Duration.of_seconds (Int64.of_int (abs tz_offset_s))
+               Result.get_ok
+               @@ Duration.of_seconds (Int64.of_int (abs tz_offset_s))
              in
-             return (pad_int padding d.minutes)
-          );
+             return (pad_int padding d.minutes));
         attempt
           (string "tzoff-sec:"
            >> padding
@@ -135,24 +131,27 @@ module Format_string_parsers = struct
            | None -> return "N/A"
            | Some tz_offset_s ->
              let d =
-               Result.get_ok @@ Duration.of_seconds (Int64.of_int (abs tz_offset_s))
+               Result.get_ok
+               @@ Duration.of_seconds (Int64.of_int (abs tz_offset_s))
              in
-             return (pad_int padding d.seconds)
-          );
+             return (pad_int padding d.seconds));
         (* string "unix"
          * >> return (Int64.to_string (Time.Date_time.to_timestamp date_time)); *)
       ]
 end
 
 let default_date_time_format_string =
-  "{year} {mon:Xxx} {mday:0X} {hour:0X}:{min:0X}:{sec:0X} {tzoff-sign}{tzoff-hour:0X}:{tzoff-min:0X}:{tzoff-sec:0X}"
+  "{year} {mon:Xxx} {mday:0X} {hour:0X}:{min:0X}:{sec:0X} \
+   {tzoff-sign}{tzoff-hour:0X}:{tzoff-min:0X}:{tzoff-sec:0X}"
 
 let default_interval_format_string =
-  "[{syear} {smon:Xxx} {smday:0X} {shour:0X}:{smin:0X}:{ssec:0X} {stzoff-sign}{stzoff-hour:0X}:{stzoff-min:0X}:{stzoff-sec:0X}, \
-   {eyear} {emon:Xxx} {emday:0X} {ehour:0X}:{emin:0X}:{esec:0X}) {etzoff-sign}{etzoff-hour:0X}:{etzoff-min:0X}:{etzoff-sec:0X}"
+  "[{syear} {smon:Xxx} {smday:0X} {shour:0X}:{smin:0X}:{ssec:0X} \
+   {stzoff-sign}{stzoff-hour:0X}:{stzoff-min:0X}:{stzoff-sec:0X}, {eyear} \
+   {emon:Xxx} {emday:0X} {ehour:0X}:{emin:0X}:{esec:0X}) \
+   {etzoff-sign}{etzoff-hour:0X}:{etzoff-min:0X}:{etzoff-sec:0X}"
 
-let sprintf_date_time ?(format : string = default_date_time_format_string) (x : Time.Date_time.t) :
-  (string, string) result =
+let sprintf_date_time ?(format : string = default_date_time_format_string)
+    (x : Time.Date_time.t) : (string, string) result =
   let open MParser in
   let open Parser_components in
   let single (date_time : Time.Date_time.t) : (string, unit) t =
@@ -177,18 +176,21 @@ let pp_date_time ?(format = default_interval_format_string) formatter x =
   | Error msg -> invalid_arg msg
   | Ok s -> Format.fprintf formatter "%s" s
 
-let sprintf_timestamp ?(display_using_tz = Time_zone.utc) ?(format = default_date_time_format_string) (time : int64)
-  : (string, string) result =
+let sprintf_timestamp ?(display_using_tz = Time_zone.utc)
+    ?(format = default_date_time_format_string) (time : int64) :
+  (string, string) result =
   match Time.Date_time.of_timestamp ~tz_of_date_time:display_using_tz time with
   | Error () -> Error "Invalid unix second"
   | Ok dt -> sprintf_date_time ~format dt
 
-let pp_timestamp ?(display_using_tz = Time_zone.utc) ?(format = default_date_time_format_string) formatter x =
+let pp_timestamp ?(display_using_tz = Time_zone.utc)
+    ?(format = default_date_time_format_string) formatter x =
   match sprintf_timestamp ~display_using_tz ~format x with
   | Error msg -> invalid_arg msg
   | Ok s -> Format.fprintf formatter "%s" s
 
-let sprintf_interval ?(display_using_tz = Time_zone.utc) ?(format : string = default_interval_format_string)
+let sprintf_interval ?(display_using_tz = Time_zone.utc)
+    ?(format : string = default_interval_format_string)
     ((s, e) : Time.Interval.t) : (string, string) result =
   let open MParser in
   let open Parser_components in
@@ -229,7 +231,8 @@ let sprintf_interval ?(display_using_tz = Time_zone.utc) ?(format : string = def
         |> result_of_mparser_result
         |> Result.map (fun l -> String.concat "" l))
 
-let pp_interval ?(display_using_tz = Time_zone.utc) ?(format = default_interval_format_string) formatter interval =
+let pp_interval ?(display_using_tz = Time_zone.utc)
+    ?(format = default_interval_format_string) formatter interval =
   match sprintf_interval ~display_using_tz ~format interval with
   | Error msg -> invalid_arg msg
   | Ok s -> Format.fprintf formatter "%s" s

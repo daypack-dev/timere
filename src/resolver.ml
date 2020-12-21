@@ -955,8 +955,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
   let open Time in
   let normalize =
-    Intervals.Normalize.normalize ~skip_filter_invalid:true
-      ~skip_sort:true
+    Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
   in
   let rec aux search_using_tz time =
     match time with
@@ -964,6 +963,21 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
     | All -> Seq.return (min_timestamp, Int64.succ @@ max_timestamp)
     | Timestamp_interval_seq (_, s) -> s
     | Pattern (space, pat) ->
+      let one_day = Duration.(make_exn ~days:10 () |> to_seconds) in
+      let widened_search_space =
+        List.map
+          (fun (x, y) ->
+             let x =
+               if Int64.sub x min_timestamp > one_day then Int64.sub x one_day
+               else x
+             in
+             let y =
+               if Int64.sub max_timestamp y > one_day then Int64.add y one_day
+               else y
+             in
+             (x, y))
+          space
+      in
       let transitions = Time_zone.transition_seq search_using_tz in
       transitions
       |> Seq.flat_map (fun ((x, y), entry) ->
@@ -972,6 +986,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
               (Pattern_search_param.make
                  ~search_using_tz_offset_s:Time_zone.(entry.offset))
               space
+              (* widened_search_space *)
           in
           Intervals.Union.union_multi_list ~skip_check:true
             (List.map
@@ -989,9 +1004,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
           Intervals.relative_complement ~skip_check:true ~not_mem_of:s
             (List.to_seq space)
         | Every -> s
-        | Drop_n_points n ->
-          do_skip_n_points (Int64.of_int n) s
-          |> normalize
+        | Drop_n_points n -> do_skip_n_points (Int64.of_int n) s |> normalize
         | Take_n_points n -> do_take_n_points (Int64.of_int n) s
         | Shift n ->
           Seq.map
@@ -1032,9 +1045,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
       |> Seq.filter_map (fun (start, end_exc) ->
           find_after (start, end_exc) s2
           |> Option.map (fun (start', _) -> (start, start')))
-    | Unchunk c ->
-      aux_chunked search_using_tz c
-      |> normalize
+    | Unchunk c -> aux_chunked search_using_tz c |> normalize
   and aux_chunked search_using_tz_offset_s (chunked : chunked) =
     let chunk_based_on_op_on_t op s =
       match op with

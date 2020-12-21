@@ -1539,30 +1539,20 @@ module Date_time = struct
 
   let equal (x : t) (y : t) : bool =
     x.year = y.year
+    && x.month = y.month
+    && x.day = y.day
+    && x.hour = y.hour
+    && x.minute = y.minute
+    && x.second = y.second
+    && (match (x.tz, y.tz) with
+        | None, None -> true
+        | Some tz_x, Some tz_y -> Time_zone.equal tz_x tz_y
+        | _ -> false)
     &&
-    x.month = y.month
-    &&
-    x.day = y.day
-    &&
-    x.hour = y.hour
-    &&
-    x.minute = y.minute
-    &&
-    x.second = y.second
-    &&
-    (match x.tz, y.tz with
-     | None, None -> true
-     | Some tz_x, Some tz_y ->
-       Time_zone.equal tz_x tz_y
-     | _ -> false
-    )
-    &&
-    (match x.tz_offset_s, y.tz_offset_s with
-     | None, None -> true
-     | Some x, Some y ->
-       x = y
-     | _ -> false
-    )
+    match (x.tz_offset_s, y.tz_offset_s) with
+    | None, None -> true
+    | Some x, Some y -> x = y
+    | _ -> false
 
   let set_to_first_sec (x : t) : t = { x with second = 0 }
 
