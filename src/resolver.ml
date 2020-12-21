@@ -954,6 +954,10 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
 let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
   let open Time in
+  let normalize =
+    Intervals.Normalize.normalize ~skip_filter_invalid:true
+      ~skip_sort:true
+  in
   let rec aux search_using_tz time =
     match time with
     | Empty -> Seq.empty
@@ -974,6 +978,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
                (fun param -> Resolve_pattern.matching_intervals param pat)
                params)
           |> Intervals.Inter.inter (Seq.return (x, y)))
+      |> normalize
     | Unary_op (space, op, t) -> (
         let search_using_tz =
           match op with With_tz x -> x | _ -> search_using_tz
@@ -986,8 +991,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
         | Every -> s
         | Drop_n_points n ->
           do_skip_n_points (Int64.of_int n) s
-          |> Intervals.Normalize.normalize ~skip_filter_empty:true
-            ~skip_sort:true ~skip_filter_invalid:true
+          |> normalize
         | Take_n_points n -> do_take_n_points (Int64.of_int n) s
         | Shift n ->
           Seq.map
@@ -996,8 +1000,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
         | Lengthen n ->
           s
           |> Seq.map (fun (start, end_exc) -> (start, Int64.add end_exc n))
-          |> Intervals.Normalize.normalize ~skip_filter_empty:true
-            ~skip_sort:true ~skip_filter_invalid:true
+          |> normalize
         | With_tz _ -> s)
     | Interval_inc (_, a, b) -> Seq.return (a, Int64.succ b)
     | Interval_exc (_, a, b) -> Seq.return (a, b)
@@ -1031,8 +1034,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
           |> Option.map (fun (start', _) -> (start, start')))
     | Unchunk c ->
       aux_chunked search_using_tz c
-      |> Intervals.Normalize.normalize ~skip_filter_invalid:true
-        ~skip_sort:true
+      |> normalize
   and aux_chunked search_using_tz_offset_s (chunked : chunked) =
     let chunk_based_on_op_on_t op s =
       match op with
@@ -1062,7 +1064,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
     time
     |> optimize_search_space search_using_tz
     |> aux search_using_tz
-    |> Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
+    |> normalize
     |> Result.ok
   with
   | Interval_is_invalid -> Error "Invalid interval"
