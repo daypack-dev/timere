@@ -130,7 +130,7 @@ module Date_time : sig
     minute : int;
     second : int;
     tz : Time_zone.t option;
-    tz_offset_s : int option;
+    tz_offset_s : tz_offset_s option;
   }
 
   val make :
@@ -161,7 +161,7 @@ module Date_time : sig
     hour:int ->
     minute:int ->
     second:int ->
-    tz_offset_s:int ->
+    tz_offset_s:tz_offset_s ->
     unit ->
     (t, unit) result
 
@@ -173,7 +173,7 @@ module Date_time : sig
     hour:int ->
     minute:int ->
     second:int ->
-    tz_offset_s:int ->
+    tz_offset_s:tz_offset_s ->
     unit ->
     t
 
