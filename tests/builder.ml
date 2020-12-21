@@ -33,7 +33,7 @@ let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
   |> List.of_seq
   |> List.sort_uniq Time.Interval.compare
   |> List.to_seq
-  |> Time.of_intervals_seq
+  |> Time.of_interval_seq
 
 let make_pattern ~rng ~min_year ~max_year_inc =
   let years =

@@ -121,7 +121,7 @@ exception Invalid_timestamp
 
 val of_timestamps : ?skip_invalid:bool -> timestamp list -> t
 
-val of_timestamps_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
+val of_timestamp_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
 
 module Date_time : sig
   type t = private {
@@ -314,11 +314,11 @@ type interval = timestamp * timestamp
 
 val of_intervals : ?skip_invalid:bool -> interval list -> t
 
-val of_intervals_seq : ?skip_invalid:bool -> interval Seq.t -> t
+val of_interval_seq : ?skip_invalid:bool -> interval Seq.t -> t
 
 val of_sorted_intervals : ?skip_invalid:bool -> interval list -> t
 
-val of_sorted_intervals_seq : ?skip_invalid:bool -> interval Seq.t -> t
+val of_sorted_interval_seq : ?skip_invalid:bool -> interval Seq.t -> t
 
 val of_hms_intervals : (hms * hms) Seq.t -> t
 

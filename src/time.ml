@@ -2193,7 +2193,7 @@ let date_time (date_time : Date_time.t) : t =
   | `Ambiguous _ ->
     invalid_arg "date_time: date time maps to two timestamps"
 
-let of_sorted_intervals_seq ?(skip_invalid : bool = false)
+let of_sorted_interval_seq ?(skip_invalid : bool = false)
     (s : (int64 * int64) Seq.t) : t =
   let s =
     s
@@ -2215,7 +2215,7 @@ let of_sorted_intervals_seq ?(skip_invalid : bool = false)
 
 let of_sorted_intervals ?(skip_invalid : bool = false)
     (l : (int64 * int64) list) : t =
-  l |> List.to_seq |> of_sorted_intervals_seq ~skip_invalid
+  l |> List.to_seq |> of_sorted_interval_seq ~skip_invalid
 
 let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
   let s =
@@ -2237,18 +2237,18 @@ let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
   | Seq.Nil -> Empty
   | _ -> Timestamp_interval_seq (default_search_space, s)
 
-let of_intervals_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t)
+let of_interval_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t)
   : t =
   s |> List.of_seq |> of_intervals ~skip_invalid
 
-let of_timestamps_seq ?(skip_invalid = false) timestamps =
+let of_timestamp_seq ?(skip_invalid = false) timestamps =
   timestamps
   |> Seq.filter_map (fun x ->
       match Date_time.of_timestamp x with
       | Ok _ -> Some x
       | Error () -> if skip_invalid then None else raise Invalid_timestamp)
   |> Seq.map (fun x -> (x, Int64.succ x))
-  |> of_intervals_seq
+  |> of_interval_seq
 
 let of_timestamps ?(skip_invalid = false) timestamps =
   timestamps
