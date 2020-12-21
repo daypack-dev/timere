@@ -204,9 +204,9 @@ module Date_time : sig
 
   val cur : ?tz_of_date_time:Time_zone.t -> unit -> (t, unit) result
 
-  val sprintf : string -> t -> (string, string) result
+  val sprintf : ?format:string -> t -> (string, string) result
 
-  val pp : string -> Format.formatter -> t -> unit
+  val pp : ?format:string -> Format.formatter -> t -> unit
 end
 
 (** {1 Durations} *)
@@ -343,23 +343,23 @@ val resolve :
 
 val sprintf_timestamp :
   ?display_using_tz:Time_zone.t ->
-  string ->
+  ?format:string ->
   timestamp ->
   (string, string) result
 
 val pp_timestamp :
   ?display_using_tz:Time_zone.t ->
-  string ->
+  ?format:string ->
   Format.formatter ->
   timestamp ->
   unit
 
 val sprintf_interval :
-  ?display_using_tz:Time_zone.t -> string -> interval -> (string, string) result
+  ?display_using_tz:Time_zone.t -> ?format:string -> interval -> (string, string) result
 
 val pp_interval :
   ?display_using_tz:Time_zone.t ->
-  string ->
+  ?format:string ->
   Format.formatter ->
   interval ->
   unit
