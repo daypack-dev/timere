@@ -42,7 +42,7 @@ let debug_resolver () =
    * in *)
   let timere =
     let open Time in
-    change_tz
+    with_tz
       (Time_zone.make_exn "Australia/Sydney")
       (inter
          [
@@ -87,8 +87,8 @@ let debug_resolver () =
          |> OSeq.take 50
          |> OSeq.iter (fun ts ->
              match
-               Printers.sprintf_interval ~display_using_tz:Time_zone.utc
-                 default_interval_format_string ts
+               Printers.sprintf_interval ~display_using_tz:(Time_zone.make_exn "Australia/Sydney")
+                 ts
              with
              | Ok s -> Printf.printf "%s\n" s
              | Error msg -> Printf.printf "Error: %s\n" msg)));
@@ -104,8 +104,8 @@ let debug_resolver () =
      |> OSeq.take 50
      |> OSeq.iter (fun ts ->
          match
-           Printers.sprintf_interval ~display_using_tz:Time_zone.utc
-             default_interval_format_string ts
+           Printers.sprintf_interval ~display_using_tz:(Time_zone.make_exn "Australia/Sydney")
+             ts
          with
          | Ok s -> Printf.printf "%s\n" s
          | Error msg -> Printf.printf "Error: %s\n" msg));
