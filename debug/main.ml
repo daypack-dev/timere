@@ -47,8 +47,8 @@ let debug_resolver () =
       (inter
          [
            hms_interval_exc
-             (make_hms_exn ~hour:23 ~minute:0 ~second:0)
-             (make_hms_exn ~hour:5 ~minute:0 ~second:0);
+             (make_hms ~hour:23 ~minute:0 ~second:0)
+             (make_hms ~hour:5 ~minute:0 ~second:0);
            months [ `Mar ];
          ])
   in
