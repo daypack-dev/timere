@@ -94,7 +94,7 @@ module Time_zone : sig
 
   val is_utc : t -> bool
 
-  val available_tzs : string list
+  val available_time_zones : string list
 end
 
 (** {1 Time zone change} *)
