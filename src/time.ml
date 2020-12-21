@@ -1286,8 +1286,15 @@ let make_hms ~hour ~minute ~second =
     && minute < 60
     && 0 <= second
     && second < 60
-  then { hour; minute; second }
-  else invalid_arg "make_hms"
+  then Ok { hour; minute; second }
+  else Error ()
+
+exception Invalid_hms
+
+let make_hms_exn ~hour ~minute ~second =
+  match make_hms ~hour ~minute ~second with
+  | Ok x -> x
+  | Error () -> raise Invalid_hms
 
 let second_of_day_of_hms x =
   Duration.make ~hours:x.hour ~minutes:x.minute ~seconds:x.second ()
@@ -1299,7 +1306,7 @@ let hms_of_second_of_day x =
   let ({ hours; minutes; seconds; _ } : Duration.t) =
     x |> Int64.of_int |> Duration.of_seconds |> Result.get_ok
   in
-  make_hms ~hour:hours ~minute:minutes ~second:seconds
+  Result.get_ok @@ make_hms ~hour:hours ~minute:minutes ~second:seconds
 
 module Hms_ranges = Ranges_small.Make (struct
     type t = hms

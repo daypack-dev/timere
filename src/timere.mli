@@ -71,13 +71,17 @@ val pattern :
   unit ->
   t
 
+exception Invalid_hms
+
 type hms = private {
   hour : int;
   minute : int;
   second : int;
 }
 
-val make_hms : hour:int -> minute:int -> second:int -> hms
+val make_hms : hour:int -> minute:int -> second:int -> (hms, unit) result
+
+val make_hms_exn : hour:int -> minute:int -> second:int -> hms
 
 (** {1 Time zone} *)
 
