@@ -71,8 +71,6 @@ val pattern :
   unit ->
   t
 
-exception Invalid_hms
-
 type hms = private {
   hour : int;
   minute : int;
@@ -113,21 +111,19 @@ val not : t -> t
 
 (** {1 Discrete time points} *)
 
-exception Invalid_timestamp
-
 val cur_timestamp : unit -> int64
 
 val min_timestamp : int64
 
 val max_timestamp : int64
 
+exception Invalid_timestamp
+
 val of_timestamps : ?skip_invalid:bool -> timestamp list -> t
 
 val of_timestamps_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
 
 module Date_time : sig
-  exception Invalid_date_time
-
   type t = private {
     year : int;
     month : month;
@@ -233,6 +229,14 @@ module Duration : sig
     unit ->
     (t, unit) result
 
+  val make_exn :
+    ?days:int ->
+    ?hours:int ->
+    ?minutes:int ->
+    ?seconds:int ->
+    unit ->
+    t
+
   val make_frac :
     ?days:float ->
     ?hours:float ->
@@ -240,6 +244,14 @@ module Duration : sig
     ?seconds:int ->
     unit ->
     (t, unit) result
+
+  val make_frac_exn :
+    ?days:float ->
+    ?hours:float ->
+    ?minutes:float ->
+    ?seconds:int ->
+    unit ->
+    t
 
   val zero : t
 

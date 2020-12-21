@@ -1289,12 +1289,10 @@ let make_hms ~hour ~minute ~second =
   then Ok { hour; minute; second }
   else Error ()
 
-exception Invalid_hms
-
 let make_hms_exn ~hour ~minute ~second =
   match make_hms ~hour ~minute ~second with
   | Ok x -> x
-  | Error () -> raise Invalid_hms
+  | Error () -> invalid_arg "make_hms_exn"
 
 let second_of_day_of_hms x =
   Duration.make ~hours:x.hour ~minutes:x.minute ~seconds:x.second ()
@@ -1386,8 +1384,6 @@ let max_timestamp =
   Ptime.max |> Ptime.to_float_s |> Int64.of_float |> Int64.pred
 
 module Date_time = struct
-  exception Invalid_date_time
-
   type t = {
     year : int;
     month : month;
@@ -1496,8 +1492,8 @@ module Date_time = struct
 
   let make_exn ~year ~month ~day ~hour ~minute ~second ~tz =
     match make ~year ~month ~day ~hour ~minute ~second ~tz with
-    | Error () -> raise Invalid_date_time
     | Ok x -> x
+    | Error () -> invalid_arg "make_exn"
 
   let make_precise ?tz ~year ~month ~day ~hour ~minute ~second ~tz_offset_s () =
     let dt =
@@ -1524,7 +1520,7 @@ module Date_time = struct
         make_precise ~tz ~year ~month ~day ~hour ~minute ~second ~tz_offset_s
           ()
     in
-    match x with Error () -> raise Invalid_date_time | Ok x -> x
+    match x with Error () -> invalid_arg "make_precise_exn" | Ok x -> x
 
   let min = Result.get_ok @@ of_timestamp min_timestamp
 
