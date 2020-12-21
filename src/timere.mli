@@ -209,7 +209,7 @@ module Date_time : sig
   val pp : string -> Format.formatter -> t -> unit
 end
 
-(* val date_time : Date_time.t -> t *)
+val date_time : Date_time.t -> t
 
 (** {1 Durations} *)
 

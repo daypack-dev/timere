@@ -2185,11 +2185,13 @@ let between_inc (t1 : t) (t2 : t) : t =
 let between_exc (t1 : t) (t2 : t) : t =
   Between_exc (default_search_space, t1, t2)
 
-(* let date_time (date_time : Date_time.t) : t =
- *   date_time
- *   |> Date_time.to_timestamp
- *   |> fun x ->
- *   Timestamp_interval_seq (default_search_space, Seq.return (x, Int64.succ x)) *)
+let date_time (date_time : Date_time.t) : t =
+  match Date_time.to_timestamp date_time with
+  | `None -> invalid_arg "date_time: date time does not map to any timestamp"
+  | `Exact x ->
+    Timestamp_interval_seq (default_search_space, Seq.return (x, Int64.succ x))
+  | `Ambiguous _ ->
+    invalid_arg "date_time: date time maps to two timestamps"
 
 let of_sorted_intervals_seq ?(skip_invalid : bool = false)
     (s : (int64 * int64) Seq.t) : t =
