@@ -13,6 +13,9 @@ type 'a local_result =
 
 let name t = t.name
 
+let equal t1 t2 =
+  t1.name = t2.name
+
 let available_time_zones = String_map.bindings db |> List.map (fun (k, _) -> k)
 
 let make name : (t, unit) result =

@@ -196,7 +196,7 @@ module Date_time : sig
   val of_timestamp :
     ?tz_of_date_time:Time_zone.t -> timestamp -> (t, unit) result
 
-  val compare : t -> t -> int
+  val equal : t -> t -> bool
 
   val min : t
 

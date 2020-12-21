@@ -11,6 +11,8 @@ type 'a local_result =
   | `Ambiguous of 'a * 'a
   ]
 
+val equal : t -> t -> bool
+
 val name : t -> string
 
 val utc : t

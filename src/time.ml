@@ -1538,24 +1538,32 @@ module Date_time = struct
   let cur ?(tz_of_date_time = Time_zone.utc) () : (t, unit) result =
     cur_timestamp () |> of_timestamp ~tz_of_date_time
 
-  let compare (x : t) (y : t) : int =
-    match compare x.year y.year with
-    | 0 -> (
-        match
-          compare (human_int_of_month x.month) (human_int_of_month y.month)
-        with
-        | 0 -> (
-            match compare x.day y.day with
-            | 0 -> (
-                match compare x.hour y.hour with
-                | 0 -> (
-                    match compare x.minute y.minute with
-                    | 0 -> compare x.second y.second
-                    | n -> n)
-                | n -> n)
-            | n -> n)
-        | n -> n)
-    | n -> n
+  let equal (x : t) (y : t) : bool =
+    x.year = y.year
+    &&
+    x.month = y.month
+    &&
+    x.day = y.day
+    &&
+    x.hour = y.hour
+    &&
+    x.minute = y.minute
+    &&
+    x.second = y.second
+    &&
+    (match x.tz, y.tz with
+     | None, None -> true
+     | Some tz_x, Some tz_y ->
+       Time_zone.equal tz_x tz_y
+     | _ -> false
+    )
+    &&
+    (match x.tz_offset_s, y.tz_offset_s with
+     | None, None -> true
+     | Some x, Some y ->
+       x = y
+     | _ -> false
+    )
 
   let set_to_first_sec (x : t) : t = { x with second = 0 }
 
@@ -1586,12 +1594,6 @@ module Date_time = struct
   let set_to_last_month_day_hour_min_sec (x : t) : t =
     { x with month = `Dec } |> set_to_last_day_hour_min_sec
 end
-
-module Date_time_set = Set.Make (struct
-    type t = Date_time.t
-
-    let compare = Date_time.compare
-  end)
 
 module Check = struct
   let timestamp_is_valid (x : int64) : bool =
