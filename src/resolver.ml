@@ -5,15 +5,15 @@ module Pattern_search_param = struct
     end_inc : Time.Date_time.t;
   }
 
-  let make ~search_using_tz_offset_s ((start, end_exc) : Time.Interval.t) : t =
+  let make ~search_using_tz_offset_s ~search_using_tz ((start, end_exc) : Time.Interval.t) : t =
     {
       search_using_tz_offset_s;
       start =
         Result.get_ok
-        @@ Time.Date_time.of_timestamp ~tz_of_date_time:Time_zone.utc start;
+        @@ Time.Date_time.of_timestamp ~tz_of_date_time:search_using_tz start;
       end_inc =
         Result.get_ok
-        @@ Time.Date_time.of_timestamp ~tz_of_date_time:Time_zone.utc
+        @@ Time.Date_time.of_timestamp ~tz_of_date_time:search_using_tz
           (Int64.pred end_exc);
     }
 end
@@ -963,7 +963,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
     | All -> Seq.return (min_timestamp, Int64.succ @@ max_timestamp)
     | Timestamp_interval_seq (_, s) -> s
     | Pattern (space, pat) ->
-      let one_day = Duration.(make_exn ~days:10 () |> to_seconds) in
+      let one_day = Duration.(make_exn ~days:1 () |> to_seconds) in
       let widened_search_space =
         List.map
           (fun (x, y) ->
@@ -984,6 +984,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
           let params =
             List.map
               (Pattern_search_param.make
+                 ~search_using_tz
                  ~search_using_tz_offset_s:Time_zone.(entry.offset))
               space
               (* widened_search_space *)
