@@ -88,7 +88,8 @@ let make_exn ?(days = 0) ?(hours = 0) ?(minutes = 0) ?(seconds = 0) () =
   | Ok x -> x
   | Error () -> invalid_arg "make_exn"
 
-let make_frac_exn ?(days = 0.0) ?(hours = 0.0) ?(minutes = 0.0) ?(seconds = 0) () =
+let make_frac_exn ?(days = 0.0) ?(hours = 0.0) ?(minutes = 0.0) ?(seconds = 0)
+    () =
   match make_frac ~days ~hours ~minutes ~seconds () with
   | Ok x -> x
   | Error () -> invalid_arg "make_frac_exn"

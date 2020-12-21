@@ -230,12 +230,7 @@ module Duration : sig
     (t, unit) result
 
   val make_exn :
-    ?days:int ->
-    ?hours:int ->
-    ?minutes:int ->
-    ?seconds:int ->
-    unit ->
-    t
+    ?days:int -> ?hours:int -> ?minutes:int -> ?seconds:int -> unit -> t
 
   val make_frac :
     ?days:float ->
@@ -246,12 +241,7 @@ module Duration : sig
     (t, unit) result
 
   val make_frac_exn :
-    ?days:float ->
-    ?hours:float ->
-    ?minutes:float ->
-    ?seconds:int ->
-    unit ->
-    t
+    ?days:float -> ?hours:float -> ?minutes:float -> ?seconds:int -> unit -> t
 
   val zero : t
 
