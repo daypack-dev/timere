@@ -105,7 +105,7 @@ let transition_seq (t : t) : ((int64 * int64) * entry) Seq.t =
         match s () with
         | Seq.Nil ->
           OSeq.cons
-            ((k1, Ptime.(max |> to_float_s |> Int64.of_float)), entry1)
+            ((k1, Constants.max_timestamp), entry1)
             (aux Seq.empty)
         | Seq.Cons ((k2, entry2), rest) ->
           OSeq.cons ((k1, k2), entry1) (aux (OSeq.cons (k2, entry2) rest)))

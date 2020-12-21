@@ -1378,10 +1378,9 @@ module Year_ranges = Ranges_small.Make (struct
 
 let cur_timestamp () : int64 = Unix.time () |> Int64.of_float
 
-let min_timestamp = Ptime.min |> Ptime.to_float_s |> Int64.of_float
+let min_timestamp = Constants.min_timestamp
 
-let max_timestamp =
-  Ptime.max |> Ptime.to_float_s |> Int64.of_float |> Int64.pred
+let max_timestamp = Constants.max_timestamp
 
 module Date_time = struct
   type t = {

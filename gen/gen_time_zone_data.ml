@@ -258,9 +258,9 @@ let process_overlapping_transition_records (l : transition_record list) :
   in
   aux l
 
-let min_timestamp = Ptime.min |> Ptime.to_float_s |> Int64.of_float
+let min_timestamp = Constants.min_timestamp
 
-let max_timestamp = Ptime.max |> Ptime.to_float_s |> Int64.of_float
+let max_timestamp = Constants.max_timestamp
 
 let gen () =
   let zoneinfo_file_dir = "/usr/share/zoneinfo/posix" in

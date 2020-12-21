@@ -1,4 +1,10 @@
 (rule
+ (targets constants.ml)
+ (deps    ../src/constants.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
  (targets parser_components.ml)
  (deps    ../src/parser_components.ml)
  (action  (copy %{deps} %{targets}))
