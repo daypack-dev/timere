@@ -1071,7 +1071,7 @@ type inc_or_exc =
   | Inc
   | Exc
 
-let do_skip_n_points (n : int64) (s : Time.Interval.t Seq.t) :
+let do_drop_n_points (n : int64) (s : Time.Interval.t Seq.t) :
   Time.Interval.t Seq.t =
   let rec aux n s =
     if n = 0L then s
@@ -1224,7 +1224,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
           Intervals.relative_complement ~skip_check:true ~not_mem_of:s
             (List.to_seq space)
         | Every -> s
-        | Drop_n_points n -> do_skip_n_points (Int64.of_int n) s |> normalize
+        | Drop_n_points n -> do_drop_n_points (Int64.of_int n) s |> normalize
         | Take_n_points n -> do_take_n_points (Int64.of_int n) s
         | Shift n ->
           Seq.map
