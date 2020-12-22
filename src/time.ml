@@ -2158,27 +2158,27 @@ let between_inc (t1 : t) (t2 : t) : t =
 let between_exc (t1 : t) (t2 : t) : t =
   Between_exc (default_search_space, t1, t2)
 
-let hms_interval_exc (hms_a : hms) (hms_b : hms) : t =
-  let a = second_of_day_of_hms hms_a in
-  let b = second_of_day_of_hms hms_b in
-  if a = b then empty
-  else
-    let gap_in_seconds =
-      if a < b then Int64.of_int (b - a)
-      else
-        Int64.sub
-          (Duration.make ~days:1 () |> Result.get_ok |> Duration.to_seconds)
-          (Int64.of_int (a - b))
-    in
-    let gap_in_seconds_minus_one = Int64.pred gap_in_seconds in
-    let gap_to_use =
-      gap_in_seconds_minus_one |> Duration.of_seconds |> Result.get_ok
-    in
-    lengthen gap_to_use
-      (pattern ~hours:[ hms_a.hour ] ~minutes:[ hms_a.minute ]
-         ~seconds:[ hms_a.second ] ())
+(* let hms_interval_exc (hms_a : hms) (hms_b : hms) : t =
+ *   let a = second_of_day_of_hms hms_a in
+ *   let b = second_of_day_of_hms hms_b in
+ *   if a = b then empty
+ *   else
+ *     let gap_in_seconds =
+ *       if a < b then Int64.of_int (b - a)
+ *       else
+ *         Int64.sub
+ *           (Duration.make ~days:1 () |> Result.get_ok |> Duration.to_seconds)
+ *           (Int64.of_int (a - b))
+ *     in
+ *     let gap_in_seconds_minus_one = Int64.pred gap_in_seconds in
+ *     let gap_to_use =
+ *       gap_in_seconds_minus_one |> Duration.of_seconds |> Result.get_ok
+ *     in
+ *     lengthen gap_to_use
+ *       (pattern ~hours:[ hms_a.hour ] ~minutes:[ hms_a.minute ]
+ *          ~seconds:[ hms_a.second ] ()) *)
 
-let hms_interval_exc' (hms_a : hms) (hms_b : hms) : t =
+let hms_interval_exc (hms_a : hms) (hms_b : hms) : t =
   between_exc
     (pattern ~hours:[ hms_a.hour ] ~minutes:[ hms_a.minute ]
        ~seconds:[ hms_a.second ] ())
