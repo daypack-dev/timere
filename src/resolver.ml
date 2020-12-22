@@ -1175,44 +1175,26 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
     | All -> Seq.return (min_timestamp, Int64.succ @@ max_timestamp)
     | Timestamp_interval_seq (_, s) -> s
     | Pattern (space, pat) ->
-      let one_day = Duration.(make_exn ~days:2 () |> to_seconds) in
-      let widened_search_space =
-        List.map
-          (fun (x, y) ->
-             let x =
-               if Int64.sub x min_timestamp > one_day then Int64.sub x one_day
-               else x
-             in
-             let y =
-               if Int64.sub max_timestamp y > one_day then Int64.add y one_day
-               else y
-             in
-             (x, y))
-          space
-      in
       let transitions =
         Time_zone.transition_seq search_using_tz
-        (* |> OSeq.take 66 *)
-        (* |> OSeq.take 67 *)
-        (* |> OSeq.drop 66
-         * |> OSeq.take 1 *)
-        (* |> OSeq.drop 65
-         * |> OSeq.take 2 *)
       in
       transitions
       |> Seq.flat_map (fun ((x, y), entry) ->
+          let space =
+            Intervals.Inter.inter (Seq.return (x, y)) (List.to_seq space)
+            |> List.of_seq
+          in
           let params =
             List.map
               (Pattern_search_param.make ~search_using_tz
                  ~search_using_tz_offset_s:Time_zone.(entry.offset))
               space
-              (* widened_search_space *)
           in
           Intervals.Union.union_multi_list ~skip_check:true
             (List.map
                (fun param -> Resolve_pattern.matching_intervals param pat)
                params)
-          |> Intervals.Inter.inter (Seq.return (x, y)))
+        )
       |> normalize
     | Unary_op (space, op, t) -> (
         let search_using_tz =
