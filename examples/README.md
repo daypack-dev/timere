@@ -5,7 +5,7 @@
 (See `dst.ml` for full runnable example)
 
 ```
-  with_tz tz
+  with_tz (Timere.Time_zone.make_exn "Australia/Sydney")
     (
       years [2020] (* in year 2020 *)
       &
