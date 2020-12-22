@@ -598,7 +598,7 @@ module Resolve_pattern = struct
       let range_map_end_inc ~(overall_search_end_inc : Time.Date_time.t) x =
         if x = overall_search_end_inc.year then overall_search_end_inc
         else
-          Time.Date_time.set_to_first_month_day_hour_min_sec
+          Time.Date_time.set_to_last_month_day_hour_min_sec
             { overall_search_end_inc with year = x }
       in
       let range_map_inc ~(overall_search_start : Time.Date_time.t)
