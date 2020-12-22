@@ -16,18 +16,14 @@ let display_intervals ~display_using_tz s =
   | Seq.Nil -> print_endline "No time intervals"
   | Seq.Cons _ ->
     s
-    |> OSeq.take 50
+    |> OSeq.take 60
     |> OSeq.iter (fun (x, y) ->
-        match
-          Printers.sprintf_interval
-            ~display_using_tz
-            (x, y)
-        with
+        match Printers.sprintf_interval ~display_using_tz (x, y) with
         | Ok s ->
-          let size = Result.get_ok @@ Duration.of_seconds (Int64.sub y x) in
-          let size_str =
-            Printers.sprint_duration size
+          let size =
+            Result.get_ok @@ Duration.of_seconds (Int64.sub y x)
           in
+          let size_str = Printers.sprint_duration size in
           Printf.printf "%s - %s\n" s size_str
         | Error msg -> Printf.printf "Error: %s\n" msg)
 
@@ -60,28 +56,25 @@ let debug_resolver () =
    *       @@ Time.Date_time.make ~year:2000 ~month:`Jan ~day:1 ~hour:0 ~minute:0
    *         ~second:0 ~tz_offset_s:0 )
    * in *)
-  let tz =
-    Time_zone.make_exn "Australia/Sydney"
-  in
+  let tz = Time_zone.make_exn "Australia/Sydney" in
   let timere =
     let open Time in
-    with_tz
-      tz
+    with_tz tz
       (inter
          [
-           hms_interval_exc'
-             (make_hms_exn ~hour:23 ~minute:0 ~second:0)
-             (make_hms_exn ~hour:4 ~minute:30 ~second:0);
+           hms_interval_exc
+             (make_hms_exn ~hour:2 ~minute:15 ~second:0)
+             (make_hms_exn ~hour:2 ~minute:30 ~second:0);
            months [ `Mar ];
          ])
-      (* (pattern ~months:[`Mar] ~hours:[2] ~minutes:[30]()) *)
+      (* (pattern ~months:[`Mar] ~hours:[23] ~minutes:[0] ~seconds:[0]()) *)
+      (* (pattern ~months:[`Mar] ~hours:[4] ~minutes:[30] ~seconds:[0]()) *)
   in
   print_endline (To_sexp.to_sexp_string timere);
   print_endline "=====";
   let search_start_dt =
     Time.Date_time.make ~year:2000 ~month:`Jan ~day:1 ~hour:10 ~minute:0
-      ~second:0
-      ~tz
+      ~second:0 ~tz
     |> Result.get_ok
   in
   let search_start =
@@ -90,7 +83,7 @@ let debug_resolver () =
     |> Option.get
   in
   let search_end_exc_dt =
-    Time.Date_time.make ~year:2003 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+    Time.Date_time.make ~year:2001 ~month:`Jan ~day:1 ~hour:0 ~minute:0
       ~second:0 ~tz
     |> Result.get_ok
   in
@@ -104,15 +97,13 @@ let debug_resolver () =
        Time.(inter [ timere; interval_exc search_start search_end_exc ])
    with
    | Error msg -> print_endline msg
-   | Ok s -> (
-       display_intervals ~display_using_tz:tz s
-     ));
+   | Ok s -> display_intervals ~display_using_tz:tz s);
   print_endline "=====";
-  let s =
-    Simple_resolver.resolve ~search_start ~search_end_exc
-      ~search_using_tz:Time_zone.utc timere
-  in
-  display_intervals ~display_using_tz:tz s;
+  (* let s =
+   *   Simple_resolver.resolve ~search_start ~search_end_exc
+   *     ~search_using_tz:Time_zone.utc timere
+   * in
+   * display_intervals ~display_using_tz:tz s; *)
   print_newline ()
 
 let debug_ccsexp_parse_string () = CCSexp.parse_string "\"\\256\"" |> ignore
