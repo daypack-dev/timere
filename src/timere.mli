@@ -88,6 +88,8 @@ module Time_zone : sig
 
   val make : string -> (t, unit) result
 
+  val make_exn : string -> t
+
   val name : t -> string
 
   val utc : t
