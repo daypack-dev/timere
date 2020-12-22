@@ -1175,10 +1175,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
     | All -> Seq.return (min_timestamp, Int64.succ @@ max_timestamp)
     | Timestamp_interval_seq (_, s) -> s
     | Pattern (space, pat) ->
-      let transitions =
-        Time_zone.transition_seq search_using_tz
-      in
-      transitions
+      Time_zone.transition_seq search_using_tz
       |> Seq.flat_map (fun ((x, y), entry) ->
           let space =
             Intervals.Inter.inter (Seq.return (x, y)) (List.to_seq space)
@@ -1193,8 +1190,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
           Intervals.Union.union_multi_list ~skip_check:false
             (List.map
                (fun param -> Resolve_pattern.matching_intervals param pat)
-               params)
-        )
+               params))
       |> normalize
     | Unary_op (space, op, t) -> (
         let search_using_tz =
