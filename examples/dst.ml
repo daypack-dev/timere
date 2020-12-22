@@ -24,8 +24,8 @@ let timere =
     (
       years [2020] (* in year 2020 *)
       &
-      (pattern ~months:[`Apr] ~month_day_ranges:[`Range_inc (3, 6)] () (* in April 3 to 6 *)
-       ||| pattern ~months:[`Oct] ~month_day_ranges:[`Range_inc (2, 5)] ()) (* or in Oct 2 to 5 *)
+      (pattern ~months:[`Apr] ~month_day_ranges:[`Range_inc (2, 7)] () (* in April 2 to 7 *)
+       ||| pattern ~months:[`Oct] ~month_day_ranges:[`Range_inc (1, 6)] ()) (* or in Oct 1 to 6 *)
       &
       hms_interval_exc (* 11pm to 3am *)
         (make_hms_exn ~hour:23 ~minute:0 ~second:0)
