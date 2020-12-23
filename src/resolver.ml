@@ -1,25 +1,25 @@
-module Pattern_search_param = struct
-  type t = {
-    search_using_tz_offset_s : int;
-    start : Time.Date_time.t;
-    end_inc : Time.Date_time.t;
-  }
-
-  let make ~search_using_tz_offset_s ~search_using_tz
-      ((start, end_exc) : Time.Interval.t) : t =
-    {
-      search_using_tz_offset_s;
-      start =
-        Result.get_ok
-        @@ Time.Date_time.of_timestamp ~tz_of_date_time:search_using_tz start;
-      end_inc =
-        Result.get_ok
-        @@ Time.Date_time.of_timestamp ~tz_of_date_time:search_using_tz
-          (Int64.pred end_exc);
-    }
-end
-
 module Resolve_pattern = struct
+  module Search_param = struct
+    type t = {
+      search_using_tz_offset_s : int;
+      start : Time.Date_time.t;
+      end_inc : Time.Date_time.t;
+    }
+
+    let make ~search_using_tz_offset_s ~search_using_tz
+        ((start, end_exc) : Time.Interval.t) : t =
+      {
+        search_using_tz_offset_s;
+        start =
+          Result.get_ok
+          @@ Time.Date_time.of_timestamp ~tz_of_date_time:search_using_tz start;
+        end_inc =
+          Result.get_ok
+          @@ Time.Date_time.of_timestamp ~tz_of_date_time:search_using_tz
+            (Int64.pred end_exc);
+      }
+  end
+
   let failwith_unexpected_case (_ : 'a) = failwith "Unexpected case"
 
   module Matching_seconds = struct
@@ -642,7 +642,7 @@ module Resolve_pattern = struct
 
   type error = Time.Pattern.error
 
-  let matching_date_times (search_param : Pattern_search_param.t)
+  let matching_date_times (search_param : Search_param.t)
       (pat : Time.Pattern.t) : Time.Date_time.t Seq.t =
     let overall_search_start = search_param.start in
     let overall_search_end_inc = search_param.end_inc in
@@ -664,7 +664,7 @@ module Resolve_pattern = struct
       (Matching_seconds.matching_seconds pat ~overall_search_start
          ~overall_search_end_inc)
 
-  let matching_date_time_ranges (search_param : Pattern_search_param.t)
+  let matching_date_time_ranges (search_param : Search_param.t)
       (t : Time.Pattern.t) : Time.Date_time.t Time.Range.range Seq.t =
     let overall_search_start = search_param.start in
     let overall_search_end_inc = search_param.end_inc in
@@ -765,7 +765,7 @@ module Resolve_pattern = struct
         (Matching_seconds.matching_second_ranges t ~overall_search_start
            ~overall_search_end_inc)
 
-  let matching_intervals (search_param : Pattern_search_param.t)
+  let matching_intervals (search_param : Search_param.t)
       (t : Time.Pattern.t) : (int64 * int64) Seq.t =
     let f (x, y) =
       let x =
@@ -1183,7 +1183,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
           in
           let params =
             List.map
-              (Pattern_search_param.make ~search_using_tz
+              (Resolve_pattern.Search_param.make ~search_using_tz
                  ~search_using_tz_offset_s:Time_zone.(entry.offset))
               space
           in
