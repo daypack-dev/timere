@@ -642,8 +642,8 @@ module Resolve_pattern = struct
 
   type error = Time.Pattern.error
 
-  let matching_date_times (search_param : Search_param.t)
-      (pat : Time.Pattern.t) : Time.Date_time.t Seq.t =
+  let matching_date_times (search_param : Search_param.t) (pat : Time.Pattern.t)
+    : Time.Date_time.t Seq.t =
     let overall_search_start = search_param.start in
     let overall_search_end_inc = search_param.end_inc in
     Matching_years.matching_years ~overall_search_start ~overall_search_end_inc
@@ -765,8 +765,8 @@ module Resolve_pattern = struct
         (Matching_seconds.matching_second_ranges t ~overall_search_start
            ~overall_search_end_inc)
 
-  let matching_intervals (search_param : Search_param.t)
-      (t : Time.Pattern.t) : (int64 * int64) Seq.t =
+  let matching_intervals (search_param : Search_param.t) (t : Time.Pattern.t) :
+    (int64 * int64) Seq.t =
     let f (x, y) =
       let x =
         Time.Date_time.to_timestamp_force_offset
