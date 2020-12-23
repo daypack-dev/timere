@@ -1049,24 +1049,6 @@ let optimize_search_space default_tz_offset_s t =
 let positive_day_of_zero_or_negative_day ~day_count day =
   if day <= 0 then day + 1 + day_count else day
 
-let resolve_arith_year_month_pairs ~year_start ~year_end_inc
-    ~(start : Time.Date_time.t) n : (int * Time.month) Seq.t =
-  let rec aux year year_end_inc month n =
-    if year > year_end_inc then Seq.empty
-    else
-      let next_month = month + n in
-      let next_year, next_month =
-        if next_month < 12 then (year, next_month)
-        else (succ year, next_month mod 12)
-      in
-      fun () ->
-        Seq.Cons
-          ( (year, Result.get_ok @@ Time.month_of_tm_int month),
-            aux next_year year_end_inc next_month n )
-  in
-  let month_start = if year_start = start.year then start.month else `Jan in
-  aux year_start year_end_inc (Time.tm_int_of_month month_start) n
-
 type inc_or_exc =
   | Inc
   | Exc
