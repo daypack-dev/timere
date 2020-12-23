@@ -1009,9 +1009,15 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
       Timestamp_interval_seq (restrict_search_space parent_search_space cur, s)
     | Pattern (cur, pat) ->
       Pattern (restrict_search_space parent_search_space cur, pat)
-    | Unary_op (cur, op, t) ->
-      let space = restrict_search_space parent_search_space cur in
-      Unary_op (space, op, aux space t)
+    | Unary_op (cur, op, t) -> (
+        let space = restrict_search_space parent_search_space cur in
+        match op with
+        | Shift n ->
+          let space =
+            List.map (fun (x, y) -> (Int64.sub x n, Int64.sub y n)) space
+          in
+          Unary_op (space, op, aux space t)
+        | _ -> Unary_op (space, op, aux space t))
     | Interval_exc (cur, p1, p2) ->
       let space = restrict_search_space parent_search_space cur in
       Interval_exc (space, p1, p2)
