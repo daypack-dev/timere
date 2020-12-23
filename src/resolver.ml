@@ -79,23 +79,18 @@ module Resolve_pattern = struct
         ~(overall_search_end_inc : Time.Date_time.t)
         (cur_branch : Time.Date_time.t) :
       Time.Date_time.t Time.Range.range Seq.t =
-      let range_map_start ~(cur_branch_search_start : Time.Date_time.t) x =
-        if x = cur_branch_search_start.second then cur_branch_search_start
-        else { cur_branch_search_start with second = x }
-      in
-      let range_map_end_inc ~(cur_branch_search_end_inc : Time.Date_time.t) x =
-        if x = cur_branch_search_end_inc.second then cur_branch_search_end_inc
-        else { cur_branch_search_end_inc with second = x }
-      in
       let range_map_inc ~(cur_branch_search_start : Time.Date_time.t)
           ~(cur_branch_search_end_inc : Time.Date_time.t) (x, y) =
-        ( range_map_start ~cur_branch_search_start x,
-          range_map_end_inc ~cur_branch_search_end_inc y )
+        let range_map_start =
+          if x = cur_branch_search_start.second then cur_branch_search_start
+          else { cur_branch_search_start with second = x }
+        in
+        let range_map_end_inc =
+          if y = cur_branch_search_end_inc.second then cur_branch_search_end_inc
+          else { cur_branch_search_end_inc with second = y }
+        in
+        (range_map_start, range_map_end_inc)
       in
-      (* let range_map_exc ~(cur_branch_search_start : Time.Date_time.t) (x, y) =
-       *   ( range_map_start ~cur_branch_search_start x,
-       *     { cur_branch_search_start with second = y } )
-       * in *)
       let cur_branch_search_start =
         get_cur_branch_search_start ~overall_search_start cur_branch
       in
@@ -172,28 +167,22 @@ module Resolve_pattern = struct
         ~(overall_search_end_inc : Time.Date_time.t) (t : Time.Pattern.t)
         (cur_branch : Time.Date_time.t) :
       Time.Date_time.t Time.Range.range Seq.t =
-      let range_map_start ~(cur_branch_search_start : Time.Date_time.t) x =
-        if x = cur_branch_search_start.minute then cur_branch_search_start
-        else
-          Time.Date_time.set_to_first_sec
-            { cur_branch_search_start with minute = x }
-      in
-      let range_map_end_inc ~(cur_branch_search_end_inc : Time.Date_time.t) x =
-        if x = cur_branch_search_end_inc.minute then cur_branch_search_end_inc
-        else
-          Time.Date_time.set_to_last_sec
-            { cur_branch_search_end_inc with minute = x }
-      in
       let range_map_inc ~(cur_branch_search_start : Time.Date_time.t)
           ~(cur_branch_search_end_inc : Time.Date_time.t) (x, y) =
-        ( range_map_start ~cur_branch_search_start x,
-          range_map_end_inc ~cur_branch_search_end_inc y )
+        let range_map_start =
+          if x = cur_branch_search_start.minute then cur_branch_search_start
+          else
+            Time.Date_time.set_to_first_sec
+              { cur_branch_search_start with minute = x }
+        in
+        let range_map_end_inc =
+          if y = cur_branch_search_end_inc.minute then cur_branch_search_end_inc
+          else
+            Time.Date_time.set_to_last_sec
+              { cur_branch_search_end_inc with minute = y }
+        in
+        (range_map_start, range_map_end_inc)
       in
-      (* let range_map_exc ~(cur_branch_search_start : Time.Date_time.t) (x, y) =
-       *   ( range_map_start ~cur_branch_search_start x,
-       *     Time.Date_time.set_to_first_sec
-       *       { cur_branch_search_start with minute = y } )
-       * in *)
       let cur_branch_search_start =
         get_cur_branch_search_start ~overall_search_start cur_branch
       in
@@ -270,28 +259,22 @@ module Resolve_pattern = struct
         ~(overall_search_end_inc : Time.Date_time.t) (t : Time.Pattern.t)
         (cur_branch : Time.Date_time.t) :
       Time.Date_time.t Time.Range.range Seq.t =
-      let range_map_start ~(cur_branch_search_start : Time.Date_time.t) x =
-        if x = cur_branch_search_start.hour then cur_branch_search_start
-        else
-          Time.Date_time.set_to_first_min_sec
-            { cur_branch_search_start with hour = x }
-      in
-      let range_map_end_inc ~(cur_branch_search_end_inc : Time.Date_time.t) x =
-        if x = cur_branch_search_end_inc.hour then cur_branch_search_end_inc
-        else
-          Time.Date_time.set_to_last_min_sec
-            { cur_branch_search_end_inc with hour = x }
-      in
       let range_map_inc ~(cur_branch_search_start : Time.Date_time.t)
           ~(cur_branch_search_end_inc : Time.Date_time.t) (x, y) =
-        ( range_map_start ~cur_branch_search_start x,
-          range_map_end_inc ~cur_branch_search_end_inc y )
+        let range_map_start =
+          if x = cur_branch_search_start.hour then cur_branch_search_start
+          else
+            Time.Date_time.set_to_first_min_sec
+              { cur_branch_search_start with hour = x }
+        in
+        let range_map_end_inc =
+          if y = cur_branch_search_end_inc.hour then cur_branch_search_end_inc
+          else
+            Time.Date_time.set_to_last_min_sec
+              { cur_branch_search_end_inc with hour = y }
+        in
+        (range_map_start, range_map_end_inc)
       in
-      (* let range_map_exc ~(cur_branch_search_start : Time.Date_time.t) (x, y) =
-       *   ( range_map_start ~cur_branch_search_start x,
-       *     Time.Date_time.set_to_first_min_sec
-       *       { cur_branch with hour = y } )
-       * in *)
       let cur_branch_search_start =
         get_cur_branch_search_start ~overall_search_start cur_branch
       in
@@ -408,28 +391,22 @@ module Resolve_pattern = struct
         ~(overall_search_end_inc : Time.Date_time.t) (t : Time.Pattern.t)
         (cur_branch : Time.Date_time.t) :
       Time.Date_time.t Time.Range.range Seq.t =
-      let range_map_start ~(cur_branch_search_start : Time.Date_time.t) x =
-        if x = cur_branch_search_start.day then cur_branch_search_start
-        else
-          Time.Date_time.set_to_first_hour_min_sec
-            { cur_branch_search_start with day = x }
-      in
-      let range_map_end_inc ~(cur_branch_search_end_inc : Time.Date_time.t) x =
-        if x = cur_branch_search_end_inc.day then cur_branch_search_end_inc
-        else
-          Time.Date_time.set_to_last_hour_min_sec
-            { cur_branch_search_end_inc with day = x }
-      in
       let range_map_inc ~(cur_branch_search_start : Time.Date_time.t)
           ~(cur_branch_search_end_inc : Time.Date_time.t) (x, y) =
-        ( range_map_start ~cur_branch_search_start x,
-          range_map_end_inc ~cur_branch_search_end_inc y )
+        let range_map_start =
+          if x = cur_branch_search_start.day then cur_branch_search_start
+          else
+            Time.Date_time.set_to_first_hour_min_sec
+              { cur_branch_search_start with day = x }
+        in
+        let range_map_end_inc =
+          if y = cur_branch_search_end_inc.day then cur_branch_search_end_inc
+          else
+            Time.Date_time.set_to_last_hour_min_sec
+              { cur_branch_search_end_inc with day = y }
+        in
+        (range_map_start, range_map_end_inc)
       in
-      (* let range_map_exc ~(cur_branch_search_start : Time.Date_time.t) (x, y) =
-       *   ( range_map_start ~cur_branch_search_start x,
-       *     Time.Date_time.set_to_first_hour_min_sec
-       *       { cur_branch with day = y } )
-       * in *)
       let cur_branch_search_start =
         get_cur_branch_search_start ~overall_search_start cur_branch
       in
@@ -439,7 +416,6 @@ module Resolve_pattern = struct
       let f_inc =
         range_map_inc ~cur_branch_search_start ~cur_branch_search_end_inc
       in
-      (* let f_exc = range_map_exc ~cur_branch_search_start in *)
       let f_exc = failwith_unexpected_case in
       match
         (Int_set.is_empty t.month_days, Time.Weekday_set.is_empty t.weekdays)
@@ -511,35 +487,22 @@ module Resolve_pattern = struct
         ~(overall_search_end_inc : Time.Date_time.t)
         (cur_branch : Time.Date_time.t) :
       Time.Date_time.t Time.Range.range Seq.t =
-      let range_map_start ~(cur_branch_search_start : Time.Date_time.t) x =
-        if x = cur_branch_search_start.month then cur_branch_search_start
-        else
-          Time.Date_time.set_to_first_day_hour_min_sec
-            { cur_branch_search_start with month = x }
-      in
-      let range_map_end_inc ~(cur_branch_search_end_inc : Time.Date_time.t) x =
-        if x = cur_branch_search_end_inc.month then cur_branch_search_end_inc
-        else
-          Time.Date_time.set_to_last_day_hour_min_sec
-            { cur_branch_search_end_inc with month = x }
-      in
       let range_map_inc ~(cur_branch_search_start : Time.Date_time.t)
           ~(cur_branch_search_end_inc : Time.Date_time.t) (x, y) =
-        ( range_map_start ~cur_branch_search_start x,
-          range_map_end_inc ~cur_branch_search_end_inc y )
+        let range_map_start =
+          if x = cur_branch_search_start.month then cur_branch_search_start
+          else
+            Time.Date_time.set_to_first_day_hour_min_sec
+              { cur_branch_search_start with month = x }
+        in
+        let range_map_end_inc =
+          if y = cur_branch_search_end_inc.month then cur_branch_search_end_inc
+          else
+            Time.Date_time.set_to_last_day_hour_min_sec
+              { cur_branch_search_end_inc with month = y }
+        in
+        (range_map_start, range_map_end_inc)
       in
-      (* let range_map_exc ~(cur_branch_search_start : Time.Date_time.t) ~(cur_branch_search_end_inc : Time.Date_time.t) (x, y) =
-       *   let y =
-       *     if y = cur_branch_search_end_inc.month then
-       *       cur_branch_search_end_inc
-       *     else
-       *       Time.Date_time.set_to_last_day_hour_min_sec
-       *         { cur_branch with month = y }
-       *   in
-       *   ( range_map_start ~cur_branch_search_start x,
-       *     y
-       *     )
-       * in *)
       let cur_branch_search_start =
         get_cur_branch_search_start ~overall_search_start cur_branch
       in
@@ -589,28 +552,22 @@ module Resolve_pattern = struct
     let matching_year_ranges ~(overall_search_start : Time.Date_time.t)
         ~(overall_search_end_inc : Time.Date_time.t) (t : Time.Pattern.t) :
       Time.Date_time.t Time.Range.range Seq.t =
-      let range_map_start ~(overall_search_start : Time.Date_time.t) x =
-        if x = overall_search_start.year then overall_search_start
-        else
-          Time.Date_time.set_to_first_month_day_hour_min_sec
-            { overall_search_start with year = x }
-      in
-      let range_map_end_inc ~(overall_search_end_inc : Time.Date_time.t) x =
-        if x = overall_search_end_inc.year then overall_search_end_inc
-        else
-          Time.Date_time.set_to_last_month_day_hour_min_sec
-            { overall_search_end_inc with year = x }
-      in
       let range_map_inc ~(overall_search_start : Time.Date_time.t)
           ~(overall_search_end_inc : Time.Date_time.t) (x, y) =
-        ( range_map_start ~overall_search_start x,
-          range_map_end_inc ~overall_search_end_inc y )
+        let range_map_start =
+          if x = overall_search_start.year then overall_search_start
+          else
+            Time.Date_time.set_to_first_month_day_hour_min_sec
+              { overall_search_start with year = x }
+        in
+        let range_map_end_inc =
+          if y = overall_search_end_inc.year then overall_search_end_inc
+          else
+            Time.Date_time.set_to_last_month_day_hour_min_sec
+              { overall_search_end_inc with year = y }
+        in
+        (range_map_start, range_map_end_inc)
       in
-      (* let range_map_exc ~(overall_search_start : Time.Date_time.t) (x, y) =
-       *   ( range_map_start ~overall_search_start x,
-       *     Time.Date_time.set_to_last_month_day_hour_min_sec
-       *       { overall_search_start with year = y } )
-       * in *)
       if Int_set.is_empty t.years then
         Seq.return (`Range_inc (overall_search_start, overall_search_end_inc))
       else
