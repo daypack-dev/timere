@@ -822,30 +822,37 @@ let set_search_space space (time : Time.t) : Time.t =
 
 let search_space_of_year_range tz year_range =
   let open Time in
+  let aux_start start =
+    Date_time.set_to_first_month_day_hour_min_sec
+      { Date_time.min with year = start; tz = Some tz }
+    |> Date_time.to_timestamp
+    |> Date_time.min_of_timestamp_local_result
+    |> Option.get
+  in
+  let aux_end_inc end_exc =
+    Date_time.set_to_last_month_day_hour_min_sec
+      { Date_time.min with year = end_exc; tz = Some tz }
+    |> Date_time.to_timestamp
+    |> Date_time.min_of_timestamp_local_result
+    |> Option.get
+    |> Int64.succ
+  in
+  let aux_end_exc end_exc =
+    Date_time.set_to_first_month_day_hour_min_sec
+      { Date_time.min with year = end_exc; tz = Some tz }
+    |> Date_time.to_timestamp
+    |> Date_time.min_of_timestamp_local_result
+    |> Option.get
+  in
   match year_range with
   | `Range_inc (start, end_inc) ->
-    ( Date_time.set_to_first_month_day_hour_min_sec
-        { Date_time.min with year = start; tz = Some tz }
-      |> Date_time.to_timestamp
-      |> Date_time.min_of_timestamp_local_result
-      |> Option.get,
-      Date_time.set_to_last_month_day_hour_min_sec
-        { Date_time.min with year = end_inc; tz = Some tz }
-      |> Date_time.to_timestamp
-      |> Date_time.max_of_timestamp_local_result
-      |> Option.get
-      |> Int64.succ )
+    ( aux_start start,
+      aux_end_inc end_inc
+    )
   | `Range_exc (start, end_exc) ->
-    ( Date_time.set_to_first_month_day_hour_min_sec
-        { Date_time.min with year = start; tz = Some tz }
-      |> Date_time.to_timestamp
-      |> Date_time.min_of_timestamp_local_result
-      |> Option.get,
-      Date_time.set_to_last_month_day_hour_min_sec
-        { Date_time.min with year = end_exc; tz = Some tz }
-      |> Date_time.to_timestamp
-      |> Date_time.max_of_timestamp_local_result
-      |> Option.get )
+    ( aux_start start,
+      aux_end_exc end_exc
+    )
 
 let search_space_of_year tz_offset_s year =
   search_space_of_year_range tz_offset_s (`Range_inc (year, year))
