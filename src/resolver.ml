@@ -1054,8 +1054,8 @@ let find_between_inc (s1 : Time.Interval.t Seq.t) (s2 : Time.Interval.t Seq.t) =
   let rec aux s1 s2 =
     match s1 () with
     | Seq.Nil -> Seq.empty
-    | Seq.Cons ((start1, _end_exc1), rest1) -> (
-        let s2 = OSeq.drop_while (fun (start2, _) -> start2 < start1) s2 in
+    | Seq.Cons ((start1, end_exc1), rest1) -> (
+        let s2 = OSeq.drop_while (fun (start2, _) -> start2 < end_exc1) s2 in
         match s2 () with
         | Seq.Nil -> Seq.empty
         | Seq.Cons ((_start2, end_exc2), _rest2) ->
@@ -1067,8 +1067,8 @@ let find_between_exc (s1 : Time.Interval.t Seq.t) (s2 : Time.Interval.t Seq.t) =
   let rec aux s1 s2 =
     match s1 () with
     | Seq.Nil -> Seq.empty
-    | Seq.Cons ((start1, _end_exc1), rest1) -> (
-        let s2 = OSeq.drop_while (fun (start2, _) -> start2 < start1) s2 in
+    | Seq.Cons ((start1, end_exc1), rest1) -> (
+        let s2 = OSeq.drop_while (fun (start2, _) -> start2 < end_exc1) s2 in
         match s2 () with
         | Seq.Nil -> Seq.empty
         | Seq.Cons ((start2, _end_exc2), _rest2) ->
