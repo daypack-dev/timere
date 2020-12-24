@@ -1050,6 +1050,34 @@ let find_after ((_start, end_exc) : Time.Interval.t)
   | Seq.Nil -> None
   | Seq.Cons (x, _) -> Some x
 
+let find_between_inc (s1 : Time.Interval.t Seq.t) (s2 : Time.Interval.t Seq.t) =
+  let rec aux s1 s2 =
+    match s1 () with
+    | Seq.Nil -> Seq.empty
+    | Seq.Cons ((start1, _end_exc1), rest1) ->
+      let s2 = OSeq.drop_while (fun (start2, _) -> start2 < start1) s2 in
+      match s2 () with
+      | Seq.Nil -> Seq.empty
+      | Seq.Cons ((_start2, end_exc2), _rest2) ->
+        OSeq.cons (start1, end_exc2)
+          (aux rest1 s2)
+  in
+  aux s1 s2
+
+let find_between_exc (s1 : Time.Interval.t Seq.t) (s2 : Time.Interval.t Seq.t) =
+  let rec aux s1 s2 =
+    match s1 () with
+    | Seq.Nil -> Seq.empty
+    | Seq.Cons ((start1, _end_exc1), rest1) ->
+      let s2 = OSeq.drop_while (fun (start2, _) -> start2 < start1) s2 in
+      match s2 () with
+      | Seq.Nil -> Seq.empty
+      | Seq.Cons ((start2, _end_exc2), _rest2) ->
+        OSeq.cons (start1, start2)
+          (aux rest1 s2)
+  in
+  aux s1 s2
+
 let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) =
   let open Time in
   let rec aux s =
@@ -1177,17 +1205,19 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
     | Between_inc (_, t1, t2) ->
       let s1 = aux search_using_tz t1 in
       let s2 = aux search_using_tz t2 in
-      s1
-      |> Seq.filter_map (fun (start, end_exc) ->
-          find_after (start, end_exc) s2
-          |> Option.map (fun (_, end_exc') -> (start, end_exc')))
+      find_between_inc s1 s2
+      (* s1
+       * |> Seq.filter_map (fun (start, end_exc) ->
+       *     find_after (start, end_exc) s2
+       *     |> Option.map (fun (_, end_exc') -> (start, end_exc'))) *)
     | Between_exc (_, t1, t2) ->
       let s1 = aux search_using_tz t1 in
       let s2 = aux search_using_tz t2 in
-      s1
-      |> Seq.filter_map (fun (start, end_exc) ->
-          find_after (start, end_exc) s2
-          |> Option.map (fun (start', _) -> (start, start')))
+      find_between_exc s1 s2
+      (* s1
+       * |> Seq.filter_map (fun (start, end_exc) ->
+       *     find_after (start, end_exc) s2
+       *     |> Option.map (fun (start', _) -> (start, start'))) *)
     | Unchunk c -> aux_chunked search_using_tz c |> normalize
   and aux_chunked search_using_tz_offset_s (chunked : chunked) =
     let chunk_based_on_op_on_t op s =
