@@ -1204,18 +1204,10 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
       let s1 = aux search_using_tz t1 in
       let s2 = aux search_using_tz t2 in
       find_between_inc s1 s2
-    (* s1
-     * |> Seq.filter_map (fun (start, end_exc) ->
-     *     find_after (start, end_exc) s2
-     *     |> Option.map (fun (_, end_exc') -> (start, end_exc'))) *)
     | Between_exc (_, t1, t2) ->
       let s1 = aux search_using_tz t1 in
       let s2 = aux search_using_tz t2 in
       find_between_exc s1 s2
-    (* s1
-     * |> Seq.filter_map (fun (start, end_exc) ->
-     *     find_after (start, end_exc) s2
-     *     |> Option.map (fun (start', _) -> (start, start'))) *)
     | Unchunk c -> aux_chunked search_using_tz c |> normalize
   and aux_chunked search_using_tz_offset_s (chunked : chunked) =
     let chunk_based_on_op_on_t op s =
