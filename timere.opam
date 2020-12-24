@@ -18,6 +18,7 @@ depends: [
   "oseq"
   "mparser"
   "containers" {>= "3.0"}
+  "ptime"
 ]
 build: [
   ["dune" "build" "-p" name "-j" jobs]
