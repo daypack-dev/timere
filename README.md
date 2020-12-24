@@ -1,6 +1,8 @@
 # Timere
 OCaml time reasoning library with time zone support and NLP-style parsing 
 
+__Note__: The project is largely complete, but still undergoing testing - you're welcome to use it in prototypes, but avoid using it in production for now
+
 ## Introduction
 
 Timere (short for time reasoning) is a comprehensive library for handling time (timestamps/date times) which aims to make things often not straightforward to solve easily accessible
@@ -23,11 +25,11 @@ This includes
 
     - Evaluate expressions with a different time zone (e.g. intersection of 9am to 5pm of Australia and 9am to 5pm of New York)
 
-  - Time query can thus be used as a robust solution for various applicationsas, e.g.
+  - Time query can thus be used as a robust solution for various applications, e.g.
 
     - Part of your scheduling process (e.g. 9am to 10am time intervals between these two dates)
 
-    - Finding out appropriate meeting time
+    - Obtaining explicit time intervals from a natural representation to be used for log analysis
 
 ## Usage
 
