@@ -3,7 +3,7 @@ OCaml time reasoning library with time zone support and NLP-style parsing
 
 ## Introduction
 
-Timere (short for time reasoning), is a comprehensive library for handling time (timestamps/date times), and aims to make things often not straightforward easily accessible
+Timere (short for time reasoning) is a comprehensive library for handling time (timestamps/date times) which aims to make things often not straightforward to solve easily accessible
 
 This includes
 
