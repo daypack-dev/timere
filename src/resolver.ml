@@ -369,10 +369,9 @@ module Resolve_pattern = struct
           ~cur_branch_search_end_inc
         |> Int_set.of_seq
       in
-      OSeq.(1 -- 31)
-      |> Seq.filter (fun mday ->
-          Int_set.mem mday matching_month_days
-          && Int_set.mem mday month_days_of_matching_weekdays)
+      Int_set.inter matching_month_days
+        month_days_of_matching_weekdays
+      |> Int_set.to_seq
 
     let matching_days ~(overall_search_start : Time.Date_time.t)
         ~(overall_search_end_inc : Time.Date_time.t) (t : Time.Pattern.t)
