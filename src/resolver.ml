@@ -369,8 +369,7 @@ module Resolve_pattern = struct
           ~cur_branch_search_end_inc
         |> Int_set.of_seq
       in
-      Int_set.inter matching_month_days
-        month_days_of_matching_weekdays
+      Int_set.inter matching_month_days month_days_of_matching_weekdays
       |> Int_set.to_seq
 
     let matching_days ~(overall_search_start : Time.Date_time.t)
@@ -844,14 +843,8 @@ let search_space_of_year_range tz year_range =
     |> Option.get
   in
   match year_range with
-  | `Range_inc (start, end_inc) ->
-    ( aux_start start,
-      aux_end_inc end_inc
-    )
-  | `Range_exc (start, end_exc) ->
-    ( aux_start start,
-      aux_end_exc end_exc
-    )
+  | `Range_inc (start, end_inc) -> (aux_start start, aux_end_inc end_inc)
+  | `Range_exc (start, end_exc) -> (aux_start start, aux_end_exc end_exc)
 
 let search_space_of_year tz_offset_s year =
   search_space_of_year_range tz_offset_s (`Range_inc (year, year))
