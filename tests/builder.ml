@@ -15,7 +15,13 @@ let make_date_time ~rng ~min_year ~max_year_inc =
   let hour = rng () mod 24 in
   let minute = rng () mod 60 in
   let second = rng () mod 60 in
-  Time.Date_time.make ~year ~month ~day ~hour ~minute ~second ~tz:Time_zone.utc
+  let available_time_zone_count = List.length Time_zone.available_time_zones in
+  let tz =
+    List.nth Time_zone.available_time_zones
+      (rng () mod available_time_zone_count)
+    |> Time_zone.make_exn
+  in
+  Time.Date_time.make ~year ~month ~day ~hour ~minute ~second ~tz
   |> Result.get_ok
 
 let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
