@@ -64,6 +64,9 @@ let debug_resolver () =
       (inter
          [
            years [ 2020 ];
+           between_exc
+             (month_days [-1])
+             (month_days [1]);
            always;
            (* hms_interval_exc
             *   (make_hms_exn ~hour:23 ~minute:15 ~second:0)
