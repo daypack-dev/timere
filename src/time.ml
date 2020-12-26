@@ -1416,12 +1416,6 @@ module Date_time = struct
         }
     | Error () -> Error ()
 
-  type timestamps =
-    [ `None
-    | `One of int64
-    | `Two of int64 * int64
-    ]
-
   let min_of_timestamp_local_result r : int64 option =
     match r with `None -> None | `Exact x | `Ambiguous (x, _) -> Some x
 
@@ -1496,7 +1490,10 @@ module Date_time = struct
         tz_offset_s = None;
       }
     in
-    match to_timestamp dt with `None -> Error () | _ -> Ok dt
+    match to_timestamp dt with
+    | `None -> Error ()
+    | `Exact x -> of_timestamp ~tz_of_date_time:tz x |> Result.get_ok |> Result.ok
+    | `Ambiguous _ -> Ok dt
 
   let make_exn ~year ~month ~day ~hour ~minute ~second ~tz =
     match make ~year ~month ~day ~hour ~minute ~second ~tz with
