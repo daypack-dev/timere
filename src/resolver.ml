@@ -822,14 +822,14 @@ let search_space_of_year_range tz year_range =
   let open Time in
   let aux_start start =
     Date_time.set_to_first_month_day_hour_min_sec
-      { Date_time.min with year = start; tz = Some tz }
+      { Date_time.min with year = start; tz_info = `Tz_only tz }
     |> Date_time.to_timestamp
     |> Date_time.min_of_timestamp_local_result
     |> Option.get
   in
   let aux_end_inc end_exc =
     Date_time.set_to_last_month_day_hour_min_sec
-      { Date_time.min with year = end_exc; tz = Some tz }
+      { Date_time.min with year = end_exc; tz_info = `Tz_only tz }
     |> Date_time.to_timestamp
     |> Date_time.min_of_timestamp_local_result
     |> Option.get
@@ -837,7 +837,7 @@ let search_space_of_year_range tz year_range =
   in
   let aux_end_exc end_exc =
     Date_time.set_to_first_month_day_hour_min_sec
-      { Date_time.min with year = end_exc; tz = Some tz }
+      { Date_time.min with year = end_exc; tz_info = `Tz_only tz }
     |> Date_time.to_timestamp
     |> Date_time.min_of_timestamp_local_result
     |> Option.get

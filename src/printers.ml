@@ -50,6 +50,11 @@ module Format_string_parsers = struct
     <|> (char 'X' >> return None)
 
   let date_time_inner (date_time : Time.Date_time.t) : (string, unit) t =
+    let tz_offset_s =
+      match date_time.tz_info with
+      | `Tz_only _ -> None
+      | `Tz_offset_s_only x | `Tz_and_tz_offset_s (_, x) -> Some x
+    in
     choice
       [
         attempt (string "year") >> return (string_of_int date_time.year);
@@ -95,7 +100,7 @@ module Format_string_parsers = struct
         attempt
           (string "tzoff-sign"
            >>
-           match date_time.tz_offset_s with
+           match tz_offset_s with
            | None -> return "N/A"
            | Some tz_offset_s ->
              if tz_offset_s >= 0 then return "+" else return "-");
@@ -103,7 +108,7 @@ module Format_string_parsers = struct
           (string "tzoff-hour:"
            >> padding
            >>= fun padding ->
-           match date_time.tz_offset_s with
+           match tz_offset_s with
            | None -> return "N/A"
            | Some tz_offset_s ->
              let d =
@@ -115,7 +120,7 @@ module Format_string_parsers = struct
           (string "tzoff-min:"
            >> padding
            >>= fun padding ->
-           match date_time.tz_offset_s with
+           match tz_offset_s with
            | None -> return "N/A"
            | Some tz_offset_s ->
              let d =
@@ -127,7 +132,7 @@ module Format_string_parsers = struct
           (string "tzoff-sec:"
            >> padding
            >>= fun padding ->
-           match date_time.tz_offset_s with
+           match tz_offset_s with
            | None -> return "N/A"
            | Some tz_offset_s ->
              let d =

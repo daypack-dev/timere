@@ -124,6 +124,12 @@ val of_timestamps : ?skip_invalid:bool -> timestamp list -> t
 val of_timestamp_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
 
 module Date_time : sig
+  type tz_info = [
+    | `Tz_only of Time_zone.t
+    | `Tz_offset_s_only of int
+    | `Tz_and_tz_offset_s of Time_zone.t * int
+  ]
+
   type t = private {
     year : int;
     month : month;
@@ -131,8 +137,7 @@ module Date_time : sig
     hour : int;
     minute : int;
     second : int;
-    tz : Time_zone.t option;
-    tz_offset_s : tz_offset_s option;
+    tz_info : tz_info;
   }
 
   val make :
