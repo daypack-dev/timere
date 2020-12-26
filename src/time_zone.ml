@@ -2,7 +2,7 @@ include Time_zone_data
 
 type t = {
   name : string;
-  table : table;
+  record : record;
 }
 
 type 'a local_result =
@@ -19,7 +19,7 @@ let available_time_zones = String_map.bindings db |> List.map (fun (k, _) -> k)
 
 let make name : (t, unit) result =
   match String_map.find_opt name db with
-  | Some table -> Ok { name; table }
+  | Some record -> Ok { name; record }
   | None -> Error ()
 
 let make_exn name : t =
@@ -35,11 +35,12 @@ let bsearch_table timestamp (table : table) =
     (timestamp, dummy_entry) table
 
 let lookup_timestamp_utc (t : t) timestamp =
-  match bsearch_table timestamp t.table with
-  | `At i -> Some (snd t.table.(i))
-  | `All_lower -> Some (snd t.table.(Array.length t.table - 1))
+  let table = t.record.table in
+  match bsearch_table timestamp table with
+  | `At i -> Some (snd table.(i))
+  | `All_lower -> Some (snd table.(Array.length table - 1))
   | `All_bigger -> None
-  | `Just_after i -> Some (snd t.table.(i))
+  | `Just_after i -> Some (snd table.(i))
   | `Empty -> None
 
 let local_interval_of_table (table : table) (i : int) =
@@ -55,10 +56,11 @@ let local_interval_of_table (table : table) (i : int) =
 let interval_mem ((x, y) : int64 * int64) (t : int64) = x <= t && t < y
 
 let lookup_timestamp_local (t : t) timestamp : entry local_result =
+  let table = t.record.table in
   let index =
-    match bsearch_table timestamp t.table with
+    match bsearch_table timestamp table with
     | `At i -> Some i
-    | `All_lower -> Some (Array.length t.table - 1)
+    | `All_lower -> Some (Array.length table - 1)
     | `All_bigger -> None
     | `Just_after i -> Some i
     | `Empty -> None
@@ -70,23 +72,23 @@ let lookup_timestamp_local (t : t) timestamp : entry local_result =
         if
           index > 0
           && interval_mem
-            (local_interval_of_table t.table (index - 1))
+            (local_interval_of_table table (index - 1))
             timestamp
-        then Some (snd t.table.(index - 1))
+        then Some (snd table.(index - 1))
         else None
       in
       let x2 =
-        if interval_mem (local_interval_of_table t.table index) timestamp then
-          Some (snd t.table.(index))
+        if interval_mem (local_interval_of_table table index) timestamp then
+          Some (snd table.(index))
         else None
       in
       let x3 =
         if
-          index < Array.length t.table - 1
+          index < Array.length table - 1
           && interval_mem
-            (local_interval_of_table t.table (index + 1))
+            (local_interval_of_table table (index + 1))
             timestamp
-        then Some (snd t.table.(index + 1))
+        then Some (snd table.(index + 1))
         else None
       in
       match (x1, x2, x3) with
@@ -97,6 +99,7 @@ let lookup_timestamp_local (t : t) timestamp : entry local_result =
       | Some _, Some _, Some _ -> failwith "Unexpected")
 
 let transition_seq (t : t) : ((int64 * int64) * entry) Seq.t =
+  let table = t.record.table in
   let rec aux s =
     match s () with
     | Seq.Nil -> Seq.empty
@@ -107,7 +110,10 @@ let transition_seq (t : t) : ((int64 * int64) * entry) Seq.t =
         | Seq.Cons ((k2, entry2), rest) ->
           OSeq.cons ((k1, k2), entry1) (aux (OSeq.cons (k2, entry2) rest)))
   in
-  Array.to_seq t.table |> aux
+  Array.to_seq table |> aux
 
 let transitions (t : t) : ((int64 * int64) * entry) list =
   List.of_seq @@ transition_seq t
+
+let recorded_offsets (t : t) : Int_set.t =
+  t.record.recorded_offsets

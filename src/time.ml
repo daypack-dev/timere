@@ -1497,21 +1497,30 @@ module Date_time = struct
     | Error () -> invalid_arg "make_exn"
 
   let make_precise ?tz ~year ~month ~day ~hour ~minute ~second ~tz_offset_s () =
-    let dt =
-      {
-        year;
-        month;
-        day;
-        hour;
-        minute;
-        second;
-        tz_info =
-          (match tz with
-           | None -> `Tz_offset_s_only tz_offset_s
-           | Some tz -> `Tz_and_tz_offset_s (tz, tz_offset_s));
-      }
+    let tz_info =
+      match tz with
+      | None -> Ok (`Tz_offset_s_only tz_offset_s)
+      | Some tz ->
+        if Int_set.mem tz_offset_s (Time_zone.recorded_offsets tz) then
+          Ok (`Tz_and_tz_offset_s (tz, tz_offset_s))
+        else
+          Error ()
     in
-    match to_timestamp dt with `None -> Error () | _ -> Ok dt
+    match tz_info with
+    | Error () -> Error ()
+    | Ok tz_info ->
+      let dt =
+        {
+          year;
+          month;
+          day;
+          hour;
+          minute;
+          second;
+          tz_info;
+        }
+      in
+      match to_timestamp dt with `None -> Error () | _ -> Ok dt
 
   let make_precise_exn ?tz ~year ~month ~day ~hour ~minute ~second ~tz_offset_s
       () =
