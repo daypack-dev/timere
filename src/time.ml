@@ -1383,11 +1383,11 @@ let min_timestamp = Constants.min_timestamp
 let max_timestamp = Constants.max_timestamp
 
 module Date_time = struct
-  type tz_info = [
-    | `Tz_only of Time_zone.t
+  type tz_info =
+    [ `Tz_only of Time_zone.t
     | `Tz_offset_s_only of int
     | `Tz_and_tz_offset_s of Time_zone.t * int
-  ]
+    ]
 
   type t = {
     year : int;
@@ -1435,7 +1435,8 @@ module Date_time = struct
       |> Int64.of_float
     in
     match x.tz_info with
-    | `Tz_offset_s_only offset | `Tz_and_tz_offset_s (_, offset) -> `Exact (Int64.sub timestamp (Int64.of_int offset))
+    | `Tz_offset_s_only offset | `Tz_and_tz_offset_s (_, offset) ->
+      `Exact (Int64.sub timestamp (Int64.of_int offset))
     | `Tz_only tz -> (
         match Time_zone.lookup_timestamp_local tz timestamp with
         | `None -> `None
@@ -1482,19 +1483,12 @@ module Date_time = struct
 
   let make ~year ~month ~day ~hour ~minute ~second ~tz =
     let dt =
-      {
-        year;
-        month;
-        day;
-        hour;
-        minute;
-        second;
-        tz_info = `Tz_only tz;
-      }
+      { year; month; day; hour; minute; second; tz_info = `Tz_only tz }
     in
     match to_timestamp dt with
     | `None -> Error ()
-    | `Exact x -> of_timestamp ~tz_of_date_time:tz x |> Result.get_ok |> Result.ok
+    | `Exact x ->
+      of_timestamp ~tz_of_date_time:tz x |> Result.get_ok |> Result.ok
     | `Ambiguous _ -> Ok dt
 
   let make_exn ~year ~month ~day ~hour ~minute ~second ~tz =
@@ -1511,10 +1505,10 @@ module Date_time = struct
         hour;
         minute;
         second;
-        tz_info = (match tz with
-            | None -> `Tz_offset_s_only tz_offset_s
-            | Some tz -> `Tz_and_tz_offset_s (tz, tz_offset_s)
-          );
+        tz_info =
+          (match tz with
+           | None -> `Tz_offset_s_only tz_offset_s
+           | Some tz -> `Tz_and_tz_offset_s (tz, tz_offset_s));
       }
     in
     match to_timestamp dt with `None -> Error () | _ -> Ok dt
@@ -1545,13 +1539,14 @@ module Date_time = struct
     && x.hour = y.hour
     && x.minute = y.minute
     && x.second = y.second
-    && (match (x.tz_info, y.tz_info) with
-        | `Tz_only x, `Tz_only y -> Time_zone.equal x y
-        | `Tz_offset_s_only x, `Tz_offset_s_only y -> x = y
-        | `Tz_and_tz_offset_s (tz_x, tz_offset_s_x), `Tz_and_tz_offset_s (tz_y, tz_offset_s_y) ->
-          Time_zone.equal tz_x tz_y && tz_offset_s_x = tz_offset_s_y
-        | _ -> false
-        )
+    &&
+    match (x.tz_info, y.tz_info) with
+    | `Tz_only x, `Tz_only y -> Time_zone.equal x y
+    | `Tz_offset_s_only x, `Tz_offset_s_only y -> x = y
+    | ( `Tz_and_tz_offset_s (tz_x, tz_offset_s_x),
+        `Tz_and_tz_offset_s (tz_y, tz_offset_s_y) ) ->
+      Time_zone.equal tz_x tz_y && tz_offset_s_x = tz_offset_s_y
+    | _ -> false
 
   let set_to_first_sec (x : t) : t = { x with second = 0 }
 

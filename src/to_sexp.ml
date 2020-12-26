@@ -18,12 +18,14 @@ let sexp_of_date_time (x : Time.Date_time.t) =
       sexp_of_int x.hour;
       sexp_of_int x.minute;
       sexp_of_int x.second;
-      list (
-        match x.tz_info with
-        | `Tz_only x -> [ atom "tz"; sexp_of_tz x ]
-        | `Tz_offset_s_only x -> [ atom "tz_offset_s"; sexp_of_int x ]
-        | `Tz_and_tz_offset_s (tz, tz_offset_s) -> [ atom "tz_and_tz_offset_s"; sexp_of_tz tz; sexp_of_int tz_offset_s]
-      )
+      list
+        (match x.tz_info with
+         | `Tz_only x -> [ atom "tz"; sexp_of_tz x ]
+         | `Tz_offset_s_only x -> [ atom "tz_offset_s"; sexp_of_int x ]
+         | `Tz_and_tz_offset_s (tz, tz_offset_s) ->
+           [
+             atom "tz_and_tz_offset_s"; sexp_of_tz tz; sexp_of_int tz_offset_s;
+           ]);
     ]
 
 let sexp_of_duration (x : Duration.t) =

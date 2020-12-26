@@ -79,64 +79,64 @@ let date_time_of_sexp (x : CCSexp.t) =
     invalid_data (Printf.sprintf "Invalid date: %s" (CCSexp.to_string x))
   in
   match x with
-  | `List
-      [ year; month; day; hour; minute; second; `List tz_info ]
-    -> (
-        let year = int_of_sexp year in
-        let month = month_of_sexp month in
-        let day = int_of_sexp day in
-        let hour = int_of_sexp hour in
-        let minute = int_of_sexp minute in
-        let second = int_of_sexp second in
-        let tz_info =
-          match tz_info with
-          | [`Atom "tz"; x ] -> `Tz_only (tz_of_sexp x)
-          | [`Atom "tz_offset_s"; x] -> `Tz_offset_s_only (int_of_sexp x)
-          | [`Atom "tz_and_tz_offset_s"; tz; tz_offset_s] -> `Tz_and_tz_offset_s (tz_of_sexp tz, int_of_sexp tz_offset_s)
-          | _ -> invalid_data ()
-        in
+  | `List [ year; month; day; hour; minute; second; `List tz_info ] -> (
+      let year = int_of_sexp year in
+      let month = month_of_sexp month in
+      let day = int_of_sexp day in
+      let hour = int_of_sexp hour in
+      let minute = int_of_sexp minute in
+      let second = int_of_sexp second in
+      let tz_info =
         match tz_info with
-        | `Tz_only tz -> (
-            match
-              Time.Date_time.make ~year ~month ~day ~hour ~minute ~second ~tz
-            with
-            | Ok x -> x
-            | Error () -> invalid_data ())
-        | `Tz_offset_s_only tz_offset_s -> (
-            match
-              Time.Date_time.make_precise ~year ~month ~day ~hour ~minute ~second
-                ~tz_offset_s ()
-            with
-            | Ok x -> x
-            | Error () -> invalid_data ())
-        | `Tz_and_tz_offset_s (tz, tz_offset_s) -> (
-            match
-              Time.Date_time.make_precise ~tz ~year ~month ~day ~hour ~minute
-                ~second ~tz_offset_s ()
-            with
-            | Ok x -> x
-            | Error () -> invalid_data ()))
+        | [ `Atom "tz"; x ] -> `Tz_only (tz_of_sexp x)
+        | [ `Atom "tz_offset_s"; x ] -> `Tz_offset_s_only (int_of_sexp x)
+        | [ `Atom "tz_and_tz_offset_s"; tz; tz_offset_s ] ->
+          `Tz_and_tz_offset_s (tz_of_sexp tz, int_of_sexp tz_offset_s)
+        | _ -> invalid_data ()
+      in
+      match tz_info with
+      | `Tz_only tz -> (
+          match
+            Time.Date_time.make ~year ~month ~day ~hour ~minute ~second ~tz
+          with
+          | Ok x -> x
+          | Error () -> invalid_data ())
+      | `Tz_offset_s_only tz_offset_s -> (
+          match
+            Time.Date_time.make_precise ~year ~month ~day ~hour ~minute ~second
+              ~tz_offset_s ()
+          with
+          | Ok x -> x
+          | Error () -> invalid_data ())
+      | `Tz_and_tz_offset_s (tz, tz_offset_s) -> (
+          match
+            Time.Date_time.make_precise ~tz ~year ~month ~day ~hour ~minute
+              ~second ~tz_offset_s ()
+          with
+          | Ok x -> x
+          | Error () -> invalid_data ()))
   | _ -> invalid_data ()
 
 let timestamp_of_sexp x =
   let dt = date_time_of_sexp x in
   match dt.tz_info with
-  | `Tz_only _ -> invalid_data "Expected time zone offset 0, but got None instead"
-  | `Tz_offset_s_only _ -> invalid_data "Expected time zone UTC, but got None instead"
-  | `Tz_and_tz_offset_s (tz, tz_offset_s) ->
-    let tz_name = Time_zone.name tz in
-    if tz_name <> "UTC" then
-      invalid_data
-        (Printf.sprintf "Expected time zone UTC, but got %s instead" tz_name)
-    else
-    if tz_offset_s <> 0 then
-      invalid_data
-        (Printf.sprintf "Expected time zone offset 0, but got %d instead"
-           tz_offset_s)
-    else
-      match Time.Date_time.to_timestamp dt with
-      | `Exact x -> x
-      | _ -> failwith "Unexpected case"
+  | `Tz_only _ ->
+    invalid_data "Expected time zone offset 0, but got None instead"
+  | `Tz_offset_s_only _ ->
+    invalid_data "Expected time zone UTC, but got None instead"
+  | `Tz_and_tz_offset_s (tz, tz_offset_s) -> (
+      let tz_name = Time_zone.name tz in
+      if tz_name <> "UTC" then
+        invalid_data
+          (Printf.sprintf "Expected time zone UTC, but got %s instead" tz_name)
+      else if tz_offset_s <> 0 then
+        invalid_data
+          (Printf.sprintf "Expected time zone offset 0, but got %d instead"
+             tz_offset_s)
+      else
+        match Time.Date_time.to_timestamp dt with
+        | `Exact x -> x
+        | _ -> failwith "Unexpected case")
 
 let range_of_sexp ~(f : CCSexp.t -> 'a) (x : CCSexp.t) =
   match x with
