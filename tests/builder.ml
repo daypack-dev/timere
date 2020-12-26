@@ -21,8 +21,12 @@ let make_date_time ~rng ~min_year ~max_year_inc =
       (rng () mod available_time_zone_count)
     |> Time_zone.make_exn
   in
-  Time.Date_time.make ~year ~month ~day ~hour ~minute ~second ~tz
-  |> Result.get_ok
+  match Time.Date_time.make ~year ~month ~day ~hour ~minute ~second ~tz with
+  | Error () ->
+    Time.Date_time.make ~year ~month ~day ~hour ~minute ~second
+      ~tz:Time_zone.utc
+    |> Result.get_ok
+  | Ok x -> x
 
 let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
   let len = rng () in
