@@ -1,5 +1,5 @@
 opam-version: "2.0"
-synopsis: "Time reasoning library in OCaml"
+synopsis: "OCaml time reasoning library with platform independent time zone support and NLP-style parsing"
 description: """
 Timere provides facilities for reasoning over time intervals, e.g. union, intersect, relative complement
 
