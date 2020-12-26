@@ -31,4 +31,4 @@ val transitions : t -> ((int64 * int64) * entry) list
 
 val transition_seq : t -> ((int64 * int64) * entry) Seq.t
 
-val recorded_offsets : t -> Int_set.t
+val offset_is_recorded : int -> t -> bool

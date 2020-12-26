@@ -115,5 +115,5 @@ let transition_seq (t : t) : ((int64 * int64) * entry) Seq.t =
 let transitions (t : t) : ((int64 * int64) * entry) list =
   List.of_seq @@ transition_seq t
 
-let recorded_offsets (t : t) : Int_set.t =
-  t.record.recorded_offsets
+let offset_is_recorded offset (t : t) =
+  Array.mem offset t.record.recorded_offsets

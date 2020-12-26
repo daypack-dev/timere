@@ -334,7 +334,7 @@ let gen () =
         write_line "type table = (int64 * entry) array";
         write_line "";
         write_line "type record = {";
-        write_line "  recorded_offsets : Int_set.t;";
+        write_line "  recorded_offsets : int array;";
         write_line "  table : table;";
         write_line "}";
         write_line "";
@@ -385,13 +385,13 @@ let gen () =
                  l
              in
              write_line (Printf.sprintf "  |> String_map.add \"%s\" {" s);
-             write_line "      recorded_offsets = Int_set.empty";
+             write_line "      recorded_offsets = [|";
              Int_set.iter
              (fun offset ->
-               write_line (Printf.sprintf "                         |> Int_set.add (%d)" offset)
+               write_line (Printf.sprintf "    (%d);" offset)
              )
                recorded_offsets;
-             write_line "                         ;";
+             write_line "        |];";
              write_line "      table = [|";
              List.iter
                (fun r ->
