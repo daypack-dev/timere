@@ -1,5 +1,5 @@
 # Timere
-OCaml time reasoning library with time zone support and NLP-style parsing 
+OCaml time reasoning library with platform independent time zone support and NLP-style parsing
 
 __Note__: The project is largely complete, but still undergoing testing - you're welcome to use it in prototypes, but avoid using it in production for now
 
@@ -27,7 +27,7 @@ This includes
 
   - Time query can thus be used as a robust solution for various applications, e.g.
 
-    - Part of your scheduling process (e.g. 9am to 10am time intervals between these two dates)
+    - Part of your scheduling process (e.g. 9am to 10am time intervals between two dates)
 
     - Obtaining explicit time intervals from a natural representation to be used for log analysis
 
@@ -37,7 +37,7 @@ TODO
 
 ## Acknowledgement
 
-- Time zone information is extracted via `zdump` command output into `src/time_zone_data.ml`
+- Time zone information is extracted via `zdump` command output into `src/time_zone_data.ml`, using the IANA database (as time zone files) distributed on Linux
 
 - Time zone data handling code copies approach used by [chrono-tz](https://github.com/chronotope/chrono-tz)
 
