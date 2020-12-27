@@ -1399,11 +1399,13 @@ module Date_time = struct
     tz_info : tz_info;
   }
 
-  let to_ptime_date_time_utc (x : t) : Ptime.date * Ptime.time =
+  let dummy_tz_info = `Tz_offset_s_only 0
+
+  let to_ptime_date_time_pretend_utc (x : t) : Ptime.date * Ptime.time =
     ( (x.year, human_int_of_month x.month, x.day),
       ((x.hour, x.minute, x.second), 0) )
 
-  let of_ptime_date_time_utc
+  let of_ptime_date_time_pretend_utc
       (((year, month, day), ((hour, minute, second), _tz_offset_s)) :
          Ptime.date * Ptime.time) : (t, unit) result =
     match month_of_human_int month with
@@ -1426,24 +1428,27 @@ module Date_time = struct
   let max_of_timestamp_local_result r : int64 option =
     match r with `None -> None | `Exact x | `Ambiguous (_, x) -> Some x
 
+  let to_timestamp_pretend_utc (x : t) : timestamp =
+    to_ptime_date_time_pretend_utc x
+    |> Ptime.of_date_time
+    |> Option.get
+    |> Ptime.to_float_s
+    |> Int64.of_float
+
   let to_timestamp (x : t) : timestamp Time_zone.local_result =
-    let timestamp =
-      to_ptime_date_time_utc x
-      |> Ptime.of_date_time
-      |> Option.get
-      |> Ptime.to_float_s
-      |> Int64.of_float
+    let timestamp_local =
+      to_timestamp_pretend_utc x
     in
     match x.tz_info with
     | `Tz_offset_s_only offset | `Tz_and_tz_offset_s (_, offset) ->
-      `Exact (Int64.sub timestamp (Int64.of_int offset))
+      `Exact (Int64.sub timestamp_local (Int64.of_int offset))
     | `Tz_only tz -> (
-        match Time_zone.lookup_timestamp_local tz timestamp with
+        match Time_zone.lookup_timestamp_local tz timestamp_local with
         | `None -> `None
-        | `Exact e -> `Exact (Int64.sub timestamp (Int64.of_int e.offset))
+        | `Exact e -> `Exact (Int64.sub timestamp_local (Int64.of_int e.offset))
         | `Ambiguous (e1, e2) ->
-          let x1 = Int64.sub timestamp (Int64.of_int e1.offset) in
-          let x2 = Int64.sub timestamp (Int64.of_int e2.offset) in
+          let x1 = Int64.sub timestamp_local (Int64.of_int e1.offset) in
+          let x2 = Int64.sub timestamp_local (Int64.of_int e2.offset) in
           `Ambiguous (min x1 x2, max x1 x2))
 
   let to_timestamp_exact (x : t) : timestamp =
@@ -1456,12 +1461,9 @@ module Date_time = struct
       invalid_arg "to_timestamp_exact: date time maps to two timestamps"
 
   let to_timestamp_force_offset ~offset (x : t) =
-    to_ptime_date_time_utc x
-    |> Ptime.of_date_time
-    |> Option.get
-    |> Ptime.to_float_s
-    |> Int64.of_float
-    |> fun x -> Int64.sub x (Int64.of_int offset)
+    Int64.sub
+      (to_timestamp_pretend_utc x)
+      (Int64.of_int offset)
 
   let of_timestamp ?(tz_of_date_time = Time_zone.utc) (x : int64) :
     (t, unit) result =
@@ -1473,7 +1475,7 @@ module Date_time = struct
         | Some x ->
           x
           |> Ptime.to_date_time ~tz_offset_s:entry.offset
-          |> of_ptime_date_time_utc
+          |> of_ptime_date_time_pretend_utc
           |> Result.map (fun t ->
               {
                 t with
@@ -1502,7 +1504,7 @@ module Date_time = struct
       | None -> Ok (`Tz_offset_s_only tz_offset_s)
       | Some tz ->
         if Time_zone.offset_is_recorded tz_offset_s tz then
-          let timestamp =
+          let timestamp_local =
             {
               year;
               month;
@@ -1510,11 +1512,11 @@ module Date_time = struct
               hour;
               minute;
               second;
-              tz_info = `Tz_offset_s_only 0;
+              tz_info = dummy_tz_info;
             }
-            |> to_timestamp_exact
+            |> to_timestamp_pretend_utc
           in
-          match Time_zone.lookup_timestamp_local tz timestamp with
+          match Time_zone.lookup_timestamp_local tz timestamp_local with
           | `None -> Error ()
           | `Exact e ->
             if e.offset = tz_offset_s then
