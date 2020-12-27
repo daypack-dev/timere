@@ -1412,16 +1412,7 @@ module Date_time = struct
          Ptime.date * Ptime.time) : (t, unit) result =
     match month_of_human_int month with
     | Ok month ->
-      Ok
-        {
-          year;
-          month;
-          day;
-          hour;
-          minute;
-          second;
-          tz_info = utc_tz_info;
-        }
+      Ok { year; month; day; hour; minute; second; tz_info = utc_tz_info }
     | Error () -> Error ()
 
   let min_of_timestamp_local_result r : int64 option =
