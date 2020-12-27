@@ -723,14 +723,8 @@ module Resolve_pattern = struct
   let matching_intervals (search_param : Search_param.t) (t : Time.Pattern.t) :
     (int64 * int64) Seq.t =
     let f (x, y) =
-      let x =
-        Time.Date_time.to_timestamp_force_offset
-          ~offset:search_param.search_using_tz_offset_s x
-      in
-      let y =
-        Time.Date_time.to_timestamp_force_offset
-          ~offset:search_param.search_using_tz_offset_s y
-      in
+      let x = Time.Date_time.to_timestamp_exact x in
+      let y = Time.Date_time.to_timestamp_exact y in
       (x, y)
     in
     matching_date_time_ranges search_param t
