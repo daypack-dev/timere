@@ -268,7 +268,7 @@ module Date_time : sig
 
   val to_iso8601 : t -> string
 
-  val of_iso8601 : string -> (t, unit) result
+  val of_iso8601 : string -> (t, string) result
 end
 
 (** {1 List and Filtering operations} *)
