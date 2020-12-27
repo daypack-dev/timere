@@ -262,7 +262,11 @@ let min_timestamp = Constants.min_timestamp
 
 let max_timestamp = Constants.max_timestamp
 
-module Int_set = Set.Make (struct type t = int let compare = compare end)
+module Int_set = Set.Make (struct
+    type t = int
+
+    let compare = compare
+  end)
 
 let gen () =
   let zoneinfo_file_dir = "/usr/share/zoneinfo/posix" in
@@ -378,28 +382,24 @@ let gen () =
                | _ -> l
              in
              let recorded_offsets =
-               List.fold_left (fun acc (r : transition_record) ->
-                   Int_set.add r.offset acc
-                 )
-                 Int_set.empty
-                 l
+               List.fold_left
+                 (fun acc (r : transition_record) -> Int_set.add r.offset acc)
+                 Int_set.empty l
              in
              write_line (Printf.sprintf "  |> String_map.add \"%s\" {" s);
              write_line "      recorded_offsets = [|";
              Int_set.iter
-             (fun offset ->
-               write_line (Printf.sprintf "    (%d);" offset)
-             )
+               (fun offset -> write_line (Printf.sprintf "    (%d);" offset))
                recorded_offsets;
              write_line "        |];";
              write_line "      table = [|";
              List.iter
                (fun r ->
                   write_line
-                    (Printf.sprintf "        ((%LdL), { is_dst = %b; offset = (%d) });"
-                       r.start r.is_dst r.offset))
+                    (Printf.sprintf
+                       "        ((%LdL), { is_dst = %b; offset = (%d) });" r.start
+                       r.is_dst r.offset))
                l;
              write_line "        |];";
-             write_line "    }"
-          )
+             write_line "    }")
           tables_utc)

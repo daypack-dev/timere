@@ -71,9 +71,7 @@ let lookup_timestamp_local (t : t) timestamp : entry local_result =
       let x1 =
         if
           index > 0
-          && interval_mem
-            (local_interval_of_table table (index - 1))
-            timestamp
+          && interval_mem (local_interval_of_table table (index - 1)) timestamp
         then Some (snd table.(index - 1))
         else None
       in
@@ -85,9 +83,7 @@ let lookup_timestamp_local (t : t) timestamp : entry local_result =
       let x3 =
         if
           index < Array.length table - 1
-          && interval_mem
-            (local_interval_of_table table (index + 1))
-            timestamp
+          && interval_mem (local_interval_of_table table (index + 1)) timestamp
         then Some (snd table.(index + 1))
         else None
       in

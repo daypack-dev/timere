@@ -353,10 +353,7 @@ val resolve :
 (** {1 Pretty printers} *)
 
 val sprintf_timestamp :
-  ?display_using_tz:Time_zone.t ->
-  ?format:string ->
-  timestamp ->
-  string
+  ?display_using_tz:Time_zone.t -> ?format:string -> timestamp -> string
 
 val pp_timestamp :
   ?display_using_tz:Time_zone.t ->
@@ -366,10 +363,7 @@ val pp_timestamp :
   unit
 
 val sprintf_interval :
-  ?display_using_tz:Time_zone.t ->
-  ?format:string ->
-  interval ->
-  string
+  ?display_using_tz:Time_zone.t -> ?format:string -> interval -> string
 
 val pp_interval :
   ?display_using_tz:Time_zone.t ->

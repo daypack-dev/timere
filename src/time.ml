@@ -1503,24 +1503,13 @@ module Date_time = struct
       | Some tz ->
         if Time_zone.offset_is_recorded tz_offset_s tz then
           Ok (`Tz_and_tz_offset_s (tz, tz_offset_s))
-        else
-          Error ()
+        else Error ()
     in
     match tz_info with
     | Error () -> Error ()
-    | Ok tz_info ->
-      let dt =
-        {
-          year;
-          month;
-          day;
-          hour;
-          minute;
-          second;
-          tz_info;
-        }
-      in
-      match to_timestamp dt with `None -> Error () | _ -> Ok dt
+    | Ok tz_info -> (
+        let dt = { year; month; day; hour; minute; second; tz_info } in
+        match to_timestamp dt with `None -> Error () | _ -> Ok dt)
 
   let make_precise_exn ?tz ~year ~month ~day ~hour ~minute ~second ~tz_offset_s
       () =

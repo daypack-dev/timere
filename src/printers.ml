@@ -176,29 +176,22 @@ let sprintf_date_time ?(format : string = default_date_time_format_string)
   let p (date_time : Time.Date_time.t) : (string list, unit) t =
     many (single date_time)
   in
-  match
-    result_of_mparser_result
-      @@
-      parse_string (p x << eof) format ()
-  with
+  match result_of_mparser_result @@ parse_string (p x << eof) format () with
   | Error msg -> invalid_format_string msg
-  | Ok l ->
-    String.concat "" l
+  | Ok l -> String.concat "" l
 
 let pp_date_time ?(format = default_interval_format_string) formatter x =
   Format.fprintf formatter "%s" (sprintf_date_time ~format x)
 
 let sprintf_timestamp ?(display_using_tz = Time_zone.utc)
-    ?(format = default_date_time_format_string) (time : int64) :
-  string =
+    ?(format = default_date_time_format_string) (time : int64) : string =
   match Time.Date_time.of_timestamp ~tz_of_date_time:display_using_tz time with
   | Error () -> invalid_arg "Invalid unix second"
   | Ok dt -> sprintf_date_time ~format dt
 
 let pp_timestamp ?(display_using_tz = Time_zone.utc)
     ?(format = default_date_time_format_string) formatter x =
-  Format.fprintf formatter "%s"
-    (sprintf_timestamp ~display_using_tz ~format x)
+  Format.fprintf formatter "%s" (sprintf_timestamp ~display_using_tz ~format x)
 
 let sprintf_interval ?(display_using_tz = Time_zone.utc)
     ?(format : string = default_interval_format_string)
@@ -228,29 +221,28 @@ let sprintf_interval ?(display_using_tz = Time_zone.utc)
   | Ok s -> (
       match Time.Date_time.of_timestamp ~tz_of_date_time:display_using_tz e with
       | Error () -> invalid_arg "Invalid end unix time"
-      | Ok e ->
-        match
-        result_of_mparser_result
-        @@
-        parse_string
-          (p s e
-           >>= fun s ->
-           get_pos
-           >>= fun pos ->
-           attempt eof
-           >> return s
-              <|> fail
-                (Printf.sprintf "Expected EOI, pos: %s" (string_of_pos pos)))
-          format ()
-        with
-        | Error msg -> invalid_format_string msg
-        | Ok l ->
-        String.concat "" l)
+      | Ok e -> (
+          match
+            result_of_mparser_result
+            @@ parse_string
+              (p s e
+               >>= fun s ->
+               get_pos
+               >>= fun pos ->
+               attempt eof
+               >> return s
+                  <|> fail
+                    (Printf.sprintf "Expected EOI, pos: %s"
+                       (string_of_pos pos)))
+              format ()
+          with
+          | Error msg -> invalid_format_string msg
+          | Ok l -> String.concat "" l))
 
 let pp_interval ?(display_using_tz = Time_zone.utc)
     ?(format = default_interval_format_string) formatter interval =
   Format.fprintf formatter "%s"
-  (sprintf_interval ~display_using_tz ~format interval)
+    (sprintf_interval ~display_using_tz ~format interval)
 
 let sprint_duration ({ days; hours; minutes; seconds } : Duration.t) : string =
   if days > 0 then
