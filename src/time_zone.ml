@@ -61,7 +61,7 @@ let lookup_timestamp_local (t : t) timestamp : entry local_result =
     match bsearch_table timestamp table with
     | `At i -> Some i
     | `All_lower -> Some (Array.length table - 1)
-    | `All_bigger -> None
+    | `All_bigger -> Some 0
     | `Just_after i -> Some i
     | `Empty -> None
   in
