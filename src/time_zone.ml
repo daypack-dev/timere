@@ -53,7 +53,7 @@ let local_interval_of_table (table : table) (i : int) =
   ( Int64.add start_utc (Int64.of_int entry.offset),
     Int64.add end_exc_utc (Int64.of_int entry.offset) )
 
-let interval_mem ((x, y) : int64 * int64) (t : int64) = x <= t && t < y
+let interval_mem (t : int64) ((x, y) : int64 * int64) = x <= t && t < y
 
 let lookup_timestamp_local (t : t) timestamp : entry local_result =
   let table = t.record.table in
@@ -71,19 +71,19 @@ let lookup_timestamp_local (t : t) timestamp : entry local_result =
       let x1 =
         if
           index > 0
-          && interval_mem (local_interval_of_table table (index - 1)) timestamp
+          && interval_mem timestamp (local_interval_of_table table (index - 1))
         then Some (snd table.(index - 1))
         else None
       in
       let x2 =
-        if interval_mem (local_interval_of_table table index) timestamp then
+        if interval_mem timestamp (local_interval_of_table table index) then
           Some (snd table.(index))
         else None
       in
       let x3 =
         if
           index < Array.length table - 1
-          && interval_mem (local_interval_of_table table (index + 1)) timestamp
+          && interval_mem timestamp (local_interval_of_table table (index + 1))
         then Some (snd table.(index + 1))
         else None
       in
