@@ -8,9 +8,7 @@ let of_date_time (dt : Time.Date_time.t) : string =
        if x = 0 then "Z"
        else
          let sign = if x < 0 then '-' else '+' in
-         let offset =
-           Duration.of_seconds (Int64.of_int (abs x))
-         in
+         let offset = Duration.of_seconds (Int64.of_int (abs x)) in
          Printf.sprintf "%c%02d:%02d" sign offset.hours offset.minutes)
 
 let pp_date_time formatter dt = Format.fprintf formatter "%s" (of_date_time dt)

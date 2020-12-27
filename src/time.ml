@@ -2150,7 +2150,8 @@ let minutes minutes = pattern ~minutes ()
 
 let seconds seconds = pattern ~seconds ()
 
-let after (bound : Duration.t) (t1 : t) (t2 : t) : t = After (default_search_space, Duration.to_seconds bound, t1, t2)
+let after (bound : Duration.t) (t1 : t) (t2 : t) : t =
+  After (default_search_space, Duration.to_seconds bound, t1, t2)
 
 let between_inc (bound : Duration.t) (t1 : t) (t2 : t) : t =
   Between_inc (default_search_space, Duration.to_seconds bound, t1, t2)
@@ -2179,8 +2180,7 @@ let between_exc (bound : Duration.t) (t1 : t) (t2 : t) : t =
  *          ~seconds:[ hms_a.second ] ()) *)
 
 let hms_interval_exc (hms_a : hms) (hms_b : hms) : t =
-  between_exc
-    (Duration.make ~days:1 ())
+  between_exc (Duration.make ~days:1 ())
     (pattern ~hours:[ hms_a.hour ] ~minutes:[ hms_a.minute ]
        ~seconds:[ hms_a.second ] ())
     (pattern ~hours:[ hms_b.hour ] ~minutes:[ hms_b.minute ]

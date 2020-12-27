@@ -63,14 +63,14 @@ let tz_of_sexp (x : CCSexp.t) =
 
 let duration_of_sexp (x : CCSexp.t) =
   match x with
-  | `List [ days; hours; minutes; seconds ] -> (
-      let days = int_of_sexp days in
-      let hours = int_of_sexp hours in
-      let minutes = int_of_sexp minutes in
-      let seconds = int_of_sexp seconds in
-      Duration.make ~days ~hours ~minutes ~seconds ()
-    )
-  | _ -> invalid_data (Printf.sprintf "Invalid duration: %s" (CCSexp.to_string x))
+  | `List [ days; hours; minutes; seconds ] ->
+    let days = int_of_sexp days in
+    let hours = int_of_sexp hours in
+    let minutes = int_of_sexp minutes in
+    let seconds = int_of_sexp seconds in
+    Duration.make ~days ~hours ~minutes ~seconds ()
+  | _ ->
+    invalid_data (Printf.sprintf "Invalid duration: %s" (CCSexp.to_string x))
 
 let date_time_of_sexp (x : CCSexp.t) =
   let invalid_data () =
@@ -229,14 +229,10 @@ let of_sexp (x : CCSexp.t) =
         | [ `Atom "take_n_points"; n; x ] ->
           take_n_points (int_of_sexp n) (aux x)
         | [ `Atom "shift"; n; x ] ->
-          let n =
-            Duration.of_seconds (int64_of_sexp n)
-          in
+          let n = Duration.of_seconds (int64_of_sexp n) in
           shift n (aux x)
         | [ `Atom "lengthen"; n; x ] ->
-          let n =
-            Duration.of_seconds (int64_of_sexp n)
-          in
+          let n = Duration.of_seconds (int64_of_sexp n) in
           lengthen n (aux x)
         | [ `Atom "with_tz"; n; x ] ->
           let tz = tz_of_sexp n in
@@ -248,9 +244,12 @@ let of_sexp (x : CCSexp.t) =
         | `Atom "round_robin" :: l -> round_robin_pick (List.map aux l)
         | `Atom "inter" :: l -> inter (List.map aux l)
         | `Atom "union" :: l -> union (List.map aux l)
-        | [ `Atom "after"; b; t1; t2 ] -> after (duration_of_sexp b) (aux t1) (aux t2)
-        | [ `Atom "between_inc"; b; t1; t2 ] -> between_inc (duration_of_sexp b) (aux t1) (aux t2)
-        | [ `Atom "between_exc"; b; t1; t2 ] -> between_exc (duration_of_sexp b) (aux t1) (aux t2)
+        | [ `Atom "after"; b; t1; t2 ] ->
+          after (duration_of_sexp b) (aux t1) (aux t2)
+        | [ `Atom "between_inc"; b; t1; t2 ] ->
+          between_inc (duration_of_sexp b) (aux t1) (aux t2)
+        | [ `Atom "between_exc"; b; t1; t2 ] ->
+          between_exc (duration_of_sexp b) (aux t1) (aux t2)
         | [ `Atom "unchunk"; x ] -> aux_chunked (fun x -> x) x
         | _ ->
           invalid_data

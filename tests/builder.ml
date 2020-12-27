@@ -178,18 +178,15 @@ let build ~min_year ~max_year_inc ~max_height ~max_branching
         |> List.of_seq
         |> Time.union
       | 3 ->
-        Time.after
-          (make_duration ~rng)
+        Time.after (make_duration ~rng)
           (aux (new_height ~rng height))
           (aux (new_height ~rng height))
       | 4 ->
-        Time.between_inc
-          (make_duration ~rng)
+        Time.between_inc (make_duration ~rng)
           (aux (new_height ~rng height))
           (aux (new_height ~rng height))
       | 5 ->
-        Time.between_exc
-          (make_duration ~rng)
+        Time.between_exc (make_duration ~rng)
           (aux (new_height ~rng height))
           (aux (new_height ~rng height))
       | 6 ->

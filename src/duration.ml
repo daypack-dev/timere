@@ -39,12 +39,12 @@ let of_seconds (x : int64) : t =
     let days = Int64.div hours 24L in
     let hours = Int64.rem hours 24L in
     let minutes = Int64.rem minutes 60L in
-      {
-        days = Int64.to_int days;
-        hours = Int64.to_int hours;
-        minutes = Int64.to_int minutes;
-        seconds = Int64.to_int seconds;
-      }
+    {
+      days = Int64.to_int days;
+      hours = Int64.to_int hours;
+      minutes = Int64.to_int minutes;
+      seconds = Int64.to_int seconds;
+    }
 
 let to_seconds (t : t) : int64 =
   let open Int64_utils in
@@ -66,17 +66,13 @@ let seconds_of_raw (r : raw) : int64 =
 
 let normalize (t : t) : t = t |> to_seconds |> of_seconds
 
-let make ?(days = 0) ?(hours = 0) ?(minutes = 0) ?(seconds = 0) () :
-  t =
+let make ?(days = 0) ?(hours = 0) ?(minutes = 0) ?(seconds = 0) () : t =
   if days >= 0 && hours >= 0 && minutes >= 0 && seconds >= 0 then
-    (({ days; hours; minutes; seconds } : t) |> normalize)
+    ({ days; hours; minutes; seconds } : t) |> normalize
   else invalid_arg "make"
 
 let make_frac ?(days = 0.0) ?(hours = 0.0) ?(minutes = 0.0) ?(seconds = 0) () :
   t =
   if days >= 0.0 && hours >= 0.0 && minutes >= 0.0 && seconds >= 0 then
-      (({ days; hours; minutes; seconds } : raw)
-       |> seconds_of_raw
-       |> of_seconds
-      )
+    ({ days; hours; minutes; seconds } : raw) |> seconds_of_raw |> of_seconds
   else invalid_arg "make_frac"

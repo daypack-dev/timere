@@ -1042,12 +1042,11 @@ let find_after bound ((_start, end_exc) : Time.Interval.t)
   match OSeq.drop_while (fun (start', _) -> start' < end_exc) s2 () with
   | Seq.Nil -> None
   | Seq.Cons ((start', end_exc'), _) ->
-    if Int64.sub start' end_exc <= bound then
-      Some (start', end_exc')
-    else
-      None
+    if Int64.sub start' end_exc <= bound then Some (start', end_exc')
+    else None
 
-let find_between_inc bound (s1 : Time.Interval.t Seq.t) (s2 : Time.Interval.t Seq.t) =
+let find_between_inc bound (s1 : Time.Interval.t Seq.t)
+    (s2 : Time.Interval.t Seq.t) =
   let rec aux s1 s2 =
     match s1 () with
     | Seq.Nil -> Seq.empty
@@ -1058,13 +1057,12 @@ let find_between_inc bound (s1 : Time.Interval.t Seq.t) (s2 : Time.Interval.t Se
         | Seq.Cons ((start2, end_exc2), _rest2) ->
           if Int64.sub start2 end_exc1 <= bound then
             OSeq.cons (start1, end_exc2) (aux rest1 s2)
-          else
-            aux rest1 s2
-      )
+          else aux rest1 s2)
   in
   aux s1 s2
 
-let find_between_exc bound (s1 : Time.Interval.t Seq.t) (s2 : Time.Interval.t Seq.t) =
+let find_between_exc bound (s1 : Time.Interval.t Seq.t)
+    (s2 : Time.Interval.t Seq.t) =
   let rec aux s1 s2 =
     match s1 () with
     | Seq.Nil -> Seq.empty
@@ -1075,9 +1073,7 @@ let find_between_exc bound (s1 : Time.Interval.t Seq.t) (s2 : Time.Interval.t Se
         | Seq.Cons ((start2, _end_exc2), _rest2) ->
           if Int64.sub start2 end_exc1 <= bound then
             OSeq.cons (start1, start2) (aux rest1 s2)
-          else
-            aux rest1 s2
-      )
+          else aux rest1 s2)
   in
   aux s1 s2
 

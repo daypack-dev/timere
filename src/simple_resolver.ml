@@ -44,9 +44,7 @@ let find_after bound ((_start, end_exc) : Time.Interval.t)
     |> OSeq.drop_while (fun (start', _) -> start' < end_exc)
     |> OSeq.take_while (fun (start', _) -> Int64.sub start' end_exc <= bound)
   in
-  match s () with
-  | Seq.Nil -> None
-  | Seq.Cons (x, _) -> Some x
+  match s () with Seq.Nil -> None | Seq.Cons (x, _) -> Some x
 
 let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) =
   let open Time in

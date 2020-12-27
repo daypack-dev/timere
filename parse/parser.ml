@@ -398,11 +398,11 @@ module Ast_normalize = struct
     let make_duration ~pos ~days ~hours ~minutes ~seconds =
       ( Option.get pos,
         Duration
-          ((Timere.Duration.make
-                ~days:(Option.value ~default:0 days)
-                ~hours:(Option.value ~default:0 hours)
-                ~minutes:(Option.value ~default:0 minutes)
-                ~seconds ())) )
+          (Timere.Duration.make
+             ~days:(Option.value ~default:0 days)
+             ~hours:(Option.value ~default:0 hours)
+             ~minutes:(Option.value ~default:0 minutes)
+             ~seconds ()) )
     in
     let rec aux_start_with_days acc l =
       match l with
@@ -429,11 +429,11 @@ module Ast_normalize = struct
         let token =
           ( Option.value ~default:pos_seconds pos,
             Duration
-              ((Timere.Duration.make
-                    ~days:(Option.value ~default:0 days)
-                    ~hours:(Option.value ~default:0 hours)
-                    ~minutes:(Option.value ~default:0 minutes)
-                    ~seconds ())) )
+              (Timere.Duration.make
+                 ~days:(Option.value ~default:0 days)
+                 ~hours:(Option.value ~default:0 hours)
+                 ~minutes:(Option.value ~default:0 minutes)
+                 ~seconds ()) )
         in
         aux_start_with_days (token :: acc) rest
       | [] ->

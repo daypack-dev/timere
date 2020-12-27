@@ -143,11 +143,33 @@ let to_sexp (t : Time.t) : CCSexp.t =
       CCSexp.(list (atom "inter" :: (s |> Seq.map aux |> List.of_seq)))
     | Union_seq (_, s) ->
       CCSexp.(list (atom "union" :: (s |> Seq.map aux |> List.of_seq)))
-    | After (_, b, t1, t2) -> CCSexp.(list [ atom "after"; Duration.of_seconds b |> sexp_of_duration; aux t1; aux t2 ])
+    | After (_, b, t1, t2) ->
+      CCSexp.(
+        list
+          [
+            atom "after";
+            Duration.of_seconds b |> sexp_of_duration;
+            aux t1;
+            aux t2;
+          ])
     | Between_inc (_, b, t1, t2) ->
-      CCSexp.(list [ atom "between_inc"; Duration.of_seconds b |> sexp_of_duration; aux t1; aux t2 ])
+      CCSexp.(
+        list
+          [
+            atom "between_inc";
+            Duration.of_seconds b |> sexp_of_duration;
+            aux t1;
+            aux t2;
+          ])
     | Between_exc (_, b, t1, t2) ->
-      CCSexp.(list [ atom "between_exc"; Duration.of_seconds b |> sexp_of_duration; aux t1; aux t2 ])
+      CCSexp.(
+        list
+          [
+            atom "between_exc";
+            Duration.of_seconds b |> sexp_of_duration;
+            aux t1;
+            aux t2;
+          ])
     | Unchunk chunked -> CCSexp.(list [ atom "unchunk"; aux_chunked chunked ])
   and aux_chunked chunked =
     let sexp_list_of_unary_op_on_t op =
@@ -159,9 +181,7 @@ let to_sexp (t : Time.t) : CCSexp.t =
       | Chunk_by_duration { chunk_size; drop_partial } ->
         [
           Some (atom "chunk_by_duration");
-          Some
-            (sexp_of_duration
-               (Duration.of_seconds chunk_size));
+          Some (sexp_of_duration (Duration.of_seconds chunk_size));
           (if drop_partial then Some (atom "drop_partial") else None);
         ]
         |> List.filter_map (fun x -> x)
