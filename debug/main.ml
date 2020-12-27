@@ -18,14 +18,10 @@ let display_intervals ~display_using_tz s =
     s
     |> OSeq.take 60
     |> OSeq.iter (fun (x, y) ->
-        match Printers.sprintf_interval ~display_using_tz (x, y) with
-        | Ok s ->
-          let size =
-            Result.get_ok @@ Duration.of_seconds (Int64.sub y x)
-          in
-          let size_str = Printers.sprint_duration size in
-          Printf.printf "%s - %s\n" s size_str
-        | Error msg -> Printf.printf "Error: %s\n" msg)
+        let s = Printers.sprintf_interval ~display_using_tz (x, y) in
+        let size = Result.get_ok @@ Duration.of_seconds (Int64.sub y x) in
+        let size_str = Printers.sprint_duration size in
+        Printf.printf "%s - %s\n" s size_str)
 
 let debug_resolver () =
   (*   let s = {|
@@ -121,14 +117,12 @@ let debug_example () =
       s
       |> OSeq.take 60
       |> OSeq.iter (fun (x, y) ->
-          match Printers.sprintf_interval ~display_using_tz (x, y) with
-          | Ok s ->
-            let size =
-              Result.get_ok @@ Duration.of_seconds (Int64.sub y x)
-            in
-            let size_str = Printers.sprint_duration size in
-            Printf.printf "%s - %s\n" s size_str
-          | Error msg -> Printf.printf "Error: %s\n" msg)
+          let s = Printers.sprintf_interval ~display_using_tz (x, y) in
+          let size =
+            Result.get_ok @@ Duration.of_seconds (Int64.sub y x)
+          in
+          let size_str = Printers.sprint_duration size in
+          Printf.printf "%s - %s\n" s size_str)
   in
   let tz = Time_zone.make_exn "Australia/Sydney" in
   let timere =

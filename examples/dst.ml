@@ -5,14 +5,13 @@ let display_intervals ~display_using_tz s =
     s
     |> OSeq.take 60
     |> OSeq.iter (fun (x, y) ->
-        match Timere.sprintf_interval ~display_using_tz (x, y) with
-        | Ok s ->
-          let size =
-            Result.get_ok @@ Timere.Duration.of_seconds (Int64.sub y x)
-          in
-          let size_str = Timere.Duration.sprint size in
-          Printf.printf "%s - %s\n" s size_str
-        | Error msg -> Printf.printf "Error: %s\n" msg)
+        let s = Timere.sprintf_interval ~display_using_tz (x, y) in
+        let size =
+          Result.get_ok @@ Timere.Duration.of_seconds (Int64.sub y x)
+        in
+        let size_str = Timere.Duration.sprint size in
+        Printf.printf "%s - %s\n" s size_str
+      )
 
 let tz = Timere.Time_zone.make_exn "Australia/Sydney"
 
