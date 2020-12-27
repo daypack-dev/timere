@@ -266,7 +266,7 @@ module Date_time : sig
 
   val pp : ?format:string -> Format.formatter -> t -> unit
 
-  val to_iso8601 : t -> string
+  val to_rfc3339 : t -> string
 
   val of_iso8601 : string -> (t, string) result
 end
