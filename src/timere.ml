@@ -1,6 +1,8 @@
 include Time
 module Time_zone = Time_zone
 
+exception Invalid_format_string = Printers.Invalid_format_string
+
 module Date_time = struct
   include Date_time
 

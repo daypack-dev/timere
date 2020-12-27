@@ -1,3 +1,7 @@
+(** {1 Sprintf exception }*)
+
+exception Invalid_format_string of string
+
 type tz_offset_s = int
 
 type timestamp = int64
@@ -211,7 +215,7 @@ module Date_time : sig
 
   val cur : ?tz_of_date_time:Time_zone.t -> unit -> (t, unit) result
 
-  val sprintf : ?format:string -> t -> (string, string) result
+  val sprintf : ?format:string -> t -> string
 
   val pp : ?format:string -> Format.formatter -> t -> unit
 end
@@ -352,7 +356,7 @@ val sprintf_timestamp :
   ?display_using_tz:Time_zone.t ->
   ?format:string ->
   timestamp ->
-  (string, string) result
+  string
 
 val pp_timestamp :
   ?display_using_tz:Time_zone.t ->
@@ -365,7 +369,7 @@ val sprintf_interval :
   ?display_using_tz:Time_zone.t ->
   ?format:string ->
   interval ->
-  (string, string) result
+  string
 
 val pp_interval :
   ?display_using_tz:Time_zone.t ->
