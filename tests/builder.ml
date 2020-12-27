@@ -103,7 +103,7 @@ let new_height ~rng height =
   let reduc = 1 + (rng () mod (height - 1)) in
   height - reduc
 
-let make_duration ~rng = Result.get_ok @@ Duration.make ~seconds:(rng ()) ()
+let make_duration ~rng = Duration.make ~seconds:(rng ()) ()
 
 let make_chunking ~rng : Time.chunking =
   match rng () mod 5 with
@@ -179,14 +179,17 @@ let build ~min_year ~max_year_inc ~max_height ~max_branching
         |> Time.union
       | 3 ->
         Time.after
+          (make_duration ~rng)
           (aux (new_height ~rng height))
           (aux (new_height ~rng height))
       | 4 ->
         Time.between_inc
+          (make_duration ~rng)
           (aux (new_height ~rng height))
           (aux (new_height ~rng height))
       | 5 ->
         Time.between_exc
+          (make_duration ~rng)
           (aux (new_height ~rng height))
           (aux (new_height ~rng height))
       | 6 ->
