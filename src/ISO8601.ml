@@ -26,6 +26,7 @@ let pp_timestamp formatter x =
   Format.fprintf formatter "%s" (of_timestamp x)
 
 let to_date_time s : (Time.Date_time.t, unit) result =
+  try
   Scanf.sscanf s "%u-%u-%uT%u:%u:%u%c%u:%u" (fun year month day hour minute second sign offset_hour offset_minute ->
       match Time.month_of_human_int month with
       | Error () -> Error ()
@@ -49,3 +50,5 @@ let to_date_time s : (Time.Date_time.t, unit) result =
             in
             Time.Date_time.make_precise ~year ~month ~day ~hour ~minute ~second ~tz_offset_s:(mult * offset) ()
     )
+  with
+  | _ -> Error ()

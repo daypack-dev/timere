@@ -113,6 +113,53 @@ val union : t list -> t
 
 val not : t -> t
 
+(** {1 Durations} *)
+
+module Duration : sig
+  type t = private {
+    days : int;
+    hours : int;
+    minutes : int;
+    seconds : int;
+  }
+
+  val make :
+    ?days:int ->
+    ?hours:int ->
+    ?minutes:int ->
+    ?seconds:int ->
+    unit ->
+    (t, unit) result
+
+  val make_exn :
+    ?days:int -> ?hours:int -> ?minutes:int -> ?seconds:int -> unit -> t
+
+  val make_frac :
+    ?days:float ->
+    ?hours:float ->
+    ?minutes:float ->
+    ?seconds:int ->
+    unit ->
+    (t, unit) result
+
+  val make_frac_exn :
+    ?days:float -> ?hours:float -> ?minutes:float -> ?seconds:int -> unit -> t
+
+  val zero : t
+
+  val of_seconds : int64 -> (t, unit) result
+
+  val to_seconds : t -> int64
+
+  val sprint : t -> string
+
+  val pp : Format.formatter -> t -> unit
+end
+
+val shift : Duration.t -> t -> t
+
+val lengthen : Duration.t -> t -> t
+
 (** {1 Discrete time points} *)
 
 val cur_timestamp : unit -> int64
@@ -218,54 +265,11 @@ module Date_time : sig
   val sprintf : ?format:string -> t -> string
 
   val pp : ?format:string -> Format.formatter -> t -> unit
+
+  val to_iso8601 : t -> string
+
+  val of_iso8601 : string -> (t, unit) result
 end
-
-(** {1 Durations} *)
-
-module Duration : sig
-  type t = private {
-    days : int;
-    hours : int;
-    minutes : int;
-    seconds : int;
-  }
-
-  val make :
-    ?days:int ->
-    ?hours:int ->
-    ?minutes:int ->
-    ?seconds:int ->
-    unit ->
-    (t, unit) result
-
-  val make_exn :
-    ?days:int -> ?hours:int -> ?minutes:int -> ?seconds:int -> unit -> t
-
-  val make_frac :
-    ?days:float ->
-    ?hours:float ->
-    ?minutes:float ->
-    ?seconds:int ->
-    unit ->
-    (t, unit) result
-
-  val make_frac_exn :
-    ?days:float -> ?hours:float -> ?minutes:float -> ?seconds:int -> unit -> t
-
-  val zero : t
-
-  val of_seconds : int64 -> (t, unit) result
-
-  val to_seconds : t -> int64
-
-  val sprint : t -> string
-
-  val pp : Format.formatter -> t -> unit
-end
-
-val shift : Duration.t -> t -> t
-
-val lengthen : Duration.t -> t -> t
 
 (** {1 List and Filtering operations} *)
 

@@ -11,6 +11,10 @@ module Date_time = struct
   let sprintf = Printers.sprintf_date_time
 
   let pp = Printers.pp_date_time
+
+  let to_iso8601 = ISO8601.of_date_time
+
+  let of_iso8601 = ISO8601.to_date_time
 end
 
 module Duration = struct
