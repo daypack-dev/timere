@@ -1399,7 +1399,9 @@ module Date_time = struct
     tz_info : tz_info;
   }
 
-  let dummy_tz_info = `Tz_offset_s_only 0
+  let utc_tz_info = `Tz_and_tz_offset_s (Time_zone.utc, 0)
+
+  let dummy_tz_info = utc_tz_info
 
   let to_ptime_date_time_pretend_utc (x : t) : Ptime.date * Ptime.time =
     ( (x.year, human_int_of_month x.month, x.day),
@@ -1418,7 +1420,7 @@ module Date_time = struct
           hour;
           minute;
           second;
-          tz_info = `Tz_and_tz_offset_s (Time_zone.utc, 0);
+          tz_info = utc_tz_info;
         }
     | Error () -> Error ()
 
