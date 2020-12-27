@@ -398,8 +398,7 @@ module Ast_normalize = struct
     let make_duration ~pos ~days ~hours ~minutes ~seconds =
       ( Option.get pos,
         Duration
-          (Result.get_ok
-             (Timere.Duration.make
+          ((Timere.Duration.make
                 ~days:(Option.value ~default:0 days)
                 ~hours:(Option.value ~default:0 hours)
                 ~minutes:(Option.value ~default:0 minutes)
@@ -430,8 +429,7 @@ module Ast_normalize = struct
         let token =
           ( Option.value ~default:pos_seconds pos,
             Duration
-              (Result.get_ok
-                 (Timere.Duration.make
+              ((Timere.Duration.make
                     ~days:(Option.value ~default:0 days)
                     ~hours:(Option.value ~default:0 hours)
                     ~minutes:(Option.value ~default:0 minutes)

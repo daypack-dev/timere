@@ -19,7 +19,7 @@ let display_intervals ~display_using_tz s =
     |> OSeq.take 60
     |> OSeq.iter (fun (x, y) ->
         let s = Printers.sprintf_interval ~display_using_tz (x, y) in
-        let size = Result.get_ok @@ Duration.of_seconds (Int64.sub y x) in
+        let size = Duration.of_seconds (Int64.sub y x) in
         let size_str = Printers.sprint_duration size in
         Printf.printf "%s - %s\n" s size_str)
 
@@ -119,7 +119,7 @@ let debug_example () =
       |> OSeq.iter (fun (x, y) ->
           let s = Printers.sprintf_interval ~display_using_tz (x, y) in
           let size =
-            Result.get_ok @@ Duration.of_seconds (Int64.sub y x)
+            Duration.of_seconds (Int64.sub y x)
           in
           let size_str = Printers.sprint_duration size in
           Printf.printf "%s - %s\n" s size_str)
