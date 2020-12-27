@@ -1436,9 +1436,7 @@ module Date_time = struct
     |> Int64.of_float
 
   let to_timestamp (x : t) : timestamp Time_zone.local_result =
-    let timestamp_local =
-      to_timestamp_pretend_utc x
-    in
+    let timestamp_local = to_timestamp_pretend_utc x in
     match x.tz_info with
     | `Tz_offset_s_only offset | `Tz_and_tz_offset_s (_, offset) ->
       `Exact (Int64.sub timestamp_local (Int64.of_int offset))
@@ -1461,9 +1459,7 @@ module Date_time = struct
       invalid_arg "to_timestamp_exact: date time maps to two timestamps"
 
   let to_timestamp_force_offset ~offset (x : t) =
-    Int64.sub
-      (to_timestamp_pretend_utc x)
-      (Int64.of_int offset)
+    Int64.sub (to_timestamp_pretend_utc x) (Int64.of_int offset)
 
   let of_timestamp ?(tz_of_date_time = Time_zone.utc) (x : int64) :
     (t, unit) result =
