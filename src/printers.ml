@@ -57,7 +57,7 @@ module Format_string_parsers = struct
     in
     choice
       [
-        attempt (string "year") >> return (string_of_int date_time.year);
+        attempt (string "year") >> return (Printf.sprintf "%04d" date_time.year);
         (attempt (string "mon:")
          >> size_and_casing
          >>= fun x ->
