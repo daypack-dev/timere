@@ -1502,7 +1502,28 @@ module Date_time = struct
       | None -> Ok (`Tz_offset_s_only tz_offset_s)
       | Some tz ->
         if Time_zone.offset_is_recorded tz_offset_s tz then
-          Ok (`Tz_and_tz_offset_s (tz, tz_offset_s))
+          let timestamp =
+            {
+              year;
+              month;
+              day;
+              hour;
+              minute;
+              second;
+              tz_info = `Tz_offset_s_only 0;
+            }
+            |> to_timestamp_exact
+          in
+          match Time_zone.lookup_timestamp_local tz timestamp with
+          | `None -> Error ()
+          | `Exact e ->
+            if e.offset = tz_offset_s then
+              Ok (`Tz_and_tz_offset_s (tz, tz_offset_s))
+            else Error ()
+          | `Ambiguous (e1, e2) ->
+            if e1.offset = tz_offset_s || e2.offset = tz_offset_s then
+              Ok (`Tz_and_tz_offset_s (tz, tz_offset_s))
+            else Error ()
         else Error ()
     in
     match tz_info with
