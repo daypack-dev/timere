@@ -1783,9 +1783,9 @@ type t =
   | Round_robin_pick_list of search_space * t list
   | Inter_seq of search_space * t Seq.t
   | Union_seq of search_space * t Seq.t
-  | After of search_space * t * t
-  | Between_inc of search_space * t * t
-  | Between_exc of search_space * t * t
+  | After of search_space * int64 * t * t
+  | Between_inc of search_space * int64 * t * t
+  | Between_exc of search_space * int64 * t * t
   | Unchunk of chunked
 
 and chunked =
@@ -1814,10 +1814,10 @@ let equal t1 t2 =
     | Interval_inc (_, x11, x12), Interval_inc (_, x21, x22)
     | Interval_exc (_, x11, x12), Interval_exc (_, x21, x22) ->
       x11 = x21 && x12 = x22
-    | After (_, x11, x12), After (_, x21, x22)
-    | Between_inc (_, x11, x12), Between_inc (_, x21, x22)
-    | Between_exc (_, x11, x12), Between_exc (_, x21, x22) ->
-      aux x11 x21 && aux x12 x22
+    | After (_, b1, x11, x12), After (_, b2, x21, x22)
+    | Between_inc (_, b1, x11, x12), Between_inc (_, b2, x21, x22)
+    | Between_exc (_, b1, x11, x12), Between_exc (_, b2, x21, x22) ->
+      b1 = b2 && aux x11 x21 && aux x12 x22
     | Round_robin_pick_list (_, l1), Round_robin_pick_list (_, l2) ->
       List.for_all2 aux l1 l2
     | Inter_seq (_, s1), Inter_seq (_, s2) | Union_seq (_, s1), Union_seq (_, s2)
@@ -2151,13 +2151,13 @@ let minutes minutes = pattern ~minutes ()
 
 let seconds seconds = pattern ~seconds ()
 
-let after (t1 : t) (t2 : t) : t = After (default_search_space, t1, t2)
+let after (bound : Duration.t) (t1 : t) (t2 : t) : t = After (default_search_space, Duration.to_seconds bound, t1, t2)
 
-let between_inc (t1 : t) (t2 : t) : t =
-  Between_inc (default_search_space, t1, t2)
+let between_inc (bound : Duration.t) (t1 : t) (t2 : t) : t =
+  Between_inc (default_search_space, Duration.to_seconds bound, t1, t2)
 
-let between_exc (t1 : t) (t2 : t) : t =
-  Between_exc (default_search_space, t1, t2)
+let between_exc (bound : Duration.t) (t1 : t) (t2 : t) : t =
+  Between_exc (default_search_space, Duration.to_seconds bound, t1, t2)
 
 (* let hms_interval_exc (hms_a : hms) (hms_b : hms) : t =
  *   let a = second_of_day_of_hms hms_a in
@@ -2181,6 +2181,7 @@ let between_exc (t1 : t) (t2 : t) : t =
 
 let hms_interval_exc (hms_a : hms) (hms_b : hms) : t =
   between_exc
+    (Duration.make_exn ~days:1 ())
     (pattern ~hours:[ hms_a.hour ] ~minutes:[ hms_a.minute ]
        ~seconds:[ hms_a.second ] ())
     (pattern ~hours:[ hms_b.hour ] ~minutes:[ hms_b.minute ]

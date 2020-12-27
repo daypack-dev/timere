@@ -71,8 +71,8 @@ let duration_of_sexp (x : CCSexp.t) =
       match Duration.make ~days ~hours ~minutes ~seconds () with
       | Ok x -> x
       | Error () ->
-        invalid_data (Printf.sprintf "Invalid date: %s" (CCSexp.to_string x)))
-  | _ -> invalid_data (Printf.sprintf "Invalid date: %s" (CCSexp.to_string x))
+        invalid_data (Printf.sprintf "Invalid duration: %s" (CCSexp.to_string x)))
+  | _ -> invalid_data (Printf.sprintf "Invalid duration: %s" (CCSexp.to_string x))
 
 let date_time_of_sexp (x : CCSexp.t) =
   let invalid_data () =
@@ -258,9 +258,9 @@ let of_sexp (x : CCSexp.t) =
         | `Atom "round_robin" :: l -> round_robin_pick (List.map aux l)
         | `Atom "inter" :: l -> inter (List.map aux l)
         | `Atom "union" :: l -> union (List.map aux l)
-        | [ `Atom "after"; a; b ] -> after (aux a) (aux b)
-        | [ `Atom "between_inc"; a; b ] -> between_inc (aux a) (aux b)
-        | [ `Atom "between_exc"; a; b ] -> between_exc (aux a) (aux b)
+        | [ `Atom "after"; b; t1; t2 ] -> after (duration_of_sexp b) (aux t1) (aux t2)
+        | [ `Atom "between_inc"; b; t1; t2 ] -> between_inc (duration_of_sexp b) (aux t1) (aux t2)
+        | [ `Atom "between_exc"; b; t1; t2 ] -> between_exc (duration_of_sexp b) (aux t1) (aux t2)
         | [ `Atom "unchunk"; x ] -> aux_chunked (fun x -> x) x
         | _ ->
           invalid_data

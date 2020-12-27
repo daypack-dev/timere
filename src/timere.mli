@@ -335,11 +335,11 @@ val of_hms_intervals : (hms * hms) Seq.t -> t
 
 (** {1 Search oriented operations} *)
 
-val after : t -> t -> t
+val after : Duration.t -> t -> t -> t
 
-val between_inc : t -> t -> t
+val between_inc : Duration.t -> t -> t -> t
 
-val between_exc : t -> t -> t
+val between_exc : Duration.t -> t -> t -> t
 
 (** {1 Infix operators} *)
 

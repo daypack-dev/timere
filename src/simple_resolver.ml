@@ -37,9 +37,14 @@ let normalize (s : Time.Interval.t Seq.t) : Time.Interval.t Seq.t =
   |> Int64_set.to_seq
   |> intervals_of_timestamps
 
-let find_after ((_start, end_exc) : Time.Interval.t)
+let find_after bound ((_start, end_exc) : Time.Interval.t)
     (s2 : Time.Interval.t Seq.t) =
-  match OSeq.drop_while (fun (start', _) -> start' < end_exc) s2 () with
+  let s =
+    s2
+    |> OSeq.drop_while (fun (start', _) -> start' < end_exc)
+    |> OSeq.take_while (fun (start', _) -> Int64.sub start' end_exc <= bound)
+  in
+  match s () with
   | Seq.Nil -> None
   | Seq.Cons (x, _) -> Some x
 
@@ -146,23 +151,23 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
         | Lengthen n ->
           aux search_using_tz t |> Seq.map (fun (x, y) -> (x, Int64.add n y))
         | With_tz tz -> aux tz t)
-    | After (_, t1, t2) ->
+    | After (_, b, t1, t2) ->
       let s1 = aux search_using_tz t1 in
       let s2 = aux search_using_tz t2 in
-      s1 |> Seq.filter_map (fun x -> find_after x s2)
-    | Between_inc (_, t1, t2) ->
+      s1 |> Seq.filter_map (fun x -> find_after b x s2)
+    | Between_inc (_, b, t1, t2) ->
       let s1 = aux search_using_tz t1 in
       let s2 = aux search_using_tz t2 in
       s1
       |> Seq.filter_map (fun (start, end_exc) ->
-          find_after (start, end_exc) s2
+          find_after b (start, end_exc) s2
           |> Option.map (fun (_, end_exc') -> (start, end_exc')))
-    | Between_exc (_, t1, t2) ->
+    | Between_exc (_, b, t1, t2) ->
       let s1 = aux search_using_tz t1 in
       let s2 = aux search_using_tz t2 in
       s1
       |> Seq.filter_map (fun (start, end_exc) ->
-          find_after (start, end_exc) s2
+          find_after b (start, end_exc) s2
           |> Option.map (fun (start', _) -> (start, start')))
     | Unchunk chunked -> aux_chunked search_using_tz chunked |> normalize
     | _ ->
@@ -265,9 +270,9 @@ and mem ?(search_using_tz = Time_zone.utc) ~(search_start : Time.timestamp)
           start <= timestamp && timestamp < end_inc
         | Unary_op (_, _, _)
         | Round_robin_pick_list (_, _)
-        | After (_, _, _)
-        | Between_inc (_, _, _)
-        | Between_exc (_, _, _)
+        | After (_, _, _, _)
+        | Between_inc (_, _, _, _)
+        | Between_exc (_, _, _, _)
         | Unchunk _ ->
           resolve ~search_using_tz ~search_start ~search_end_exc t
           |> OSeq.exists (fun (x, y) -> x <= timestamp && timestamp < y)

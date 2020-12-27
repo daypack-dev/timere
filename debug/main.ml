@@ -60,12 +60,12 @@ let debug_resolver () =
       (inter
          [
            years [ 2020 ];
-           between_exc (month_days [ -1 ]) (month_days [ 1 ]);
-           always;
-           (* hms_interval_exc
-            *   (make_hms_exn ~hour:23 ~minute:15 ~second:0)
-            *   (make_hms_exn ~hour:2 ~minute:30 ~second:0);
-            * months [ `Oct ]; *)
+           (* between_exc (month_days [ -1 ]) (month_days [ 1 ]); *)
+           (* always; *)
+           hms_interval_exc
+             (make_hms_exn ~hour:1 ~minute:15 ~second:0)
+             (make_hms_exn ~hour:2 ~minute:30 ~second:0);
+           months [ `Oct ];
          ])
       (* (pattern ~months:[`Mar] ~hours:[23] ~minutes:[0] ~seconds:[0]()) *)
       (* (pattern ~months:[`Mar] ~hours:[4] ~minutes:[30] ~seconds:[0]()) *)
