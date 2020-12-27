@@ -24,3 +24,28 @@ let of_timestamp (x : int64) : string =
 
 let pp_timestamp formatter x =
   Format.fprintf formatter "%s" (of_timestamp x)
+
+let to_date_time s : (Time.Date_time.t, unit) result =
+  Scanf.sscanf s "%u-%u-%uT%u:%u:%u%c%u:%u" (fun year month day hour minute second sign offset_hour offset_minute ->
+      match Time.month_of_human_int month with
+      | Error () -> Error ()
+      | Ok month ->
+        let mult =
+          match sign with
+          | '+' -> Ok 1
+          | '-' -> Ok (-1)
+          | _ -> Error ()
+        in
+        match mult with
+        | Error () -> Error ()
+        | Ok mult ->
+          if offset_hour > 24 || offset_minute >= 60 then
+            Error ()
+          else
+            let offset = Duration.make ~hours:offset_hour ~minutes:offset_minute ()
+                         |> Result.get_ok
+                         |> Duration.to_seconds
+                         |> Int64.to_int
+            in
+            Time.Date_time.make_precise ~year ~month ~day ~hour ~minute ~second ~tz_offset_s:(mult * offset) ()
+    )
