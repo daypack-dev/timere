@@ -1458,9 +1458,6 @@ module Date_time = struct
     | `Ambiguous _ ->
       invalid_arg "to_timestamp_exact: date time maps to two timestamps"
 
-  let to_timestamp_force_offset ~offset (x : t) =
-    Int64.sub (to_timestamp_pretend_utc x) (Int64.of_int offset)
-
   let of_timestamp ?(tz_of_date_time = Time_zone.utc) (x : int64) :
     (t, unit) result =
     match Time_zone.lookup_timestamp_utc tz_of_date_time x with

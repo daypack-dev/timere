@@ -245,8 +245,6 @@ module Date_time : sig
 
   val to_timestamp_exact : t -> timestamp
 
-  val to_timestamp_force_offset : offset:int -> t -> timestamp
-
   val min_of_timestamp_local_result : timestamp local_result -> timestamp option
 
   val max_of_timestamp_local_result : timestamp local_result -> timestamp option
