@@ -30,8 +30,8 @@ type t = {
 
 let zero : t = { days = 0; hours = 0; minutes = 0; seconds = 0 }
 
-let of_seconds (x : int64) : (t, unit) result =
-  if x < 0L then Error ()
+let of_seconds (x : int64) : t =
+  if x < 0L then invalid_arg "of_seconds"
   else
     let seconds = Int64.rem x 60L in
     let minutes = Int64.div x 60L in
@@ -39,7 +39,6 @@ let of_seconds (x : int64) : (t, unit) result =
     let days = Int64.div hours 24L in
     let hours = Int64.rem hours 24L in
     let minutes = Int64.rem minutes 60L in
-    Ok
       {
         days = Int64.to_int days;
         hours = Int64.to_int hours;
@@ -65,31 +64,19 @@ let seconds_of_raw (r : raw) : int64 =
   |> Int64.of_float
   |> Int64.add (Int64.of_int r.seconds)
 
-let normalize (t : t) : t = t |> to_seconds |> of_seconds |> Result.get_ok
+let normalize (t : t) : t = t |> to_seconds |> of_seconds
 
 let make ?(days = 0) ?(hours = 0) ?(minutes = 0) ?(seconds = 0) () :
-  (t, unit) result =
+  t =
   if days >= 0 && hours >= 0 && minutes >= 0 && seconds >= 0 then
-    Ok (({ days; hours; minutes; seconds } : t) |> normalize)
-  else Error ()
+    (({ days; hours; minutes; seconds } : t) |> normalize)
+  else invalid_arg "make"
 
 let make_frac ?(days = 0.0) ?(hours = 0.0) ?(minutes = 0.0) ?(seconds = 0) () :
-  (t, unit) result =
+  t =
   if days >= 0.0 && hours >= 0.0 && minutes >= 0.0 && seconds >= 0 then
-    Ok
       (({ days; hours; minutes; seconds } : raw)
        |> seconds_of_raw
        |> of_seconds
-       |> Result.get_ok)
-  else Error ()
-
-let make_exn ?(days = 0) ?(hours = 0) ?(minutes = 0) ?(seconds = 0) () =
-  match make ~days ~hours ~minutes ~seconds () with
-  | Ok x -> x
-  | Error () -> invalid_arg "make_exn"
-
-let make_frac_exn ?(days = 0.0) ?(hours = 0.0) ?(minutes = 0.0) ?(seconds = 0)
-    () =
-  match make_frac ~days ~hours ~minutes ~seconds () with
-  | Ok x -> x
-  | Error () -> invalid_arg "make_frac_exn"
+      )
+  else invalid_arg "make_frac"

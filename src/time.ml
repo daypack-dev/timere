@@ -1296,13 +1296,12 @@ let make_hms_exn ~hour ~minute ~second =
 
 let second_of_day_of_hms x =
   Duration.make ~hours:x.hour ~minutes:x.minute ~seconds:x.second ()
-  |> Result.get_ok
   |> Duration.to_seconds
   |> Int64.to_int
 
 let hms_of_second_of_day x =
   let ({ hours; minutes; seconds; _ } : Duration.t) =
-    x |> Int64.of_int |> Duration.of_seconds |> Result.get_ok
+    x |> Int64.of_int |> Duration.of_seconds
   in
   Result.get_ok @@ make_hms ~hour:hours ~minute:minutes ~second:seconds
 
@@ -2181,7 +2180,7 @@ let between_exc (bound : Duration.t) (t1 : t) (t2 : t) : t =
 
 let hms_interval_exc (hms_a : hms) (hms_b : hms) : t =
   between_exc
-    (Duration.make_exn ~days:1 ())
+    (Duration.make ~days:1 ())
     (pattern ~hours:[ hms_a.hour ] ~minutes:[ hms_a.minute ]
        ~seconds:[ hms_a.second ] ())
     (pattern ~hours:[ hms_b.hour ] ~minutes:[ hms_b.minute ]

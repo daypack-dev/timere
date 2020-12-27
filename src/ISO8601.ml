@@ -42,7 +42,6 @@ let to_date_time s : (Time.Date_time.t, string) result =
              hm_p
              |>> fun (hour, minute) ->
              Duration.make ~hours:hour ~minutes:minute ()
-             |> Result.get_ok
              |> Duration.to_seconds
              |> Int64.to_int
              |> Int.mul mult)

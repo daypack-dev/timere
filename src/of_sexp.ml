@@ -68,10 +68,8 @@ let duration_of_sexp (x : CCSexp.t) =
       let hours = int_of_sexp hours in
       let minutes = int_of_sexp minutes in
       let seconds = int_of_sexp seconds in
-      match Duration.make ~days ~hours ~minutes ~seconds () with
-      | Ok x -> x
-      | Error () ->
-        invalid_data (Printf.sprintf "Invalid duration: %s" (CCSexp.to_string x)))
+      Duration.make ~days ~hours ~minutes ~seconds ()
+    )
   | _ -> invalid_data (Printf.sprintf "Invalid duration: %s" (CCSexp.to_string x))
 
 let date_time_of_sexp (x : CCSexp.t) =
@@ -232,20 +230,12 @@ let of_sexp (x : CCSexp.t) =
           take_n_points (int_of_sexp n) (aux x)
         | [ `Atom "shift"; n; x ] ->
           let n =
-            match Duration.of_seconds (int64_of_sexp n) with
-            | Error () ->
-              invalid_data
-                (Printf.sprintf "Invalid duration: %s" (CCSexp.to_string n))
-            | Ok n -> n
+            Duration.of_seconds (int64_of_sexp n)
           in
           shift n (aux x)
         | [ `Atom "lengthen"; n; x ] ->
           let n =
-            match Duration.of_seconds (int64_of_sexp n) with
-            | Error () ->
-              invalid_data
-                (Printf.sprintf "Invalid duration: %s" (CCSexp.to_string n))
-            | Ok n -> n
+            Duration.of_seconds (int64_of_sexp n)
           in
           lengthen n (aux x)
         | [ `Atom "with_tz"; n; x ] ->

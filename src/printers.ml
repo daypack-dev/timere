@@ -112,8 +112,7 @@ module Format_string_parsers = struct
            | None -> return "N/A"
            | Some tz_offset_s ->
              let d =
-               Result.get_ok
-               @@ Duration.of_seconds (Int64.of_int (abs tz_offset_s))
+               Duration.of_seconds (Int64.of_int (abs tz_offset_s))
              in
              return (pad_int padding d.hours));
         attempt
@@ -124,8 +123,7 @@ module Format_string_parsers = struct
            | None -> return "N/A"
            | Some tz_offset_s ->
              let d =
-               Result.get_ok
-               @@ Duration.of_seconds (Int64.of_int (abs tz_offset_s))
+               Duration.of_seconds (Int64.of_int (abs tz_offset_s))
              in
              return (pad_int padding d.minutes));
         attempt
@@ -136,8 +134,7 @@ module Format_string_parsers = struct
            | None -> return "N/A"
            | Some tz_offset_s ->
              let d =
-               Result.get_ok
-               @@ Duration.of_seconds (Int64.of_int (abs tz_offset_s))
+               Duration.of_seconds (Int64.of_int (abs tz_offset_s))
              in
              return (pad_int padding d.seconds));
         (* string "unix"

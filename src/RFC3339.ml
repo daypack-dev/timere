@@ -9,7 +9,7 @@ let of_date_time (dt : Time.Date_time.t) : string =
        else
          let sign = if x < 0 then '-' else '+' in
          let offset =
-           Result.get_ok @@ Duration.of_seconds (Int64.of_int (abs x))
+           Duration.of_seconds (Int64.of_int (abs x))
          in
          Printf.sprintf "%c%02d:%02d" sign offset.hours offset.minutes)
 
