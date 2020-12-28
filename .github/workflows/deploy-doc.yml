@@ -30,7 +30,7 @@ jobs:
           opam install dune ptime oseq re mparser containers odoc
           eval $(opam env); make doc
           mkdir public
-          cp _build/default/_doc/_html/* public/
+          cp -r _build/default/_doc/_html/* public/
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@3.7.1
         with:
