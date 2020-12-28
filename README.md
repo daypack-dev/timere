@@ -35,6 +35,8 @@ This includes
 
 TODO
 
+[API documentation](https://daypack-dev.github.io/timere/)
+
 ## Acknowledgement
 
 - Time zone information is extracted via `zdump` command output into `src/time_zone_data.ml`, using the IANA database (as time zone files) distributed on Linux
