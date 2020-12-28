@@ -1,6 +1,11 @@
-(** {1 Sprintf exception }*)
+type t
+(** This is the core type of Timere used to encode computation over time.
+
+    The following documentation may call value of type [timere] "a Timere object".
+*)
 
 exception Invalid_format_string of string
+(** Printing exception *)
 
 type tz_offset_s = int
 
@@ -11,13 +16,16 @@ type 'a range =
   | `Range_exc of 'a * 'a
   ]
 
-type t
+(** {1 Basic constructors} *)
 
 val always : t
+(** Entire interval that Timere can handle, i.e. [\[min_timestamp, max_timestamp\)] *)
 
 val empty : t
+(** Empty interval *)
 
 val years : int list -> t
+(** [years l] is a shorthand for [pattern ~years:l ()] *)
 
 type month =
   [ `Jan
@@ -35,8 +43,10 @@ type month =
   ]
 
 val months : month list -> t
+(** [months l] is a shorthand for [pattern ~months:l ()] *)
 
 val month_days : int list -> t
+(** [month_days l] is a shorthand for [pattern ~month_days:l ()] *)
 
 type weekday =
   [ `Sun
@@ -49,12 +59,16 @@ type weekday =
   ]
 
 val weekdays : weekday list -> t
+(** [weekdays l] is a shorthand for [pattern ~weekdays:l ()] *)
 
 val hours : int list -> t
+(** [hours l] is a shorthand for [pattern ~hours:l ()] *)
 
 val minutes : int list -> t
+(** [minutes l] is a shorthand for [pattern ~minutes:l ()] *)
 
 val seconds : int list -> t
+(** [seconds l] is a shorthand for [pattern ~seconds:l ()] *)
 
 val pattern :
   ?strict:bool ->
@@ -74,16 +88,22 @@ val pattern :
   ?second_ranges:int range list ->
   unit ->
   t
+(** Pattern matches over date times.
 
-type hms = private {
-  hour : int;
-  minute : int;
-  second : int;
-}
+    A pattern [p] matches date time [dt] if
+    {[
+      (dt.year is in p.years or p.year_ranges)
+      && (dt.month is in p.months or p.month_ranges)
+      && (dt.month_days is in p.month_days or p.month_day_ranges)
+      && (dt.weekdays is in p.weekdays or p.weekday_ranges)
+      && (dt.hours is in p.hours or p.hour_ranges)
+      && (dt.minute is in p.minutes or p.minute_ranges)
+      && (dt.second is in p.seconds or p.second_ranges)
+    ]}
 
-val make_hms : hour:int -> minute:int -> second:int -> (hms, unit) result
-
-val make_hms_exn : hour:int -> minute:int -> second:int -> hms
+    Empty pattern levels are treated as wildcard, e.g. if [p.years] and [p.year_ranges] are both empty,
+    then [(dt.year is in p.years or p.year_ranges)] is [true].
+*)
 
 (** {1 Time zone} *)
 
@@ -100,8 +120,6 @@ module Time_zone : sig
 
   val available_time_zones : string list
 end
-
-(** {1 Time zone change} *)
 
 val with_tz : Time_zone.t -> t -> t
 
@@ -293,10 +311,6 @@ val interval_inc : timestamp -> timestamp -> t
 
 val interval_exc : timestamp -> timestamp -> t
 
-val hms_interval_inc : hms -> hms -> t
-
-val hms_interval_exc : hms -> hms -> t
-
 exception Interval_is_invalid
 
 exception Interval_is_empty
@@ -314,6 +328,22 @@ val of_interval_seq : ?skip_invalid:bool -> interval Seq.t -> t
 val of_sorted_intervals : ?skip_invalid:bool -> interval list -> t
 
 val of_sorted_interval_seq : ?skip_invalid:bool -> interval Seq.t -> t
+
+(** {2 Hour minute second intervals} *)
+
+type hms = private {
+  hour : int;
+  minute : int;
+  second : int;
+}
+
+val make_hms : hour:int -> minute:int -> second:int -> (hms, unit) result
+
+val make_hms_exn : hour:int -> minute:int -> second:int -> hms
+
+val hms_interval_inc : hms -> hms -> t
+
+val hms_interval_exc : hms -> hms -> t
 
 val of_hms_intervals : (hms * hms) Seq.t -> t
 
@@ -333,8 +363,11 @@ module Infix : sig
   val ( ||| ) : t -> t -> t
 end
 
+(** {1 Resolution} *)
+
 val resolve :
   ?search_using_tz:Time_zone.t -> t -> (interval Seq.t, string) result
+(** Resolves a Timere object into a concrete interval sequence *)
 
 (** {1 Pretty printers} *)
 
@@ -370,6 +403,7 @@ val of_sexp : CCSexp.t -> (t, string) result
 
 val of_sexp_string : string -> (t, string) result
 
+(** Misc *)
 module Utils : sig
   val flatten_month_ranges : month range Seq.t -> (month Seq.t, unit) result
 
