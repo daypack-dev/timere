@@ -94,9 +94,9 @@ val pattern :
     {[
       (dt.year is in p.years or p.year_ranges)
       && (dt.month is in p.months or p.month_ranges)
-      && (dt.month_days is in p.month_days or p.month_day_ranges)
-      && (dt.weekdays is in p.weekdays or p.weekday_ranges)
-      && (dt.hours is in p.hours or p.hour_ranges)
+      && (dt.month_day is in p.month_days or p.month_day_ranges)
+      && (dt.weekday is in p.weekdays or p.weekday_ranges)
+      && (dt.hour is in p.hours or p.hour_ranges)
       && (dt.minute is in p.minutes or p.minute_ranges)
       && (dt.second is in p.seconds or p.second_ranges)
     ]}
@@ -111,6 +111,12 @@ module Time_zone : sig
   type t
 
   val make : string -> (t, unit) result
+  (** Makes a time zone from name.
+
+      Naming follows the convention used in [/usr/share/zoneinfo/posix/] distributed on Linux, e.g. "Australia/Sydney".
+
+      See {!val:available_time_zones} for all usable time zone names.
+  *)
 
   val make_exn : string -> t
 
@@ -122,6 +128,7 @@ module Time_zone : sig
 end
 
 val with_tz : Time_zone.t -> t -> t
+(** [with_tz tz t] changes the time zone to evaluate [t] in to [tz] *)
 
 (** {1 Algebraic operations} *)
 
@@ -131,7 +138,7 @@ val union : t list -> t
 
 val not : t -> t
 
-(** {1 Durations} *)
+(** {1 Duration} *)
 
 module Duration : sig
   type t = private {
@@ -359,8 +366,10 @@ val between_exc : Duration.t -> t -> t -> t
 
 module Infix : sig
   val ( & ) : t -> t -> t
+  (** [inter] *)
 
   val ( ||| ) : t -> t -> t
+  (** [union] *)
 end
 
 (** {1 Resolution} *)
@@ -403,7 +412,8 @@ val of_sexp : CCSexp.t -> (t, string) result
 
 val of_sexp_string : string -> (t, string) result
 
-(** Misc *)
+(** {1 Misc} *)
+
 module Utils : sig
   val flatten_month_ranges : month range Seq.t -> (month Seq.t, unit) result
 
