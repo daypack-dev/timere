@@ -1490,16 +1490,16 @@ module Date_time = struct
       | Some tz ->
         if Time_zone.offset_is_recorded tz_offset_s tz then
           let timestamp_local =
-            {
-              year;
-              month;
-              day;
-              hour;
-              minute;
-              second;
-              tz_info = dummy_tz_info;
-            }
-            |> to_timestamp_pretend_utc
+            to_timestamp_pretend_utc
+              {
+                year;
+                month;
+                day;
+                hour;
+                minute;
+                second;
+                tz_info = dummy_tz_info;
+              }
           in
           match Time_zone.lookup_timestamp_local tz timestamp_local with
           | `None -> Error ()
