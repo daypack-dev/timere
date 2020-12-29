@@ -405,14 +405,6 @@ val hms_interval_exc : hms -> hms -> t
 
 val of_hms_intervals : (hms * hms) Seq.t -> t
 
-(* (\** {1 Search oriented operations} *\)
- * 
- * val after : Duration.t -> t -> t -> t
- * 
- * val between_inc : Duration.t -> t -> t -> t
- * 
- * val between_exc : Duration.t -> t -> t -> t *)
-
 (** {1 Infix operators} *)
 
 module Infix : sig
@@ -428,6 +420,37 @@ module Infix : sig
       [f1 >> f2] is equivalent to [fun x -> x |> f1 |> f2].
   *)
 end
+
+(** {1 Search oriented operations} *)
+
+(** {e Warning}: These are low level operations used to communicate with the resolver directly.
+
+    While powerful and necessary for certain queries, may yield unexpected results.
+*)
+
+val after : Duration.t -> t -> t -> t
+(** [after bound s1 s2],
+    for every interval [(x1, y1)] in [s1],
+    yields the earliest interval [(x2, y2)] in [s2] such that
+    [y1 <= x2 && (x2 - y1) < bound]
+    if exists
+*)
+
+val between_inc : Duration.t -> t -> t -> t
+(** [between_inc bound s1 s2],
+    for every interval [(x1, y1)] in [s1],
+    and the earliest interval [(x2, y2)] in [s2] such that
+    [y1 <= x2 && (x2 - y1) < bound],
+    yields [(x1, y2)]
+*)
+
+val between_exc : Duration.t -> t -> t -> t
+(** [between_inc bound s1 s2],
+    for every interval [(x1, y1)] in [s1],
+    and the earliest interval [(x2, y2)] in [s2] such that
+    [y1 <= x2 && (x2 - y1) < bound],
+    yields [(x1, x2)]
+*)
 
 (** {1 Resolution} *)
 
