@@ -119,6 +119,7 @@ module Time_zone : sig
   *)
 
   val make_exn : string -> t
+  (** @raise Invalid_argument if [make] fails *)
 
   val name : t -> string
 
@@ -150,13 +151,16 @@ module Duration : sig
 
   val make :
     ?days:int -> ?hours:int -> ?minutes:int -> ?seconds:int -> unit -> t
+  (** @raise Invalid_argument if any of the arguments are negative *)
 
   val make_frac :
     ?days:float -> ?hours:float -> ?minutes:float -> ?seconds:int -> unit -> t
+  (** @raise Invalid_argument if any of the arguments are negative *)
 
   val zero : t
 
   val of_seconds : int64 -> t
+  (** @raise Invalid_argument if argument is negative *)
 
   val to_seconds : t -> int64
 
@@ -169,19 +173,7 @@ val shift : Duration.t -> t -> t
 
 val lengthen : Duration.t -> t -> t
 
-(** {1 Discrete time points} *)
-
-val cur_timestamp : unit -> int64
-
-val min_timestamp : int64
-
-val max_timestamp : int64
-
-exception Invalid_timestamp
-
-val of_timestamps : ?skip_invalid:bool -> timestamp list -> t
-
-val of_timestamp_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
+(** {1 Date time and timestamps} *)
 
 module Date_time : sig
   type tz_info =
@@ -209,6 +201,14 @@ module Date_time : sig
     second:int ->
     tz:Time_zone.t ->
     (t, unit) result
+  (** Constructs a date time providing only a time zone.
+
+      A precise offset is inferred if possible.
+
+      Note that this may yield a ambiguous date time if the time zone has varying offsets, e.g. DST.
+
+      See {!val:make_precise} for the most precise construction.
+  *)
 
   val make_exn :
     year:int ->
@@ -219,6 +219,7 @@ module Date_time : sig
     second:int ->
     tz:Time_zone.t ->
     t
+  (** @raise Invalid_argument if [make] fails *)
 
   val make_precise :
     ?tz:Time_zone.t ->
@@ -231,6 +232,11 @@ module Date_time : sig
     tz_offset_s:tz_offset_s ->
     unit ->
     (t, unit) result
+  (** Constructs a date time providing time zone offset in seconds, and optionally a time zone.
+
+      If a time zone is provided, then the offset is checked against the time zone record to make sure
+      the time zone does use said offset for the particular date time.
+  *)
 
   val make_precise_exn :
     ?tz:Time_zone.t ->
@@ -243,16 +249,28 @@ module Date_time : sig
     tz_offset_s:tz_offset_s ->
     unit ->
     t
+  (** @raise Invalid_argument if [make_precise] fails *)
 
   type 'a local_result =
     [ `None
     | `Exact of 'a
     | `Ambiguous of 'a * 'a
     ]
+  (** Result for when a local date time may be involved, e.g. using a date time with no precise time zone offset attached.
+
+      - [`None] is yielded when the date time does not map to any ['a].
+        This happens when DST begins and "skips an hour" for instance.
+      - [`Exact] is yielded when the date time maps to exactly one ['a].
+        This happens when date time carries an accurate offset,
+        or when the date time is not affected by any offset shifts (thus an accurate offset can be inferred).
+      - [`Ambiguous] is yielded when date time maps to more than one (exactly two) ['a].
+        This happens when DST ends and "goes back an hour" for instance.
+  *)
 
   val to_timestamp : t -> timestamp local_result
 
   val to_timestamp_exact : t -> timestamp
+  (** @raise Invalid_argument if [to_timestamp] does not yield a [`Exact] result *)
 
   val min_of_timestamp_local_result : timestamp local_result -> timestamp option
 
@@ -277,6 +295,18 @@ module Date_time : sig
 
   val of_iso8601 : string -> (t, string) result
 end
+
+val cur_timestamp : unit -> int64
+
+val min_timestamp : int64
+
+val max_timestamp : int64
+
+exception Invalid_timestamp
+
+val of_timestamps : ?skip_invalid:bool -> timestamp list -> t
+
+val of_timestamp_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
 
 (** {1 Chunking} *)
 
@@ -309,6 +339,9 @@ val chunk_again : chunking -> chunked -> chunked
 
 (** {2 Chunked selectors} *)
 
+(** You may find {!val:Infix.(>>)} useful for chaining selectors together, e.g. [drop 5 >> take 2]
+*)
+
 val first : chunked -> chunked
 (** Takes only first chunk *)
 
@@ -316,8 +349,10 @@ val take : int -> chunked -> chunked
 (** Takes n chunks *)
 
 val take_nth : int -> chunked -> chunked
+(** Take every nth chunk, specifically [0]th, [n]th, [2n]th, [3n]th *)
 
 val drop : int -> chunked -> chunked
+(** Discard n chunks *)
 
 val first_point : t -> t
 
@@ -391,7 +426,7 @@ module Infix : sig
   val ( >> ) : ('a -> 'a) -> ('a -> 'a) -> 'a -> 'a
   (** Composition, mainly for chunked selectors
 
-        [f1 >> f2] is equivalent to [fun x -> x |> f1 |> f2].
+      [f1 >> f2] is equivalent to [fun x -> x |> f1 |> f2].
   *)
 end
 
@@ -423,7 +458,7 @@ val pp_interval :
   interval ->
   unit
 
-(** {1 S-expressions} *)
+(** {1 S-expressions for serialization/deserialization} *)
 
 val to_sexp : t -> CCSexp.t
 
