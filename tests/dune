@@ -5,6 +5,12 @@
 )
 
 (rule
+ (targets infix.ml)
+ (deps    ../src/infix.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
  (targets time.ml)
  (deps    ../src/time.ml)
  (action  (copy %{deps} %{targets}))
