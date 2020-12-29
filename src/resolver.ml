@@ -1037,13 +1037,16 @@ let do_take_n_points (n : int64) (s : Time.Interval.t Seq.t) :
   in
   aux n s
 
-let find_after bound ((_start, end_exc) : Time.Interval.t)
+let find_after bound (s1 : Time.Interval.t Seq.t)
     (s2 : Time.Interval.t Seq.t) =
-  match OSeq.drop_while (fun (start', _) -> start' < end_exc) s2 () with
-  | Seq.Nil -> None
-  | Seq.Cons ((start', end_exc'), _) ->
-    if Int64.sub start' end_exc <= bound then Some (start', end_exc')
-    else None
+  s1
+  |> Seq.filter_map (fun (_start, end_exc) ->
+      match OSeq.drop_while (fun (start', _) -> start' < end_exc) s2 () with
+      | Seq.Nil -> None
+      | Seq.Cons ((start', end_exc'), _) ->
+        if Int64.sub start' end_exc <= bound then Some (start', end_exc')
+        else None
+    )
 
 let find_between_inc bound (s1 : Time.Interval.t Seq.t)
     (s2 : Time.Interval.t Seq.t) =
@@ -1200,7 +1203,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
     | After (_, b, t1, t2) ->
       let s1 = aux search_using_tz t1 in
       let s2 = aux search_using_tz t2 in
-      s1 |> Seq.filter_map (fun x -> find_after b x s2)
+      find_after b s1 s2
     | Between_inc (_, b, t1, t2) ->
       let s1 = aux search_using_tz t1 in
       let s2 = aux search_using_tz t2 in
