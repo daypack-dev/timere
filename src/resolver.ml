@@ -1037,16 +1037,14 @@ let do_take_n_points (n : int64) (s : Time.Interval.t Seq.t) :
   in
   aux n s
 
-let find_after bound (s1 : Time.Interval.t Seq.t)
-    (s2 : Time.Interval.t Seq.t) =
+let find_after bound (s1 : Time.Interval.t Seq.t) (s2 : Time.Interval.t Seq.t) =
   s1
   |> Seq.filter_map (fun (_start, end_exc) ->
       match OSeq.drop_while (fun (start', _) -> start' < end_exc) s2 () with
       | Seq.Nil -> None
       | Seq.Cons ((start', end_exc'), _) ->
         if Int64.sub start' end_exc <= bound then Some (start', end_exc')
-        else None
-    )
+        else None)
 
 let find_between_inc bound (s1 : Time.Interval.t Seq.t)
     (s2 : Time.Interval.t Seq.t) =
