@@ -1,7 +1,7 @@
 type t
 (** This is the core type of Timere used to encode computation over time.
 
-    The following documentation may call value of type [timere] "a Timere object".
+    The following documentation may call value of type [t] "a Timere object".
 *)
 
 exception Invalid_format_string of string
