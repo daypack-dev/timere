@@ -114,7 +114,7 @@ module Time_zone : sig
 
       Naming follows the convention used in [/usr/share/zoneinfo/posix/] distributed on Linux, e.g. "Australia/Sydney".
 
-      See {!val:available_time_zones} for all usable time zone names.
+      See {{:https://github.com/daypack-dev/timere/tree/main/gen_artifacts/available-time-zones.txt} [available-time-zones.txt]} or {!val:available_time_zones} or for all usable time zone names.
   *)
 
   val make_exn : string -> t
