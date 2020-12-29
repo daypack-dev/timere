@@ -104,32 +104,6 @@ val pattern :
     then [(dt.year is in p.years or p.year_ranges)] is [true].
 *)
 
-(** {1 Time zone} *)
-
-module Time_zone : sig
-  type t
-
-  val make : string -> (t, unit) result
-  (** Makes a time zone from name.
-
-      Naming follows the convention used in [/usr/share/zoneinfo/posix/] distributed on Linux, e.g. "Australia/Sydney".
-
-      See {{:https://github.com/daypack-dev/timere/tree/main/gen_artifacts/available-time-zones.txt} [available-time-zones.txt]} or {!val:available_time_zones} or for all usable time zone names.
-  *)
-
-  val make_exn : string -> t
-  (** @raise Invalid_argument if [make] fails *)
-
-  val name : t -> string
-
-  val utc : t
-
-  val available_time_zones : string list
-end
-
-val with_tz : Time_zone.t -> t -> t
-(** [with_tz tz t] changes the time zone to evaluate [t] in to [tz] *)
-
 (** {1 Algebraic operations} *)
 
 val inter : t list -> t
@@ -171,6 +145,32 @@ end
 val shift : Duration.t -> t -> t
 
 val lengthen : Duration.t -> t -> t
+
+(** {1 Time zone} *)
+
+module Time_zone : sig
+  type t
+
+  val make : string -> (t, unit) result
+  (** Makes a time zone from name.
+
+      Naming follows the convention used in [/usr/share/zoneinfo/posix/] distributed on Linux, e.g. "Australia/Sydney".
+
+      See {{:https://github.com/daypack-dev/timere/tree/main/gen_artifacts/available-time-zones.txt} [available-time-zones.txt]} or {!val:available_time_zones} or for all usable time zone names.
+  *)
+
+  val make_exn : string -> t
+  (** @raise Invalid_argument if [make] fails *)
+
+  val name : t -> string
+
+  val utc : t
+
+  val available_time_zones : string list
+end
+
+val with_tz : Time_zone.t -> t -> t
+(** [with_tz tz t] changes the time zone to evaluate [t] in to [tz] *)
 
 (** {1 Date time and timestamps} *)
 
