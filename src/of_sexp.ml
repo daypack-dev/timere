@@ -276,26 +276,26 @@ let of_sexp (x : CCSexp.t) =
         | [ `Atom "chunk_by_duration"; duration; x ] ->
           chunk (`By_duration (duration_of_sexp duration)) f (aux x)
         | [ `Atom "drop"; n; chunked ] ->
-          aux_chunked (drop (int_of_sexp n) >> f) chunked
+          aux_chunked (drop (int_of_sexp n) %> f) chunked
         | [ `Atom "take"; n; chunked ] ->
-          aux_chunked (take (int_of_sexp n) >> f) chunked
+          aux_chunked (take (int_of_sexp n) %> f) chunked
         | [ `Atom "take_nth"; n; chunked ] ->
-          aux_chunked (take_nth (int_of_sexp n) >> f) chunked
+          aux_chunked (take_nth (int_of_sexp n) %> f) chunked
         | [ `Atom "nth"; n; chunked ] ->
-          aux_chunked (nth (int_of_sexp n) >> f) chunked
+          aux_chunked (nth (int_of_sexp n) %> f) chunked
         | [
           `Atom "chunk_again";
           `List [ `Atom "chunk_disjoint_intervals"; chunked ];
         ] ->
-          aux_chunked (chunk_again `Disjoint_intervals >> f) chunked
+          aux_chunked (chunk_again `Disjoint_intervals %> f) chunked
         | [
           `Atom "chunk_again"; `List [ `Atom "chunk_at_year_boundary"; chunked ];
         ] ->
-          aux_chunked (chunk_again `At_year_boundary >> f) chunked
+          aux_chunked (chunk_again `At_year_boundary %> f) chunked
         | [
           `Atom "chunk_again"; `List [ `Atom "chunk_at_month_boundary"; chunked ];
         ] ->
-          aux_chunked (chunk_again `At_month_boundary >> f) chunked
+          aux_chunked (chunk_again `At_month_boundary %> f) chunked
         | [
           `Atom "chunk_again";
           `List
@@ -306,14 +306,14 @@ let of_sexp (x : CCSexp.t) =
           aux_chunked
             (chunk_again
                (`By_duration_drop_partial (duration_of_sexp duration))
-             >> f)
+             %> f)
             chunked
         | [
           `Atom "chunk_again";
           `List [ `Atom "chunk_by_duration"; duration; chunked ];
         ] ->
           aux_chunked
-            (chunk_again (`By_duration (duration_of_sexp duration)) >> f)
+            (chunk_again (`By_duration (duration_of_sexp duration)) %> f)
             chunked
         | _ ->
           invalid_data
