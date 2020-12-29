@@ -287,21 +287,15 @@ let of_sexp (x : CCSexp.t) =
           `Atom "chunk_again";
           `List [ `Atom "chunk_disjoint_intervals"; chunked ];
         ] ->
-          aux_chunked
-            (chunk_again `Disjoint_intervals >> f)
-            chunked
+          aux_chunked (chunk_again `Disjoint_intervals >> f) chunked
         | [
           `Atom "chunk_again"; `List [ `Atom "chunk_at_year_boundary"; chunked ];
         ] ->
-          aux_chunked
-            (chunk_again `At_year_boundary >> f)
-            chunked
+          aux_chunked (chunk_again `At_year_boundary >> f) chunked
         | [
           `Atom "chunk_again"; `List [ `Atom "chunk_at_month_boundary"; chunked ];
         ] ->
-          aux_chunked
-            (chunk_again `At_month_boundary >> f)
-            chunked
+          aux_chunked (chunk_again `At_month_boundary >> f) chunked
         | [
           `Atom "chunk_again";
           `List
@@ -311,8 +305,8 @@ let of_sexp (x : CCSexp.t) =
         ] ->
           aux_chunked
             (chunk_again
-                 (`By_duration_drop_partial (duration_of_sexp duration))
-               >> f)
+               (`By_duration_drop_partial (duration_of_sexp duration))
+             >> f)
             chunked
         | [
           `Atom "chunk_again";
