@@ -332,8 +332,7 @@ let gen () =
   CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
     output_list_file_name (fun oc ->
         let write_line = CCIO.write_line oc in
-        List.iter write_line all_time_zones;
-      );
+        List.iter write_line all_time_zones);
   Printf.printf "Generating %s\n" output_file_name;
   CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
     output_file_name (fun oc ->
