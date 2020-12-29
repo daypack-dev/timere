@@ -224,8 +224,8 @@ let of_sexp (x : CCSexp.t) =
         | `Atom "pattern" :: _ -> pattern_of_sexp x
         | [ `Atom "not"; x ] -> not (aux x)
         | [ `Atom "every"; x ] -> aux x
-        | [ `Atom "skip_n_points"; n; x ] ->
-          skip_n_points (int_of_sexp n) (aux x)
+        | [ `Atom "drop_n_points"; n; x ] ->
+          drop_n_points (int_of_sexp n) (aux x)
         | [ `Atom "take_n_points"; n; x ] ->
           take_n_points (int_of_sexp n) (aux x)
         | [ `Atom "shift"; n; x ] ->

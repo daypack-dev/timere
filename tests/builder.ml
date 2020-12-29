@@ -134,7 +134,7 @@ let make_chunk_selector ~rng : Time.chunked -> Time.chunked =
 let make_unary_op ~rng t =
   match rng () mod 6 with
   | 0 -> Time.not t
-  | 1 -> Time.skip_n_points (rng ()) t
+  | 1 -> Time.drop_n_points (rng ()) t
   | 2 -> Time.take_n_points (rng ()) t
   | 3 -> Time.shift (make_duration ~rng) t
   | 4 -> Time.lengthen (make_duration ~rng) t

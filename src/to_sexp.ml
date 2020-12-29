@@ -97,7 +97,7 @@ let sexp_list_of_unary_op (op : Time.unary_op) =
   | Not -> [ CCSexp.atom "not" ]
   | Every -> [ CCSexp.atom "every" ]
   | Drop_n_points n ->
-    [ CCSexp.atom "skip_n_points"; CCSexp.atom (string_of_int n) ]
+    [ CCSexp.atom "drop_n_points"; CCSexp.atom (string_of_int n) ]
   | Take_n_points n ->
     [ CCSexp.atom "take_n_points"; CCSexp.atom (string_of_int n) ]
   (* | Every_nth n -> [ CCSexp.atom "every_nth"; CCSexp.atom (string_of_int n) ]
