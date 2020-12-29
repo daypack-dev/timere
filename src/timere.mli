@@ -354,11 +354,11 @@ val take_nth : int -> chunked -> chunked
 val drop : int -> chunked -> chunked
 (** Discard n chunks *)
 
-val first_point : t -> t
-
-val take_n_points : int -> t -> t
-
-val drop_n_points : int -> t -> t
+(* val first_point : t -> t
+ * 
+ * val take_n_points : int -> t -> t
+ * 
+ * val drop_n_points : int -> t -> t *)
 
 (** {1 Manual intervals} *)
 
