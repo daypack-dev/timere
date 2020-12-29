@@ -19,7 +19,7 @@ type 'a range =
 (** {1 Basic constructors} *)
 
 val always : t
-(** Entire interval that Timere can handle, i.e. [\[min_timestamp, max_timestamp\)] *)
+(** Entire interval that Timere can handle, i.e. [\[min_timestamp, max_timestamp)] *)
 
 val empty : t
 (** Empty interval *)
