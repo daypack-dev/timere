@@ -43,6 +43,29 @@ module Qc = struct
            ) s
       )
 
+  let find_after_completeness =
+    QCheck.Test.make ~count:10_000 ~name:"find_after_completeness"
+      QCheck.(triple pos_int64 sorted_time_slots_maybe_gaps sorted_time_slots_maybe_gaps)
+      (fun (bound, l1, l2) ->
+         let s1 = List.to_seq l1 in
+         let s2 = List.to_seq l2 in
+         let s =
+           Resolver.find_after bound s1 s2
+         in
+         List.for_all (fun (_x1, y1) ->
+             match List.filter
+                     (fun (x2, _y2) ->
+                        y1 <= x2
+                        &&
+                        (Int64.sub x2 y1) <= bound
+                     ) l2
+             with
+             | [] -> true
+             | r :: _ ->
+               OSeq.mem ~eq:( = ) r s
+           ) l1
+      )
+
   let find_between_inc_empty =
     QCheck.Test.make ~count:10_000 ~name:"find_between_inc_empty"
       QCheck.(triple pos_int64 sorted_time_slots_maybe_gaps sorted_time_slots_maybe_gaps)
@@ -97,10 +120,35 @@ module Qc = struct
            ) s
       )
 
+  let find_between_inc_completeness =
+    QCheck.Test.make ~count:10_000 ~name:"find_between_inc_completeness"
+      QCheck.(triple pos_int64 sorted_time_slots_maybe_gaps sorted_time_slots_maybe_gaps)
+      (fun (bound, l1, l2) ->
+         let s1 = List.to_seq l1 in
+         let s2 = List.to_seq l2 in
+         let s =
+           Resolver.find_between_inc bound s1 s2
+         in
+         List.for_all (fun (x1, y1) ->
+             match List.filter
+                     (fun (x2, _y2) ->
+                        y1 <= x2
+                        &&
+                        (Int64.sub x2 y1) <= bound
+                     ) l2
+             with
+             | [] -> true
+             | (_xr, yr) :: _ ->
+               OSeq.mem ~eq:( = ) (x1, yr) s
+           ) l1
+      )
+
   let suite = [
     find_after_empty;
     find_after_soundness;
+    find_after_completeness;
     find_between_inc_empty;
     find_between_inc_soundness;
+    find_between_inc_completeness;
   ]
 end
