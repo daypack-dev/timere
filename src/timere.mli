@@ -338,7 +338,7 @@ val chunk_again : chunking -> chunked -> chunked
 
 (** {2 Chunked selectors} *)
 
-(** You may find {!val:Infix.(>>)} useful for chaining selectors together, e.g. [drop 5 >> take 2]
+(** You may find {!val:Infix.(%>)} useful for chaining selectors together, e.g. [drop 5 %> take 2]
 *)
 
 val first : chunked -> chunked
@@ -414,10 +414,10 @@ module Infix : sig
   val ( ||| ) : t -> t -> t
   (** [union] *)
 
-  val ( >> ) : ('a -> 'a) -> ('a -> 'a) -> 'a -> 'a
+  val ( %> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
   (** Composition, mainly for chunked selectors
 
-      [f1 >> f2] is equivalent to [fun x -> x |> f1 |> f2].
+      [f1 %> f2] is equivalent to [fun x -> x |> f1 |> f2].
   *)
 end
 
@@ -432,7 +432,7 @@ val after : Duration.t -> t -> t -> t
 (** [after bound s1 s2],
     for every interval [(x1, y1)] in [s1],
     yields the earliest interval [(x2, y2)] in [s2] such that
-    [y1 <= x2 && (x2 - y1) < bound]
+    [y1 <= x2 && (x2 - y1) <= bound]
     if exists
 *)
 
@@ -440,7 +440,7 @@ val between_inc : Duration.t -> t -> t -> t
 (** [between_inc bound s1 s2],
     for every interval [(x1, y1)] in [s1],
     and the earliest interval [(x2, y2)] in [s2] such that
-    [y1 <= x2 && (x2 - y1) < bound],
+    [y1 <= x2 && (x2 - y1) <= bound],
     yields [(x1, y2)]
 *)
 
@@ -448,7 +448,7 @@ val between_exc : Duration.t -> t -> t -> t
 (** [between_inc bound s1 s2],
     for every interval [(x1, y1)] in [s1],
     and the earliest interval [(x2, y2)] in [s2] such that
-    [y1 <= x2 && (x2 - y1) < bound],
+    [y1 <= x2 && (x2 - y1) <= bound],
     yields [(x1, x2)]
 *)
 
