@@ -372,6 +372,10 @@ module Infix : sig
   (** [union] *)
 
   val ( >> ) : (chunked -> chunked) -> (chunked -> chunked) -> (chunked -> chunked)
+  (** Composes chunked selectors.
+
+      [f1 >> f2] is equivalent to [fun x -> x |> f1 |> f2].
+  *)
 end
 
 (** {1 Resolution} *)
