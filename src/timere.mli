@@ -71,7 +71,6 @@ val seconds : int list -> t
 (** [seconds l] is a shorthand for [pattern ~seconds:l ()] *)
 
 val pattern :
-  ?strict:bool ->
   ?years:int list ->
   ?year_ranges:int range list ->
   ?months:month list ->
@@ -406,13 +405,13 @@ val hms_interval_exc : hms -> hms -> t
 
 val of_hms_intervals : (hms * hms) Seq.t -> t
 
-(** {1 Search oriented operations} *)
-
-val after : Duration.t -> t -> t -> t
-
-val between_inc : Duration.t -> t -> t -> t
-
-val between_exc : Duration.t -> t -> t -> t
+(* (\** {1 Search oriented operations} *\)
+ * 
+ * val after : Duration.t -> t -> t -> t
+ * 
+ * val between_inc : Duration.t -> t -> t -> t
+ * 
+ * val between_exc : Duration.t -> t -> t -> t *)
 
 (** {1 Infix operators} *)
 

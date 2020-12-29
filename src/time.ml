@@ -2053,7 +2053,7 @@ let safe_month_day_range_inc ~years ~months =
   in
   aux (-31) 31 (Month_ranges.Flatten.flatten @@ List.to_seq @@ months)
 
-let pattern ?(strict = false) ?(years = []) ?(year_ranges = []) ?(months = [])
+let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
     ?(month_ranges = []) ?(month_days = []) ?(month_day_ranges = [])
     ?(weekdays = []) ?(weekday_ranges = []) ?(hours = []) ?(hour_ranges = [])
     ?(minutes = []) ?(minute_ranges = []) ?(seconds = []) ?(second_ranges = [])
@@ -2084,43 +2084,21 @@ let pattern ?(strict = false) ?(years = []) ?(year_ranges = []) ?(months = [])
       let years = Int_set.of_list years in
       let months = Month_set.of_list months in
       let month_days = Int_set.of_list month_days in
-      let is_okay =
-        Stdlib.not strict
-        ||
-        let safe_month_day_start, safe_month_day_end_inc =
-          let years =
-            if Int_set.is_empty years then
-              [ `Range_inc (Date_time.min.year, Date_time.max.year) ]
-            else Year_ranges.Of_seq.range_list_of_seq @@ Int_set.to_seq years
-          in
-          let months =
-            if Month_set.is_empty months then [ `Range_inc (`Jan, `Dec) ]
-            else
-              Month_ranges.Of_seq.range_list_of_seq @@ Month_set.to_seq months
-          in
-          safe_month_day_range_inc ~years ~months
-        in
-        Int_set.for_all
-          (fun x -> safe_month_day_start <= x && x <= safe_month_day_end_inc)
-          month_days
-      in
-      if is_okay then
-        let weekdays = Weekday_set.of_list weekdays in
-        let hours = Int_set.of_list hours in
-        let minutes = Int_set.of_list minutes in
-        let seconds = Int_set.of_list seconds in
-        Pattern
-          ( default_search_space,
-            {
-              Pattern.years;
-              months;
-              month_days;
-              weekdays;
-              hours;
-              minutes;
-              seconds;
-            } )
-      else invalid_arg "pattern"
+      let weekdays = Weekday_set.of_list weekdays in
+      let hours = Int_set.of_list hours in
+      let minutes = Int_set.of_list minutes in
+      let seconds = Int_set.of_list seconds in
+      Pattern
+        ( default_search_space,
+          {
+            Pattern.years;
+            months;
+            month_days;
+            weekdays;
+            hours;
+            minutes;
+            seconds;
+          } )
     else invalid_arg "pattern"
 
 let month_day_ranges_are_valid_strict ~safe_month_day_range_inc day_ranges =
