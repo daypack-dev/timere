@@ -306,7 +306,7 @@ val first_point : t -> t
 
 val take_n_points : int -> t -> t
 
-val skip_n_points : int -> t -> t
+val drop_n_points : int -> t -> t
 
 (** {1 Manual intervals} *)
 

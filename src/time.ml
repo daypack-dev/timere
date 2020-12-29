@@ -1965,8 +1965,8 @@ let take_n_points (n : int) (t : t) : t =
   if n < 0 then invalid_arg "take_n_points: n < 0"
   else Unary_op (default_search_space, Take_n_points n, t)
 
-let skip_n_points (n : int) (t : t) : t =
-  if n < 0 then invalid_arg "skip_n_points: n < 0"
+let drop_n_points (n : int) (t : t) : t =
+  if n < 0 then invalid_arg "drop_n_points: n < 0"
   else Unary_op (default_search_space, Drop_n_points n, t)
 
 let first (c : chunked) : chunked = Unary_op_on_chunked (Take 1, c)
