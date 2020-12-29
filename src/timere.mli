@@ -370,6 +370,8 @@ module Infix : sig
 
   val ( ||| ) : t -> t -> t
   (** [union] *)
+
+  val ( >> ) : (chunked -> chunked) -> (chunked -> chunked) -> (chunked -> chunked)
 end
 
 (** {1 Resolution} *)
