@@ -348,7 +348,7 @@ val take : int -> chunked -> chunked
 (** Takes n chunks *)
 
 val take_nth : int -> chunked -> chunked
-(** Take every nth chunk, specifically [0]th, [n]th, [2n]th, [3n]th *)
+(** Take every nth chunk, specifically [0]th, [n]th, [2n]th, [3n]th, ... *)
 
 val drop : int -> chunked -> chunked
 (** Discard n chunks *)
