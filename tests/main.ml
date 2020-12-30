@@ -41,8 +41,8 @@ let () =
   in
   let qc_suites =
     [
-      (* ("Time_intervals_tests.Qc", Time_intervals_tests.Qc.suite); *)
-      (* ("Time_tests.Qc", Time_tests.Qc.suite); *)
+      ("Time_intervals_tests.Qc", Time_intervals_tests.Qc.suite);
+      ("Time_tests.Qc", Time_tests.Qc.suite);
       ("Resolver_tests.Qc", Resolver_tests.Qc.suite);
     ]
     |> List.map (fun (name, suite) ->

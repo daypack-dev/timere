@@ -88,7 +88,7 @@ let sexp_of_pattern (pat : Time.Pattern.t) : CCSexp.t =
      | [] -> None
      | _ -> Some (list (atom "seconds" :: seconds)));
   ]
-  |> List.filter_map (fun x -> x)
+  |> List.filter_map Fun.id
   |> list
 
 let sexp_list_of_unary_op (op : Time.unary_op) =
@@ -108,7 +108,7 @@ let sexp_list_of_unary_op (op : Time.unary_op) =
    *     (if drop_partial then Some (CCSexp.atom "drop_partial") else None);
    *     Some (CCSexp.atom (Int64.to_string chunk_size));
    *   ]
-   *   |> List.filter_map (fun x -> x)
+   *   |> List.filter_map Fun.id
    * | Chunk_by_year -> [ CCSexp.atom "chunk_by_year"]
    * | Chunk_by_month -> [ CCSexp.atom "chunk_by_month"] *)
   | Shift n -> [ CCSexp.atom "shift"; CCSexp.atom (Int64.to_string n) ]
@@ -184,7 +184,7 @@ let to_sexp (t : Time.t) : CCSexp.t =
           Some (sexp_of_duration (Duration.of_seconds chunk_size));
           (if drop_partial then Some (atom "drop_partial") else None);
         ]
-        |> List.filter_map (fun x -> x)
+        |> List.filter_map Fun.id
     in
     match chunked with
     | Unary_op_on_t (op, t) ->

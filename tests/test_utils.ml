@@ -257,9 +257,18 @@ let time_gen : Time.t QCheck.Gen.t =
   let open QCheck.Gen in
   map3
     (fun max_height max_branching randomness ->
-       Builder.build ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching
+       Builder.build ~min_year:2000 ~max_year_inc:2020 ~max_height ~max_branching
          ~randomness)
     (int_range 1 3) (int_range 1 5)
-    (list_size (int_range 1 10) (int_bound 100))
+    (list_size (int_bound 10) (int_bound 5))
 
 let time = QCheck.make ~print:To_sexp.to_sexp_string time_gen
+
+let time_list_gen : Time.t list QCheck.Gen.t =
+  let open QCheck.Gen in
+  list_size (int_bound 5) time_gen
+
+let time_list =
+  QCheck.make
+    ~print:(fun l -> String.concat ", " (List.map To_sexp.to_sexp_string l))
+    time_list_gen

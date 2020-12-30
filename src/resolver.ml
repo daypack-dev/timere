@@ -589,9 +589,8 @@ module Resolve_pattern = struct
         Time.Date_time.of_timestamp ~tz_of_date_time:search_using_tz y )
     in
     s
-    |> Time.Ranges.Of_seq.range_seq_of_seq ~modulo:None
-      ~to_int64:(fun x -> x)
-      ~of_int64:(fun x -> x)
+    |> Time.Ranges.Of_seq.range_seq_of_seq ~modulo:None ~to_int64:Fun.id
+      ~of_int64:Fun.id
     |> Seq.map (Time.Range.map ~f_inc:f ~f_exc:f)
     |> Seq.filter_map Time.Range_utils.result_range_get
 
