@@ -250,7 +250,7 @@ let of_sexp (x : CCSexp.t) =
           between_inc (duration_of_sexp b) (aux t1) (aux t2)
         | [ `Atom "between_exc"; b; t1; t2 ] ->
           between_exc (duration_of_sexp b) (aux t1) (aux t2)
-        | [ `Atom "unchunk"; x ] -> aux_chunked (fun x -> x) x
+        | [ `Atom "unchunk"; x ] -> aux_chunked Fun.id x
         | _ ->
           invalid_data
             (Printf.sprintf "Invalid timere data: %s" (CCSexp.to_string x)))
