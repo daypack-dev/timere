@@ -998,9 +998,6 @@ let optimize_search_space default_tz_offset_s t =
   |> propagate_search_space_bottom_up default_tz_offset_s
   |> propagate_search_space_top_down
 
-let positive_day_of_zero_or_negative_day ~day_count day =
-  if day <= 0 then day + 1 + day_count else day
-
 type inc_or_exc =
   | Inc
   | Exc
