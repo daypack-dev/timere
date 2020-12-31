@@ -272,3 +272,19 @@ let time_list =
   QCheck.make
     ~print:(fun l -> String.concat ", " (List.map To_sexp.to_sexp_string l))
     time_list_gen
+
+let permute (seed : int) (l : 'a list) : 'a list =
+  let len = List.length l in
+  let l = ref l in
+  OSeq.(0 --^ len)
+  |> Seq.map (fun i ->
+      let l' = List.mapi (fun i x -> (i, x)) !l in
+      let len = List.length l' in
+      let pick =
+        (i * seed) mod len
+      in
+      let r = List.assoc pick l' in
+      l := List.remove_assoc pick l' |> List.map (fun (_, x) -> x);
+      r
+    )
+  |> List.of_seq
