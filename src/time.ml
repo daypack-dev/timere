@@ -545,20 +545,6 @@ module Intervals = struct
     |> (fun s -> if skip_check then s else s |> Check.check_if_valid)
     |> aux
 
-  module Sum = struct
-    let sum_length ?(skip_check = false) (intervals : Interval.t Seq.t) : int64
-      =
-      intervals
-      |> (fun s -> if skip_check then s else Check.check_if_valid s)
-      |> Seq.fold_left
-        (fun acc (start, end_exc) -> acc +^ (end_exc -^ start))
-        0L
-
-    let sum_length_list ?(skip_check = false) (intervals : Interval.t list) :
-      int64 =
-      intervals |> List.to_seq |> sum_length ~skip_check
-  end
-
   module Bound = struct
     let min_start_and_max_end_exc ?(skip_check = false)
         (intervals : Interval.t Seq.t) : (int64 * int64) option =

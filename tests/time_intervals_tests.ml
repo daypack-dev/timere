@@ -49,7 +49,7 @@ module Qc = struct
       (fun l ->
          l
          |> List.to_seq
-         |> Time.Intervals.Normalize.normalize
+         |> Time.Intervals.normalize
          |> List.of_seq
          |> List.for_all (fun (x, y) -> x <= y))
 
@@ -58,7 +58,7 @@ module Qc = struct
       time_slots (fun l ->
           l
           |> List.to_seq
-          |> Time.Intervals.Normalize.normalize
+          |> Time.Intervals.normalize
           |> List.of_seq
           |> List.fold_left
             (fun (res, last) (x, y) ->
@@ -75,7 +75,7 @@ module Qc = struct
     QCheck.Test.make ~count:10_000 ~name:"normalize_time_slots_are_unique"
       time_slots (fun l ->
           let l =
-            l |> List.to_seq |> Time.Intervals.Normalize.normalize |> List.of_seq
+            l |> List.to_seq |> Time.Intervals.normalize |> List.of_seq
           in
           List.length (List.sort_uniq compare l) = List.length l)
 
@@ -84,7 +84,7 @@ module Qc = struct
       ~name:"normalize_time_slots_are_disjoint_with_gaps" time_slots (fun l ->
           l
           |> List.to_seq
-          |> Time.Intervals.Normalize.normalize
+          |> Time.Intervals.normalize
           |> Seq.fold_left
             (fun (res, last) (x, y) ->
                if res then
@@ -101,7 +101,7 @@ module Qc = struct
       sorted_time_slots_with_gaps (fun l ->
           l
           |> List.to_seq
-          |> Time.Intervals.Normalize.normalize
+          |> Time.Intervals.normalize
           |> List.of_seq
              = l)
 
@@ -117,7 +117,7 @@ module Qc = struct
           let normalized_timestamps =
             l
             |> List.to_seq
-            |> Time.Intervals.Normalize.normalize ~skip_sort:true
+            |> Time.Intervals.normalize ~skip_sort:true
             |> Seq.flat_map (fun (a, b) -> Seq_utils.a_to_b_exc_int64 ~a ~b)
             |> Int64_set.of_seq
           in
@@ -182,7 +182,7 @@ module Qc = struct
                 |> List.of_seq)
                @ inverted)
            |> List.to_seq
-           |> Time.Intervals.Normalize.normalize
+           |> Time.Intervals.normalize
            |> List.of_seq
          in
          (l <> [] && List.for_all (fun (x, y) -> y < start || end_exc < x) l)
