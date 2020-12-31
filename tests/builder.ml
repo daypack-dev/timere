@@ -136,22 +136,23 @@ let make_chunking ~rng : Time.chunking =
   | _ -> failwith "Unexpected case"
 
 let make_chunk_selector ~rng : Time.chunked -> Time.chunked =
+  let open Infix in
   let rec aux f height =
     if height = 1 then f
     else
       let f =
         match rng () mod 6 with
-        | 0 -> fun x -> x |> f |> Time.chunk_again (make_chunking ~rng)
-        | 1 -> fun x -> x |> f |> Time.first
-        | 2 -> fun x -> x |> f |> Time.take (rng ())
-        | 3 -> fun x -> x |> f |> Time.take_nth (rng ())
-        | 4 -> fun x -> x |> f |> Time.nth (rng ())
-        | 5 -> fun x -> x |> f |> Time.drop (rng ())
+        | 0 -> f %> Time.chunk_again (make_chunking ~rng)
+        | 1 -> f %> Time.first
+        | 2 -> f %> Time.take (rng ())
+        | 3 -> f %> Time.take_nth (rng ())
+        | 4 -> f %> Time.nth (rng ())
+        | 5 -> f %> Time.drop (rng ())
         | _ -> failwith "Unexpected case"
       in
       aux f (new_height ~rng height)
   in
-  aux (fun x -> x) 10
+  aux Fun.id 5
 
 let make_unary_op ~rng t =
   match rng () mod 6 with
