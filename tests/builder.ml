@@ -138,7 +138,7 @@ let make_chunking ~rng : Time.chunking =
 let make_chunk_selector ~rng : Time.chunked -> Time.chunked =
   let open Infix in
   let rec aux f height =
-    if height = 1 then f
+    if height <= 1 then f
     else
       let f =
         match rng () mod 6 with
@@ -175,10 +175,9 @@ let make_unary_op ~rng t =
 
 let build ~min_year ~max_year_inc ~max_height ~max_branching
     ~(randomness : int list) : Time.t =
-  if max_height <= 0 then invalid_arg "make";
   let rng = make_rng ~randomness in
   let rec aux height =
-    if height = 1 then
+    if height <= 1 then
       match rng () mod 6 with
       | 0 -> Time.empty
       | 1 -> Time.always
