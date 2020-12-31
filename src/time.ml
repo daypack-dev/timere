@@ -544,44 +544,6 @@ module Intervals = struct
     intervals
     |> (fun s -> if skip_check then s else s |> Check.check_if_valid)
     |> aux
-
-  module Bound = struct
-    let min_start_and_max_end_exc ?(skip_check = false)
-        (intervals : Interval.t Seq.t) : (int64 * int64) option =
-      intervals
-      |> (fun s -> if skip_check then s else Check.check_if_valid s)
-      |> Seq.fold_left
-        (fun acc (start, end_exc) ->
-           match acc with
-           | None -> Some (start, end_exc)
-           | Some (min_start, max_end_exc) ->
-             Some (min min_start start, max max_end_exc end_exc))
-        None
-
-    let min_start_and_max_end_exc_list ?(skip_check = false)
-        (intervals : Interval.t list) : (int64 * int64) option =
-      intervals |> List.to_seq |> min_start_and_max_end_exc ~skip_check
-  end
-
-  let shift_list ~offset (intervals : Interval.t list) : Interval.t list =
-    List.map
-      (fun (start, end_exc) -> (start +^ offset, end_exc +^ offset))
-      intervals
-
-  let equal (intervals1 : Interval.t list) (intervals2 : Interval.t list) : bool
-    =
-    let intervals1 =
-      intervals1 |> List.to_seq |> normalize |> List.of_seq
-    in
-    let intervals2 =
-      intervals2 |> List.to_seq |> normalize |> List.of_seq
-    in
-    intervals1 = intervals2
-
-  let a_is_subset_of_b ~(a : Interval.t Seq.t) ~(b : Interval.t Seq.t) : bool =
-    let inter = Inter.inter a b |> List.of_seq in
-    let a = List.of_seq a in
-    a = inter
 end
 
 module Range = struct
