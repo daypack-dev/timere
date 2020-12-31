@@ -4,7 +4,7 @@ let make_rng ~randomness : unit -> int =
   let len = Array.length arr in
   let cur = ref 0 in
   fun () ->
-    let ret = max 0 (arr.(!cur) mod 5000) in
+    let ret = arr.(!cur) in
     cur := (!cur + 1) mod len;
     ret
 

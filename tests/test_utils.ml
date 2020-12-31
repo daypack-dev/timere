@@ -255,11 +255,25 @@ let date_time_testable : (module Alcotest.TESTABLE) =
 
 let time_gen : Time.t QCheck.Gen.t =
   let open QCheck.Gen in
+  let search_start_dt =
+    Result.get_ok
+    @@ Time.Date_time.make ~year:2000 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+      ~second:0 ~tz:Time_zone.utc
+  in
+  let search_end_exc_dt =
+    Result.get_ok
+    @@ Time.Date_time.make ~year:2021 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+      ~second:0 ~tz:Time_zone.utc
+  in
   map3
     (fun max_height max_branching randomness ->
-       Builder.build ~min_year:2000 ~max_year_inc:2020 ~max_height ~max_branching
-         ~randomness)
-    (int_range 1 3) (int_range 1 3)
+       Time.inter [
+         Time.(interval_dt_exc search_start_dt search_end_exc_dt);
+         Builder.build ~min_year:2000 ~max_year_inc:2020 ~max_height ~max_branching
+           ~randomness
+       ]
+    )
+    (int_range 1 2) (int_range 1 3)
     (list_size (int_bound 10) (int_bound 100))
 
 let time = QCheck.make ~print:To_sexp.to_sexp_string time_gen
