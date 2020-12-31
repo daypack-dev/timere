@@ -7,7 +7,7 @@ module Qc = struct
         Time.equal t t')
 
   let union_order_does_not_matter =
-    QCheck.Test.make ~count:10 ~name:"union_order_does_not_matter" QCheck.(pair (int_bound 10) time_list)
+    QCheck.Test.make ~count:100 ~name:"union_order_does_not_matter" QCheck.(pair (int_bound 10) time_list)
       (fun (rand, l1) ->
          let l2 = permute rand l1 in
          let t1 = Time.union l1 in
@@ -18,7 +18,7 @@ module Qc = struct
       )
 
   let inter_order_does_not_matter =
-    QCheck.Test.make ~count:10 ~name:"inter_order_does_not_matter" QCheck.(pair (int_bound 10) time_list)
+    QCheck.Test.make ~count:100 ~name:"inter_order_does_not_matter" QCheck.(pair (int_bound 10) time_list)
       (fun (rand, l1) ->
          let l2 = permute rand l1 in
          let t1 = Time.inter l1 in
