@@ -47,56 +47,48 @@ let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
 
 let make_pattern ~rng ~min_year ~max_year_inc =
   let years =
-    if rng () mod 2 = 0 then
-      []
+    if rng () mod 2 = 0 then []
     else
       OSeq.(0 -- rng ())
       |> Seq.map (fun _ -> min max_year_inc (min_year + rng ()))
       |> List.of_seq
   in
   let months =
-    if rng () mod 2 = 0 then
-      []
+    if rng () mod 2 = 0 then []
     else
       OSeq.(0 -- rng ())
-    |> Seq.map (fun _ -> Result.get_ok @@ Time.month_of_tm_int (rng () mod 12))
-    |> List.of_seq
+      |> Seq.map (fun _ ->
+          Result.get_ok @@ Time.month_of_tm_int (rng () mod 12))
+      |> List.of_seq
   in
   let month_days =
-    if rng () mod 2 = 0 then
-      []
+    if rng () mod 2 = 0 then []
     else
       OSeq.(0 -- rng ())
-    |> Seq.map (fun _ ->
-        if rng () mod 2 = 0 then 1 + (rng () mod 31)
-        else -(1 + (rng () mod 31)))
-    |> List.of_seq
+      |> Seq.map (fun _ ->
+          if rng () mod 2 = 0 then 1 + (rng () mod 31)
+          else -(1 + (rng () mod 31)))
+      |> List.of_seq
   in
   let weekdays =
-    if rng () mod 2 = 0 then
-      []
+    if rng () mod 2 = 0 then []
     else
       OSeq.(0 -- rng ())
-    |> Seq.map (fun _ -> Result.get_ok @@ Time.weekday_of_tm_int (rng () mod 7))
-    |> List.of_seq
+      |> Seq.map (fun _ ->
+          Result.get_ok @@ Time.weekday_of_tm_int (rng () mod 7))
+      |> List.of_seq
   in
   let hours =
-    if rng () mod 2 = 0 then
-      []
-    else
-      OSeq.(0 -- rng ()) |> Seq.map (fun _ -> rng () mod 24) |> List.of_seq
+    if rng () mod 2 = 0 then []
+    else OSeq.(0 -- rng ()) |> Seq.map (fun _ -> rng () mod 24) |> List.of_seq
   in
   let minutes =
-    if rng () mod 2 = 0 then
-      []
-    else
-      OSeq.(0 -- rng ()) |> Seq.map (fun _ -> rng () mod 60) |> List.of_seq
+    if rng () mod 2 = 0 then []
+    else OSeq.(0 -- rng ()) |> Seq.map (fun _ -> rng () mod 60) |> List.of_seq
   in
   let seconds =
-    if rng () mod 2 = 0 then
-      []
-    else
-      OSeq.(0 -- rng ()) |> Seq.map (fun _ -> rng () mod 60) |> List.of_seq
+    if rng () mod 2 = 0 then []
+    else OSeq.(0 -- rng ()) |> Seq.map (fun _ -> rng () mod 60) |> List.of_seq
   in
   Time.pattern ~years ~months ~month_days ~weekdays ~hours ~minutes ~seconds ()
 

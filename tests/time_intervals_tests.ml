@@ -74,9 +74,7 @@ module Qc = struct
   let normalize_time_slots_are_unique =
     QCheck.Test.make ~count:10_000 ~name:"normalize_time_slots_are_unique"
       time_slots (fun l ->
-          let l =
-            l |> List.to_seq |> Time.Intervals.normalize |> List.of_seq
-          in
+          let l = l |> List.to_seq |> Time.Intervals.normalize |> List.of_seq in
           List.length (List.sort_uniq compare l) = List.length l)
 
   let normalize_time_slots_are_disjoint_with_gaps =
@@ -99,11 +97,7 @@ module Qc = struct
     QCheck.Test.make ~count:10_000
       ~name:"normalize_idempotent_wrt_normalized_time_slots"
       sorted_time_slots_with_gaps (fun l ->
-          l
-          |> List.to_seq
-          |> Time.Intervals.normalize
-          |> List.of_seq
-             = l)
+          l |> List.to_seq |> Time.Intervals.normalize |> List.of_seq = l)
 
   let normalize_is_lossless =
     QCheck.Test.make ~count:10_000 ~name:"normalize_is_lossless"
