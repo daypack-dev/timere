@@ -732,7 +732,7 @@ module Resolve_pattern = struct
         match r with
         | `Range_inc (x, y) -> (x, Int64.succ y)
         | `Range_exc (x, y) -> (x, y))
-    |> Time.Intervals.Normalize.normalize ~skip_filter_invalid:true
+    |> Time.Intervals.normalize ~skip_filter_invalid:true
       ~skip_sort:true
 
   (* let matching_intervals_round_robin_non_decreasing
@@ -881,7 +881,7 @@ let propagate_search_space_bottom_up default_tz (time : Time.t) : Time.t =
         s
         |> Seq.map get_search_space
         |> Seq.map List.to_seq
-        |> Seq.map (Intervals.Normalize.normalize ~skip_sort:true)
+        |> Seq.map (Intervals.normalize ~skip_sort:true)
         |> Intervals.Inter.inter_multi_seq ~skip_check:false
         |> List.of_seq
       in
@@ -900,28 +900,25 @@ let propagate_search_space_bottom_up default_tz (time : Time.t) : Time.t =
       Union_seq (space, s)
     | After (_, b, t1, t2) ->
       let space =
-        [ t1; t2 ]
-        |> List.map get_search_space
-        |> List.map List.to_seq
-        |> Intervals.Union.union_multi_list
+        Intervals.Union.union
+          (List.to_seq @@ get_search_space t1)
+          (List.to_seq @@ get_search_space t2)
         |> List.of_seq
       in
       After (space, b, t1, t2)
     | Between_inc (_, b, t1, t2) ->
       let space =
-        [ t1; t2 ]
-        |> List.map get_search_space
-        |> List.map List.to_seq
-        |> Intervals.Union.union_multi_list
+        Intervals.Union.union
+          (List.to_seq @@ get_search_space t1)
+          (List.to_seq @@ get_search_space t2)
         |> List.of_seq
       in
       Between_inc (space, b, t1, t2)
     | Between_exc (_, b, t1, t2) ->
       let space =
-        [ t1; t2 ]
-        |> List.map get_search_space
-        |> List.map List.to_seq
-        |> Intervals.Union.union_multi_list
+        Intervals.Union.union
+          (List.to_seq @@ get_search_space t1)
+          (List.to_seq @@ get_search_space t2)
         |> List.of_seq
       in
       Between_exc (space, b, t1, t2)
@@ -1139,7 +1136,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
   let open Time in
   let normalize =
-    Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
+    Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
   in
   let rec aux search_using_tz time =
     match time with
@@ -1151,16 +1148,15 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
       |> Seq.flat_map (fun ((x, y), entry) ->
           let space =
             Intervals.Inter.inter (Seq.return (x, y)) (List.to_seq space)
-            |> List.of_seq
           in
           let params =
-            List.map
+            Seq.map
               (Resolve_pattern.Search_param.make ~search_using_tz
                  ~search_using_tz_offset_s:Time_zone.(entry.offset))
               space
           in
-          Intervals.Union.union_multi_list ~skip_check:false
-            (List.map
+          Intervals.Union.union_multi_seq ~skip_check:false
+            (Seq.map
                (fun param -> Resolve_pattern.matching_intervals param pat)
                params))
       |> normalize
@@ -1214,7 +1210,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
     let chunk_based_on_op_on_t op s =
       match op with
       | Chunk_disjoint_interval ->
-        Intervals.Normalize.normalize ~skip_filter_invalid:true
+        Intervals.normalize ~skip_filter_invalid:true
           ~skip_sort:true s
       | Chunk_by_duration { chunk_size; drop_partial } ->
         Intervals.chunk ~skip_check:false ~drop_partial ~chunk_size s

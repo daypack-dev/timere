@@ -43,16 +43,6 @@ let first_mday = 1
 
 let tm_year_offset = 1900
 
-let next_weekday (wday : weekday) : weekday =
-  match wday with
-  | `Sun -> `Mon
-  | `Mon -> `Tue
-  | `Tue -> `Wed
-  | `Wed -> `Thu
-  | `Thu -> `Fri
-  | `Fri -> `Sat
-  | `Sat -> `Sun
-
 let tm_int_of_weekday (wday : weekday) : int =
   match wday with
   | `Sun -> 0
@@ -112,14 +102,6 @@ let month_of_human_int (x : int) : (month, unit) result = month_of_tm_int (x - 1
 let compare_month (m1 : month) (m2 : month) : int =
   compare (tm_int_of_month m1) (tm_int_of_month m2)
 
-let month_lt m1 m2 = tm_int_of_month m1 < tm_int_of_month m2
-
-let month_le m1 m2 = tm_int_of_month m1 <= tm_int_of_month m2
-
-let month_gt m1 m2 = tm_int_of_month m1 > tm_int_of_month m2
-
-let month_ge m1 m2 = tm_int_of_month m1 >= tm_int_of_month m2
-
 module Month_set = Set.Make (struct
     type t = month
 
@@ -128,16 +110,6 @@ module Month_set = Set.Make (struct
 
 let compare_weekday (d1 : weekday) (d2 : weekday) : int =
   compare (tm_int_of_weekday d1) (tm_int_of_weekday d2)
-
-let weekday_lt d1 d2 = tm_int_of_weekday d1 < tm_int_of_weekday d2
-
-let weekday_le d1 d2 = tm_int_of_weekday d1 <= tm_int_of_weekday d2
-
-let weekday_gt d1 d2 = tm_int_of_weekday d1 > tm_int_of_weekday d2
-
-let weekday_ge d1 d2 = tm_int_of_weekday d1 >= tm_int_of_weekday d2
-
-let zero_tm_sec tm = Unix.{ tm with tm_sec = 0 }
 
 module Weekday_set = Set.Make (struct
     type t = weekday
@@ -342,21 +314,13 @@ module Intervals = struct
         else s |> Check.check_if_valid |> Check.check_if_sorted)
     |> Join_internal.join
 
-  module Normalize = struct
-    let normalize ?(skip_filter_invalid = false) ?(skip_filter_empty = false)
-        ?(skip_sort = false) intervals =
-      intervals
-      |> (fun s -> if skip_filter_invalid then s else Filter.filter_invalid s)
-      |> (fun s -> if skip_filter_empty then s else Filter.filter_empty s)
-      |> (fun s -> if skip_sort then s else Sort.sort_uniq_intervals s)
-      |> Join_internal.join
-
-    let normalize_list_in_seq_out ?(skip_filter_invalid = false)
-        ?(skip_filter_empty = false) ?(skip_sort = false) intervals =
-      intervals
-      |> List.to_seq
-      |> normalize ~skip_filter_invalid ~skip_filter_empty ~skip_sort
-  end
+  let normalize ?(skip_filter_invalid = false) ?(skip_filter_empty = false)
+      ?(skip_sort = false) intervals =
+    intervals
+    |> (fun s -> if skip_filter_invalid then s else Filter.filter_invalid s)
+    |> (fun s -> if skip_filter_empty then s else Filter.filter_empty s)
+    |> (fun s -> if skip_sort then s else Sort.sort_uniq_intervals s)
+    |> Join_internal.join
 
   module Slice_internal = struct
     let slice_start ~start (intervals : Interval.t Seq.t) : Interval.t Seq.t =
@@ -396,43 +360,6 @@ module Intervals = struct
       aux end_exc intervals
   end
 
-  module Slice_rev_internal = struct
-    let slice_start ~start (intervals : Interval.t Seq.t) : Interval.t Seq.t =
-      let rec aux acc start intervals =
-        match intervals () with
-        | Seq.Nil -> List.rev acc |> List.to_seq
-        | Seq.Cons ((ts_start, ts_end_exc), slots) ->
-          if start <= ts_start then
-            (* entire time slot is after start, add to acc *)
-            aux ((ts_start, ts_end_exc) :: acc) start slots
-          else if ts_start < start && start < ts_end_exc then
-            (* time slot spans across the start mark, split time slot *)
-            aux ((start, ts_end_exc) :: acc) start slots
-          else
-            (* time slot is before start mark, do nothing *)
-            aux acc start Seq.empty
-      in
-      aux [] start intervals
-
-    let slice_end_exc ~end_exc (intervals : Interval.t Seq.t) : Interval.t Seq.t
-      =
-      let rec aux end_exc intervals =
-        match intervals () with
-        | Seq.Nil -> Seq.empty
-        | Seq.Cons ((ts_start, ts_end_exc), slots) ->
-          if ts_end_exc <= end_exc then
-            (* entire time slot is before end_exc mark, do nothing *)
-            intervals
-          else if ts_start < end_exc && end_exc < ts_end_exc then
-            (* time slot spans across the end_exc mark, split time slot *)
-            OSeq.cons (ts_start, end_exc) slots
-          else
-            (* time slot is after end_exc mark, move to next time slot *)
-            aux end_exc slots
-      in
-      aux end_exc intervals
-  end
-
   module Slice = struct
     let slice ?(skip_check = false) ?start ?end_exc intervals =
       intervals
@@ -447,20 +374,6 @@ module Intervals = struct
       match end_exc with
       | None -> s
       | Some end_exc -> Slice_internal.slice_end_exc ~end_exc s
-
-    let slice_rev ?(skip_check = false) ?start ?end_exc intervals =
-      intervals
-      |> (fun s ->
-          if skip_check then s
-          else s |> Check.check_if_valid |> Check.check_if_sorted_rev)
-      |> (fun s ->
-          match start with
-          | None -> s
-          | Some start -> Slice_rev_internal.slice_start ~start s)
-      |> fun s ->
-      match end_exc with
-      | None -> s
-      | Some end_exc -> Slice_rev_internal.slice_end_exc ~end_exc s
   end
 
   let relative_complement ?(skip_check = false) ~(not_mem_of : Interval.t Seq.t)
@@ -561,10 +474,6 @@ module Intervals = struct
       with
       | None -> Seq.empty
       | Some s -> s
-
-    let inter_multi_list ?(skip_check = false)
-        (interval_batches : Interval.t Seq.t list) : Interval.t Seq.t =
-      List.to_seq interval_batches |> inter_multi_seq ~skip_check
   end
 
   module Union = struct
@@ -588,17 +497,13 @@ module Intervals = struct
         else intervals2 |> Check.check_if_valid |> Check.check_if_sorted
       in
       aux intervals1 intervals2
-      |> Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
+      |> normalize ~skip_filter_invalid:true ~skip_sort:true
 
     let union_multi_seq ?(skip_check = false)
         (interval_batches : Interval.t Seq.t Seq.t) : Interval.t Seq.t =
       Seq.fold_left
         (fun acc intervals -> union ~skip_check acc intervals)
         Seq.empty interval_batches
-
-    let union_multi_list ?(skip_check = false)
-        (interval_batches : Interval.t Seq.t list) : Interval.t Seq.t =
-      List.to_seq interval_batches |> union_multi_seq ~skip_check
   end
 
   module Round_robin = struct
@@ -614,7 +519,7 @@ module Intervals = struct
         (batches : Interval.t Seq.t list) : Interval.t Seq.t =
       collect_round_robin_non_decreasing ~skip_check batches
       |> Seq.flat_map (fun l -> List.to_seq l |> Seq.filter_map Fun.id)
-      |> Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
+      |> normalize ~skip_filter_invalid:true ~skip_sort:true
 
     let merge_multi_seq_round_robin_non_decreasing ?(skip_check = false)
         (batches : Interval.t Seq.t Seq.t) : Interval.t Seq.t =
@@ -680,10 +585,10 @@ module Intervals = struct
   let equal (intervals1 : Interval.t list) (intervals2 : Interval.t list) : bool
     =
     let intervals1 =
-      intervals1 |> List.to_seq |> Normalize.normalize |> List.of_seq
+      intervals1 |> List.to_seq |> normalize |> List.of_seq
     in
     let intervals2 =
-      intervals2 |> List.to_seq |> Normalize.normalize |> List.of_seq
+      intervals2 |> List.to_seq |> normalize |> List.of_seq
     in
     intervals1 = intervals2
 
@@ -991,7 +896,7 @@ module Ranges = struct
     | None ->
       s
       |> Seq.map (Range.int64_exc_range_of_range ~to_int64)
-      |> Intervals.Normalize.normalize ~skip_filter_invalid ~skip_filter_empty
+      |> Intervals.normalize ~skip_filter_invalid ~skip_filter_empty
         ~skip_sort
       |> Seq.map (fun (x, y) -> (of_int64 x, y |> Int64.pred |> of_int64))
       |> Seq.map (fun (x, y) -> `Range_inc (x, y))
@@ -2185,7 +2090,7 @@ let of_sorted_interval_seq ?(skip_invalid : bool = false)
         | Ok _, Ok _ -> Some (x, y)
         | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
     |> Intervals.Check.check_if_sorted
-    |> Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
+    |> Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
   in
   match s () with
   | Seq.Nil -> Empty
@@ -2209,7 +2114,7 @@ let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
         | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
     |> Intervals.Sort.sort_uniq_intervals_list
     |> List.to_seq
-    |> Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
+    |> Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
   in
   match s () with
   | Seq.Nil -> Empty
