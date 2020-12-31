@@ -793,24 +793,6 @@ and get_search_space_chunked (chunked : Time.chunked) =
   | Unary_op_on_t (_, t) -> get_search_space t
   | Unary_op_on_chunked (_, c) -> get_search_space_chunked c
 
-let set_search_space space (time : Time.t) : Time.t =
-  let open Time in
-  match time with
-  | All -> All
-  | Empty -> Empty
-  | Timestamp_interval_seq (_, x) -> Timestamp_interval_seq (space, x)
-  | Pattern (_, x) -> Pattern (space, x)
-  | Unary_op (_, op, x) -> Unary_op (space, op, x)
-  | Interval_exc (_, x, y) -> Interval_exc (space, x, y)
-  | Interval_inc (_, x, y) -> Interval_inc (space, x, y)
-  | Round_robin_pick_list (_, x) -> Round_robin_pick_list (space, x)
-  | Inter_seq (_, x) -> Inter_seq (space, x)
-  | Union_seq (_, x) -> Union_seq (space, x)
-  | After (_, b, x, y) -> After (space, b, x, y)
-  | Between_inc (_, b, x, y) -> Between_inc (space, b, x, y)
-  | Between_exc (_, b, x, y) -> Between_exc (space, b, x, y)
-  | Unchunk c -> Unchunk c
-
 let search_space_of_year_range tz year_range =
   let open Time in
   let aux_start start =
