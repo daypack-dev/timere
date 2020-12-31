@@ -39,16 +39,10 @@ module Qc = struct
         Time.equal t t')
 
   let union_order_does_not_matter =
-    QCheck.Test.make ~count:10_000 ~name:"union_order_does_not_matter" time_list
-      (fun l1 ->
+    QCheck.Test.make ~count:10_000 ~name:"union_order_does_not_matter" QCheck.(pair small_nat time_list)
+      (fun (rand, l1) ->
          let l2 = List.rev l1 in
-         let l3 =
-           let x = l1 |> List.to_seq |> OSeq.take_nth 2 |> List.of_seq in
-           let y =
-             l1 |> List.to_seq |> OSeq.drop 1 |> OSeq.take_nth 2 |> List.of_seq
-           in
-           x @ y
-         in
+         let l3 = permute rand l1 in
          let t1 = Time.union l1 in
          let t2 = Time.union l2 in
          let t3 = Time.union l3 in
@@ -58,16 +52,10 @@ module Qc = struct
          OSeq.equal ~eq:( = ) r1 r2 && OSeq.equal ~eq:( = ) r2 r3)
 
   let inter_order_does_not_matter =
-    QCheck.Test.make ~count:10_000 ~name:"inter_order_does_not_matter" time_list
-      (fun l1 ->
+    QCheck.Test.make ~count:10_000 ~name:"inter_order_does_not_matter" QCheck.(pair small_nat time_list)
+      (fun (rand, l1) ->
          let l2 = List.rev l1 in
-         let l3 =
-           let x = l1 |> List.to_seq |> OSeq.take_nth 2 |> List.of_seq in
-           let y =
-             l1 |> List.to_seq |> OSeq.drop 1 |> OSeq.take_nth 2 |> List.of_seq
-           in
-           x @ y
-         in
+         let l3 = permute rand l1 in
          let t1 = Time.inter l1 in
          let t2 = Time.inter l2 in
          let t3 = Time.inter l3 in
