@@ -162,9 +162,6 @@ module Interval = struct
 
   let compare x y = if lt x y then -1 else if x = y then 0 else 1
 
-  let to_string ((start, end_exc) : t) : string =
-    Printf.sprintf "[%Ld, %Ld)" start end_exc
-
   module Check = struct
     let is_valid ((start, end_exc) : t) : bool = start <= end_exc
 
