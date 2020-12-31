@@ -259,8 +259,8 @@ let time_gen : Time.t QCheck.Gen.t =
     (fun max_height max_branching randomness ->
        Builder.build ~min_year:2000 ~max_year_inc:2020 ~max_height ~max_branching
          ~randomness)
-    (int_range 1 3) (int_range 1 5)
-    (list_size (int_bound 10) (int_bound 5))
+    (int_range 1 3) (int_range 1 3)
+    (list_size (int_bound 10) (int_bound 100))
 
 let time = QCheck.make ~print:To_sexp.to_sexp_string time_gen
 

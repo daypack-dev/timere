@@ -140,12 +140,13 @@ let make_chunk_selector ~rng : Time.chunked -> Time.chunked =
     if height = 1 then f
     else
       let f =
-        match rng () mod 1 with
+        match rng () mod 6 with
         | 0 -> fun x -> x |> f |> Time.chunk_again (make_chunking ~rng)
         | 1 -> fun x -> x |> f |> Time.first
         | 2 -> fun x -> x |> f |> Time.take (rng ())
         | 3 -> fun x -> x |> f |> Time.take_nth (rng ())
-        | 4 -> fun x -> x |> f |> Time.drop (rng ())
+        | 4 -> fun x -> x |> f |> Time.nth (rng ())
+        | 5 -> fun x -> x |> f |> Time.drop (rng ())
         | _ -> failwith "Unexpected case"
       in
       aux f (new_height ~rng height)
