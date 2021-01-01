@@ -534,14 +534,14 @@ module Intervals = struct
         let size = end_exc -^ start in
         if size < chunk_size then (
           if drop_partial then aux rest
-          else OSeq.cons (start, end_exc) (aux rest)
+          else fun () -> Seq.Cons ((start, end_exc), (aux rest))
         )
         else if size = chunk_size then
-          OSeq.cons (start, end_exc) (aux rest)
+          fun () -> Seq.Cons ((start, end_exc), (aux rest))
         else
           let chunk_end_exc = (start +^ chunk_size) in
           let rest () = Seq.Cons ((chunk_end_exc, end_exc), rest) in
-          OSeq.cons (start, chunk_end_exc) (aux rest)
+          fun () -> Seq.Cons ((start, chunk_end_exc), (aux rest))
     in
     if chunk_size < 1L then
       invalid_arg "chunk"
@@ -1818,7 +1818,7 @@ let inter_seq (s : t Seq.t) : t =
     | None -> Some rest
     | Some (Error ()) -> None
     | Some (Ok pat) ->
-      Some (OSeq.cons (Pattern (default_search_space, pat)) rest)
+      Some (fun () -> Seq.Cons ((Pattern (default_search_space, pat)), rest))
   in
   let s = flatten s in
   match inter_patterns s with
