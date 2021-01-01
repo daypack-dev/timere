@@ -102,9 +102,13 @@ let transition_seq (t : t) : ((int64 * int64) * entry) Seq.t =
     | Seq.Cons ((k1, entry1), s) -> (
         match s () with
         | Seq.Nil ->
-          fun () -> Seq.Cons (((k1, Constants.max_timestamp), entry1), (aux Seq.empty))
+          fun () ->
+            Seq.Cons (((k1, Constants.max_timestamp), entry1), aux Seq.empty)
         | Seq.Cons ((k2, entry2), rest) ->
-          fun () -> Seq.Cons (((k1, k2), entry1), (aux (fun () -> Seq.Cons ((k2, entry2), rest)))))
+          fun () ->
+            Seq.Cons
+              ( ((k1, k2), entry1),
+                aux (fun () -> Seq.Cons ((k2, entry2), rest)) ))
   in
   Array.to_seq table |> aux
 

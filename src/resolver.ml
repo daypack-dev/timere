@@ -1030,8 +1030,8 @@ let find_between_inc bound (s1 : Time.Interval.t Seq.t)
         match s2 () with
         | Seq.Nil -> Seq.empty
         | Seq.Cons ((start2, end_exc2), _rest2) ->
-          if Int64.sub start2 end_exc1 <= bound then
-            fun () -> Seq.Cons ((start1, end_exc2), (aux rest1 s2))
+          if Int64.sub start2 end_exc1 <= bound then fun () ->
+            Seq.Cons ((start1, end_exc2), aux rest1 s2)
           else aux rest1 s2)
   in
   aux s1 s2
@@ -1046,8 +1046,8 @@ let find_between_exc bound (s1 : Time.Interval.t Seq.t)
         match s2 () with
         | Seq.Nil -> Seq.empty
         | Seq.Cons ((start2, _end_exc2), _rest2) ->
-          if Int64.sub start2 end_exc1 <= bound then
-            fun () -> Seq.Cons ((start1, start2), (aux rest1 s2))
+          if Int64.sub start2 end_exc1 <= bound then fun () ->
+            Seq.Cons ((start1, start2), aux rest1 s2)
           else aux rest1 s2)
   in
   aux s1 s2
@@ -1077,7 +1077,8 @@ let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) =
           |> Option.get
           |> Int64.succ
         in
-        fun () -> Seq.Cons ((t1, t'), (aux (fun () -> Seq.Cons ((t', t2), rest))))
+        fun () ->
+          Seq.Cons ((t1, t'), aux (fun () -> Seq.Cons ((t', t2), rest)))
   in
   aux s
 
@@ -1106,7 +1107,8 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
           |> Option.get
           |> Int64.succ
         in
-        fun () -> Seq.Cons ((t1, t'), (aux (fun () -> Seq.Cons ((t', t2), rest))))
+        fun () ->
+          Seq.Cons ((t1, t'), aux (fun () -> Seq.Cons ((t', t2), rest)))
   in
   aux s
 
@@ -1114,7 +1116,8 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
   let open Time in
   let normalize =
-    Intervals.normalize ~skip_filter_empty:false ~skip_filter_invalid:true ~skip_sort:true
+    Intervals.normalize ~skip_filter_empty:false ~skip_filter_invalid:true
+      ~skip_sort:true
   in
   let rec aux search_using_tz time =
     match time with
@@ -1187,8 +1190,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
   and aux_chunked search_using_tz_offset_s (chunked : chunked) =
     let chunk_based_on_op_on_t op s =
       match op with
-      | Chunk_disjoint_interval ->
-        normalize s
+      | Chunk_disjoint_interval -> normalize s
       | Chunk_by_duration { chunk_size; drop_partial } ->
         Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
       | Chunk_at_year_boundary ->

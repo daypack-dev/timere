@@ -289,23 +289,18 @@ module Intervals = struct
     let join (intervals : Interval.t Seq.t) : Interval.t Seq.t =
       let rec aux cur intervals =
         match intervals () with
-        | Seq.Nil -> (
-            Seq.return cur
-            )
+        | Seq.Nil -> Seq.return cur
         | Seq.Cons ((start, end_exc), rest) -> (
-            (
-                match Interval.join cur (start, end_exc) with
-                | Some x -> aux x rest
-                | None ->
-                  (* cannot be merged, add time slot being carried to the sequence *)
-                  fun () -> Seq.Cons (cur, aux (start, end_exc) rest)))
+            match Interval.join cur (start, end_exc) with
+            | Some x -> aux x rest
+            | None ->
+              (* cannot be merged, add time slot being carried to the sequence *)
+              fun () -> Seq.Cons (cur, aux (start, end_exc) rest))
       in
       let aux' intervals =
         match intervals () with
-        | Seq.Nil -> (
-            Seq.empty)
-        | Seq.Cons ((start, end_exc), rest) ->
-          aux (start, end_exc) rest
+        | Seq.Nil -> Seq.empty
+        | Seq.Cons ((start, end_exc), rest) -> aux (start, end_exc) rest
       in
       aux' intervals
   end
@@ -486,7 +481,8 @@ module Intervals = struct
         match (intervals1 (), intervals2 ()) with
         | Seq.Nil, s | s, Seq.Nil -> fun () -> s
         | Seq.Cons (x1, rest1), Seq.Cons (x2, rest2) ->
-          if Interval.le x1 x2 then fun () -> Seq.Cons (x1, aux rest1 intervals2)
+          if Interval.le x1 x2 then fun () ->
+            Seq.Cons (x1, aux rest1 intervals2)
           else fun () -> Seq.Cons (x2, aux rest2 intervals1)
       in
       let intervals1 =
@@ -536,19 +532,17 @@ module Intervals = struct
       | Seq.Nil -> Seq.empty
       | Seq.Cons ((start, end_exc), rest) ->
         let size = end_exc -^ start in
-        if size < chunk_size then (
+        if size < chunk_size then
           if drop_partial then aux rest
-          else fun () -> Seq.Cons ((start, end_exc), (aux rest))
-        )
-        else if size = chunk_size then
-          fun () -> Seq.Cons ((start, end_exc), (aux rest))
+          else fun () -> Seq.Cons ((start, end_exc), aux rest)
+        else if size = chunk_size then fun () ->
+          Seq.Cons ((start, end_exc), aux rest)
         else
-          let chunk_end_exc = (start +^ chunk_size) in
+          let chunk_end_exc = start +^ chunk_size in
           let rest () = Seq.Cons ((chunk_end_exc, end_exc), rest) in
-          fun () -> Seq.Cons ((start, chunk_end_exc), (aux rest))
+          fun () -> Seq.Cons ((start, chunk_end_exc), aux rest)
     in
-    if chunk_size < 1L then
-      invalid_arg "chunk"
+    if chunk_size < 1L then invalid_arg "chunk"
     else
       intervals
       |> (fun s -> if skip_check then s else s |> Check.check_if_valid)
@@ -1703,37 +1697,21 @@ let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
   | `Disjoint_intervals ->
     Unchunk (f (Unary_op_on_t (Chunk_disjoint_interval, t)))
   | `By_duration duration ->
-    let chunk_size =
-      Duration.to_seconds duration
-    in
-    if chunk_size < 1L then
-      invalid_arg "chunk"
+    let chunk_size = Duration.to_seconds duration in
+    if chunk_size < 1L then invalid_arg "chunk"
     else
       Unchunk
-      (f
-         (Unary_op_on_t
-            ( Chunk_by_duration
-                {
-                  chunk_size;
-                  drop_partial = false;
-                },
-              t )))
+        (f
+           (Unary_op_on_t
+              (Chunk_by_duration { chunk_size; drop_partial = false }, t)))
   | `By_duration_drop_partial duration ->
-    let chunk_size =
-      Duration.to_seconds duration
-    in
-    if chunk_size < 1L then
-      invalid_arg "chunk"
+    let chunk_size = Duration.to_seconds duration in
+    if chunk_size < 1L then invalid_arg "chunk"
     else
-    Unchunk
-      (f
-         (Unary_op_on_t
-            ( Chunk_by_duration
-                {
-                  chunk_size;
-                  drop_partial = true;
-                },
-              t )))
+      Unchunk
+        (f
+           (Unary_op_on_t
+              (Chunk_by_duration { chunk_size; drop_partial = true }, t)))
   | `At_year_boundary -> Unchunk (f (Unary_op_on_t (Chunk_at_year_boundary, t)))
   | `At_month_boundary ->
     Unchunk (f (Unary_op_on_t (Chunk_at_month_boundary, t)))
@@ -1743,35 +1721,29 @@ let chunk_again (chunking : chunking) chunked : chunked =
   | `Disjoint_intervals ->
     Unary_op_on_chunked (Chunk_again Chunk_disjoint_interval, chunked)
   | `By_duration duration ->
-    let chunk_size =
-      Duration.to_seconds duration
-    in
-    if chunk_size < 1L then
-      invalid_arg "chunk_again"
+    let chunk_size = Duration.to_seconds duration in
+    if chunk_size < 1L then invalid_arg "chunk_again"
     else
       Unary_op_on_chunked
-      ( Chunk_again
-          (Chunk_by_duration
-             {
-               chunk_size = Duration.to_seconds duration;
-               drop_partial = false;
-             }),
-        chunked )
+        ( Chunk_again
+            (Chunk_by_duration
+               {
+                 chunk_size = Duration.to_seconds duration;
+                 drop_partial = false;
+               }),
+          chunked )
   | `By_duration_drop_partial duration ->
-    let chunk_size =
-      Duration.to_seconds duration
-    in
-    if chunk_size < 1L then
-      invalid_arg "chunk_again"
+    let chunk_size = Duration.to_seconds duration in
+    if chunk_size < 1L then invalid_arg "chunk_again"
     else
       Unary_op_on_chunked
-      ( Chunk_again
-          (Chunk_by_duration
-             {
-               chunk_size = Duration.to_seconds duration;
-               drop_partial = true;
-             }),
-        chunked )
+        ( Chunk_again
+            (Chunk_by_duration
+               {
+                 chunk_size = Duration.to_seconds duration;
+                 drop_partial = true;
+               }),
+          chunked )
   | `At_year_boundary ->
     Unary_op_on_chunked (Chunk_again Chunk_at_year_boundary, chunked)
   | `At_month_boundary ->
@@ -1817,7 +1789,7 @@ let inter_seq (s : t Seq.t) : t =
     | None -> Some rest
     | Some (Error ()) -> None
     | Some (Ok pat) ->
-      Some (fun () -> Seq.Cons ((Pattern (default_search_space, pat)), rest))
+      Some (fun () -> Seq.Cons (Pattern (default_search_space, pat), rest))
   in
   let s = flatten s in
   match inter_patterns s with
