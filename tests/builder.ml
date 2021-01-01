@@ -148,10 +148,10 @@ let make_chunk_selector ~rng : Time.chunked -> Time.chunked =
         match rng () mod 6 with
         | 0 -> f %> Time.chunk_again (make_chunking ~rng)
         | 1 -> f %> Time.first
-        | 2 -> f %> Time.take (rng ())
-        | 3 -> f %> Time.take_nth (rng ())
-        | 4 -> f %> Time.nth (rng ())
-        | 5 -> f %> Time.drop (rng ())
+        | 2 -> f %> Time.take (rng () mod 5)
+        | 3 -> f %> Time.take_nth (1 + (rng () mod 5))
+        | 4 -> f %> Time.nth (rng () mod 5)
+        | 5 -> f %> Time.drop (rng () mod 5)
         | _ -> failwith "Unexpected case"
       in
       aux f (new_height ~rng height)
@@ -161,8 +161,8 @@ let make_chunk_selector ~rng : Time.chunked -> Time.chunked =
 let make_unary_op ~rng t =
   match rng () mod 6 with
   | 0 -> Time.not t
-  | 1 -> Time.drop_n_points (rng ()) t
-  | 2 -> Time.take_n_points (rng ()) t
+  | 1 -> Time.drop_n_points (rng () mod 5) t
+  | 2 -> Time.take_n_points (rng () mod 5) t
   | 3 -> Time.shift (make_duration ~rng) t
   | 4 -> Time.lengthen (make_duration ~rng) t
   | 5 ->
