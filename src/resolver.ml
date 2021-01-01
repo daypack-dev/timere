@@ -1188,7 +1188,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
     let chunk_based_on_op_on_t op s =
       match op with
       | Chunk_disjoint_interval ->
-        Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true s
+        normalize s
       | Chunk_by_duration { chunk_size; drop_partial } ->
         Intervals.chunk ~skip_check:false ~drop_partial ~chunk_size s
       | Chunk_at_year_boundary ->
