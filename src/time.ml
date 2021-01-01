@@ -543,9 +543,12 @@ module Intervals = struct
           let rest () = Seq.Cons ((chunk_end_exc, end_exc), rest) in
           OSeq.cons (start, chunk_end_exc) (aux rest)
     in
-    intervals
-    |> (fun s -> if skip_check then s else s |> Check.check_if_valid)
-    |> aux
+    if chunk_size < 1L then
+      invalid_arg "chunk"
+    else
+      intervals
+      |> (fun s -> if skip_check then s else s |> Check.check_if_valid)
+      |> aux
 end
 
 module Range = struct
@@ -1701,22 +1704,34 @@ let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
   | `Disjoint_intervals ->
     Unchunk (f (Unary_op_on_t (Chunk_disjoint_interval, t)))
   | `By_duration duration ->
-    Unchunk
+    let chunk_size =
+      Duration.to_seconds duration
+    in
+    if chunk_size < 1L then
+      invalid_arg "chunk"
+    else
+      Unchunk
       (f
          (Unary_op_on_t
             ( Chunk_by_duration
                 {
-                  chunk_size = Duration.to_seconds duration;
+                  chunk_size;
                   drop_partial = false;
                 },
               t )))
   | `By_duration_drop_partial duration ->
+    let chunk_size =
+      Duration.to_seconds duration
+    in
+    if chunk_size < 1L then
+      invalid_arg "chunk"
+    else
     Unchunk
       (f
          (Unary_op_on_t
             ( Chunk_by_duration
                 {
-                  chunk_size = Duration.to_seconds duration;
+                  chunk_size;
                   drop_partial = true;
                 },
               t )))
@@ -1729,7 +1744,13 @@ let chunk_again (chunking : chunking) chunked : chunked =
   | `Disjoint_intervals ->
     Unary_op_on_chunked (Chunk_again Chunk_disjoint_interval, chunked)
   | `By_duration duration ->
-    Unary_op_on_chunked
+    let chunk_size =
+      Duration.to_seconds duration
+    in
+    if chunk_size < 1L then
+      invalid_arg "chunk_again"
+    else
+      Unary_op_on_chunked
       ( Chunk_again
           (Chunk_by_duration
              {
@@ -1738,7 +1759,13 @@ let chunk_again (chunking : chunking) chunked : chunked =
              }),
         chunked )
   | `By_duration_drop_partial duration ->
-    Unary_op_on_chunked
+    let chunk_size =
+      Duration.to_seconds duration
+    in
+    if chunk_size < 1L then
+      invalid_arg "chunk_again"
+    else
+      Unary_op_on_chunked
       ( Chunk_again
           (Chunk_by_duration
              {
