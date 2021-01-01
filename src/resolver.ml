@@ -863,7 +863,7 @@ let propagate_search_space_bottom_up default_tz (time : Time.t) : Time.t =
         |> Seq.map get_search_space
         |> Seq.map List.to_seq
         |> Seq.map (Intervals.normalize ~skip_sort:true)
-        |> Intervals.Inter.inter_multi_seq ~skip_check:false
+        |> Intervals.Inter.inter_multi_seq ~skip_check:true
         |> List.of_seq
       in
       Inter_seq (space, s)
@@ -924,7 +924,7 @@ let propagate_search_space_bottom_up default_tz (time : Time.t) : Time.t =
 let propagate_search_space_top_down (time : Time.t) : Time.t =
   let open Time in
   let restrict_search_space (parent : search_space) (cur : search_space) =
-    Intervals.Inter.inter ~skip_check:false (List.to_seq parent)
+    Intervals.Inter.inter ~skip_check:true (List.to_seq parent)
       (List.to_seq cur)
     |> List.of_seq
   in
@@ -1133,7 +1133,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
                  ~search_using_tz_offset_s:Time_zone.(entry.offset))
               space
           in
-          Intervals.Union.union_multi_seq ~skip_check:false
+          Intervals.Union.union_multi_seq ~skip_check:true
             (Seq.map
                (fun param -> Resolve_pattern.matching_intervals param pat)
                params))
@@ -1164,13 +1164,13 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
     | Round_robin_pick_list (_, l) ->
       List.map (aux search_using_tz) l
       |> Time.Intervals.Round_robin
-         .merge_multi_list_round_robin_non_decreasing ~skip_check:false
+         .merge_multi_list_round_robin_non_decreasing ~skip_check:true
     | Inter_seq (_, s) ->
       Seq.map (aux search_using_tz) s
-      |> Time.Intervals.Inter.inter_multi_seq ~skip_check:false
+      |> Time.Intervals.Inter.inter_multi_seq ~skip_check:true
     | Union_seq (_, s) ->
       Seq.map (aux search_using_tz) s
-      |> Time.Intervals.Union.union_multi_seq ~skip_check:false
+      |> Time.Intervals.Union.union_multi_seq ~skip_check:true
     | After (_, b, t1, t2) ->
       let s1 = aux search_using_tz t1 in
       let s2 = aux search_using_tz t2 in
@@ -1190,7 +1190,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
       | Chunk_disjoint_interval ->
         normalize s
       | Chunk_by_duration { chunk_size; drop_partial } ->
-        Intervals.chunk ~skip_check:false ~drop_partial ~chunk_size s
+        Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
       | Chunk_at_year_boundary ->
         do_chunk_at_year_boundary search_using_tz_offset_s s
       | Chunk_at_month_boundary ->
