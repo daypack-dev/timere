@@ -49,14 +49,14 @@ let make_pattern ~rng ~min_year ~max_year_inc =
   let years =
     if rng () mod 2 = 0 then []
     else
-      OSeq.(0 -- (Stdlib.min 5 (rng ())))
+      OSeq.(0 -- Stdlib.min 5 (rng ()))
       |> Seq.map (fun _ -> min max_year_inc (min_year + rng ()))
       |> List.of_seq
   in
   let months =
     if rng () mod 2 = 0 then []
     else
-      OSeq.(0 -- (Stdlib.min 5 (rng ())))
+      OSeq.(0 -- Stdlib.min 5 (rng ()))
       |> Seq.map (fun _ ->
           Result.get_ok @@ Time.month_of_tm_int (rng () mod 12))
       |> List.of_seq
@@ -64,7 +64,7 @@ let make_pattern ~rng ~min_year ~max_year_inc =
   let month_days =
     if rng () mod 2 = 0 then []
     else
-      OSeq.(0 -- (Stdlib.min 5 (rng ())))
+      OSeq.(0 -- Stdlib.min 5 (rng ()))
       |> Seq.map (fun _ ->
           if rng () mod 2 = 0 then 1 + (rng () mod 31)
           else -(1 + (rng () mod 31)))
@@ -73,28 +73,31 @@ let make_pattern ~rng ~min_year ~max_year_inc =
   let weekdays =
     if rng () mod 2 = 0 then []
     else
-      OSeq.(0 -- (Stdlib.min 5 (rng ())))
+      OSeq.(0 -- Stdlib.min 5 (rng ()))
       |> Seq.map (fun _ ->
           Result.get_ok @@ Time.weekday_of_tm_int (rng () mod 7))
       |> List.of_seq
   in
   let hours =
     if rng () mod 2 = 0 then []
-    else 
-        OSeq.(0 -- (Stdlib.min 5 (rng ())))
-         |> Seq.map (fun _ -> rng () mod 24) |> List.of_seq
+    else
+      OSeq.(0 -- Stdlib.min 5 (rng ()))
+      |> Seq.map (fun _ -> rng () mod 24)
+      |> List.of_seq
   in
   let minutes =
     if rng () mod 2 = 0 then []
     else
-      OSeq.(0 -- (Stdlib.min 5 (rng ())))
-      |> Seq.map (fun _ -> rng () mod 60) |> List.of_seq
+      OSeq.(0 -- Stdlib.min 5 (rng ()))
+      |> Seq.map (fun _ -> rng () mod 60)
+      |> List.of_seq
   in
   let seconds =
     if rng () mod 2 = 0 then []
     else
-      OSeq.(0 -- (Stdlib.min 5 (rng ())))
-      |> Seq.map (fun _ -> rng () mod 60) |> List.of_seq
+      OSeq.(0 -- Stdlib.min 5 (rng ()))
+      |> Seq.map (fun _ -> rng () mod 60)
+      |> List.of_seq
   in
   Time.pattern ~years ~months ~month_days ~weekdays ~hours ~minutes ~seconds ()
 
@@ -119,7 +122,10 @@ let make_interval_exc ~rng ~min_year ~max_year_inc =
   Time.interval_exc start end_exc
 
 let make_hms ~rng =
-  Time.make_hms_exn ~hour:(rng () mod 24) ~minute:(rng () mod 60) ~second:(rng () mod 60)
+  Time.make_hms_exn
+    ~hour:(rng () mod 24)
+    ~minute:(rng () mod 60)
+    ~second:(rng () mod 60)
 
 let make_hms_interval_inc ~rng =
   Time.hms_interval_inc (make_hms ~rng) (make_hms ~rng)
@@ -134,9 +140,7 @@ let new_height ~rng height =
   height - reduc
 
 let make_duration ~rng =
-  let seconds =
-    1 + rng ()
-  in
+  let seconds = 1 + rng () in
   Duration.make ~seconds ()
 
 let make_chunking ~rng : Time.chunking =
