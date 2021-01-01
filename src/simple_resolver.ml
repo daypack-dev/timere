@@ -71,7 +71,7 @@ let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) =
           |> Option.get
           |> Int64.succ
         in
-        OSeq.cons (t1, t') (aux (OSeq.cons (t', t2) rest))
+        fun () -> Seq.Cons ((t1, t'), (aux (fun () -> Seq.Cons ((t', t2), rest))))
   in
   aux s
 
@@ -100,7 +100,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
           |> Option.get
           |> Int64.succ
         in
-        OSeq.cons (t1, t') (aux (OSeq.cons (t', t2) rest))
+        fun () -> Seq.Cons ((t1, t'), (aux (fun () -> Seq.Cons ((t', t2), rest))))
   in
   aux s
 

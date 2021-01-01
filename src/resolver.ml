@@ -1031,7 +1031,7 @@ let find_between_inc bound (s1 : Time.Interval.t Seq.t)
         | Seq.Nil -> Seq.empty
         | Seq.Cons ((start2, end_exc2), _rest2) ->
           if Int64.sub start2 end_exc1 <= bound then
-            OSeq.cons (start1, end_exc2) (aux rest1 s2)
+            fun () -> Seq.Cons ((start1, end_exc2), (aux rest1 s2))
           else aux rest1 s2)
   in
   aux s1 s2
@@ -1047,7 +1047,7 @@ let find_between_exc bound (s1 : Time.Interval.t Seq.t)
         | Seq.Nil -> Seq.empty
         | Seq.Cons ((start2, _end_exc2), _rest2) ->
           if Int64.sub start2 end_exc1 <= bound then
-            OSeq.cons (start1, start2) (aux rest1 s2)
+            fun () -> Seq.Cons ((start1, start2), (aux rest1 s2))
           else aux rest1 s2)
   in
   aux s1 s2
@@ -1077,7 +1077,7 @@ let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) =
           |> Option.get
           |> Int64.succ
         in
-        OSeq.cons (t1, t') (aux (OSeq.cons (t', t2) rest))
+        fun () -> Seq.Cons ((t1, t'), (aux (fun () -> Seq.Cons ((t', t2), rest))))
   in
   aux s
 
@@ -1106,7 +1106,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
           |> Option.get
           |> Int64.succ
         in
-        OSeq.cons (t1, t') (aux (OSeq.cons (t', t2) rest))
+        fun () -> Seq.Cons ((t1, t'), (aux (fun () -> Seq.Cons ((t', t2), rest))))
   in
   aux s
 
