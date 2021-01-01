@@ -257,7 +257,7 @@ let time_gen : Time.t QCheck.Gen.t =
   let open QCheck.Gen in
   let search_start_dt =
     Result.get_ok
-    @@ Time.Date_time.make ~year:2000 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+    @@ Time.Date_time.make ~year:2018 ~month:`Jan ~day:1 ~hour:0 ~minute:0
       ~second:0 ~tz:Time_zone.utc
   in
   let search_end_exc_dt =
@@ -270,7 +270,7 @@ let time_gen : Time.t QCheck.Gen.t =
        Time.inter
          [
            Time.(interval_dt_exc search_start_dt search_end_exc_dt);
-           Builder.build ~min_year:2000 ~max_year_inc:2020 ~max_height
+           Builder.build ~min_year:2018 ~max_year_inc:2020 ~max_height
              ~max_branching ~randomness;
          ])
     (int_range 1 2) (int_range 1 3)
