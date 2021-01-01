@@ -1114,7 +1114,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
   let open Time in
   let normalize =
-    Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
+    Intervals.normalize ~skip_filter_empty:false ~skip_filter_invalid:true ~skip_sort:true
   in
   let rec aux search_using_tz time =
     match time with
