@@ -118,6 +118,15 @@ let make_interval_exc ~rng ~min_year ~max_year_inc =
   let end_exc = Int64.add start (Int64.of_int (rng ())) in
   Time.interval_exc start end_exc
 
+let make_hms ~rng =
+  Time.make_hms_exn ~hour:(rng () mod 24) ~minute:(rng () mod 60) ~second:(rng () mod 60)
+
+let make_hms_interval_inc ~rng =
+  Time.hms_interval_inc (make_hms ~rng) (make_hms ~rng)
+
+let make_hms_interval_exc ~rng =
+  Time.hms_interval_exc (make_hms ~rng) (make_hms ~rng)
+
 let new_height ~rng height =
   assert (height > 1);
   let reduc = 1 + (rng () mod (height - 1)) in
@@ -182,13 +191,15 @@ let build ~min_year ~max_year_inc ~max_height ~max_branching
   let rng = make_rng ~randomness in
   let rec aux height =
     if height <= 1 then
-      match rng () mod 6 with
+      match rng () mod 8 with
       | 0 -> Time.empty
       | 1 -> Time.always
       | 2 -> make_timestamp_intervals ~rng ~min_year ~max_year_inc
       | 3 -> make_pattern ~rng ~min_year ~max_year_inc
       | 4 -> make_interval_inc ~rng ~min_year ~max_year_inc
       | 5 -> make_interval_exc ~rng ~min_year ~max_year_inc
+      | 6 -> make_hms_interval_inc ~rng
+      | 7 -> make_hms_interval_exc ~rng
       | _ -> failwith "Unexpected case"
     else
       match rng () mod 7 with
