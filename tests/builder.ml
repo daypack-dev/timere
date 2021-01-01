@@ -124,7 +124,11 @@ let new_height ~rng height =
   assert (reduc >= 1);
   height - reduc
 
-let make_duration ~rng = Duration.make ~seconds:(rng ()) ()
+let make_duration ~rng =
+  let seconds =
+    1 + rng ()
+  in
+  Duration.make ~seconds ()
 
 let make_chunking ~rng : Time.chunking =
   match rng () mod 5 with
