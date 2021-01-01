@@ -278,14 +278,14 @@ let time_gen : Time.t QCheck.Gen.t =
 
 let time = QCheck.make ~print:To_sexp.to_sexp_string time_gen
 
-let time_list_gen : Time.t list QCheck.Gen.t =
+let time_list_gen n : Time.t list QCheck.Gen.t =
   let open QCheck.Gen in
-  list_size (int_bound 5) time_gen
+  list_size (int_bound n) time_gen
 
-let time_list =
+let time_list n =
   QCheck.make
     ~print:(fun l -> String.concat ", " (List.map To_sexp.to_sexp_string l))
-    time_list_gen
+    (time_list_gen n)
 
 let permute (seed : int) (l : 'a list) : 'a list =
   let len = List.length l in
