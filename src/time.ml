@@ -1857,7 +1857,7 @@ let take (n : int) (c : chunked) : chunked =
   if n < 0 then invalid_arg "take_n: n < 0" else Unary_op_on_chunked (Take n, c)
 
 let take_nth (n : int) (c : chunked) : chunked =
-  if n < 0 then invalid_arg "take_nth: n < 0"
+  if n < 1 then invalid_arg "take_nth: n < 1"
   else Unary_op_on_chunked (Take_nth n, c)
 
 let nth (n : int) (c : chunked) : chunked =
