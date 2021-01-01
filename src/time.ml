@@ -486,10 +486,8 @@ module Intervals = struct
         match (intervals1 (), intervals2 ()) with
         | Seq.Nil, s | s, Seq.Nil -> fun () -> s
         | Seq.Cons (x1, rest1), Seq.Cons (x2, rest2) ->
-          let ts1 () = Seq.Cons (x1, rest1) in
-          let ts2 () = Seq.Cons (x2, rest2) in
-          if Interval.le x1 x2 then fun () -> Seq.Cons (x1, aux rest1 ts2)
-          else fun () -> Seq.Cons (x2, aux rest2 ts1)
+          if Interval.le x1 x2 then fun () -> Seq.Cons (x1, aux rest1 intervals2)
+          else fun () -> Seq.Cons (x2, aux rest2 intervals1)
       in
       let intervals1 =
         if skip_check then intervals1
