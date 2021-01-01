@@ -531,12 +531,17 @@ module Intervals = struct
       match intervals () with
       | Seq.Nil -> Seq.empty
       | Seq.Cons ((start, end_exc), rest) ->
-        let chunk_end_exc = min end_exc (start +^ chunk_size) in
-        let size = chunk_end_exc -^ start in
-        if size = 0L || (size < chunk_size && drop_partial) then aux rest
+        let size = end_exc -^ start in
+        if size < chunk_size then (
+          if drop_partial then aux rest
+          else OSeq.cons (start, end_exc) (aux rest)
+        )
+        else if size = chunk_size then
+          OSeq.cons (start, end_exc) (aux rest)
         else
+          let chunk_end_exc = (start +^ chunk_size) in
           let rest () = Seq.Cons ((chunk_end_exc, end_exc), rest) in
-          fun () -> Seq.Cons ((start, chunk_end_exc), aux rest)
+          OSeq.cons (start, chunk_end_exc) (aux rest)
     in
     intervals
     |> (fun s -> if skip_check then s else s |> Check.check_if_valid)
