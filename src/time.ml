@@ -1456,11 +1456,6 @@ module Check = struct
     (0 <= hour && hour < 24) && minute_second_is_valid ~minute ~second
 end
 
-let next_hour_minute ~(hour : int) ~(minute : int) : (int * int, unit) result =
-  if Check.hour_minute_second_is_valid ~hour ~minute ~second:0 then
-    if minute < 59 then Ok (hour, succ minute) else Ok (succ hour mod 24, 0)
-  else Error ()
-
 module Pattern = struct
   type t = {
     years : Int_set.t;
