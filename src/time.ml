@@ -300,7 +300,7 @@ module Intervals = struct
                   (* cannot be merged, add time slot being carried to the sequence *)
                   fun () -> Seq.Cons (cur, aux (start, end_exc) rest)))
       in
-      let rec aux' intervals =
+      let aux' intervals =
         match intervals () with
         | Seq.Nil -> (
             Seq.empty)
