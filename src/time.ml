@@ -290,18 +290,24 @@ module Intervals = struct
       let rec aux cur intervals =
         match intervals () with
         | Seq.Nil -> (
-            match cur with None -> Seq.empty | Some x -> Seq.return x)
+            Seq.return cur
+            )
         | Seq.Cons ((start, end_exc), rest) -> (
-            match cur with
-            | None -> aux (Some (start, end_exc)) rest
-            | Some cur -> (
+            (
                 match Interval.join cur (start, end_exc) with
-                | Some x -> aux (Some x) rest
+                | Some x -> aux x rest
                 | None ->
                   (* cannot be merged, add time slot being carried to the sequence *)
-                  fun () -> Seq.Cons (cur, aux (Some (start, end_exc)) rest)))
+                  fun () -> Seq.Cons (cur, aux (start, end_exc) rest)))
       in
-      aux None intervals
+      let rec aux' intervals =
+        match intervals () with
+        | Seq.Nil -> (
+            Seq.empty)
+        | Seq.Cons ((start, end_exc), rest) ->
+          aux (start, end_exc) rest
+      in
+      aux' intervals
   end
 
   let join ?(skip_check = false) intervals =
