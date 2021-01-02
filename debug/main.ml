@@ -28,22 +28,14 @@ let debug_resolver () =
     {|
 (union
    (inter
-      (interval_exc (2018 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)) (2021 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)))
-      (after (0 0 1 17) (between_exc (1 0 0 0) (pattern (hours 12) (minutes 43) (seconds 27)) (pattern (hours 4) (minutes 24) (seconds 43))) (interval_inc (2020 Apr 14 9 16 27 (tz_and_tz_offset_s UTC 0)) (2020 Apr 14 9 17 51 (tz_and_tz_offset_s UTC 0))))
-   )
+      (interval_exc (2015 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)) (2021 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)))
+      (all)
+      (between_exc (1 0 0 0) (pattern (hours 18) (minutes 32) (seconds 12)) (pattern (hours 6) (minutes 19) (seconds 47)))
+      (all)
+      (between_exc (1 0 0 0) (pattern (hours 18) (minutes 32) (seconds 12)) (pattern (hours 6) (minutes 19) (seconds 47))))
    (inter
-      (interval_exc
-         (2018 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0))
-         (2021 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)))
-      (between_exc (1 0 0 0) (pattern (hours 0) (minutes 22) (seconds 25)) (pattern (hours 17) (minutes 24) (seconds 15)))
+      (interval_exc (2015 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)) (2021 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)))
    )
-   (inter
-      (interval_exc (2018 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)) (2021 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)))
-      (union
-         (interval_inc
-            (2020 Mar 10 0 54 12 (tz_and_tz_offset_s UTC 0)) (2020 Mar 10 0 54 26 (tz_and_tz_offset_s UTC 0)))
-         (pattern (hours 3 6 9 12 14 18))
-         (between_exc (1 0 0 0) (pattern (hours 14) (minutes 18) (seconds 12)) (pattern (hours 6) (minutes 27) (seconds 10)))))
 )
     |}
   in
