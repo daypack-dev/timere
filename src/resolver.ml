@@ -1264,6 +1264,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
       |> List.to_seq
       |> Time.Intervals.Slice.slice ~skip_check:true ~start
       |> List.of_seq
+      |> (calibrate_search_space t)
       |> (fun space -> set_search_space space t)
       |> propagate_search_space_top_down
     in
