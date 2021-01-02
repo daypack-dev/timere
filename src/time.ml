@@ -474,8 +474,8 @@ module Intervals = struct
       | Some s -> s
   end
 
-  module Union = struct
-    let union ?(skip_check = false) (intervals1 : Interval.t Seq.t)
+  module Merge = struct
+    let merge ?(skip_check = false) (intervals1 : Interval.t Seq.t)
         (intervals2 : Interval.t Seq.t) : Interval.t Seq.t =
       let rec aux intervals1 intervals2 =
         match (intervals1 (), intervals2 ()) with
@@ -494,6 +494,18 @@ module Intervals = struct
         else intervals2 |> Check.check_if_valid |> Check.check_if_sorted
       in
       aux intervals1 intervals2
+
+    let merge_multi_seq ?(skip_check = false)
+        (interval_batches : Interval.t Seq.t Seq.t) : Interval.t Seq.t =
+      Seq.fold_left
+        (fun acc intervals -> merge ~skip_check acc intervals)
+        Seq.empty interval_batches
+  end
+
+  module Union = struct
+    let union ?(skip_check = false) (intervals1 : Interval.t Seq.t)
+        (intervals2 : Interval.t Seq.t) : Interval.t Seq.t =
+      Merge.merge ~skip_check intervals1 intervals2
       |> normalize ~skip_filter_invalid:true ~skip_sort:true
 
     let union_multi_seq ?(skip_check = false)

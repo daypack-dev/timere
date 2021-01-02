@@ -1,3 +1,5 @@
+open Int64_utils
+
 module Resolve_pattern = struct
   module Search_param = struct
     type t = {
@@ -792,6 +794,24 @@ and get_search_space_chunked (chunked : Time.chunked) =
   | Unary_op_on_t (_, t) -> get_search_space t
   | Unary_op_on_chunked (_, c) -> get_search_space_chunked c
 
+let set_search_space space (time : Time.t) : Time.t =
+  let open Time in
+  match time with
+  | All -> All
+  | Empty -> Empty
+  | Timestamp_interval_seq (_, x) -> Timestamp_interval_seq (space, x)
+  | Pattern (_, x) -> Pattern (space, x)
+  | Unary_op (_, op, x) -> Unary_op (space, op, x)
+  | Interval_exc (_, x, y) -> Interval_exc (space, x, y)
+  | Interval_inc (_, x, y) -> Interval_inc (space, x, y)
+  | Round_robin_pick_list (_, x) -> Round_robin_pick_list (space, x)
+  | Inter_seq (_, x) -> Inter_seq (space, x)
+  | Union_seq (_, x) -> Union_seq (space, x)
+  | After (_, b, x, y) -> After (space, b, x, y)
+  | Between_inc (_, b, x, y) -> Between_inc (space, b, x, y)
+  | Between_exc (_, b, x, y) -> Between_exc (space, b, x, y)
+  | Unchunk c -> Unchunk c
+
 let search_space_of_year_range tz year_range =
   let open Time in
   let aux_start start =
@@ -1112,6 +1132,9 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
   in
   aux s
 
+let search_space_adjustment_trigger_size =
+  Duration.make ~days:100 () |> Duration.to_seconds
+
 let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
   let open Time in
@@ -1172,8 +1195,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
       Seq.map (aux search_using_tz) s
       |> Time.Intervals.Inter.inter_multi_seq ~skip_check:true
     | Union_seq (_, s) ->
-      Seq.map (aux search_using_tz) s
-      |> Time.Intervals.Union.union_multi_seq ~skip_check:true
+      aux_union search_using_tz s
     | After (_, b, t1, t2) ->
       let s1 = aux search_using_tz t1 in
       let s2 = aux search_using_tz t2 in
@@ -1187,6 +1209,46 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
       let s2 = aux search_using_tz t2 in
       find_between_exc b s1 s2
     | Unchunk c -> aux_chunked search_using_tz c |> normalize
+  and aux_union search_using_tz timeres =
+    let resolve_and_merge (s : Time.t Seq.t) : Interval.t Seq.t =
+      Seq.map (aux search_using_tz) s
+      |> Time.Intervals.Merge.merge_multi_seq ~skip_check:true
+    in
+    let slice_search_space ~start (t : Time.t) : Time.t =
+      get_search_space t
+      |> List.to_seq
+      |> Time.Intervals.Slice.slice ~skip_check:true ~start
+      |> List.of_seq
+      |> (fun space -> set_search_space space t)
+      |> propagate_search_space_top_down
+    in
+    let slice_search_space_multi ~start (s : Time.t Seq.t) : Time.t Seq.t =
+      Seq.map (slice_search_space ~start) s
+    in
+    let rec aux_union' (timeres : Time.t Seq.t) (intervals : Interval.t Seq.t) =
+      match intervals () with
+      | Seq.Nil -> Seq.empty
+      | Seq.Cons ((start, end_exc), rest) ->
+        let size = end_exc -^ start in
+        if size >= search_space_adjustment_trigger_size then
+          let timeres =
+            slice_search_space_multi ~start:end_exc timeres
+          in
+          print_endline "test0";
+          flush stdout;
+          let next_intervals =
+            resolve_and_merge timeres
+            |> OSeq.drop_while (fun (start', _end_exc') ->
+                start' <= start
+              )
+          in
+          fun () ->
+            Seq.Cons ((start, end_exc), aux_union' timeres next_intervals)
+        else
+          fun () ->
+            Seq.Cons ((start, end_exc), aux_union' timeres rest)
+    in
+    aux_union' timeres (resolve_and_merge timeres)
   and aux_chunked search_using_tz (chunked : chunked) =
     let chunk_based_on_op_on_t op s =
       match op with
