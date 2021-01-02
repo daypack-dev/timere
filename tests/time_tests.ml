@@ -19,8 +19,8 @@ module Qc = struct
          print_endline (To_sexp.to_sexp_string t2);
          print_endline "=====";
          flush stdout;
-         let r1 = Result.get_ok @@ Resolver.resolve t1 in
-         let r2 = Result.get_ok @@ Resolver.resolve t2 in
+         let r1 = OSeq.take 10_000 @@ Result.get_ok @@ Resolver.resolve t1 in
+         let r2 = OSeq.take 10_000 @@ Result.get_ok @@ Resolver.resolve t2 in
          OSeq.equal ~eq:( = ) r1 r2)
 
   let inter_order_does_not_matter =
@@ -30,8 +30,8 @@ module Qc = struct
          let l2 = permute rand l1 in
          let t1 = Time.inter l1 in
          let t2 = Time.inter l2 in
-         let r1 = Result.get_ok @@ Resolver.resolve t1 in
-         let r2 = Result.get_ok @@ Resolver.resolve t2 in
+         let r1 = OSeq.take 10_000 @@ Result.get_ok @@ Resolver.resolve t1 in
+         let r2 = OSeq.take 10_000 @@ Result.get_ok @@ Resolver.resolve t2 in
          OSeq.equal ~eq:( = ) r1 r2)
 
   let suite =
