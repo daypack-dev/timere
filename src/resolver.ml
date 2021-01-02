@@ -984,10 +984,11 @@ let propagate_search_space_bottom_up default_tz (time : Time.t) : Time.t =
 
 let propagate_search_space_top_down (time : Time.t) : Time.t =
   let open Time in
-  let restrict_search_space (parent : search_space) (cur : search_space) =
+  let restrict_search_space time (parent : search_space) (cur : search_space) =
     Intervals.Inter.inter ~skip_check:true (List.to_seq parent)
       (List.to_seq cur)
     |> List.of_seq
+    |> calibrate_search_space time
   in
   let rec aux parent_search_space time =
     match time with
@@ -995,39 +996,39 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
     | Empty -> Empty
     | Timestamp_interval_seq (cur, _) ->
       set_search_space
-        (calibrate_search_space time @@ restrict_search_space parent_search_space cur)
+        (restrict_search_space time parent_search_space cur)
         time
     | Pattern (cur, _) ->
       set_search_space
-        (calibrate_search_space time @@ restrict_search_space parent_search_space cur)
+        (restrict_search_space time parent_search_space cur)
         time
     | Unary_op (cur, op, t) -> (
-        let space = calibrate_search_space time @@ restrict_search_space parent_search_space cur in
+        let space = restrict_search_space time parent_search_space cur in
         set_search_space space
           (Unary_op (cur, op, aux space t))
       )
     | Interval_exc (cur, _, _)
     | Interval_inc (cur, _, _) ->
-      set_search_space (calibrate_search_space time @@ restrict_search_space parent_search_space cur)
+      set_search_space (restrict_search_space time parent_search_space cur)
         time
     | Round_robin_pick_list (cur, l) ->
-      let space = calibrate_search_space time @@ restrict_search_space parent_search_space cur in
+      let space = restrict_search_space time parent_search_space cur in
       set_search_space space
         (Round_robin_pick_list (cur, aux_list space l))
     | Inter_seq (cur, s) ->
-      let space = calibrate_search_space time @@ restrict_search_space parent_search_space cur in
+      let space = restrict_search_space time parent_search_space cur in
       set_search_space space
         (Inter_seq (cur, aux_seq space s))
     | Union_seq (cur, s) ->
-      let space = calibrate_search_space time @@ restrict_search_space parent_search_space cur in
+      let space = restrict_search_space time parent_search_space cur in
       set_search_space space
         (Union_seq (cur, aux_seq space s))
     | After (cur, b, t1, t2) ->
-      let space = calibrate_search_space time @@ restrict_search_space parent_search_space cur in
+      let space = restrict_search_space time parent_search_space cur in
       set_search_space space
         (After (cur, b, aux space t1, aux space t2))
     | Between_inc (cur, b, t1, t2) ->
-      let space = calibrate_search_space time @@ restrict_search_space parent_search_space cur in
+      let space = restrict_search_space time parent_search_space cur in
       set_search_space space
         (Between_inc (cur, b, aux space t1, aux space t2))
     | Between_exc (cur, b, t1, t2) ->
