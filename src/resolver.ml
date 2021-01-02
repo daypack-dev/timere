@@ -1178,7 +1178,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
   aux s
 
 let search_space_adjustment_trigger_size =
-  Duration.make ~hours:1 () |> Duration.to_seconds
+  Duration.make ~days:30 () |> Duration.to_seconds
 
 let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
