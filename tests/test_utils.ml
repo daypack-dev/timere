@@ -255,20 +255,47 @@ let date_time_testable : (module Alcotest.TESTABLE) =
 
 let time_gen : Time.t QCheck.Gen.t =
   let open QCheck.Gen in
+  let search_start_dt =
+    Result.get_ok
+    @@ Time.Date_time.make ~year:2018 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+      ~second:0 ~tz:Time_zone.utc
+  in
+  let search_end_exc_dt =
+    Result.get_ok
+    @@ Time.Date_time.make ~year:2021 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+      ~second:0 ~tz:Time_zone.utc
+  in
   map3
     (fun max_height max_branching randomness ->
-       Builder.build ~min_year:2000 ~max_year_inc:2020 ~max_height ~max_branching
-         ~randomness)
-    (int_range 1 3) (int_range 1 5)
-    (list_size (int_bound 10) (int_bound 5))
+       Time.inter
+         [
+           Time.(interval_dt_exc search_start_dt search_end_exc_dt);
+           Builder.build ~min_year:2018 ~max_year_inc:2020 ~max_height
+             ~max_branching ~randomness;
+         ])
+    (int_range 1 2) (int_range 1 3)
+    (list_size (int_bound 10) (int_bound 100))
 
 let time = QCheck.make ~print:To_sexp.to_sexp_string time_gen
 
-let time_list_gen : Time.t list QCheck.Gen.t =
+let time_list_gen n : Time.t list QCheck.Gen.t =
   let open QCheck.Gen in
-  list_size (int_bound 5) time_gen
+  list_size (int_bound n) time_gen
 
-let time_list =
+let time_list n =
   QCheck.make
     ~print:(fun l -> String.concat ", " (List.map To_sexp.to_sexp_string l))
-    time_list_gen
+    (time_list_gen n)
+
+let permute (seed : int) (l : 'a list) : 'a list =
+  let len = List.length l in
+  let l = ref l in
+  OSeq.(0 --^ len)
+  |> Seq.map (fun i ->
+      let l' = List.mapi (fun i x -> (i, x)) !l in
+      let len = List.length l' in
+      let pick = i * seed mod len in
+      let r = List.assoc pick l' in
+      l := List.remove_assoc pick l' |> List.map (fun (_, x) -> x);
+      r)
+  |> List.of_seq

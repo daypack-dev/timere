@@ -24,10 +24,22 @@ let display_intervals ~display_using_tz s =
         Printf.printf "%s - %s\n" s size_str)
 
 let debug_resolver () =
-  (*   let s = {|
-   * (unchunk (chunk_again (chunk_at_year_boundary (chunk_again (chunk_disjoint_intervals (chunk_again (chunk_at_year_boundary (chunk_disjoint_intervals (empty)))))))))
-   *   |} in *)
-  (* let timere = Result.get_ok @@ Of_sexp.of_sexp_string s in *)
+  let s =
+    {|
+(union
+   (inter
+      (interval_exc (2015 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)) (2021 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)))
+      (all)
+      (between_exc (1 0 0 0) (pattern (hours 18) (minutes 32) (seconds 12)) (pattern (hours 6) (minutes 19) (seconds 47)))
+      (all)
+      (between_exc (1 0 0 0) (pattern (hours 18) (minutes 32) (seconds 12)) (pattern (hours 6) (minutes 19) (seconds 47))))
+   (inter
+      (interval_exc (2015 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)) (2021 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)))
+   )
+)
+    |}
+  in
+  let timere = Result.get_ok @@ Of_sexp.of_sexp_string s in
   (* let timere =
    *   (fun max_height max_branching randomness ->
    *      Builder.build ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching
@@ -54,22 +66,22 @@ let debug_resolver () =
    * in *)
   let tz = Time_zone.make_exn "Australia/Sydney" in
   (* let tz = Time_zone.make_exn "UTC" in *)
-  let timere =
-    let open Time in
-    with_tz tz
-      (inter
-         [
-           years [ 2020 ];
-           (* between_exc (month_days [ -1 ]) (month_days [ 1 ]); *)
-           (* always; *)
-           hms_interval_exc
-             (make_hms_exn ~hour:1 ~minute:15 ~second:0)
-             (make_hms_exn ~hour:2 ~minute:30 ~second:0);
-           months [ `Oct ];
-         ])
-      (* (pattern ~months:[`Mar] ~hours:[23] ~minutes:[0] ~seconds:[0]()) *)
-      (* (pattern ~months:[`Mar] ~hours:[4] ~minutes:[30] ~seconds:[0]()) *)
-  in
+  (* let timere =
+   *   let open Time in
+   *   with_tz tz
+   *     (inter
+   *        [
+   *          years [ 2020 ];
+   *          (\* between_exc (month_days [ -1 ]) (month_days [ 1 ]); *\)
+   *          (\* always; *\)
+   *          hms_interval_exc
+   *            (make_hms_exn ~hour:1 ~minute:15 ~second:0)
+   *            (make_hms_exn ~hour:2 ~minute:30 ~second:0);
+   *          months [ `Oct ];
+   *        ])
+   *     (\* (pattern ~months:[`Mar] ~hours:[23] ~minutes:[0] ~seconds:[0]()) *\)
+   *     (\* (pattern ~months:[`Mar] ~hours:[4] ~minutes:[30] ~seconds:[0]()) *\)
+   * in *)
   print_endline (To_sexp.to_sexp_string timere);
   print_endline "=====";
   let search_start_dt =

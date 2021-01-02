@@ -43,16 +43,6 @@ let first_mday = 1
 
 let tm_year_offset = 1900
 
-let next_weekday (wday : weekday) : weekday =
-  match wday with
-  | `Sun -> `Mon
-  | `Mon -> `Tue
-  | `Tue -> `Wed
-  | `Wed -> `Thu
-  | `Thu -> `Fri
-  | `Fri -> `Sat
-  | `Sat -> `Sun
-
 let tm_int_of_weekday (wday : weekday) : int =
   match wday with
   | `Sun -> 0
@@ -112,14 +102,6 @@ let month_of_human_int (x : int) : (month, unit) result = month_of_tm_int (x - 1
 let compare_month (m1 : month) (m2 : month) : int =
   compare (tm_int_of_month m1) (tm_int_of_month m2)
 
-let month_lt m1 m2 = tm_int_of_month m1 < tm_int_of_month m2
-
-let month_le m1 m2 = tm_int_of_month m1 <= tm_int_of_month m2
-
-let month_gt m1 m2 = tm_int_of_month m1 > tm_int_of_month m2
-
-let month_ge m1 m2 = tm_int_of_month m1 >= tm_int_of_month m2
-
 module Month_set = Set.Make (struct
     type t = month
 
@@ -128,16 +110,6 @@ module Month_set = Set.Make (struct
 
 let compare_weekday (d1 : weekday) (d2 : weekday) : int =
   compare (tm_int_of_weekday d1) (tm_int_of_weekday d2)
-
-let weekday_lt d1 d2 = tm_int_of_weekday d1 < tm_int_of_weekday d2
-
-let weekday_le d1 d2 = tm_int_of_weekday d1 <= tm_int_of_weekday d2
-
-let weekday_gt d1 d2 = tm_int_of_weekday d1 > tm_int_of_weekday d2
-
-let weekday_ge d1 d2 = tm_int_of_weekday d1 >= tm_int_of_weekday d2
-
-let zero_tm_sec tm = Unix.{ tm with tm_sec = 0 }
 
 module Weekday_set = Set.Make (struct
     type t = weekday
@@ -189,9 +161,6 @@ module Interval = struct
   let ge x y = le y x
 
   let compare x y = if lt x y then -1 else if x = y then 0 else 1
-
-  let to_string ((start, end_exc) : t) : string =
-    Printf.sprintf "[%Ld, %Ld)" start end_exc
 
   module Check = struct
     let is_valid ((start, end_exc) : t) : bool = start <= end_exc
@@ -320,19 +289,20 @@ module Intervals = struct
     let join (intervals : Interval.t Seq.t) : Interval.t Seq.t =
       let rec aux cur intervals =
         match intervals () with
-        | Seq.Nil -> (
-            match cur with None -> Seq.empty | Some x -> Seq.return x)
+        | Seq.Nil -> Seq.return cur
         | Seq.Cons ((start, end_exc), rest) -> (
-            match cur with
-            | None -> aux (Some (start, end_exc)) rest
-            | Some cur -> (
-                match Interval.join cur (start, end_exc) with
-                | Some x -> aux (Some x) rest
-                | None ->
-                  (* cannot be merged, add time slot being carried to the sequence *)
-                  fun () -> Seq.Cons (cur, aux (Some (start, end_exc)) rest)))
+            match Interval.join cur (start, end_exc) with
+            | Some x -> aux x rest
+            | None ->
+              (* cannot be merged, add time slot being carried to the sequence *)
+              fun () -> Seq.Cons (cur, aux (start, end_exc) rest))
       in
-      aux None intervals
+      let aux' intervals =
+        match intervals () with
+        | Seq.Nil -> Seq.empty
+        | Seq.Cons ((start, end_exc), rest) -> aux (start, end_exc) rest
+      in
+      aux' intervals
   end
 
   let join ?(skip_check = false) intervals =
@@ -342,21 +312,13 @@ module Intervals = struct
         else s |> Check.check_if_valid |> Check.check_if_sorted)
     |> Join_internal.join
 
-  module Normalize = struct
-    let normalize ?(skip_filter_invalid = false) ?(skip_filter_empty = false)
-        ?(skip_sort = false) intervals =
-      intervals
-      |> (fun s -> if skip_filter_invalid then s else Filter.filter_invalid s)
-      |> (fun s -> if skip_filter_empty then s else Filter.filter_empty s)
-      |> (fun s -> if skip_sort then s else Sort.sort_uniq_intervals s)
-      |> Join_internal.join
-
-    let normalize_list_in_seq_out ?(skip_filter_invalid = false)
-        ?(skip_filter_empty = false) ?(skip_sort = false) intervals =
-      intervals
-      |> List.to_seq
-      |> normalize ~skip_filter_invalid ~skip_filter_empty ~skip_sort
-  end
+  let normalize ?(skip_filter_invalid = false) ?(skip_filter_empty = false)
+      ?(skip_sort = false) intervals =
+    intervals
+    |> (fun s -> if skip_filter_invalid then s else Filter.filter_invalid s)
+    |> (fun s -> if skip_filter_empty then s else Filter.filter_empty s)
+    |> (fun s -> if skip_sort then s else Sort.sort_uniq_intervals s)
+    |> Join_internal.join
 
   module Slice_internal = struct
     let slice_start ~start (intervals : Interval.t Seq.t) : Interval.t Seq.t =
@@ -396,43 +358,6 @@ module Intervals = struct
       aux end_exc intervals
   end
 
-  module Slice_rev_internal = struct
-    let slice_start ~start (intervals : Interval.t Seq.t) : Interval.t Seq.t =
-      let rec aux acc start intervals =
-        match intervals () with
-        | Seq.Nil -> List.rev acc |> List.to_seq
-        | Seq.Cons ((ts_start, ts_end_exc), slots) ->
-          if start <= ts_start then
-            (* entire time slot is after start, add to acc *)
-            aux ((ts_start, ts_end_exc) :: acc) start slots
-          else if ts_start < start && start < ts_end_exc then
-            (* time slot spans across the start mark, split time slot *)
-            aux ((start, ts_end_exc) :: acc) start slots
-          else
-            (* time slot is before start mark, do nothing *)
-            aux acc start Seq.empty
-      in
-      aux [] start intervals
-
-    let slice_end_exc ~end_exc (intervals : Interval.t Seq.t) : Interval.t Seq.t
-      =
-      let rec aux end_exc intervals =
-        match intervals () with
-        | Seq.Nil -> Seq.empty
-        | Seq.Cons ((ts_start, ts_end_exc), slots) ->
-          if ts_end_exc <= end_exc then
-            (* entire time slot is before end_exc mark, do nothing *)
-            intervals
-          else if ts_start < end_exc && end_exc < ts_end_exc then
-            (* time slot spans across the end_exc mark, split time slot *)
-            OSeq.cons (ts_start, end_exc) slots
-          else
-            (* time slot is after end_exc mark, move to next time slot *)
-            aux end_exc slots
-      in
-      aux end_exc intervals
-  end
-
   module Slice = struct
     let slice ?(skip_check = false) ?start ?end_exc intervals =
       intervals
@@ -447,20 +372,6 @@ module Intervals = struct
       match end_exc with
       | None -> s
       | Some end_exc -> Slice_internal.slice_end_exc ~end_exc s
-
-    let slice_rev ?(skip_check = false) ?start ?end_exc intervals =
-      intervals
-      |> (fun s ->
-          if skip_check then s
-          else s |> Check.check_if_valid |> Check.check_if_sorted_rev)
-      |> (fun s ->
-          match start with
-          | None -> s
-          | Some start -> Slice_rev_internal.slice_start ~start s)
-      |> fun s ->
-      match end_exc with
-      | None -> s
-      | Some end_exc -> Slice_rev_internal.slice_end_exc ~end_exc s
   end
 
   let relative_complement ?(skip_check = false) ~(not_mem_of : Interval.t Seq.t)
@@ -561,23 +472,18 @@ module Intervals = struct
       with
       | None -> Seq.empty
       | Some s -> s
-
-    let inter_multi_list ?(skip_check = false)
-        (interval_batches : Interval.t Seq.t list) : Interval.t Seq.t =
-      List.to_seq interval_batches |> inter_multi_seq ~skip_check
   end
 
-  module Union = struct
-    let union ?(skip_check = false) (intervals1 : Interval.t Seq.t)
+  module Merge = struct
+    let merge ?(skip_check = false) (intervals1 : Interval.t Seq.t)
         (intervals2 : Interval.t Seq.t) : Interval.t Seq.t =
       let rec aux intervals1 intervals2 =
         match (intervals1 (), intervals2 ()) with
         | Seq.Nil, s | s, Seq.Nil -> fun () -> s
         | Seq.Cons (x1, rest1), Seq.Cons (x2, rest2) ->
-          let ts1 () = Seq.Cons (x1, rest1) in
-          let ts2 () = Seq.Cons (x2, rest2) in
-          if Interval.le x1 x2 then fun () -> Seq.Cons (x1, aux rest1 ts2)
-          else fun () -> Seq.Cons (x2, aux rest2 ts1)
+          if Interval.le x1 x2 then fun () ->
+            Seq.Cons (x1, aux rest1 intervals2)
+          else fun () -> Seq.Cons (x2, aux rest2 intervals1)
       in
       let intervals1 =
         if skip_check then intervals1
@@ -588,17 +494,25 @@ module Intervals = struct
         else intervals2 |> Check.check_if_valid |> Check.check_if_sorted
       in
       aux intervals1 intervals2
-      |> Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
+
+    let merge_multi_seq ?(skip_check = false)
+        (interval_batches : Interval.t Seq.t Seq.t) : Interval.t Seq.t =
+      Seq.fold_left
+        (fun acc intervals -> merge ~skip_check acc intervals)
+        Seq.empty interval_batches
+  end
+
+  module Union = struct
+    let union ?(skip_check = false) (intervals1 : Interval.t Seq.t)
+        (intervals2 : Interval.t Seq.t) : Interval.t Seq.t =
+      Merge.merge ~skip_check intervals1 intervals2
+      |> normalize ~skip_filter_invalid:true ~skip_sort:true
 
     let union_multi_seq ?(skip_check = false)
         (interval_batches : Interval.t Seq.t Seq.t) : Interval.t Seq.t =
       Seq.fold_left
         (fun acc intervals -> union ~skip_check acc intervals)
         Seq.empty interval_batches
-
-    let union_multi_list ?(skip_check = false)
-        (interval_batches : Interval.t Seq.t list) : Interval.t Seq.t =
-      List.to_seq interval_batches |> union_multi_seq ~skip_check
   end
 
   module Round_robin = struct
@@ -614,7 +528,7 @@ module Intervals = struct
         (batches : Interval.t Seq.t list) : Interval.t Seq.t =
       collect_round_robin_non_decreasing ~skip_check batches
       |> Seq.flat_map (fun l -> List.to_seq l |> Seq.filter_map Fun.id)
-      |> Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
+      |> normalize ~skip_filter_invalid:true ~skip_sort:true
 
     let merge_multi_seq_round_robin_non_decreasing ?(skip_check = false)
         (batches : Interval.t Seq.t Seq.t) : Interval.t Seq.t =
@@ -629,68 +543,22 @@ module Intervals = struct
       match intervals () with
       | Seq.Nil -> Seq.empty
       | Seq.Cons ((start, end_exc), rest) ->
-        let chunk_end_exc = min end_exc (start +^ chunk_size) in
-        let size = chunk_end_exc -^ start in
-        if size = 0L || (size < chunk_size && drop_partial) then aux rest
+        let size = end_exc -^ start in
+        if size < chunk_size then
+          if drop_partial then aux rest
+          else fun () -> Seq.Cons ((start, end_exc), aux rest)
+        else if size = chunk_size then fun () ->
+          Seq.Cons ((start, end_exc), aux rest)
         else
+          let chunk_end_exc = start +^ chunk_size in
           let rest () = Seq.Cons ((chunk_end_exc, end_exc), rest) in
           fun () -> Seq.Cons ((start, chunk_end_exc), aux rest)
     in
-    intervals
-    |> (fun s -> if skip_check then s else s |> Check.check_if_valid)
-    |> aux
-
-  module Sum = struct
-    let sum_length ?(skip_check = false) (intervals : Interval.t Seq.t) : int64
-      =
+    if chunk_size < 1L then invalid_arg "chunk"
+    else
       intervals
-      |> (fun s -> if skip_check then s else Check.check_if_valid s)
-      |> Seq.fold_left
-        (fun acc (start, end_exc) -> acc +^ (end_exc -^ start))
-        0L
-
-    let sum_length_list ?(skip_check = false) (intervals : Interval.t list) :
-      int64 =
-      intervals |> List.to_seq |> sum_length ~skip_check
-  end
-
-  module Bound = struct
-    let min_start_and_max_end_exc ?(skip_check = false)
-        (intervals : Interval.t Seq.t) : (int64 * int64) option =
-      intervals
-      |> (fun s -> if skip_check then s else Check.check_if_valid s)
-      |> Seq.fold_left
-        (fun acc (start, end_exc) ->
-           match acc with
-           | None -> Some (start, end_exc)
-           | Some (min_start, max_end_exc) ->
-             Some (min min_start start, max max_end_exc end_exc))
-        None
-
-    let min_start_and_max_end_exc_list ?(skip_check = false)
-        (intervals : Interval.t list) : (int64 * int64) option =
-      intervals |> List.to_seq |> min_start_and_max_end_exc ~skip_check
-  end
-
-  let shift_list ~offset (intervals : Interval.t list) : Interval.t list =
-    List.map
-      (fun (start, end_exc) -> (start +^ offset, end_exc +^ offset))
-      intervals
-
-  let equal (intervals1 : Interval.t list) (intervals2 : Interval.t list) : bool
-    =
-    let intervals1 =
-      intervals1 |> List.to_seq |> Normalize.normalize |> List.of_seq
-    in
-    let intervals2 =
-      intervals2 |> List.to_seq |> Normalize.normalize |> List.of_seq
-    in
-    intervals1 = intervals2
-
-  let a_is_subset_of_b ~(a : Interval.t Seq.t) ~(b : Interval.t Seq.t) : bool =
-    let inter = Inter.inter a b |> List.of_seq in
-    let a = List.of_seq a in
-    a = inter
+      |> (fun s -> if skip_check then s else s |> Check.check_if_valid)
+      |> aux
 end
 
 module Range = struct
@@ -991,7 +859,7 @@ module Ranges = struct
     | None ->
       s
       |> Seq.map (Range.int64_exc_range_of_range ~to_int64)
-      |> Intervals.Normalize.normalize ~skip_filter_invalid ~skip_filter_empty
+      |> Intervals.normalize ~skip_filter_invalid ~skip_filter_empty
         ~skip_sort
       |> Seq.map (fun (x, y) -> (of_int64 x, y |> Int64.pred |> of_int64))
       |> Seq.map (fun (x, y) -> `Range_inc (x, y))
@@ -1598,11 +1466,6 @@ module Check = struct
     (0 <= hour && hour < 24) && minute_second_is_valid ~minute ~second
 end
 
-let next_hour_minute ~(hour : int) ~(minute : int) : (int * int, unit) result =
-  if Check.hour_minute_second_is_valid ~hour ~minute ~second:0 then
-    if minute < 59 then Ok (hour, succ minute) else Ok (succ hour mod 24, 0)
-  else Error ()
-
 module Pattern = struct
   type t = {
     years : Int_set.t;
@@ -1846,25 +1709,21 @@ let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
   | `Disjoint_intervals ->
     Unchunk (f (Unary_op_on_t (Chunk_disjoint_interval, t)))
   | `By_duration duration ->
-    Unchunk
-      (f
-         (Unary_op_on_t
-            ( Chunk_by_duration
-                {
-                  chunk_size = Duration.to_seconds duration;
-                  drop_partial = false;
-                },
-              t )))
+    let chunk_size = Duration.to_seconds duration in
+    if chunk_size < 1L then invalid_arg "chunk"
+    else
+      Unchunk
+        (f
+           (Unary_op_on_t
+              (Chunk_by_duration { chunk_size; drop_partial = false }, t)))
   | `By_duration_drop_partial duration ->
-    Unchunk
-      (f
-         (Unary_op_on_t
-            ( Chunk_by_duration
-                {
-                  chunk_size = Duration.to_seconds duration;
-                  drop_partial = true;
-                },
-              t )))
+    let chunk_size = Duration.to_seconds duration in
+    if chunk_size < 1L then invalid_arg "chunk"
+    else
+      Unchunk
+        (f
+           (Unary_op_on_t
+              (Chunk_by_duration { chunk_size; drop_partial = true }, t)))
   | `At_year_boundary -> Unchunk (f (Unary_op_on_t (Chunk_at_year_boundary, t)))
   | `At_month_boundary ->
     Unchunk (f (Unary_op_on_t (Chunk_at_month_boundary, t)))
@@ -1874,23 +1733,29 @@ let chunk_again (chunking : chunking) chunked : chunked =
   | `Disjoint_intervals ->
     Unary_op_on_chunked (Chunk_again Chunk_disjoint_interval, chunked)
   | `By_duration duration ->
-    Unary_op_on_chunked
-      ( Chunk_again
-          (Chunk_by_duration
-             {
-               chunk_size = Duration.to_seconds duration;
-               drop_partial = false;
-             }),
-        chunked )
+    let chunk_size = Duration.to_seconds duration in
+    if chunk_size < 1L then invalid_arg "chunk_again"
+    else
+      Unary_op_on_chunked
+        ( Chunk_again
+            (Chunk_by_duration
+               {
+                 chunk_size = Duration.to_seconds duration;
+                 drop_partial = false;
+               }),
+          chunked )
   | `By_duration_drop_partial duration ->
-    Unary_op_on_chunked
-      ( Chunk_again
-          (Chunk_by_duration
-             {
-               chunk_size = Duration.to_seconds duration;
-               drop_partial = true;
-             }),
-        chunked )
+    let chunk_size = Duration.to_seconds duration in
+    if chunk_size < 1L then invalid_arg "chunk_again"
+    else
+      Unary_op_on_chunked
+        ( Chunk_again
+            (Chunk_by_duration
+               {
+                 chunk_size = Duration.to_seconds duration;
+                 drop_partial = true;
+               }),
+          chunked )
   | `At_year_boundary ->
     Unary_op_on_chunked (Chunk_again Chunk_at_year_boundary, chunked)
   | `At_month_boundary ->
@@ -1936,7 +1801,7 @@ let inter_seq (s : t Seq.t) : t =
     | None -> Some rest
     | Some (Error ()) -> None
     | Some (Ok pat) ->
-      Some (OSeq.cons (Pattern (default_search_space, pat)) rest)
+      Some (fun () -> Seq.Cons (Pattern (default_search_space, pat), rest))
   in
   let s = flatten s in
   match inter_patterns s with
@@ -1975,7 +1840,7 @@ let take (n : int) (c : chunked) : chunked =
   if n < 0 then invalid_arg "take_n: n < 0" else Unary_op_on_chunked (Take n, c)
 
 let take_nth (n : int) (c : chunked) : chunked =
-  if n < 0 then invalid_arg "take_nth: n < 0"
+  if n < 1 then invalid_arg "take_nth: n < 1"
   else Unary_op_on_chunked (Take_nth n, c)
 
 let nth (n : int) (c : chunked) : chunked =
@@ -2185,7 +2050,7 @@ let of_sorted_interval_seq ?(skip_invalid : bool = false)
         | Ok _, Ok _ -> Some (x, y)
         | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
     |> Intervals.Check.check_if_sorted
-    |> Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
+    |> Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
   in
   match s () with
   | Seq.Nil -> Empty
@@ -2209,7 +2074,7 @@ let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
         | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
     |> Intervals.Sort.sort_uniq_intervals_list
     |> List.to_seq
-    |> Intervals.Normalize.normalize ~skip_filter_invalid:true ~skip_sort:true
+    |> Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
   in
   match s () with
   | Seq.Nil -> Empty

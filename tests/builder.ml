@@ -4,7 +4,7 @@ let make_rng ~randomness : unit -> int =
   let len = Array.length arr in
   let cur = ref 0 in
   fun () ->
-    let ret = max 0 (arr.(!cur) mod 5000) in
+    let ret = arr.(!cur) in
     cur := (!cur + 1) mod len;
     ret
 
@@ -29,7 +29,7 @@ let make_date_time ~rng ~min_year ~max_year_inc =
   | Ok x -> x
 
 let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
-  let len = rng () in
+  let len = min 5 (rng ()) in
   OSeq.(0 -- len)
   |> Seq.map (fun _ ->
       let start =
@@ -47,35 +47,57 @@ let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
 
 let make_pattern ~rng ~min_year ~max_year_inc =
   let years =
-    OSeq.(0 -- rng ())
-    |> Seq.map (fun _ -> min max_year_inc (min_year + rng ()))
-    |> List.of_seq
+    if rng () mod 2 = 0 then []
+    else
+      OSeq.(0 -- Stdlib.min 5 (rng ()))
+      |> Seq.map (fun _ -> min max_year_inc (min_year + rng ()))
+      |> List.of_seq
   in
   let months =
-    OSeq.(0 -- rng ())
-    |> Seq.map (fun _ -> Result.get_ok @@ Time.month_of_tm_int (rng () mod 12))
-    |> List.of_seq
+    if rng () mod 2 = 0 then []
+    else
+      OSeq.(0 -- Stdlib.min 5 (rng ()))
+      |> Seq.map (fun _ ->
+          Result.get_ok @@ Time.month_of_tm_int (rng () mod 12))
+      |> List.of_seq
   in
   let month_days =
-    OSeq.(0 -- rng ())
-    |> Seq.map (fun _ ->
-        if rng () mod 2 = 0 then 1 + (rng () mod 31)
-        else -(1 + (rng () mod 31)))
-    |> List.of_seq
+    if rng () mod 2 = 0 then []
+    else
+      OSeq.(0 -- Stdlib.min 5 (rng ()))
+      |> Seq.map (fun _ ->
+          if rng () mod 2 = 0 then 1 + (rng () mod 31)
+          else -(1 + (rng () mod 31)))
+      |> List.of_seq
   in
   let weekdays =
-    OSeq.(0 -- rng ())
-    |> Seq.map (fun _ -> Result.get_ok @@ Time.weekday_of_tm_int (rng () mod 7))
-    |> List.of_seq
+    if rng () mod 2 = 0 then []
+    else
+      OSeq.(0 -- Stdlib.min 5 (rng ()))
+      |> Seq.map (fun _ ->
+          Result.get_ok @@ Time.weekday_of_tm_int (rng () mod 7))
+      |> List.of_seq
   in
   let hours =
-    OSeq.(0 -- rng ()) |> Seq.map (fun _ -> rng () mod 24) |> List.of_seq
+    if rng () mod 2 = 0 then []
+    else
+      OSeq.(0 -- Stdlib.min 5 (rng ()))
+      |> Seq.map (fun _ -> rng () mod 24)
+      |> List.of_seq
   in
   let minutes =
-    OSeq.(0 -- rng ()) |> Seq.map (fun _ -> rng () mod 60) |> List.of_seq
+    if rng () mod 2 = 0 then []
+    else
+      OSeq.(0 -- Stdlib.min 5 (rng ()))
+      |> Seq.map (fun _ -> rng () mod 60)
+      |> List.of_seq
   in
   let seconds =
-    OSeq.(0 -- rng ()) |> Seq.map (fun _ -> rng () mod 60) |> List.of_seq
+    if rng () mod 2 = 0 then []
+    else
+      OSeq.(0 -- Stdlib.min 5 (rng ()))
+      |> Seq.map (fun _ -> rng () mod 60)
+      |> List.of_seq
   in
   Time.pattern ~years ~months ~month_days ~weekdays ~hours ~minutes ~seconds ()
 
@@ -99,11 +121,27 @@ let make_interval_exc ~rng ~min_year ~max_year_inc =
   let end_exc = Int64.add start (Int64.of_int (rng ())) in
   Time.interval_exc start end_exc
 
+let make_hms ~rng =
+  Time.make_hms_exn
+    ~hour:(rng () mod 24)
+    ~minute:(rng () mod 60)
+    ~second:(rng () mod 60)
+
+let make_hms_interval_inc ~rng =
+  Time.hms_interval_inc (make_hms ~rng) (make_hms ~rng)
+
+let make_hms_interval_exc ~rng =
+  Time.hms_interval_exc (make_hms ~rng) (make_hms ~rng)
+
 let new_height ~rng height =
+  assert (height > 1);
   let reduc = 1 + (rng () mod (height - 1)) in
+  assert (reduc >= 1);
   height - reduc
 
-let make_duration ~rng = Duration.make ~seconds:(rng ()) ()
+let make_duration ~rng =
+  let seconds = 1 + rng () in
+  Duration.make ~seconds ()
 
 let make_chunking ~rng : Time.chunking =
   match rng () mod 5 with
@@ -115,27 +153,29 @@ let make_chunking ~rng : Time.chunking =
   | _ -> failwith "Unexpected case"
 
 let make_chunk_selector ~rng : Time.chunked -> Time.chunked =
+  let open Infix in
   let rec aux f height =
-    if height = 1 then f
+    if height <= 1 then f
     else
       let f =
-        match rng () mod 1 with
-        | 0 -> fun x -> x |> f |> Time.chunk_again (make_chunking ~rng)
-        | 1 -> fun x -> x |> f |> Time.first
-        | 2 -> fun x -> x |> f |> Time.take (rng ())
-        | 3 -> fun x -> x |> f |> Time.take_nth (rng ())
-        | 4 -> fun x -> x |> f |> Time.drop (rng ())
+        match rng () mod 6 with
+        | 0 -> f %> Time.chunk_again (make_chunking ~rng)
+        | 1 -> f %> Time.first
+        | 2 -> f %> Time.take (rng () mod 5)
+        | 3 -> f %> Time.take_nth (1 + (rng () mod 5))
+        | 4 -> f %> Time.nth (rng () mod 5)
+        | 5 -> f %> Time.drop (rng () mod 5)
         | _ -> failwith "Unexpected case"
       in
       aux f (new_height ~rng height)
   in
-  aux (fun x -> x) 10
+  aux Fun.id 5
 
 let make_unary_op ~rng t =
   match rng () mod 6 with
   | 0 -> Time.not t
-  | 1 -> Time.drop_n_points (rng ()) t
-  | 2 -> Time.take_n_points (rng ()) t
+  | 1 -> Time.drop_n_points (rng () mod 5) t
+  | 2 -> Time.take_n_points (rng () mod 5) t
   | 3 -> Time.shift (make_duration ~rng) t
   | 4 -> Time.lengthen (make_duration ~rng) t
   | 5 ->
@@ -152,17 +192,18 @@ let make_unary_op ~rng t =
 
 let build ~min_year ~max_year_inc ~max_height ~max_branching
     ~(randomness : int list) : Time.t =
-  if max_height <= 0 then invalid_arg "make";
   let rng = make_rng ~randomness in
   let rec aux height =
-    if height = 1 then
-      match rng () mod 6 with
+    if height <= 1 then
+      match rng () mod 8 with
       | 0 -> Time.empty
       | 1 -> Time.always
       | 2 -> make_timestamp_intervals ~rng ~min_year ~max_year_inc
       | 3 -> make_pattern ~rng ~min_year ~max_year_inc
       | 4 -> make_interval_inc ~rng ~min_year ~max_year_inc
       | 5 -> make_interval_exc ~rng ~min_year ~max_year_inc
+      | 6 -> make_hms_interval_inc ~rng
+      | 7 -> make_hms_interval_exc ~rng
       | _ -> failwith "Unexpected case"
     else
       match rng () mod 7 with

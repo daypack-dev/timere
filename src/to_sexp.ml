@@ -194,7 +194,7 @@ let to_sexp (t : Time.t) : CCSexp.t =
         list
           (match op with
            | Drop n -> [ atom "drop"; sexp_of_int n; aux_chunked chunked ]
-           | Take n -> [ atom "drop"; sexp_of_int n; aux_chunked chunked ]
+           | Take n -> [ atom "take"; sexp_of_int n; aux_chunked chunked ]
            | Take_nth n ->
              [ atom "take_nth"; sexp_of_int n; aux_chunked chunked ]
            | Nth n -> [ atom "nth"; sexp_of_int n; aux_chunked chunked ]
