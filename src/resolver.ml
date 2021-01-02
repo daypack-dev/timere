@@ -1133,7 +1133,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
   aux s
 
 let search_space_adjustment_trigger_size =
-  Duration.make ~days:100 () |> Duration.to_seconds
+  Duration.make ~days:30 () |> Duration.to_seconds
 
 let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
@@ -1234,8 +1234,6 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
           let timeres =
             slice_search_space_multi ~start:end_exc timeres
           in
-          print_endline "test0";
-          flush stdout;
           let next_intervals =
             resolve_and_merge timeres
             |> OSeq.drop_while (fun (start', _end_exc') ->
@@ -1249,6 +1247,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
             Seq.Cons ((start, end_exc), aux_union' timeres rest)
     in
     aux_union' timeres (resolve_and_merge timeres)
+    |> normalize
   and aux_chunked search_using_tz (chunked : chunked) =
     let chunk_based_on_op_on_t op s =
       match op with
