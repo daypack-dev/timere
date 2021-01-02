@@ -13,6 +13,12 @@ module Qc = struct
          let l2 = permute rand l1 in
          let t1 = Time.union l1 in
          let t2 = Time.union l2 in
+         print_endline "=====";
+         print_endline (To_sexp.to_sexp_string t1);
+         print_endline "^^^^^";
+         print_endline (To_sexp.to_sexp_string t2);
+         print_endline "=====";
+         flush stdout;
          let r1 = Result.get_ok @@ Resolver.resolve t1 in
          let r2 = Result.get_ok @@ Resolver.resolve t2 in
          OSeq.equal ~eq:( = ) r1 r2)
