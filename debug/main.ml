@@ -28,13 +28,13 @@ let debug_resolver () =
     {|
 (union
    (inter
-      (interval_exc (2019 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)) (2021 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)))
+      (interval_exc (2015 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)) (2021 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)))
       (all)
       (between_exc (1 0 0 0) (pattern (hours 18) (minutes 32) (seconds 12)) (pattern (hours 6) (minutes 19) (seconds 47)))
       (all)
       (between_exc (1 0 0 0) (pattern (hours 18) (minutes 32) (seconds 12)) (pattern (hours 6) (minutes 19) (seconds 47))))
    (inter
-      (interval_exc (2019 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)) (2021 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)))
+      (interval_exc (2015 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)) (2021 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)))
    )
 )
     |}
