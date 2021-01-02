@@ -1187,22 +1187,22 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
       let s2 = aux search_using_tz t2 in
       find_between_exc b s1 s2
     | Unchunk c -> aux_chunked search_using_tz c |> normalize
-  and aux_chunked search_using_tz_offset_s (chunked : chunked) =
+  and aux_chunked search_using_tz (chunked : chunked) =
     let chunk_based_on_op_on_t op s =
       match op with
       | Chunk_disjoint_interval -> normalize s
       | Chunk_by_duration { chunk_size; drop_partial } ->
         Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
       | Chunk_at_year_boundary ->
-        do_chunk_at_year_boundary search_using_tz_offset_s s
+        do_chunk_at_year_boundary search_using_tz s
       | Chunk_at_month_boundary ->
-        do_chunk_at_month_boundary search_using_tz_offset_s s
+        do_chunk_at_month_boundary search_using_tz s
     in
     match chunked with
     | Unary_op_on_t (op, t) ->
-      aux search_using_tz_offset_s t |> chunk_based_on_op_on_t op
+      aux search_using_tz t |> chunk_based_on_op_on_t op
     | Unary_op_on_chunked (op, c) -> (
-        let s = aux_chunked search_using_tz_offset_s c in
+        let s = aux_chunked search_using_tz c in
         match op with
         | Nth n -> s |> OSeq.drop n |> OSeq.take 1
         | Drop n -> OSeq.drop n s
