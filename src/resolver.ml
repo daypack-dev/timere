@@ -1282,8 +1282,8 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
           in
           let next_intervals =
             resolve_and_merge timeres
-            |> OSeq.drop_while (fun (start', end_exc') ->
-                Time.Interval.le (start', end_exc') (start, end_exc)
+            |> OSeq.drop_while (fun x ->
+                Time.Interval.le x (start, end_exc)
               )
           in
           fun () ->
