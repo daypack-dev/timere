@@ -969,6 +969,7 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
     |> calibrate_search_space time
   in
   let rec aux parent_search_space time =
+    let stop_propagation = time in
     match time with
     | All -> All
     | Empty -> Empty
@@ -982,7 +983,7 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
         time
     | Unary_op (cur, op, t) -> (
         match op with
-        | Take_n_points _ | Drop_n_points _ -> time
+        | Take_n_points _ | Drop_n_points _ -> stop_propagation
         | _ ->
           let space = restrict_search_space time parent_search_space cur in
           set_search_space space (Unary_op (cur, op, aux space t)))
@@ -1010,7 +1011,7 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
       let space = restrict_search_space time parent_search_space cur in
       set_search_space space
         (Between_exc (cur, b, aux space t1, aux space t2))
-    | Unchunk (cur, c) -> Unchunk (cur, c)
+    | Unchunk (_, _) -> stop_propagation
   and aux_list parent_search_space l = List.map (aux parent_search_space) l
   and aux_seq parent_search_space l = Seq.map (aux parent_search_space) l in
   aux default_search_space time
