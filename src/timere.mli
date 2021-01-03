@@ -291,7 +291,10 @@ module Date_time : sig
      Pretty printing for date time.
 
      Default format string:
-     [{year} {mon:Xxx} {mday:0X} {hour:0X}:{min:0X}:{sec:0X} {tzoff-sign}{tzoff-hour:0X}:{tzoff-min:0X}:{tzoff-sec:0X}]
+     {[
+{year} {mon:Xxx} {mday:0X} {hour:0X}:{min:0X}:{sec:0X} \
+{tzoff-sign}{tzoff-hour:0X}:{tzoff-min:0X}:{tzoff-sec:0X}
+     ]}
 
      Format string specification:
      {[
@@ -307,7 +310,7 @@ module Date_time : sig
                  casing of second 'x' controls casing of following letters
 {hour:cX}        hour in 24-hour format, character 'c' before 'X' determines padding
                  (leave out character for no padding)
-{12hour:cX}      hour in 12-hour, character 'c' before 'X' determines padding
+{12hour:cX}      hour in 12-hour format, character 'c' before 'X' determines padding
                  (leave out character for no padding)
 {min:cX}         minute, character 'c' before 'X' determines padding
                  (leave out character for no padding)
@@ -512,6 +515,22 @@ val pp_timestamp :
 
 val sprintf_interval :
   ?display_using_tz:Time_zone.t -> ?format:string -> interval -> string
+(** Pretty printing for interval.
+
+    Default format string:
+    {[
+[{syear} {smon:Xxx} {smday:0X} {shour:0X}:{smin:0X}:{ssec:0X} \
+{stzoff-sign}{stzoff-hour:0X}:{stzoff-min:0X}:{stzoff-sec:0X}, {eyear} \
+{emon:Xxx} {emday:0X} {ehour:0X}:{emin:0X}:{esec:0X} \
+{etzoff-sign}{etzoff-hour:0X}:{etzoff-min:0X}:{etzoff-sec:0X})
+    ]}
+
+    Follows same format string rules as {!val:Date_time.sprintf}, but tags are prefixed with 's' for "start time", and 'e' for "end exc time",
+    e.g. for interval [(x, y)]
+
+    - [{syear}] gives year of the [x]
+    - [{ehour:cX}] gives hour of the [y]
+*)
 
 val pp_interval :
   ?display_using_tz:Time_zone.t ->
