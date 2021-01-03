@@ -595,7 +595,14 @@ val pp_interval :
   interval ->
   unit
 
-(** {1 S-expressions for serialization/deserialization} *)
+(** {1 S-expressions} *)
+
+(** These functions are suitable for debugging, serializing and deserializing timeres.
+
+    The sexp is a precise description of the steps used to construct a timere.
+    As such deserialization is accurate and goes through the exact same construction steps (including validation)
+    as one would using the construction API directly.
+*)
 
 val to_sexp : t -> CCSexp.t
 
@@ -623,11 +630,4 @@ module Utils : sig
 
   val flatten_weekday_range_list :
     weekday range list -> (weekday list, unit) result
-
-  val resolve_simple :
-    ?search_using_tz:Time_zone.t ->
-    search_start:timestamp ->
-    search_end_exc:timestamp ->
-    t ->
-    interval Seq.t
 end
