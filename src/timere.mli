@@ -504,10 +504,10 @@ val drop : int -> chunked -> chunked
 
 module Infix : sig
   val ( & ) : t -> t -> t
-  (** [inter] *)
+  (** {!val:inter} *)
 
   val ( ||| ) : t -> t -> t
-  (** [union] *)
+  (** {!val:union} *)
 
   val ( %> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
   (** Composition, mainly for chunked selectors
