@@ -370,66 +370,18 @@ val of_timestamp_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
     @raise Invalid_timestamp if [not skip_invalid] and [s] contains an invalid timestamp
 *)
 
-(** {1 Chunking} *)
-
-type chunked
-
-type chunking =
-  [ `Disjoint_intervals
-  | `By_duration of Duration.t
-  | `By_duration_drop_partial of Duration.t
-  | `At_year_boundary
-  | `At_month_boundary
-  ]
-(** Ways to chunk/slice time intervals for the selector.
-
-    - [`Disjoint_intervals] gives a sequence of disjoint intervals to the selector,
-      specifically they are in ascending order, non-overlapping, non-connecting, and unique
-    - [`By_duration] slices in the fixed size specified by the duration.
-      Partial chunks (chunks less than the fixed size) are preserved.
-    - [`By_duration_drop_partial] slices in the fixed size specified by the duration.
-      Partial chunks (chunks less than the fixed size) are discarded.
-    - [`At_year_boundary] slices at the year boundary (e.g. [2021 Jan 1st 00:00:00])
-    - [`At_month_boundary] slices at the month boundary (e.g. [Aug 1st 00:00:00])
-*)
-
-val chunk : chunking -> (chunked -> chunked) -> t -> t
-(** [chunk chunking f t] applies [chunked] selector [f] on [t]*)
-
-val chunk_again : chunking -> chunked -> chunked
-(** [chunk_again chunking f] applies [chunked] selector [f] as a selector*)
-
-(** {2 Chunked selectors} *)
-
-(** You may find {!val:Infix.(%>)} useful for chaining selectors together, e.g. [drop 5 %> take 2]
-*)
-
-val first : chunked -> chunked
-(** Takes only first chunk *)
-
-val take : int -> chunked -> chunked
-(** Takes n chunks *)
-
-val take_nth : int -> chunked -> chunked
-(** Take every nth chunk, specifically [0]th, [n]th, [2n]th, [3n]th, ... *)
-
-val drop : int -> chunked -> chunked
-(** Discard n chunks *)
-
-(* val first_point : t -> t
- * 
- * val take_n_points : int -> t -> t
- * 
- * val drop_n_points : int -> t -> t *)
-
 (** {1 Manual intervals} *)
 
 val interval_dt_inc : Date_time.t -> Date_time.t -> t
-(** [interval_dt_inc x y] @raise Invalid_argument if [x > y]
+(** [interval_dt_inc x y]
+
+    @raise Invalid_argument if [x > y]
 *)
 
 val interval_dt_exc : Date_time.t -> Date_time.t -> t
-(** [interval_dt_exc x y] @raise Invalid_argument if [x > y]
+(** [interval_dt_exc x y]
+
+    @raise Invalid_argument if [x > y]
 *)
 
 val interval_inc : timestamp -> timestamp -> t
@@ -501,6 +453,52 @@ val hms_interval_inc : hms -> hms -> t
 val hms_interval_exc : hms -> hms -> t
 
 val of_hms_intervals : (hms * hms) Seq.t -> t
+
+(** {1 Chunking} *)
+
+type chunked
+
+type chunking =
+  [ `Disjoint_intervals
+  | `By_duration of Duration.t
+  | `By_duration_drop_partial of Duration.t
+  | `At_year_boundary
+  | `At_month_boundary
+  ]
+(** Ways to chunk/slice time intervals for the selector.
+
+    - [`Disjoint_intervals] gives a sequence of disjoint intervals to the selector,
+      specifically they are in ascending order, non-overlapping, non-connecting, and unique
+    - [`By_duration] slices in the fixed size specified by the duration.
+      Partial chunks (chunks less than the fixed size) are preserved.
+    - [`By_duration_drop_partial] slices in the fixed size specified by the duration.
+      Partial chunks (chunks less than the fixed size) are discarded.
+    - [`At_year_boundary] slices at the year boundary (e.g. [2021 Jan 1st 00:00:00])
+    - [`At_month_boundary] slices at the month boundary (e.g. [Aug 1st 00:00:00])
+*)
+
+val chunk : chunking -> (chunked -> chunked) -> t -> t
+(** [chunk chunking f t] applies [chunked] selector [f] on [t]*)
+
+(** {2 Chunked selectors} *)
+
+(** You may find {!val:Infix.(%>)} useful for chaining selectors together, e.g. [drop 5 %> take 2]
+*)
+
+val chunk_again : chunking -> chunked -> chunked
+(** [chunk_again chunking f] applies [chunked] selector [f] as a selector*)
+
+val first : chunked -> chunked
+(** Takes only first chunk *)
+
+val take : int -> chunked -> chunked
+(** Takes n chunks *)
+
+val take_nth : int -> chunked -> chunked
+(** Take every nth chunk, specifically [0]th, [n]th, [2n]th, [3n]th, ... *)
+
+val drop : int -> chunked -> chunked
+(** Discard n chunks *)
 
 (** {1 Infix operators} *)
 
