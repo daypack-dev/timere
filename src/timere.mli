@@ -90,7 +90,7 @@ val pattern :
 (** Pattern matches over date times.
 
     A pattern [p] matches date time [dt] if
-    {[
+    {v
       (dt.year is in p.years or p.year_ranges)
       && (dt.month is in p.months or p.month_ranges)
       && (dt.month_day is in p.month_days or p.month_day_ranges)
@@ -98,7 +98,7 @@ val pattern :
       && (dt.hour is in p.hours or p.hour_ranges)
       && (dt.minute is in p.minutes or p.minute_ranges)
       && (dt.second is in p.seconds or p.second_ranges)
-    ]}
+    v}
 
     Empty pattern levels are treated as wildcard, e.g. if [p.years] and [p.year_ranges] are both empty,
     then [(dt.year is in p.years or p.year_ranges)] is [true].
