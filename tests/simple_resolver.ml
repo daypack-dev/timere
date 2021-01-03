@@ -110,6 +110,9 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
     ~(search_start : Time.timestamp) ~(search_end_exc : Time.timestamp)
     (t : Time.t) : Time.Interval.t Seq.t =
   let open Time in
+  let default_search_space =
+    (default_search_space_start, default_search_space_end_exc)
+  in
   let filter s =
     Seq.filter_map
       (fun (x, y) ->
@@ -118,12 +121,12 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
          else Some (max search_start x, min search_end_exc y))
       s
   in
-  let rec aux (search_using_tz : Time_zone.t) t =
+  let rec aux (search_space : Time.Interval.t) (search_using_tz : Time_zone.t) t =
     match t with
     | Timestamp_interval_seq (_, s) -> s
     | Round_robin_pick_list (_, l) ->
       l
-      |> List.map (fun t -> aux search_using_tz t)
+      |> List.map (fun t -> aux search_space search_using_tz t)
       |> Time.Intervals.Round_robin
          .merge_multi_list_round_robin_non_decreasing ~skip_check:true
     | Unary_op (_, op, t) -> (
@@ -134,37 +137,45 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
               Stdlib.not
                 (mem ~search_start ~search_end_exc ~search_using_tz t x))
           |> intervals_of_timestamps
-        | Every -> aux search_using_tz t
+        | Every -> aux search_space search_using_tz t
         | Drop_n_points n ->
-          aux search_using_tz t
+          aux default_search_space search_using_tz t
           |> timestamps_of_intervals
           |> OSeq.drop n
           |> intervals_of_timestamps
         | Take_n_points n ->
-          aux search_using_tz t
+          aux default_search_space search_using_tz t
           |> timestamps_of_intervals
           |> OSeq.take n
           |> intervals_of_timestamps
         | Shift n ->
-          aux search_using_tz t
+          let (x, y) = search_space in
+          aux (Int64.sub x n, Int64.sub y n) search_using_tz t
           |> Seq.map (fun (x, y) -> (Int64.add n x, Int64.add n y))
         | Lengthen n ->
-          aux search_using_tz t |> Seq.map (fun (x, y) -> (x, Int64.add n y))
-        | With_tz tz -> aux tz t)
+          let (x, y) = search_space in
+          aux (x, Int64.add y n) search_using_tz t |> Seq.map (fun (x, y) -> (x, Int64.add n y))
+        | With_tz tz -> aux search_space tz t)
     | After (_, b, t1, t2) ->
-      let s1 = aux search_using_tz t1 in
-      let s2 = aux search_using_tz t2 in
+      let (x, y) = search_space in
+      let search_space = (Int64.sub x b, y) in
+      let s1 = aux search_space search_using_tz t1 in
+      let s2 = aux search_space search_using_tz t2 in
       s1 |> Seq.filter_map (fun x -> find_after b x s2)
     | Between_inc (_, b, t1, t2) ->
-      let s1 = aux search_using_tz t1 in
-      let s2 = aux search_using_tz t2 in
+      let (x, y) = search_space in
+      let search_space = (Int64.sub x b, y) in
+      let s1 = aux search_space search_using_tz t1 in
+      let s2 = aux search_space search_using_tz t2 in
       s1
       |> Seq.filter_map (fun (start, end_exc) ->
           find_after b (start, end_exc) s2
           |> Option.map (fun (_, end_exc') -> (start, end_exc')))
     | Between_exc (_, b, t1, t2) ->
-      let s1 = aux search_using_tz t1 in
-      let s2 = aux search_using_tz t2 in
+      let (x, y) = search_space in
+      let search_space = (Int64.sub x b, y) in
+      let s1 = aux search_space search_using_tz t1 in
+      let s2 = aux search_space search_using_tz t2 in
       s1
       |> Seq.filter_map (fun (start, end_exc) ->
           find_after b (start, end_exc) s2
@@ -185,7 +196,7 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
     in
     match chunked with
     | Unary_op_on_t (op, t) ->
-      aux search_using_tz t |> chunk_based_on_op_on_t op
+      aux default_search_space search_using_tz t |> chunk_based_on_op_on_t op
     | Unary_op_on_chunked (op, c) -> (
         let s = aux_chunked search_using_tz c in
         match op with
@@ -195,7 +206,7 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
         | Take_nth n -> OSeq.take_nth n s
         | Chunk_again op -> chunk_based_on_op_on_t op s)
   in
-  aux search_using_tz t |> filter |> normalize
+  aux (search_start, search_end_exc) search_using_tz t |> filter |> normalize
 
 and mem ?(search_using_tz = Time_zone.utc) ~(search_start : Time.timestamp)
     ~(search_end_exc : Time.timestamp) (t : Time.t) (timestamp : Time.timestamp)
