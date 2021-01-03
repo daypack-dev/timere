@@ -1012,9 +1012,7 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
       set_search_space space
         (Between_exc (cur, b, aux space t1, aux space t2))
     | Unchunk (cur, c) ->
-      let space = restrict_search_space time parent_search_space cur in
-      set_search_space space
-        (Unchunk (cur, c))
+      Unchunk (cur, c)
   and aux_list parent_search_space l = List.map (aux parent_search_space) l
   and aux_seq parent_search_space l = Seq.map (aux parent_search_space) l in
   aux default_search_space time
