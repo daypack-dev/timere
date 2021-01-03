@@ -32,6 +32,7 @@ let sexp_of_duration (x : Duration.t) =
   let open CCSexp in
   list
     [
+      atom "duration";
       sexp_of_int x.days;
       sexp_of_int x.hours;
       sexp_of_int x.minutes;

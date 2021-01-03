@@ -63,7 +63,7 @@ let tz_of_sexp (x : CCSexp.t) =
 
 let duration_of_sexp (x : CCSexp.t) =
   match x with
-  | `List [ days; hours; minutes; seconds ] ->
+  | `List [ `Atom "duration"; days; hours; minutes; seconds ] ->
     let days = int_of_sexp days in
     let hours = int_of_sexp hours in
     let minutes = int_of_sexp minutes in
