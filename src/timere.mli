@@ -291,13 +291,13 @@ module Date_time : sig
      Pretty printing for date time.
 
      Default format string:
-     {[
+     {v
 {year} {mon:Xxx} {mday:0X} {hour:0X}:{min:0X}:{sec:0X} \
 {tzoff-sign}{tzoff-hour:0X}:{tzoff-min:0X}:{tzoff-sec:0X}
-     ]}
+     v}
 
      Format string specification:
-     {[
+     {v
 {{               literal {
 {year}           year
 {mon:Xxx}        abbreviated month name (e.g. Jan), casing of 'x' controls the casing
@@ -324,7 +324,7 @@ module Date_time : sig
                  yields "N/A" if time zone offset is not available
 {tzoff-sec:cX}   time zone offset second, follows same padding rule as "{sec:cX}"
                  yields "N/A" if time zone offset is not available
-     ]}
+     v}
   *)
 
   val pp : ?format:string -> Format.formatter -> t -> unit
@@ -518,12 +518,12 @@ val sprintf_interval :
 (** Pretty printing for interval.
 
     Default format string:
-    {[
+    {v
 [{syear} {smon:Xxx} {smday:0X} {shour:0X}:{smin:0X}:{ssec:0X} \
 {stzoff-sign}{stzoff-hour:0X}:{stzoff-min:0X}:{stzoff-sec:0X}, {eyear} \
 {emon:Xxx} {emday:0X} {ehour:0X}:{emin:0X}:{esec:0X} \
 {etzoff-sign}{etzoff-hour:0X}:{etzoff-min:0X}:{etzoff-sec:0X})
-    ]}
+    v}
 
     Follows same format string rules as {!val:Date_time.sprintf}, but tags are prefixed with 's' for "start time", and 'e' for "end exc time",
     e.g. for interval [(x, y)]
