@@ -287,6 +287,42 @@ module Date_time : sig
   val cur : ?tz_of_date_time:Time_zone.t -> unit -> (t, unit) result
 
   val sprintf : ?format:string -> t -> string
+  (**
+     Pretty printing for date time.
+
+     Format string specification:
+     {[
+{{               literal {
+{year}           year
+{mon:Xxx}        abbreviated month name (e.g. Jan), casing of 'x' controls the casing
+{mon:Xx*}        full month name (e.g. January), casing of first 'x' controls casing of first letter,
+                 casing of second 'x' controls casing of following letters
+{mday:cX}        month day (e.g.  1) character 'c' before 'X' is used for padding
+                 (leave out character for no padding)
+{wday:Xxx}       abbreviated weekday name (e.g. Sun), the casing of 'x' controls the casing
+{wday:Xx*}       full weekday name (e.g. Sunday), casing of first 'x' controls casing of first letter,
+                 casing of second 'x' controls casing of following letters
+{hour:cX}        hour in 24-hour format, character 'c' before 'X' determines padding
+                 (leave out character for no padding)
+{12hour:cX}      hour in 12-hour, character 'c' before 'X' determines padding
+                 (leave out character for no padding)
+{min:cX}         minute, character 'c' before 'X' determines padding
+                 (leave out character for no padding)
+{sec:cX}         second, character 'c' before 'X' determines padding
+                 (leave out character for no padding)
+{tzoff-sign}     time zone offset sign (+ or -)
+                 yields "N/A" if time zone offset is not available
+{tzoff-hour:cX}  time zone offset hour, follows same padding rule as "{hour:cX}"
+                 yields "N/A" if time zone offset is not available
+{tzoff-min:cX}   time zone offset minute, follows same padding rule as "{min:cX}"
+                 yields "N/A" if time zone offset is not available
+{tzoff-sec:cX}   time zone offset second, follows same padding rule as "{sec:cX}"
+                 yields "N/A" if time zone offset is not available
+     ]}
+
+     Default format string:
+     [{year} {mon:Xxx} {mday:0X} {hour:0X}:{min:0X}:{sec:0X} {tzoff-sign}{tzoff-hour:0X}:{tzoff-min:0X}:{tzoff-sec:0X}]
+  *)
 
   val pp : ?format:string -> Format.formatter -> t -> unit
 
