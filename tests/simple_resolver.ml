@@ -121,7 +121,8 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
          else Some (max search_start x, min search_end_exc y))
       s
   in
-  let rec aux (search_space : Time.Interval.t) (search_using_tz : Time_zone.t) t =
+  let rec aux (search_space : Time.Interval.t) (search_using_tz : Time_zone.t) t
+    =
     match t with
     | Timestamp_interval_seq (_, s) -> s
     | Round_robin_pick_list (_, l) ->
@@ -149,21 +150,22 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
           |> OSeq.take n
           |> intervals_of_timestamps
         | Shift n ->
-          let (x, y) = search_space in
+          let x, y = search_space in
           aux (Int64.sub x n, Int64.sub y n) search_using_tz t
           |> Seq.map (fun (x, y) -> (Int64.add n x, Int64.add n y))
         | Lengthen n ->
-          let (x, y) = search_space in
-          aux (x, Int64.add y n) search_using_tz t |> Seq.map (fun (x, y) -> (x, Int64.add n y))
+          let x, y = search_space in
+          aux (x, Int64.add y n) search_using_tz t
+          |> Seq.map (fun (x, y) -> (x, Int64.add n y))
         | With_tz tz -> aux search_space tz t)
     | After (_, b, t1, t2) ->
-      let (x, y) = search_space in
+      let x, y = search_space in
       let search_space = (Int64.sub x b, y) in
       let s1 = aux search_space search_using_tz t1 in
       let s2 = aux search_space search_using_tz t2 in
       s1 |> Seq.filter_map (fun x -> find_after b x s2)
     | Between_inc (_, b, t1, t2) ->
-      let (x, y) = search_space in
+      let x, y = search_space in
       let search_space = (Int64.sub x b, y) in
       let s1 = aux search_space search_using_tz t1 in
       let s2 = aux search_space search_using_tz t2 in
@@ -172,7 +174,7 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
           find_after b (start, end_exc) s2
           |> Option.map (fun (_, end_exc') -> (start, end_exc')))
     | Between_exc (_, b, t1, t2) ->
-      let (x, y) = search_space in
+      let x, y = search_space in
       let search_space = (Int64.sub x b, y) in
       let s1 = aux search_space search_using_tz t1 in
       let s2 = aux search_space search_using_tz t2 in

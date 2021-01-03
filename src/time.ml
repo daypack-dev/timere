@@ -1707,30 +1707,32 @@ type chunking =
 let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
   match chunking with
   | `Disjoint_intervals ->
-    Unchunk (default_search_space, f (Unary_op_on_t (Chunk_disjoint_interval, t)))
+    Unchunk
+      (default_search_space, f (Unary_op_on_t (Chunk_disjoint_interval, t)))
   | `By_duration duration ->
     let chunk_size = Duration.to_seconds duration in
     if chunk_size < 1L then invalid_arg "chunk"
     else
       Unchunk
-        (default_search_space,
-         f
-           (Unary_op_on_t
-              (Chunk_by_duration { chunk_size; drop_partial = false }, t)))
+        ( default_search_space,
+          f
+            (Unary_op_on_t
+               (Chunk_by_duration { chunk_size; drop_partial = false }, t)) )
   | `By_duration_drop_partial duration ->
     let chunk_size = Duration.to_seconds duration in
     if chunk_size < 1L then invalid_arg "chunk"
     else
       Unchunk
-        (default_search_space,
-         f
-           (Unary_op_on_t
-              (Chunk_by_duration { chunk_size; drop_partial = true }, t)))
-  | `At_year_boundary -> Unchunk (default_search_space,
-                                  f (Unary_op_on_t (Chunk_at_year_boundary, t)))
+        ( default_search_space,
+          f
+            (Unary_op_on_t
+               (Chunk_by_duration { chunk_size; drop_partial = true }, t)) )
+  | `At_year_boundary ->
+    Unchunk
+      (default_search_space, f (Unary_op_on_t (Chunk_at_year_boundary, t)))
   | `At_month_boundary ->
-    Unchunk (default_search_space,
-             f (Unary_op_on_t (Chunk_at_month_boundary, t)))
+    Unchunk
+      (default_search_space, f (Unary_op_on_t (Chunk_at_month_boundary, t)))
 
 let chunk_again (chunking : chunking) chunked : chunked =
   match chunking with

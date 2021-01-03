@@ -942,8 +942,7 @@ let propagate_search_space_bottom_up default_tz (time : Time.t) : Time.t =
     | Unary_op_on_t (_op, time) ->
       let t = aux tz time in
       get_search_space t
-    | Unary_op_on_chunked (_op, chunked) ->
-      aux_chunked tz chunked
+    | Unary_op_on_chunked (_op, chunked) -> aux_chunked tz chunked
   and aux_seq tz_offset_s s =
     let s = Seq.map (aux tz_offset_s) s in
     let space =
@@ -1011,8 +1010,7 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
       let space = restrict_search_space time parent_search_space cur in
       set_search_space space
         (Between_exc (cur, b, aux space t1, aux space t2))
-    | Unchunk (cur, c) ->
-      Unchunk (cur, c)
+    | Unchunk (cur, c) -> Unchunk (cur, c)
   and aux_list parent_search_space l = List.map (aux parent_search_space) l
   and aux_seq parent_search_space l = Seq.map (aux parent_search_space) l in
   aux default_search_space time
