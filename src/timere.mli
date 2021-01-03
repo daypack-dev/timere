@@ -290,6 +290,9 @@ module Date_time : sig
   (**
      Pretty printing for date time.
 
+     Default format string:
+     [{year} {mon:Xxx} {mday:0X} {hour:0X}:{min:0X}:{sec:0X} {tzoff-sign}{tzoff-hour:0X}:{tzoff-min:0X}:{tzoff-sec:0X}]
+
      Format string specification:
      {[
 {{               literal {
@@ -319,9 +322,6 @@ module Date_time : sig
 {tzoff-sec:cX}   time zone offset second, follows same padding rule as "{sec:cX}"
                  yields "N/A" if time zone offset is not available
      ]}
-
-     Default format string:
-     [{year} {mon:Xxx} {mday:0X} {hour:0X}:{min:0X}:{sec:0X} {tzoff-sign}{tzoff-hour:0X}:{tzoff-min:0X}:{tzoff-sec:0X}]
   *)
 
   val pp : ?format:string -> Format.formatter -> t -> unit
@@ -498,6 +498,10 @@ val resolve :
 
 val sprintf_timestamp :
   ?display_using_tz:Time_zone.t -> ?format:string -> timestamp -> string
+(** Pretty printing for timestamp.
+
+    Follows same format string rules and default format string as {!val:Date_time.sprintf}.
+*)
 
 val pp_timestamp :
   ?display_using_tz:Time_zone.t ->
