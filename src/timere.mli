@@ -1,7 +1,7 @@
 type t
 (** This is the core type of Timere used to encode computation over time.
 
-    The following documentation may call value of type [t] "a Timere object".
+    The following documentation may call value of type [t] "a Timere object", or "timere".
 *)
 
 exception Invalid_format_string of string
@@ -107,10 +107,22 @@ val pattern :
 (** {1 Algebraic operations} *)
 
 val inter : t list -> t
+(** Intersection of list of timeres.
+
+    [inter []] is equivalent to [empty].
+*)
 
 val union : t list -> t
+(** Union of list of timeres.
+
+    [union []] is equivalent to [empty].
+*)
 
 val not : t -> t
+(** Negation of timere.
+
+    [not t] is equivalent to all the intervals not included in [t].
+*)
 
 (** {1 Duration} *)
 
