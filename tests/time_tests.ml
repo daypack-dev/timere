@@ -1,5 +1,23 @@
 open Test_utils
 
+module Alco = struct
+  let union_empty () =
+    Alcotest.(check (list (pair int64 int64)))
+      "same list" []
+      (Time.union [] |> Resolver.resolve |> Result.get_ok |> List.of_seq)
+
+  let inter_empty () =
+    Alcotest.(check (list (pair int64 int64)))
+      "same list" []
+      (Time.inter [] |> Resolver.resolve |> Result.get_ok |> List.of_seq)
+
+  let suite =
+    [
+      Alcotest.test_case "union_empty" `Quick union_empty;
+      Alcotest.test_case "inter_empty" `Quick inter_empty;
+    ]
+end
+
 module Qc = struct
   let to_of_sexp =
     QCheck.Test.make ~count:10_000 ~name:"to_of_sexp" time (fun t ->
