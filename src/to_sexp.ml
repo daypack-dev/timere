@@ -171,7 +171,7 @@ let to_sexp (t : Time.t) : CCSexp.t =
             aux t1;
             aux t2;
           ])
-    | Unchunk chunked -> CCSexp.(list [ atom "unchunk"; aux_chunked chunked ])
+    | Unchunk (_, chunked) -> CCSexp.(list [ atom "unchunk"; aux_chunked chunked ])
   and aux_chunked chunked =
     let sexp_list_of_unary_op_on_t op =
       let open CCSexp in

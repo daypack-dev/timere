@@ -1648,7 +1648,7 @@ type t =
   | After of search_space * int64 * t * t
   | Between_inc of search_space * int64 * t * t
   | Between_exc of search_space * int64 * t * t
-  | Unchunk of chunked
+  | Unchunk of search_space * chunked
 
 and chunked =
   | Unary_op_on_t of chunked_unary_op_on_t * t
@@ -1685,7 +1685,7 @@ let equal t1 t2 =
     | Inter_seq (_, s1), Inter_seq (_, s2) | Union_seq (_, s1), Union_seq (_, s2)
       ->
       OSeq.for_all2 aux s1 s2
-    | Unchunk c1, Unchunk c2 -> aux_chunked c1 c2
+    | Unchunk (_, c1), Unchunk (_, c2) -> aux_chunked c1 c2
     | _, _ -> false
   and aux_chunked c1 c2 =
     match (c1, c2) with
@@ -1707,13 +1707,14 @@ type chunking =
 let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
   match chunking with
   | `Disjoint_intervals ->
-    Unchunk (f (Unary_op_on_t (Chunk_disjoint_interval, t)))
+    Unchunk (default_search_space, f (Unary_op_on_t (Chunk_disjoint_interval, t)))
   | `By_duration duration ->
     let chunk_size = Duration.to_seconds duration in
     if chunk_size < 1L then invalid_arg "chunk"
     else
       Unchunk
-        (f
+        (default_search_space,
+         f
            (Unary_op_on_t
               (Chunk_by_duration { chunk_size; drop_partial = false }, t)))
   | `By_duration_drop_partial duration ->
@@ -1721,12 +1722,15 @@ let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
     if chunk_size < 1L then invalid_arg "chunk"
     else
       Unchunk
-        (f
+        (default_search_space,
+         f
            (Unary_op_on_t
               (Chunk_by_duration { chunk_size; drop_partial = true }, t)))
-  | `At_year_boundary -> Unchunk (f (Unary_op_on_t (Chunk_at_year_boundary, t)))
+  | `At_year_boundary -> Unchunk (default_search_space,
+                                  f (Unary_op_on_t (Chunk_at_year_boundary, t)))
   | `At_month_boundary ->
-    Unchunk (f (Unary_op_on_t (Chunk_at_month_boundary, t)))
+    Unchunk (default_search_space,
+             f (Unary_op_on_t (Chunk_at_month_boundary, t)))
 
 let chunk_again (chunking : chunking) chunked : chunked =
   match chunking with

@@ -770,7 +770,7 @@ module Resolve_pattern = struct
    *   match s () with Seq.Nil -> None | Seq.Cons (x, _) -> Some x *)
 end
 
-let rec get_search_space (time : Time.t) : Time.Interval.t list =
+let get_search_space (time : Time.t) : Time.Interval.t list =
   let open Time in
   match time with
   | All -> default_search_space
@@ -786,13 +786,7 @@ let rec get_search_space (time : Time.t) : Time.Interval.t list =
   | After (s, _, _, _) -> s
   | Between_inc (s, _, _, _) -> s
   | Between_exc (s, _, _, _) -> s
-  | Unchunk c -> get_search_space_chunked c
-
-and get_search_space_chunked (chunked : Time.chunked) =
-  let open Time in
-  match chunked with
-  | Unary_op_on_t (_, t) -> get_search_space t
-  | Unary_op_on_chunked (_, c) -> get_search_space_chunked c
+  | Unchunk (s, _) -> s
 
 let calibrate_search_space (time : Time.t) space : Time.search_space =
   let open Time in
@@ -829,7 +823,7 @@ let set_search_space space (time : Time.t) : Time.t =
   | After (_, b, x, y) -> After (space, b, x, y)
   | Between_inc (_, b, x, y) -> Between_inc (space, b, x, y)
   | Between_exc (_, b, x, y) -> Between_exc (space, b, x, y)
-  | Unchunk c -> Unchunk c
+  | Unchunk (_, c) -> Unchunk (space, c)
 
 let search_space_of_year_range tz year_range =
   let open Time in
@@ -942,7 +936,14 @@ let propagate_search_space_bottom_up default_tz (time : Time.t) : Time.t =
         |> List.of_seq
       in
       Between_exc (space, b, t1, t2)
-    | Unchunk c -> Unchunk c
+    | Unchunk (_, c) -> Unchunk (aux_chunked tz c, c)
+  and aux_chunked tz chunked : search_space =
+    match chunked with
+    | Unary_op_on_t (_op, time) ->
+      let t = aux tz time in
+      get_search_space t
+    | Unary_op_on_chunked (_op, chunked) ->
+      aux_chunked tz chunked
   and aux_seq tz_offset_s s =
     let s = Seq.map (aux tz_offset_s) s in
     let space =
@@ -1010,7 +1011,10 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
       let space = restrict_search_space time parent_search_space cur in
       set_search_space space
         (Between_exc (cur, b, aux space t1, aux space t2))
-    | Unchunk c -> Unchunk c
+    | Unchunk (cur, c) ->
+      let space = restrict_search_space time parent_search_space cur in
+      set_search_space space
+        (Unchunk (cur, c))
   and aux_list parent_search_space l = List.map (aux parent_search_space) l
   and aux_seq parent_search_space l = Seq.map (aux parent_search_space) l in
   aux default_search_space time
@@ -1228,7 +1232,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
       let s1 = aux search_using_tz t1 in
       let s2 = aux search_using_tz t2 in
       find_between_exc b s1 s2
-    | Unchunk c -> aux_chunked search_using_tz c |> normalize
+    | Unchunk (_, c) -> aux_chunked search_using_tz c |> normalize
   and aux_union search_using_tz timeres =
     let resolve_and_merge (s : Time.t Seq.t) : Interval.t Seq.t =
       Seq.map (aux search_using_tz) s
