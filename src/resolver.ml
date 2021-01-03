@@ -877,8 +877,7 @@ let propagate_search_space_bottom_up default_tz (time : Time.t) : Time.t =
           Timestamp_interval_seq ([ (start, default_search_space_end_exc) ], s)
       )
     | Pattern (_, pat) ->
-      if Int_set.is_empty pat.years then
-        Pattern (default_search_space, pat)
+      if Int_set.is_empty pat.years then Pattern (default_search_space, pat)
       else
         let space =
           pat.years
@@ -983,13 +982,10 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
         time
     | Unary_op (cur, op, t) -> (
         match op with
-        | Take_n_points _
-        | Drop_n_points _ ->
-          time
+        | Take_n_points _ | Drop_n_points _ -> time
         | _ ->
           let space = restrict_search_space time parent_search_space cur in
-          set_search_space space (Unary_op (cur, op, aux space t))
-      )
+          set_search_space space (Unary_op (cur, op, aux space t)))
     | Interval_exc (cur, _, _) | Interval_inc (cur, _, _) ->
       set_search_space
         (restrict_search_space time parent_search_space cur)
