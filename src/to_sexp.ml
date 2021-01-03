@@ -96,10 +96,10 @@ let sexp_list_of_unary_op (op : Time.unary_op) =
   let open Time in
   match op with
   | Not -> [ CCSexp.atom "not" ]
-  | Drop_n_points n ->
-    [ CCSexp.atom "drop_n_points"; CCSexp.atom (string_of_int n) ]
-  | Take_n_points n ->
-    [ CCSexp.atom "take_n_points"; CCSexp.atom (string_of_int n) ]
+  | Drop_points n ->
+    [ CCSexp.atom "drop_points"; CCSexp.atom (string_of_int n) ]
+  | Take_points n ->
+    [ CCSexp.atom "take_points"; CCSexp.atom (string_of_int n) ]
   (* | Every_nth n -> [ CCSexp.atom "every_nth"; CCSexp.atom (string_of_int n) ]
    * | Nth n -> [ CCSexp.atom "nth"; CCSexp.atom (string_of_int n) ]
    * | Chunk { chunk_size; drop_partial } ->

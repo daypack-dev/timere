@@ -223,10 +223,8 @@ let of_sexp (x : CCSexp.t) =
           |> of_sorted_intervals ~skip_invalid:false
         | `Atom "pattern" :: _ -> pattern_of_sexp x
         | [ `Atom "not"; x ] -> not (aux x)
-        | [ `Atom "drop_n_points"; n; x ] ->
-          drop_n_points (int_of_sexp n) (aux x)
-        | [ `Atom "take_n_points"; n; x ] ->
-          take_n_points (int_of_sexp n) (aux x)
+        | [ `Atom "drop_points"; n; x ] -> drop_points (int_of_sexp n) (aux x)
+        | [ `Atom "take_points"; n; x ] -> take_points (int_of_sexp n) (aux x)
         | [ `Atom "shift"; n; x ] ->
           let n = Duration.of_seconds (int64_of_sexp n) in
           shift n (aux x)

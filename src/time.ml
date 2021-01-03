@@ -1602,8 +1602,8 @@ type sign_expr =
 
 type unary_op =
   | Not
-  | Drop_n_points of int
-  | Take_n_points of int
+  | Drop_points of int
+  | Take_points of int
   | Shift of int64
   | Lengthen of int64
   | With_tz of Time_zone.t
@@ -1656,8 +1656,7 @@ and chunked =
 let equal_unary_op op1 op2 =
   match (op1, op2) with
   | Not, Not -> true
-  | Drop_n_points n1, Drop_n_points n2 | Take_n_points n1, Take_n_points n2 ->
-    n1 = n2
+  | Drop_points n1, Drop_points n2 | Take_points n1, Take_points n2 -> n1 = n2
   | Shift n1, Shift n2 | Lengthen n1, Lengthen n2 -> n1 = n2
   | With_tz tz1, With_tz tz2 -> Time_zone.name tz1 = Time_zone.name tz2
   | _, _ -> false
@@ -1829,15 +1828,15 @@ let union (l : t list) : t = union_seq (List.to_seq l)
 let round_robin_pick (l : t list) : t =
   Round_robin_pick_list (default_search_space, l)
 
-let first_point (a : t) : t = Unary_op (default_search_space, Take_n_points 1, a)
+let first_point (a : t) : t = Unary_op (default_search_space, Take_points 1, a)
 
-let take_n_points (n : int) (t : t) : t =
+let take_points (n : int) (t : t) : t =
   if n < 0 then invalid_arg "take_n_points: n < 0"
-  else Unary_op (default_search_space, Take_n_points n, t)
+  else Unary_op (default_search_space, Take_points n, t)
 
-let drop_n_points (n : int) (t : t) : t =
+let drop_points (n : int) (t : t) : t =
   if n < 0 then invalid_arg "drop_n_points: n < 0"
-  else Unary_op (default_search_space, Drop_n_points n, t)
+  else Unary_op (default_search_space, Drop_points n, t)
 
 let first (c : chunked) : chunked = Unary_op_on_chunked (Take 1, c)
 

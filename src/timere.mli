@@ -500,13 +500,17 @@ val take_nth : int -> chunked -> chunked
 val drop : int -> chunked -> chunked
 (** Discard n chunks *)
 
-(** {1 Seconds chunker}*)
+(** {1 Lightweight chunking}*)
+
+(** These are strictly less flexible than chunking functions provided in {!section:Chunking},
+    but can be significantly more efficient than the equivalent implemented with [chunk ...]
+*)
 
 val first_point : t -> t
 
-val take_n_points : int -> t -> t
+val take_points : int -> t -> t
 
-val drop_n_points : int -> t -> t
+val drop_points : int -> t -> t
 
 (** {1 Infix operators} *)
 

@@ -983,7 +983,7 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
         time
     | Unary_op (cur, op, t) -> (
         match op with
-        | Take_n_points _ | Drop_n_points _ -> stop_propagation
+        | Take_points _ | Drop_points _ -> stop_propagation
         | _ ->
           let space = restrict_search_space time parent_search_space cur in
           set_search_space space (Unary_op (cur, op, aux space t)))
@@ -1025,7 +1025,7 @@ type inc_or_exc =
   | Inc
   | Exc
 
-let do_drop_n_points (n : int64) (s : Time.Interval.t Seq.t) :
+let do_drop_points (n : int64) (s : Time.Interval.t Seq.t) :
   Time.Interval.t Seq.t =
   let rec aux n s =
     if n = 0L then s
@@ -1039,7 +1039,7 @@ let do_drop_n_points (n : int64) (s : Time.Interval.t Seq.t) :
   in
   aux n s
 
-let do_take_n_points (n : int64) (s : Time.Interval.t Seq.t) :
+let do_take_points (n : int64) (s : Time.Interval.t Seq.t) :
   Time.Interval.t Seq.t =
   let rec aux n s =
     if n = 0L then Seq.empty
@@ -1195,8 +1195,8 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
         | Not ->
           Intervals.relative_complement ~skip_check:false ~not_mem_of:s
             (List.to_seq space)
-        | Drop_n_points n -> do_drop_n_points (Int64.of_int n) s |> normalize
-        | Take_n_points n -> do_take_n_points (Int64.of_int n) s
+        | Drop_points n -> do_drop_points (Int64.of_int n) s |> normalize
+        | Take_points n -> do_take_points (Int64.of_int n) s
         | Shift n ->
           Seq.map
             (fun (start, end_exc) -> (Int64.add start n, Int64.add end_exc n))
