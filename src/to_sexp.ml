@@ -96,7 +96,6 @@ let sexp_list_of_unary_op (op : Time.unary_op) =
   let open Time in
   match op with
   | Not -> [ CCSexp.atom "not" ]
-  | Every -> [ CCSexp.atom "every" ]
   | Drop_n_points n ->
     [ CCSexp.atom "drop_n_points"; CCSexp.atom (string_of_int n) ]
   | Take_n_points n ->

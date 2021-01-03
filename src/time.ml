@@ -1602,7 +1602,6 @@ type sign_expr =
 
 type unary_op =
   | Not
-  | Every
   | Drop_n_points of int
   | Take_n_points of int
   | Shift of int64
@@ -1656,7 +1655,7 @@ and chunked =
 
 let equal_unary_op op1 op2 =
   match (op1, op2) with
-  | Not, Not | Every, Every -> true
+  | Not, Not -> true
   | Drop_n_points n1, Drop_n_points n2 | Take_n_points n1, Take_n_points n2 ->
     n1 = n2
   | Shift n1, Shift n2 | Lengthen n1, Lengthen n2 -> n1 = n2

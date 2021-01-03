@@ -1194,7 +1194,6 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
         | Not ->
           Intervals.relative_complement ~skip_check:false ~not_mem_of:s
             (List.to_seq space)
-        | Every -> s
         | Drop_n_points n -> do_drop_n_points (Int64.of_int n) s |> normalize
         | Take_n_points n -> do_take_n_points (Int64.of_int n) s
         | Shift n ->

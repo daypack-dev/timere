@@ -138,7 +138,6 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
               Stdlib.not
                 (mem ~search_start ~search_end_exc ~search_using_tz t x))
           |> intervals_of_timestamps
-        | Every -> aux search_space search_using_tz t
         | Drop_n_points n ->
           aux default_search_space search_using_tz t
           |> timestamps_of_intervals
