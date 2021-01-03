@@ -355,8 +355,20 @@ val max_timestamp : int64
 exception Invalid_timestamp
 
 val of_timestamps : ?skip_invalid:bool -> timestamp list -> t
+(** [of_timestamps l]
+
+    [skip_invalid] defaults to [false]
+
+    @raise Invalid_timestamp if [not skip_invalid] and [l] contains an invalid timestamp
+*)
 
 val of_timestamp_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
+(** [of_timestamps s]
+
+    [skip_invalid] defaults to [false]
+
+    @raise Invalid_timestamp if [not skip_invalid] and [s] contains an invalid timestamp
+*)
 
 (** {1 Chunking} *)
 
@@ -413,30 +425,64 @@ val drop : int -> chunked -> chunked
 (** {1 Manual intervals} *)
 
 val interval_dt_inc : Date_time.t -> Date_time.t -> t
+(** [interval_dt_inc x y] @raise Invalid_argument if [x > y]
+*)
 
 val interval_dt_exc : Date_time.t -> Date_time.t -> t
+(** [interval_dt_exc x y] @raise Invalid_argument if [x > y]
+*)
 
 val interval_inc : timestamp -> timestamp -> t
+(** [interval_inc x y]
+    @raise Invalid_argument if [x > y]
+    @raise Invalid_argument if [x] or [y] is not a valid timestamp
+*)
 
 val interval_exc : timestamp -> timestamp -> t
+(** [interval_exc x y]
+    @raise Invalid_argument if [x > y]
+    @raise Invalid_argument if [x] or [y] is not a valid timestamp
+*)
 
 exception Interval_is_invalid
 
-exception Interval_is_empty
-
 exception Intervals_are_not_sorted
-
-exception Intervals_are_not_disjoint
 
 type interval = timestamp * timestamp
 
 val of_intervals : ?skip_invalid:bool -> interval list -> t
+(** [of_intervals l]
+
+    [skip_invalid] defaults to [false]
+
+    @raise Interval_is_invalid if [not skip_invalid] and [l] contains an invalid interval
+*)
 
 val of_interval_seq : ?skip_invalid:bool -> interval Seq.t -> t
+(** [of_interval_seq s]
+
+    [skip_invalid] defaults to [false]
+
+    @raise Interval_is_invalid if [not skip_invalid] and [s] contains an invalid interval
+*)
 
 val of_sorted_intervals : ?skip_invalid:bool -> interval list -> t
+(** [of_sorted_intervals l]
+
+    [skip_invalid] defaults to [false]
+
+    @raise Interval_is_invalid if [not skip_invalid] and [l] contains an invalid interval
+    @raise Intervals_are_not_sorted if [l] is not sorted
+*)
 
 val of_sorted_interval_seq : ?skip_invalid:bool -> interval Seq.t -> t
+(** [of_sorted_interval_seq s]
+
+    [skip_invalid] defaults to [false]
+
+    @raise Interval_is_invalid if [not skip_invalid] and [s] contains an invalid interval
+    @raise Intervals_are_not_sorted if [s] is not sorted
+*)
 
 (** {2 Hour minute second intervals} *)
 
