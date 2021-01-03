@@ -328,7 +328,7 @@ module Date_time : sig
                  (leave out character for no padding)
 {sec:cX}         second, character 'c' before 'X' determines padding
                  (leave out character for no padding)
-{tzoff-sign}     time zone offset sign (+ or -)
+{tzoff-sign}     time zone offset sign ('+' or '-')
                  yields "N/A" if time zone offset is not available
 {tzoff-hour:cX}  time zone offset hour, follows same padding rule as "{hour:cX}"
                  yields "N/A" if time zone offset is not available
