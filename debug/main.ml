@@ -26,17 +26,7 @@ let display_intervals ~display_using_tz s =
 let debug_resolver () =
   let s =
     {|
-(union
-   (inter
-      (interval_exc (2015 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)) (2021 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)))
-      (all)
-      (between_exc (1 0 0 0) (pattern (hours 18) (minutes 32) (seconds 12)) (pattern (hours 6) (minutes 19) (seconds 47)))
-      (all)
-      (between_exc (1 0 0 0) (pattern (hours 18) (minutes 32) (seconds 12)) (pattern (hours 6) (minutes 19) (seconds 47))))
-   (inter
-      (interval_exc (2015 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)) (2021 Jan 1 0 0 0 (tz_and_tz_offset_s UTC 0)))
-   )
-)
+(take_n_points 4 (between_exc (duration 1 0 0 0) (pattern (hours 23) (minutes 2) (seconds 59)) (pattern (hours 2) (minutes 59) (seconds 2))))
     |}
   in
   let timere = Result.get_ok @@ Of_sexp.of_sexp_string s in
@@ -44,7 +34,7 @@ let debug_resolver () =
    *   (fun max_height max_branching randomness ->
    *      Builder.build ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching
    *        ~randomness)
-   *     3 1 [ 497 ]
+   *     3 2 [ 119; 962 ]
    * in *)
   (* let timere =
    *   Time.inter
@@ -64,8 +54,8 @@ let debug_resolver () =
    *       @@ Time.Date_time.make ~year:2000 ~month:`Jan ~day:1 ~hour:0 ~minute:0
    *         ~second:0 ~tz_offset_s:0 )
    * in *)
-  let tz = Time_zone.make_exn "Australia/Sydney" in
-  (* let tz = Time_zone.make_exn "UTC" in *)
+  (* let tz = Time_zone.make_exn "Australia/Sydney" in *)
+  let tz = Time_zone.make_exn "UTC" in
   (* let timere =
    *   let open Time in
    *   with_tz tz
@@ -83,9 +73,8 @@ let debug_resolver () =
    *     (\* (pattern ~months:[`Mar] ~hours:[4] ~minutes:[30] ~seconds:[0]()) *\)
    * in *)
   print_endline (To_sexp.to_sexp_string timere);
-  print_endline "=====";
   let search_start_dt =
-    Time.Date_time.make ~year:2020 ~month:`Jan ~day:1 ~hour:10 ~minute:0
+    Time.Date_time.make ~year:0 ~month:`Jan ~day:1 ~hour:10 ~minute:0
       ~second:0 ~tz
     |> Result.get_ok
   in
@@ -95,7 +84,7 @@ let debug_resolver () =
     |> Option.get
   in
   let search_end_exc_dt =
-    Time.Date_time.make ~year:2021 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+    Time.Date_time.make ~year:3 ~month:`Jan ~day:1 ~hour:0 ~minute:0
       ~second:0 ~tz
     |> Result.get_ok
   in
@@ -104,19 +93,24 @@ let debug_resolver () =
     |> Time.Date_time.max_of_timestamp_local_result
     |> Option.get
   in
+  let timere' =
+    Time.(inter [ timere; interval_exc search_start search_end_exc ])
+  in
+  print_endline "^^^^^";
+  print_endline (To_sexp.to_sexp_string timere');
+  print_endline "=====";
   (match
      Resolver.resolve
-       (* Time.(inter [ timere; interval_exc search_start search_end_exc ]) *)
-       timere
+       timere'
    with
    | Error msg -> print_endline msg
    | Ok s -> display_intervals ~display_using_tz:tz s);
   print_endline "=====";
-  (* let s =
-   *   Simple_resolver.resolve ~search_start ~search_end_exc
-   *     ~search_using_tz:Time_zone.utc timere
-   * in
-   * display_intervals ~display_using_tz:tz s; *)
+  let s =
+    Simple_resolver.resolve ~search_start ~search_end_exc
+      ~search_using_tz:Time_zone.utc timere
+  in
+  display_intervals ~display_using_tz:tz s;
   print_newline ()
 
 let debug_ccsexp_parse_string () = CCSexp.parse_string "\"\\256\"" |> ignore

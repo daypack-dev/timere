@@ -2,7 +2,7 @@ open Fuzz_utils
 
 let search_start_dt =
   Result.get_ok
-  @@ Time.Date_time.make ~year:2000 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+  @@ Time.Date_time.make ~year:0 ~month:`Jan ~day:1 ~hour:0 ~minute:0
     ~second:0 ~tz:Time_zone.utc
 
 let search_start =
@@ -12,7 +12,7 @@ let search_start =
 
 let search_end_exc_dt =
   Result.get_ok
-  @@ Time.Date_time.make ~year:2003 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+  @@ Time.Date_time.make ~year:3 ~month:`Jan ~day:1 ~hour:0 ~minute:0
     ~second:0 ~tz:Time_zone.utc
 
 let search_end_exc =
