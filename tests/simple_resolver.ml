@@ -182,7 +182,7 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
       |> Seq.filter_map (fun (start, end_exc) ->
           find_after b (start, end_exc) s2
           |> Option.map (fun (start', _) -> (start, start')))
-    | Unchunk chunked -> aux_chunked search_using_tz chunked |> normalize
+    | Unchunk (_, chunked) -> aux_chunked search_using_tz chunked |> normalize
     | _ ->
       Seq_utils.a_to_b_exc_int64 ~a:search_start ~b:search_end_exc
       |> Seq.filter (mem ~search_using_tz ~search_start ~search_end_exc t)
