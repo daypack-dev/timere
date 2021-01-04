@@ -1249,6 +1249,18 @@ let min_timestamp = Constants.min_timestamp
 
 let max_timestamp = Constants.max_timestamp
 
+let timestamp_safe_sub a b =
+  if Int64.sub a min_timestamp >= b then
+    Int64.sub a b
+  else
+    min_timestamp
+
+let timestamp_safe_add a b =
+  if Int64.sub max_timestamp a <= b then
+    Int64.add a b
+  else
+    max_timestamp
+
 module Date_time = struct
   type tz_info =
     [ `Tz_only of Time_zone.t

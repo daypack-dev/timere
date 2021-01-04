@@ -133,10 +133,10 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
     | Unary_op (_, op, t) -> (
         match op with
         | Not ->
-          Seq_utils.a_to_b_exc_int64 ~a:search_start ~b:search_end_exc
+          Seq_utils.a_to_b_exc_int64 ~a:default_search_space_start ~b:default_search_space_end_exc
           |> Seq.filter (fun x ->
               Stdlib.not
-                (mem ~search_start ~search_end_exc ~search_using_tz t x))
+                (mem search_space ~search_using_tz t x))
           |> intervals_of_timestamps
         | Drop_points n ->
           aux default_search_space search_using_tz t
@@ -174,7 +174,7 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
           |> Option.map (fun (_, end_exc') -> (start, end_exc')))
     | Between_exc (_, b, t1, t2) ->
       let x, y = search_space in
-      let search_space = (Int64.sub x b, y) in
+      let search_space = (Time.timestamp_safe_sub x b, y) in
       let s1 = aux search_space search_using_tz t1 in
       let s2 = aux search_space search_using_tz t2 in
       s1
@@ -183,8 +183,8 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
           |> Option.map (fun (start', _) -> (start, start')))
     | Unchunk (_, chunked) -> aux_chunked search_using_tz chunked |> normalize
     | _ ->
-      Seq_utils.a_to_b_exc_int64 ~a:search_start ~b:search_end_exc
-      |> Seq.filter (mem ~search_using_tz ~search_start ~search_end_exc t)
+      Seq_utils.a_to_b_exc_int64 ~a:(fst search_space) ~b:(snd search_space)
+      |> Seq.filter (mem ~search_using_tz search_space t)
       |> intervals_of_timestamps
   and aux_chunked search_using_tz chunked =
     let chunk_based_on_op_on_t op s =
@@ -209,8 +209,8 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
   in
   aux (search_start, search_end_exc) search_using_tz t |> filter |> normalize
 
-and mem ?(search_using_tz = Time_zone.utc) ~(search_start : Time.timestamp)
-    ~(search_end_exc : Time.timestamp) (t : Time.t) (timestamp : Time.timestamp)
+and mem ?(search_using_tz = Time_zone.utc) ((search_start, search_end_exc) : Time.Interval.t)
+    (t : Time.t) (timestamp : Time.timestamp)
   : bool =
   let open Time in
   let rec aux t timestamp =

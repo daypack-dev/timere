@@ -794,17 +794,17 @@ let calibrate_search_space (time : Time.t) space : Time.search_space =
   | All | Empty | Timestamp_interval_seq _ | Pattern _ -> space
   | Unary_op (_, op, _) -> (
       match op with
-      | Shift n -> List.map (fun (x, y) -> (Int64.sub x n, Int64.sub y n)) space
+      | Shift n -> List.map (fun (x, y) -> (timestamp_safe_sub x n, timestamp_safe_sub y n)) space
       | _ -> space)
   | Interval_exc _ | Interval_inc _ | Round_robin_pick_list _ | Inter_seq _
   | Union_seq _ ->
     space
   | After (_, b, _, _) -> (
-      match space with [] -> [] | (x, y) :: rest -> (Int64.sub x b, y) :: rest)
+      match space with [] -> [] | (x, y) :: rest -> (timestamp_safe_sub x b, y) :: rest)
   | Between_inc (_, b, _, _) -> (
-      match space with [] -> [] | (x, y) :: rest -> (Int64.sub x b, y) :: rest)
+      match space with [] -> [] | (x, y) :: rest -> (timestamp_safe_sub x b, y) :: rest)
   | Between_exc (_, b, _, _) -> (
-      match space with [] -> [] | (x, y) :: rest -> (Int64.sub x b, y) :: rest)
+      match space with [] -> [] | (x, y) :: rest -> (timestamp_safe_sub x b, y) :: rest)
   | Unchunk _ -> space
 
 let set_search_space space (time : Time.t) : Time.t =
