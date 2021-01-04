@@ -1298,18 +1298,20 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
         in
         let _min_start, min_end_exc = List.hd batch in
         let max_start, max_end_exc = List.hd @@ List.rev batch in
+        let timeres, interval_batches =
+          if
+            min_end_exc <= max_start
+            && max_start -^ min_end_exc >= search_space_adjustment_trigger_size
+          then
+            let timeres = slice_search_space_multi ~start:max_start timeres in
+            (timeres, resolve ~start search_using_tz timeres)
+          else (timeres, interval_batches)
+        in
         let intervals_up_to_max_end_exc =
           interval_batches
           |> List.to_seq
           |> Intervals.Inter.inter_multi_seq ~skip_check:true
           |> Intervals.Slice.slice ~skip_check:true ~end_exc:max_end_exc
-        in
-        let timeres =
-          if
-            min_end_exc <= max_start
-            && max_start -^ min_end_exc >= search_space_adjustment_trigger_size
-          then slice_search_space_multi ~start:max_start timeres
-          else timeres
         in
         OSeq.append intervals_up_to_max_end_exc
           (aux_inter' ~start:max_end_exc timeres)
