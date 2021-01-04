@@ -24,18 +24,18 @@ let display_intervals ~display_using_tz s =
         Printf.printf "%s - %s\n" s size_str)
 
 let debug_resolver () =
-  let s =
-    {|
-(unchunk (nth 3 (chunk_by_duration (duration 0 0 10 34) (between_exc (duration 1 0 0 0) (pattern (hours 22) (minutes 33) (seconds 46)) (pattern (hours 9) (minutes 46) (seconds 34))))))
-    |}
+(*   let s =
+ *     {|
+ * (unchunk (nth 3 (chunk_by_duration (duration 0 0 10 34) (between_exc (duration 1 0 0 0) (pattern (hours 22) (minutes 33) (seconds 46)) (pattern (hours 9) (minutes 46) (seconds 34))))))
+ *     |}
+ *   in
+ *   let timere = Result.get_ok @@ Of_sexp.of_sexp_string s in *)
+  let timere =
+    (fun max_height max_branching randomness ->
+       Builder.build ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching
+         ~randomness)
+      3 1 [ 497; 144 ]
   in
-  let timere = Result.get_ok @@ Of_sexp.of_sexp_string s in
-  (* let timere =
-   *   (fun max_height max_branching randomness ->
-   *      Builder.build ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching
-   *        ~randomness)
-   *     2 1 [ 286; 633 ]
-   * in *)
   (* let timere =
    *   Time.inter
    *     [
@@ -131,12 +131,12 @@ let debug_example () =
     with_tz tz
       (inter
          [
-           years [ 2020 ] (* in year 2020 *);
-           (* union [
-            *   pattern ~months:[`Apr] ~month_day_ranges:[`Range_inc (3, 6)] () (\* in April 3 to 6 *\);
-            *   (\* pattern ~months:[`Oct] ~month_day_ranges:[`Range_inc (2, 5)] () (\\* or in Oct 2 to 5 *\\); *\)
-            * ];
-            * hms_interval_exc (\* 11pm to 3am *\)
+           years [ 2020; 2021; 2022; 2023; 2025; 2026 ] (* in year 2020 *);
+           union [
+             pattern ~months:[`Apr] ~month_day_ranges:[`Range_inc (3, 6)] () (* in April 3 to 6 *);
+             (* pattern ~months:[`Oct] ~month_day_ranges:[`Range_inc (2, 5)] () (\* or in Oct 2 to 5 *\); *)
+           ];
+           (* hms_interval_exc (\* 11pm to 3am *\)
             *   (make_hms_exn ~hour:23 ~minute:0 ~second:0)
             *   (make_hms_exn ~hour:3 ~minute:0 ~second:0); *)
          ])
