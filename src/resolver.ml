@@ -1298,15 +1298,11 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
         in
         let _min_start, min_end_exc = List.hd batch in
         let max_start, max_end_exc = List.hd @@ List.rev batch in
-        let interval_batches_up_to_max_end_exc =
+        let intervals_up_to_max_end_exc =
           interval_batches
           |> List.to_seq
-          |> Seq.map
-            (Intervals.Slice.slice ~skip_check:true ~end_exc:max_end_exc)
-        in
-        let intervals_up_to_max_end_exc =
-          Intervals.Inter.inter_multi_seq ~skip_check:true
-            interval_batches_up_to_max_end_exc
+          |> Intervals.Inter.inter_multi_seq ~skip_check:true
+          |> Intervals.Slice.slice ~skip_check:true ~end_exc:max_end_exc
         in
         let timeres =
           if
