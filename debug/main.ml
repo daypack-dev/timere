@@ -24,18 +24,18 @@ let display_intervals ~display_using_tz s =
         Printf.printf "%s - %s\n" s size_str)
 
 let debug_resolver () =
-  let s =
-    {|
-(take_n_points 4 (between_exc (duration 1 0 0 0) (pattern (hours 23) (minutes 2) (seconds 59)) (pattern (hours 2) (minutes 59) (seconds 2))))
-    |}
+(*   let s =
+ *     {|
+ * (take_n_points 4 (between_exc (duration 1 0 0 0) (pattern (hours 23) (minutes 2) (seconds 59)) (pattern (hours 2) (minutes 59) (seconds 2))))
+ *     |}
+ *   in
+ *   let timere = Result.get_ok @@ Of_sexp.of_sexp_string s in *)
+  let timere =
+    (fun max_height max_branching randomness ->
+       Builder.build ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching
+         ~randomness)
+      2 1 [ 286; 633 ]
   in
-  let timere = Result.get_ok @@ Of_sexp.of_sexp_string s in
-  (* let timere =
-   *   (fun max_height max_branching randomness ->
-   *      Builder.build ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching
-   *        ~randomness)
-   *     3 2 [ 119; 962 ]
-   * in *)
   (* let timere =
    *   Time.inter
    *     [
@@ -74,7 +74,7 @@ let debug_resolver () =
    * in *)
   print_endline (To_sexp.to_sexp_string timere);
   let search_start_dt =
-    Time.Date_time.make ~year:0 ~month:`Jan ~day:1 ~hour:10 ~minute:0 ~second:0
+    Time.Date_time.make ~year:2000 ~month:`Jan ~day:1 ~hour:10 ~minute:0 ~second:0
       ~tz
     |> Result.get_ok
   in
@@ -84,7 +84,7 @@ let debug_resolver () =
     |> Option.get
   in
   let search_end_exc_dt =
-    Time.Date_time.make ~year:3 ~month:`Jan ~day:1 ~hour:0 ~minute:0 ~second:0
+    Time.Date_time.make ~year:2003 ~month:`Jan ~day:1 ~hour:0 ~minute:0 ~second:0
       ~tz
     |> Result.get_ok
   in
