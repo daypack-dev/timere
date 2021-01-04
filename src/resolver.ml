@@ -1299,7 +1299,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
             interval_batches_up_to_max_end_exc
         in
         let timeres =
-          if max_start -^ min_end_exc >= search_space_adjustment_trigger_size then
+          if min_end_exc <= max_start && max_start -^ min_end_exc >= search_space_adjustment_trigger_size then
             slice_search_space_multi ~start:max_start timeres
           else
             timeres
