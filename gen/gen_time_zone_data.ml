@@ -396,7 +396,7 @@ let gen () =
              write_line (Printf.sprintf "  |> String_map.add \"%s\" {" s);
              write_line "      recorded_offsets = [|";
              Int_set.iter
-               (fun offset -> write_line (Printf.sprintf "    (%d);" offset))
+               (fun offset -> write_line (Printf.sprintf "        (%d);" offset))
                recorded_offsets;
              write_line "        |];";
              write_line "      table = [|";
