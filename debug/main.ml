@@ -24,18 +24,18 @@ let display_intervals ~display_using_tz s =
         Printf.printf "%s - %s\n" s size_str)
 
 let debug_resolver () =
-(*   let s =
- *     {|
- * (take_n_points 4 (between_exc (duration 1 0 0 0) (pattern (hours 23) (minutes 2) (seconds 59)) (pattern (hours 2) (minutes 59) (seconds 2))))
- *     |}
- *   in
- *   let timere = Result.get_ok @@ Of_sexp.of_sexp_string s in *)
-  let timere =
-    (fun max_height max_branching randomness ->
-       Builder.build ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching
-         ~randomness)
-      2 1 [ 286; 633 ]
+  let s =
+    {|
+(unchunk (nth 3 (chunk_by_duration (duration 0 0 10 34) (between_exc (duration 1 0 0 0) (pattern (hours 22) (minutes 33) (seconds 46)) (pattern (hours 9) (minutes 46) (seconds 34))))))
+    |}
   in
+  let timere = Result.get_ok @@ Of_sexp.of_sexp_string s in
+  (* let timere =
+   *   (fun max_height max_branching randomness ->
+   *      Builder.build ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching
+   *        ~randomness)
+   *     2 1 [ 286; 633 ]
+   * in *)
   (* let timere =
    *   Time.inter
    *     [
