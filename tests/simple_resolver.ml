@@ -133,10 +133,10 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
     | Unary_op (_, op, t) -> (
         match op with
         | Not ->
-          Seq_utils.a_to_b_exc_int64 ~a:default_search_space_start ~b:default_search_space_end_exc
+          Seq_utils.a_to_b_exc_int64 ~a:default_search_space_start
+            ~b:default_search_space_end_exc
           |> Seq.filter (fun x ->
-              Stdlib.not
-                (mem search_space ~search_using_tz t x))
+              Stdlib.not (mem search_space ~search_using_tz t x))
           |> intervals_of_timestamps
         | Drop_points n ->
           aux default_search_space search_using_tz t
@@ -150,8 +150,11 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
           |> intervals_of_timestamps
         | Shift n ->
           let x, y = search_space in
-          aux (timestamp_safe_sub x n, timestamp_safe_sub y n) search_using_tz t
-          |> Seq.map (fun (x, y) -> (timestamp_safe_add n x, timestamp_safe_add n y))
+          aux
+            (timestamp_safe_sub x n, timestamp_safe_sub y n)
+            search_using_tz t
+          |> Seq.map (fun (x, y) ->
+              (timestamp_safe_add n x, timestamp_safe_add n y))
         | Lengthen n ->
           let x, y = search_space in
           aux (x, Int64.add y n) search_using_tz t
@@ -209,9 +212,9 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
   in
   aux (search_start, search_end_exc) search_using_tz t |> filter |> normalize
 
-and mem ?(search_using_tz = Time_zone.utc) ((search_start, search_end_exc) : Time.Interval.t)
-    (t : Time.t) (timestamp : Time.timestamp)
-  : bool =
+and mem ?(search_using_tz = Time_zone.utc)
+    ((search_start, search_end_exc) : Time.Interval.t) (t : Time.t)
+    (timestamp : Time.timestamp) : bool =
   let open Time in
   let rec aux t timestamp =
     match

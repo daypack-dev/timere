@@ -74,8 +74,8 @@ let debug_resolver () =
    * in *)
   print_endline (To_sexp.to_sexp_string timere);
   let search_start_dt =
-    Time.Date_time.make ~year:2000 ~month:`Jan ~day:1 ~hour:10 ~minute:0 ~second:0
-      ~tz
+    Time.Date_time.make ~year:2000 ~month:`Jan ~day:1 ~hour:10 ~minute:0
+      ~second:0 ~tz
     |> Result.get_ok
   in
   let search_start =
@@ -84,8 +84,8 @@ let debug_resolver () =
     |> Option.get
   in
   let search_end_exc_dt =
-    Time.Date_time.make ~year:2003 ~month:`Jan ~day:1 ~hour:0 ~minute:0 ~second:0
-      ~tz
+    Time.Date_time.make ~year:2003 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+      ~second:0 ~tz
     |> Result.get_ok
   in
   let search_end_exc =
