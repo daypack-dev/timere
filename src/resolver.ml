@@ -1157,6 +1157,18 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
 let search_space_adjustment_trigger_size =
   Duration.make ~days:30 () |> Duration.to_seconds
 
+let slice_search_space ~start (t : Time.t) : Time.t =
+  get_search_space t
+  |> List.to_seq
+  |> Time.Intervals.Slice.slice ~skip_check:true ~start
+  |> List.of_seq
+  |> calibrate_search_space t
+  |> (fun space -> set_search_space space t)
+  |> propagate_search_space_top_down
+
+let slice_search_space_multi ~start (s : Time.t Seq.t) : Time.t Seq.t =
+  Seq.map (slice_search_space ~start) s
+
 let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
   let open Time in
@@ -1233,18 +1245,6 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
     let resolve_and_merge (s : Time.t Seq.t) : Interval.t Seq.t =
       Seq.map (aux search_using_tz) s
       |> Time.Intervals.Merge.merge_multi_seq ~skip_check:true
-    in
-    let slice_search_space ~start (t : Time.t) : Time.t =
-      get_search_space t
-      |> List.to_seq
-      |> Time.Intervals.Slice.slice ~skip_check:true ~start
-      |> List.of_seq
-      |> calibrate_search_space t
-      |> (fun space -> set_search_space space t)
-      |> propagate_search_space_top_down
-    in
-    let slice_search_space_multi ~start (s : Time.t Seq.t) : Time.t Seq.t =
-      Seq.map (slice_search_space ~start) s
     in
     let rec aux_union' (timeres : Time.t Seq.t) (intervals : Interval.t Seq.t) =
       match intervals () with
