@@ -1199,11 +1199,11 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
         | Take_points n -> do_take_points (Int64.of_int n) s
         | Shift n ->
           Seq.map
-            (fun (start, end_exc) -> (Int64.add start n, Int64.add end_exc n))
+            (fun (start, end_exc) -> (timestamp_safe_add start n, timestamp_safe_add end_exc n))
             s
         | Lengthen n ->
           s
-          |> Seq.map (fun (start, end_exc) -> (start, Int64.add end_exc n))
+          |> Seq.map (fun (start, end_exc) -> (start, timestamp_safe_add end_exc n))
           |> normalize
         | With_tz _ -> s)
     | Interval_inc (_, a, b) -> Seq.return (a, Int64.succ b)
