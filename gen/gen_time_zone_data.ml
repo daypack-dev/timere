@@ -389,11 +389,16 @@ let gen () =
                | x :: xs ->
                  if x.start <> min_timestamp then
                    let filler =
-                     { start = min_timestamp; end_exc = x.start; tz = x.tz; is_dst = x.is_dst; offset = x.offset }
+                     {
+                       start = min_timestamp;
+                       end_exc = x.start;
+                       tz = x.tz;
+                       is_dst = x.is_dst;
+                       offset = x.offset;
+                     }
                    in
                    filler :: x :: xs
-                 else
-                   x :: xs
+                 else x :: xs
              in
              let recorded_offsets =
                List.fold_left
