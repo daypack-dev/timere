@@ -49,7 +49,7 @@ module Format_string_parsers = struct
        >>= fun padding -> char 'X' >> return (Some padding))
     <|> (char 'X' >> return None)
 
-  let date_time_inner (date_time : Time.Date_time.t) : (string, unit) t =
+  let date_time_inner (date_time : Time.Date_time'.t) : (string, unit) t =
     let tz_offset_s =
       match date_time.tz_info with
       | `Tz_only _ -> None
@@ -132,7 +132,7 @@ module Format_string_parsers = struct
              let d = Duration.of_seconds (Int64.of_int (abs tz_offset_s)) in
              return (pad_int padding d.seconds));
         (* string "unix"
-         * >> return (Int64.to_string (Time.Date_time.to_timestamp date_time)); *)
+         * >> return (Int64.to_string (Time.Date_time'.to_timestamp date_time)); *)
       ]
 end
 
@@ -151,10 +151,10 @@ exception Invalid_format_string of string
 let invalid_format_string s = raise (Invalid_format_string s)
 
 let sprintf_date_time ?(format : string = default_date_time_format_string)
-    (x : Time.Date_time.t) : string =
+    (x : Time.Date_time'.t) : string =
   let open MParser in
   let open Parser_components in
-  let single (date_time : Time.Date_time.t) : (string, unit) t =
+  let single (date_time : Time.Date_time'.t) : (string, unit) t =
     choice
       [
         attempt (string "{{" >> return "{");
@@ -164,7 +164,7 @@ let sprintf_date_time ?(format : string = default_date_time_format_string)
         (many1_satisfy (function '{' -> false | _ -> true) |>> fun s -> s);
       ]
   in
-  let p (date_time : Time.Date_time.t) : (string list, unit) t =
+  let p (date_time : Time.Date_time'.t) : (string list, unit) t =
     many (single date_time)
   in
   match result_of_mparser_result @@ parse_string (p x << eof) format () with
@@ -176,7 +176,7 @@ let pp_date_time ?(format = default_interval_format_string) formatter x =
 
 let sprintf_timestamp ?(display_using_tz = Time_zone.utc)
     ?(format = default_date_time_format_string) (time : int64) : string =
-  match Time.Date_time.of_timestamp ~tz_of_date_time:display_using_tz time with
+  match Time.Date_time'.of_timestamp ~tz_of_date_time:display_using_tz time with
   | Error () -> invalid_arg "Invalid unix second"
   | Ok dt -> sprintf_date_time ~format dt
 
@@ -189,8 +189,8 @@ let sprintf_interval ?(display_using_tz = Time_zone.utc)
     ((s, e) : Time.Interval.t) : string =
   let open MParser in
   let open Parser_components in
-  let single (start_date_time : Time.Date_time.t)
-      (end_date_time : Time.Date_time.t) : (string, unit) t =
+  let single (start_date_time : Time.Date_time'.t)
+      (end_date_time : Time.Date_time'.t) : (string, unit) t =
     choice
       [
         attempt (string "{{" >> return "{");
@@ -203,14 +203,14 @@ let sprintf_interval ?(display_using_tz = Time_zone.utc)
          >>= fun s -> return s);
       ]
   in
-  let p (start_date_time : Time.Date_time.t) (end_date_time : Time.Date_time.t)
+  let p (start_date_time : Time.Date_time'.t) (end_date_time : Time.Date_time'.t)
     : (string list, unit) t =
     many (single start_date_time end_date_time)
   in
-  match Time.Date_time.of_timestamp ~tz_of_date_time:display_using_tz s with
+  match Time.Date_time'.of_timestamp ~tz_of_date_time:display_using_tz s with
   | Error () -> invalid_arg "Invalid start unix time"
   | Ok s -> (
-      match Time.Date_time.of_timestamp ~tz_of_date_time:display_using_tz e with
+      match Time.Date_time'.of_timestamp ~tz_of_date_time:display_using_tz e with
       | Error () -> invalid_arg "Invalid end unix time"
       | Ok e -> (
           match

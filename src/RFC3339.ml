@@ -1,4 +1,4 @@
-let of_date_time (dt : Time.Date_time.t) : string =
+let of_date_time (dt : Time.Date_time'.t) : string =
   Printf.sprintf "%04d-%02d-%02dT%02d:%02d:%02d%s" dt.year
     (Time.human_int_of_month dt.month)
     dt.day dt.hour dt.minute dt.second
@@ -14,7 +14,7 @@ let of_date_time (dt : Time.Date_time.t) : string =
 let pp_date_time formatter dt = Format.fprintf formatter "%s" (of_date_time dt)
 
 let of_timestamp (x : int64) : string =
-  match Time.Date_time.of_timestamp x with
+  match Time.Date_time'.of_timestamp x with
   | Error () -> invalid_arg "Invalid timestamp"
   | Ok dt -> of_date_time dt
 

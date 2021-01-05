@@ -12,10 +12,11 @@ homepage: "https://github.com/daypack-dev/timere"
 bug-reports: "https://github.com/daypack-dev/timere/issues"
 dev-repo: "git+https://github.com/daypack-dev/timere"
 depends: [
-  "ocaml" {>= "4.08.0"}
+  "ocaml" {>= "4.06.1"}
   "bisect_ppx" {dev & >= "2.5.0"}
   "dune" {>= "1.11.0"}
   "oseq"
+  "seq"
   "mparser"
   "containers" {>= "3.0"}
   "ptime"

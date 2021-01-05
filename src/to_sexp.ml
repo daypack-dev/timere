@@ -8,7 +8,7 @@ let sexp_list_of_ints l = List.map sexp_of_int l
 
 let sexp_of_tz t = CCSexp.atom (Time_zone.name t)
 
-let sexp_of_date_time (x : Time.Date_time.t) =
+let sexp_of_date_time (x : Time.Date_time'.t) =
   let open CCSexp in
   list
     [
@@ -40,7 +40,7 @@ let sexp_of_duration (x : Duration.t) =
     ]
 
 let sexp_of_timestamp x =
-  x |> Time.Date_time.of_timestamp |> Result.get_ok |> sexp_of_date_time
+  x |> Time.Date_time'.of_timestamp |> CCResult.get_exn |> sexp_of_date_time
 
 let sexp_of_range ~(f : 'a -> CCSexp.t) (r : 'a Time.Range.range) =
   match r with
@@ -48,25 +48,25 @@ let sexp_of_range ~(f : 'a -> CCSexp.t) (r : 'a Time.Range.range) =
   | `Range_exc (x, y) -> CCSexp.(list [ atom "range_exc"; f x; f y ])
 
 let sexp_of_pattern (pat : Time.Pattern.t) : CCSexp.t =
-  let years = pat.years |> Int_set.to_seq |> List.of_seq |> sexp_list_of_ints in
+  let years = pat.years |> Int_set.to_seq |> CCList.of_seq |> sexp_list_of_ints in
   let months =
-    pat.months |> Time.Month_set.to_seq |> List.of_seq |> List.map sexp_of_month
+    pat.months |> Time.Month_set.to_seq |> CCList.of_seq |> List.map sexp_of_month
   in
   let month_days =
-    pat.month_days |> Int_set.to_seq |> List.of_seq |> sexp_list_of_ints
+    pat.month_days |> Int_set.to_seq |> CCList.of_seq |> sexp_list_of_ints
   in
   let weekdays =
     pat.weekdays
     |> Time.Weekday_set.to_seq
-    |> List.of_seq
+    |> CCList.of_seq
     |> List.map sexp_of_weekday
   in
-  let hours = pat.hours |> Int_set.to_seq |> List.of_seq |> sexp_list_of_ints in
+  let hours = pat.hours |> Int_set.to_seq |> CCList.of_seq |> sexp_list_of_ints in
   let minutes =
-    pat.minutes |> Int_set.to_seq |> List.of_seq |> sexp_list_of_ints
+    pat.minutes |> Int_set.to_seq |> CCList.of_seq |> sexp_list_of_ints
   in
   let seconds =
-    pat.seconds |> Int_set.to_seq |> List.of_seq |> sexp_list_of_ints
+    pat.seconds |> Int_set.to_seq |> CCList.of_seq |> sexp_list_of_ints
   in
   let open CCSexp in
   [
@@ -89,7 +89,7 @@ let sexp_of_pattern (pat : Time.Pattern.t) : CCSexp.t =
      | [] -> None
      | _ -> Some (list (atom "seconds" :: seconds)));
   ]
-  |> List.filter_map Fun.id
+  |> CCList.filter_map CCFun.id
   |> list
 
 let sexp_list_of_unary_op (op : Time.unary_op) =
@@ -124,7 +124,7 @@ let to_sexp (t : Time.t) : CCSexp.t =
     | Timestamp_interval_seq (_, s) ->
       let l =
         s
-        |> List.of_seq
+        |> CCList.of_seq
         |> List.map (fun (x, y) ->
             CCSexp.list [ sexp_of_timestamp x; sexp_of_timestamp y ])
       in
@@ -140,9 +140,9 @@ let to_sexp (t : Time.t) : CCSexp.t =
     | Round_robin_pick_list (_, l) ->
       CCSexp.(list (atom "round_robin" :: List.map aux l))
     | Inter_seq (_, s) ->
-      CCSexp.(list (atom "inter" :: (s |> Seq.map aux |> List.of_seq)))
+      CCSexp.(list (atom "inter" :: (s |> Seq.map aux |> CCList.of_seq)))
     | Union_seq (_, s) ->
-      CCSexp.(list (atom "union" :: (s |> Seq.map aux |> List.of_seq)))
+      CCSexp.(list (atom "union" :: (s |> Seq.map aux |> CCList.of_seq)))
     | After (_, b, t1, t2) ->
       CCSexp.(
         list
@@ -185,7 +185,7 @@ let to_sexp (t : Time.t) : CCSexp.t =
           Some (sexp_of_duration (Duration.of_seconds chunk_size));
           (if drop_partial then Some (atom "drop_partial") else None);
         ]
-        |> List.filter_map Fun.id
+        |> CCList.filter_map CCFun.id
     in
     match chunked with
     | Unary_op_on_t (op, t) ->

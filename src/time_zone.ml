@@ -110,10 +110,10 @@ let transition_seq (t : t) : ((int64 * int64) * entry) Seq.t =
               ( ((k1, k2), entry1),
                 aux (fun () -> Seq.Cons ((k2, entry2), rest)) ))
   in
-  Array.to_seq table |> aux
+  CCArray.to_seq table |> aux
 
 let transitions (t : t) : ((int64 * int64) * entry) list =
-  List.of_seq @@ transition_seq t
+  CCList.of_seq @@ transition_seq t
 
 let offset_is_recorded offset (t : t) =
   Array.mem offset t.record.recorded_offsets

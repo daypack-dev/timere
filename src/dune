@@ -14,5 +14,6 @@
             re
             mparser
             containers
+            seq
  )
 )

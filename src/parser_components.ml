@@ -73,7 +73,7 @@ let string_of_pos pos =
  *       >>= fun s -> return (pos, s) )
  *   |>> fun l ->
  *     ( l
- *       |> List.to_seq
+ *       |> CCList.to_seq
  *       |> Seq.map (fun (pos, s) ->
  *           match
  *           parse_string
@@ -92,7 +92,7 @@ let string_of_pos pos =
  *     )
  * 
  * let sep_res ~by ~end_markers (p : 'a t) : ('a, string) result list t =
- *   sep_res_seq ~by ~end_markers p >>= fun s -> return (List.of_seq s)
+ *   sep_res_seq ~by ~end_markers p >>= fun s -> return (CCList.of_seq s)
  * 
  * let sep_fail_on_first_fail ~by ~end_markers (p : 'a t) : 'a list t =
  *   sep_res_seq ~by ~end_markers p
@@ -120,7 +120,7 @@ let extraneous_text_check ~end_markers =
   >>= fun s ->
   match s with "" -> return () | text -> invalid_syntax ~text ~pos
 
-let result_of_mparser_result (x : 'a result) : ('a, string) Result.t =
+let result_of_mparser_result (x : 'a result) : ('a, string) CCResult.t =
   match x with
   | Success x -> Ok x
   | Failed (_, err) -> (

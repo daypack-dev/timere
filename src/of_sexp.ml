@@ -95,20 +95,20 @@ let date_time_of_sexp (x : CCSexp.t) =
       match tz_info with
       | `Tz_only tz -> (
           match
-            Time.Date_time.make ~year ~month ~day ~hour ~minute ~second ~tz
+            Time.Date_time'.make ~year ~month ~day ~hour ~minute ~second ~tz
           with
           | Ok x -> x
           | Error () -> invalid_data ())
       | `Tz_offset_s_only tz_offset_s -> (
           match
-            Time.Date_time.make_precise ~year ~month ~day ~hour ~minute ~second
+            Time.Date_time'.make_precise ~year ~month ~day ~hour ~minute ~second
               ~tz_offset_s ()
           with
           | Ok x -> x
           | Error () -> invalid_data ())
       | `Tz_and_tz_offset_s (tz, tz_offset_s) -> (
           match
-            Time.Date_time.make_precise ~tz ~year ~month ~day ~hour ~minute
+            Time.Date_time'.make_precise ~tz ~year ~month ~day ~hour ~minute
               ~second ~tz_offset_s ()
           with
           | Ok x -> x
@@ -132,7 +132,7 @@ let timestamp_of_sexp x =
           (Printf.sprintf "Expected time zone offset 0, but got %d instead"
              tz_offset_s)
       else
-        match Time.Date_time.to_timestamp dt with
+        match Time.Date_time'.to_timestamp dt with
         | `Exact x -> x
         | _ -> failwith "Unexpected case")
 
@@ -247,7 +247,7 @@ let of_sexp (x : CCSexp.t) =
           between_inc (duration_of_sexp b) (aux t1) (aux t2)
         | [ `Atom "between_exc"; b; t1; t2 ] ->
           between_exc (duration_of_sexp b) (aux t1) (aux t2)
-        | [ `Atom "unchunk"; x ] -> aux_chunked Fun.id x
+        | [ `Atom "unchunk"; x ] -> aux_chunked CCFun.id x
         | _ ->
           invalid_data
             (Printf.sprintf "Invalid timere data: %s" (CCSexp.to_string x)))

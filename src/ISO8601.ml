@@ -1,4 +1,4 @@
-let to_date_time s : (Time.Date_time.t, string) result =
+let to_date_time s : (Time.Date_time'.t, string) result =
   let open MParser in
   let open Parser_components in
   let two_digit_nat_zero =
@@ -44,7 +44,7 @@ let to_date_time s : (Time.Date_time.t, string) result =
              Duration.make ~hours:hour ~minutes:minute ()
              |> Duration.to_seconds
              |> Int64.to_int
-             |> Int.mul mult)
+             |> CCInt.mul mult)
   in
   let p =
     nat_zero
@@ -64,7 +64,7 @@ let to_date_time s : (Time.Date_time.t, string) result =
         offset_p
         >>= fun offset ->
         match
-          Time.Date_time.make_precise ~year ~month ~day ~hour ~minute ~second
+          Time.Date_time'.make_precise ~year ~month ~day ~hour ~minute ~second
             ~tz_offset_s:offset ()
         with
         | Error () -> fail "Invalid date time"

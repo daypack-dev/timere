@@ -102,20 +102,28 @@ let month_of_human_int (x : int) : (month, unit) result = month_of_tm_int (x - 1
 let compare_month (m1 : month) (m2 : month) : int =
   compare (tm_int_of_month m1) (tm_int_of_month m2)
 
-module Month_set = Set.Make (struct
+module Month_set = struct
+  include CCSet.Make (struct
     type t = month
 
     let compare = compare_month
   end)
 
+  let to_seq x = x |> to_list |> CCList.to_seq
+end
+
 let compare_weekday (d1 : weekday) (d2 : weekday) : int =
   compare (tm_int_of_weekday d1) (tm_int_of_weekday d2)
 
-module Weekday_set = Set.Make (struct
+module Weekday_set = struct
+  include CCSet.Make (struct
     type t = weekday
 
     let compare = compare_weekday
   end)
+
+  let to_seq x = x |> to_list |> CCList.to_seq
+end
 
 let is_leap_year ~year =
   assert (year >= 0);
@@ -257,7 +265,7 @@ module Intervals = struct
       intervals
       |> (fun l ->
           if skip_check then l
-          else l |> List.to_seq |> Check.check_if_valid |> List.of_seq)
+          else l |> CCList.to_seq |> Check.check_if_valid |> CCList.of_seq)
       |> List.sort Interval.compare
 
     let sort_uniq_intervals_list ?(skip_check = false)
@@ -265,24 +273,24 @@ module Intervals = struct
       intervals
       |> (fun l ->
           if skip_check then l
-          else l |> List.to_seq |> Check.check_if_valid |> List.of_seq)
+          else l |> CCList.to_seq |> Check.check_if_valid |> CCList.of_seq)
       |> List.sort_uniq Interval.compare
 
     let sort_uniq_intervals ?(skip_check = false) (intervals : Interval.t Seq.t)
       : Interval.t Seq.t =
       intervals
       |> (fun s -> if skip_check then s else Check.check_if_valid s)
-      |> List.of_seq
+      |> CCList.of_seq
       |> List.sort_uniq Interval.compare
-      |> List.to_seq
+      |> CCList.to_seq
 
     let sort_intervals ?(skip_check = false) (intervals : Interval.t Seq.t) :
       Interval.t Seq.t =
       intervals
       |> (fun s -> if skip_check then s else Check.check_if_valid s)
-      |> List.of_seq
+      |> CCList.of_seq
       |> List.sort Interval.compare
-      |> List.to_seq
+      |> CCList.to_seq
   end
 
   module Join_internal = struct
@@ -527,13 +535,13 @@ module Intervals = struct
     let merge_multi_list_round_robin_non_decreasing ?(skip_check = false)
         (batches : Interval.t Seq.t list) : Interval.t Seq.t =
       collect_round_robin_non_decreasing ~skip_check batches
-      |> Seq.flat_map (fun l -> List.to_seq l |> Seq.filter_map Fun.id)
+      |> Seq.flat_map (fun l -> CCList.to_seq l |> Seq.filter_map CCFun.id)
       |> normalize ~skip_filter_invalid:true ~skip_sort:true
 
     let merge_multi_seq_round_robin_non_decreasing ?(skip_check = false)
         (batches : Interval.t Seq.t Seq.t) : Interval.t Seq.t =
       batches
-      |> List.of_seq
+      |> CCList.of_seq
       |> merge_multi_list_round_robin_non_decreasing ~skip_check
   end
 
@@ -615,7 +623,7 @@ module Range = struct
     let x = int64_exc_range_of_range ~to_int64 x in
     let y = int64_exc_range_of_range ~to_int64 y in
     Interval.join x y
-    |> Option.map (fun (x, y) -> `Range_exc (of_int64 x, of_int64 y))
+    |> CCOpt.map (fun (x, y) -> `Range_exc (of_int64 x, of_int64 y))
 
   let is_valid (type a) ~(modulo : int64 option) ~(to_int64 : a -> int64)
       (t : a range) : bool =
@@ -665,7 +673,7 @@ module Range = struct
     let flatten_into_list (type a) ~(modulo : int64 option)
         ~(to_int64 : a -> int64) ~(of_int64 : int64 -> a) (t : a range) : a list
       =
-      flatten_into_seq ~modulo ~to_int64 ~of_int64 t |> List.of_seq
+      flatten_into_seq ~modulo ~to_int64 ~of_int64 t |> CCList.of_seq
   end
 
   module type B = sig
@@ -730,7 +738,7 @@ module Range = struct
         Flatten.flatten_into_seq ~modulo ~to_int64 ~of_int64 t
 
       let flatten_into_list (t : t range) : t list =
-        Flatten.flatten_into_seq ~modulo ~to_int64 ~of_int64 t |> List.of_seq
+        Flatten.flatten_into_seq ~modulo ~to_int64 ~of_int64 t |> CCList.of_seq
     end
   end
 end
@@ -758,19 +766,19 @@ module Range_small = struct
   let int_exc_range_of_range (type a) ~(to_int : a -> int) (x : a Range.range) :
     int * int =
     match x with
-    | `Range_inc (x, y) -> (to_int x, y |> to_int |> Int.succ)
+    | `Range_inc (x, y) -> (to_int x, y |> to_int |> CCInt.succ)
     | `Range_exc (x, y) -> (to_int x, to_int y)
 
   let inc_range_of_range (type a) ~(to_int : a -> int) ~(of_int : int -> a)
       (x : a Range.range) : a * a =
     match x with
     | `Range_inc (x, y) -> (x, y)
-    | `Range_exc (x, y) -> (x, y |> to_int |> Int.pred |> of_int)
+    | `Range_exc (x, y) -> (x, y |> to_int |> CCInt.pred |> of_int)
 
   let exc_range_of_range (type a) ~(to_int : a -> int) ~(of_int : int -> a)
       (x : a Range.range) : a * a =
     match x with
-    | `Range_inc (x, y) -> (x, y |> to_int |> Int.succ |> of_int)
+    | `Range_inc (x, y) -> (x, y |> to_int |> CCInt.succ |> of_int)
     | `Range_exc (x, y) -> (x, y)
 
   let join (type a) ~(to_int : a -> int) ~(of_int : int -> a)
@@ -782,14 +790,14 @@ module Range_small = struct
   module Flatten = struct
     let flatten_into_seq (type a) ~(modulo : int option) ~(to_int : a -> int)
         ~(of_int : int -> a) (t : a Range.range) : a Seq.t =
-      let modulo = Option.map Int64.of_int modulo in
+      let modulo = CCOpt.map Int64.of_int modulo in
       let to_int64 = Misc_utils.convert_to_int_to_int64 to_int in
       let of_int64 = Misc_utils.convert_of_int_to_int64 of_int in
       Range.Flatten.flatten_into_seq ~modulo ~to_int64 ~of_int64 t
 
     let flatten_into_list (type a) ~(modulo : int option) ~(to_int : a -> int)
         ~(of_int : int -> a) (t : a Range.range) : a list =
-      flatten_into_seq ~modulo ~to_int ~of_int t |> List.of_seq
+      flatten_into_seq ~modulo ~to_int ~of_int t |> CCList.of_seq
   end
 
   module type B = sig
@@ -845,7 +853,7 @@ module Range_small = struct
         Flatten.flatten_into_seq ~modulo ~to_int ~of_int t
 
       let flatten_into_list (t : t Range.range) : t list =
-        Flatten.flatten_into_seq ~modulo ~to_int ~of_int t |> List.of_seq
+        Flatten.flatten_into_seq ~modulo ~to_int ~of_int t |> CCList.of_seq
     end
   end
 end
@@ -886,7 +894,7 @@ module Ranges = struct
 
     let flatten_list (type a) ~(modulo : int64 option) ~(to_int64 : a -> int64)
         ~(of_int64 : int64 -> a) (l : a Range.range list) : a list =
-      l |> List.to_seq |> flatten ~modulo ~to_int64 ~of_int64 |> List.of_seq
+      l |> CCList.to_seq |> flatten ~modulo ~to_int64 ~of_int64 |> CCList.of_seq
   end
 
   module Of_seq = struct
@@ -901,22 +909,22 @@ module Ranges = struct
     let range_list_of_seq (type a) ?(skip_sort = false) ~(modulo : int64 option)
         ~(to_int64 : a -> int64) ~(of_int64 : int64 -> a) (s : a Seq.t) :
       a Range.range list =
-      range_seq_of_seq ~skip_sort ~modulo ~to_int64 ~of_int64 s |> List.of_seq
+      range_seq_of_seq ~skip_sort ~modulo ~to_int64 ~of_int64 s |> CCList.of_seq
   end
 
   module Of_list = struct
     let range_seq_of_list (type a) ?(skip_sort = false) ~(modulo : int64 option)
         ~(to_int64 : a -> int64) ~(of_int64 : int64 -> a) (l : a list) :
       a Range.range Seq.t =
-      List.to_seq l
+      CCList.to_seq l
       |> Of_seq.range_seq_of_seq ~skip_sort ~modulo ~to_int64 ~of_int64
 
     let range_list_of_list (type a) ?(skip_sort = false)
         ~(modulo : int64 option) ~(to_int64 : a -> int64)
         ~(of_int64 : int64 -> a) (l : a list) : a Range.range list =
-      List.to_seq l
+      CCList.to_seq l
       |> Of_seq.range_seq_of_seq ~skip_sort ~modulo ~to_int64 ~of_int64
-      |> List.of_seq
+      |> CCList.of_seq
   end
 
   module type S = sig
@@ -989,11 +997,11 @@ module Ranges = struct
     module Of_list = struct
       let range_seq_of_list ?(skip_sort = false) (l : t list) :
         t Range.range Seq.t =
-        List.to_seq l |> Of_seq.range_seq_of_seq ~skip_sort
+        CCList.to_seq l |> Of_seq.range_seq_of_seq ~skip_sort
 
       let range_list_of_list ?(skip_sort = false) (l : t list) :
         t Range.range list =
-        List.to_seq l |> Of_seq.range_seq_of_seq ~skip_sort |> List.of_seq
+        CCList.to_seq l |> Of_seq.range_seq_of_seq ~skip_sort |> CCList.of_seq
     end
   end
 end
@@ -1003,7 +1011,7 @@ module Ranges_small = struct
       ?(skip_filter_empty = false) ?(skip_sort = false) ~(modulo : int option)
       ~(to_int : a -> int) ~(of_int : int -> a) (s : a Range.range Seq.t) :
     a Range.range Seq.t =
-    let modulo = Option.map Int64.of_int modulo in
+    let modulo = CCOpt.map Int64.of_int modulo in
     let to_int64 = Misc_utils.convert_to_int_to_int64 to_int in
     let of_int64 = Misc_utils.convert_of_int_to_int64 of_int in
     Ranges.normalize ~skip_filter_invalid ~skip_filter_empty ~skip_sort ~modulo
@@ -1012,13 +1020,13 @@ module Ranges_small = struct
   module Check = struct
     let seq_is_valid (type a) ~(modulo : int option) ~(to_int : a -> int)
         (s : a Range.range Seq.t) : bool =
-      let modulo = Option.map Int64.of_int modulo in
+      let modulo = CCOpt.map Int64.of_int modulo in
       let to_int64 = Misc_utils.convert_to_int_to_int64 to_int in
       Ranges.Check.seq_is_valid ~modulo ~to_int64 s
 
     let list_is_valid (type a) ~(modulo : int option) ~(to_int : a -> int)
         (l : a Range.range list) : bool =
-      let modulo = Option.map Int64.of_int modulo in
+      let modulo = CCOpt.map Int64.of_int modulo in
       let to_int64 = Misc_utils.convert_to_int_to_int64 to_int in
       Ranges.Check.list_is_valid ~modulo ~to_int64 l
   end
@@ -1026,14 +1034,14 @@ module Ranges_small = struct
   module Flatten = struct
     let flatten (type a) ~(modulo : int option) ~(to_int : a -> int)
         ~(of_int : int -> a) (s : a Range.range Seq.t) : a Seq.t =
-      let modulo = Option.map Int64.of_int modulo in
+      let modulo = CCOpt.map Int64.of_int modulo in
       let to_int64 = Misc_utils.convert_to_int_to_int64 to_int in
       let of_int64 = Misc_utils.convert_of_int_to_int64 of_int in
       Ranges.Flatten.flatten ~modulo ~to_int64 ~of_int64 s
 
     let flatten_list (type a) ~(modulo : int option) ~(to_int : a -> int)
         ~(of_int : int -> a) (l : a Range.range list) : a list =
-      l |> List.to_seq |> flatten ~modulo ~to_int ~of_int |> List.of_seq
+      l |> CCList.to_seq |> flatten ~modulo ~to_int ~of_int |> CCList.of_seq
   end
 
   module Of_seq = struct
@@ -1048,22 +1056,22 @@ module Ranges_small = struct
     let range_list_of_seq (type a) ?(skip_sort = false) ~(modulo : int option)
         ~(to_int : a -> int) ~(of_int : int -> a) (s : a Seq.t) :
       a Range.range list =
-      range_seq_of_seq ~skip_sort ~modulo ~to_int ~of_int s |> List.of_seq
+      range_seq_of_seq ~skip_sort ~modulo ~to_int ~of_int s |> CCList.of_seq
   end
 
   module Of_list = struct
     let range_seq_of_list (type a) ?(skip_sort = false) ~(modulo : int option)
         ~(to_int : a -> int) ~(of_int : int -> a) (l : a list) :
       a Range.range Seq.t =
-      List.to_seq l
+      CCList.to_seq l
       |> Of_seq.range_seq_of_seq ~skip_sort ~modulo ~to_int ~of_int
 
     let range_list_of_list (type a) ?(skip_sort = false) ~(modulo : int option)
         ~(to_int : a -> int) ~(of_int : int -> a) (l : a list) :
       a Range.range list =
-      List.to_seq l
+      CCList.to_seq l
       |> Of_seq.range_seq_of_seq ~skip_sort ~modulo ~to_int ~of_int
-      |> List.of_seq
+      |> CCList.of_seq
   end
 
   module Make (B : Range_small.B) : Ranges.S with type t := B.t = struct
@@ -1101,11 +1109,11 @@ module Ranges_small = struct
     module Of_list = struct
       let range_seq_of_list ?(skip_sort = false) (l : t list) :
         t Range.range Seq.t =
-        List.to_seq l |> Of_seq.range_seq_of_seq ~skip_sort
+        CCList.to_seq l |> Of_seq.range_seq_of_seq ~skip_sort
 
       let range_list_of_list ?(skip_sort = false) (l : t list) :
         t Range.range list =
-        List.to_seq l |> Of_seq.range_seq_of_seq ~skip_sort |> List.of_seq
+        CCList.to_seq l |> Of_seq.range_seq_of_seq ~skip_sort |> CCList.of_seq
     end
   end
 end
@@ -1171,7 +1179,7 @@ let hms_of_second_of_day x =
   let ({ hours; minutes; seconds; _ } : Duration.t) =
     x |> Int64.of_int |> Duration.of_seconds
   in
-  Result.get_ok @@ make_hms ~hour:hours ~minute:minutes ~second:seconds
+  CCResult.get_exn @@ make_hms ~hour:hours ~minute:minutes ~second:seconds
 
 module Hms_ranges = Ranges_small.Make (struct
     type t = hms
@@ -1200,7 +1208,7 @@ module Weekday_ranges = Ranges_small.Make (struct
 
     let to_int = tm_int_of_weekday
 
-    let of_int x = x |> weekday_of_tm_int |> Result.get_ok
+    let of_int x = x |> weekday_of_tm_int |> CCResult.get_exn
   end)
 
 module Month_day_ranges = Ranges_small.Make (struct
@@ -1230,7 +1238,7 @@ module Month_ranges = Ranges_small.Make (struct
 
     let to_int = human_int_of_month
 
-    let of_int x = x |> month_of_human_int |> Result.get_ok
+    let of_int x = x |> month_of_human_int |> CCResult.get_exn
   end)
 
 module Year_ranges = Ranges_small.Make (struct
@@ -1249,7 +1257,7 @@ let min_timestamp = Constants.min_timestamp
 
 let max_timestamp = Constants.max_timestamp
 
-module Date_time = struct
+module Date_time' = struct
   type tz_info =
     [ `Tz_only of Time_zone.t
     | `Tz_offset_s_only of int
@@ -1291,7 +1299,7 @@ module Date_time = struct
   let to_timestamp_pretend_utc (x : t) : timestamp =
     to_ptime_date_time_pretend_utc x
     |> Ptime.of_date_time
-    |> Option.get
+    |> CCOpt.get_exn
     |> Ptime.to_float_s
     |> Int64.of_float
 
@@ -1329,7 +1337,7 @@ module Date_time = struct
           x
           |> Ptime.to_date_time ~tz_offset_s:entry.offset
           |> of_ptime_date_time_pretend_utc
-          |> Result.map (fun t ->
+          |> CCResult.map (fun t ->
               {
                 t with
                 tz_info =
@@ -1343,7 +1351,7 @@ module Date_time = struct
     match to_timestamp dt with
     | `None -> Error ()
     | `Exact x ->
-      of_timestamp ~tz_of_date_time:tz x |> Result.get_ok |> Result.ok
+      Ok (of_timestamp ~tz_of_date_time:tz x |> CCResult.get_exn)
     | `Ambiguous _ -> Ok dt
 
   let make_exn ~year ~month ~day ~hour ~minute ~second ~tz =
@@ -1399,9 +1407,9 @@ module Date_time = struct
     in
     match x with Error () -> invalid_arg "make_precise_exn" | Ok x -> x
 
-  let min = Result.get_ok @@ of_timestamp min_timestamp
+  let min = CCResult.get_exn @@ of_timestamp min_timestamp
 
-  let max = Result.get_ok @@ of_timestamp max_timestamp
+  let max = CCResult.get_exn @@ of_timestamp max_timestamp
 
   let cur ?(tz_of_date_time = Time_zone.utc) () : (t, unit) result =
     cur_timestamp () |> of_timestamp ~tz_of_date_time
@@ -1454,7 +1462,7 @@ end
 
 module Check = struct
   let timestamp_is_valid (x : int64) : bool =
-    match Date_time.of_timestamp x with Ok _ -> true | Error () -> false
+    match Date_time'.of_timestamp x with Ok _ -> true | Error () -> false
 
   let second_is_valid ~(second : int) : bool = 0 <= second && second < 60
 
@@ -1812,7 +1820,7 @@ let inter_seq (s : t Seq.t) : t =
   | None -> empty
   | Some s -> Inter_seq (default_search_space, s)
 
-let inter (l : t list) : t = inter_seq (List.to_seq l)
+let inter (l : t list) : t = inter_seq (CCList.to_seq l)
 
 let union_seq (s : t Seq.t) : t =
   let flatten s =
@@ -1823,7 +1831,7 @@ let union_seq (s : t Seq.t) : t =
   let s = flatten s in
   Union_seq (default_search_space, s)
 
-let union (l : t list) : t = union_seq (List.to_seq l)
+let union (l : t list) : t = union_seq (CCList.to_seq l)
 
 let round_robin_pick (l : t list) : t =
   Round_robin_pick_list (default_search_space, l)
@@ -1854,41 +1862,41 @@ let drop (n : int) (c : chunked) : chunked =
   if n < 0 then invalid_arg "skip_n: n < 0" else Unary_op_on_chunked (Drop n, c)
 
 let interval_inc (a : timestamp) (b : timestamp) : t =
-  match Date_time.of_timestamp a with
+  match Date_time'.of_timestamp a with
   | Error () -> invalid_arg "interval_inc: invalid timestamp"
   | Ok _ -> (
-      match Date_time.of_timestamp b with
+      match Date_time'.of_timestamp b with
       | Error () -> invalid_arg "interval_inc: invalid timestamp"
       | Ok _ ->
         if a <= b then Interval_inc (default_search_space, a, b)
         else invalid_arg "interval_inc: a > b")
 
 let interval_exc (a : timestamp) (b : timestamp) : t =
-  match Date_time.of_timestamp a with
+  match Date_time'.of_timestamp a with
   | Error () -> invalid_arg "interval_exc: invalid timestamp"
   | Ok _ -> (
-      match Date_time.of_timestamp b with
+      match Date_time'.of_timestamp b with
       | Error () -> invalid_arg "interval_exc: invalid timestamp"
       | Ok _ ->
         if a <= b then Interval_exc (default_search_space, a, b)
         else invalid_arg "interval_exc: a > b")
 
-let interval_dt_inc (a : Date_time.t) (b : Date_time.t) : t =
+let interval_dt_inc (a : Date_time'.t) (b : Date_time'.t) : t =
   let a =
-    Option.get Date_time.(min_of_timestamp_local_result @@ to_timestamp a)
+    CCOpt.get_exn Date_time'.(min_of_timestamp_local_result @@ to_timestamp a)
   in
   let b =
-    Option.get Date_time.(max_of_timestamp_local_result @@ to_timestamp b)
+    CCOpt.get_exn Date_time'.(max_of_timestamp_local_result @@ to_timestamp b)
   in
   if a <= b then Interval_inc (default_search_space, a, b)
   else invalid_arg "interval_dt_inc: a > b"
 
-let interval_dt_exc (a : Date_time.t) (b : Date_time.t) : t =
+let interval_dt_exc (a : Date_time'.t) (b : Date_time'.t) : t =
   let a =
-    Option.get Date_time.(min_of_timestamp_local_result @@ to_timestamp a)
+    CCOpt.get_exn Date_time'.(min_of_timestamp_local_result @@ to_timestamp a)
   in
   let b =
-    Option.get Date_time.(max_of_timestamp_local_result @@ to_timestamp b)
+    CCOpt.get_exn Date_time'.(max_of_timestamp_local_result @@ to_timestamp b)
   in
   if a <= b then Interval_exc (default_search_space, a, b)
   else invalid_arg "interval_dt_exc: a > b"
@@ -1897,30 +1905,30 @@ let not (a : t) : t = Unary_op (default_search_space, Not, a)
 
 let with_tz offset t = Unary_op (default_search_space, With_tz offset, t)
 
-let safe_month_day_range_inc ~years ~months =
-  let contains_non_leap_year =
-    years
-    |> List.to_seq
-    |> Year_ranges.Flatten.flatten
-    |> OSeq.exists (fun year -> Stdlib.not (is_leap_year ~year))
-  in
-  let leap_year = 2020 in
-  let non_leap_year = 2019 in
-  let rec aux start end_inc months =
-    match months () with
-    | Seq.Nil -> (start, end_inc)
-    | Seq.Cons (month, rest) ->
-      let count =
-        match month with
-        | `Feb ->
-          if contains_non_leap_year then
-            day_count_of_month ~year:non_leap_year ~month
-          else day_count_of_month ~year:leap_year ~month
-        | _ -> day_count_of_month ~year:leap_year ~month
-      in
-      aux (max (-count) start) (min count end_inc) rest
-  in
-  aux (-31) 31 (Month_ranges.Flatten.flatten @@ List.to_seq @@ months)
+(* let safe_month_day_range_inc ~years ~months =
+ *   let contains_non_leap_year =
+ *     years
+ *     |> CCList.to_seq
+ *     |> Year_ranges.Flatten.flatten
+ *     |> OSeq.exists (fun year -> not (is_leap_year ~year))
+ *   in
+ *   let leap_year = 2020 in
+ *   let non_leap_year = 2019 in
+ *   let rec aux start end_inc months =
+ *     match months () with
+ *     | Seq.Nil -> (start, end_inc)
+ *     | Seq.Cons (month, rest) ->
+ *       let count =
+ *         match month with
+ *         | `Feb ->
+ *           if contains_non_leap_year then
+ *             day_count_of_month ~year:non_leap_year ~month
+ *           else day_count_of_month ~year:leap_year ~month
+ *         | _ -> day_count_of_month ~year:leap_year ~month
+ *       in
+ *       aux (max (-count) start) (min count end_inc) rest
+ *   in
+ *   aux (-31) 31 (Month_ranges.Flatten.flatten @@ CCList.to_seq @@ months) *)
 
 let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
     ?(month_ranges = []) ?(month_days = []) ?(month_day_ranges = [])
@@ -1943,7 +1951,7 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
   | _ ->
     if
       List.for_all
-        (fun year -> Date_time.min.year <= year && year <= Date_time.max.year)
+        (fun year -> Date_time'.min.year <= year && year <= Date_time'.max.year)
         years
       && List.for_all (fun x -> -31 <= x && x <= 31 && x <> 0) month_days
       && List.for_all (fun x -> 0 <= x && x < 24) hours
@@ -1973,7 +1981,7 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
 let month_day_ranges_are_valid_strict ~safe_month_day_range_inc day_ranges =
   let safe_month_day_start, safe_month_day_end_inc = safe_month_day_range_inc in
   day_ranges
-  |> List.to_seq
+  |> CCList.to_seq
   |> Month_day_ranges.Flatten.flatten
   |> Seq.filter (fun mday -> mday <> 0)
   |> OSeq.for_all (fun mday ->
@@ -2015,12 +2023,12 @@ let between_exc (bound : Duration.t) (t1 : t) (t2 : t) : t =
  *       if a < b then Int64.of_int (b - a)
  *       else
  *         Int64.sub
- *           (Duration.make ~days:1 () |> Result.get_ok |> Duration.to_seconds)
+ *           (Duration.make ~days:1 () |> CCResult.get_ok |> Duration.to_seconds)
  *           (Int64.of_int (a - b))
  *     in
  *     let gap_in_seconds_minus_one = Int64.pred gap_in_seconds in
  *     let gap_to_use =
- *       gap_in_seconds_minus_one |> Duration.of_seconds |> Result.get_ok
+ *       gap_in_seconds_minus_one |> Duration.of_seconds |> CCResult.get_ok
  *     in
  *     lengthen gap_to_use
  *       (pattern ~hours:[ hms_a.hour ] ~minutes:[ hms_a.minute ]
@@ -2049,7 +2057,7 @@ let of_sorted_interval_seq ?(skip_invalid : bool = false)
         else Intervals.Check.check_if_valid)
     |> Seq.filter_map (fun (x, y) ->
         match
-          (Date_time.of_timestamp x, Date_time.of_timestamp (Int64.pred y))
+          (Date_time'.of_timestamp x, Date_time'.of_timestamp (Int64.pred y))
         with
         | Ok _, Ok _ -> Some (x, y)
         | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
@@ -2062,7 +2070,7 @@ let of_sorted_interval_seq ?(skip_invalid : bool = false)
 
 let of_sorted_intervals ?(skip_invalid : bool = false)
     (l : (int64 * int64) list) : t =
-  l |> List.to_seq |> of_sorted_interval_seq ~skip_invalid
+  l |> CCList.to_seq |> of_sorted_interval_seq ~skip_invalid
 
 let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
   let s =
@@ -2070,14 +2078,14 @@ let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
     |> Intervals.Filter.filter_empty_list
     |> (if skip_invalid then Intervals.Filter.filter_invalid_list
         else Intervals.Check.check_if_valid_list)
-    |> List.filter_map (fun (x, y) ->
+    |> CCList.filter_map (fun (x, y) ->
         match
-          (Date_time.of_timestamp x, Date_time.of_timestamp (Int64.pred y))
+          (Date_time'.of_timestamp x, Date_time'.of_timestamp (Int64.pred y))
         with
         | Ok _, Ok _ -> Some (x, y)
         | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
     |> Intervals.Sort.sort_uniq_intervals_list
-    |> List.to_seq
+    |> CCList.to_seq
     |> Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
   in
   match s () with
@@ -2086,12 +2094,12 @@ let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
 
 let of_interval_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t) :
   t =
-  s |> List.of_seq |> of_intervals ~skip_invalid
+  s |> CCList.of_seq |> of_intervals ~skip_invalid
 
 let of_timestamp_seq ?(skip_invalid = false) timestamps =
   timestamps
   |> Seq.filter_map (fun x ->
-      match Date_time.of_timestamp x with
+      match Date_time'.of_timestamp x with
       | Ok _ -> Some x
       | Error () -> if skip_invalid then None else raise Invalid_timestamp)
   |> Seq.map (fun x -> (x, Int64.succ x))
@@ -2099,8 +2107,8 @@ let of_timestamp_seq ?(skip_invalid = false) timestamps =
 
 let of_timestamps ?(skip_invalid = false) timestamps =
   timestamps
-  |> List.filter_map (fun x ->
-      match Date_time.of_timestamp x with
+  |> CCList.filter_map (fun x ->
+      match Date_time'.of_timestamp x with
       | Ok _ -> Some x
       | Error () -> if skip_invalid then None else raise Invalid_timestamp)
   |> List.map (fun x -> (x, Int64.succ x))
