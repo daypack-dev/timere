@@ -794,26 +794,17 @@ let calibrate_search_space (time : Time.t) space : Time.search_space =
   | All | Empty | Timestamp_interval_seq _ | Pattern _ -> space
   | Unary_op (_, op, _) -> (
       match op with
-      | Shift n ->
-        List.map
-          (fun (x, y) -> (Int64.sub x n, Int64.sub y n))
-          space
+      | Shift n -> List.map (fun (x, y) -> (Int64.sub x n, Int64.sub y n)) space
       | _ -> space)
   | Interval_exc _ | Interval_inc _ | Round_robin_pick_list _ | Inter_seq _
   | Union_seq _ ->
     space
   | After (_, b, _, _) -> (
-      match space with
-      | [] -> []
-      | (x, y) :: rest -> (Int64.sub x b, y) :: rest)
+      match space with [] -> [] | (x, y) :: rest -> (Int64.sub x b, y) :: rest)
   | Between_inc (_, b, _, _) -> (
-      match space with
-      | [] -> []
-      | (x, y) :: rest -> (Int64.sub x b, y) :: rest)
+      match space with [] -> [] | (x, y) :: rest -> (Int64.sub x b, y) :: rest)
   | Between_exc (_, b, _, _) -> (
-      match space with
-      | [] -> []
-      | (x, y) :: rest -> (Int64.sub x b, y) :: rest)
+      match space with [] -> [] | (x, y) :: rest -> (Int64.sub x b, y) :: rest)
   | Unchunk _ -> space
 
 let set_search_space space (time : Time.t) : Time.t =
@@ -1223,13 +1214,11 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
         | Take_points n -> do_take_points (Int64.of_int n) s
         | Shift n ->
           Seq.map
-            (fun (start, end_exc) ->
-               (Int64.add start n, Int64.add end_exc n))
+            (fun (start, end_exc) -> (Int64.add start n, Int64.add end_exc n))
             s
         | Lengthen n ->
           s
-          |> Seq.map (fun (start, end_exc) ->
-              (start, Int64.add end_exc n))
+          |> Seq.map (fun (start, end_exc) -> (start, Int64.add end_exc n))
           |> normalize
         | With_tz _ -> s)
     | Interval_inc (_, a, b) -> Seq.return (a, Int64.succ b)
@@ -1302,25 +1291,21 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
           if
             min_end_exc <= max_start
             && max_start -^ min_end_exc >= search_space_adjustment_trigger_size
-          then (
+          then
             let timeres = slice_search_space_multi ~start:max_start timeres in
             (timeres, resolve ~start search_using_tz timeres)
-          )
-          else (
-            (timeres, interval_batches)
-          )
+          else (timeres, interval_batches)
         in
         let intervals_up_to_max_end_exc =
           interval_batches
           |> List.to_seq
-          |> Seq.map (
-            Intervals.Slice.slice ~skip_check:true ~end_exc:max_end_exc
-          )
+          |> Seq.map
+            (Intervals.Slice.slice ~skip_check:true ~end_exc:max_end_exc)
           |> Intervals.Inter.inter_multi_seq ~skip_check:true
         in
-        fun () -> Seq.Cons (intervals_up_to_max_end_exc,
-                            aux_inter' ~start:max_end_exc timeres
-                           )
+        fun () ->
+          Seq.Cons
+            (intervals_up_to_max_end_exc, aux_inter' ~start:max_end_exc timeres)
     in
     aux_inter' ~start:default_search_space_start (List.of_seq timeres)
     |> Seq.flat_map Fun.id
@@ -1351,7 +1336,8 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
     |> optimize_search_space search_using_tz
     |> aux search_using_tz
     |> normalize
-    |> Intervals.Slice.slice ~skip_check:true ~start:min_timestamp ~end_exc:max_timestamp
+    |> Intervals.Slice.slice ~skip_check:true ~start:min_timestamp
+      ~end_exc:max_timestamp
     |> Result.ok
   with
   | Interval_is_invalid -> Error "Invalid interval"
