@@ -150,8 +150,7 @@ let token_p : (token, unit) MParser.t =
       attempt (string "sec") >>$ Seconds;
       attempt (string "s") >>$ Seconds;
       (attempt
-         (many1_satisfy (fun c ->
-              c <> ' ' && not (String.contains symbols c)))
+         (many1_satisfy (fun c -> c <> ' ' && not (String.contains symbols c)))
        >>= fun s ->
        fail (Printf.sprintf "%s: Unrecognized token: %s" (string_of_pos pos) s));
     ]
@@ -437,10 +436,7 @@ module Ast_normalize = struct
         in
         aux_start_with_days (token :: acc) rest
       | [] ->
-        if
-          CCOpt.is_some days
-          || CCOpt.is_some hours
-          || CCOpt.is_some minutes
+        if CCOpt.is_some days || CCOpt.is_some hours || CCOpt.is_some minutes
         then
           let new_token =
             make_duration ~pos ~days ~hours ~minutes ~seconds:0
@@ -448,10 +444,7 @@ module Ast_normalize = struct
           List.rev (new_token :: acc)
         else List.rev acc
       | token :: rest ->
-        if
-          CCOpt.is_some days
-          || CCOpt.is_some hours
-          || CCOpt.is_some minutes
+        if CCOpt.is_some days || CCOpt.is_some hours || CCOpt.is_some minutes
         then
           let new_token =
             make_duration ~pos ~days ~hours ~minutes ~seconds:0
@@ -639,7 +632,8 @@ let parse_timere s =
       | Error msg -> Error msg
       | Ok ast -> t_of_ast ast)
 
-let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t =
+let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t
+  =
   match ast with
   | Tokens [ (_, Nat year); (_, Month month); (_, Nat day); (_, Hms hms) ]
     when year > 31 ->

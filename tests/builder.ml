@@ -15,9 +15,12 @@ let make_date_time ~rng ~min_year ~max_year_inc =
   let hour = rng () mod 24 in
   let minute = rng () mod 60 in
   let second = rng () mod 60 in
-  let available_time_zone_count = List.length (Time_zone.available_time_zones ()) in
+  let available_time_zone_count =
+    List.length (Time_zone.available_time_zones ())
+  in
   let tz =
-    List.nth (Time_zone.available_time_zones ())
+    List.nth
+      (Time_zone.available_time_zones ())
       (rng () mod available_time_zone_count)
     |> Time_zone.make_exn
   in
@@ -49,9 +52,7 @@ let make_pattern ~rng ~min_year ~max_year_inc =
   let years =
     if rng () mod 2 = 0 then []
     else
-      let end_inc =
-        min 5 (rng ())
-      in
+      let end_inc = min 5 (rng ()) in
       OSeq.(0 -- end_inc)
       |> Seq.map (fun _ -> min max_year_inc (min_year + rng ()))
       |> CCList.of_seq
@@ -59,9 +60,7 @@ let make_pattern ~rng ~min_year ~max_year_inc =
   let months =
     if rng () mod 2 = 0 then []
     else
-      let end_inc =
-        min 5 (rng ())
-      in
+      let end_inc = min 5 (rng ()) in
       OSeq.(0 -- end_inc)
       |> Seq.map (fun _ ->
           CCResult.get_exn @@ Time.month_of_tm_int (rng () mod 12))
@@ -70,9 +69,7 @@ let make_pattern ~rng ~min_year ~max_year_inc =
   let month_days =
     if rng () mod 2 = 0 then []
     else
-      let end_inc =
-        min 5 (rng ())
-      in
+      let end_inc = min 5 (rng ()) in
       OSeq.(0 -- end_inc)
       |> Seq.map (fun _ ->
           if rng () mod 2 = 0 then 1 + (rng () mod 31)
@@ -82,9 +79,7 @@ let make_pattern ~rng ~min_year ~max_year_inc =
   let weekdays =
     if rng () mod 2 = 0 then []
     else
-      let end_inc =
-        min 5 (rng ())
-      in
+      let end_inc = min 5 (rng ()) in
       OSeq.(0 -- end_inc)
       |> Seq.map (fun _ ->
           CCResult.get_exn @@ Time.weekday_of_tm_int (rng () mod 7))
@@ -93,32 +88,20 @@ let make_pattern ~rng ~min_year ~max_year_inc =
   let hours =
     if rng () mod 2 = 0 then []
     else
-      let end_inc =
-        min 5 (rng ())
-      in
-      OSeq.(0 -- end_inc)
-      |> Seq.map (fun _ -> rng () mod 24)
-      |> CCList.of_seq
+      let end_inc = min 5 (rng ()) in
+      OSeq.(0 -- end_inc) |> Seq.map (fun _ -> rng () mod 24) |> CCList.of_seq
   in
   let minutes =
     if rng () mod 2 = 0 then []
     else
-      let end_inc =
-        min 5 (rng ())
-      in
-      OSeq.(0 -- end_inc)
-      |> Seq.map (fun _ -> rng () mod 60)
-      |> CCList.of_seq
+      let end_inc = min 5 (rng ()) in
+      OSeq.(0 -- end_inc) |> Seq.map (fun _ -> rng () mod 60) |> CCList.of_seq
   in
   let seconds =
     if rng () mod 2 = 0 then []
     else
-      let end_inc =
-        min 5 (rng ())
-      in
-      OSeq.(0 -- end_inc)
-      |> Seq.map (fun _ -> rng () mod 60)
-      |> CCList.of_seq
+      let end_inc = min 5 (rng ()) in
+      OSeq.(0 -- end_inc) |> Seq.map (fun _ -> rng () mod 60) |> CCList.of_seq
   in
   Time.pattern ~years ~months ~month_days ~weekdays ~hours ~minutes ~seconds ()
 
@@ -204,7 +187,8 @@ let make_unary_op ~rng t =
       List.length (Time_zone.available_time_zones ())
     in
     let tz =
-      List.nth (Time_zone.available_time_zones ())
+      List.nth
+        (Time_zone.available_time_zones ())
         (rng () mod available_time_zone_count)
       |> Time_zone.make_exn
     in

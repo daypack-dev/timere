@@ -471,7 +471,8 @@ module Resolve_pattern = struct
       in
       if Time.Month_set.is_empty t.months then
         OSeq.(month_start_int -- month_end_inc_int)
-        |> Seq.map (fun month -> Time.month_of_human_int month |> CCResult.get_exn)
+        |> Seq.map (fun month ->
+            Time.month_of_human_int month |> CCResult.get_exn)
         |> Seq.map (fun month -> { cur_branch_search_start with month })
       else
         t.months
@@ -479,7 +480,8 @@ module Resolve_pattern = struct
         |> Seq.map Time.human_int_of_month
         |> Seq.filter (fun month ->
             month_start_int <= month && month <= month_end_inc_int)
-        |> Seq.map (fun month -> Time.month_of_human_int month |> CCResult.get_exn)
+        |> Seq.map (fun month ->
+            Time.month_of_human_int month |> CCResult.get_exn)
         |> Seq.map (fun month -> { cur_branch_search_start with month })
 
     let matching_month_ranges (t : Time.Pattern.t)
@@ -524,7 +526,8 @@ module Resolve_pattern = struct
         |> Seq.map Time.human_int_of_month
         |> Seq.filter (fun month ->
             month_start_int <= month && month <= month_end_inc_int)
-        |> Seq.map (fun month -> Time.month_of_human_int month |> CCResult.get_exn)
+        |> Seq.map (fun month ->
+            Time.month_of_human_int month |> CCResult.get_exn)
         |> Time.Month_ranges.Of_seq.range_seq_of_seq
         |> Seq.map
           (Time.Range.map
@@ -1332,14 +1335,13 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
         | Chunk_again op -> chunk_based_on_op_on_t op s)
   in
   try
-    Ok (
-      time
-      |> optimize_search_space search_using_tz
-      |> aux search_using_tz
-      |> normalize
-      |> Intervals.Slice.slice ~skip_check:true ~start:min_timestamp
-        ~end_exc:max_timestamp
-    )
+    Ok
+      (time
+       |> optimize_search_space search_using_tz
+       |> aux search_using_tz
+       |> normalize
+       |> Intervals.Slice.slice ~skip_check:true ~start:min_timestamp
+         ~end_exc:max_timestamp)
   with
   | Interval_is_invalid -> Error "Invalid interval"
   | Intervals_are_not_sorted -> Error "Intervals are not sorted"

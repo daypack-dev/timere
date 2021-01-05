@@ -203,14 +203,16 @@ let sprintf_interval ?(display_using_tz = Time_zone.utc)
          >>= fun s -> return s);
       ]
   in
-  let p (start_date_time : Time.Date_time'.t) (end_date_time : Time.Date_time'.t)
-    : (string list, unit) t =
+  let p (start_date_time : Time.Date_time'.t)
+      (end_date_time : Time.Date_time'.t) : (string list, unit) t =
     many (single start_date_time end_date_time)
   in
   match Time.Date_time'.of_timestamp ~tz_of_date_time:display_using_tz s with
   | Error () -> invalid_arg "Invalid start unix time"
   | Ok s -> (
-      match Time.Date_time'.of_timestamp ~tz_of_date_time:display_using_tz e with
+      match
+        Time.Date_time'.of_timestamp ~tz_of_date_time:display_using_tz e
+      with
       | Error () -> invalid_arg "Invalid end unix time"
       | Ok e -> (
           match

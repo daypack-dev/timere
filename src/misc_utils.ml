@@ -42,7 +42,9 @@ let get_ok_error_list (l : ('a, 'b) result list) : ('a list, 'b) result =
   match x with None -> Ok (List.map CCResult.get_exn l) | Some x -> Error x
 
 let list_concat_map (f : 'a -> 'b list) (l : 'a list) : 'b list =
-  CCList.to_seq l |> Seq.flat_map (fun x -> f x |> CCList.to_seq) |> CCList.of_seq
+  CCList.to_seq l
+  |> Seq.flat_map (fun x -> f x |> CCList.to_seq)
+  |> CCList.of_seq
 
 let list_concat_mapi (f : int -> 'a -> 'b list) (l : 'a list) : 'b list =
   CCList.to_seq l

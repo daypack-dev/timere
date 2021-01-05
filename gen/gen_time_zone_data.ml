@@ -348,7 +348,9 @@ let gen () =
         write_line "  recorded_offsets : int array;";
         write_line "  table : table;";
         write_line "}";
-        write_line "module String_map = Map.Make (struct type t = string let compare = compare end)";
+        write_line
+          "module String_map = Map.Make (struct type t = string let compare = \
+           compare end)";
         write_line "";
         write_line "type db = record String_map.t";
         write_line "";
@@ -426,5 +428,5 @@ let gen () =
         write_line "";
         write_line "let lookup_record name = String_map.find_opt name db";
         write_line "";
-        write_line "let available_time_zones () = String_map.bindings db |> List.map fst"
-      )
+        write_line
+          "let available_time_zones () = String_map.bindings db |> List.map fst")

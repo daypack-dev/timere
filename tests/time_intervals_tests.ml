@@ -74,7 +74,9 @@ module Qc = struct
   let normalize_time_slots_are_unique =
     QCheck.Test.make ~count:10_000 ~name:"normalize_time_slots_are_unique"
       time_slots (fun l ->
-          let l = l |> CCList.to_seq |> Time.Intervals.normalize |> CCList.of_seq in
+          let l =
+            l |> CCList.to_seq |> Time.Intervals.normalize |> CCList.of_seq
+          in
           List.length (List.sort_uniq compare l) = List.length l)
 
   let normalize_time_slots_are_disjoint_with_gaps =

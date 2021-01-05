@@ -104,10 +104,10 @@ let compare_month (m1 : month) (m2 : month) : int =
 
 module Month_set = struct
   include CCSet.Make (struct
-    type t = month
+      type t = month
 
-    let compare = compare_month
-  end)
+      let compare = compare_month
+    end)
 
   let to_seq x = x |> to_list |> CCList.to_seq
 end
@@ -117,10 +117,10 @@ let compare_weekday (d1 : weekday) (d2 : weekday) : int =
 
 module Weekday_set = struct
   include CCSet.Make (struct
-    type t = weekday
+      type t = weekday
 
-    let compare = compare_weekday
-  end)
+      let compare = compare_weekday
+    end)
 
   let to_seq x = x |> to_list |> CCList.to_seq
 end
@@ -1350,8 +1350,7 @@ module Date_time' = struct
     in
     match to_timestamp dt with
     | `None -> Error ()
-    | `Exact x ->
-      Ok (of_timestamp ~tz_of_date_time:tz x |> CCResult.get_exn)
+    | `Exact x -> Ok (of_timestamp ~tz_of_date_time:tz x |> CCResult.get_exn)
     | `Ambiguous _ -> Ok dt
 
   let make_exn ~year ~month ~day ~hour ~minute ~second ~tz =
@@ -1951,7 +1950,8 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
   | _ ->
     if
       List.for_all
-        (fun year -> Date_time'.min.year <= year && year <= Date_time'.max.year)
+        (fun year ->
+           Date_time'.min.year <= year && year <= Date_time'.max.year)
         years
       && List.for_all (fun x -> -31 <= x && x <= 31 && x <> 0) month_days
       && List.for_all (fun x -> 0 <= x && x < 24) hours

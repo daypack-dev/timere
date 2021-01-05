@@ -142,8 +142,7 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
         | Not ->
           Seq_utils.a_to_b_exc_int64 ~a:Time.default_search_space_start
             ~b:Time.default_search_space_end_exc
-          |> Seq.filter (fun x ->
-              not (mem search_space ~search_using_tz t x))
+          |> Seq.filter (fun x -> not (mem search_space ~search_using_tz t x))
           |> intervals_of_timestamps
         | Drop_points n ->
           aux default_search_space search_using_tz t

@@ -13,8 +13,7 @@ type 'a local_result =
 
 let lookup_record : (string -> record option) ref = ref lookup_record
 
-let set_data_source (f : string -> record option) : unit =
-  lookup_record := f
+let set_data_source (f : string -> record option) : unit = lookup_record := f
 
 let name t = t.name
 
