@@ -1303,12 +1303,10 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
             min_end_exc <= max_start
             && max_start -^ min_end_exc >= search_space_adjustment_trigger_size
           then (
-            print_endline "test0";
             let timeres = slice_search_space_multi ~start:max_start timeres in
             (timeres, resolve ~start search_using_tz timeres)
           )
           else (
-            print_endline "test1";
             (timeres, interval_batches)
           )
         in
