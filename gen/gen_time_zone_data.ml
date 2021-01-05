@@ -386,7 +386,14 @@ let gen () =
                               "Unrecognized time zone during special case \
                                handling: %s"
                               s)))
-               | _ -> l
+               | x :: xs ->
+                 if x.start <> min_timestamp then
+                   let filler =
+                     { start = min_timestamp; end_exc = x.start; tz = x.tz; is_dst = x.is_dst; offset = x.offset }
+                   in
+                   filler :: x :: xs
+                 else
+                   x :: xs
              in
              let recorded_offsets =
                List.fold_left
