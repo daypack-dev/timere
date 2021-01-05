@@ -796,7 +796,7 @@ let calibrate_search_space (time : Time.t) space : Time.search_space =
       match op with
       | Shift n ->
         List.map
-          (fun (x, y) -> (timestamp_safe_sub x n, timestamp_safe_sub y n))
+          (fun (x, y) -> (Int64.sub x n, Int64.sub y n))
           space
       | _ -> space)
   | Interval_exc _ | Interval_inc _ | Round_robin_pick_list _ | Inter_seq _
@@ -805,15 +805,15 @@ let calibrate_search_space (time : Time.t) space : Time.search_space =
   | After (_, b, _, _) -> (
       match space with
       | [] -> []
-      | (x, y) :: rest -> (timestamp_safe_sub x b, y) :: rest)
+      | (x, y) :: rest -> (Int64.sub x b, y) :: rest)
   | Between_inc (_, b, _, _) -> (
       match space with
       | [] -> []
-      | (x, y) :: rest -> (timestamp_safe_sub x b, y) :: rest)
+      | (x, y) :: rest -> (Int64.sub x b, y) :: rest)
   | Between_exc (_, b, _, _) -> (
       match space with
       | [] -> []
-      | (x, y) :: rest -> (timestamp_safe_sub x b, y) :: rest)
+      | (x, y) :: rest -> (Int64.sub x b, y) :: rest)
   | Unchunk _ -> space
 
 let set_search_space space (time : Time.t) : Time.t =
@@ -1224,12 +1224,12 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
         | Shift n ->
           Seq.map
             (fun (start, end_exc) ->
-               (timestamp_safe_add start n, timestamp_safe_add end_exc n))
+               (Int64.add start n, Int64.add end_exc n))
             s
         | Lengthen n ->
           s
           |> Seq.map (fun (start, end_exc) ->
-              (start, timestamp_safe_add end_exc n))
+              (start, Int64.add end_exc n))
           |> normalize
         | With_tz _ -> s)
     | Interval_inc (_, a, b) -> Seq.return (a, Int64.succ b)
@@ -1353,6 +1353,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
     |> optimize_search_space search_using_tz
     |> aux search_using_tz
     |> normalize
+    |> Intervals.Slice.slice ~skip_check:true ~start:min_timestamp ~end_exc:max_timestamp
     |> Result.ok
   with
   | Interval_is_invalid -> Error "Invalid interval"
