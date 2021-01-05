@@ -24,18 +24,18 @@ let display_intervals ~display_using_tz s =
         Printf.printf "%s - %s\n" s size_str)
 
 let debug_resolver () =
-(*   let s =
- *     {|
- * (unchunk (nth 3 (chunk_by_duration (duration 0 0 10 34) (between_exc (duration 1 0 0 0) (pattern (hours 22) (minutes 33) (seconds 46)) (pattern (hours 9) (minutes 46) (seconds 34))))))
- *     |}
- *   in
- *   let timere = Result.get_ok @@ Of_sexp.of_sexp_string s in *)
-  let timere =
-    (fun max_height max_branching randomness ->
-       Builder.build ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching
-         ~randomness)
-      3 1 [ 497; 144 ]
+  let s =
+    {|
+(shift 1 (interval_exc (2002 Apr 15 6 51 15 (tz_and_tz_offset_s UTC 0)) (2002 Apr 15 6 59 30 (tz_and_tz_offset_s UTC 0))))
+    |}
   in
+  let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in
+  (* let timere =
+   *   (fun max_height max_branching randomness ->
+   *      Builder.build ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching
+   *        ~randomness)
+   *     2 1 [ 231; 495; 914; 495 ]
+   * in *)
   (* let timere =
    *   Time.inter
    *     [
@@ -51,7 +51,7 @@ let debug_resolver () =
    *       (every_nth_month 3)
    *     ~day:(every_nth_day 10)
    *     ( Result.get_ok
-   *       @@ Time.Date_time.make ~year:2000 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+   *       @@ Time.Date_time'.make ~year:2000 ~month:`Jan ~day:1 ~hour:0 ~minute:0
    *         ~second:0 ~tz_offset_s:0 )
    * in *)
   (* let tz = Time_zone.make_exn "Australia/Sydney" in *)
@@ -74,24 +74,24 @@ let debug_resolver () =
    * in *)
   print_endline (To_sexp.to_sexp_string timere);
   let search_start_dt =
-    Time.Date_time.make ~year:2000 ~month:`Jan ~day:1 ~hour:10 ~minute:0
+    Time.Date_time'.make ~year:2000 ~month:`Jan ~day:1 ~hour:10 ~minute:0
       ~second:0 ~tz
-    |> Result.get_ok
+    |> CCResult.get_exn
   in
   let search_start =
-    Time.Date_time.to_timestamp search_start_dt
-    |> Time.Date_time.min_of_timestamp_local_result
-    |> Option.get
+    Time.Date_time'.to_timestamp search_start_dt
+    |> Time.Date_time'.min_of_timestamp_local_result
+    |> CCOpt.get_exn
   in
   let search_end_exc_dt =
-    Time.Date_time.make ~year:2003 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+    Time.Date_time'.make ~year:2003 ~month:`Jan ~day:1 ~hour:0 ~minute:0
       ~second:0 ~tz
-    |> Result.get_ok
+    |> CCResult.get_exn
   in
   let search_end_exc =
-    Time.Date_time.to_timestamp search_end_exc_dt
-    |> Time.Date_time.max_of_timestamp_local_result
-    |> Option.get
+    Time.Date_time'.to_timestamp search_end_exc_dt
+    |> Time.Date_time'.max_of_timestamp_local_result
+    |> CCOpt.get_exn
   in
   let timere' =
     Time.(inter [ timere; interval_exc search_start search_end_exc ])
@@ -132,10 +132,14 @@ let debug_example () =
       (inter
          [
            years [ 2020; 2021; 2022; 2023; 2025; 2026 ] (* in year 2020 *);
-           union [
-             pattern ~months:[`Apr] ~month_day_ranges:[`Range_inc (3, 6)] () (* in April 3 to 6 *);
-             (* pattern ~months:[`Oct] ~month_day_ranges:[`Range_inc (2, 5)] () (\* or in Oct 2 to 5 *\); *)
-           ];
+           union
+             [
+               pattern ~months:[ `Apr ]
+                 ~month_day_ranges:[ `Range_inc (3, 6) ]
+                 ()
+               (* in April 3 to 6 *);
+               (* pattern ~months:[`Oct] ~month_day_ranges:[`Range_inc (2, 5)] () (\* or in Oct 2 to 5 *\); *)
+             ];
            (* hms_interval_exc (\* 11pm to 3am *\)
             *   (make_hms_exn ~hour:23 ~minute:0 ~second:0)
             *   (make_hms_exn ~hour:3 ~minute:0 ~second:0); *)
