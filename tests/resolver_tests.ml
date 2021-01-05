@@ -7,8 +7,8 @@ module Qc = struct
         triple pos_int64 sorted_time_slots_maybe_gaps
           sorted_time_slots_maybe_gaps)
       (fun (bound, l1, l2) ->
-         let s1 = List.to_seq l1 in
-         let s2 = List.to_seq l2 in
+         let s1 = CCList.to_seq l1 in
+         let s2 = CCList.to_seq l2 in
          let s = Resolver.find_after bound s1 s2 in
          (not (OSeq.is_empty s1 || OSeq.is_empty s2)) || OSeq.is_empty s)
 
@@ -18,8 +18,8 @@ module Qc = struct
         triple pos_int64 sorted_time_slots_maybe_gaps
           sorted_time_slots_maybe_gaps)
       (fun (bound, l1, l2) ->
-         let s1 = List.to_seq l1 in
-         let s2 = List.to_seq l2 in
+         let s1 = CCList.to_seq l1 in
+         let s2 = CCList.to_seq l2 in
          let s = Resolver.find_after bound s1 s2 in
          OSeq.for_all
            (fun (x1, _y1) ->
@@ -40,8 +40,8 @@ module Qc = struct
         triple pos_int64 sorted_time_slots_maybe_gaps
           sorted_time_slots_maybe_gaps)
       (fun (bound, l1, l2) ->
-         let s1 = List.to_seq l1 in
-         let s2 = List.to_seq l2 in
+         let s1 = CCList.to_seq l1 in
+         let s2 = CCList.to_seq l2 in
          let s = Resolver.find_after bound s1 s2 in
          List.for_all
            (fun (_x1, y1) ->
@@ -60,8 +60,8 @@ module Qc = struct
         triple pos_int64 sorted_time_slots_maybe_gaps
           sorted_time_slots_maybe_gaps)
       (fun (bound, l1, l2) ->
-         let s1 = List.to_seq l1 in
-         let s2 = List.to_seq l2 in
+         let s1 = CCList.to_seq l1 in
+         let s2 = CCList.to_seq l2 in
          let s = Resolver.find_between_inc bound s1 s2 in
          (not (OSeq.is_empty s1 || OSeq.is_empty s2)) || OSeq.is_empty s)
 
@@ -71,8 +71,8 @@ module Qc = struct
         triple pos_int64 sorted_time_slots_maybe_gaps
           sorted_time_slots_maybe_gaps)
       (fun (bound, l1, l2) ->
-         let s1 = List.to_seq l1 in
-         let s2 = List.to_seq l2 in
+         let s1 = CCList.to_seq l1 in
+         let s2 = CCList.to_seq l2 in
          let s = Resolver.find_between_inc bound s1 s2 in
          OSeq.for_all
            (fun (x1, y1) ->
@@ -94,8 +94,8 @@ module Qc = struct
         triple pos_int64 sorted_time_slots_maybe_gaps
           sorted_time_slots_maybe_gaps)
       (fun (bound, l1, l2) ->
-         let s1 = List.to_seq l1 in
-         let s2 = List.to_seq l2 in
+         let s1 = CCList.to_seq l1 in
+         let s2 = CCList.to_seq l2 in
          let s = Resolver.find_between_inc bound s1 s2 in
          List.for_all
            (fun (x1, y1) ->
@@ -114,8 +114,8 @@ module Qc = struct
         triple pos_int64 sorted_time_slots_maybe_gaps
           sorted_time_slots_maybe_gaps)
       (fun (bound, l1, l2) ->
-         let s1 = List.to_seq l1 in
-         let s2 = List.to_seq l2 in
+         let s1 = CCList.to_seq l1 in
+         let s2 = CCList.to_seq l2 in
          let s = Resolver.find_between_exc bound s1 s2 in
          (not (OSeq.is_empty s1 || OSeq.is_empty s2)) || OSeq.is_empty s)
 
@@ -125,8 +125,8 @@ module Qc = struct
         triple pos_int64 sorted_time_slots_maybe_gaps
           sorted_time_slots_maybe_gaps)
       (fun (bound, l1, l2) ->
-         let s1 = List.to_seq l1 in
-         let s2 = List.to_seq l2 in
+         let s1 = CCList.to_seq l1 in
+         let s2 = CCList.to_seq l2 in
          let s = Resolver.find_between_exc bound s1 s2 in
          OSeq.for_all
            (fun (x1, y1) ->
@@ -148,8 +148,8 @@ module Qc = struct
         triple pos_int64 sorted_time_slots_maybe_gaps
           sorted_time_slots_maybe_gaps)
       (fun (bound, l1, l2) ->
-         let s1 = List.to_seq l1 in
-         let s2 = List.to_seq l2 in
+         let s1 = CCList.to_seq l1 in
+         let s2 = CCList.to_seq l2 in
          let s = Resolver.find_between_exc bound s1 s2 in
          List.for_all
            (fun (x1, y1) ->

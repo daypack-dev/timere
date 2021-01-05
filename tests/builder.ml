@@ -10,7 +10,7 @@ let make_rng ~randomness : unit -> int =
 
 let make_date_time ~rng ~min_year ~max_year_inc =
   let year = min max_year_inc (min_year + rng ()) in
-  let month = Result.get_ok @@ Time.month_of_tm_int (rng () mod 12) in
+  let month = CCResult.get_exn @@ Time.month_of_tm_int (rng () mod 12) in
   let day = 1 + (rng () mod Time.day_count_of_month ~year ~month) in
   let hour = rng () mod 24 in
   let minute = rng () mod 60 in
@@ -21,11 +21,11 @@ let make_date_time ~rng ~min_year ~max_year_inc =
       (rng () mod available_time_zone_count)
     |> Time_zone.make_exn
   in
-  match Time.Date_time.make ~year ~month ~day ~hour ~minute ~second ~tz with
+  match Time.Date_time'.make ~year ~month ~day ~hour ~minute ~second ~tz with
   | Error () ->
-    Time.Date_time.make ~year ~month ~day ~hour ~minute ~second
+    Time.Date_time'.make ~year ~month ~day ~hour ~minute ~second
       ~tz:Time_zone.utc
-    |> Result.get_ok
+    |> CCResult.get_exn
   | Ok x -> x
 
 let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
@@ -34,15 +34,15 @@ let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
   |> Seq.map (fun _ ->
       let start =
         make_date_time ~rng ~min_year ~max_year_inc
-        |> Time.Date_time.to_timestamp
-        |> Time.Date_time.min_of_timestamp_local_result
-        |> Option.get
+        |> Time.Date_time'.to_timestamp
+        |> Time.Date_time'.min_of_timestamp_local_result
+        |> CCOpt.get_exn
       in
       let end_exc = Int64.add start (Int64.of_int (rng ())) in
       (start, end_exc))
-  |> List.of_seq
+  |> CCList.of_seq
   |> List.sort_uniq Time.Interval.compare
-  |> List.to_seq
+  |> CCList.to_seq
   |> Time.of_interval_seq
 
 let make_pattern ~rng ~min_year ~max_year_inc =
@@ -51,15 +51,15 @@ let make_pattern ~rng ~min_year ~max_year_inc =
     else
       OSeq.(0 -- Stdlib.min 5 (rng ()))
       |> Seq.map (fun _ -> min max_year_inc (min_year + rng ()))
-      |> List.of_seq
+      |> CCList.of_seq
   in
   let months =
     if rng () mod 2 = 0 then []
     else
       OSeq.(0 -- Stdlib.min 5 (rng ()))
       |> Seq.map (fun _ ->
-          Result.get_ok @@ Time.month_of_tm_int (rng () mod 12))
-      |> List.of_seq
+          CCResult.get_exn @@ Time.month_of_tm_int (rng () mod 12))
+      |> CCList.of_seq
   in
   let month_days =
     if rng () mod 2 = 0 then []
@@ -68,45 +68,45 @@ let make_pattern ~rng ~min_year ~max_year_inc =
       |> Seq.map (fun _ ->
           if rng () mod 2 = 0 then 1 + (rng () mod 31)
           else -(1 + (rng () mod 31)))
-      |> List.of_seq
+      |> CCList.of_seq
   in
   let weekdays =
     if rng () mod 2 = 0 then []
     else
       OSeq.(0 -- Stdlib.min 5 (rng ()))
       |> Seq.map (fun _ ->
-          Result.get_ok @@ Time.weekday_of_tm_int (rng () mod 7))
-      |> List.of_seq
+          CCResult.get_exn @@ Time.weekday_of_tm_int (rng () mod 7))
+      |> CCList.of_seq
   in
   let hours =
     if rng () mod 2 = 0 then []
     else
       OSeq.(0 -- Stdlib.min 5 (rng ()))
       |> Seq.map (fun _ -> rng () mod 24)
-      |> List.of_seq
+      |> CCList.of_seq
   in
   let minutes =
     if rng () mod 2 = 0 then []
     else
       OSeq.(0 -- Stdlib.min 5 (rng ()))
       |> Seq.map (fun _ -> rng () mod 60)
-      |> List.of_seq
+      |> CCList.of_seq
   in
   let seconds =
     if rng () mod 2 = 0 then []
     else
       OSeq.(0 -- Stdlib.min 5 (rng ()))
       |> Seq.map (fun _ -> rng () mod 60)
-      |> List.of_seq
+      |> CCList.of_seq
   in
   Time.pattern ~years ~months ~month_days ~weekdays ~hours ~minutes ~seconds ()
 
 let make_interval_inc ~rng ~min_year ~max_year_inc =
   let start_dt = make_date_time ~rng ~min_year ~max_year_inc in
   let start =
-    Time.Date_time.to_timestamp start_dt
-    |> Time.Date_time.min_of_timestamp_local_result
-    |> Option.get
+    Time.Date_time'.to_timestamp start_dt
+    |> Time.Date_time'.min_of_timestamp_local_result
+    |> CCOpt.get_exn
   in
   let end_inc = Int64.add start (Int64.of_int (rng ())) in
   Time.interval_inc start end_inc
@@ -114,9 +114,9 @@ let make_interval_inc ~rng ~min_year ~max_year_inc =
 let make_interval_exc ~rng ~min_year ~max_year_inc =
   let start_dt = make_date_time ~rng ~min_year ~max_year_inc in
   let start =
-    Time.Date_time.to_timestamp start_dt
-    |> Time.Date_time.min_of_timestamp_local_result
-    |> Option.get
+    Time.Date_time'.to_timestamp start_dt
+    |> Time.Date_time'.min_of_timestamp_local_result
+    |> CCOpt.get_exn
   in
   let end_exc = Int64.add start (Int64.of_int (rng ())) in
   Time.interval_exc start end_exc
@@ -169,7 +169,7 @@ let make_chunk_selector ~rng : Time.chunked -> Time.chunked =
       in
       aux f (new_height ~rng height)
   in
-  aux Fun.id 5
+  aux CCFun.id 5
 
 let make_unary_op ~rng t =
   match rng () mod 6 with
@@ -211,12 +211,12 @@ let build ~min_year ~max_year_inc ~max_height ~max_branching
       | 1 ->
         OSeq.(0 -- Stdlib.min max_branching (rng ()))
         |> Seq.map (fun _ -> aux (new_height ~rng height))
-        |> List.of_seq
+        |> CCList.of_seq
         |> Time.inter
       | 2 ->
         OSeq.(0 -- Stdlib.min max_branching (rng ()))
         |> Seq.map (fun _ -> aux (new_height ~rng height))
-        |> List.of_seq
+        |> CCList.of_seq
         |> Time.union
       | 3 ->
         Time.after (make_duration ~rng)

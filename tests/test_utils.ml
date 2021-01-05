@@ -235,11 +235,11 @@ let default_interval_format_string =
 
 let date_time_testable : (module Alcotest.TESTABLE) =
   (module struct
-    type t = Time.Date_time.t
+    type t = Time.Date_time'.t
 
     let pp formatter t = Printers.pp_date_time formatter t
 
-    let equal = Time.Date_time.equal
+    let equal = Time.Date_time'.equal
   end)
 
 (* let time_pattern_testable : (module Alcotest.TESTABLE) =
@@ -256,13 +256,13 @@ let date_time_testable : (module Alcotest.TESTABLE) =
 let time_gen : Time.t QCheck.Gen.t =
   let open QCheck.Gen in
   let search_start_dt =
-    Result.get_ok
-    @@ Time.Date_time.make ~year:2018 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+    CCResult.get_exn
+    @@ Time.Date_time'.make ~year:2018 ~month:`Jan ~day:1 ~hour:0 ~minute:0
       ~second:0 ~tz:Time_zone.utc
   in
   let search_end_exc_dt =
-    Result.get_ok
-    @@ Time.Date_time.make ~year:2021 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+    CCResult.get_exn
+    @@ Time.Date_time'.make ~year:2021 ~month:`Jan ~day:1 ~hour:0 ~minute:0
       ~second:0 ~tz:Time_zone.utc
   in
   map3
@@ -298,4 +298,4 @@ let permute (seed : int) (l : 'a list) : 'a list =
       let r = List.assoc pick l' in
       l := List.remove_assoc pick l' |> List.map (fun (_, x) -> x);
       r)
-  |> List.of_seq
+  |> CCList.of_seq

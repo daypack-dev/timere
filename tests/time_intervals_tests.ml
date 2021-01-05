@@ -15,9 +15,9 @@ module Alco = struct
         [ (-10L, -9L); (-7L, -5L); (-1L, 1L); (0L, 1L); (3L, 5L) ];
         [ (4L, 5L) ];
       ]
-        |> List.map List.to_seq
+        |> List.map CCList.to_seq
         |> Time.Intervals.Round_robin.merge_multi_list_round_robin_non_decreasing
-        |> List.of_seq)
+        |> CCList.of_seq)
 
   let suite =
     [ Alcotest.test_case "round_robin_simple1" `Quick round_robin_simple1 ]
@@ -29,9 +29,9 @@ module Qc = struct
       QCheck.(pair pos_int64 sorted_time_slots_maybe_gaps)
       (fun (start, l) ->
          l
-         |> List.to_seq
+         |> CCList.to_seq
          |> Time.Intervals.Slice.slice ~start
-         |> List.of_seq
+         |> CCList.of_seq
          |> List.for_all (fun (x, _) -> start <= x))
 
   let slice_end_exc =
@@ -39,27 +39,27 @@ module Qc = struct
       QCheck.(pair pos_int64 sorted_time_slots_maybe_gaps)
       (fun (end_exc, l) ->
          l
-         |> List.to_seq
+         |> CCList.to_seq
          |> Time.Intervals.Slice.slice ~end_exc
-         |> List.of_seq
+         |> CCList.of_seq
          |> List.for_all (fun (_, y) -> y <= end_exc))
 
   let normalize_pairs_are_fine =
     QCheck.Test.make ~count:10_000 ~name:"normalize_pairs_are_fine" time_slots
       (fun l ->
          l
-         |> List.to_seq
+         |> CCList.to_seq
          |> Time.Intervals.normalize
-         |> List.of_seq
+         |> CCList.of_seq
          |> List.for_all (fun (x, y) -> x <= y))
 
   let normalize_time_slots_are_sorted =
     QCheck.Test.make ~count:10_000 ~name:"normalize_time_slots_are_sorted"
       time_slots (fun l ->
           l
-          |> List.to_seq
+          |> CCList.to_seq
           |> Time.Intervals.normalize
-          |> List.of_seq
+          |> CCList.of_seq
           |> List.fold_left
             (fun (res, last) (x, y) ->
                if res then
@@ -74,14 +74,14 @@ module Qc = struct
   let normalize_time_slots_are_unique =
     QCheck.Test.make ~count:10_000 ~name:"normalize_time_slots_are_unique"
       time_slots (fun l ->
-          let l = l |> List.to_seq |> Time.Intervals.normalize |> List.of_seq in
+          let l = l |> CCList.to_seq |> Time.Intervals.normalize |> CCList.of_seq in
           List.length (List.sort_uniq compare l) = List.length l)
 
   let normalize_time_slots_are_disjoint_with_gaps =
     QCheck.Test.make ~count:10_000
       ~name:"normalize_time_slots_are_disjoint_with_gaps" time_slots (fun l ->
           l
-          |> List.to_seq
+          |> CCList.to_seq
           |> Time.Intervals.normalize
           |> Seq.fold_left
             (fun (res, last) (x, y) ->
@@ -97,23 +97,25 @@ module Qc = struct
     QCheck.Test.make ~count:10_000
       ~name:"normalize_idempotent_wrt_normalized_time_slots"
       sorted_time_slots_with_gaps (fun l ->
-          l |> List.to_seq |> Time.Intervals.normalize |> List.of_seq = l)
+          l |> CCList.to_seq |> Time.Intervals.normalize |> CCList.of_seq = l)
 
   let normalize_is_lossless =
     QCheck.Test.make ~count:10_000 ~name:"normalize_is_lossless"
       sorted_time_slots_maybe_gaps (fun l ->
           let original_timestamps =
             l
-            |> List.to_seq
+            |> CCList.to_seq
             |> Seq.flat_map (fun (a, b) -> Seq_utils.a_to_b_exc_int64 ~a ~b)
-            |> Int64_set.of_seq
+            |> CCList.of_seq
+            |> Int64_set.of_list
           in
           let normalized_timestamps =
             l
-            |> List.to_seq
+            |> CCList.to_seq
             |> Time.Intervals.normalize ~skip_sort:true
             |> Seq.flat_map (fun (a, b) -> Seq_utils.a_to_b_exc_int64 ~a ~b)
-            |> Int64_set.of_seq
+            |> CCList.of_seq
+            |> Int64_set.of_list
           in
           Int64_set.equal original_timestamps normalized_timestamps)
 
@@ -122,7 +124,7 @@ module Qc = struct
       ~name:"join_time_slots_are_disjoint_with_gaps"
       sorted_time_slots_maybe_gaps (fun l ->
           l
-          |> List.to_seq
+          |> CCList.to_seq
           |> Time.Intervals.join
           |> Seq.fold_left
             (fun (res, last) (x, y) ->
@@ -137,7 +139,7 @@ module Qc = struct
   let join_idempotent_wrt_joined_time_slots =
     QCheck.Test.make ~count:10_000 ~name:"join_idempotent_wrt_joined_time_slots"
       sorted_time_slots_with_gaps (fun l ->
-          l |> List.to_seq |> Time.Intervals.join |> List.of_seq = l)
+          l |> CCList.to_seq |> Time.Intervals.join |> CCList.of_seq = l)
 
   let invert_disjoint_from_original =
     QCheck.Test.make ~count:10_000 ~name:"invert_disjoint_from_original"
@@ -146,15 +148,15 @@ module Qc = struct
          QCheck.assume (start <= end_exc);
          let sliced =
            l
-           |> List.to_seq
+           |> CCList.to_seq
            |> Time.Intervals.Slice.slice ~start ~end_exc
-           |> List.of_seq
+           |> CCList.of_seq
          in
          let inverted =
            l
-           |> List.to_seq
+           |> CCList.to_seq
            |> Time.Intervals.invert ~start ~end_exc
-           |> List.of_seq
+           |> CCList.of_seq
          in
          let sliced_count = List.length sliced in
          let inverted_count = List.length inverted in
@@ -168,16 +170,16 @@ module Qc = struct
          QCheck.assume (start < end_exc);
          let res =
            l
-           |> List.to_seq
+           |> CCList.to_seq
            |> Time.Intervals.invert ~start ~end_exc
-           |> List.of_seq
+           |> CCList.of_seq
            |> (fun inverted ->
-               (Time.Intervals.Slice.slice ~start ~end_exc (List.to_seq l)
-                |> List.of_seq)
+               (Time.Intervals.Slice.slice ~start ~end_exc (CCList.to_seq l)
+                |> CCList.of_seq)
                @ inverted)
-           |> List.to_seq
+           |> CCList.to_seq
            |> Time.Intervals.normalize
-           |> List.of_seq
+           |> CCList.of_seq
          in
          (l <> [] && List.for_all (fun (x, y) -> y < start || end_exc < x) l)
          || [ (start, end_exc) ] = res)
@@ -189,8 +191,8 @@ module Qc = struct
       (fun (mem_of, not_mem_of) ->
          let res =
            Time.Intervals.relative_complement
-             ~not_mem_of:(List.to_seq not_mem_of) (List.to_seq mem_of)
-           |> List.of_seq
+             ~not_mem_of:(CCList.to_seq not_mem_of) (CCList.to_seq mem_of)
+           |> CCList.of_seq
          in
          let not_mem_of_count = List.length not_mem_of in
          let res_count = List.length res in
@@ -204,34 +206,34 @@ module Qc = struct
       (fun (mem_of, not_mem_of) ->
          let res_s =
            Time.Intervals.relative_complement
-             ~not_mem_of:(List.to_seq not_mem_of) (List.to_seq mem_of)
+             ~not_mem_of:(CCList.to_seq not_mem_of) (CCList.to_seq mem_of)
          in
-         let res = res_s |> List.of_seq in
-         Time.Intervals.Inter.inter (List.to_seq mem_of) res_s
-         |> List.of_seq
+         let res = res_s |> CCList.of_seq in
+         Time.Intervals.Inter.inter (CCList.to_seq mem_of) res_s
+         |> CCList.of_seq
             = res)
 
   let relative_complement_self =
     QCheck.Test.make ~count:10_000 ~name:"relative_complement_self"
       sorted_time_slots_maybe_gaps (fun l ->
-          let s = List.to_seq l in
-          Time.Intervals.relative_complement ~not_mem_of:s s |> List.of_seq = [])
+          let s = CCList.to_seq l in
+          Time.Intervals.relative_complement ~not_mem_of:s s |> CCList.of_seq = [])
 
   let inter_with_self =
     QCheck.Test.make ~count:10_000 ~name:"inter_with_self"
       sorted_time_slots_maybe_gaps (fun l ->
-          let s = l |> List.to_seq in
-          let res = Time.Intervals.Inter.inter s s |> List.of_seq in
+          let s = l |> CCList.to_seq in
+          let res = Time.Intervals.Inter.inter s s |> CCList.of_seq in
           l = res)
 
   let inter_commutative =
     QCheck.Test.make ~count:10_000 ~name:"inter_commutative"
       QCheck.(pair sorted_time_slots_maybe_gaps sorted_time_slots_maybe_gaps)
       (fun (l1, l2) ->
-         let s1 = l1 |> List.to_seq in
-         let s2 = l2 |> List.to_seq in
-         let inter1 = Time.Intervals.Inter.inter s1 s2 |> List.of_seq in
-         let inter2 = Time.Intervals.Inter.inter s2 s1 |> List.of_seq in
+         let s1 = l1 |> CCList.to_seq in
+         let s2 = l2 |> CCList.to_seq in
+         let inter1 = Time.Intervals.Inter.inter s1 s2 |> CCList.of_seq in
+         let inter2 = Time.Intervals.Inter.inter s2 s1 |> CCList.of_seq in
          inter1 = inter2)
 
   let inter_associative =
@@ -240,32 +242,32 @@ module Qc = struct
         triple sorted_time_slots_maybe_gaps sorted_time_slots_maybe_gaps
           sorted_time_slots_maybe_gaps)
       (fun (l1, l2, l3) ->
-         let s1 = l1 |> List.to_seq in
-         let s2 = l2 |> List.to_seq in
-         let s3 = l3 |> List.to_seq in
+         let s1 = l1 |> CCList.to_seq in
+         let s2 = l2 |> CCList.to_seq in
+         let s3 = l3 |> CCList.to_seq in
          let inter1 =
-           Time.Intervals.Inter.(inter (inter s1 s2) s3) |> List.of_seq
+           Time.Intervals.Inter.(inter (inter s1 s2) s3) |> CCList.of_seq
          in
          let inter2 =
-           Time.Intervals.Inter.(inter s1 (inter s2 s3)) |> List.of_seq
+           Time.Intervals.Inter.(inter s1 (inter s2 s3)) |> CCList.of_seq
          in
          inter1 = inter2)
 
   let union_with_self =
     QCheck.Test.make ~count:10_000 ~name:"union_with_self"
       sorted_time_slots_with_gaps (fun l ->
-          let s = l |> List.to_seq in
-          let res = Time.Intervals.Union.union s s |> List.of_seq in
+          let s = l |> CCList.to_seq in
+          let res = Time.Intervals.Union.union s s |> CCList.of_seq in
           l = res)
 
   let union_commutative =
     QCheck.Test.make ~count:10_000 ~name:"union_commutative"
       QCheck.(pair sorted_time_slots_maybe_gaps sorted_time_slots_maybe_gaps)
       (fun (l1, l2) ->
-         let s1 = l1 |> List.to_seq in
-         let s2 = l2 |> List.to_seq in
-         let inter1 = Time.Intervals.Union.union s1 s2 |> List.of_seq in
-         let inter2 = Time.Intervals.Union.union s2 s1 |> List.of_seq in
+         let s1 = l1 |> CCList.to_seq in
+         let s2 = l2 |> CCList.to_seq in
+         let inter1 = Time.Intervals.Union.union s1 s2 |> CCList.of_seq in
+         let inter2 = Time.Intervals.Union.union s2 s1 |> CCList.of_seq in
          inter1 = inter2)
 
   let union_associative =
@@ -274,14 +276,14 @@ module Qc = struct
         triple sorted_time_slots_with_gaps sorted_time_slots_with_gaps
           sorted_time_slots_with_gaps)
       (fun (l1, l2, l3) ->
-         let s1 = l1 |> List.to_seq in
-         let s2 = l2 |> List.to_seq in
-         let s3 = l3 |> List.to_seq in
+         let s1 = l1 |> CCList.to_seq in
+         let s2 = l2 |> CCList.to_seq in
+         let s3 = l3 |> CCList.to_seq in
          let res1 =
-           Time.Intervals.(Union.union (Union.union s1 s2) s3) |> List.of_seq
+           Time.Intervals.(Union.union (Union.union s1 s2) s3) |> CCList.of_seq
          in
          let res2 =
-           Time.Intervals.(Union.union s1 (Union.union s2 s3)) |> List.of_seq
+           Time.Intervals.(Union.union s1 (Union.union s2 s3)) |> CCList.of_seq
          in
          res1 = res2)
 
@@ -291,15 +293,15 @@ module Qc = struct
         triple sorted_time_slots_maybe_gaps sorted_time_slots_maybe_gaps
           sorted_time_slots_maybe_gaps)
       (fun (l1, l2, l3) ->
-         let s1 = l1 |> List.to_seq in
-         let s2 = l2 |> List.to_seq in
-         let s3 = l3 |> List.to_seq in
+         let s1 = l1 |> CCList.to_seq in
+         let s2 = l2 |> CCList.to_seq in
+         let s3 = l3 |> CCList.to_seq in
          let res1 =
-           Time.Intervals.(Union.union s1 (Inter.inter s2 s3)) |> List.of_seq
+           Time.Intervals.(Union.union s1 (Inter.inter s2 s3)) |> CCList.of_seq
          in
          let res2 =
            Time.Intervals.(Inter.inter (Union.union s1 s2) (Union.union s1 s3))
-           |> List.of_seq
+           |> CCList.of_seq
          in
          res1 = res2)
 
@@ -309,15 +311,15 @@ module Qc = struct
         triple sorted_time_slots_with_gaps sorted_time_slots_maybe_gaps
           sorted_time_slots_maybe_gaps)
       (fun (l1, l2, l3) ->
-         let s1 = l1 |> List.to_seq in
-         let s2 = l2 |> List.to_seq in
-         let s3 = l3 |> List.to_seq in
+         let s1 = l1 |> CCList.to_seq in
+         let s2 = l2 |> CCList.to_seq in
+         let s3 = l3 |> CCList.to_seq in
          let res1 =
-           Time.Intervals.(Inter.inter s1 (Union.union s2 s3)) |> List.of_seq
+           Time.Intervals.(Inter.inter s1 (Union.union s2 s3)) |> CCList.of_seq
          in
          let res2 =
            Time.Intervals.(Union.union (Inter.inter s1 s2) (Inter.inter s1 s3))
-           |> List.of_seq
+           |> CCList.of_seq
          in
          res1 = res2)
 

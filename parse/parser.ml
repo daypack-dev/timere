@@ -78,12 +78,12 @@ let months : (string * Timere.month) list =
     ("december", `Dec);
   ]
 
-let parse_weekday (s : string) : (Timere.weekday, unit) Result.t =
+let parse_weekday (s : string) : (Timere.weekday, unit) CCResult.t =
   match Misc_utils.prefix_string_match weekdays s with
   | [ (_, x) ] -> Ok x
   | _ -> Error ()
 
-let parse_month (s : string) : (Timere.month, unit) Result.t =
+let parse_month (s : string) : (Timere.month, unit) CCResult.t =
   match Misc_utils.prefix_string_match months s with
   | [ (_, x) ] -> Ok x
   | _ -> Error ()
@@ -151,7 +151,7 @@ let token_p : (token, unit) MParser.t =
       attempt (string "s") >>$ Seconds;
       (attempt
          (many1_satisfy (fun c ->
-              c <> ' ' && Stdlib.not (String.contains symbols c)))
+              c <> ' ' && not (String.contains symbols c)))
        >>= fun s ->
        fail (Printf.sprintf "%s: Unrecognized token: %s" (string_of_pos pos) s));
     ]
@@ -327,12 +327,12 @@ module Ast_normalize = struct
         else
           invalid_data
             (Printf.sprintf "%s: Invalid second: %d"
-               (string_of_pos @@ Option.get @@ pos_second)
+               (string_of_pos @@ CCOpt.get_exn @@ pos_second)
                minute)
       else
         invalid_data
           (Printf.sprintf "%s: Invalid minute: %d"
-             (string_of_pos @@ Option.get @@ pos_minute)
+             (string_of_pos @@ CCOpt.get_exn @@ pos_minute)
              minute)
     in
     let rec aux acc (l : token list) : token list =
@@ -396,12 +396,12 @@ module Ast_normalize = struct
 
   let recognize_duration (l : token list) : token list =
     let make_duration ~pos ~days ~hours ~minutes ~seconds =
-      ( Option.get pos,
+      ( CCOpt.get_exn pos,
         Duration
           (Timere.Duration.make
-             ~days:(Option.value ~default:0 days)
-             ~hours:(Option.value ~default:0 hours)
-             ~minutes:(Option.value ~default:0 minutes)
+             ~days:(CCOpt.value ~default:0 days)
+             ~hours:(CCOpt.value ~default:0 hours)
+             ~minutes:(CCOpt.value ~default:0 minutes)
              ~seconds ()) )
     in
     let rec aux_start_with_days acc l =
@@ -413,34 +413,34 @@ module Ast_normalize = struct
       match l with
       | (pos_hours, Nat hours) :: (_, Hours) :: rest ->
         aux_start_with_minutes
-          ~pos:(Some (Option.value ~default:pos_hours pos))
+          ~pos:(Some (CCOpt.value ~default:pos_hours pos))
           ~days ~hours:(Some hours) acc rest
       | _ -> aux_start_with_minutes ~pos ~days ~hours:None acc l
     and aux_start_with_minutes ~pos ~days ~hours acc l =
       match l with
       | (pos_minutes, Nat minutes) :: (_, Minutes) :: rest ->
         aux_start_with_seconds
-          ~pos:(Some (Option.value ~default:pos_minutes pos))
+          ~pos:(Some (CCOpt.value ~default:pos_minutes pos))
           ~days ~hours ~minutes:(Some minutes) acc rest
       | _ -> aux_start_with_seconds ~pos ~days ~hours ~minutes:None acc l
     and aux_start_with_seconds ~pos ~days ~hours ~minutes acc l =
       match l with
       | (pos_seconds, Nat seconds) :: (_, Seconds) :: rest ->
         let token =
-          ( Option.value ~default:pos_seconds pos,
+          ( CCOpt.value ~default:pos_seconds pos,
             Duration
               (Timere.Duration.make
-                 ~days:(Option.value ~default:0 days)
-                 ~hours:(Option.value ~default:0 hours)
-                 ~minutes:(Option.value ~default:0 minutes)
+                 ~days:(CCOpt.value ~default:0 days)
+                 ~hours:(CCOpt.value ~default:0 hours)
+                 ~minutes:(CCOpt.value ~default:0 minutes)
                  ~seconds ()) )
         in
         aux_start_with_days (token :: acc) rest
       | [] ->
         if
-          Option.is_some days
-          || Option.is_some hours
-          || Option.is_some minutes
+          CCOpt.is_some days
+          || CCOpt.is_some hours
+          || CCOpt.is_some minutes
         then
           let new_token =
             make_duration ~pos ~days ~hours ~minutes ~seconds:0
@@ -449,9 +449,9 @@ module Ast_normalize = struct
         else List.rev acc
       | token :: rest ->
         if
-          Option.is_some days
-          || Option.is_some hours
-          || Option.is_some minutes
+          CCOpt.is_some days
+          || CCOpt.is_some hours
+          || CCOpt.is_some minutes
         then
           let new_token =
             make_duration ~pos ~days ~hours ~minutes ~seconds:0
@@ -461,7 +461,7 @@ module Ast_normalize = struct
     in
     aux_start_with_days [] l
 
-  let process_tokens (e : ast) : (ast, string) Result.t =
+  let process_tokens (e : ast) : (ast, string) CCResult.t =
     let rec aux e =
       match e with
       | Tokens l ->
@@ -489,22 +489,22 @@ module Ast_normalize = struct
       | Binary_op (op, e1, e2) -> Binary_op (op, aux e1, aux e2)
       | Round_robin_pick l ->
         l
-        |> List.to_seq
+        |> CCList.to_seq
         |> Seq.map aux
         |> Seq.flat_map (fun e ->
             match e with
-            | Round_robin_pick l -> List.to_seq l
+            | Round_robin_pick l -> CCList.to_seq l
             | _ -> Seq.return e)
-        |> List.of_seq
+        |> CCList.of_seq
         |> fun l -> Round_robin_pick l
     in
     aux e
 
-  let normalize (e : ast) : (ast, string) Result.t =
+  let normalize (e : ast) : (ast, string) CCResult.t =
     e |> flatten_round_robin_select |> process_tokens
 end
 
-let parse_into_ast (s : string) : (ast, string) Result.t =
+let parse_into_ast (s : string) : (ast, string) CCResult.t =
   parse_string
     (expr
      << spaces
@@ -519,17 +519,17 @@ let parse_into_ast (s : string) : (ast, string) Result.t =
 
 let flatten_months pos (l : Timere.month Timere.range list) =
   Timere.Utils.flatten_month_range_list l
-  |> Result.map_error (fun () ->
+  |> CCResult.map_err (fun () ->
       Some (Printf.sprintf "%s: Invalid month ranges" (string_of_pos pos)))
 
 let flatten_weekdays pos (l : Timere.weekday Timere.range list) =
   Timere.Utils.flatten_weekday_range_list l
-  |> Result.map_error (fun () ->
+  |> CCResult.map_err (fun () ->
       Some (Printf.sprintf "%s: Invalid weekday ranges" (string_of_pos pos)))
 
 let flatten_month_days pos (l : int Timere.range list) =
   Timere.Utils.flatten_month_day_range_list l
-  |> Result.map_error (fun () ->
+  |> CCResult.map_err (fun () ->
       Some
         (Printf.sprintf "%s: Invalid month day ranges" (string_of_pos pos)))
 
@@ -539,7 +539,7 @@ let pattern ?(years = []) ?(months = []) ?pos_month_days ?(month_days = [])
     Error
       (Some
          (Printf.sprintf "%s: Invalid month days"
-            (string_of_pos @@ Option.get @@ pos_month_days)))
+            (string_of_pos @@ CCOpt.get_exn @@ pos_month_days)))
   else
     match hms with
     | None -> Ok (Timere.pattern ~years ~months ~month_days ~weekdays ())
@@ -549,23 +549,23 @@ let pattern ?(years = []) ?(months = []) ?pos_month_days ?(month_days = [])
            ~hours:[ hms.hour ] ~minutes:[ hms.minute ] ~seconds:[ hms.second ]
            ())
 
-let t_rules : (token list -> (Timere.t, string option) Result.t) list =
+let t_rules : (token list -> (Timere.t, string option) CCResult.t) list =
   [
     (function [ (_, Star) ] -> Ok Timere.always | _ -> Error None);
     (function
       | [ (_, Weekday x) ] -> Ok (Timere.weekdays [ x ])
       | [ (pos, Weekdays l) ] ->
-        flatten_weekdays pos l |> Result.map (fun l -> Timere.weekdays l)
+        flatten_weekdays pos l |> CCResult.map (fun l -> Timere.weekdays l)
       | _ -> Error None);
     (function
       | [ (_, Month_day x) ] -> Ok (Timere.month_days [ x ])
       | [ (pos, Month_days l) ] ->
-        flatten_month_days pos l |> Result.map (fun l -> Timere.month_days l)
+        flatten_month_days pos l |> CCResult.map (fun l -> Timere.month_days l)
       | _ -> Error None);
     (function
       | [ (_, Month x) ] -> Ok (Timere.months [ x ])
       | [ (pos, Months l) ] ->
-        flatten_months pos l |> Result.map (fun l -> Timere.months l)
+        flatten_months pos l |> CCResult.map (fun l -> Timere.months l)
       | _ -> Error None);
     (function
       | [ (_, Nat year); (_, Month month); (pos_month_days, Nat day) ]
@@ -593,7 +593,7 @@ let t_rules : (token list -> (Timere.t, string option) Result.t) list =
       | _ -> Error None);
   ]
 
-let t_of_tokens (tokens : token list) : (Timere.t, string) Result.t =
+let t_of_tokens (tokens : token list) : (Timere.t, string) CCResult.t =
   let rec aux tokens rules =
     match rules with
     | [] ->
@@ -608,7 +608,7 @@ let t_of_tokens (tokens : token list) : (Timere.t, string) Result.t =
   in
   aux tokens t_rules
 
-let t_of_ast (ast : ast) : (Timere.t, string) Result.t =
+let t_of_ast (ast : ast) : (Timere.t, string) CCResult.t =
   let rec aux ast =
     match ast with
     | Tokens tokens -> t_of_tokens tokens
@@ -639,18 +639,18 @@ let parse_timere s =
       | Error msg -> Error msg
       | Ok ast -> t_of_ast ast)
 
-let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) Result.t =
+let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t =
   match ast with
   | Tokens [ (_, Nat year); (_, Month month); (_, Nat day); (_, Hms hms) ]
     when year > 31 ->
     Timere.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
       ~second:hms.second ~tz
-    |> Result.map_error (fun () -> "Invalid date time")
+    |> CCResult.map_err (fun () -> "Invalid date time")
   | Tokens [ (_, Nat day); (_, Month month); (_, Nat year); (_, Hms hms) ]
     when year > 31 ->
     Timere.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
       ~second:hms.second ~tz
-    |> Result.map_error (fun () -> "Invalid date time")
+    |> CCResult.map_err (fun () -> "Invalid date time")
   | Tokens
       [ (_, Nat year); (_, Month month); (_, Nat day); (_, St); (_, Hms hms) ]
   | Tokens
@@ -662,7 +662,7 @@ let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) Result.t =
     ->
     Timere.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
       ~second:hms.second ~tz
-    |> Result.map_error (fun () -> "Invalid date time")
+    |> CCResult.map_err (fun () -> "Invalid date time")
   | _ -> Error "Unrecognized pattern"
 
 let parse_date_time ?(tz = Timere.Time_zone.utc) s =
@@ -673,7 +673,7 @@ let parse_date_time ?(tz = Timere.Time_zone.utc) s =
       | Error msg -> Error msg
       | Ok ast -> date_time_t_of_ast ~tz ast)
 
-let duration_t_of_ast (ast : ast) : (Timere.Duration.t, string) Result.t =
+let duration_t_of_ast (ast : ast) : (Timere.Duration.t, string) CCResult.t =
   match ast with
   | Tokens [ (_, Duration duration) ] -> Ok duration
   | _ -> Error "Unrecognized pattern"

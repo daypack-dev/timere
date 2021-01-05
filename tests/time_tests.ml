@@ -4,12 +4,12 @@ module Alco = struct
   let union_empty () =
     Alcotest.(check (list (pair int64 int64)))
       "same list" []
-      (Time.union [] |> Resolver.resolve |> Result.get_ok |> List.of_seq)
+      (Time.union [] |> Resolver.resolve |> CCResult.get_exn |> CCList.of_seq)
 
   let inter_empty () =
     Alcotest.(check (list (pair int64 int64)))
       "same list" []
-      (Time.inter [] |> Resolver.resolve |> Result.get_ok |> List.of_seq)
+      (Time.inter [] |> Resolver.resolve |> CCResult.get_exn |> CCList.of_seq)
 
   let suite =
     [
@@ -21,7 +21,7 @@ end
 module Qc = struct
   let to_of_sexp =
     QCheck.Test.make ~count:100_000 ~name:"to_of_sexp" time (fun t ->
-        let t' = t |> To_sexp.to_sexp |> Of_sexp.of_sexp |> Result.get_ok in
+        let t' = t |> To_sexp.to_sexp |> Of_sexp.of_sexp |> CCResult.get_exn in
         Time.equal t t')
 
   let union_order_does_not_matter =
@@ -37,8 +37,8 @@ module Qc = struct
          print_endline (To_sexp.to_sexp_string t2);
          print_endline "=====";
          flush stdout;
-         let r1 = OSeq.take 10_000 @@ Result.get_ok @@ Resolver.resolve t1 in
-         let r2 = OSeq.take 10_000 @@ Result.get_ok @@ Resolver.resolve t2 in
+         let r1 = OSeq.take 10_000 @@ CCResult.get_exn @@ Resolver.resolve t1 in
+         let r2 = OSeq.take 10_000 @@ CCResult.get_exn @@ Resolver.resolve t2 in
          OSeq.equal ~eq:( = ) r1 r2)
 
   let inter_order_does_not_matter =
@@ -48,8 +48,8 @@ module Qc = struct
          let l2 = permute rand l1 in
          let t1 = Time.inter l1 in
          let t2 = Time.inter l2 in
-         let r1 = OSeq.take 10_000 @@ Result.get_ok @@ Resolver.resolve t1 in
-         let r2 = OSeq.take 10_000 @@ Result.get_ok @@ Resolver.resolve t2 in
+         let r1 = OSeq.take 10_000 @@ CCResult.get_exn @@ Resolver.resolve t1 in
+         let r2 = OSeq.take 10_000 @@ CCResult.get_exn @@ Resolver.resolve t2 in
          OSeq.equal ~eq:( = ) r1 r2)
 
   let suite =

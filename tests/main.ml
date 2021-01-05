@@ -7,7 +7,7 @@ let default_interval_format_string =
 
 (* let () =
  *   let search_years_ahead = 1 in
- *   let cur_date_time = Result.get_ok @@ Time.Date_time.cur () in
+ *   let cur_date_time = CCResult.get_ok @@ Time.Date_time.cur () in
  *   let search_start = Time.Date_time.to_timestamp cur_date_time in
  *   let search_end_exc =
  *     Time.Date_time.make
@@ -15,7 +15,7 @@ let default_interval_format_string =
  *       ~month:cur_date_time.month ~day:cur_date_time.day ~hour:cur_date_time.hour
  *       ~minute:cur_date_time.minute ~second:cur_date_time.second
  *       ~tz_offset_s:cur_date_time.tz_offset_s
- *     |> Result.get_ok
+ *     |> CCResult.get_ok
  *     |> Time.Date_time.to_timestamp
  *   in
  *   let timere = Time.pattern ~months:[ `Jan ] () in

@@ -61,13 +61,13 @@ let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) =
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((t1, t2), rest) ->
       let dt1 =
-        Result.get_ok @@ Date_time.of_timestamp ~tz_of_date_time:tz t1
+        CCResult.get_ok @@ Date_time.of_timestamp ~tz_of_date_time:tz t1
       in
       let dt2 =
         t2
         |> Int64.pred
         |> Date_time.of_timestamp ~tz_of_date_time:tz
-        |> Result.get_ok
+        |> CCResult.get_ok
       in
       if dt1.year = dt2.year && dt1.month = dt2.month then fun () ->
         Seq.Cons ((t1, t2), aux rest)
@@ -76,7 +76,7 @@ let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) =
           Date_time.set_to_last_day_hour_min_sec dt1
           |> Date_time.to_timestamp
           |> Date_time.max_of_timestamp_local_result
-          |> Option.get
+          |> CCOpt.get
           |> Int64.succ
         in
         fun () ->
@@ -91,13 +91,13 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((t1, t2), rest) ->
       let dt1 =
-        Result.get_ok @@ Date_time.of_timestamp ~tz_of_date_time:tz t1
+        CCResult.get_ok @@ Date_time.of_timestamp ~tz_of_date_time:tz t1
       in
       let dt2 =
         t2
         |> Int64.pred
         |> Date_time.of_timestamp ~tz_of_date_time:tz
-        |> Result.get_ok
+        |> CCResult.get_ok
       in
       if dt1.year = dt2.year && dt1.month = dt2.month then fun () ->
         Seq.Cons ((t1, t2), aux rest)
@@ -106,7 +106,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
           Date_time.set_to_last_day_hour_min_sec dt1
           |> Date_time.to_timestamp
           |> Date_time.max_of_timestamp_local_result
-          |> Option.get
+          |> CCOpt.get
           |> Int64.succ
         in
         fun () ->
@@ -182,7 +182,7 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
       s1
       |> Seq.filter_map (fun (start, end_exc) ->
           find_after b (start, end_exc) s2
-          |> Option.map (fun (_, end_exc') -> (start, end_exc')))
+          |> CCOpt.map (fun (_, end_exc') -> (start, end_exc')))
     | Between_exc (_, b, t1, t2) ->
       let x, y = search_space in
       let search_space = (timestamp_safe_sub x b, y) in
@@ -191,7 +191,7 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
       s1
       |> Seq.filter_map (fun (start, end_exc) ->
           find_after b (start, end_exc) s2
-          |> Option.map (fun (start', _) -> (start, start')))
+          |> CCOpt.map (fun (start', _) -> (start, start')))
     | Unchunk (_, chunked) -> aux_chunked search_using_tz chunked |> normalize
     | _ ->
       Seq_utils.a_to_b_exc_int64 ~a:(fst search_space) ~b:(snd search_space)
@@ -231,7 +231,7 @@ and mem ?(search_using_tz = Time_zone.utc)
     | Error () -> failwith (Printf.sprintf "Invalid timestamp: %Ld" timestamp)
     | Ok dt -> (
         let weekday =
-          Result.get_ok
+          CCResult.get_ok
           @@ Time.weekday_of_month_day ~year:dt.year ~month:dt.month
             ~mday:dt.day
         in

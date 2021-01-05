@@ -200,7 +200,7 @@ let timestamp_of_date_time_utc (x : date_time) : int64 =
   let offset = 0 in
   Ptime.of_date_time
     ((x.year, x.month, x.day), ((x.hour, x.minute, x.second), offset))
-  |> Option.get
+  |> CCOpt.get_exn
   |> Ptime.to_float_s
   |> Int64.of_float
 
@@ -208,7 +208,7 @@ let timestamp_of_date_time_local (x : date_time) : int64 =
   let offset = 0 in
   Ptime.of_date_time
     ((x.year, x.month, x.day), ((x.hour, x.minute, x.second), offset))
-  |> Option.get
+  |> CCOpt.get_exn
   |> Ptime.to_float_s
   |> Int64.of_float
 
