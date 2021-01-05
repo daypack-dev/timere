@@ -168,7 +168,10 @@ module Time_zone : sig
 
       Naming follows the convention used in [/usr/share/zoneinfo/posix/] distributed on Linux, e.g. "Australia/Sydney".
 
-      See {{:https://github.com/daypack-dev/timere/tree/main/gen_artifacts/available-time-zones.txt} [available-time-zones.txt]} or {!val:available_time_zones} or for all usable time zone names.
+      See {!val:available_time_zones} or checking usable time zone names at runtime.
+
+      Alternatively, if you are using [timere.tz.full] (the default implementation for [timere.tz.data]), then you can also see
+      {{:https://github.com/daypack-dev/timere/tree/main/gen_artifacts/available-time-zones.txt} [available-time-zones.txt]} for available time zones.
   *)
 
   val make_exn : string -> t
@@ -178,7 +181,7 @@ module Time_zone : sig
 
   val utc : t
 
-  val available_time_zones : string list
+  val available_time_zones : unit -> string list
 end
 
 val with_tz : Time_zone.t -> t -> t

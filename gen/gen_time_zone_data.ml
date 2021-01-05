@@ -422,4 +422,9 @@ let gen () =
                l;
              write_line "        |];";
              write_line "    }")
-          tables_utc)
+          tables_utc;
+        write_line "";
+        write_line "let lookup_record name = String_map.find_opt name db";
+        write_line "";
+        write_line "let available_time_zones () = String_map.bindings db |> List.map fst"
+      )

@@ -5,6 +5,5 @@
       oseq
       re
       timere
-      timere-tz-full
    )
 )

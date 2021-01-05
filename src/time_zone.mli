@@ -21,7 +21,7 @@ val make : string -> (t, unit) result
 
 val make_exn : string -> t
 
-val available_time_zones : string list
+val available_time_zones : unit -> string list
 
 val lookup_timestamp_utc : t -> int64 -> entry option
 

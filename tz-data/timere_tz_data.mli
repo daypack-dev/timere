@@ -10,8 +10,6 @@ type record = {
   table : table;
 }
 
-module String_map : Map.S with type key = string
+val lookup_record : string -> record option
 
-type db = record String_map.t
-
-val db : db
+val available_time_zones : unit -> string list

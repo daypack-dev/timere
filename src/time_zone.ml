@@ -11,14 +11,17 @@ type 'a local_result =
   | `Ambiguous of 'a * 'a
   ]
 
+let lookup_record : (string -> record option) ref = ref lookup_record
+
+let set_data_source (f : string -> record option) : unit =
+  lookup_record := f
+
 let name t = t.name
 
 let equal t1 t2 = t1.name = t2.name
 
-let available_time_zones = String_map.bindings db |> List.map (fun (k, _) -> k)
-
 let make name : (t, unit) result =
-  match String_map.find_opt name db with
+  match !lookup_record name with
   | Some record -> Ok { name; record }
   | None -> Error ()
 
