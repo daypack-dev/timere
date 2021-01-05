@@ -182,6 +182,8 @@ module Time_zone : sig
   val utc : t
 
   val available_time_zones : unit -> string list
+
+  val set_data_source : (string -> Timere_tz_data.record option) -> unit
 end
 
 val with_tz : Time_zone.t -> t -> t

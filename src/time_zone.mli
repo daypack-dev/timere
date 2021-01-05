@@ -11,6 +11,8 @@ type 'a local_result =
   | `Ambiguous of 'a * 'a
   ]
 
+val set_data_source : (string -> Timere_tz_data.record option) -> unit
+
 val equal : t -> t -> bool
 
 val name : t -> string
