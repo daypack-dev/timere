@@ -1,0 +1,12 @@
+(rule
+ (targets timere_tz_data.ml)
+ (deps    ../gen_artifacts/time_zone_data.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(library
+ (flags     (-w "+a-4-9-29-37-40-42-44-48-50-32-30@8"))
+ (name      timere_tz_full)
+ (public_name timere-tz-full)
+ (implements timere_tz_data)
+)

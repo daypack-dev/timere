@@ -348,6 +348,7 @@ let gen () =
         write_line "  recorded_offsets : int array;";
         write_line "  table : table;";
         write_line "}";
+        write_line "module String_map = Map.Make (struct type t = string let compare = compare end)";
         write_line "";
         write_line "type db = record String_map.t";
         write_line "";

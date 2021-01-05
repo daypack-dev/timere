@@ -1,0 +1,5 @@
+(library
+ (name timere_tz_data)
+ (public_name timere-tz-data)
+ (virtual_modules timere_tz_data)
+)
