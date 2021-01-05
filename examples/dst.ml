@@ -33,5 +33,5 @@ let timere =
 
 let () =
   Timere.resolve timere
-  |> Result.get_ok
+  |> CCResult.get_exn
   |> display_intervals ~display_using_tz:tz

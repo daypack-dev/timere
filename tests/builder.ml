@@ -49,14 +49,20 @@ let make_pattern ~rng ~min_year ~max_year_inc =
   let years =
     if rng () mod 2 = 0 then []
     else
-      OSeq.(0 -- Stdlib.min 5 (rng ()))
+      let end_inc =
+        min 5 (rng ())
+      in
+      OSeq.(0 -- end_inc)
       |> Seq.map (fun _ -> min max_year_inc (min_year + rng ()))
       |> CCList.of_seq
   in
   let months =
     if rng () mod 2 = 0 then []
     else
-      OSeq.(0 -- Stdlib.min 5 (rng ()))
+      let end_inc =
+        min 5 (rng ())
+      in
+      OSeq.(0 -- end_inc)
       |> Seq.map (fun _ ->
           CCResult.get_exn @@ Time.month_of_tm_int (rng () mod 12))
       |> CCList.of_seq
@@ -64,7 +70,10 @@ let make_pattern ~rng ~min_year ~max_year_inc =
   let month_days =
     if rng () mod 2 = 0 then []
     else
-      OSeq.(0 -- Stdlib.min 5 (rng ()))
+      let end_inc =
+        min 5 (rng ())
+      in
+      OSeq.(0 -- end_inc)
       |> Seq.map (fun _ ->
           if rng () mod 2 = 0 then 1 + (rng () mod 31)
           else -(1 + (rng () mod 31)))
@@ -73,7 +82,10 @@ let make_pattern ~rng ~min_year ~max_year_inc =
   let weekdays =
     if rng () mod 2 = 0 then []
     else
-      OSeq.(0 -- Stdlib.min 5 (rng ()))
+      let end_inc =
+        min 5 (rng ())
+      in
+      OSeq.(0 -- end_inc)
       |> Seq.map (fun _ ->
           CCResult.get_exn @@ Time.weekday_of_tm_int (rng () mod 7))
       |> CCList.of_seq
@@ -81,21 +93,30 @@ let make_pattern ~rng ~min_year ~max_year_inc =
   let hours =
     if rng () mod 2 = 0 then []
     else
-      OSeq.(0 -- Stdlib.min 5 (rng ()))
+      let end_inc =
+        min 5 (rng ())
+      in
+      OSeq.(0 -- end_inc)
       |> Seq.map (fun _ -> rng () mod 24)
       |> CCList.of_seq
   in
   let minutes =
     if rng () mod 2 = 0 then []
     else
-      OSeq.(0 -- Stdlib.min 5 (rng ()))
+      let end_inc =
+        min 5 (rng ())
+      in
+      OSeq.(0 -- end_inc)
       |> Seq.map (fun _ -> rng () mod 60)
       |> CCList.of_seq
   in
   let seconds =
     if rng () mod 2 = 0 then []
     else
-      OSeq.(0 -- Stdlib.min 5 (rng ()))
+      let end_inc =
+        min 5 (rng ())
+      in
+      OSeq.(0 -- end_inc)
       |> Seq.map (fun _ -> rng () mod 60)
       |> CCList.of_seq
   in
@@ -209,12 +230,14 @@ let build ~min_year ~max_year_inc ~max_height ~max_branching
       match rng () mod 7 with
       | 0 -> make_unary_op ~rng (aux (new_height ~rng height))
       | 1 ->
-        OSeq.(0 -- Stdlib.min max_branching (rng ()))
+        let end_inc = min max_branching (rng ()) in
+        OSeq.(0 -- end_inc)
         |> Seq.map (fun _ -> aux (new_height ~rng height))
         |> CCList.of_seq
         |> Time.inter
       | 2 ->
-        OSeq.(0 -- Stdlib.min max_branching (rng ()))
+        let end_inc = min max_branching (rng ()) in
+        OSeq.(0 -- end_inc)
         |> Seq.map (fun _ -> aux (new_height ~rng height))
         |> CCList.of_seq
         |> Time.union
