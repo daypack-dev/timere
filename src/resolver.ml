@@ -1302,21 +1302,30 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
           if
             min_end_exc <= max_start
             && max_start -^ min_end_exc >= search_space_adjustment_trigger_size
-          then
+          then (
+            print_endline "test0";
             let timeres = slice_search_space_multi ~start:max_start timeres in
             (timeres, resolve ~start search_using_tz timeres)
-          else (timeres, interval_batches)
+          )
+          else (
+            print_endline "test1";
+            (timeres, interval_batches)
+          )
         in
         let intervals_up_to_max_end_exc =
           interval_batches
           |> List.to_seq
+          |> Seq.map (
+            Intervals.Slice.slice ~skip_check:true ~end_exc:max_end_exc
+          )
           |> Intervals.Inter.inter_multi_seq ~skip_check:true
-          |> Intervals.Slice.slice ~skip_check:true ~end_exc:max_end_exc
         in
-        OSeq.append intervals_up_to_max_end_exc
-          (aux_inter' ~start:max_end_exc timeres)
+        fun () -> Seq.Cons (intervals_up_to_max_end_exc,
+                            aux_inter' ~start:max_end_exc timeres
+                           )
     in
     aux_inter' ~start:default_search_space_start (List.of_seq timeres)
+    |> Seq.flat_map Fun.id
     |> normalize
   and aux_chunked search_using_tz (chunked : chunked) =
     let chunk_based_on_op_on_t op s =
