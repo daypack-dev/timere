@@ -40,18 +40,18 @@ a concrete implementation of time zone data source
 
 - `timere.tz.full`
 
-  - This is the default implementation which embeds the full time zone database
+  - This is the default implementation which embeds the full IANA time zone database from year 1850 to year 2100 exclusive
 
 - `timere.tz.none`
 
   - This embeds no database.
-    This is suitable when you want to retrieve time zone data during run time, to, for instance, reduce the built artifact size.
+    This is suitable when you want to retrieve time zone data during run time. For instance, to reduce the built artifact size.
   
   - The following resources should allow you to implement said approach readily
   
     - A usable and test suite covered data source is provided under `tzdb-json/`.
     
-    - List of available time zones is available as `gen_artifacts/available-time-zones.txt`
+    - List of available time zones is available as `gen-artifacts/available-time-zones.txt`
 
     - `Time_zone.of_json_string` can load files in `tzdb-json/`
 
