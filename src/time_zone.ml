@@ -185,6 +185,13 @@ let of_json_string s : (t, unit) result =
             | _ -> raise Invalid_data)
         |> Array.of_list
       in
+      Array.fold_left
+        (fun acc (start, _) ->
+           if Int64_set.mem start acc then raise Invalid_data
+           else Int64_set.add start acc)
+        Int64_set.empty table
+      |> ignore;
+      Array.sort (fun (start1, _) (start2, _) -> compare start1 start2) table;
       Ok { name; record = process_table table }
     | _ -> raise Invalid_data
   with _ -> Error ()
