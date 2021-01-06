@@ -249,8 +249,7 @@ let tz_testable : (module Alcotest.TESTABLE with type t = Time_zone.t) =
     let pp _formatter _t = failwith "Time zone is not printable"
 
     let equal = Time_zone.equal
-  end
-  )
+  end)
 
 (* let time_pattern_testable : (module Alcotest.TESTABLE) =
  *   ( module struct
