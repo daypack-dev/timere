@@ -46,6 +46,12 @@ a concrete implementation of time zone data source
 
 [API documentation](https://daypack-dev.github.io/timere/)
 
+## License
+
+Code files are licensed under the MIT license as specified in the `LICENSE` file
+
+Time zone database derived files are licensed under its original terms (public domain)
+
 ## Acknowledgement
 
 - Time zone information is extracted via `zdump` command output into `src/time_zone_data.ml`, using the IANA database (as time zone files) distributed on Linux
