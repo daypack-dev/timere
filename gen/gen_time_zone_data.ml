@@ -43,7 +43,7 @@ type transition_record = {
 
 type transition_table = string * transition_record list
 
-let output_dir = "gen_artifacts/"
+let output_dir = "gen-artifacts/"
 
 let output_list_file_name = output_dir ^ "available-time-zones.txt"
 
