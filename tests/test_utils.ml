@@ -298,16 +298,13 @@ let time_list n =
 
 let time_zone_gen : Time_zone.t QCheck.Gen.t =
   let open QCheck.Gen in
-  let tz_count = (List.length Time_zone.available_time_zones) in
-  map (fun n ->
-      Time_zone.make_exn (List.nth Time_zone.available_time_zones n)
-    )
-  (int_bound (tz_count - 1))
+  let tz_count = List.length Time_zone.available_time_zones in
+  map
+    (fun n -> Time_zone.make_exn (List.nth Time_zone.available_time_zones n))
+    (int_bound (tz_count - 1))
 
 let time_zone =
-  QCheck.make
-    ~print:(fun (t : Time_zone.t) -> t.name)
-    time_zone_gen
+  QCheck.make ~print:(fun (t : Time_zone.t) -> t.name) time_zone_gen
 
 let permute (seed : int) (l : 'a list) : 'a list =
   let len = List.length l in

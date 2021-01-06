@@ -15,12 +15,9 @@ let make_date_time ~rng ~min_year ~max_year_inc =
   let hour = rng () mod 24 in
   let minute = rng () mod 60 in
   let second = rng () mod 60 in
-  let available_time_zone_count =
-    List.length (Time_zone.available_time_zones)
-  in
+  let available_time_zone_count = List.length Time_zone.available_time_zones in
   let tz =
-    List.nth
-      (Time_zone.available_time_zones)
+    List.nth Time_zone.available_time_zones
       (rng () mod available_time_zone_count)
     |> Time_zone.make_exn
   in
@@ -184,11 +181,10 @@ let make_unary_op ~rng t =
   | 4 -> Time.lengthen (make_duration ~rng) t
   | 5 ->
     let available_time_zone_count =
-      List.length (Time_zone.available_time_zones)
+      List.length Time_zone.available_time_zones
     in
     let tz =
-      List.nth
-        (Time_zone.available_time_zones)
+      List.nth Time_zone.available_time_zones
         (rng () mod available_time_zone_count)
       |> Time_zone.make_exn
     in

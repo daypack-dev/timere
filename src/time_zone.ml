@@ -192,22 +192,22 @@ let of_json_string s : (t, unit) result =
 let to_json_string (t : t) : string =
   let json =
     Yojson.Basic.(
-      `Assoc [
-        ("name", `String t.name);
-        ("table",
-         `List
-           (Array.to_list t.record.table
-            |> List.map (fun (start, entry) ->
-                `List [`String (Int64.to_string start);
-                       `Assoc [
-                         ("is_dst", `Bool entry.is_dst);
-                         ("offset", `Int entry.offset);
-                       ]
-                      ]
-              )
-           )
-        )
-      ]
-    )
+      `Assoc
+        [
+          ("name", `String t.name);
+          ( "table",
+            `List
+              (Array.to_list t.record.table
+               |> List.map (fun (start, entry) ->
+                   `List
+                     [
+                       `String (Int64.to_string start);
+                       `Assoc
+                         [
+                           ("is_dst", `Bool entry.is_dst);
+                           ("offset", `Int entry.offset);
+                         ];
+                     ])) );
+        ])
   in
   Yojson.Basic.to_string json
