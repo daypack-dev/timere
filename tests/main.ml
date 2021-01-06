@@ -40,6 +40,7 @@ let () =
     [
       ("Time_intervals_tests.Alco", Time_intervals_tests.Alco.suite);
       ("Time_tests.Alco", Time_tests.Alco.suite);
+      ("Tzdb_json_tests.Alco", Tzdb_json_tests.Alco.suite);
     ]
   in
   let qc_suites =

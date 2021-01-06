@@ -35,6 +35,12 @@
 )
 
 (rule
+ (targets tzdb_utils.ml)
+ (deps    ../src/tzdb_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
  (targets int64_utils.ml)
  (deps    ../src/int64_utils.ml)
  (action  (copy %{deps} %{targets}))
@@ -113,5 +119,6 @@
             seq
             mparser
             containers
+            yojson
             )
  )

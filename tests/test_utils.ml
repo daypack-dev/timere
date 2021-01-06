@@ -242,6 +242,16 @@ let date_time_testable : (module Alcotest.TESTABLE) =
     let equal = Time.Date_time'.equal
   end)
 
+let tz_testable : (module Alcotest.TESTABLE with type t = Time_zone.t) =
+  (module struct
+    type t = Time_zone.t
+
+    let pp _formatter _t = failwith "Time zone is not printable"
+
+    let equal = Time_zone.equal
+  end
+  )
+
 (* let time_pattern_testable : (module Alcotest.TESTABLE) =
  *   ( module struct
  *     type t = Daypack_lib.Time_pattern.time_pattern
