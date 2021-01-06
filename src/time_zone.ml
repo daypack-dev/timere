@@ -35,12 +35,20 @@ let process_table (table : table) : record =
     in
     { recorded_offsets; table }
 
-let lookup : (string -> table option) ref = ref lookup
+let available_time_zones_ref : (unit -> string list) ref =
+  ref available_time_zones
+
+let lookup_ref : (string -> table option) ref = ref lookup
+
+let set_data_source ~(available_time_zones : unit -> string list)
+    ~(lookup : string -> table option) : unit =
+  available_time_zones_ref := available_time_zones;
+  lookup_ref := lookup
+
+let available_time_zones () = !available_time_zones_ref ()
 
 let lookup_record name : record option =
-  name |> !lookup |> CCOpt.map process_table
-
-let set_data_source (f : string -> table option) : unit = lookup := f
+  name |> !lookup_ref |> CCOpt.map process_table
 
 let name t = t.name
 

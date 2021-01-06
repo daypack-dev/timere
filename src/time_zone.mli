@@ -13,7 +13,10 @@ type 'a local_result =
   | `Ambiguous of 'a * 'a
   ]
 
-val set_data_source : (string -> Timere_tz_data.table option) -> unit
+val set_data_source :
+  available_time_zones:(unit -> string list) ->
+  lookup:(string -> Timere_tz_data.table option) ->
+  unit
 
 val equal : t -> t -> bool
 

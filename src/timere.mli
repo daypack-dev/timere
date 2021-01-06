@@ -185,7 +185,10 @@ module Time_zone : sig
 
   val available_time_zones : unit -> string list
 
-  val set_data_source : (string -> Timere_tz_data.table option) -> unit
+  val set_data_source :
+    available_time_zones:(unit -> string list) ->
+    lookup:(string -> Timere_tz_data.table option) ->
+    unit
 end
 
 val with_tz : Time_zone.t -> t -> t
