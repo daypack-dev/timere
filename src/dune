@@ -11,5 +11,6 @@
             mparser
             containers
             seq
+            yojson
  )
 )

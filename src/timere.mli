@@ -652,4 +652,6 @@ module Utils : sig
 
   val flatten_weekday_range_list :
     weekday range list -> (weekday list, unit) result
+
+  val tz_table_of_json_string : string -> (Timere_tz_data.table, unit) result
 end
