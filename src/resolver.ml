@@ -1056,15 +1056,6 @@ let do_take_points (n : int64) (s : Time.Interval.t Seq.t) :
   in
   aux n s
 
-let find_after bound (s1 : Time.Interval.t Seq.t) (s2 : Time.Interval.t Seq.t) =
-  s1
-  |> Seq.filter_map (fun (_start, end_exc) ->
-      match OSeq.drop_while (fun (start', _) -> start' < end_exc) s2 () with
-      | Seq.Nil -> None
-      | Seq.Cons ((start', end_exc'), _) ->
-        if Int64.sub start' end_exc <= bound then Some (start', end_exc')
-        else None)
-
 let find_between_inc bound (s1 : Time.Interval.t Seq.t)
     (s2 : Time.Interval.t Seq.t) =
   let rec aux s1 s2 =
@@ -1234,8 +1225,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
     | Union_seq (_, s) -> aux_union search_using_tz s
     | After (_, b, t1, t2) ->
       let s1 = aux search_using_tz t1 in
-      let s2 = aux search_using_tz t2 in
-      find_after b s1 s2
+      aux_after b search_using_tz s1 t2
     | Between_inc (_, b, t1, t2) ->
       let s1 = aux search_using_tz t1 in
       let s2 = aux search_using_tz t2 in
@@ -1245,6 +1235,17 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
       let s2 = aux search_using_tz t2 in
       find_between_exc b s1 s2
     | Unchunk (_, c) -> aux_chunked search_using_tz c |> normalize
+  and aux_after bound search_using_tz s1 t2 =
+    s1
+    |> Seq.filter_map (fun (_start, end_exc) ->
+        let t2 = slice_search_space ~start:end_exc t2 in
+        let s2 = aux search_using_tz t2 in
+        match OSeq.drop_while (fun (start', _) -> start' < end_exc) s2 () with
+        | Seq.Nil -> None
+        | Seq.Cons ((start', end_exc'), _) ->
+          if Int64.sub start' end_exc <= bound then Some (start', end_exc')
+          else None
+      )
   and aux_union search_using_tz timeres =
     let resolve_and_merge (s : Time.t Seq.t) : Interval.t Seq.t =
       Seq.map (aux search_using_tz) s
