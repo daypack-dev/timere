@@ -11,7 +11,20 @@ type 'a local_result =
   | `Ambiguous of 'a * 'a
   ]
 
-let lookup_record : (string -> record option) ref = ref lookup_record
+let process_record (r : record) : record =
+  let len = Array.length r.table in
+  if len = 0 then failwith "Time zone record table is empty"
+  else
+    let table =
+      let first_row = r.table.(0) in
+      if Constants.min_timestamp < fst first_row then
+        Array.append [| (Constants.min_timestamp, snd first_row) |] r.table
+      else r.table
+    in
+    { r with table }
+
+let lookup_record : (string -> record option) ref =
+  ref (fun x -> x |> lookup_record |> CCOpt.map process_record)
 
 let set_data_source (f : string -> record option) : unit = lookup_record := f
 
