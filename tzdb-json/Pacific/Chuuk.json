@@ -1,0 +1,11 @@
+{
+  "name" : "Pacific/Chuuk",
+  "table" : [
+    ["-62167219200", { "is_dst" : false, "offset" : 36000 }],
+    ["-2177489228", { "is_dst" : false, "offset" : 36000 }],
+    ["-1743674400", { "is_dst" : false, "offset" : 32400 }],
+    ["-1606813200", { "is_dst" : false, "offset" : 36000 }],
+    ["-907408800", { "is_dst" : false, "offset" : 32400 }],
+    ["-770634000", { "is_dst" : false, "offset" : 36000 }]
+  ]
+}

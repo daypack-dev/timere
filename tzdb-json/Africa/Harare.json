@@ -1,0 +1,7 @@
+{
+  "name" : "Africa/Harare",
+  "table" : [
+    ["-62167219200", { "is_dst" : false, "offset" : 7200 }],
+    ["-2109291020", { "is_dst" : false, "offset" : 7200 }]
+  ]
+}

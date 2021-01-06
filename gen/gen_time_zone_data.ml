@@ -41,7 +41,7 @@ type transition_record = {
   offset : int;
 }
 
-type transition_table = (string * transition_record list) list
+type transition_table = (string * transition_record list)
 
 let output_dir = "gen_artifacts/"
 
@@ -49,7 +49,7 @@ let output_list_file_name = output_dir ^ "available-time-zones.txt"
 
 let output_file_name = output_dir ^ "time_zone_data.ml"
 
-let tzdb_output_dir = "tzdb/"
+let tzdb_json_output_dir = "tzdb-json/"
 
 let year_start = 1850
 
@@ -276,7 +276,6 @@ let gen () =
   let zoneinfo_file_dir = "/usr/share/zoneinfo/posix" in
   let all_zoneinfo_file_paths =
     FileUtil.(find Is_file zoneinfo_file_dir (fun x y -> y :: x) [])
-    |> CCList.take 1
   in
   let all_time_zones_in_parts =
     all_zoneinfo_file_paths
@@ -318,9 +317,10 @@ let gen () =
         transitions_of_zdump_lines l)
   in
   print_newline ();
-  let tables_utc : transition_table =
+  let tables_utc : transition_table list =
     List.combine all_time_zones transitions
-    |> List.map (fun (s, l) ->
+    |> CCList.to_seq
+    |> Seq.map (fun (s, l) ->
         Printf.printf "Constructing transition table for time_zone: %s\n" s;
         flush stdout;
         let l =
@@ -329,6 +329,55 @@ let gen () =
           |> check_transition_records_are_contiguous
         in
         (s, l))
+    |> Seq.map (fun (s, l) ->
+        let l =
+          match l with
+          | [] -> (
+              let base =
+                {
+                  start = min_timestamp;
+                  end_exc = max_timestamp;
+                  tz = String s;
+                  is_dst = false;
+                  offset = 0;
+                }
+              in
+              match s with
+              | "UTC" | "UCT" | "GMT" | "GMT-0" | "GMT+0" | "GMT0"
+              | "Universal" | "Greenwich" | "Zulu" | "Factory" | "Etc/GMT"
+              | "Etc/GMT0" | "Etc/UTC" | "Etc/UCT" | "Etc/Universal"
+              | "Etc/Greenwich" | "Etc/Zulu" ->
+                [ base ]
+              | "EST" -> [ { base with offset = -5 * 60 * 60 } ]
+              | "HST" -> [ { base with offset = -10 * 60 * 60 } ]
+              | "MST" -> [ { base with offset = -7 * 60 * 60 } ]
+              | s -> (
+                  try
+                    Scanf.sscanf s "Etc/GMT%d" (fun x ->
+                        [ { base with offset = x * 60 * 60 } ])
+                  with _ ->
+                    failwith
+                      (Printf.sprintf
+                         "Unrecognized time zone during special case \
+                          handling: %s"
+                         s)))
+          | x :: xs ->
+            if x.start <> min_timestamp then
+              let filler =
+                {
+                  start = min_timestamp;
+                  end_exc = x.start;
+                  tz = x.tz;
+                  is_dst = x.is_dst;
+                  offset = x.offset;
+                }
+              in
+              filler :: x :: xs
+            else x :: xs
+        in
+        (s, l)
+      )
+    |> CCList.of_seq
   in
   print_newline ();
   Printf.printf "Number of time_zones: %d\n" (List.length all_time_zones);
@@ -362,51 +411,6 @@ let gen () =
         write_line "  String_map.empty";
         List.iter
           (fun (s, l) ->
-             let l =
-               match l with
-               | [] -> (
-                   let base =
-                     {
-                       start = min_timestamp;
-                       end_exc = max_timestamp;
-                       tz = String s;
-                       is_dst = false;
-                       offset = 0;
-                     }
-                   in
-                   match s with
-                   | "UTC" | "UCT" | "GMT" | "GMT-0" | "GMT+0" | "GMT0"
-                   | "Universal" | "Greenwich" | "Zulu" | "Factory" | "Etc/GMT"
-                   | "Etc/GMT0" | "Etc/UTC" | "Etc/UCT" | "Etc/Universal"
-                   | "Etc/Greenwich" | "Etc/Zulu" ->
-                     [ base ]
-                   | "EST" -> [ { base with offset = -5 * 60 * 60 } ]
-                   | "HST" -> [ { base with offset = -10 * 60 * 60 } ]
-                   | "MST" -> [ { base with offset = -7 * 60 * 60 } ]
-                   | s -> (
-                       try
-                         Scanf.sscanf s "Etc/GMT%d" (fun x ->
-                             [ { base with offset = x * 60 * 60 } ])
-                       with _ ->
-                         failwith
-                           (Printf.sprintf
-                              "Unrecognized time zone during special case \
-                               handling: %s"
-                              s)))
-               | x :: xs ->
-                 if x.start <> min_timestamp then
-                   let filler =
-                     {
-                       start = min_timestamp;
-                       end_exc = x.start;
-                       tz = x.tz;
-                       is_dst = x.is_dst;
-                       offset = x.offset;
-                     }
-                   in
-                   filler :: x :: xs
-                 else x :: xs
-             in
              write_line (Printf.sprintf "  |> String_map.add \"%s\"" s);
              write_line "      [|";
              List.iter
@@ -424,17 +428,35 @@ let gen () =
         write_line "";
         write_line
           "let available_time_zones () = String_map.bindings db |> List.map fst");
-  List.iter (fun time_zone_parts ->
+  print_endline "Generating tzdb JSON";
+  List.combine all_time_zones_in_parts tables_utc
+  |> List.iter (fun (time_zone_parts, (name, transitions)) ->
       let len = List.length time_zone_parts in
       assert (len > 0);
-      let dir_parts = tzdb_output_dir :: CCList.take (len - 1) time_zone_parts in
+      let dir_parts = tzdb_json_output_dir :: CCList.take (len - 1) time_zone_parts in
       let dir = String.concat "/" dir_parts in
       FileUtil.mkdir ~parent:true dir;
-      let output_file_name = List.nth time_zone_parts (len - 1) in
+      let output_file_name = Filename.concat dir (List.nth time_zone_parts (len - 1) ^ ".json") in
       CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
         output_file_name (fun oc ->
+            let transition_count = List.length transitions in
             let write_line = CCIO.write_line oc in
-            ()
+            write_line "{";
+            write_line (Printf.sprintf "  \"name\" : \"%s\"," name);
+            write_line "  \"table\" : [";
+            List.iteri (fun i (r : transition_record) ->
+                write_line
+                  (Printf.sprintf "    [\"%Ld\", { \"is_dst\" : %b, \"offset\" : %d }]%s"
+                     r.start
+                     r.is_dst
+                     r.offset
+                     (if i = transition_count - 1 then "" else ","
+                     )
+                  );
+              )
+              transitions;
+            write_line "  ]";
+            write_line "}";
           )
     )
-    all_time_zones_in_parts;
+  ;

@@ -1,0 +1,8 @@
+{
+  "name" : "America/Lower_Princes",
+  "table" : [
+    ["-62167219200", { "is_dst" : false, "offset" : -16200 }],
+    ["-1826738653", { "is_dst" : false, "offset" : -16200 }],
+    ["-157750200", { "is_dst" : false, "offset" : -14400 }]
+  ]
+}

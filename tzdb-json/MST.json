@@ -1,0 +1,6 @@
+{
+  "name" : "MST",
+  "table" : [
+    ["-62167219200", { "is_dst" : false, "offset" : -25200 }]
+  ]
+}

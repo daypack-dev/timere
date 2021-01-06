@@ -1,0 +1,14 @@
+{
+  "name" : "Asia/Jakarta",
+  "table" : [
+    ["-62167219200", { "is_dst" : false, "offset" : 25632 }],
+    ["-3231299232", { "is_dst" : false, "offset" : 25632 }],
+    ["-1451719200", { "is_dst" : false, "offset" : 26400 }],
+    ["-1172906400", { "is_dst" : false, "offset" : 27000 }],
+    ["-876641400", { "is_dst" : false, "offset" : 32400 }],
+    ["-766054800", { "is_dst" : false, "offset" : 27000 }],
+    ["-683883000", { "is_dst" : false, "offset" : 28800 }],
+    ["-620812800", { "is_dst" : false, "offset" : 27000 }],
+    ["-189415800", { "is_dst" : false, "offset" : 25200 }]
+  ]
+}

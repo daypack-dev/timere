@@ -1,0 +1,8 @@
+{
+  "name" : "Asia/Bahrain",
+  "table" : [
+    ["-62167219200", { "is_dst" : false, "offset" : 14400 }],
+    ["-1577935568", { "is_dst" : false, "offset" : 14400 }],
+    ["76190400", { "is_dst" : false, "offset" : 10800 }]
+  ]
+}

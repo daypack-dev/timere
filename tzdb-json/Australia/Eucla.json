@@ -1,0 +1,25 @@
+{
+  "name" : "Australia/Eucla",
+  "table" : [
+    ["-62167219200", { "is_dst" : false, "offset" : 31500 }],
+    ["-2337928528", { "is_dst" : false, "offset" : 31500 }],
+    ["-1672555500", { "is_dst" : true, "offset" : 35100 }],
+    ["-1665384300", { "is_dst" : false, "offset" : 31500 }],
+    ["-883637100", { "is_dst" : true, "offset" : 35100 }],
+    ["-876120300", { "is_dst" : false, "offset" : 31500 }],
+    ["-860395500", { "is_dst" : true, "offset" : 35100 }],
+    ["-844670700", { "is_dst" : false, "offset" : 31500 }],
+    ["152039700", { "is_dst" : true, "offset" : 35100 }],
+    ["162926100", { "is_dst" : false, "offset" : 31500 }],
+    ["436295700", { "is_dst" : true, "offset" : 35100 }],
+    ["447182100", { "is_dst" : false, "offset" : 31500 }],
+    ["690311700", { "is_dst" : true, "offset" : 35100 }],
+    ["699383700", { "is_dst" : false, "offset" : 31500 }],
+    ["1165079700", { "is_dst" : true, "offset" : 35100 }],
+    ["1174756500", { "is_dst" : false, "offset" : 31500 }],
+    ["1193505300", { "is_dst" : true, "offset" : 35100 }],
+    ["1206810900", { "is_dst" : false, "offset" : 31500 }],
+    ["1224954900", { "is_dst" : true, "offset" : 35100 }],
+    ["1238260500", { "is_dst" : false, "offset" : 31500 }]
+  ]
+}

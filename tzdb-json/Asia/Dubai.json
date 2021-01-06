@@ -1,0 +1,7 @@
+{
+  "name" : "Asia/Dubai",
+  "table" : [
+    ["-62167219200", { "is_dst" : false, "offset" : 14400 }],
+    ["-1577936472", { "is_dst" : false, "offset" : 14400 }]
+  ]
+}

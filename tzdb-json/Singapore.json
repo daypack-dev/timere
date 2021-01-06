@@ -1,0 +1,14 @@
+{
+  "name" : "Singapore",
+  "table" : [
+    ["-62167219200", { "is_dst" : false, "offset" : 24925 }],
+    ["-2177477725", { "is_dst" : false, "offset" : 24925 }],
+    ["-2038200925", { "is_dst" : false, "offset" : 25200 }],
+    ["-1167634800", { "is_dst" : true, "offset" : 26400 }],
+    ["-1073028000", { "is_dst" : false, "offset" : 26400 }],
+    ["-894180000", { "is_dst" : false, "offset" : 27000 }],
+    ["-879665400", { "is_dst" : false, "offset" : 32400 }],
+    ["-767005200", { "is_dst" : false, "offset" : 27000 }],
+    ["378664200", { "is_dst" : false, "offset" : 28800 }]
+  ]
+}

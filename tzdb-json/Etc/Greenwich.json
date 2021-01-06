@@ -1,0 +1,6 @@
+{
+  "name" : "Etc/Greenwich",
+  "table" : [
+    ["-62167219200", { "is_dst" : false, "offset" : 0 }]
+  ]
+}

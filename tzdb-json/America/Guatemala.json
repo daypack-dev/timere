@@ -1,0 +1,15 @@
+{
+  "name" : "America/Guatemala",
+  "table" : [
+    ["-62167219200", { "is_dst" : false, "offset" : -21600 }],
+    ["-1617040676", { "is_dst" : false, "offset" : -21600 }],
+    ["123055200", { "is_dst" : true, "offset" : -18000 }],
+    ["130914000", { "is_dst" : false, "offset" : -21600 }],
+    ["422344800", { "is_dst" : true, "offset" : -18000 }],
+    ["433054800", { "is_dst" : false, "offset" : -21600 }],
+    ["669708000", { "is_dst" : true, "offset" : -18000 }],
+    ["684219600", { "is_dst" : false, "offset" : -21600 }],
+    ["1146376800", { "is_dst" : true, "offset" : -18000 }],
+    ["1159678800", { "is_dst" : false, "offset" : -21600 }]
+  ]
+}

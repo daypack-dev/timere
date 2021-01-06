@@ -1,0 +1,12 @@
+{
+  "name" : "Pacific/Ponape",
+  "table" : [
+    ["-62167219200", { "is_dst" : false, "offset" : 39600 }],
+    ["-2177490772", { "is_dst" : false, "offset" : 39600 }],
+    ["-1743678000", { "is_dst" : false, "offset" : 32400 }],
+    ["-1606813200", { "is_dst" : false, "offset" : 39600 }],
+    ["-1041418800", { "is_dst" : false, "offset" : 36000 }],
+    ["-907408800", { "is_dst" : false, "offset" : 32400 }],
+    ["-770634000", { "is_dst" : false, "offset" : 39600 }]
+  ]
+}
