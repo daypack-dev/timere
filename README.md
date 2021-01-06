@@ -1,6 +1,8 @@
 # Timere
 OCaml time reasoning library with platform independent time zone support and NLP-style parsing
 
+[API documentation](https://daypack-dev.github.io/timere/)
+
 __Note__: The project is largely complete, but still undergoing testing - you're welcome to use it in prototypes, but avoid using it in production for now
 
 ## Introduction
@@ -52,7 +54,9 @@ a concrete implementation of time zone data source
 
     - A utility JSON string parsing function is available as `Timere.Utils.tz_table_of_json_string`
 
-[API documentation](https://daypack-dev.github.io/timere/)
+__Note__: While `tzdb-json/` may be useful and usable outside of Timere,
+we make no guarantees that the JSON format stays unmodified
+(though changes of the format should be a rare occurrence, if ever occurring)
 
 ## License
 
