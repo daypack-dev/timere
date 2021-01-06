@@ -390,8 +390,6 @@ let gen () =
   CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
     output_file_name (fun oc ->
         let write_line = CCIO.write_line oc in
-        write_line "exception Tz_data_retrieval_failure of string";
-        write_line "";
         write_line "type entry = {";
         write_line "  is_dst : bool;";
         write_line "  offset : int;";
@@ -424,7 +422,7 @@ let gen () =
         write_line "let lookup name = String_map.find_opt name db";
         write_line "";
         write_line
-          "let available_time_zones () = String_map.bindings db |> List.map fst");
+          "let available_time_zones = String_map.bindings db |> List.map fst");
   print_endline "Generating tzdb JSON";
   List.combine all_time_zones_in_parts tables_utc
   |> List.iter (fun (time_zone_parts, (name, transitions)) ->

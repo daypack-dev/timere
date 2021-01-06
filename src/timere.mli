@@ -161,8 +161,6 @@ val lengthen : Duration.t -> t -> t
 (** {1 Time zone} *)
 
 module Time_zone : sig
-  exception Tz_data_retrieval_failure of string
-
   type t
 
   val make : string -> (t, unit) result
@@ -185,12 +183,7 @@ module Time_zone : sig
 
   val equal : t -> t -> bool
 
-  val available_time_zones : unit -> string list
-
-  val set_data_source :
-    available_time_zones:(unit -> string list) ->
-    lookup:(string -> Timere_tz_data.table option) ->
-    unit
+  val available_time_zones : string list
 end
 
 val with_tz : Time_zone.t -> t -> t
@@ -654,6 +647,4 @@ module Utils : sig
 
   val flatten_weekday_range_list :
     weekday range list -> (weekday list, unit) result
-
-  val tz_table_of_json_string : string -> (Timere_tz_data.table, unit) result
 end

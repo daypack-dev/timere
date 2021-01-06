@@ -125,5 +125,6 @@
             mparser
             containers
             re
+            yojson
  )
  )

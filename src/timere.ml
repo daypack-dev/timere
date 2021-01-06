@@ -81,6 +81,4 @@ module Utils = struct
     (weekday list, unit) CCResult.t =
     try Ok (Weekday_ranges.Flatten.flatten_list weekdays)
     with Range.Range_is_invalid -> Error ()
-
-  let tz_table_of_json_string = Tzdb_utils.tz_table_of_json_string
 end

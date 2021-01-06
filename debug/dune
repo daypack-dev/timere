@@ -122,6 +122,7 @@
             re
             mparser
             containers
-      ptime.clock.os
+            ptime.clock.os
+            yojson
    )
 )

@@ -1,5 +1,3 @@
-exception Tz_data_retrieval_failure of string
-
 type entry = {
   is_dst : bool;
   offset : int;
@@ -68405,4 +68403,4 @@ let db : db =
 
 let lookup name = String_map.find_opt name db
 
-let available_time_zones () = String_map.bindings db |> List.map fst
+let available_time_zones = String_map.bindings db |> List.map fst

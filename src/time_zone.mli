@@ -1,5 +1,3 @@
-exception Tz_data_retrieval_failure of string
-
 type t
 
 type entry = private {
@@ -13,11 +11,6 @@ type 'a local_result =
   | `Ambiguous of 'a * 'a
   ]
 
-val set_data_source :
-  available_time_zones:(unit -> string list) ->
-  lookup:(string -> Timere_tz_data.table option) ->
-  unit
-
 val equal : t -> t -> bool
 
 val name : t -> string
@@ -28,7 +21,7 @@ val make : string -> (t, unit) result
 
 val make_exn : string -> t
 
-val available_time_zones : unit -> string list
+val available_time_zones : string list
 
 val lookup_timestamp_utc : t -> int64 -> entry option
 

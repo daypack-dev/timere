@@ -35,17 +35,7 @@ let process_table (table : table) : record =
     in
     { recorded_offsets; table }
 
-let available_time_zones_ref : (unit -> string list) ref =
-  ref available_time_zones
-
 let lookup_ref : (string -> table option) ref = ref lookup
-
-let set_data_source ~(available_time_zones : unit -> string list)
-    ~(lookup : string -> table option) : unit =
-  available_time_zones_ref := available_time_zones;
-  lookup_ref := lookup
-
-let available_time_zones () = !available_time_zones_ref ()
 
 let lookup_record name : record option =
   name |> !lookup_ref |> CCOpt.map process_table
@@ -157,3 +147,67 @@ let transitions (t : t) : ((int64 * int64) * entry) list =
 
 let offset_is_recorded offset (t : t) =
   Array.mem offset t.record.recorded_offsets
+
+let of_json_string s : (t, unit) result =
+  let exception Invalid_data in
+  try
+    let json = Yojson.Basic.from_string s in
+    match json with
+    | `Assoc l ->
+      let name =
+        match List.assoc "name" l with
+        | `String s -> s
+        | _ -> raise Invalid_data
+      in
+      let table_rows =
+        match List.assoc "table" l with
+        | `List l -> l
+        | _ -> raise Invalid_data
+      in
+      let table =
+        table_rows
+        |> List.map (fun row ->
+            match row with
+            | `List [ `String s; `Assoc e ] ->
+              let start = Int64.of_string s in
+              let is_dst =
+                match List.assoc "is_dst" e with
+                | `Bool b -> b
+                | _ -> raise Invalid_data
+              in
+              let offset =
+                match List.assoc "offset" e with
+                | `Int x -> x
+                | _ -> raise Invalid_data
+              in
+              let entry = Timere_tz_data.{ is_dst; offset } in
+              (start, entry)
+            | _ -> raise Invalid_data)
+        |> Array.of_list
+      in
+      Ok { name; record = process_table table }
+    | _ -> raise Invalid_data
+  with _ -> Error ()
+
+let to_json_string (t : t) : string =
+  let json =
+    Yojson.Basic.(
+      `Assoc [
+        ("name", `String t.name);
+        ("table",
+         `List
+           (Array.to_list t.record.table
+            |> List.map (fun (start, entry) ->
+                `List [`String (Int64.to_string start);
+                       `Assoc [
+                         ("is_dst", `Bool entry.is_dst);
+                         ("offset", `Int entry.offset);
+                       ]
+                      ]
+              )
+           )
+        )
+      ]
+    )
+  in
+  Yojson.Basic.to_string json

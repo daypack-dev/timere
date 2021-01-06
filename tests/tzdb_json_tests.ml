@@ -12,18 +12,19 @@ module Alco = struct
             CCIO.with_in ~flags:[ Open_rdonly; Open_binary ] json_file_path
               (fun ic ->
                  let json_string = CCIO.read_all ic in
-                 let table_in_memory = (Time_zone.make_exn s).record.table in
-                 let table_from_json =
+                 let tz_in_memory = Time_zone.make_exn s in
+                 let tz_from_json =
                    CCResult.get_exn
-                   @@ Tzdb_utils.tz_table_of_json_string json_string
+                   @@ Time_zone.of_json_string json_string
                  in
                  assert (
-                   Array.length table_in_memory = Array.length table_from_json);
-                 assert (
-                   CCArray.for_all2
-                     (fun e1 e2 -> e1 = e2)
-                     table_in_memory table_from_json)))
-         (Time_zone.available_time_zones ()))
+                   Time_zone.equal
+                     tz_in_memory
+                     tz_from_json
+                 )
+              )
+         )
+         (Time_zone.available_time_zones))
       ()
 
   let suite =
