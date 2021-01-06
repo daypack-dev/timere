@@ -1,3 +1,5 @@
+exception Tz_data_retrieval_failure of string
+
 type entry = {
   is_dst : bool;
   offset : int;

@@ -1,3 +1,5 @@
+exception Tz_data_retrieval_failure of string
+
 type t
 
 type entry = private {

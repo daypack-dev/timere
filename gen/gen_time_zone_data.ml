@@ -337,6 +337,8 @@ let gen () =
   CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
     output_file_name (fun oc ->
         let write_line = CCIO.write_line oc in
+        write_line "exception Tz_data_retrieval_failure of string";
+        write_line "";
         write_line "type entry = {";
         write_line "  is_dst : bool;";
         write_line "  offset : int;";

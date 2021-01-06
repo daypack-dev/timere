@@ -161,6 +161,8 @@ val lengthen : Duration.t -> t -> t
 (** {1 Time zone} *)
 
 module Time_zone : sig
+  exception Tz_data_retrieval_failure of string
+
   type t
 
   val make : string -> (t, unit) result
