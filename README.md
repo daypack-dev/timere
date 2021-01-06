@@ -42,7 +42,15 @@ a concrete implementation of time zone data source
 
 - `timere.tz.none`
 
-  - This embeds no database. This is suitable for when you want to provide your own time zone data source during run time, and want to reduce the built artifact size.
+  - This embeds no database. This is suitable for when you want to provide your own time zone data sourcing method during run time, and want to reduce the built artifact size.
+  
+  - The following resources should allow you to construct your own sourcing method
+  
+    - A usable and test suite covered data source is provided under `tzdb-json/`.
+    
+    - List of available time zones is available as `gen_artifacts/available-time-zones.txt`
+
+    - A utility JSON string parsing function is available as `Timere.Utils.tz_table_of_json_string`
 
 [API documentation](https://daypack-dev.github.io/timere/)
 
