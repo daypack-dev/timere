@@ -163,8 +163,7 @@ module Qc = struct
    *          l1) *)
 
   let suite =
-    [
-      (* find_after_empty;
+    [ (* find_after_empty;
        * find_after_soundness;
        * find_after_completeness;
        * find_between_inc_empty;
@@ -172,6 +171,5 @@ module Qc = struct
        * find_between_inc_completeness;
        * find_between_exc_empty;
        * find_between_exc_soundness;
-       * find_between_exc_completeness; *)
-    ]
+       * find_between_exc_completeness; *) ]
 end
