@@ -302,7 +302,7 @@ let time_zone_gen : Time_zone.t QCheck.Gen.t =
   map (fun n ->
       Time_zone.make_exn (List.nth Time_zone.available_time_zones n)
     )
-  (int_bound tz_count)
+  (int_bound (tz_count - 1))
 
 let time_zone =
   QCheck.make
