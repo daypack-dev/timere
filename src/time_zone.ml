@@ -1,5 +1,10 @@
 include Timere_tz_data
 
+type record = {
+  recorded_offsets : int array;
+  table : table;
+}
+
 type t = {
   name : string;
   record : record;
@@ -11,29 +16,41 @@ type 'a local_result =
   | `Ambiguous of 'a * 'a
   ]
 
-let process_record (r : record) : record =
-  let len = Array.length r.table in
+let process_table (table : table) : record =
+  let len = Array.length table in
   if len = 0 then failwith "Time zone record table is empty"
   else
     let table =
-      let first_row = r.table.(0) in
+      let first_row = table.(0) in
       if Constants.min_timestamp < fst first_row then
-        Array.append [| (Constants.min_timestamp, snd first_row) |] r.table
-      else r.table
+        Array.append [| (Constants.min_timestamp, snd first_row) |] table
+      else table
     in
-    { r with table }
+    let recorded_offsets =
+      Array.fold_left (fun acc (_, entry) ->
+          Int_set.add entry.offset acc
+        )
+        Int_set.empty
+        table
+      |> Int_set.to_list
+      |> CCArray.of_list
+    in
+    { recorded_offsets; table }
 
-let lookup_record : (string -> record option) ref =
-  ref (fun x -> x |> lookup_record |> CCOpt.map process_record)
+let lookup : (string -> table option) ref =
+  ref lookup
 
-let set_data_source (f : string -> record option) : unit = lookup_record := f
+let lookup_record name : record option =
+  name |> !lookup |> CCOpt.map process_table
+
+let set_data_source (f : string -> table option) : unit = lookup := f
 
 let name t = t.name
 
 let equal t1 t2 = t1.name = t2.name
 
 let make name : (t, unit) result =
-  match !lookup_record name with
+  match lookup_record name with
   | Some record -> Ok { name; record }
   | None -> Error ()
 

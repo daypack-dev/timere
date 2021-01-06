@@ -49,6 +49,8 @@ let output_list_file_name = output_dir ^ "available-time-zones.txt"
 
 let output_file_name = output_dir ^ "time_zone_data.ml"
 
+let tzdb_output_dir = "tzdb/"
+
 let year_start = 1850
 
 let year_end_exc = 2100
@@ -274,11 +276,15 @@ let gen () =
   let zoneinfo_file_dir = "/usr/share/zoneinfo/posix" in
   let all_zoneinfo_file_paths =
     FileUtil.(find Is_file zoneinfo_file_dir (fun x y -> y :: x) [])
+    |> CCList.take 1
   in
-  let all_time_zones =
+  let all_time_zones_in_parts =
     all_zoneinfo_file_paths
     |> List.map (fun s -> String.split_on_char '/' s)
     |> List.map (CCList.drop 5)
+  in
+  let all_time_zones =
+    all_time_zones_in_parts
     |> List.map (String.concat "/")
   in
   let zdump_lines =
@@ -346,15 +352,11 @@ let gen () =
         write_line "";
         write_line "type table = (int64 * entry) array";
         write_line "";
-        write_line "type record = {";
-        write_line "  recorded_offsets : int array;";
-        write_line "  table : table;";
-        write_line "}";
         write_line
           "module String_map = Map.Make (struct type t = string let compare = \
            compare end)";
         write_line "";
-        write_line "type db = record String_map.t";
+        write_line "type db = table String_map.t";
         write_line "";
         write_line "let db : db =";
         write_line "  String_map.empty";
@@ -405,18 +407,8 @@ let gen () =
                    filler :: x :: xs
                  else x :: xs
              in
-             let recorded_offsets =
-               List.fold_left
-                 (fun acc (r : transition_record) -> Int_set.add r.offset acc)
-                 Int_set.empty l
-             in
-             write_line (Printf.sprintf "  |> String_map.add \"%s\" {" s);
-             write_line "      recorded_offsets = [|";
-             Int_set.iter
-               (fun offset -> write_line (Printf.sprintf "        (%d);" offset))
-               recorded_offsets;
-             write_line "        |];";
-             write_line "      table = [|";
+             write_line (Printf.sprintf "  |> String_map.add \"%s\"" s);
+             write_line "      [|";
              List.iter
                (fun r ->
                   write_line
@@ -424,11 +416,25 @@ let gen () =
                        "        ((%LdL), { is_dst = %b; offset = (%d) });" r.start
                        r.is_dst r.offset))
                l;
-             write_line "        |];";
-             write_line "    }")
+             write_line "      |]";
+          )
           tables_utc;
         write_line "";
-        write_line "let lookup_record name = String_map.find_opt name db";
+        write_line "let lookup name = String_map.find_opt name db";
         write_line "";
         write_line
-          "let available_time_zones () = String_map.bindings db |> List.map fst")
+          "let available_time_zones () = String_map.bindings db |> List.map fst");
+  List.iter (fun time_zone_parts ->
+      let len = List.length time_zone_parts in
+      assert (len > 0);
+      let dir_parts = tzdb_output_dir :: CCList.take (len - 1) time_zone_parts in
+      let dir = String.concat "/" dir_parts in
+      FileUtil.mkdir ~parent:true dir;
+      let output_file_name = List.nth time_zone_parts (len - 1) in
+      CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
+        output_file_name (fun oc ->
+            let write_line = CCIO.write_line oc in
+            ()
+          )
+    )
+    all_time_zones_in_parts;
