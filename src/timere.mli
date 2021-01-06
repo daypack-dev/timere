@@ -184,6 +184,10 @@ module Time_zone : sig
   val equal : t -> t -> bool
 
   val available_time_zones : string list
+
+  val to_json_string : t -> string
+
+  val of_json_string : string -> (t, unit) result
 end
 
 val with_tz : Time_zone.t -> t -> t
