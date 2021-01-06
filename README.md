@@ -33,7 +33,13 @@ This includes
 
 ## Usage
 
-TODO
+Include `timere` in the `libraries` in your dune file, and optionally one of the following two to select
+a concrete implementation of time zone data source
+
+- `timere.tz.full`
+  - This is the default implementation which embeds the full time zone database
+- `timere.tz.none`
+  - This embeds no database. This is suitable for when you want to provide your own time zone data source during run time, and want to reduce the built artifact size.
 
 [API documentation](https://daypack-dev.github.io/timere/)
 
