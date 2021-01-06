@@ -44,15 +44,16 @@ a concrete implementation of time zone data source
 
 - `timere.tz.none`
 
-  - This embeds no database. This is suitable for when you want to provide your own time zone data sourcing method during run time, and want to reduce the built artifact size.
+  - This embeds no database.
+    This is suitable when you want to retrieve time zone data during run time, to, for instance, reduce the built artifact size.
   
-  - The following resources should allow you to construct your own sourcing method
+  - The following resources should allow you to implement said approach readily
   
     - A usable and test suite covered data source is provided under `tzdb-json/`.
     
     - List of available time zones is available as `gen_artifacts/available-time-zones.txt`
 
-    - A utility JSON string parsing function is available as `Timere.Utils.tz_table_of_json_string`
+    - `Time_zone.of_json_string` can load files in `tzdb-json/`
 
 __Note__: While `tzdb-json/` may be useful and usable outside of Timere,
 we make no guarantees that the JSON format stays unmodified
