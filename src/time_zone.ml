@@ -107,7 +107,7 @@ let lookup_timestamp_local (t : t) timestamp : entry local_result =
       | Some x, None, None | None, Some x, None | None, None, Some x -> `Exact x
       | Some x, Some y, None | Some x, None, Some y | None, Some x, Some y ->
         `Ambiguous (x, y)
-      | Some _, Some _, Some _ -> failwith "Unexpected")
+      | Some _, Some _, Some _ -> failwith "Unexpected case")
 
 let transition_seq (t : t) : ((int64 * int64) * entry) Seq.t =
   let table = t.record.table in
