@@ -186,12 +186,13 @@ let of_json_string s : (t, unit) result =
         |> Array.of_list
       in
       Array.fold_left
-        (fun acc (start, _) ->
-           if Int64_set.mem start acc then raise Invalid_data
-           else Int64_set.add start acc)
-        Int64_set.empty table
+        (fun last_start (start, _) ->
+           match last_start with
+           | None -> Some start
+           | Some last_start ->
+             if last_start < start then Some start else raise Invalid_data)
+        None table
       |> ignore;
-      Array.sort (fun (start1, _) (start2, _) -> compare start1 start2) table;
       Ok { name; record = process_table table }
     | _ -> raise Invalid_data
   with _ -> Error ()
