@@ -53,6 +53,13 @@ let lookup_record name : record option =
 let name t = t.name
 
 let equal t1 t2 = t1.name = t2.name
+                  &&
+                  Array.length t1.record.table = Array.length t2.record.table
+                  &&
+                  CCArray.for_all2 (fun e1 e2 ->
+                      e1 = e2
+                    )
+                    t1.record.table t2.record.table
 
 let make name : (t, unit) result =
   match lookup_record name with

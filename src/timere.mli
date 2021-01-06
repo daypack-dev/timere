@@ -183,6 +183,8 @@ module Time_zone : sig
 
   val utc : t
 
+  val equal : t -> t -> bool
+
   val available_time_zones : unit -> string list
 
   val set_data_source :
