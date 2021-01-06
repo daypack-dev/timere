@@ -30,7 +30,7 @@
 
 (rule
  (targets timere_tz_data.ml)
- (deps    ../gen_artifacts/time_zone_data.ml)
+ (deps    ../gen-artifacts/time_zone_data.ml)
  (action  (copy %{deps} %{targets}))
 )
 
