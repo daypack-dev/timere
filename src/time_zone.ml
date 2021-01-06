@@ -27,18 +27,15 @@ let process_table (table : table) : record =
       else table
     in
     let recorded_offsets =
-      Array.fold_left (fun acc (_, entry) ->
-          Int_set.add entry.offset acc
-        )
-        Int_set.empty
-        table
+      Array.fold_left
+        (fun acc (_, entry) -> Int_set.add entry.offset acc)
+        Int_set.empty table
       |> Int_set.to_list
       |> CCArray.of_list
     in
     { recorded_offsets; table }
 
-let lookup : (string -> table option) ref =
-  ref lookup
+let lookup : (string -> table option) ref = ref lookup
 
 let lookup_record name : record option =
   name |> !lookup |> CCOpt.map process_table

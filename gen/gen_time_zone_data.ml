@@ -41,7 +41,7 @@ type transition_record = {
   offset : int;
 }
 
-type transition_table = (string * transition_record list)
+type transition_table = string * transition_record list
 
 let output_dir = "gen_artifacts/"
 
@@ -283,8 +283,7 @@ let gen () =
     |> List.map (CCList.drop 5)
   in
   let all_time_zones =
-    all_time_zones_in_parts
-    |> List.map (String.concat "/")
+    all_time_zones_in_parts |> List.map (String.concat "/")
   in
   let zdump_lines =
     all_zoneinfo_file_paths
@@ -375,8 +374,7 @@ let gen () =
               filler :: x :: xs
             else x :: xs
         in
-        (s, l)
-      )
+        (s, l))
     |> CCList.of_seq
   in
   print_newline ();
@@ -420,8 +418,7 @@ let gen () =
                        "        ((%LdL), { is_dst = %b; offset = (%d) });" r.start
                        r.is_dst r.offset))
                l;
-             write_line "      |]";
-          )
+             write_line "      |]")
           tables_utc;
         write_line "";
         write_line "let lookup name = String_map.find_opt name db";
@@ -433,30 +430,29 @@ let gen () =
   |> List.iter (fun (time_zone_parts, (name, transitions)) ->
       let len = List.length time_zone_parts in
       assert (len > 0);
-      let dir_parts = tzdb_json_output_dir :: CCList.take (len - 1) time_zone_parts in
+      let dir_parts =
+        tzdb_json_output_dir :: CCList.take (len - 1) time_zone_parts
+      in
       let dir = String.concat "/" dir_parts in
       FileUtil.mkdir ~parent:true dir;
-      let output_file_name = Filename.concat dir (List.nth time_zone_parts (len - 1) ^ ".json") in
-      CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
+      let output_file_name =
+        Filename.concat dir (List.nth time_zone_parts (len - 1) ^ ".json")
+      in
+      CCIO.with_out
+        ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
         output_file_name (fun oc ->
             let transition_count = List.length transitions in
             let write_line = CCIO.write_line oc in
             write_line "{";
             write_line (Printf.sprintf "  \"name\" : \"%s\"," name);
             write_line "  \"table\" : [";
-            List.iteri (fun i (r : transition_record) ->
-                write_line
-                  (Printf.sprintf "    [\"%Ld\", { \"is_dst\" : %b, \"offset\" : %d }]%s"
-                     r.start
-                     r.is_dst
-                     r.offset
-                     (if i = transition_count - 1 then "" else ","
-                     )
-                  );
-              )
+            List.iteri
+              (fun i (r : transition_record) ->
+                 write_line
+                   (Printf.sprintf
+                      "    [\"%Ld\", { \"is_dst\" : %b, \"offset\" : %d }]%s"
+                      r.start r.is_dst r.offset
+                      (if i = transition_count - 1 then "" else ",")))
               transitions;
             write_line "  ]";
-            write_line "}";
-          )
-    )
-  ;
+            write_line "}"))
