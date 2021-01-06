@@ -1209,7 +1209,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
     match s () with
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((start', _), _) ->
-      (if Int64.sub start' start >= search_space_adjustment_trigger_size then
+      (if Int64.sub start start' >= search_space_adjustment_trigger_size then
          let timere = slice_search_space ~start timere in
          aux search_using_tz timere
        else s)
