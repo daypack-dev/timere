@@ -89,12 +89,6 @@
 )
 
 (rule
- (targets int64_set.ml)
- (deps    ../src/int64_set.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
  (targets resolver.ml)
  (deps    ../src/resolver.ml)
  (action  (copy %{deps} %{targets}))

@@ -41,6 +41,12 @@
 )
 
 (rule
+ (targets int64_set.ml)
+ (deps    ../tests/int64_set.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
  (targets seq_utils.ml)
  (deps    ../src/seq_utils.ml)
  (action  (copy %{deps} %{targets}))
@@ -85,12 +91,6 @@
 (rule
  (targets int_set.ml)
  (deps    ../src/int_set.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
- (targets int64_set.ml)
- (deps    ../src/int64_set.ml)
  (action  (copy %{deps} %{targets}))
 )
 

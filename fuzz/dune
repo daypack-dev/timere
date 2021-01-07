@@ -90,7 +90,7 @@
 
 (rule
  (targets int64_set.ml)
- (deps    ../src/int64_set.ml)
+ (deps    ../tests/int64_set.ml)
  (action  (copy %{deps} %{targets}))
 )
 
