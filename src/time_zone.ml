@@ -149,7 +149,7 @@ let transitions (t : t) : ((int64 * int64) * entry) list =
 let offset_is_recorded offset (t : t) =
   Array.mem offset t.record.recorded_offsets
 
-let make_offset_only ~name (offset : int) =
+let make_offset_only ?(name = "dummy") (offset : int) =
   {
     name;
     record =
