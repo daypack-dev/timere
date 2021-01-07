@@ -185,6 +185,13 @@ module Time_zone : sig
 
   val available_time_zones : string list
 
+  val of_offset_only : name:string -> int -> t
+  (** This is mainly used for when you only have an offset to work with,
+      and you don't need to do any accurate search over time zones.
+
+      One use of this is to create a time zone for sprintf functions.
+  *)
+
   val to_json_string : t -> string
 
   val of_json_string : string -> (t, unit) result

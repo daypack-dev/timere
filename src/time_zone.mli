@@ -33,6 +33,8 @@ val transition_seq : t -> ((int64 * int64) * entry) Seq.t
 
 val offset_is_recorded : int -> t -> bool
 
+val of_offset_only : name:string -> int -> t
+
 val to_json_string : t -> string
 
 val of_json_string : string -> (t, unit) result

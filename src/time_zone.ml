@@ -148,6 +148,12 @@ let transitions (t : t) : ((int64 * int64) * entry) list =
 let offset_is_recorded offset (t : t) =
   Array.mem offset t.record.recorded_offsets
 
+let of_offset_only ~name (offset : int) =
+  {
+    name;
+    record = process_table [|(Constants.min_timestamp, { is_dst = false; offset })|]
+  }
+
 let of_json_string s : (t, unit) result =
   let exception Invalid_data in
   try
