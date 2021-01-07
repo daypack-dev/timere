@@ -119,7 +119,8 @@ let lookup_timestamp_local (t : t) timestamp : entry local_result =
       in
       match (x1, x2, x3) with
       | None, None, None -> `None
-      | Some x, None, None | None, Some x, None | None, None, Some x -> `Single x
+      | Some x, None, None | None, Some x, None | None, None, Some x ->
+        `Single x
       | Some x, Some y, None | Some x, None, Some y | None, Some x, Some y ->
         `Ambiguous (x, y)
       | Some _, Some _, Some _ -> failwith "Unexpected case")
@@ -151,7 +152,8 @@ let offset_is_recorded offset (t : t) =
 let of_offset_only ~name (offset : int) =
   {
     name;
-    record = process_table [|(Constants.min_timestamp, { is_dst = false; offset })|]
+    record =
+      process_table [| (Constants.min_timestamp, { is_dst = false; offset }) |];
   }
 
 let of_json_string s : (t, unit) result =

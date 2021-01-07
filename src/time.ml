@@ -1311,7 +1311,8 @@ module Date_time' = struct
     | `Tz_only tz -> (
         match Time_zone.lookup_timestamp_local tz timestamp_local with
         | `None -> `None
-        | `Single e -> `Single (Int64.sub timestamp_local (Int64.of_int e.offset))
+        | `Single e ->
+          `Single (Int64.sub timestamp_local (Int64.of_int e.offset))
         | `Ambiguous (e1, e2) ->
           let x1 = Int64.sub timestamp_local (Int64.of_int e1.offset) in
           let x2 = Int64.sub timestamp_local (Int64.of_int e2.offset) in
