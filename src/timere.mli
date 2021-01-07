@@ -362,6 +362,16 @@ module Date_time : sig
   val of_iso8601 : string -> (t, string) result
 end
 
+val of_date_time : Date_time.t -> t
+
+val of_date_times : Date_time.t list -> t
+
+val of_date_time_seq : Date_time.t Seq.t -> t
+
+val of_sorted_date_times : Date_time.t list -> t
+
+val of_sorted_date_time_seq : Date_time.t Seq.t -> t
+
 val cur_timestamp : unit -> int64
 
 val min_timestamp : int64
@@ -369,6 +379,8 @@ val min_timestamp : int64
 val max_timestamp : int64
 
 exception Invalid_timestamp
+
+val of_timestamp : timestamp -> t
 
 val of_timestamps : ?skip_invalid:bool -> timestamp list -> t
 (** [of_timestamps l]
@@ -385,6 +397,10 @@ val of_timestamp_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
 
     @raise Invalid_timestamp if [not skip_invalid] and [s] contains an invalid timestamp
 *)
+
+val of_sorted_timestamps : ?skip_invalid:bool -> timestamp list -> t
+
+val of_sorted_timestamp_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
 
 (** {1 Manual intervals} *)
 

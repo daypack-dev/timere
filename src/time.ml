@@ -2107,23 +2107,49 @@ let of_interval_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t) :
   t =
   s |> CCList.of_seq |> of_intervals ~skip_invalid
 
+let interval_of_date_time date_time =
+  let x = Date_time'.to_timestamp_single date_time in
+  (x, Int64.succ x)
+
+let of_date_time_seq date_times =
+  date_times |> Seq.map interval_of_date_time |> of_interval_seq
+
+let of_date_times date_times = date_times |> CCList.to_seq |> of_date_time_seq
+
+let of_sorted_date_time_seq date_times =
+  date_times |> Seq.map interval_of_date_time |> of_sorted_interval_seq
+
+let of_sorted_date_times date_times =
+  date_times |> CCList.to_seq |> of_sorted_date_time_seq
+
+let of_date_time date_time = of_date_times [ date_time ]
+
+let interval_of_timestamp ~skip_invalid x =
+  match Date_time'.of_timestamp x with
+  | Ok _ -> Some (x, Int64.succ x)
+  | Error () -> if skip_invalid then None else raise Invalid_timestamp
+
 let of_timestamp_seq ?(skip_invalid = false) timestamps =
   timestamps
-  |> Seq.filter_map (fun x ->
-      match Date_time'.of_timestamp x with
-      | Ok _ -> Some x
-      | Error () -> if skip_invalid then None else raise Invalid_timestamp)
-  |> Seq.map (fun x -> (x, Int64.succ x))
+  |> Seq.filter_map (interval_of_timestamp ~skip_invalid)
   |> of_interval_seq
 
 let of_timestamps ?(skip_invalid = false) timestamps =
   timestamps
-  |> CCList.filter_map (fun x ->
-      match Date_time'.of_timestamp x with
-      | Ok _ -> Some x
-      | Error () -> if skip_invalid then None else raise Invalid_timestamp)
-  |> List.map (fun x -> (x, Int64.succ x))
+  |> CCList.filter_map (interval_of_timestamp ~skip_invalid)
   |> of_intervals
+
+let of_sorted_timestamp_seq ?(skip_invalid = false) timestamps =
+  timestamps
+  |> Seq.filter_map (interval_of_timestamp ~skip_invalid)
+  |> of_sorted_interval_seq
+
+let of_sorted_timestamps ?(skip_invalid = false) timestamps =
+  timestamps
+  |> CCList.filter_map (interval_of_timestamp ~skip_invalid)
+  |> of_sorted_intervals
+
+let of_timestamp x = of_timestamps [ x ]
 
 let full_string_of_weekday (wday : weekday) : string =
   match wday with
