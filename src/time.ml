@@ -1815,9 +1815,11 @@ let inter_seq (s : t Seq.t) : t =
       Some (fun () -> Seq.Cons (Pattern (default_search_space, pat), rest))
   in
   let s = flatten s in
-  match inter_patterns s with
-  | None -> empty
-  | Some s -> Inter_seq (default_search_space, s)
+  if OSeq.exists (fun x -> match x with Empty -> true | _ -> false) s then empty
+  else
+    match inter_patterns s with
+    | None -> empty
+    | Some s -> Inter_seq (default_search_space, s)
 
 let inter (l : t list) : t = inter_seq (CCList.to_seq l)
 
@@ -1827,7 +1829,11 @@ let union_seq (s : t Seq.t) : t =
       (fun x -> match x with Union_seq (_, s) -> s | _ -> Seq.return x)
       s
   in
-  let s = flatten s in
+  let s =
+    s
+    |> flatten
+    |> Seq.filter (fun x -> match x with Empty -> false | _ -> true)
+  in
   Union_seq (default_search_space, s)
 
 let union (l : t list) : t = union_seq (CCList.to_seq l)
