@@ -1782,6 +1782,11 @@ let empty = Empty
 
 let always = All
 
+type inter_acc =
+  | Uninitialized
+  | Unsatisfiable
+  | Some' of Pattern.t
+
 let inter_seq (s : t Seq.t) : t =
   let flatten s =
     Seq.flat_map
@@ -1798,20 +1803,19 @@ let inter_seq (s : t Seq.t) : t =
            match x with
            | Pattern (_, pat) -> (
                match acc with
-               | None -> Some (Ok pat)
-               | Some (Error ()) -> acc
-               | Some (Ok acc) ->
-                 Some
-                   (match Pattern.inter acc pat with
-                    | None -> Error ()
-                    | Some pat -> Ok pat))
+               | Uninitialized -> Some' pat
+               | Unsatisfiable -> Unsatisfiable
+               | Some' acc -> (
+                   match Pattern.inter acc pat with
+                   | None -> Unsatisfiable
+                   | Some pat -> Some' pat))
            | _ -> acc)
-        None patterns
+        Uninitialized patterns
     in
     match pattern with
-    | None -> Some rest
-    | Some (Error ()) -> None
-    | Some (Ok pat) ->
+    | Uninitialized -> Some rest
+    | Unsatisfiable -> None
+    | Some' pat ->
       Some (fun () -> Seq.Cons (Pattern (default_search_space, pat), rest))
   in
   let s = flatten s in
