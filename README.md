@@ -45,7 +45,7 @@ a concrete implementation of time zone data source
 - `timere.tz.none`
 
   - This embeds no database.
-    This is suitable when you want to retrieve time zone data during run time. For instance, to reduce the built artifact size.
+    This is suitable for when you want to retrieve time zone data during run time, for instance, to reduce the built artifact size.
   
   - The following resources should allow you to implement said approach readily
   
