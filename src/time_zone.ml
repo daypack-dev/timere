@@ -55,7 +55,13 @@ let make name : (t, unit) result =
 let make_exn name : t =
   match make name with Ok x -> x | Error () -> invalid_arg "make_exn"
 
-let utc = make_exn "UTC"
+let utc : t =
+  {
+    name = "UTC";
+    record =
+      process_table
+        [| (Constants.min_timestamp, { is_dst = false; offset = 0 }) |];
+  }
 
 let dummy_entry : entry = { is_dst = false; offset = 0 }
 
