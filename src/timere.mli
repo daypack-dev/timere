@@ -289,7 +289,7 @@ module Date_time : sig
 
   val to_timestamp : t -> timestamp local_result
 
-  val to_timestamp_exact : t -> timestamp
+  val to_timestamp_single : t -> timestamp
   (** @raise Invalid_argument if [to_timestamp] does not yield a [`Single] result *)
 
   val min_of_timestamp_local_result : timestamp local_result -> timestamp option

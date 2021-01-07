@@ -1317,14 +1317,14 @@ module Date_time' = struct
           let x2 = Int64.sub timestamp_local (Int64.of_int e2.offset) in
           `Ambiguous (min x1 x2, max x1 x2))
 
-  let to_timestamp_exact (x : t) : timestamp =
+  let to_timestamp_single (x : t) : timestamp =
     match to_timestamp x with
     | `None ->
       invalid_arg
-        "to_timestamp_exact: date time does not map to any timestamp"
+        "to_timestamp_single: date time does not map to any timestamp"
     | `Single x -> x
     | `Ambiguous _ ->
-      invalid_arg "to_timestamp_exact: date time maps to two timestamps"
+      invalid_arg "to_timestamp_single: date time maps to two timestamps"
 
   let of_timestamp ?(tz_of_date_time = Time_zone.utc) (x : int64) :
     (t, unit) result =
