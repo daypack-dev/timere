@@ -1782,7 +1782,7 @@ let empty = Empty
 
 let always = All
 
-type inter_acc =
+type inter_pattern_acc =
   | Uninitialized
   | Unsatisfiable
   | Some' of Pattern.t
