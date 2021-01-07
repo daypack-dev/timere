@@ -1291,10 +1291,10 @@ module Date_time' = struct
     | Error () -> Error ()
 
   let min_of_timestamp_local_result r : int64 option =
-    match r with `None -> None | `Exact x | `Ambiguous (x, _) -> Some x
+    match r with `None -> None | `Single x | `Ambiguous (x, _) -> Some x
 
   let max_of_timestamp_local_result r : int64 option =
-    match r with `None -> None | `Exact x | `Ambiguous (_, x) -> Some x
+    match r with `None -> None | `Single x | `Ambiguous (_, x) -> Some x
 
   let to_timestamp_pretend_utc (x : t) : timestamp =
     to_ptime_date_time_pretend_utc x
@@ -1307,11 +1307,11 @@ module Date_time' = struct
     let timestamp_local = to_timestamp_pretend_utc x in
     match x.tz_info with
     | `Tz_offset_s_only offset | `Tz_and_tz_offset_s (_, offset) ->
-      `Exact (Int64.sub timestamp_local (Int64.of_int offset))
+      `Single (Int64.sub timestamp_local (Int64.of_int offset))
     | `Tz_only tz -> (
         match Time_zone.lookup_timestamp_local tz timestamp_local with
         | `None -> `None
-        | `Exact e -> `Exact (Int64.sub timestamp_local (Int64.of_int e.offset))
+        | `Single e -> `Single (Int64.sub timestamp_local (Int64.of_int e.offset))
         | `Ambiguous (e1, e2) ->
           let x1 = Int64.sub timestamp_local (Int64.of_int e1.offset) in
           let x2 = Int64.sub timestamp_local (Int64.of_int e2.offset) in
@@ -1322,7 +1322,7 @@ module Date_time' = struct
     | `None ->
       invalid_arg
         "to_timestamp_exact: date time does not map to any timestamp"
-    | `Exact x -> x
+    | `Single x -> x
     | `Ambiguous _ ->
       invalid_arg "to_timestamp_exact: date time maps to two timestamps"
 
@@ -1350,7 +1350,7 @@ module Date_time' = struct
     in
     match to_timestamp dt with
     | `None -> Error ()
-    | `Exact x -> Ok (of_timestamp ~tz_of_date_time:tz x |> CCResult.get_exn)
+    | `Single x -> Ok (of_timestamp ~tz_of_date_time:tz x |> CCResult.get_exn)
     | `Ambiguous _ -> Ok dt
 
   let make_exn ~year ~month ~day ~hour ~minute ~second ~tz =
@@ -1378,7 +1378,7 @@ module Date_time' = struct
           in
           match Time_zone.lookup_timestamp_local tz timestamp_local with
           | `None -> Error ()
-          | `Exact e ->
+          | `Single e ->
             if e.offset = tz_offset_s then
               Ok (`Tz_and_tz_offset_s (tz, tz_offset_s))
             else Error ()

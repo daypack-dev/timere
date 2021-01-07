@@ -7,7 +7,7 @@ type entry = private {
 
 type 'a local_result =
   [ `None
-  | `Exact of 'a
+  | `Single of 'a
   | `Ambiguous of 'a * 'a
   ]
 

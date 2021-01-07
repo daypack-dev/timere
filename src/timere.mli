@@ -273,14 +273,14 @@ module Date_time : sig
 
   type 'a local_result =
     [ `None
-    | `Exact of 'a
+    | `Single of 'a
     | `Ambiguous of 'a * 'a
     ]
   (** Result for when a local date time may be involved, e.g. using a date time with no precise time zone offset attached.
 
       - [`None] is yielded when the date time does not map to any ['a].
         This happens when DST begins and "skips an hour" for instance.
-      - [`Exact] is yielded when the date time maps to exactly one ['a].
+      - [`Single] is yielded when the date time maps to exactly one ['a].
         This happens when date time carries an accurate offset,
         or when the date time is not affected by any offset shifts (thus an accurate offset can be inferred).
       - [`Ambiguous] is yielded when date time maps to more than one (exactly two) ['a].
@@ -290,7 +290,7 @@ module Date_time : sig
   val to_timestamp : t -> timestamp local_result
 
   val to_timestamp_exact : t -> timestamp
-  (** @raise Invalid_argument if [to_timestamp] does not yield a [`Exact] result *)
+  (** @raise Invalid_argument if [to_timestamp] does not yield a [`Single] result *)
 
   val min_of_timestamp_local_result : timestamp local_result -> timestamp option
 

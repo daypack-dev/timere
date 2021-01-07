@@ -12,7 +12,7 @@ type t = {
 
 type 'a local_result =
   [ `None
-  | `Exact of 'a
+  | `Single of 'a
   | `Ambiguous of 'a * 'a
   ]
 
@@ -119,7 +119,7 @@ let lookup_timestamp_local (t : t) timestamp : entry local_result =
       in
       match (x1, x2, x3) with
       | None, None, None -> `None
-      | Some x, None, None | None, Some x, None | None, None, Some x -> `Exact x
+      | Some x, None, None | None, Some x, None | None, None, Some x -> `Single x
       | Some x, Some y, None | Some x, None, Some y | None, Some x, Some y ->
         `Ambiguous (x, y)
       | Some _, Some _, Some _ -> failwith "Unexpected case")

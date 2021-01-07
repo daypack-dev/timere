@@ -133,7 +133,7 @@ let timestamp_of_sexp x =
              tz_offset_s)
       else
         match Time.Date_time'.to_timestamp dt with
-        | `Exact x -> x
+        | `Single x -> x
         | _ -> failwith "Unexpected case")
 
 let range_of_sexp ~(f : CCSexp.t -> 'a) (x : CCSexp.t) =
