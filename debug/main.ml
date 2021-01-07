@@ -5,12 +5,6 @@ let default_interval_format_string =
   "[{syear} {smon:Xxx} {smday:0X} {swday:Xxx} {shour:0X}:{smin:0X}:{ssec:0X}, \
    {eyear} {emon:Xxx} {emday:0X} {ewday:Xxx} {ehour:0X}:{emin:0X}:{esec:0X})"
 
-(* let debug_parsing () =
- *   let expr = "jan to feb, apr" in
- *   match Time_parse.timere expr with
- *   | Error msg -> print_endline msg
- *   | Ok timere -> print_endline (Time.to_sexp_string timere) *)
-
 let display_intervals ~display_using_tz s =
   match s () with
   | Seq.Nil -> print_endline "No time intervals"

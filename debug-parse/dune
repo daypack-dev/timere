@@ -1,0 +1,22 @@
+(rule
+ (targets parser.ml)
+ (deps    ../parse/parser.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(executable
+   (flags     (-g -w "+a-4-9-29-37-40-42-44-48-50-32"))
+   (name main)
+   (libraries 
+            unix
+            ptime
+            oseq
+            re
+            mparser
+            containers
+            ptime.clock.os
+            yojson
+            timere
+            timere-parse
+   )
+)

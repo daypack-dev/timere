@@ -30,6 +30,10 @@ covtest : lib
 debug : lib
 	dune exec ./debug/main.exe
 
+.PHONY: debug-parse
+debug-parse : lib
+	dune exec ./debug-parse/main.exe
+
 .PHONY: doc
 doc :
 	dune build @doc
