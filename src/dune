@@ -3,7 +3,7 @@
  (name timere)
  (public_name timere)
  (libraries
-            timere.tz.data
+            timere.tzdata
             unix
             ptime
             oseq

@@ -7,6 +7,6 @@
 (library
  (flags     (-w "+a-4-9-29-37-40-42-44-48-50-32-30@8"))
  (name      timere_tz_full)
- (public_name timere.tz.full)
+ (public_name timere.tzdata.full)
  (implements timere_tz_data)
 )
