@@ -51,6 +51,44 @@ type ast =
   | Binary_op of binary_op * ast * ast
   | Round_robin_pick of ast list
 
+let string_of_token (_, guess) =
+  match guess with
+  | Dot -> "DOT"
+  | Comma -> "COMMA"
+  | Hyphen -> "HYPHEN"
+  | Colon -> "COLON"
+  | Star -> "STAR"
+  | Not -> "NOT"
+  | Outside -> "outside"
+  | For -> "for"
+  | Of -> "of"
+  | In -> "in"
+  | To -> "to"
+  | From -> "from"
+  | Am -> "am"
+  | Pm -> "pm"
+  | St -> "st"
+  | Nd -> "nd"
+  | Rd -> "rd"
+  | Th -> "th"
+  | Days -> "days"
+  | Hours -> "hours"
+  | Minutes -> "minutes"
+  | Seconds -> "seconds"
+  | Nat n -> string_of_int n
+  | Nats l ->
+    "nats"
+  | Hms hms ->
+    "hms"
+  | Hmss _ -> "hmss"
+  | Weekday _ -> "weekday"
+  | Weekdays _ -> "weekdays"
+  | Month_day _ -> "month_day"
+  | Month_days _ -> "month_days"
+  | Month _ -> "month"
+  | Months _ -> "months"
+  | Duration _ -> "duration"
+
 let weekdays : (string * Timere.weekday) list =
   [
     ("sunday", `Sun);
@@ -463,11 +501,11 @@ module Ast_normalize = struct
           |> recognize_hms
           |> recognize_duration
           |> recognize_month_day
-          |> group_nats
-          |> group_month_days
-          |> group_weekdays
-          |> group_months
-          |> group_hms
+          (* |> group_nats
+           * |> group_month_days
+           * |> group_weekdays
+           * |> group_months
+           * |> group_hms *)
         in
         Tokens l
       | Binary_op (op, e1, e2) -> Binary_op (op, aux e1, aux e2)
@@ -591,6 +629,9 @@ let t_of_tokens (tokens : token list) : (Timere.t, string) CCResult.t =
     match rules with
     | [] ->
       let pos, _ = List.hd tokens in
+      (* List.iter
+       *   (fun token -> print_endline (string_of_token token))
+       *   tokens; *)
       Error
         (Printf.sprintf "%s: Unrecognized token pattern" (string_of_pos pos))
     | rule :: rest -> (
@@ -629,6 +670,7 @@ let parse_timere s =
   | Error msg -> Error msg
   | Ok ast -> (
       match Ast_normalize.normalize ast with
+      (* match Ok ast with *)
       | Error msg -> Error msg
       | Ok ast -> t_of_ast ast)
 
