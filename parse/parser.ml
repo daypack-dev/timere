@@ -617,6 +617,13 @@ let t_rules : (token list -> (Timere.t, string option) CCResult.t) list =
       | _ -> Error None);
     (function
       | [
+        (_, Month month); (pos_month_days, Nat day); (_, Hms hms);
+      ] ->
+        pattern ~months:[ month ] ~pos_month_days
+          ~month_days:[ day ] ~hms ()
+      | _ -> Error None);
+    (function
+      | [
         (_, Nat year); (_, Month month); (pos_month_days, Nat day); (_, Hms hms);
       ] ->
         pattern ~years:[ year ] ~months:[ month ] ~pos_month_days
