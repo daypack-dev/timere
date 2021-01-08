@@ -1,6 +1,6 @@
 (library
  (flags     (-w "+a-4-9-29-37-40-42-44-48-50-32-30@8"))
- (name      timere_tz_none)
- (public_name timere.tzdata.none)
+ (name      timere_tzdb_none)
+ (public_name timere.tzdb.none)
  (implements timere_tz_data)
 )

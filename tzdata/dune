@@ -1,6 +1,0 @@
-(library
- (name timere_tz_data)
- (public_name timere.tzdata)
- (virtual_modules timere_tz_data)
- (default_implementation timere.tzdata.full)
-)
