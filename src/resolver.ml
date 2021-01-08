@@ -1292,15 +1292,15 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
     in
     let rec aux_inter' ~start (timeres : Time.t list) =
       let interval_batches = resolve ~start search_using_tz timeres in
-      let batch = collect_batch interval_batches in
-      if List.exists CCOpt.is_none batch then Seq.empty
+      let batch_for_sampling = collect_batch interval_batches in
+      if List.exists CCOpt.is_none batch_for_sampling then Seq.empty
       else
-        let batch =
-          CCList.filter_map CCFun.id batch
+        let batch_for_sampling =
+          CCList.filter_map CCFun.id batch_for_sampling
           |> Intervals.Sort.sort_uniq_intervals_list ~skip_check:true
         in
-        let _min_start, min_end_exc = List.hd batch in
-        let max_start, max_end_exc = List.hd @@ List.rev batch in
+        let _min_start, min_end_exc = List.hd batch_for_sampling in
+        let max_start, max_end_exc = List.hd @@ List.rev batch_for_sampling in
         let timeres, interval_batches =
           if
             min_end_exc <= max_start
