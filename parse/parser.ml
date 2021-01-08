@@ -76,10 +76,8 @@ let string_of_token (_, guess) =
   | Minutes -> "minutes"
   | Seconds -> "seconds"
   | Nat n -> string_of_int n
-  | Nats l ->
-    "nats"
-  | Hms hms ->
-    "hms"
+  | Nats l -> "nats"
+  | Hms hms -> "hms"
   | Hmss _ -> "hmss"
   | Weekday _ -> "weekday"
   | Weekdays _ -> "weekdays"
@@ -497,10 +495,7 @@ module Ast_normalize = struct
       match e with
       | Tokens l ->
         let l =
-          l
-          |> recognize_hms
-          |> recognize_duration
-          |> recognize_month_day
+          l |> recognize_hms |> recognize_duration |> recognize_month_day
           (* |> group_nats
            * |> group_month_days
            * |> group_weekdays
@@ -616,11 +611,8 @@ let t_rules : (token list -> (Timere.t, string option) CCResult.t) list =
           ~month_days:[ day ] ()
       | _ -> Error None);
     (function
-      | [
-        (_, Month month); (pos_month_days, Nat day); (_, Hms hms);
-      ] ->
-        pattern ~months:[ month ] ~pos_month_days
-          ~month_days:[ day ] ~hms ()
+      | [ (_, Month month); (pos_month_days, Nat day); (_, Hms hms) ] ->
+        pattern ~months:[ month ] ~pos_month_days ~month_days:[ day ] ~hms ()
       | _ -> Error None);
     (function
       | [
