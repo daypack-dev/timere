@@ -38,11 +38,11 @@ This includes
 Include `timere` in the `libraries` in your dune file, and optionally one of the following two to select
 a concrete implementation of time zone data source
 
-- `timere.tzdata.full`
+- `timere.tzdb.full`
 
   - This is the default implementation which embeds the full IANA time zone database from year 1850 to year 2100 exclusive
 
-- `timere.tzdata.none`
+- `timere.tzdb.none`
 
   - This embeds no database.
     This is suitable for when you want to retrieve time zone data during run time, for instance, to reduce the built artifact size.
