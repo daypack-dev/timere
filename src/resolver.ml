@@ -1293,7 +1293,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
     let rec aux_inter' ~start (timeres : Time.t list) =
       let interval_batches = resolve ~start search_using_tz timeres in
       let batch = collect_batch interval_batches in
-      if List.for_all CCOpt.is_none batch then Seq.empty
+      if List.exists CCOpt.is_none batch then Seq.empty
       else
         let batch =
           CCList.filter_map CCFun.id batch
