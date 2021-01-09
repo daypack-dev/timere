@@ -1199,17 +1199,17 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
     | After (space, b, t1, t2) ->
       let s1 = aux search_using_tz t1 in
       let s2 = aux search_using_tz t2 in
-      aux_after search_using_tz space b s1 s2 t2
+      aux_after search_using_tz space b s1 s2 t1 t2
     | Between_inc (space, b, t1, t2) ->
       let s1 = aux search_using_tz t1 in
       let s2 = aux search_using_tz t2 in
-      aux_between_inc search_using_tz space b s1 s2 t2
+      aux_between_inc search_using_tz space b s1 s2 t1 t2
     | Between_exc (space, b, t1, t2) ->
       let s1 = aux search_using_tz t1 in
       let s2 = aux search_using_tz t2 in
-      aux_between_exc search_using_tz space b s1 s2 t2
+      aux_between_exc search_using_tz space b s1 s2 t1 t2
     | Unchunk (_, c) -> aux_chunked search_using_tz c |> normalize
-  and get_after_seq_and_possibly_sliced_timere ~start search_using_tz (s : Time.Interval.t Seq.t)
+  and get_after_seq_and_maybe_sliced_timere ~start search_using_tz (s : Time.Interval.t Seq.t)
       (timere : Time.t) : (Time.Interval.t Seq.t * Time.t) =
     match s () with
     | Seq.Nil -> (Seq.empty, timere)
@@ -1225,15 +1225,33 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
         OSeq.drop_while (fun (start', _) -> start' < start) s
       in
       (s, timere)
-  and aux_after search_using_tz space bound s1 s2 t2 =
+  and maybe_slice_source_of_after ~last_result search_using_tz bound (s : Time.Interval.t Seq.t) (timere : Time.t) : (Time.Interval.t Seq.t * Time.t) =
+    let (_, last_end_exc) = last_result in
+    match s () with
+    | Seq.Nil -> (Seq.empty, timere)
+    | Seq.Cons ((start, _), _) ->
+      let distance = last_end_exc -^ start in
+      let safe_start = last_end_exc -^ bound in
+      let (s, timere) =
+        if distance >= bound && distance >= search_space_adjustment_trigger_size then
+          let timere = slice_search_space ~start:safe_start timere in
+          (aux search_using_tz timere, timere)
+        else
+          (s, timere)
+      in
+      let s =
+        OSeq.drop_while (fun (start, _) -> start < safe_start) s
+      in
+      (s, timere)
+  and aux_after search_using_tz space bound s1 s2 t1 t2 =
     let (_, search_space_end_exc) =
       List.hd @@ List.rev space
     in
-    let rec aux_after' s1 s2 t2 =
+    let rec aux_after' s1 s2 t1 t2 =
       match s1 () with
       | Seq.Nil -> Seq.empty
       | Seq.Cons ((_, end_exc1), rest1) -> (
-          let s2, t2 = get_after_seq_and_possibly_sliced_timere ~start:end_exc1 search_using_tz s2 t2 in
+          let s2, t2 = get_after_seq_and_maybe_sliced_timere ~start:end_exc1 search_using_tz s2 t2 in
           match s2 () with
           | Seq.Nil -> Seq.empty
           | Seq.Cons ((start2, end_exc2), _) ->
@@ -1241,19 +1259,24 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
               Seq.empty
             else
             if Int64.sub start2 end_exc1 <= bound then fun () ->
-              Seq.Cons ((start2, end_exc2), aux_after' rest1 s2 t2)
-            else aux_after' rest1 s2 t2)
+              Seq.Cons ((start2, end_exc2), aux_after' rest1 s2 t1 t2)
+            else
+              let (s1, t1) = maybe_slice_source_of_after ~last_result:(start2, end_exc2)
+                  search_using_tz bound rest1 t1
+              in
+              aux_after' s1 s2 t1 t2
+        )
     in
-    aux_after' s1 s2 t2
-  and aux_between_inc search_using_tz space bound s1 s2 t2 =
+    aux_after' s1 s2 t1 t2
+  and aux_between_inc search_using_tz space bound s1 s2 t1 t2 =
     let (_, search_space_end_exc) =
       List.hd @@ List.rev space
     in
-    let rec aux_between_inc' s1 s2 t2 =
+    let rec aux_between_inc' s1 s2 t1 t2 =
       match s1 () with
       | Seq.Nil -> Seq.empty
       | Seq.Cons ((start1, end_exc1), rest1) -> (
-          let s2, t2 = get_after_seq_and_possibly_sliced_timere ~start:end_exc1 search_using_tz s2 t2 in
+          let s2, t2 = get_after_seq_and_maybe_sliced_timere ~start:end_exc1 search_using_tz s2 t2 in
           match s2 () with
           | Seq.Nil -> Seq.empty
           | Seq.Cons ((start2, end_exc2), _rest2) ->
@@ -1261,30 +1284,38 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
               Seq.empty
             else
             if Int64.sub start2 end_exc1 <= bound then fun () ->
-              Seq.Cons ((start1, end_exc2), aux_between_inc' rest1 s2 t2)
-            else aux_between_inc' rest1 s2 t2)
+              Seq.Cons ((start1, end_exc2), aux_between_inc' rest1 s2 t1 t2)
+            else
+              let (s1, t1) = maybe_slice_source_of_after ~last_result:(start2, end_exc2)
+                  search_using_tz bound rest1 t1
+              in
+              aux_between_inc' s1 s2 t1 t2)
     in
-    aux_between_inc' s1 s2 t2
-  and aux_between_exc search_using_tz space bound s1 s2 t2 =
+    aux_between_inc' s1 s2 t1 t2
+  and aux_between_exc search_using_tz space bound s1 s2 t1 t2 =
     let (_, search_space_end_exc) =
       List.hd @@ List.rev space
     in
-    let rec aux_between_exc' s1 s2 t2 =
+    let rec aux_between_exc' s1 s2 t1 t2 =
       match s1 () with
       | Seq.Nil -> Seq.empty
       | Seq.Cons ((start1, end_exc1), rest1) -> (
-          let s2, t2 = get_after_seq_and_possibly_sliced_timere ~start:end_exc1 search_using_tz s2 t2 in
+          let s2, t2 = get_after_seq_and_maybe_sliced_timere ~start:end_exc1 search_using_tz s2 t2 in
           match s2 () with
           | Seq.Nil -> Seq.empty
-          | Seq.Cons ((start2, _end_exc2), _rest2) ->
+          | Seq.Cons ((start2, end_exc2), _rest2) ->
             if search_space_end_exc <= start2 then
               Seq.empty
             else
             if Int64.sub start2 end_exc1 <= bound then fun () ->
-              Seq.Cons ((start1, start2), aux_between_exc' rest1 s2 t2)
-            else aux_between_exc' rest1 s2 t2)
+              Seq.Cons ((start1, start2), aux_between_exc' rest1 s2 t1 t2)
+            else
+              let (s1, t1) = maybe_slice_source_of_after ~last_result:(start2, end_exc2)
+                  search_using_tz bound rest1 t1
+              in
+              aux_between_exc' s1 s2 t1 t2)
     in
-    aux_between_exc' s1 s2 t2
+    aux_between_exc' s1 s2 t1 t2
   and aux_union search_using_tz timeres =
     let resolve_and_merge (s : Time.t Seq.t) : Interval.t Seq.t =
       Seq.map (aux search_using_tz) s
