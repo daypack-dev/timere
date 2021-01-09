@@ -14,17 +14,26 @@ module Alco = struct
   let after_empty () =
     Alcotest.(check (list (pair int64 int64)))
       "same list" []
-      (Time.after (Duration.make ~days:1 ()) Time.empty Time.always |> Resolver.resolve |> CCResult.get_exn |> CCList.of_seq)
+      (Time.after (Duration.make ~days:1 ()) Time.empty Time.always
+       |> Resolver.resolve
+       |> CCResult.get_exn
+       |> CCList.of_seq)
 
   let between_inc_empty () =
     Alcotest.(check (list (pair int64 int64)))
       "same list" []
-      (Time.between_inc (Duration.make ~days:1 ()) Time.empty Time.always |> Resolver.resolve |> CCResult.get_exn |> CCList.of_seq)
+      (Time.between_inc (Duration.make ~days:1 ()) Time.empty Time.always
+       |> Resolver.resolve
+       |> CCResult.get_exn
+       |> CCList.of_seq)
 
   let between_exc_empty () =
     Alcotest.(check (list (pair int64 int64)))
       "same list" []
-      (Time.between_exc (Duration.make ~days:1 ()) Time.empty Time.always |> Resolver.resolve |> CCResult.get_exn |> CCList.of_seq)
+      (Time.between_exc (Duration.make ~days:1 ()) Time.empty Time.always
+       |> Resolver.resolve
+       |> CCResult.get_exn
+       |> CCList.of_seq)
 
   let suite =
     [
@@ -72,29 +81,33 @@ module Qc = struct
 
   let after_empty =
     QCheck.Test.make ~count:10 ~name:"after_empty"
-      QCheck.(pair pos_int64
-                time
-             )
+      QCheck.(pair pos_int64 time)
       (fun (bound_offset, t1) ->
          let open QCheck in
-         let bound = Int64.add Duration.(make ~days:366 () |> to_seconds) bound_offset in
+         let bound =
+           Int64.add Duration.(make ~days:366 () |> to_seconds) bound_offset
+         in
          print_endline "=====";
          print_endline (To_sexp.to_sexp_string t1);
          print_endline "=====";
-         let s1 = CCResult.get_exn @@ Resolver.resolve Time.(after (Duration.of_seconds bound) t1 empty) in
-         let s2 = CCResult.get_exn @@ Resolver.resolve Time.(after (Duration.of_seconds bound) empty t1) in
-         OSeq.is_empty s1
-         && OSeq.is_empty s2
-      )
+         let s1 =
+           CCResult.get_exn
+           @@ Resolver.resolve Time.(after (Duration.of_seconds bound) t1 empty)
+         in
+         let s2 =
+           CCResult.get_exn
+           @@ Resolver.resolve Time.(after (Duration.of_seconds bound) empty t1)
+         in
+         OSeq.is_empty s1 && OSeq.is_empty s2)
 
   let after_soundness =
     QCheck.Test.make ~count:10 ~name:"after_soundness"
-      QCheck.(triple pos_int64
-                time time
-             )
+      QCheck.(triple pos_int64 time time)
       (fun (bound_offset, t1, t2) ->
          let open QCheck in
-         let bound = Int64.add Duration.(make ~days:366 () |> to_seconds) bound_offset in
+         let bound =
+           Int64.add Duration.(make ~days:366 () |> to_seconds) bound_offset
+         in
          print_endline "=====";
          print_endline (To_sexp.to_sexp_string t1);
          print_endline "^^^^^";
@@ -103,50 +116,48 @@ module Qc = struct
          let s1 = CCResult.get_exn @@ Resolver.resolve t1 in
          let s2 = CCResult.get_exn @@ Resolver.resolve t2 in
          let l1 = CCList.of_seq s1 in
-         let s = CCResult.get_exn @@ Resolver.resolve Time.(after (Duration.of_seconds bound) t1 t2) in
-         OSeq.for_all (fun (x, _y) ->
-             match List.filter (fun (_x1, y1) -> y1 <= x && Int64.sub x y1 <= bound)
-                     l1
-             with
-             | [] -> false
-             | r ->
-               let _xr, yr = List.hd @@ List.rev r in
-               not
-                 (
-                   OSeq.exists (fun (x2, _y2) ->
-                       yr <= x2 && x2 < x
-                     )
-                     s2
-                 )
-           )
-           s
-      )
+         let s =
+           CCResult.get_exn
+           @@ Resolver.resolve Time.(after (Duration.of_seconds bound) t1 t2)
+         in
+         OSeq.for_all
+           (fun (x, _y) ->
+              match
+                List.filter
+                  (fun (_x1, y1) -> y1 <= x && Int64.sub x y1 <= bound)
+                  l1
+              with
+              | [] -> false
+              | r ->
+                let _xr, yr = List.hd @@ List.rev r in
+                not (OSeq.exists (fun (x2, _y2) -> yr <= x2 && x2 < x) s2))
+           s)
 
   let after_completeness =
     QCheck.Test.make ~count:10 ~name:"after_completeness"
-      QCheck.(triple pos_int64
-                time time
-             )
+      QCheck.(triple pos_int64 time time)
       (fun (bound_offset, t1, t2) ->
          let open QCheck in
-         let bound = Int64.add Duration.(make ~days:366 () |> to_seconds) bound_offset in
+         let bound =
+           Int64.add Duration.(make ~days:366 () |> to_seconds) bound_offset
+         in
          let s1 = CCResult.get_exn @@ Resolver.resolve t1 in
          let s2 = CCResult.get_exn @@ Resolver.resolve t2 in
          let l2 = CCList.of_seq s2 in
-         let s = CCResult.get_exn @@ Resolver.resolve Time.(after (Duration.of_seconds bound) t1 t2) in
-         OSeq.for_all (fun (_x1, y1) ->
-             match
-               List.filter (fun (x2, _y2) ->
-                   y1 <= x2 &&
-                   Int64.sub x2 y1 <= bound
-                 ) l2
-             with
-             | [] -> true
-             | r :: _ ->
-               OSeq.mem ~eq:( = ) r s
-           )
-           s1
-      )
+         let s =
+           CCResult.get_exn
+           @@ Resolver.resolve Time.(after (Duration.of_seconds bound) t1 t2)
+         in
+         OSeq.for_all
+           (fun (_x1, y1) ->
+              match
+                List.filter
+                  (fun (x2, _y2) -> y1 <= x2 && Int64.sub x2 y1 <= bound)
+                  l2
+              with
+              | [] -> true
+              | r :: _ -> OSeq.mem ~eq:( = ) r s)
+           s1)
 
   let suite =
     [
