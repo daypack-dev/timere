@@ -10,7 +10,7 @@ let display_intervals ~display_using_tz s =
   | Seq.Nil -> print_endline "No time intervals"
   | Seq.Cons _ ->
     s
-    |> OSeq.take 60
+    |> OSeq.take 1000
     |> OSeq.iter (fun (x, y) ->
         let s = Printers.sprintf_interval ~display_using_tz (x, y) in
         let size = Duration.of_seconds (Int64.sub y x) in
@@ -20,7 +20,12 @@ let display_intervals ~display_using_tz s =
 let debug_resolver () =
   let s =
     {|
-(shift 1 (interval_exc (2002 Apr 15 6 51 15 (tz_and_tz_offset_s UTC 0)) (2002 Apr 15 6 59 30 (tz_and_tz_offset_s UTC 0))))
+    (unchunk
+      (take 100
+        (chunk_disjoint_intervals
+          (between_exc (duration 1 0 0 0)
+            (pattern (hours 15) (minutes 18) (seconds 59))
+            (pattern (hours 15) (minutes 18) (seconds 59))))))
     |}
   in
   let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in
@@ -31,11 +36,13 @@ let debug_resolver () =
    *     2 1 [ 231; 495; 914; 495 ]
    * in *)
   (* let timere =
-   *   Time.inter
-   *     [
-   *       Time.empty;
-   *       Time.pattern ~strict:true ~months:[ `Mar ] ~month_days:[ 31 ] ();
-   *     ]
+   *   let open Time in
+   *   after (Duration.make ~seconds:1 ())
+   *     empty
+   *     (between_exc (Duration.make ~seconds:10000 ())
+   *        (pattern ~hours:[12] ~minutes:[0] ~seconds:[0] ())
+   *        (pattern ~hours:[13] ~minutes:[0] ~seconds:[0] ())
+   *     )
    * in *)
   (* let timere =
    *   let open Time in
@@ -93,7 +100,7 @@ let debug_resolver () =
   print_endline "^^^^^";
   print_endline (To_sexp.to_sexp_string timere');
   print_endline "=====";
-  (match Resolver.resolve timere' with
+  (match Resolver.resolve timere with
    | Error msg -> print_endline msg
    | Ok s -> display_intervals ~display_using_tz:tz s);
   print_endline "=====";
