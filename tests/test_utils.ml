@@ -279,8 +279,8 @@ let time_gen : Time.t QCheck.Gen.t =
        Time.inter
          [
            Time.(interval_dt_exc search_start_dt search_end_exc_dt);
-           Builder.build ~min_year:2018 ~max_year_inc:2020 ~max_height
-             ~max_branching ~randomness;
+           Builder.build ~enable_extra_restrictions:true ~min_year:2018
+             ~max_year_inc:2020 ~max_height ~max_branching ~randomness;
          ])
     (int_range 1 2) (int_range 1 3)
     (list_size (int_bound 10) (int_bound 100))

@@ -4,5 +4,5 @@ let time =
     (fun max_height max_branching randomness ->
        let max_height = 1 + max_height in
        let max_branching = 1 + max_branching in
-       Builder.build ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching
-         ~randomness)
+       Builder.build ~enable_extra_restrictions:false ~min_year:2000
+         ~max_year_inc:2002 ~max_height ~max_branching ~randomness)

@@ -198,8 +198,8 @@ let make_unary_op ~min_year ~max_year_inc ~rng t =
     Time.with_tz tz t
   | _ -> failwith "Unexpected case"
 
-let build ~min_year ~max_year_inc ~max_height ~max_branching
-    ~(randomness : int list) : Time.t =
+let build ~enable_extra_restrictions ~min_year ~max_year_inc ~max_height
+    ~max_branching ~(randomness : int list) : Time.t =
   let rng = make_rng ~randomness in
   let rec aux height =
     if height <= 1 then
@@ -249,8 +249,10 @@ let build ~min_year ~max_year_inc ~max_height ~max_branching
        *   |> Time.round_robin_pick *)
       | _ -> failwith "Unexpected case"
   and aux_restricted height =
-    Time.chunk `Disjoint_intervals
-      Time.(take 100)
-      (aux (new_height ~rng height))
+    if enable_extra_restrictions then
+      Time.chunk `Disjoint_intervals
+        Time.(take 100)
+        (aux (new_height ~rng height))
+    else aux (new_height ~rng height)
   in
   aux max_height
