@@ -1117,7 +1117,9 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
   aux s
 
 let search_space_adjustment_trigger_size =
-  Duration.make ~days:30 () |> Duration.to_seconds
+  Duration.(make ~days:30 () |> to_seconds)
+
+let inter_minimum_slice_size = Duration.(make ~days:10 () |> to_seconds)
 
 let slice_search_space ~start (t : Time.t) : Time.t =
   get_search_space t
@@ -1337,16 +1339,22 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
             (timeres, resolve ~start search_using_tz timeres)
           else (timeres, interval_batches)
         in
-        let intervals_up_to_max_end_exc =
+        let end_exc =
+          if max_end_exc -^ start <= inter_minimum_slice_size then
+            start +^ inter_minimum_slice_size
+          else
+            max_end_exc
+        in
+        let intervals_up_to_end_exc =
           interval_batches
           |> CCList.to_seq
           |> Seq.map
-            (Intervals.Slice.slice ~skip_check:true ~end_exc:max_end_exc)
+            (Intervals.Slice.slice ~skip_check:true ~end_exc)
           |> Intervals.Inter.inter_multi_seq ~skip_check:true
         in
         fun () ->
           Seq.Cons
-            (intervals_up_to_max_end_exc, aux_inter' ~start:max_end_exc timeres)
+            (intervals_up_to_end_exc, aux_inter' ~start:end_exc timeres)
     in
     aux_inter' ~start:default_search_space_start (CCList.of_seq timeres)
     |> Seq.flat_map CCFun.id
