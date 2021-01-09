@@ -10,7 +10,7 @@ let display_intervals ~display_using_tz s =
   | Seq.Nil -> print_endline "No time intervals"
   | Seq.Cons _ ->
     s
-    |> OSeq.take 1000
+    |> OSeq.take 60
     |> OSeq.iter (fun (x, y) ->
         let s = Printers.sprintf_interval ~display_using_tz (x, y) in
         let size = Duration.of_seconds (Int64.sub y x) in
@@ -20,12 +20,9 @@ let display_intervals ~display_using_tz s =
 let debug_resolver () =
   let s =
     {|
-    (unchunk
-      (take 100
-        (chunk_disjoint_intervals
           (between_exc (duration 1 0 0 0)
             (pattern (hours 15) (minutes 18) (seconds 59))
-            (pattern (hours 15) (minutes 18) (seconds 59))))))
+            (pattern (hours 15) (minutes 18) (seconds 59)))
     |}
   in
   let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in
@@ -100,15 +97,15 @@ let debug_resolver () =
   print_endline "^^^^^";
   print_endline (To_sexp.to_sexp_string timere');
   print_endline "=====";
-  (match Resolver.resolve timere with
+  (match Resolver.resolve timere' with
    | Error msg -> print_endline msg
    | Ok s -> display_intervals ~display_using_tz:tz s);
   print_endline "=====";
-  let s =
-    Simple_resolver.resolve ~search_start ~search_end_exc
-      ~search_using_tz:Time_zone.utc timere
-  in
-  display_intervals ~display_using_tz:tz s;
+  (* let s =
+   *   Simple_resolver.resolve ~search_start ~search_end_exc
+   *     ~search_using_tz:Time_zone.utc timere
+   * in
+   * display_intervals ~display_using_tz:tz s; *)
   print_newline ()
 
 let debug_ccsexp_parse_string () = CCSexp.parse_string "\"\\256\"" |> ignore
