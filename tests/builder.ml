@@ -241,7 +241,7 @@ let build ~min_year ~max_year_inc ~max_height ~max_branching
           (aux_restricted height)
       | 6 ->
         Time.chunk (make_chunking ~rng) (make_chunk_selector ~rng)
-          (aux_restricted height)
+          (aux (new_height ~rng height))
       (* | 3 ->
        *   OSeq.(0 -- Stdlib.min max_branching (rng ()))
        *   |> Seq.map (fun _ -> aux (new_height height))
@@ -249,11 +249,7 @@ let build ~min_year ~max_year_inc ~max_height ~max_branching
        *   |> Time.round_robin_pick *)
       | _ -> failwith "Unexpected case"
   and aux_restricted height =
-    Time.(inter
-            [
-              (pattern ~year_ranges:[`Range_inc(min_year, max_year_inc)] ());
-              (aux (new_height ~rng height));
-            ]
-         )
+    Time.chunk `Disjoint_intervals Time.(take 100)
+      (aux (new_height ~rng height))
   in
   aux max_height
