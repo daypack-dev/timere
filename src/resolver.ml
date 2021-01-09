@@ -1250,7 +1250,10 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
     let rec aux_after' s1 s2 t1 t2 =
       match s1 () with
       | Seq.Nil -> Seq.empty
-      | Seq.Cons ((_, end_exc1), rest1) -> (
+      | Seq.Cons ((start1, end_exc1), rest1) -> (
+          if search_space_end_exc <= start1 then
+            Seq.empty
+          else
           let s2, t2 = get_after_seq_and_maybe_sliced_timere ~start:end_exc1 search_using_tz s2 t2 in
           match s2 () with
           | Seq.Nil -> Seq.empty
@@ -1276,7 +1279,10 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
       match s1 () with
       | Seq.Nil -> Seq.empty
       | Seq.Cons ((start1, end_exc1), rest1) -> (
-          let s2, t2 = get_after_seq_and_maybe_sliced_timere ~start:end_exc1 search_using_tz s2 t2 in
+          if search_space_end_exc <= start1 then
+            Seq.empty
+          else
+            let s2, t2 = get_after_seq_and_maybe_sliced_timere ~start:end_exc1 search_using_tz s2 t2 in
           match s2 () with
           | Seq.Nil -> Seq.empty
           | Seq.Cons ((start2, end_exc2), _rest2) ->
