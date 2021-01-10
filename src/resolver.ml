@@ -1136,273 +1136,277 @@ let slice_search_space_multi ~start (l : Time.t list) : Time.t list =
 let slice_search_space_multi_seq ~start (s : Time.t Seq.t) : Time.t Seq.t =
   Seq.map (slice_search_space ~start) s
 
+let normalize =
+  Time.Intervals.normalize ~skip_filter_empty:false ~skip_filter_invalid:true
+    ~skip_sort:true
+
+let rec aux search_using_tz time =
+  let open Time in
+  match get_search_space time with
+  | [] -> Seq.empty
+  | _ -> (
+      match time with
+      | Empty -> Seq.empty
+      | All -> Seq.return (min_timestamp, Int64.succ @@ max_timestamp)
+      | Timestamp_interval_seq (_, s) -> s
+      | Pattern (space, pat) ->
+        Time_zone.transition_seq search_using_tz
+        |> Seq.flat_map (fun ((x, y), entry) ->
+            let space =
+              Intervals.Inter.inter
+                (Seq.return (x, y))
+                (CCList.to_seq space)
+            in
+            let params =
+              Seq.map
+                (Resolve_pattern.Search_param.make ~search_using_tz
+                   ~search_using_tz_offset_s:Time_zone.(entry.offset))
+                space
+            in
+            Intervals.Union.union_multi_seq ~skip_check:true
+              (Seq.map
+                 (fun param ->
+                    Resolve_pattern.matching_intervals param pat)
+                 params))
+        |> normalize
+      | Unary_op (space, op, t) -> (
+          let search_using_tz =
+            match op with With_tz x -> x | _ -> search_using_tz
+          in
+          let s = aux search_using_tz t in
+          match op with
+          | Not ->
+            Intervals.relative_complement ~skip_check:false ~not_mem_of:s
+              (CCList.to_seq space)
+          | Drop_points n -> do_drop_points (Int64.of_int n) s |> normalize
+          | Take_points n -> do_take_points (Int64.of_int n) s
+          | Shift n ->
+            Seq.map
+              (fun (start, end_exc) ->
+                 (Int64.add start n, Int64.add end_exc n))
+              s
+          | Lengthen n ->
+            s
+            |> Seq.map (fun (start, end_exc) ->
+                (start, Int64.add end_exc n))
+            |> normalize
+          | With_tz _ -> s)
+      | Interval_inc (_, a, b) -> Seq.return (a, Int64.succ b)
+      | Interval_exc (_, a, b) -> Seq.return (a, b)
+      | Round_robin_pick_list (_, l) ->
+        List.map (aux search_using_tz) l
+        |> Time.Intervals.Round_robin
+           .merge_multi_list_round_robin_non_decreasing ~skip_check:true
+      | Inter_seq (_, s) -> aux_inter search_using_tz s
+      | Union_seq (_, s) -> aux_union search_using_tz s
+      | After (space, b, t1, t2) ->
+        let s1 = get_start_spec_of_after search_using_tz space t1 in
+        let s2 = aux search_using_tz t2 in
+        aux_after search_using_tz space b s1 s2 t1 t2
+      | Between_inc (space, b, t1, t2) ->
+        let s1 = get_start_spec_of_after search_using_tz space t1 in
+        let s2 = aux search_using_tz t2 in
+        aux_between Inc search_using_tz space b s1 s2 t1 t2
+      | Between_exc (space, b, t1, t2) ->
+        let s1 = get_start_spec_of_after search_using_tz space t1 in
+        let s2 = aux search_using_tz t2 in
+        aux_between Exc search_using_tz space b s1 s2 t1 t2
+      | Unchunk (_, c) -> aux_chunked search_using_tz c |> normalize)
+and get_start_spec_of_after search_using_tz space t =
+  let search_space_start = fst (List.hd space) in
+  aux search_using_tz t
+  |> OSeq.drop_while (fun (start, _) -> start < search_space_start)
+and get_after_seq_and_maybe_sliced_timere ~start search_using_tz
+    (s : Time.Interval.t Seq.t) (timere : Time.t) :
+  Time.Interval.t Seq.t * Time.t =
+  match s () with
+  | Seq.Nil -> (Seq.empty, timere)
+  | Seq.Cons ((start', _), _) ->
+    let s, timere =
+      if Int64.sub start start' >= search_space_adjustment_trigger_size then
+        let timere = slice_search_space ~start timere in
+        (aux search_using_tz timere, timere)
+      else (s, timere)
+    in
+    let s = OSeq.drop_while (fun (start', _) -> start' < start) s in
+    (s, timere)
+and maybe_slice_start_spec_of_after ~last_result search_using_tz bound
+    (s : Time.Interval.t Seq.t) (timere : Time.t) :
+  Time.Interval.t Seq.t * Time.t =
+  let _, last_end_exc = last_result in
+  match s () with
+  | Seq.Nil -> (Seq.empty, timere)
+  | Seq.Cons ((start, _), _) ->
+    let distance = last_end_exc -^ start in
+    let safe_start = last_end_exc -^ bound in
+    let s, timere =
+      if
+        distance >= bound
+        && distance >= search_space_adjustment_trigger_size
+      then
+        let timere = slice_search_space ~start:safe_start timere in
+        (aux search_using_tz timere, timere)
+      else (s, timere)
+    in
+    let s = OSeq.drop_while (fun (start, _) -> start < safe_start) s in
+    (s, timere)
+and aux_after search_using_tz space bound s1 s2 t1 t2 =
+  let _, search_space_end_exc = List.hd @@ List.rev space in
+  let rec aux_after' s1 s2 t1 t2 =
+    match s1 () with
+    | Seq.Nil -> Seq.empty
+    | Seq.Cons ((start1, end_exc1), rest1) -> (
+        if search_space_end_exc <= start1 then Seq.empty
+        else
+          let s2, t2 =
+            get_after_seq_and_maybe_sliced_timere ~start:end_exc1
+              search_using_tz s2 t2
+          in
+          match s2 () with
+          | Seq.Nil -> Seq.empty
+          | Seq.Cons ((start2, end_exc2), _) ->
+            if search_space_end_exc <= start2 then Seq.empty
+            else if Int64.sub start2 end_exc1 <= bound then fun () ->
+              Seq.Cons ((start2, end_exc2), aux_after' rest1 s2 t1 t2)
+            else
+              let s1, t1 =
+                maybe_slice_start_spec_of_after
+                  ~last_result:(start2, end_exc2) search_using_tz bound
+                  rest1 t1
+              in
+              aux_after' s1 s2 t1 t2)
+  in
+  aux_after' s1 s2 t1 t2
+and aux_between inc_or_exc search_using_tz space bound s1 s2 t1 t2 =
+  let _, search_space_end_exc = List.hd @@ List.rev space in
+  let rec aux_between' s1 s2 t1 t2 =
+    match s1 () with
+    | Seq.Nil -> Seq.empty
+    | Seq.Cons ((start1, end_exc1), rest1) -> (
+        if search_space_end_exc <= start1 then Seq.empty
+        else
+          let s2, t2 =
+            get_after_seq_and_maybe_sliced_timere ~start:end_exc1
+              search_using_tz s2 t2
+          in
+          match s2 () with
+          | Seq.Nil -> Seq.empty
+          | Seq.Cons ((start2, end_exc2), _rest2) ->
+            if search_space_end_exc <= start2 then Seq.empty
+            else if start2 -^ end_exc1 <= bound then
+              let interval =
+                match inc_or_exc with
+                | Inc -> (start1, end_exc2)
+                | Exc -> (start1, start2)
+              in
+              fun () -> Seq.Cons (interval, aux_between' rest1 s2 t1 t2)
+            else
+              let s1, t1 =
+                maybe_slice_start_spec_of_after
+                  ~last_result:(start2, end_exc2) search_using_tz bound
+                  rest1 t1
+              in
+              aux_between' s1 s2 t1 t2)
+  in
+  aux_between' s1 s2 t1 t2
+and aux_union search_using_tz timeres =
+  let open Time in
+  let resolve_and_merge (s : Time.t Seq.t) : Interval.t Seq.t =
+    Seq.map (aux search_using_tz) s
+    |> Time.Intervals.Merge.merge_multi_seq ~skip_check:true
+  in
+  let rec aux_union' (timeres : Time.t Seq.t) (intervals : Interval.t Seq.t) =
+    match intervals () with
+    | Seq.Nil -> Seq.empty
+    | Seq.Cons ((start, end_exc), rest) ->
+      let size = end_exc -^ start in
+      if size >= search_space_adjustment_trigger_size then
+        let timeres = slice_search_space_multi_seq ~start:end_exc timeres in
+        let next_intervals =
+          resolve_and_merge timeres
+          |> OSeq.drop_while (fun x -> Time.Interval.le x (start, end_exc))
+        in
+        fun () ->
+          Seq.Cons ((start, end_exc), aux_union' timeres next_intervals)
+      else fun () -> Seq.Cons ((start, end_exc), aux_union' timeres rest)
+  in
+  aux_union' timeres (resolve_and_merge timeres) |> normalize
+and aux_inter search_using_tz timeres =
+  let open Time in
+  let resolve ~start search_using_tz timeres =
+    List.map
+      (fun timere ->
+         aux search_using_tz timere
+         |> Intervals.Slice.slice ~skip_check:true ~start)
+      timeres
+  in
+  let collect_batch (l : Interval.t Seq.t list) : Interval.t option list =
+    List.map
+      (fun s -> match s () with Seq.Nil -> None | Seq.Cons (x, _) -> Some x)
+      l
+  in
+  let rec aux_inter' ~start (timeres : Time.t list) =
+    let interval_batches = resolve ~start search_using_tz timeres in
+    let batch_for_sampling = collect_batch interval_batches in
+    if List.exists CCOpt.is_none batch_for_sampling then Seq.empty
+    else
+      let batch_for_sampling =
+        CCList.filter_map CCFun.id batch_for_sampling
+        |> Intervals.Sort.sort_uniq_intervals_list ~skip_check:true
+      in
+      let _min_start, min_end_exc = List.hd batch_for_sampling in
+      let max_start, max_end_exc = List.hd @@ List.rev batch_for_sampling in
+      let timeres, interval_batches =
+        if
+          min_end_exc <= max_start
+          && max_start -^ min_end_exc >= search_space_adjustment_trigger_size
+        then
+          let timeres = slice_search_space_multi ~start:max_start timeres in
+          (timeres, resolve ~start search_using_tz timeres)
+        else (timeres, interval_batches)
+      in
+      let end_exc =
+        if max_end_exc -^ start <= inter_minimum_slice_size then
+          start +^ inter_minimum_slice_size
+        else max_end_exc
+      in
+      let intervals_up_to_end_exc =
+        interval_batches
+        |> CCList.to_seq
+        |> Seq.map (Intervals.Slice.slice ~skip_check:true ~end_exc)
+        |> Intervals.Inter.inter_multi_seq ~skip_check:true
+      in
+      fun () ->
+        Seq.Cons (intervals_up_to_end_exc, aux_inter' ~start:end_exc timeres)
+  in
+  aux_inter' ~start:default_search_space_start (CCList.of_seq timeres)
+  |> Seq.flat_map CCFun.id
+  |> normalize
+and aux_chunked search_using_tz (chunked : Time.chunked) =
+  let open Time in
+  let chunk_based_on_op_on_t op s =
+    match op with
+    | Chunk_disjoint_interval -> normalize s
+    | Chunk_by_duration { chunk_size; drop_partial } ->
+      Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
+    | Chunk_at_year_boundary -> do_chunk_at_year_boundary search_using_tz s
+    | Chunk_at_month_boundary -> do_chunk_at_month_boundary search_using_tz s
+  in
+  match chunked with
+  | Unary_op_on_t (op, t) ->
+    aux search_using_tz t |> chunk_based_on_op_on_t op
+  | Unary_op_on_chunked (op, c) -> (
+      let s = aux_chunked search_using_tz c in
+      match op with
+      | Nth n -> s |> OSeq.drop n |> OSeq.take 1
+      | Drop n -> OSeq.drop n s
+      | Take n -> OSeq.take n s
+      | Take_nth n -> OSeq.take_nth n s
+      | Chunk_again op -> chunk_based_on_op_on_t op s)
+
 let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
   let open Time in
-  let normalize =
-    Intervals.normalize ~skip_filter_empty:false ~skip_filter_invalid:true
-      ~skip_sort:true
-  in
-  let rec aux search_using_tz time =
-    match get_search_space time with
-    | [] -> Seq.empty
-    | _ -> (
-        match time with
-        | Empty -> Seq.empty
-        | All -> Seq.return (min_timestamp, Int64.succ @@ max_timestamp)
-        | Timestamp_interval_seq (_, s) -> s
-        | Pattern (space, pat) ->
-          Time_zone.transition_seq search_using_tz
-          |> Seq.flat_map (fun ((x, y), entry) ->
-              let space =
-                Intervals.Inter.inter
-                  (Seq.return (x, y))
-                  (CCList.to_seq space)
-              in
-              let params =
-                Seq.map
-                  (Resolve_pattern.Search_param.make ~search_using_tz
-                     ~search_using_tz_offset_s:Time_zone.(entry.offset))
-                  space
-              in
-              Intervals.Union.union_multi_seq ~skip_check:true
-                (Seq.map
-                   (fun param ->
-                      Resolve_pattern.matching_intervals param pat)
-                   params))
-          |> normalize
-        | Unary_op (space, op, t) -> (
-            let search_using_tz =
-              match op with With_tz x -> x | _ -> search_using_tz
-            in
-            let s = aux search_using_tz t in
-            match op with
-            | Not ->
-              Intervals.relative_complement ~skip_check:false ~not_mem_of:s
-                (CCList.to_seq space)
-            | Drop_points n -> do_drop_points (Int64.of_int n) s |> normalize
-            | Take_points n -> do_take_points (Int64.of_int n) s
-            | Shift n ->
-              Seq.map
-                (fun (start, end_exc) ->
-                   (Int64.add start n, Int64.add end_exc n))
-                s
-            | Lengthen n ->
-              s
-              |> Seq.map (fun (start, end_exc) ->
-                  (start, Int64.add end_exc n))
-              |> normalize
-            | With_tz _ -> s)
-        | Interval_inc (_, a, b) -> Seq.return (a, Int64.succ b)
-        | Interval_exc (_, a, b) -> Seq.return (a, b)
-        | Round_robin_pick_list (_, l) ->
-          List.map (aux search_using_tz) l
-          |> Time.Intervals.Round_robin
-             .merge_multi_list_round_robin_non_decreasing ~skip_check:true
-        | Inter_seq (_, s) -> aux_inter search_using_tz s
-        | Union_seq (_, s) -> aux_union search_using_tz s
-        | After (space, b, t1, t2) ->
-          let s1 = get_start_spec_of_after search_using_tz space t1 in
-          let s2 = aux search_using_tz t2 in
-          aux_after search_using_tz space b s1 s2 t1 t2
-        | Between_inc (space, b, t1, t2) ->
-          let s1 = get_start_spec_of_after search_using_tz space t1 in
-          let s2 = aux search_using_tz t2 in
-          aux_between Inc search_using_tz space b s1 s2 t1 t2
-        | Between_exc (space, b, t1, t2) ->
-          let s1 = get_start_spec_of_after search_using_tz space t1 in
-          let s2 = aux search_using_tz t2 in
-          aux_between Exc search_using_tz space b s1 s2 t1 t2
-        | Unchunk (_, c) -> aux_chunked search_using_tz c |> normalize)
-  and get_start_spec_of_after search_using_tz space t =
-    let search_space_start = fst (List.hd space) in
-    aux search_using_tz t
-    |> OSeq.drop_while (fun (start, _) -> start < search_space_start)
-  and get_after_seq_and_maybe_sliced_timere ~start search_using_tz
-      (s : Time.Interval.t Seq.t) (timere : Time.t) :
-    Time.Interval.t Seq.t * Time.t =
-    match s () with
-    | Seq.Nil -> (Seq.empty, timere)
-    | Seq.Cons ((start', _), _) ->
-      let s, timere =
-        if Int64.sub start start' >= search_space_adjustment_trigger_size then
-          let timere = slice_search_space ~start timere in
-          (aux search_using_tz timere, timere)
-        else (s, timere)
-      in
-      let s = OSeq.drop_while (fun (start', _) -> start' < start) s in
-      (s, timere)
-  and maybe_slice_start_spec_of_after ~last_result search_using_tz bound
-      (s : Time.Interval.t Seq.t) (timere : Time.t) :
-    Time.Interval.t Seq.t * Time.t =
-    let _, last_end_exc = last_result in
-    match s () with
-    | Seq.Nil -> (Seq.empty, timere)
-    | Seq.Cons ((start, _), _) ->
-      let distance = last_end_exc -^ start in
-      let safe_start = last_end_exc -^ bound in
-      let s, timere =
-        if
-          distance >= bound
-          && distance >= search_space_adjustment_trigger_size
-        then
-          let timere = slice_search_space ~start:safe_start timere in
-          (aux search_using_tz timere, timere)
-        else (s, timere)
-      in
-      let s = OSeq.drop_while (fun (start, _) -> start < safe_start) s in
-      (s, timere)
-  and aux_after search_using_tz space bound s1 s2 t1 t2 =
-    let _, search_space_end_exc = List.hd @@ List.rev space in
-    let rec aux_after' s1 s2 t1 t2 =
-      match s1 () with
-      | Seq.Nil -> Seq.empty
-      | Seq.Cons ((start1, end_exc1), rest1) -> (
-          if search_space_end_exc <= start1 then Seq.empty
-          else
-            let s2, t2 =
-              get_after_seq_and_maybe_sliced_timere ~start:end_exc1
-                search_using_tz s2 t2
-            in
-            match s2 () with
-            | Seq.Nil -> Seq.empty
-            | Seq.Cons ((start2, end_exc2), _) ->
-              if search_space_end_exc <= start2 then Seq.empty
-              else if Int64.sub start2 end_exc1 <= bound then fun () ->
-                Seq.Cons ((start2, end_exc2), aux_after' rest1 s2 t1 t2)
-              else
-                let s1, t1 =
-                  maybe_slice_start_spec_of_after
-                    ~last_result:(start2, end_exc2) search_using_tz bound
-                    rest1 t1
-                in
-                aux_after' s1 s2 t1 t2)
-    in
-    aux_after' s1 s2 t1 t2
-  and aux_between inc_or_exc search_using_tz space bound s1 s2 t1 t2 =
-    let _, search_space_end_exc = List.hd @@ List.rev space in
-    let rec aux_between' s1 s2 t1 t2 =
-      match s1 () with
-      | Seq.Nil -> Seq.empty
-      | Seq.Cons ((start1, end_exc1), rest1) -> (
-          if search_space_end_exc <= start1 then Seq.empty
-          else
-            let s2, t2 =
-              get_after_seq_and_maybe_sliced_timere ~start:end_exc1
-                search_using_tz s2 t2
-            in
-            match s2 () with
-            | Seq.Nil -> Seq.empty
-            | Seq.Cons ((start2, end_exc2), _rest2) ->
-              if search_space_end_exc <= start2 then Seq.empty
-              else if start2 -^ end_exc1 <= bound then
-                let interval =
-                  match inc_or_exc with
-                  | Inc -> (start1, end_exc2)
-                  | Exc -> (start1, start2)
-                in
-                fun () -> Seq.Cons (interval, aux_between' rest1 s2 t1 t2)
-              else
-                let s1, t1 =
-                  maybe_slice_start_spec_of_after
-                    ~last_result:(start2, end_exc2) search_using_tz bound
-                    rest1 t1
-                in
-                aux_between' s1 s2 t1 t2)
-    in
-    aux_between' s1 s2 t1 t2
-  and aux_union search_using_tz timeres =
-    let resolve_and_merge (s : Time.t Seq.t) : Interval.t Seq.t =
-      Seq.map (aux search_using_tz) s
-      |> Time.Intervals.Merge.merge_multi_seq ~skip_check:true
-    in
-    let rec aux_union' (timeres : Time.t Seq.t) (intervals : Interval.t Seq.t) =
-      match intervals () with
-      | Seq.Nil -> Seq.empty
-      | Seq.Cons ((start, end_exc), rest) ->
-        let size = end_exc -^ start in
-        if size >= search_space_adjustment_trigger_size then
-          let timeres = slice_search_space_multi_seq ~start:end_exc timeres in
-          let next_intervals =
-            resolve_and_merge timeres
-            |> OSeq.drop_while (fun x -> Time.Interval.le x (start, end_exc))
-          in
-          fun () ->
-            Seq.Cons ((start, end_exc), aux_union' timeres next_intervals)
-        else fun () -> Seq.Cons ((start, end_exc), aux_union' timeres rest)
-    in
-    aux_union' timeres (resolve_and_merge timeres) |> normalize
-  and aux_inter search_using_tz timeres =
-    let resolve ~start search_using_tz timeres =
-      List.map
-        (fun timere ->
-           aux search_using_tz timere
-           |> Intervals.Slice.slice ~skip_check:true ~start)
-        timeres
-    in
-    let collect_batch (l : Interval.t Seq.t list) : Interval.t option list =
-      List.map
-        (fun s -> match s () with Seq.Nil -> None | Seq.Cons (x, _) -> Some x)
-        l
-    in
-    let rec aux_inter' ~start (timeres : Time.t list) =
-      let interval_batches = resolve ~start search_using_tz timeres in
-      let batch_for_sampling = collect_batch interval_batches in
-      if List.exists CCOpt.is_none batch_for_sampling then Seq.empty
-      else
-        let batch_for_sampling =
-          CCList.filter_map CCFun.id batch_for_sampling
-          |> Intervals.Sort.sort_uniq_intervals_list ~skip_check:true
-        in
-        let _min_start, min_end_exc = List.hd batch_for_sampling in
-        let max_start, max_end_exc = List.hd @@ List.rev batch_for_sampling in
-        let timeres, interval_batches =
-          if
-            min_end_exc <= max_start
-            && max_start -^ min_end_exc >= search_space_adjustment_trigger_size
-          then
-            let timeres = slice_search_space_multi ~start:max_start timeres in
-            (timeres, resolve ~start search_using_tz timeres)
-          else (timeres, interval_batches)
-        in
-        let end_exc =
-          if max_end_exc -^ start <= inter_minimum_slice_size then
-            start +^ inter_minimum_slice_size
-          else max_end_exc
-        in
-        let intervals_up_to_end_exc =
-          interval_batches
-          |> CCList.to_seq
-          |> Seq.map (Intervals.Slice.slice ~skip_check:true ~end_exc)
-          |> Intervals.Inter.inter_multi_seq ~skip_check:true
-        in
-        fun () ->
-          Seq.Cons (intervals_up_to_end_exc, aux_inter' ~start:end_exc timeres)
-    in
-    aux_inter' ~start:default_search_space_start (CCList.of_seq timeres)
-    |> Seq.flat_map CCFun.id
-    |> normalize
-  and aux_chunked search_using_tz (chunked : chunked) =
-    let chunk_based_on_op_on_t op s =
-      match op with
-      | Chunk_disjoint_interval -> normalize s
-      | Chunk_by_duration { chunk_size; drop_partial } ->
-        Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
-      | Chunk_at_year_boundary -> do_chunk_at_year_boundary search_using_tz s
-      | Chunk_at_month_boundary -> do_chunk_at_month_boundary search_using_tz s
-    in
-    match chunked with
-    | Unary_op_on_t (op, t) ->
-      aux search_using_tz t |> chunk_based_on_op_on_t op
-    | Unary_op_on_chunked (op, c) -> (
-        let s = aux_chunked search_using_tz c in
-        match op with
-        | Nth n -> s |> OSeq.drop n |> OSeq.take 1
-        | Drop n -> OSeq.drop n s
-        | Take n -> OSeq.take n s
-        | Take_nth n -> OSeq.take_nth n s
-        | Chunk_again op -> chunk_based_on_op_on_t op s)
-  in
   try
     Ok
       (time
