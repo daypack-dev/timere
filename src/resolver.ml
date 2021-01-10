@@ -1217,8 +1217,9 @@ and get_start_spec_of_after search_using_tz space t =
   aux search_using_tz t
   |> OSeq.drop_while (fun (start, _) -> start < search_space_start)
 
-and get_after_seq_and_maybe_sliced_timere ~start ~(s2 : Time.Interval.t Seq.t)
-    ~(t2 : Time.t) search_using_tz : Time.Interval.t Seq.t * Time.t =
+and get_after_seq_and_maybe_sliced_timere ~end_exc1
+    ~(s2 : Time.Interval.t Seq.t) ~(t2 : Time.t) search_using_tz :
+  Time.Interval.t Seq.t * Time.t =
   match s2 () with
   | Seq.Nil -> (Seq.empty, t2)
   | Seq.Cons ((start', _), _) ->
@@ -1226,14 +1227,15 @@ and get_after_seq_and_maybe_sliced_timere ~start ~(s2 : Time.Interval.t Seq.t)
 
        the drop happens at OSeq.drop_while(...)
     *)
-    let safe_search_start = start -^ 1L in
+    let safe_search_start = end_exc1 -^ 1L in
     let s, t2 =
-      if Int64.sub start start' >= search_space_adjustment_trigger_size then
+      if Int64.sub end_exc1 start' >= search_space_adjustment_trigger_size
+      then
         let timere = slice_search_space ~start:safe_search_start t2 in
         (aux search_using_tz timere, timere)
       else (s2, t2)
     in
-    let s = OSeq.drop_while (fun (start', _) -> start' < start) s in
+    let s = OSeq.drop_while (fun (start', _) -> start' < end_exc1) s in
     (s, t2)
 
 and maybe_slice_start_spec_of_after ~last_result_from_s2
@@ -1264,7 +1266,7 @@ and aux_after search_using_tz space bound s1 s2 t1 t2 =
         if search_space_end_exc <= start1 then Seq.empty
         else
           let s2, t2 =
-            get_after_seq_and_maybe_sliced_timere ~start:end_exc1 ~s2 ~t2
+            get_after_seq_and_maybe_sliced_timere ~end_exc1 ~s2 ~t2
               search_using_tz
           in
           match s2 () with
@@ -1292,7 +1294,7 @@ and aux_between inc_or_exc search_using_tz space bound s1 s2 t1 t2 =
         if search_space_end_exc <= start1 then Seq.empty
         else
           let s2, t2 =
-            get_after_seq_and_maybe_sliced_timere ~start:end_exc1 ~s2 ~t2
+            get_after_seq_and_maybe_sliced_timere ~end_exc1 ~s2 ~t2
               search_using_tz
           in
           match s2 () with
