@@ -21,5 +21,5 @@ let () =
                     l2
                 with
                 | [] -> true
-                | (xr, _yr) :: _ -> OSeq.mem ~eq:( = ) (x1, xr) s)
+                | (_xr2, yr2) :: _ -> OSeq.mem ~eq:( = ) (x1, yr2) s)
              s1))
