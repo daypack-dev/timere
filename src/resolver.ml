@@ -1196,8 +1196,8 @@ let rec aux search_using_tz time =
         List.map (aux search_using_tz) l
         |> Time.Intervals.Round_robin
            .merge_multi_list_round_robin_non_decreasing ~skip_check:true
-      | Inter_seq (_, s) -> aux_inter search_using_tz s
-      | Union_seq (_, s) -> aux_union search_using_tz s
+      | Inter_seq (_, s) -> aux_inter search_using_tz s |> normalize
+      | Union_seq (_, s) -> aux_union search_using_tz s |> normalize
       | After (space, b, t1, t2) ->
         let s1 = get_start_spec_of_after search_using_tz space t1 in
         let s2 = aux search_using_tz t2 in
@@ -1336,7 +1336,7 @@ and aux_union search_using_tz timeres =
           Seq.Cons ((start, end_exc), aux_union' timeres next_intervals)
       else fun () -> Seq.Cons ((start, end_exc), aux_union' timeres rest)
   in
-  aux_union' timeres (resolve_and_merge timeres) |> normalize
+  aux_union' timeres (resolve_and_merge timeres)
 
 and aux_inter search_using_tz timeres =
   let open Time in
@@ -1388,7 +1388,6 @@ and aux_inter search_using_tz timeres =
   in
   aux_inter' ~start:default_search_space_start (CCList.of_seq timeres)
   |> Seq.flat_map CCFun.id
-  |> normalize
 
 and aux_chunked search_using_tz (chunked : Time.chunked) =
   let open Time in
@@ -1419,7 +1418,6 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
       (time
        |> optimize_search_space search_using_tz
        |> aux search_using_tz
-       |> normalize
        |> Intervals.Slice.slice ~skip_check:true ~start:min_timestamp
          ~end_exc:max_timestamp)
   with
