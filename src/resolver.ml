@@ -1225,7 +1225,7 @@ and get_after_seq_and_maybe_sliced_timere ~end_exc1
   | Seq.Cons ((start', _), _) ->
     (* we search one extra second back so we can drop contiguous block that spans across start
 
-       the drop happens at OSeq.drop_while(...)
+       the drop happens at OSeq.drop_while (...)
     *)
     let safe_search_start = end_exc1 -^ 1L in
     let s, t2 =
