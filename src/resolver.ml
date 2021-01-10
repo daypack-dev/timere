@@ -1116,7 +1116,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
   in
   aux s
 
-let search_space_adjustment_trigger_size =
+let dynamic_search_space_adjustment_trigger_size =
   Duration.(make ~days:30 () |> to_seconds)
 
 let inter_minimum_slice_size = Duration.(make ~days:10 () |> to_seconds)
@@ -1229,7 +1229,9 @@ and get_after_seq_and_maybe_sliced_timere ~end_exc1
     *)
     let safe_search_start = end_exc1 -^ 1L in
     let s2, t2 =
-      if Int64.sub end_exc1 start2 >= search_space_adjustment_trigger_size
+      if
+        Int64.sub end_exc1 start2
+        >= dynamic_search_space_adjustment_trigger_size
       then
         let timere = slice_search_space ~start:safe_search_start t2 in
         (aux search_using_tz timere, timere)
@@ -1245,7 +1247,9 @@ and maybe_slice_start_spec_of_after ~last_end_exc2
   | Seq.Nil -> (Seq.empty, t1)
   | Seq.Cons ((start, _), _) ->
     let distance = last_end_exc2 -^ start in
-    if distance >= bound && distance >= search_space_adjustment_trigger_size
+    if
+      distance >= bound
+      && distance >= dynamic_search_space_adjustment_trigger_size
     then
       let safe_start = last_end_exc2 -^ bound in
       let t1 = slice_search_space ~start:safe_start t1 in
@@ -1326,7 +1330,7 @@ and aux_union search_using_tz timeres =
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((start, end_exc), rest) ->
       let size = end_exc -^ start in
-      if size >= search_space_adjustment_trigger_size then
+      if size >= dynamic_search_space_adjustment_trigger_size then
         let timeres = slice_search_space_multi_seq ~start:end_exc timeres in
         let next_intervals =
           resolve_and_merge timeres
@@ -1366,7 +1370,8 @@ and aux_inter search_using_tz timeres =
       let timeres, interval_batches =
         if
           min_end_exc <= max_start
-          && max_start -^ min_end_exc >= search_space_adjustment_trigger_size
+          && max_start -^ min_end_exc
+             >= dynamic_search_space_adjustment_trigger_size
         then
           let timeres = slice_search_space_multi ~start:max_start timeres in
           (timeres, resolve ~start search_using_tz timeres)
