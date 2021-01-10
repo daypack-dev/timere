@@ -9,7 +9,7 @@ let () =
         let l2 = CCList.of_seq s2 in
         let s =
           CCResult.get_exn
-          @@ Resolver.resolve Time.(between_inc (Duration.of_seconds bound) t1 t2)
+          @@ Resolver.resolve Time.(between_exc (Duration.of_seconds bound) t1 t2)
         in
         Crowbar.check
           (OSeq.for_all
