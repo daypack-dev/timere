@@ -10,7 +10,7 @@ let display_intervals ~display_using_tz s =
   | Seq.Nil -> print_endline "No time intervals"
   | Seq.Cons _ ->
     s
-    |> OSeq.take 60
+    |> OSeq.take 10
     |> OSeq.iter (fun (x, y) ->
         let s = Printers.sprintf_interval ~display_using_tz (x, y) in
         let size = Duration.of_seconds (Int64.sub y x) in
@@ -170,12 +170,14 @@ let debug_fuzz_between_exc () =
   let bound = Int64.of_int 24159 in
   let s =
     Resolver.(
-      aux_between Exc tz Time.default_search_space bound s1 s2 t1 t2)
+      aux_between Inc tz Time.default_search_space bound s1 s2 t1 t2)
   in
   print_endline "=====";
   display_intervals ~display_using_tz:tz s1;
+  print_endline (To_sexp.to_sexp_string t1);
   print_endline "=====";
   display_intervals ~display_using_tz:tz s2;
+  print_endline (To_sexp.to_sexp_string t2);
   print_endline "=====";
   display_intervals ~display_using_tz:tz s;
   print_endline "=====";
