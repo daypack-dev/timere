@@ -1187,8 +1187,7 @@ let rec aux search_using_tz time =
               s
           | Lengthen n ->
             s
-            |> Seq.map (fun (start, end_exc) ->
-                (start, Int64.add end_exc n))
+            |> Seq.map (fun (start, end_exc) -> (start, Int64.add end_exc n))
             |> normalize
           | With_tz _ -> s)
       | Interval_inc (_, a, b) -> Seq.return (a, Int64.succ b)
@@ -1206,18 +1205,18 @@ let rec aux search_using_tz time =
       | Between_inc (space, b, t1, t2) ->
         let s1 = get_start_spec_of_after search_using_tz space t1 in
         let s2 = aux search_using_tz t2 in
-        aux_between Inc search_using_tz space b s1 s2 t1 t2
-        |> normalize
+        aux_between Inc search_using_tz space b s1 s2 t1 t2 |> normalize
       | Between_exc (space, b, t1, t2) ->
         let s1 = get_start_spec_of_after search_using_tz space t1 in
         let s2 = aux search_using_tz t2 in
-        aux_between Exc search_using_tz space b s1 s2 t1 t2
-        |> normalize
+        aux_between Exc search_using_tz space b s1 s2 t1 t2 |> normalize
       | Unchunk (_, c) -> aux_chunked search_using_tz c |> normalize)
+
 and get_start_spec_of_after search_using_tz space t =
   let search_space_start = fst (List.hd space) in
   aux search_using_tz t
   |> OSeq.drop_while (fun (start, _) -> start < search_space_start)
+
 and get_after_seq_and_maybe_sliced_timere ~start search_using_tz
     (s : Time.Interval.t Seq.t) (timere : Time.t) :
   Time.Interval.t Seq.t * Time.t =
@@ -1232,6 +1231,7 @@ and get_after_seq_and_maybe_sliced_timere ~start search_using_tz
     in
     let s = OSeq.drop_while (fun (start', _) -> start' < start) s in
     (s, timere)
+
 and maybe_slice_start_spec_of_after ~last_result search_using_tz bound
     (s : Time.Interval.t Seq.t) (timere : Time.t) :
   Time.Interval.t Seq.t * Time.t =
@@ -1242,9 +1242,7 @@ and maybe_slice_start_spec_of_after ~last_result search_using_tz bound
     let distance = last_end_exc -^ start in
     let safe_start = last_end_exc -^ bound in
     let s, timere =
-      if
-        distance >= bound
-        && distance >= search_space_adjustment_trigger_size
+      if distance >= bound && distance >= search_space_adjustment_trigger_size
       then
         let timere = slice_search_space ~start:safe_start timere in
         (aux search_using_tz timere, timere)
@@ -1252,6 +1250,7 @@ and maybe_slice_start_spec_of_after ~last_result search_using_tz bound
     in
     let s = OSeq.drop_while (fun (start, _) -> start < safe_start) s in
     (s, timere)
+
 and aux_after search_using_tz space bound s1 s2 t1 t2 =
   let _, search_space_end_exc = List.hd @@ List.rev space in
   let rec aux_after' s1 s2 t1 t2 =
@@ -1273,12 +1272,13 @@ and aux_after search_using_tz space bound s1 s2 t1 t2 =
             else
               let s1, t1 =
                 maybe_slice_start_spec_of_after
-                  ~last_result:(start2, end_exc2) search_using_tz bound
-                  rest1 t1
+                  ~last_result:(start2, end_exc2) search_using_tz bound rest1
+                  t1
               in
               aux_after' s1 s2 t1 t2)
   in
   aux_after' s1 s2 t1 t2
+
 and aux_between inc_or_exc search_using_tz space bound s1 s2 t1 t2 =
   let _, search_space_end_exc = List.hd @@ List.rev space in
   let rec aux_between' s1 s2 t1 t2 =
@@ -1305,12 +1305,13 @@ and aux_between inc_or_exc search_using_tz space bound s1 s2 t1 t2 =
             else
               let s1, t1 =
                 maybe_slice_start_spec_of_after
-                  ~last_result:(start2, end_exc2) search_using_tz bound
-                  rest1 t1
+                  ~last_result:(start2, end_exc2) search_using_tz bound rest1
+                  t1
               in
               aux_between' s1 s2 t1 t2)
   in
   aux_between' s1 s2 t1 t2
+
 and aux_union search_using_tz timeres =
   let open Time in
   let resolve_and_merge (s : Time.t Seq.t) : Interval.t Seq.t =
@@ -1333,6 +1334,7 @@ and aux_union search_using_tz timeres =
       else fun () -> Seq.Cons ((start, end_exc), aux_union' timeres rest)
   in
   aux_union' timeres (resolve_and_merge timeres) |> normalize
+
 and aux_inter search_using_tz timeres =
   let open Time in
   let resolve ~start search_using_tz timeres =
@@ -1384,6 +1386,7 @@ and aux_inter search_using_tz timeres =
   aux_inter' ~start:default_search_space_start (CCList.of_seq timeres)
   |> Seq.flat_map CCFun.id
   |> normalize
+
 and aux_chunked search_using_tz (chunked : Time.chunked) =
   let open Time in
   let chunk_based_on_op_on_t op s =
@@ -1395,8 +1398,7 @@ and aux_chunked search_using_tz (chunked : Time.chunked) =
     | Chunk_at_month_boundary -> do_chunk_at_month_boundary search_using_tz s
   in
   match chunked with
-  | Unary_op_on_t (op, t) ->
-    aux search_using_tz t |> chunk_based_on_op_on_t op
+  | Unary_op_on_t (op, t) -> aux search_using_tz t |> chunk_based_on_op_on_t op
   | Unary_op_on_chunked (op, c) -> (
       let s = aux_chunked search_using_tz c in
       match op with
