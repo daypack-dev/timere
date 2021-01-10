@@ -1201,7 +1201,7 @@ let rec aux search_using_tz time =
       | After (space, b, t1, t2) ->
         let s1 = get_start_spec_of_after search_using_tz space t1 in
         let s2 = aux search_using_tz t2 in
-        aux_after search_using_tz space b s1 s2 t1 t2
+        aux_after search_using_tz space b s1 s2 t1 t2 |> normalize
       | Between_inc (space, b, t1, t2) ->
         let s1 = get_start_spec_of_after search_using_tz space t1 in
         let s2 = aux search_using_tz t2 in
