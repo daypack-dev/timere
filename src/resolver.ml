@@ -1217,14 +1217,17 @@ and get_start_spec_of_after search_using_tz space t =
   aux search_using_tz t
   |> OSeq.drop_while (fun (start, _) -> start < search_space_start)
 
-and get_after_seq_and_maybe_sliced_timere ~start search_using_tz bound
+and get_after_seq_and_maybe_sliced_timere ~start search_using_tz
     (s : Time.Interval.t Seq.t) (timere : Time.t) :
   Time.Interval.t Seq.t * Time.t =
   match s () with
   | Seq.Nil -> (Seq.empty, timere)
   | Seq.Cons ((start', _), _) ->
-    let safe_search_start = start -^ bound -^ 1L in
-    Printf.printf "start': %s\n" (Printers.sprintf_timestamp start');
+    (* we search one extra second back so we can drop contiguous block that spans across start
+
+       the drop happens at OSeq.drop_while(...)
+    *)
+    let safe_search_start = start -^ 1L in
     let s, timere =
       if Int64.sub start start' >= search_space_adjustment_trigger_size then
         let timere = slice_search_space ~start:safe_search_start timere in
@@ -1241,20 +1244,18 @@ and maybe_slice_start_spec_of_after ~last_result search_using_tz bound
   match s () with
   | Seq.Nil -> (Seq.empty, timere)
   | Seq.Cons ((start, _), _) ->
-    Printf.printf "start: %s\n" (Printers.sprintf_timestamp start);
     let distance = last_end_exc -^ start in
-    let safe_start = last_end_exc -^ bound in
-    let safe_search_start = safe_start -^ 1L in
-    let s, timere =
-      if distance >= bound && distance >= search_space_adjustment_trigger_size
-      then
-        let timere = slice_search_space ~start:safe_search_start timere in
-        (aux search_using_tz timere, timere)
-      else
-        (s, timere)
-    in
-    let s = OSeq.drop_while (fun (start, _) -> start < safe_start) s in
-    (s, timere)
+    if distance >= bound && distance >= search_space_adjustment_trigger_size
+    then
+      let safe_start = last_end_exc -^ bound in
+      let timere = slice_search_space ~start:safe_start timere in
+      let s =
+        aux search_using_tz timere
+        |> OSeq.drop_while (fun (start, _) -> start < safe_start)
+      in
+      (s, timere)
+    else
+      (s, timere)
 
 and aux_after search_using_tz space bound s1 s2 t1 t2 =
   let _, search_space_end_exc = List.hd @@ List.rev space in
@@ -1266,7 +1267,7 @@ and aux_after search_using_tz space bound s1 s2 t1 t2 =
         else
           let s2, t2 =
             get_after_seq_and_maybe_sliced_timere ~start:end_exc1
-              search_using_tz bound s2 t2
+              search_using_tz s2 t2
           in
           match s2 () with
           | Seq.Nil -> Seq.empty
@@ -1290,19 +1291,15 @@ and aux_between inc_or_exc search_using_tz space bound s1 s2 t1 t2 =
     match s1 () with
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((start1, end_exc1), rest1) -> (
-        Printf.printf "start1: %s\n" (Printers.sprintf_timestamp start1);
-        Printf.printf "end_exc1: %s\n" (Printers.sprintf_timestamp end_exc1);
         if search_space_end_exc <= start1 then Seq.empty
         else
           let s2, t2 =
             get_after_seq_and_maybe_sliced_timere ~start:end_exc1
-              search_using_tz bound s2 t2
+              search_using_tz s2 t2
           in
           match s2 () with
           | Seq.Nil -> Seq.empty
           | Seq.Cons ((start2, end_exc2), _rest2) ->
-            Printf.printf "start2: %s\n" (Printers.sprintf_timestamp start2);
-            Printf.printf "end_exc2: %s\n" (Printers.sprintf_timestamp end_exc2);
             if search_space_end_exc <= start2 then Seq.empty
             else if start2 -^ end_exc1 <= bound then
               let interval =
