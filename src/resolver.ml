@@ -1148,7 +1148,7 @@ let rec aux search_using_tz time =
       match time with
       | Empty -> Seq.empty
       | All -> Seq.return (min_timestamp, Int64.succ @@ max_timestamp)
-      | Timestamp_interval_seq (_, s) -> s |> normalize
+      | Timestamp_interval_seq (_, s) -> s
       | Pattern (space, pat) ->
         Time_zone.transition_seq search_using_tz
         |> Seq.flat_map (fun ((x, y), entry) ->
