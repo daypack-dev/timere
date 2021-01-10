@@ -1244,7 +1244,7 @@ and maybe_slice_start_spec_of_after ~last_result search_using_tz bound
     Printf.printf "start: %s\n" (Printers.sprintf_timestamp start);
     let distance = last_end_exc -^ start in
     let safe_start = last_end_exc -^ bound in
-    let safe_search_start = last_end_exc -^ bound -^ 1L in
+    let safe_search_start = safe_start -^ 1L in
     let s, timere =
       if distance >= bound && distance >= search_space_adjustment_trigger_size
       then
