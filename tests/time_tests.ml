@@ -161,9 +161,11 @@ module Qc = struct
 
   let suite =
     [
-      (* to_of_sexp; union_order_does_not_matter; inter_order_does_not_matter ; *)
-      after_empty;
-      after_soundness;
-      after_completeness;
+      to_of_sexp;
+      union_order_does_not_matter;
+      inter_order_does_not_matter;
+      (* after_empty;
+       * after_soundness;
+       * after_completeness; *)
     ]
 end
