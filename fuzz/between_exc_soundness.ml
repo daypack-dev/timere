@@ -1,7 +1,7 @@
 open Fuzz_utils
 
 let () =
-  Crowbar.add_test ~name:"between_inc_soundness"
+  Crowbar.add_test ~name:"between_exc_soundness"
     [ Crowbar.range 100_000; time; time ] (fun bound t1 t2 ->
         let bound = Int64.of_int bound in
         let s1 = CCResult.get_exn @@ Resolver.resolve t1 in
