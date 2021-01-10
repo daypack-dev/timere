@@ -1207,10 +1207,12 @@ let rec aux search_using_tz time =
         let s1 = get_start_spec_of_after search_using_tz space t1 in
         let s2 = aux search_using_tz t2 in
         aux_between Inc search_using_tz space b s1 s2 t1 t2
+        |> normalize
       | Between_exc (space, b, t1, t2) ->
         let s1 = get_start_spec_of_after search_using_tz space t1 in
         let s2 = aux search_using_tz t2 in
         aux_between Exc search_using_tz space b s1 s2 t1 t2
+        |> normalize
       | Unchunk (_, c) -> aux_chunked search_using_tz c |> normalize)
 and get_start_spec_of_after search_using_tz space t =
   let search_space_start = fst (List.hd space) in
