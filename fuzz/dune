@@ -117,6 +117,9 @@
  (names     resolver_is_same_as_simple_resolver
             to_of_sexp
             of_sexp_string_does_not_crash
+            after_empty
+            after_soundness
+            after_completeness
  )
  (libraries crowbar
             ptime
