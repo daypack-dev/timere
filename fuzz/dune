@@ -123,6 +123,9 @@
             between_inc_empty
             between_inc_soundness
             between_inc_completeness
+            between_exc_empty
+            between_exc_soundness
+            between_exc_completeness
  )
  (libraries crowbar
             ptime

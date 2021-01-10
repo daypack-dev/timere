@@ -18,7 +18,7 @@ let () =
                 match List.filter (fun (x1, _y1) -> x = x1) l1 with
                 | [] -> false
                 | [ (_xr1, yr1) ] -> (
-                    match List.filter (fun (_x2, y2) -> y = y2) l2 with
+                    match List.filter (fun (x2, _y2) -> y = x2) l2 with
                     | [] -> false
                     | [ (xr2, _yr2) ] ->
                       not
