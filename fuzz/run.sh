@@ -11,7 +11,7 @@ if [[ "$1" == "" ]]; then
   exit 1
 fi
 
-name=$(echo "$1" | sed 's/\.exe$//')
+name=$(echo "$1" | sed 's/\.exe$//' | sed 's/\.ml$//')
 
 echo "Creating input directory"
 
