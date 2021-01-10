@@ -1222,33 +1222,32 @@ and get_after_seq_and_maybe_sliced_timere ~end_exc1
   Time.Interval.t Seq.t * Time.t =
   match s2 () with
   | Seq.Nil -> (Seq.empty, t2)
-  | Seq.Cons ((start', _), _) ->
+  | Seq.Cons ((start2, _), _) ->
     (* we search one extra second back so we can drop contiguous block that spans across start
 
        the drop happens at OSeq.drop_while (...)
     *)
     let safe_search_start = end_exc1 -^ 1L in
-    let s, t2 =
-      if Int64.sub end_exc1 start' >= search_space_adjustment_trigger_size
+    let s2, t2 =
+      if Int64.sub end_exc1 start2 >= search_space_adjustment_trigger_size
       then
         let timere = slice_search_space ~start:safe_search_start t2 in
         (aux search_using_tz timere, timere)
       else (s2, t2)
     in
-    let s = OSeq.drop_while (fun (start', _) -> start' < end_exc1) s in
-    (s, t2)
+    let s2 = OSeq.drop_while (fun (start', _) -> start' < end_exc1) s2 in
+    (s2, t2)
 
-and maybe_slice_start_spec_of_after ~last_result_from_s2
+and maybe_slice_start_spec_of_after ~last_end_exc2
     ~(rest1 : Time.Interval.t Seq.t) ~(t1 : Time.t) search_using_tz bound :
   Time.Interval.t Seq.t * Time.t =
-  let _, last_end_exc = last_result_from_s2 in
   match rest1 () with
   | Seq.Nil -> (Seq.empty, t1)
   | Seq.Cons ((start, _), _) ->
-    let distance = last_end_exc -^ start in
+    let distance = last_end_exc2 -^ start in
     if distance >= bound && distance >= search_space_adjustment_trigger_size
     then
-      let safe_start = last_end_exc -^ bound in
+      let safe_start = last_end_exc2 -^ bound in
       let t1 = slice_search_space ~start:safe_start t1 in
       let s =
         aux search_using_tz t1
@@ -1277,9 +1276,8 @@ and aux_after search_using_tz space bound s1 s2 t1 t2 =
               Seq.Cons ((start2, end_exc2), aux_after' rest1 s2 t1 t2)
             else
               let s1, t1 =
-                maybe_slice_start_spec_of_after
-                  ~last_result_from_s2:(start2, end_exc2) ~rest1 ~t1
-                  search_using_tz bound
+                maybe_slice_start_spec_of_after ~last_end_exc2:end_exc2 ~rest1
+                  ~t1 search_using_tz bound
               in
               aux_after' s1 s2 t1 t2)
   in
@@ -1310,9 +1308,8 @@ and aux_between inc_or_exc search_using_tz space bound s1 s2 t1 t2 =
               fun () -> Seq.Cons (interval, aux_between' rest1 s2 t1 t2)
             else
               let s1, t1 =
-                maybe_slice_start_spec_of_after
-                  ~last_result_from_s2:(start2, end_exc2) ~rest1 ~t1
-                  search_using_tz bound
+                maybe_slice_start_spec_of_after ~last_end_exc2:end_exc2 ~rest1
+                  ~t1 search_using_tz bound
               in
               aux_between' s1 s2 t1 t2)
   in
