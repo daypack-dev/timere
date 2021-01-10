@@ -8,7 +8,8 @@ let () =
         let s1 = Resolver.aux tz t1 in
         let s2 = Resolver.aux tz t2 in
         let s =
-          Resolver.(aux_between Inc tz Time.default_search_space bound s1 s2 t1 t2)
+          Resolver.(
+            aux_between Inc tz Time.default_search_space bound s1 s2 t1 t2)
         in
         Crowbar.check
           ((not (OSeq.is_empty s1 && OSeq.is_empty s2)) || OSeq.is_empty s))

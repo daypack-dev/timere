@@ -9,7 +9,8 @@ let () =
         let s2 = Resolver.aux tz t2 in
         let l2 = CCList.of_seq s2 in
         let s =
-          Resolver.(aux_between Exc tz Time.default_search_space bound s1 s2 t1 t2)
+          Resolver.(
+            aux_between Exc tz Time.default_search_space bound s1 s2 t1 t2)
         in
         Crowbar.check
           (OSeq.for_all
