@@ -147,12 +147,41 @@ let debug_example () =
   | Error msg -> print_endline msg
   | Ok s -> display_intervals ~display_using_tz:tz s
 
+let debug_between_exc () =
+  let tz = Time_zone.utc in
+  let t1 = (fun max_height max_branching randomness ->
+      Builder.build ~enable_extra_restrictions:false ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching ~randomness
+    )
+    1 0 [469; 661]
+  in
+  let t2 = (fun max_height max_branching randomness ->
+      Builder.build ~enable_extra_restrictions:false ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching ~randomness
+    )
+      1 0 []
+  in
+  let s1 = Resolver.aux tz t1 in
+  let s2 = Resolver.aux tz t2 in
+  let bound = 37308L in
+  let s =
+    Resolver.(
+      aux_between Exc tz Time.default_search_space bound s1 s2 t1 t2)
+  in
+  print_endline "=====";
+  display_intervals ~display_using_tz:tz s1;
+  print_endline "=====";
+  display_intervals ~display_using_tz:tz s2;
+  print_endline "=====";
+  display_intervals ~display_using_tz:tz s;
+  print_endline "====="
+
 (* let () = debug_branching () *)
 
 (* let () = debug_parsing () *)
 
-let () = debug_resolver ()
+(* let () = debug_resolver () *)
 
 (* let () = debug_ccsexp_parse_string () *)
 
 (* let () = debug_example () *)
+
+let () = debug_between_exc ()
