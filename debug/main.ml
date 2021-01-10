@@ -149,18 +149,20 @@ let debug_example () =
 
 let debug_fuzz_between_exc () =
   let tz = Time_zone.utc in
-  let t1 = (fun max_height max_branching randomness ->
-      let max_height = 1 + max_height in
-      let max_branching = 1 + max_branching in
-      Builder.build ~enable_extra_restrictions:false ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching ~randomness
-    )
-    1 3 [125; 149; 659]
+  let t1 =
+    (fun max_height max_branching randomness ->
+       let max_height = 1 + max_height in
+       let max_branching = 1 + max_branching in
+       Builder.build ~enable_extra_restrictions:false ~min_year:2000
+         ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
+      1 3 [ 125; 149; 659 ]
   in
-  let t2 = (fun max_height max_branching randomness ->
-      let max_height = 1 + max_height in
-      let max_branching = 1 + max_branching in
-      Builder.build ~enable_extra_restrictions:false ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching ~randomness
-    )
+  let t2 =
+    (fun max_height max_branching randomness ->
+       let max_height = 1 + max_height in
+       let max_branching = 1 + max_branching in
+       Builder.build ~enable_extra_restrictions:false ~min_year:2000
+         ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
       1 0 []
   in
   let s1 = Resolver.aux tz t1 in
@@ -169,8 +171,7 @@ let debug_fuzz_between_exc () =
   let l2 = CCList.of_seq s2 in
   let bound = Int64.of_int 24159 in
   let s =
-    Resolver.(
-      aux_between Inc tz Time.default_search_space bound s1 s2 t1 t2)
+    Resolver.(aux_between Inc tz Time.default_search_space bound s1 s2 t1 t2)
   in
   print_endline "=====";
   display_intervals ~display_using_tz:tz s1;
@@ -181,7 +182,7 @@ let debug_fuzz_between_exc () =
   print_endline "=====";
   display_intervals ~display_using_tz:tz s;
   print_endline "=====";
-  Printf.printf "%b\n" (
+  Printf.printf "%b\n"
     (OSeq.for_all
        (fun (x, y) ->
           match List.filter (fun (x1, _y1) -> x = x1) l1 with
@@ -190,12 +191,10 @@ let debug_fuzz_between_exc () =
               match List.filter (fun (x2, _y2) -> y = x2) l2 with
               | [] -> false
               | [ (xr2, _yr2) ] ->
-                not
-                  (List.exists (fun (x2, _y2) -> yr1 <= x2 && x2 < xr2) l2)
+                not (List.exists (fun (x2, _y2) -> yr1 <= x2 && x2 < xr2) l2)
               | _ -> false)
           | _ -> false)
        s)
-  )
 
 (* let () = debug_branching () *)
 

@@ -1254,8 +1254,7 @@ and maybe_slice_start_spec_of_after ~last_result search_using_tz bound
         |> OSeq.drop_while (fun (start, _) -> start < safe_start)
       in
       (s, timere)
-    else
-      (s, timere)
+    else (s, timere)
 
 and aux_after search_using_tz space bound s1 s2 t1 t2 =
   let _, search_space_end_exc = List.hd @@ List.rev space in
