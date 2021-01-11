@@ -1151,8 +1151,7 @@ let rec aux search_using_tz time =
        | Empty -> Seq.empty
        | All -> CCList.to_seq Time.default_search_space
        | Timestamp_interval_seq (_, s) -> s
-       | Pattern (space, pat) ->
-         aux_pattern search_using_tz space pat
+       | Pattern (space, pat) -> aux_pattern search_using_tz space pat
        | Unary_op (space, op, t) -> (
            let search_using_tz =
              match op with With_tz x -> x | _ -> search_using_tz
@@ -1201,9 +1200,7 @@ and aux_pattern search_using_tz space pat =
   Time_zone.transition_seq search_using_tz
   |> Seq.flat_map (fun ((x, y), entry) ->
       let space =
-        Intervals.Inter.inter
-          (Seq.return (x, y))
-          (CCList.to_seq space)
+        Intervals.Inter.inter (Seq.return (x, y)) (CCList.to_seq space)
       in
       let params =
         Seq.map
@@ -1213,8 +1210,7 @@ and aux_pattern search_using_tz space pat =
       in
       Intervals.Union.union_multi_seq ~skip_check:true
         (Seq.map
-           (fun param ->
-              Resolve_pattern.matching_intervals param pat)
+           (fun param -> Resolve_pattern.matching_intervals param pat)
            params))
 
 and get_start_spec_of_after search_using_tz space t =
