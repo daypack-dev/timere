@@ -14,9 +14,10 @@ let () =
             Seq_utils.a_to_b_exc_int64
               ~a:(fst (List.hd search_space))
               ~b:(snd (List.hd @@ List.rev search_space))
-        |> OSeq.filter (fun timestamp ->
-            List.exists (fun (x, y) -> x <= timestamp && timestamp < y) search_space
-            )
+            |> OSeq.filter (fun timestamp ->
+                List.exists
+                  (fun (x, y) -> x <= timestamp && timestamp < y)
+                  search_space)
             |> OSeq.filter (fun timestamp ->
                 let dt =
                   CCResult.get_exn
