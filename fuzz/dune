@@ -129,6 +129,7 @@
             union_is_sound_and_complete
             inter_is_sound_and_complete
             pattern_resolution_is_sound
+            pattern_resolution_is_complete
  )
  (libraries crowbar
             ptime
