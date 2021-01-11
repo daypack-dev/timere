@@ -196,6 +196,48 @@ let debug_fuzz_between_exc () =
           | _ -> false)
        s)
 
+let debug_fuzz_union () =
+  let tz = Time_zone.utc in
+  let t1 =
+    (fun max_height max_branching randomness ->
+       let max_height = 1 + max_height in
+       let max_branching = 1 + max_branching in
+       Builder.build ~enable_extra_restrictions:false ~min_year:2000
+         ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
+      1 0 [ ]
+  in
+  let t2 =
+    (fun max_height max_branching randomness ->
+       let max_height = 1 + max_height in
+       let max_branching = 1 + max_branching in
+       Builder.build ~enable_extra_restrictions:false ~min_year:2000
+         ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
+      1 0 [ 113 ]
+  in
+  let s1 = Resolver.aux tz t1 in
+  let s2 = Resolver.aux tz t2 in
+  let l = [t1; t2] in
+  let s' = l |> List.map (Resolver.aux tz) |> CCList.to_seq
+           |> Time.Intervals.Union.union_multi_seq
+           |> Time.Intervals.Slice.slice ~start:Time.default_search_space_start ~end_exc:Time.default_search_space_end_exc
+  in
+  let s =
+    Resolver.aux_union tz (CCList.to_seq l)
+  in
+  print_endline "=====";
+  (* display_intervals ~display_using_tz:tz s1; *)
+  print_endline (To_sexp.to_sexp_string t1);
+  print_endline "=====";
+  (* display_intervals ~display_using_tz:tz s2; *)
+  print_endline (To_sexp.to_sexp_string t2);
+  print_endline "=====";
+  display_intervals ~display_using_tz:tz s';
+  print_endline "=====";
+  display_intervals ~display_using_tz:tz s;
+  print_endline "=====";
+  Printf.printf "%b\n"
+    (OSeq.equal ~eq:( = ) s s')
+
 (* let () = debug_branching () *)
 
 (* let () = debug_parsing () *)
@@ -206,4 +248,6 @@ let debug_fuzz_between_exc () =
 
 (* let () = debug_example () *)
 
-let () = debug_fuzz_between_exc ()
+(* let () = debug_fuzz_between_exc () *)
+
+let () = debug_fuzz_union ()

@@ -10,6 +10,7 @@ let () =
        in
        let s' = l |> List.map (Resolver.aux tz) |> CCList.to_seq
                 |> Time.Intervals.Union.union_multi_seq
+                |> Time.Intervals.Slice.slice ~start:Time.default_search_space_start ~end_exc:Time.default_search_space_end_exc
        in
        Crowbar.check (
          OSeq.equal ~eq:( = ) s s'
