@@ -2,7 +2,7 @@
 
 simul_test_count=2
 
-test_timeout="20s"
+test_timeout="30s"
 
 script_dir=$(dirname $(readlink -f "$0"))
 
@@ -17,7 +17,7 @@ echo ""
 start_date=$(date "+%Y-%m-%d %H:%M")
 start_time=$(date "+%s")
 
-names=[]
+names=()
 
 i=0
 for file in "$script_dir"/../_build/default/fuzz/*.exe; do
@@ -41,6 +41,8 @@ echo ""
 echo "Starting $test_count tests"
 echo ""
 
+mkdir -p "$log_dir"
+
 i=0
 while (( $i < $test_count )); do
   if (( $test_count - $i >= $simul_test_count )); then
@@ -51,16 +53,12 @@ while (( $i < $test_count )); do
 
   echo "Running $tests_to_run tests in parallel"
 
-  mkdir -p "$log_dir"
-
-  j=$i
-
   for (( c=0; c < $tests_to_run; c++ )); do
     name=${names[$i]}
-    if [[ "$t" != "" ]]; then
+    if [[ "$name" != "" ]]; then
       echo "    Starting $name"
 
-      AFL_NO_UI=1 timeout "$test_timeout" ./"$script_dir"/run.sh "$name" > "$log_dir"/"$name".log &
+      (AFL_NO_UI=1 timeout "$test_timeout" "$script_dir"/run.sh "$name" skip_build > "$log_dir"/"$name".log) &
 
       i=$[i+1]
     fi
@@ -70,6 +68,8 @@ while (( $i < $test_count )); do
 
   wait
 
+  sleep 5
+
   echo ""
   echo "$[test_count - i] / $test_count tests remaining"
   echo ""
@@ -77,10 +77,44 @@ done
 
 end_date=$(date "+%Y-%m-%d %H:%M")
 end_time=$(date "+%s")
+
 echo ""
 echo "Test end:" $end_date
 
 echo ""
 
 echo "Time elapsed:" $[(end_time - start_time) / 60] "minutes"
+
+test_fail_count=0
+tests_failed=()
+
+for name in ${names[@]}; do
+  output_dir="$script_dir"/../"fuzz-""$name""-output"
+
+  crashes_dir="$output_dir"/crashes
+
+  if [ -z "$(ls -A $crashes_dir)" ]; then
+    # crashes dir is empty
+    :
+  else
+    # crashes dir is not empty
+    test_fail_count=$[$test_fail_count + 1]
+    tests_failed+=("$name")
+  fi
+done
+
+echo "========================================"
+
+if [[ $test_fail_count == 0 ]]; then
+    echo "All $test_count tests passed"
+    exit_code=0
+else
+    echo "$test_fail_count tests failed"
+    echo ""
+    echo "List of tests failed :"
+    for t in ${tests_failed[@]}; do
+      echo "    "$t
+    done
+    exit_code=1
+fi
 

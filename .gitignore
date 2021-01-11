@@ -7,3 +7,4 @@ bisect*.out
 bisect*.coverage
 fuzz-*-input
 fuzz-*-output
+fuzz-logs/
