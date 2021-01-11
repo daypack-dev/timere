@@ -2,11 +2,11 @@ open Fuzz_utils
 
 let () =
   Crowbar.add_test ~name:"pattern_resolution_is_sound"
-    [ pattern ]
-    (fun pattern ->
+    [ search_space; pattern ]
+    (fun search_space pattern ->
        let tz = Time_zone.utc in
        let s =
-         Resolver.aux_pattern tz Time.default_search_space pattern
+         Resolver.aux_pattern tz search_space pattern
          |> Resolver.normalize
          |> Seq.flat_map (fun (a, b) ->
              Seq_utils.a_to_b_exc_int64 ~a ~b

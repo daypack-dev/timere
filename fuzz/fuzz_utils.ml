@@ -70,3 +70,23 @@ let pattern =
        in
        Time.Pattern.{ years; months; month_days; weekdays; hours; minutes; seconds }
     )
+
+let search_space =
+  Crowbar.map [
+    Crowbar.list
+    (Crowbar.map [Crowbar.int64; Crowbar.int64 ]
+       (fun search_start search_size ->
+          let search_start = min (max Time.min_timestamp search_start) Time.max_timestamp in
+          let search_size = Int64.abs search_size in
+          let search_end_exc =
+            min Time.max_timestamp (Int64.add search_start search_size)
+          in
+          (search_start, search_end_exc)
+       )
+    )
+]
+    (fun l ->
+       CCList.to_seq l
+       |> Time.Intervals.normalize
+       |> CCList.of_seq
+    )
