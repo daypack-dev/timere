@@ -7,10 +7,11 @@ let () =
        let s =
          Resolver.aux_inter tz (CCList.to_seq l)
          |> Resolver.normalize
+         |> Time.slice_valid_interval
        in
        let s' = l |> List.map (Resolver.aux tz) |> CCList.to_seq
                 |> Time.Intervals.Inter.inter_multi_seq
-                |> Time.Intervals.Slice.slice ~start:Time.min_timestamp ~end_exc:Time.max_timestamp
+                |> Time.slice_valid_interval
        in
        Crowbar.check (
          OSeq.equal ~eq:( = ) s s'
