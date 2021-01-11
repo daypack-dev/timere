@@ -1257,6 +1257,10 @@ let min_timestamp = Constants.min_timestamp
 
 let max_timestamp = Constants.max_timestamp
 
+let slice_valid_interval s =
+  Intervals.Slice.slice ~skip_check:true ~start:min_timestamp
+    ~end_exc:max_timestamp s
+
 module Date_time' = struct
   type tz_info =
     [ `Tz_only of Time_zone.t

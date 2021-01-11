@@ -1136,9 +1136,9 @@ let slice_search_space_multi ~start (l : Time.t list) : Time.t list =
 let slice_search_space_multi_seq ~start (s : Time.t Seq.t) : Time.t Seq.t =
   Seq.map (slice_search_space ~start) s
 
-let normalize =
+let normalize s =
   Time.Intervals.normalize ~skip_filter_empty:false ~skip_filter_invalid:true
-    ~skip_sort:true
+    ~skip_sort:true s
 
 let rec aux search_using_tz time =
   let open Time in
@@ -1423,8 +1423,8 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
       (time
        |> optimize_search_space search_using_tz
        |> aux search_using_tz
-       |> Intervals.Slice.slice ~skip_check:true ~start:min_timestamp
-         ~end_exc:max_timestamp)
+       |> Time.slice_valid_interval
+       )
   with
   | Interval_is_invalid -> Error "Invalid interval"
   | Intervals_are_not_sorted -> Error "Intervals are not sorted"
