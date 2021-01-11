@@ -9,6 +9,9 @@ let () =
          Resolver.aux_pattern tz search_space pattern
          |> Resolver.normalize
        in
+       match search_space with
+       | [] -> Crowbar.check (OSeq.is_empty s)
+       | _ ->
        let s' =
          Seq_utils.a_to_b_exc_int64 ~a:(fst (List.hd search_space))
            ~b:(snd (List.hd @@ List.rev search_space))
