@@ -7,7 +7,6 @@ let () =
        let s =
          Resolver.aux_union tz (CCList.to_seq l)
          |> Resolver.normalize
-         |> Time.slice_valid_interval
        in
        let s' =
          l
