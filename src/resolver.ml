@@ -1366,6 +1366,9 @@ and aux_inter search_using_tz timeres =
         CCList.filter_map CCFun.id batch_for_sampling
         |> Intervals.Sort.sort_uniq_intervals_list ~skip_check:true
       in
+      match batch_for_sampling with
+      | [] -> Seq.empty
+      | _ ->
       let _min_start, min_end_exc = List.hd batch_for_sampling in
       let max_start, max_end_exc = List.hd @@ List.rev batch_for_sampling in
       let timeres, interval_batches =
