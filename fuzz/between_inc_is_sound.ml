@@ -1,7 +1,7 @@
 open Fuzz_utils
 
 let () =
-  Crowbar.add_test ~name:"between_inc_soundness"
+  Crowbar.add_test ~name:"between_inc_is_sound"
     [ Crowbar.range 100_000; time; time ] (fun bound t1 t2 ->
         let bound = Int64.of_int bound in
         let tz = Time_zone.utc in

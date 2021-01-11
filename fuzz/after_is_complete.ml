@@ -1,7 +1,7 @@
 open Fuzz_utils
 
 let () =
-  Crowbar.add_test ~name:"after_empty" [ Crowbar.range 100_000; time; time ]
+  Crowbar.add_test ~name:"after_is_complete" [ Crowbar.range 100_000; time; time ]
     (fun bound t1 t2 ->
        let bound = Int64.of_int bound in
        let tz = Time_zone.utc in
