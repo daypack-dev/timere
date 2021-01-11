@@ -1152,24 +1152,7 @@ let rec aux search_using_tz time =
        | All -> CCList.to_seq Time.default_search_space
        | Timestamp_interval_seq (_, s) -> s
        | Pattern (space, pat) ->
-         Time_zone.transition_seq search_using_tz
-         |> Seq.flat_map (fun ((x, y), entry) ->
-             let space =
-               Intervals.Inter.inter
-                 (Seq.return (x, y))
-                 (CCList.to_seq space)
-             in
-             let params =
-               Seq.map
-                 (Resolve_pattern.Search_param.make ~search_using_tz
-                    ~search_using_tz_offset_s:Time_zone.(entry.offset))
-                 space
-             in
-             Intervals.Union.union_multi_seq ~skip_check:true
-               (Seq.map
-                  (fun param ->
-                     Resolve_pattern.matching_intervals param pat)
-                  params))
+         aux_pattern search_using_tz space pat
        | Unary_op (space, op, t) -> (
            let search_using_tz =
              match op with With_tz x -> x | _ -> search_using_tz
@@ -1212,6 +1195,27 @@ let rec aux search_using_tz time =
          aux_between Exc search_using_tz space b s1 s2 t1 t2
        | Unchunk (_, c) -> aux_chunked search_using_tz c))
   |> normalize
+
+and aux_pattern search_using_tz space pat =
+  let open Time in
+  Time_zone.transition_seq search_using_tz
+  |> Seq.flat_map (fun ((x, y), entry) ->
+      let space =
+        Intervals.Inter.inter
+          (Seq.return (x, y))
+          (CCList.to_seq space)
+      in
+      let params =
+        Seq.map
+          (Resolve_pattern.Search_param.make ~search_using_tz
+             ~search_using_tz_offset_s:Time_zone.(entry.offset))
+          space
+      in
+      Intervals.Union.union_multi_seq ~skip_check:true
+        (Seq.map
+           (fun param ->
+              Resolve_pattern.matching_intervals param pat)
+           params))
 
 and get_start_spec_of_after search_using_tz space t =
   let search_space_start = fst (List.hd space) in
