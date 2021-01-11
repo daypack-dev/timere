@@ -118,14 +118,16 @@
             to_of_sexp
             of_sexp_string_does_not_crash
             after_empty
-            after_soundness
-            after_completeness
+            after_is_sound
+            after_is_complete
             between_inc_empty
-            between_inc_soundness
-            between_inc_completeness
+            between_inc_is_sound
+            between_inc_is_complete
             between_exc_empty
-            between_exc_soundness
-            between_exc_completeness
+            between_exc_is_sound
+            between_exc_is_complete
+            union_is_sound_and_complete
+            inter_is_sound_and_complete
  )
  (libraries crowbar
             ptime
