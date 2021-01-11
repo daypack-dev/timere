@@ -1144,6 +1144,7 @@ let normalize s =
 
 let rec aux search_using_tz time =
   let open Time in
+  (
   match get_search_space time with
   | [] -> Seq.empty
   | _ -> (
@@ -1170,7 +1171,6 @@ let rec aux search_using_tz time =
                  (fun param ->
                     Resolve_pattern.matching_intervals param pat)
                  params))
-        |> normalize
       | Unary_op (space, op, t) -> (
           let search_using_tz =
             match op with With_tz x -> x | _ -> search_using_tz
@@ -1180,7 +1180,7 @@ let rec aux search_using_tz time =
           | Not ->
             Intervals.relative_complement ~skip_check:false ~not_mem_of:s
               (CCList.to_seq space)
-          | Drop_points n -> do_drop_points (Int64.of_int n) s |> normalize
+          | Drop_points n -> do_drop_points (Int64.of_int n) s
           | Take_points n -> do_take_points (Int64.of_int n) s
           | Shift n ->
             Seq.map
@@ -1190,7 +1190,6 @@ let rec aux search_using_tz time =
           | Lengthen n ->
             s
             |> Seq.map (fun (start, end_exc) -> (start, Int64.add end_exc n))
-            |> normalize
           | With_tz _ -> s)
       | Interval_inc (_, a, b) -> Seq.return (a, Int64.succ b)
       | Interval_exc (_, a, b) -> Seq.return (a, b)
@@ -1198,21 +1197,23 @@ let rec aux search_using_tz time =
         List.map (aux search_using_tz) l
         |> Time.Intervals.Round_robin
            .merge_multi_list_round_robin_non_decreasing ~skip_check:true
-      | Inter_seq (_, s) -> aux_inter search_using_tz s |> normalize
-      | Union_seq (_, s) -> aux_union search_using_tz s |> normalize
+      | Inter_seq (_, s) -> aux_inter search_using_tz s
+      | Union_seq (_, s) -> aux_union search_using_tz s
       | After (space, b, t1, t2) ->
         let s1 = get_start_spec_of_after search_using_tz space t1 in
         let s2 = aux search_using_tz t2 in
-        aux_after search_using_tz space b s1 s2 t1 t2 |> normalize
+        aux_after search_using_tz space b s1 s2 t1 t2
       | Between_inc (space, b, t1, t2) ->
         let s1 = get_start_spec_of_after search_using_tz space t1 in
         let s2 = aux search_using_tz t2 in
-        aux_between Inc search_using_tz space b s1 s2 t1 t2 |> normalize
+        aux_between Inc search_using_tz space b s1 s2 t1 t2
       | Between_exc (space, b, t1, t2) ->
         let s1 = get_start_spec_of_after search_using_tz space t1 in
         let s2 = aux search_using_tz t2 in
-        aux_between Exc search_using_tz space b s1 s2 t1 t2 |> normalize
-      | Unchunk (_, c) -> aux_chunked search_using_tz c |> normalize)
+        aux_between Exc search_using_tz space b s1 s2 t1 t2
+      | Unchunk (_, c) -> aux_chunked search_using_tz c)
+)
+  |> normalize
 
 and get_start_spec_of_after search_using_tz space t =
   let search_space_start = fst (List.hd space) in
