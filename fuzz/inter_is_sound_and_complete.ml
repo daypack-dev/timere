@@ -9,11 +9,11 @@ let () =
          |> Resolver.normalize
          |> Time.slice_valid_interval
        in
-       let s' = l |> List.map (Resolver.aux tz) |> CCList.to_seq
-                |> Time.Intervals.Inter.inter_multi_seq
-                |> Time.slice_valid_interval
+       let s' =
+         l
+         |> List.map (Resolver.aux tz)
+         |> CCList.to_seq
+         |> Time.Intervals.Inter.inter_multi_seq
+         |> Time.slice_valid_interval
        in
-       Crowbar.check (
-         OSeq.equal ~eq:( = ) s s'
-       )
-    )
+       Crowbar.check (OSeq.equal ~eq:( = ) s s'))

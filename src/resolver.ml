@@ -1144,75 +1144,73 @@ let normalize s =
 
 let rec aux search_using_tz time =
   let open Time in
-  (
-  match get_search_space time with
-  | [] -> Seq.empty
-  | _ -> (
-      match time with
-      | Empty -> Seq.empty
-      | All -> CCList.to_seq Time.default_search_space
-      | Timestamp_interval_seq (_, s) -> s
-      | Pattern (space, pat) ->
-        Time_zone.transition_seq search_using_tz
-        |> Seq.flat_map (fun ((x, y), entry) ->
-            let space =
-              Intervals.Inter.inter
-                (Seq.return (x, y))
-                (CCList.to_seq space)
-            in
-            let params =
-              Seq.map
-                (Resolve_pattern.Search_param.make ~search_using_tz
-                   ~search_using_tz_offset_s:Time_zone.(entry.offset))
-                space
-            in
-            Intervals.Union.union_multi_seq ~skip_check:true
-              (Seq.map
-                 (fun param ->
-                    Resolve_pattern.matching_intervals param pat)
-                 params))
-      | Unary_op (space, op, t) -> (
-          let search_using_tz =
-            match op with With_tz x -> x | _ -> search_using_tz
-          in
-          let s = aux search_using_tz t in
-          match op with
-          | Not ->
-            Intervals.relative_complement ~skip_check:false ~not_mem_of:s
-              (CCList.to_seq space)
-          | Drop_points n -> do_drop_points (Int64.of_int n) s
-          | Take_points n -> do_take_points (Int64.of_int n) s
-          | Shift n ->
-            Seq.map
-              (fun (start, end_exc) ->
-                 (Int64.add start n, Int64.add end_exc n))
-              s
-          | Lengthen n ->
-            s
-            |> Seq.map (fun (start, end_exc) -> (start, Int64.add end_exc n))
-          | With_tz _ -> s)
-      | Interval_inc (_, a, b) -> Seq.return (a, Int64.succ b)
-      | Interval_exc (_, a, b) -> Seq.return (a, b)
-      | Round_robin_pick_list (_, l) ->
-        List.map (aux search_using_tz) l
-        |> Time.Intervals.Round_robin
-           .merge_multi_list_round_robin_non_decreasing ~skip_check:true
-      | Inter_seq (_, s) -> aux_inter search_using_tz s
-      | Union_seq (_, s) -> aux_union search_using_tz s
-      | After (space, b, t1, t2) ->
-        let s1 = get_start_spec_of_after search_using_tz space t1 in
-        let s2 = aux search_using_tz t2 in
-        aux_after search_using_tz space b s1 s2 t1 t2
-      | Between_inc (space, b, t1, t2) ->
-        let s1 = get_start_spec_of_after search_using_tz space t1 in
-        let s2 = aux search_using_tz t2 in
-        aux_between Inc search_using_tz space b s1 s2 t1 t2
-      | Between_exc (space, b, t1, t2) ->
-        let s1 = get_start_spec_of_after search_using_tz space t1 in
-        let s2 = aux search_using_tz t2 in
-        aux_between Exc search_using_tz space b s1 s2 t1 t2
-      | Unchunk (_, c) -> aux_chunked search_using_tz c)
-)
+  (match get_search_space time with
+   | [] -> Seq.empty
+   | _ -> (
+       match time with
+       | Empty -> Seq.empty
+       | All -> CCList.to_seq Time.default_search_space
+       | Timestamp_interval_seq (_, s) -> s
+       | Pattern (space, pat) ->
+         Time_zone.transition_seq search_using_tz
+         |> Seq.flat_map (fun ((x, y), entry) ->
+             let space =
+               Intervals.Inter.inter
+                 (Seq.return (x, y))
+                 (CCList.to_seq space)
+             in
+             let params =
+               Seq.map
+                 (Resolve_pattern.Search_param.make ~search_using_tz
+                    ~search_using_tz_offset_s:Time_zone.(entry.offset))
+                 space
+             in
+             Intervals.Union.union_multi_seq ~skip_check:true
+               (Seq.map
+                  (fun param ->
+                     Resolve_pattern.matching_intervals param pat)
+                  params))
+       | Unary_op (space, op, t) -> (
+           let search_using_tz =
+             match op with With_tz x -> x | _ -> search_using_tz
+           in
+           let s = aux search_using_tz t in
+           match op with
+           | Not ->
+             Intervals.relative_complement ~skip_check:false ~not_mem_of:s
+               (CCList.to_seq space)
+           | Drop_points n -> do_drop_points (Int64.of_int n) s
+           | Take_points n -> do_take_points (Int64.of_int n) s
+           | Shift n ->
+             Seq.map
+               (fun (start, end_exc) ->
+                  (Int64.add start n, Int64.add end_exc n))
+               s
+           | Lengthen n ->
+             s
+             |> Seq.map (fun (start, end_exc) -> (start, Int64.add end_exc n))
+           | With_tz _ -> s)
+       | Interval_inc (_, a, b) -> Seq.return (a, Int64.succ b)
+       | Interval_exc (_, a, b) -> Seq.return (a, b)
+       | Round_robin_pick_list (_, l) ->
+         List.map (aux search_using_tz) l
+         |> Time.Intervals.Round_robin
+            .merge_multi_list_round_robin_non_decreasing ~skip_check:true
+       | Inter_seq (_, s) -> aux_inter search_using_tz s
+       | Union_seq (_, s) -> aux_union search_using_tz s
+       | After (space, b, t1, t2) ->
+         let s1 = get_start_spec_of_after search_using_tz space t1 in
+         let s2 = aux search_using_tz t2 in
+         aux_after search_using_tz space b s1 s2 t1 t2
+       | Between_inc (space, b, t1, t2) ->
+         let s1 = get_start_spec_of_after search_using_tz space t1 in
+         let s2 = aux search_using_tz t2 in
+         aux_between Inc search_using_tz space b s1 s2 t1 t2
+       | Between_exc (space, b, t1, t2) ->
+         let s1 = get_start_spec_of_after search_using_tz space t1 in
+         let s2 = aux search_using_tz t2 in
+         aux_between Exc search_using_tz space b s1 s2 t1 t2
+       | Unchunk (_, c) -> aux_chunked search_using_tz c))
   |> normalize
 
 and get_start_spec_of_after search_using_tz space t =
@@ -1422,11 +1420,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
   (Time.Interval.t Seq.t, string) result =
   let open Time in
   try
-    Ok
-      (time
-       |> optimize_search_space search_using_tz
-       |> aux search_using_tz
-       )
+    Ok (time |> optimize_search_space search_using_tz |> aux search_using_tz)
   with
   | Interval_is_invalid -> Error "Invalid interval"
   | Intervals_are_not_sorted -> Error "Intervals are not sorted"
