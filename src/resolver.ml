@@ -1369,31 +1369,31 @@ and aux_inter search_using_tz timeres =
       match batch_for_sampling with
       | [] -> Seq.empty
       | _ ->
-      let _min_start, min_end_exc = List.hd batch_for_sampling in
-      let max_start, max_end_exc = List.hd @@ List.rev batch_for_sampling in
-      let timeres, interval_batches =
-        if
-          min_end_exc <= max_start
-          && max_start -^ min_end_exc
-             >= dynamic_search_space_adjustment_trigger_size
-        then
-          let timeres = slice_search_space_multi ~start:max_start timeres in
-          (timeres, resolve ~start search_using_tz timeres)
-        else (timeres, interval_batches)
-      in
-      let end_exc =
-        if max_end_exc -^ start <= inter_minimum_slice_size then
-          start +^ inter_minimum_slice_size
-        else max_end_exc
-      in
-      let intervals_up_to_end_exc =
-        interval_batches
-        |> CCList.to_seq
-        |> Seq.map (Intervals.Slice.slice ~skip_check:true ~end_exc)
-        |> Intervals.Inter.inter_multi_seq ~skip_check:true
-      in
-      fun () ->
-        Seq.Cons (intervals_up_to_end_exc, aux_inter' ~start:end_exc timeres)
+        let _min_start, min_end_exc = List.hd batch_for_sampling in
+        let max_start, max_end_exc = List.hd @@ List.rev batch_for_sampling in
+        let timeres, interval_batches =
+          if
+            min_end_exc <= max_start
+            && max_start -^ min_end_exc
+               >= dynamic_search_space_adjustment_trigger_size
+          then
+            let timeres = slice_search_space_multi ~start:max_start timeres in
+            (timeres, resolve ~start search_using_tz timeres)
+          else (timeres, interval_batches)
+        in
+        let end_exc =
+          if max_end_exc -^ start <= inter_minimum_slice_size then
+            start +^ inter_minimum_slice_size
+          else max_end_exc
+        in
+        let intervals_up_to_end_exc =
+          interval_batches
+          |> CCList.to_seq
+          |> Seq.map (Intervals.Slice.slice ~skip_check:true ~end_exc)
+          |> Intervals.Inter.inter_multi_seq ~skip_check:true
+        in
+        fun () ->
+          Seq.Cons (intervals_up_to_end_exc, aux_inter' ~start:end_exc timeres)
   in
   aux_inter' ~start:default_search_space_start (CCList.of_seq timeres)
   |> Seq.flat_map CCFun.id
