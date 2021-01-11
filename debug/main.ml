@@ -204,7 +204,7 @@ let debug_fuzz_union () =
        let max_branching = 1 + max_branching in
        Builder.build ~enable_extra_restrictions:false ~min_year:2000
          ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
-      1 0 [ ]
+      0 3 [761; 143 ]
   in
   let t2 =
     (fun max_height max_branching randomness ->
@@ -214,22 +214,25 @@ let debug_fuzz_union () =
          ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
       1 0 [ 113 ]
   in
-  let s1 = Resolver.aux tz t1 in
+  let s1 = Resolver.aux tz t1
+           |> Resolver.normalize
+  in
   let s2 = Resolver.aux tz t2 in
-  let l = [t1; t2] in
+  let l = [t1] in
   let s' = l |> List.map (Resolver.aux tz) |> CCList.to_seq
            |> Time.Intervals.Union.union_multi_seq
-           |> Time.Intervals.Slice.slice ~start:Time.default_search_space_start ~end_exc:Time.default_search_space_end_exc
+           |> Time.Intervals.Slice.slice ~start:Time.min_timestamp ~end_exc:Time.max_timestamp
   in
   let s =
     Resolver.aux_union tz (CCList.to_seq l)
+    |> Resolver.normalize
   in
   print_endline "=====";
-  (* display_intervals ~display_using_tz:tz s1; *)
+  display_intervals ~display_using_tz:tz s1;
   print_endline (To_sexp.to_sexp_string t1);
-  print_endline "=====";
-  (* display_intervals ~display_using_tz:tz s2; *)
-  print_endline (To_sexp.to_sexp_string t2);
+  (* print_endline "=====";
+   * display_intervals ~display_using_tz:tz s2;
+   * print_endline (To_sexp.to_sexp_string t2); *)
   print_endline "=====";
   display_intervals ~display_using_tz:tz s';
   print_endline "=====";
