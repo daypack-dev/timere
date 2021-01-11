@@ -2,7 +2,7 @@
 
 simul_test_count=2
 
-test_timeout="30s"
+test_timeout="10m"
 
 script_dir=$(dirname $(readlink -f "$0"))
 
@@ -56,7 +56,7 @@ while (( $i < $test_count )); do
   for (( c=0; c < $tests_to_run; c++ )); do
     name=${names[$i]}
     if [[ "$name" != "" ]]; then
-      echo "    Starting $name"
+      echo "  Starting $name"
 
       (AFL_NO_UI=1 timeout "$test_timeout" "$script_dir"/run.sh "$name" skip_build > "$log_dir"/"$name".log) &
 
@@ -67,8 +67,6 @@ while (( $i < $test_count )); do
   echo "Waiting for tests to finish"
 
   wait
-
-  sleep 5
 
   echo ""
   echo "$[test_count - i] / $test_count tests remaining"
