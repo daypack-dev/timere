@@ -2078,6 +2078,7 @@ let of_sorted_interval_seq ?(skip_invalid : bool = false)
         | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
     |> Intervals.Check.check_if_sorted
     |> Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
+    |> slice_valid_interval
   in
   match s () with
   | Seq.Nil -> Empty
@@ -2102,6 +2103,7 @@ let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
     |> Intervals.Sort.sort_uniq_intervals_list
     |> CCList.to_seq
     |> Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
+    |> slice_valid_interval
   in
   match s () with
   | Seq.Nil -> Empty
