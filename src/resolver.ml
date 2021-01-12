@@ -1262,7 +1262,7 @@ and maybe_slice_start_spec_of_after ~last_start2
       let t1 = slice_search_space ~start:safe_search_start t1 in
       let s =
         aux search_using_tz t1
-        |> OSeq.drop_while (fun (start, _) -> start < safe_start)
+        |> OSeq.drop_while (fun (start', _) -> start' < safe_start)
       in
       (s, t1)
     else (rest1, t1)
