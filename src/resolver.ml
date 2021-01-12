@@ -1270,7 +1270,7 @@ and maybe_slice_start_spec_of_after ~last_start2
     else (rest1, t1)
 
 and aux_after search_using_tz space bound s1 s2 t1 t2 =
-  let _, search_space_end_exc = List.hd @@ List.rev space in
+  let _, search_space_end_exc = CCOpt.get_exn @@ Misc_utils.last_element_of_list space in
   let rec aux_after' s1 s2 t1 t2 =
     match s1 () with
     | Seq.Nil -> Seq.empty
@@ -1297,7 +1297,7 @@ and aux_after search_using_tz space bound s1 s2 t1 t2 =
   aux_after' s1 s2 t1 t2
 
 and aux_between inc_or_exc search_using_tz space bound s1 s2 t1 t2 =
-  let _, search_space_end_exc = List.hd @@ List.rev space in
+  let _, search_space_end_exc = CCOpt.get_exn @@ Misc_utils.last_element_of_list space in
   let rec aux_between' s1 s2 t1 t2 =
     match s1 () with
     | Seq.Nil -> Seq.empty
@@ -1378,7 +1378,7 @@ and aux_inter search_using_tz timeres =
       | [] -> Seq.empty
       | _ ->
         let _min_start, min_end_exc = List.hd batch_for_sampling in
-        let max_start, max_end_exc = List.hd @@ List.rev batch_for_sampling in
+        let max_start, max_end_exc = CCOpt.get_exn @@ Misc_utils.last_element_of_list batch_for_sampling in
         let timeres, interval_batches =
           if
             min_end_exc <= max_start

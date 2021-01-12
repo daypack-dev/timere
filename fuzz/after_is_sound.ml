@@ -21,6 +21,6 @@ let () =
                with
                | [] -> false
                | r ->
-                 let xr, _yr = List.hd @@ List.rev r in
+                 let xr, _yr = CCOpt.get_exn @@ Misc_utils.last_element_of_list r in
                  not (OSeq.exists (fun (x2, _y2) -> xr <= x2 && x2 < x) s2))
             s))

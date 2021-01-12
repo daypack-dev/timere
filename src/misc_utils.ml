@@ -22,9 +22,6 @@ let take_first_n_list (n : int) (l : 'a list) : 'a list =
   assert (n >= 0);
   aux n [] l
 
-let take_last_n_list (n : int) (l : 'a list) : 'a list =
-  l |> List.rev |> take_first_n_list n |> List.rev
-
 let convert_of_int_to_int64 (f : int -> 'a) : int64 -> 'a =
   fun x -> x |> Int64.to_int |> f
 
@@ -51,3 +48,14 @@ let list_concat_mapi (f : int -> 'a -> 'b list) (l : 'a list) : 'b list =
   |> OSeq.mapi (fun i x -> (i, x))
   |> Seq.flat_map (fun (i, x) -> f i x |> CCList.to_seq)
   |> CCList.of_seq
+
+let last_element_of_list (l : 'a list) : 'a option =
+  let rec aux l =
+    match l with
+    | [] -> None
+    | [x] ->
+      Some x
+    | _ :: rest ->
+      aux rest
+  in
+  aux l

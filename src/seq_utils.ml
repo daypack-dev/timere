@@ -83,3 +83,14 @@ let get_ok_error_list (s : ('a, 'b) result Seq.t) : ('a list, 'b) result =
         match x with Ok x -> aux (x :: acc) rest | Error s -> Error s)
   in
   aux [] s
+
+let last_element_of_seq (s : 'a Seq.t) : 'a option =
+  let rec aux s =
+    match s () with
+    | Seq.Nil -> None
+    | Seq.Cons (x, rest) ->
+      match rest () with
+      | Seq.Nil -> Some x
+      | Seq.Cons _ -> aux rest
+  in
+  aux s
