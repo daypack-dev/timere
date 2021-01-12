@@ -20,9 +20,7 @@ let display_intervals ~display_using_tz s =
 let debug_resolver () =
   let s =
     {|
-          (between_exc (duration 1 0 0 0)
-            (pattern (hours 15) (minutes 18) (seconds 59))
-            (pattern (hours 15) (minutes 18) (seconds 59)))
+(unchunk (drop 3 (chunk_at_month_boundary (all))))
     |}
   in
   let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in
@@ -97,7 +95,7 @@ let debug_resolver () =
   print_endline "^^^^^";
   print_endline (To_sexp.to_sexp_string timere');
   print_endline "=====";
-  (match Resolver.resolve timere' with
+  (match Resolver.resolve timere with
    | Error msg -> print_endline msg
    | Ok s -> display_intervals ~display_using_tz:tz s);
   print_endline "=====";
@@ -147,8 +145,9 @@ let debug_example () =
   | Error msg -> print_endline msg
   | Ok s -> display_intervals ~display_using_tz:tz s
 
-let debug_fuzz_between_exc () =
-  let bound = Int64.of_int 65536 in
+let debug_fuzz_after () =
+  let bound = Int64.of_int 57633 in
+  print_endline (Duration.(of_seconds bound) |> Printers.sprint_duration);
   let tz = Time_zone.utc in
   let t1 =
     (fun max_height max_branching randomness ->
@@ -156,7 +155,7 @@ let debug_fuzz_between_exc () =
        let max_branching = 1 + max_branching in
        Builder.build ~enable_extra_restrictions:false ~min_year:2000
          ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
-      0 0 [ 45 ]
+      1 3 [ 882; 891; 595; 891; 891 ]
   in
   let t2 =
     (fun max_height max_branching randomness ->
@@ -164,14 +163,66 @@ let debug_fuzz_between_exc () =
        let max_branching = 1 + max_branching in
        Builder.build ~enable_extra_restrictions:false ~min_year:2000
          ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
-      1 3 [ 45; 307; 915; 573; 658 ]
+      0 3 [ 891; 891; 891; 926; 907 ]
   in
   let s1 = Resolver.aux tz t1 in
   let s2 = Resolver.aux tz t2 in
   let l1 = CCList.of_seq s1 in
   let l2 = CCList.of_seq s2 in
   let s =
-    Resolver.(aux_between Inc tz Time.default_search_space bound s1 s2 t1 t2)
+    Resolver.(aux_after tz Time.default_search_space bound s1 s2 t1 t2)
+  in
+  print_endline "=====";
+  print_endline (To_sexp.to_sexp_string t1);
+  display_intervals ~display_using_tz:tz s1;
+  print_endline "=====";
+  print_endline (To_sexp.to_sexp_string t2);
+  display_intervals ~display_using_tz:tz s2;
+  print_endline "=====";
+  display_intervals ~display_using_tz:tz s;
+  print_endline "=====";
+  Printf.printf "%b\n"
+    (OSeq.for_all
+       (fun (x, _y) ->
+          match
+            List.filter
+              (fun (x1, _y1) ->
+                 x1 <= x && Int64.sub x x1 <= bound)
+              l1
+          with
+          | [] ->
+            print_endline "test";
+            false
+          | r ->
+            let xr, _yr = List.hd @@ List.rev r in
+            not (OSeq.exists (fun (x2, _y2) -> xr <= x2 && x2 < x) s2))
+       s)
+
+let debug_fuzz_between_exc () =
+  let bound = Int64.of_int 8904 in
+  let tz = Time_zone.utc in
+  let t1 =
+    (fun max_height max_branching randomness ->
+       let max_height = 1 + max_height in
+       let max_branching = 1 + max_branching in
+       Builder.build ~enable_extra_restrictions:false ~min_year:2000
+         ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
+      0 3 [ 143; 143; 143;143; 109 ]
+  in
+  let t2 =
+    (fun max_height max_branching randomness ->
+       let max_height = 1 + max_height in
+       let max_branching = 1 + max_branching in
+       Builder.build ~enable_extra_restrictions:false ~min_year:2000
+         ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
+      1 3 [ 713 ]
+  in
+  let s1 = Resolver.aux tz t1 in
+  let s2 = Resolver.aux tz t2 in
+  let l1 = CCList.of_seq s1 in
+  let l2 = CCList.of_seq s2 in
+  let s =
+    Resolver.(aux_after tz Time.default_search_space bound s1 s2 t1 t2)
   in
   print_endline "=====";
   display_intervals ~display_using_tz:tz s1;
@@ -249,6 +300,8 @@ let debug_fuzz_union () =
 
 (* let () = debug_example () *)
 
+let () = debug_fuzz_after ()
+
 (* let () = debug_fuzz_between_exc () *)
 
-let () = debug_fuzz_union ()
+(* let () = debug_fuzz_union () *)
