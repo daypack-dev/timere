@@ -14,10 +14,10 @@ let () =
         in
         Crowbar.check
           (OSeq.for_all
-             (fun (x1, y1) ->
+             (fun (x1, _y1) ->
                 match
                   List.filter
-                    (fun (x2, _y2) -> y1 <= x2 && Int64.sub x2 y1 <= bound)
+                    (fun (x2, _y2) -> x1 <= x2 && Int64.sub x2 x1 <= bound)
                     l2
                 with
                 | [] -> true
