@@ -1,6 +1,8 @@
 #!/bin/bash
 
-simul_test_count=$(grep -c ^processor /proc/cpuinfo)
+cpu_count=$(grep -c ^processor /proc/cpuinfo)
+
+simul_test_count=$[cpu_count-1]
 
 test_timeout="30m"
 
