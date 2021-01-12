@@ -1231,6 +1231,8 @@ and get_after_seq_and_maybe_sliced_timere ~start1
     let safe_search_start = start1 -^ 1L in
     let s2, t2 =
       if
+        start2 <= start1
+        &&
         Int64.sub start1 start2
         >= dynamic_search_space_adjustment_trigger_size
       then
@@ -1247,18 +1249,20 @@ and maybe_slice_start_spec_of_after ~last_start2
   match rest1 () with
   | Seq.Nil -> (Seq.empty, t1)
   | Seq.Cons ((start, _), _) ->
-    let distance = last_start2 -^ start in
-    if
-      distance >= bound
-      && distance >= dynamic_search_space_adjustment_trigger_size
-    then
-      let safe_start = last_start2 -^ bound in
-      let t1 = slice_search_space ~start:safe_start t1 in
-      let s =
-        aux search_using_tz t1
-        |> OSeq.drop_while (fun (start, _) -> start < safe_start)
-      in
-      (s, t1)
+    if start <= last_start2 then
+      let distance = last_start2 -^ start in
+      if
+        distance >= bound
+        && distance >= dynamic_search_space_adjustment_trigger_size
+      then
+        let safe_start = last_start2 -^ bound in
+        let t1 = slice_search_space ~start:safe_start t1 in
+        let s =
+          aux search_using_tz t1
+          |> OSeq.drop_while (fun (start, _) -> start < safe_start)
+        in
+        (s, t1)
+      else (rest1, t1)
     else (rest1, t1)
 
 and aux_after search_using_tz space bound s1 s2 t1 t2 =
