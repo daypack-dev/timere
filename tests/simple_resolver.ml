@@ -45,12 +45,12 @@ let normalize (s : Time.Interval.t Seq.t) : Time.Interval.t Seq.t =
   |> Int64_set.to_seq
   |> intervals_of_timestamps
 
-let find_after bound ((_start, end_exc) : Time.Interval.t)
+let find_after bound ((start, _end_exc) : Time.Interval.t)
     (s2 : Time.Interval.t Seq.t) =
   let s =
     s2
-    |> OSeq.drop_while (fun (start', _) -> start' < end_exc)
-    |> OSeq.take_while (fun (start', _) -> Int64.sub start' end_exc <= bound)
+    |> OSeq.drop_while (fun (start', _) -> start' < start)
+    |> OSeq.take_while (fun (start', _) -> Int64.sub start' start <= bound)
   in
   match s () with Seq.Nil -> None | Seq.Cons (x, _) -> Some x
 
