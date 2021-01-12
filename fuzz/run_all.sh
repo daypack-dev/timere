@@ -1,8 +1,8 @@
 #!/bin/bash
 
-simul_test_count=2
+simul_test_count=$(grep -c ^processor /proc/cpuinfo)
 
-test_timeout="10m"
+test_timeout="30m"
 
 script_dir=$(dirname $(readlink -f "$0"))
 
