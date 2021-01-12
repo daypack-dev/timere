@@ -7,7 +7,6 @@ let () =
         let tz = Time_zone.utc in
         let s1 = Resolver.aux tz t1 in
         let s2 = Resolver.aux tz t2 in
-        let l2 = CCList.of_seq s2 in
         let s =
           Resolver.(
             aux_between Inc tz Time.default_search_space bound s1 s2 t1 t2)
@@ -16,10 +15,11 @@ let () =
           (OSeq.for_all
              (fun (x1, _y1) ->
                 match
-                  List.filter
+                  Seq.filter
                     (fun (x2, _y2) -> x1 <= x2 && Int64.sub x2 x1 <= bound)
-                    l2
+                    s2
+                    ()
                 with
-                | [] -> true
-                | (_xr2, yr2) :: _ -> OSeq.mem ~eq:( = ) (x1, yr2) s)
+                | Seq.Nil -> true
+                | Seq.Cons ((_xr2, yr2), _) -> OSeq.mem ~eq:( = ) (x1, yr2) s)
              s1))

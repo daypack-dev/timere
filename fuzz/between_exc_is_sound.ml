@@ -7,8 +7,6 @@ let () =
         let tz = Time_zone.utc in
         let s1 = Resolver.aux tz t1 in
         let s2 = Resolver.aux tz t2 in
-        let l1 = CCList.of_seq s1 in
-        let l2 = CCList.of_seq s2 in
         let s =
           Resolver.(
             aux_between Exc tz Time.default_search_space bound s1 s2 t1 t2)
@@ -16,14 +14,27 @@ let () =
         Crowbar.check
           (OSeq.for_all
              (fun (x, y) ->
-                match List.filter (fun (x1, _y1) -> x = x1) l1 with
-                | [] -> false
-                | [ (_xr1, yr1) ] -> (
-                    match List.filter (fun (x2, _y2) -> y = x2) l2 with
-                    | [] -> false
-                    | [ (xr2, _yr2) ] ->
-                      not
-                        (List.exists (fun (x2, _y2) -> yr1 <= x2 && x2 < xr2) l2)
+                let r1 =
+                  Seq.filter (fun (x1, _y1) -> x = x1) s1
+                in
+                match r1 () with
+                | Seq.Nil -> false
+                | Seq.Cons ((_xr1, yr1), rest1) -> (
+                    match rest1 () with
+                    | Seq.Nil -> (
+                        let r2 =
+                          Seq.filter (fun (x2, _y2) -> y = x2) s2
+                        in
+                        match r2 () with
+                        | Seq.Nil -> false
+                        | Seq.Cons ((xr2, _yr2), rest2) -> (
+                            match rest2 () with
+                            | Seq.Nil ->
+                              not
+                                (OSeq.exists (fun (x2, _y2) -> yr1 <= x2 && x2 < xr2) s2)
+                            | _ -> false
+                          )
+                      )
                     | _ -> false)
-                | _ -> false)
+             )
              s))
