@@ -88,9 +88,7 @@ let last_element_of_seq (s : 'a Seq.t) : 'a option =
   let rec aux s =
     match s () with
     | Seq.Nil -> None
-    | Seq.Cons (x, rest) ->
-      match rest () with
-      | Seq.Nil -> Some x
-      | Seq.Cons _ -> aux rest
+    | Seq.Cons (x, rest) -> (
+        match rest () with Seq.Nil -> Some x | Seq.Cons _ -> aux rest)
   in
   aux s

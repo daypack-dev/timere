@@ -16,8 +16,7 @@ let () =
                 match
                   Seq.filter
                     (fun (x2, _y2) -> x1 <= x2 && Int64.sub x2 x1 <= bound)
-                    s2
-                    ()
+                    s2 ()
                 with
                 | Seq.Nil -> true
                 | Seq.Cons (r, _) -> OSeq.mem ~eq:( = ) r s)

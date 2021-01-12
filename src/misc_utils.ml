@@ -51,11 +51,6 @@ let list_concat_mapi (f : int -> 'a -> 'b list) (l : 'a list) : 'b list =
 
 let last_element_of_list (l : 'a list) : 'a option =
   let rec aux l =
-    match l with
-    | [] -> None
-    | [x] ->
-      Some x
-    | _ :: rest ->
-      aux rest
+    match l with [] -> None | [ x ] -> Some x | _ :: rest -> aux rest
   in
   aux l

@@ -21,6 +21,8 @@ let () =
                match r () with
                | Seq.Nil -> false
                | _ ->
-                 let xr, _yr = CCOpt.get_exn @@ Seq_utils.last_element_of_seq r in
+                 let xr, _yr =
+                   CCOpt.get_exn @@ Seq_utils.last_element_of_seq r
+                 in
                  not (OSeq.exists (fun (x2, _y2) -> xr <= x2 && x2 < x) s2))
             s))

@@ -18,11 +18,9 @@ let display_intervals ~display_using_tz s =
         Printf.printf "%s - %s\n" s size_str)
 
 let debug_resolver () =
-  let s =
-    {|
+  let s = {|
 (unchunk (drop 3 (chunk_at_month_boundary (all))))
-    |}
-  in
+    |} in
   let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in
   (* let timere =
    *   (fun max_height max_branching randomness ->
@@ -155,7 +153,8 @@ let debug_fuzz_after () =
        let max_branching = 1 + max_branching in
        Builder.build ~enable_extra_restrictions:false ~min_year:2000
          ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
-      1 3 [ 882; 891; 595; 891; 891 ]
+      1 3
+      [ 882; 891; 595; 891; 891 ]
   in
   let t2 =
     (fun max_height max_branching randomness ->
@@ -163,15 +162,14 @@ let debug_fuzz_after () =
        let max_branching = 1 + max_branching in
        Builder.build ~enable_extra_restrictions:false ~min_year:2000
          ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
-      0 3 [ 891; 891; 891; 926; 907 ]
+      0 3
+      [ 891; 891; 891; 926; 907 ]
   in
   let s1 = Resolver.aux tz t1 in
   let s2 = Resolver.aux tz t2 in
   let l1 = CCList.of_seq s1 in
   let l2 = CCList.of_seq s2 in
-  let s =
-    Resolver.(aux_after tz Time.default_search_space bound s1 s2 t1 t2)
-  in
+  let s = Resolver.(aux_after tz Time.default_search_space bound s1 s2 t1 t2) in
   print_endline "=====";
   print_endline (To_sexp.to_sexp_string t1);
   display_intervals ~display_using_tz:tz s1;
@@ -185,10 +183,7 @@ let debug_fuzz_after () =
     (OSeq.for_all
        (fun (x, _y) ->
           match
-            List.filter
-              (fun (x1, _y1) ->
-                 x1 <= x && Int64.sub x x1 <= bound)
-              l1
+            List.filter (fun (x1, _y1) -> x1 <= x && Int64.sub x x1 <= bound) l1
           with
           | [] ->
             print_endline "test";
@@ -207,7 +202,8 @@ let debug_fuzz_between_exc () =
        let max_branching = 1 + max_branching in
        Builder.build ~enable_extra_restrictions:false ~min_year:2000
          ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
-      0 3 [ 143; 143; 143;143; 109 ]
+      0 3
+      [ 143; 143; 143; 143; 109 ]
   in
   let t2 =
     (fun max_height max_branching randomness ->
@@ -221,9 +217,7 @@ let debug_fuzz_between_exc () =
   let s2 = Resolver.aux tz t2 in
   let l1 = CCList.of_seq s1 in
   let l2 = CCList.of_seq s2 in
-  let s =
-    Resolver.(aux_after tz Time.default_search_space bound s1 s2 t1 t2)
-  in
+  let s = Resolver.(aux_after tz Time.default_search_space bound s1 s2 t1 t2) in
   print_endline "=====";
   display_intervals ~display_using_tz:tz s1;
   print_endline (To_sexp.to_sexp_string t1);

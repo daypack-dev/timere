@@ -13,7 +13,10 @@ let () =
           let s' =
             Seq_utils.a_to_b_exc_int64
               ~a:(fst (List.hd search_space))
-              ~b:(snd (CCOpt.get_exn @@ Misc_utils.last_element_of_list search_space))
+              ~b:
+                (snd
+                   (CCOpt.get_exn
+                    @@ Misc_utils.last_element_of_list search_space))
             |> OSeq.filter (fun timestamp ->
                 List.exists
                   (fun (x, y) -> x <= timestamp && timestamp < y)
