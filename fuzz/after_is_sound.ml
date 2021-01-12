@@ -16,11 +16,11 @@ let () =
             (fun (x, _y) ->
                match
                  List.filter
-                   (fun (_x1, y1) -> y1 <= x && Int64.sub x y1 <= bound)
+                   (fun (x1, _y1) -> x1 <= x && Int64.sub x x1 <= bound)
                    l1
                with
                | [] -> false
                | r ->
-                 let _xr, yr = List.hd @@ List.rev r in
-                 not (OSeq.exists (fun (x2, _y2) -> yr <= x2 && x2 < x) s2))
+                 let xr, _yr = List.hd @@ List.rev r in
+                 not (OSeq.exists (fun (x2, _y2) -> xr <= x2 && x2 < x) s2))
             s))
