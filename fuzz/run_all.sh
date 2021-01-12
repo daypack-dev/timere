@@ -64,9 +64,15 @@ while (( $i < $test_count )); do
     fi
   done
 
-  echo "Waiting for tests to finish"
+  echo "Waiting for $test_timeout"
 
-  wait
+  sleep $test_timeout
+
+  echo "Terminating tests"
+
+  pkill afl-fuzz
+
+  sleep 5
 
   echo ""
   echo "$[test_count - i] / $test_count tests remaining"
