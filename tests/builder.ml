@@ -61,8 +61,7 @@ let make_pattern ~rng ~min_year ~max_year_inc =
     else
       let end_inc = min 5 (rng ()) in
       OSeq.(0 -- end_inc)
-      |> Seq.map (fun _ ->
-          CCResult.get_exn @@ month_of_tm_int (rng () mod 12))
+      |> Seq.map (fun _ -> CCResult.get_exn @@ month_of_tm_int (rng () mod 12))
       |> CCList.of_seq
   in
   let month_days =
@@ -80,8 +79,7 @@ let make_pattern ~rng ~min_year ~max_year_inc =
     else
       let end_inc = min 5 (rng ()) in
       OSeq.(0 -- end_inc)
-      |> Seq.map (fun _ ->
-          CCResult.get_exn @@ weekday_of_tm_int (rng () mod 7))
+      |> Seq.map (fun _ -> CCResult.get_exn @@ weekday_of_tm_int (rng () mod 7))
       |> CCList.of_seq
   in
   let hours =

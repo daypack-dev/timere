@@ -24,7 +24,8 @@ let do_chunk ~drop_partial (n : int64) (s : Time.Interval.t Seq.t) :
   in
   aux n s
 
-let intervals_of_timestamps (s : Time_ast.timestamp Seq.t) : Time.Interval.t Seq.t =
+let intervals_of_timestamps (s : Time_ast.timestamp Seq.t) :
+  Time.Interval.t Seq.t =
   let rec aux acc s =
     match s () with
     | Seq.Nil -> ( match acc with None -> Seq.empty | Some x -> Seq.return x)
@@ -37,7 +38,8 @@ let intervals_of_timestamps (s : Time_ast.timestamp Seq.t) : Time.Interval.t Seq
   in
   aux None s
 
-let timestamps_of_intervals (s : Time.Interval.t Seq.t) : Time_ast.timestamp Seq.t =
+let timestamps_of_intervals (s : Time.Interval.t Seq.t) :
+  Time_ast.timestamp Seq.t =
   s |> Seq.flat_map (fun (a, b) -> Seq_utils.a_to_b_exc_int64 ~a ~b)
 
 let normalize (s : Time.Interval.t Seq.t) : Time.Interval.t Seq.t =
@@ -119,9 +121,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
 let rec resolve ?(search_using_tz = Time_zone.utc)
     ~(search_start : Time_ast.timestamp) ~(search_end_exc : Time_ast.timestamp)
     (t : Time_ast.t) : Time.Interval.t Seq.t =
-  let default_search_space =
-    Time.(min_timestamp, max_timestamp)
-  in
+  let default_search_space = Time.(min_timestamp, max_timestamp) in
   let filter s =
     Seq.filter_map
       (fun (x, y) ->
@@ -192,7 +192,7 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
       |> Seq.filter_map (fun (start, end_exc) ->
           find_follow b (start, end_exc) s2
           |> CCOpt.map (fun (start', _) -> (start, start')))
-    | Unchunk (chunked) -> aux_chunked search_using_tz chunked |> normalize
+    | Unchunk chunked -> aux_chunked search_using_tz chunked |> normalize
     | _ ->
       Seq_utils.a_to_b_exc_int64 ~a:(fst search_space) ~b:(snd search_space)
       |> Seq.filter (mem ~search_using_tz search_space t)
@@ -232,8 +232,7 @@ and mem ?(search_using_tz = Time_zone.utc)
     | Ok dt -> (
         let weekday =
           CCResult.get_exn
-          @@ weekday_of_month_day ~year:dt.year ~month:dt.month
-            ~mday:dt.day
+          @@ weekday_of_month_day ~year:dt.year ~month:dt.month ~mday:dt.day
         in
         match t with
         | All -> true
@@ -243,7 +242,7 @@ and mem ?(search_using_tz = Time_zone.utc)
             (fun (start, end_exc) ->
                start <= timestamp && timestamp < end_exc)
             s
-        | Pattern (pattern) ->
+        | Pattern pattern ->
           let year_is_fine =
             Int_set.is_empty pattern.years
             || Int_set.mem dt.year pattern.years
@@ -292,14 +291,14 @@ and mem ?(search_using_tz = Time_zone.utc)
         | Interval_exc (start, end_inc) ->
           start <= timestamp && timestamp < end_inc
         | Unary_op (_, _)
-        | Round_robin_pick_list (_)
+        | Round_robin_pick_list _
         | Follow (_, _, _)
         | Between_inc (_, _, _)
         | Between_exc (_, _, _)
         | Unchunk _ ->
           resolve ~search_using_tz ~search_start ~search_end_exc t
           |> OSeq.exists (fun (x, y) -> x <= timestamp && timestamp < y)
-        | Inter_seq (s) -> OSeq.for_all (fun t -> aux t timestamp) s
-        | Union_seq (s) -> OSeq.exists (fun t -> aux t timestamp) s)
+        | Inter_seq s -> OSeq.for_all (fun t -> aux t timestamp) s
+        | Union_seq s -> OSeq.exists (fun t -> aux t timestamp) s)
   in
   aux t timestamp

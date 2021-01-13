@@ -34,22 +34,15 @@ let rec t_of_ast (ast : Time_ast.t) : t =
   match ast with
   | Empty -> Empty
   | All -> All
-  | Timestamp_interval_seq s ->
-    Timestamp_interval_seq (default_search_space, s)
-  | Pattern p ->
-    Pattern (default_search_space, p)
-  | Unary_op (op, t) ->
-    Unary_op (default_search_space, op, t_of_ast t)
-  | Interval_inc (t1, t2) ->
-    Interval_inc (default_search_space, t1, t2)
-  | Interval_exc (t1, t2) ->
-    Interval_exc (default_search_space, t1, t2)
+  | Timestamp_interval_seq s -> Timestamp_interval_seq (default_search_space, s)
+  | Pattern p -> Pattern (default_search_space, p)
+  | Unary_op (op, t) -> Unary_op (default_search_space, op, t_of_ast t)
+  | Interval_inc (t1, t2) -> Interval_inc (default_search_space, t1, t2)
+  | Interval_exc (t1, t2) -> Interval_exc (default_search_space, t1, t2)
   | Round_robin_pick_list l ->
     Round_robin_pick_list (default_search_space, List.map t_of_ast l)
-  | Inter_seq s ->
-    Inter_seq (default_search_space, Seq.map t_of_ast s)
-  | Union_seq s ->
-    Union_seq (default_search_space, Seq.map t_of_ast s)
+  | Inter_seq s -> Inter_seq (default_search_space, Seq.map t_of_ast s)
+  | Union_seq s -> Union_seq (default_search_space, Seq.map t_of_ast s)
   | Follow (bound, t1, t2) ->
     Follow (default_search_space, bound, t_of_ast t1, t_of_ast t2)
   | Between_inc (bound, t1, t2) ->
@@ -61,8 +54,7 @@ let rec t_of_ast (ast : Time_ast.t) : t =
 
 and chunked_of_ast_chunked (c : Time_ast.chunked) : chunked =
   match c with
-  | Unary_op_on_t (op, t) ->
-    Unary_op_on_t (op, t_of_ast t)
+  | Unary_op_on_t (op, t) -> Unary_op_on_t (op, t_of_ast t)
   | Unary_op_on_chunked (op, chunked) ->
     Unary_op_on_chunked (op, chunked_of_ast_chunked chunked)
 
@@ -498,9 +490,7 @@ and aux_pattern search_using_tz space pat =
           space
       in
       Intervals.Union.union_multi_seq ~skip_check:true
-        (Seq.map
-           (fun param -> Pattern_resolver.resolve param pat)
-           params))
+        (Seq.map (fun param -> Pattern_resolver.resolve param pat) params))
 
 and get_start_spec_of_follow search_using_tz space t =
   let search_space_start = fst (List.hd space) in
@@ -579,8 +569,8 @@ and aux_follow search_using_tz space bound s1 s2 t1 t2 =
               Seq.Cons ((start2, end_exc2), aux_follow' rest1 s2 t1 t2)
             else
               let s1, t1 =
-                maybe_slice_start_spec_of_follow ~last_start2:start2 ~rest1 ~t1
-                  search_using_tz bound
+                maybe_slice_start_spec_of_follow ~last_start2:start2 ~rest1
+                  ~t1 search_using_tz bound
               in
               aux_follow' s1 s2 t1 t2)
   in
@@ -613,8 +603,8 @@ and aux_between inc_or_exc search_using_tz space bound s1 s2 t1 t2 =
               fun () -> Seq.Cons (interval, aux_between' rest1 s2 t1 t2)
             else
               let s1, t1 =
-                maybe_slice_start_spec_of_follow ~last_start2:start2 ~rest1 ~t1
-                  search_using_tz bound
+                maybe_slice_start_spec_of_follow ~last_start2:start2 ~rest1
+                  ~t1 search_using_tz bound
               in
               aux_between' s1 s2 t1 t2)
   in
@@ -721,7 +711,7 @@ and aux_chunked search_using_tz (chunked : chunked) =
       | Take_nth n -> OSeq.take_nth n s
       | Chunk_again op -> chunk_based_on_op_on_t op s)
 
-let resolve' ~(search_using_tz) (time : t) :
+let resolve' ~search_using_tz (time : t) :
   (Time.Interval.t Seq.t, string) result =
   let open Time in
   try

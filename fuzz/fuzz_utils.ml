@@ -9,10 +9,7 @@ let time =
        Builder.build ~enable_extra_restrictions:false ~min_year:2000
          ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
 
-let time' =
-  Crowbar.map
-    [ time ]
-    Resolver.t_of_ast
+let time' = Crowbar.map [ time ] Resolver.t_of_ast
 
 let pattern =
   Crowbar.map
@@ -81,8 +78,7 @@ let pattern =
            |> Seq.map (fun _ -> rng () mod 60)
            |> Int_set.of_seq
        in
-       Pattern.
-         { years; months; month_days; weekdays; hours; minutes; seconds })
+       Pattern.{ years; months; month_days; weekdays; hours; minutes; seconds })
 
 let search_space =
   Crowbar.map

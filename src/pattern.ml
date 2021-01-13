@@ -33,12 +33,8 @@ module Check = struct
       Int_set.filter (fun x -> x < 1 || 31 < x) x.month_days
     in
     let invalid_hours = Int_set.filter (fun x -> x < 0 || 23 < x) x.hours in
-    let invalid_minutes =
-      Int_set.filter (fun x -> x < 0 || 59 < x) x.minutes
-    in
-    let invalid_seconds =
-      Int_set.filter (fun x -> x < 0 || 59 < x) x.seconds
-    in
+    let invalid_minutes = Int_set.filter (fun x -> x < 0 || 59 < x) x.minutes in
+    let invalid_seconds = Int_set.filter (fun x -> x < 0 || 59 < x) x.seconds in
     if Int_set.is_empty invalid_years then
       if Int_set.is_empty invalid_month_days then
         if Int_set.is_empty invalid_hours then
@@ -79,8 +75,8 @@ let union p1 p2 =
   }
 
 let inter p1 p2 =
-  let inter_sets (type a) ~(is_empty : a -> bool) ~(inter : a -> a -> a)
-      (a : a) (b : a) =
+  let inter_sets (type a) ~(is_empty : a -> bool) ~(inter : a -> a -> a) (a : a)
+      (b : a) =
     if is_empty a then Some b
     else if is_empty b then Some a
     else
