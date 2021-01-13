@@ -566,37 +566,6 @@ module Infix : sig
   *)
 end
 
-(** {1 Search oriented operations} *)
-
-(** {e Warning}: These are low level operations used to communicate with the resolver directly.
-
-    While powerful and necessary for certain queries, may yield unexpected results.
-*)
-
-val follow : Duration.t -> t -> t -> t
-(** [follow bound s1 s2],
-    for every interval [(x1, y1)] in [s1],
-    yields the earliest interval [(x2, y2)] in [s2] such that
-    [y1 <= x2 && (x2 - y1) <= bound]
-    if exists
-*)
-
-val between_inc : Duration.t -> t -> t -> t
-(** [between_inc bound s1 s2],
-    for every interval [(x1, y1)] in [s1],
-    and the earliest interval [(x2, y2)] in [s2] such that
-    [y1 <= x2 && (x2 - y1) <= bound],
-    yields [(x1, y2)]
-*)
-
-val between_exc : Duration.t -> t -> t -> t
-(** [between_inc bound s1 s2],
-    for every interval [(x1, y1)] in [s1],
-    and the earliest interval [(x2, y2)] in [s2] such that
-    [y1 <= x2 && (x2 - y1) <= bound],
-    yields [(x1, x2)]
-*)
-
 (** {1 Resolution} *)
 
 val resolve :
@@ -667,6 +636,8 @@ val of_sexp_string : string -> (t, string) result
 (** {1 Misc} *)
 
 module Utils : sig
+  (** {1 Range flattening} *)
+
   val flatten_month_ranges : month range Seq.t -> (month Seq.t, unit) result
 
   val flatten_month_day_ranges : int range Seq.t -> (int Seq.t, unit) result
@@ -680,4 +651,35 @@ module Utils : sig
 
   val flatten_weekday_range_list :
     weekday range list -> (weekday list, unit) result
+
+  (** {1 Search oriented operations} *)
+
+  (** {e Warning}: These are low level operations used to communicate with the resolver directly.
+
+      While powerful and necessary for certain queries, may yield unexpected results.
+  *)
+
+  val follow : Duration.t -> t -> t -> t
+  (** [follow bound s1 s2],
+      for every interval [(x1, y1)] in [s1],
+      yields the earliest interval [(x2, y2)] in [s2] such that
+      [y1 <= x2 && (x2 - y1) <= bound]
+      if exists
+  *)
+
+  val between_inc : Duration.t -> t -> t -> t
+  (** [between_inc bound s1 s2],
+      for every interval [(x1, y1)] in [s1],
+      and the earliest interval [(x2, y2)] in [s2] such that
+      [y1 <= x2 && (x2 - y1) <= bound],
+      yields [(x1, y2)]
+  *)
+
+  val between_exc : Duration.t -> t -> t -> t
+  (** [between_inc bound s1 s2],
+      for every interval [(x1, y1)] in [s1],
+      and the earliest interval [(x2, y2)] in [s2] such that
+      [y1 <= x2 && (x2 - y1) <= bound],
+      yields [(x1, x2)]
+  *)
 end

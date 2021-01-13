@@ -83,4 +83,10 @@ module Utils = struct
     (weekday list, unit) CCResult.t =
     try Ok (Weekday_ranges.Flatten.flatten_list weekdays)
     with Range.Range_is_invalid -> Error ()
+
+  let follow = follow
+
+  let between_exc = between_exc
+
+  let between_inc = between_inc
 end
