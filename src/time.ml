@@ -1,6 +1,7 @@
-type tz_offset_s = int
+open Date_components
+open Time_ast
 
-type timestamp = int64
+type tz_offset_s = int
 
 let tz_offset_s_utc = 0
 
@@ -13,147 +14,6 @@ exception Interval_is_empty
 exception Intervals_are_not_sorted
 
 exception Intervals_are_not_disjoint
-
-type weekday =
-  [ `Sun
-  | `Mon
-  | `Tue
-  | `Wed
-  | `Thu
-  | `Fri
-  | `Sat
-  ]
-
-type month =
-  [ `Jan
-  | `Feb
-  | `Mar
-  | `Apr
-  | `May
-  | `Jun
-  | `Jul
-  | `Aug
-  | `Sep
-  | `Oct
-  | `Nov
-  | `Dec
-  ]
-
-let first_mday = 1
-
-let tm_year_offset = 1900
-
-let tm_int_of_weekday (wday : weekday) : int =
-  match wday with
-  | `Sun -> 0
-  | `Mon -> 1
-  | `Tue -> 2
-  | `Wed -> 3
-  | `Thu -> 4
-  | `Fri -> 5
-  | `Sat -> 6
-
-let weekday_of_tm_int (x : int) : (weekday, unit) result =
-  match x with
-  | 0 -> Ok `Sun
-  | 1 -> Ok `Mon
-  | 2 -> Ok `Tue
-  | 3 -> Ok `Wed
-  | 4 -> Ok `Thu
-  | 5 -> Ok `Fri
-  | 6 -> Ok `Sat
-  | _ -> Error ()
-
-let tm_int_of_month (month : month) : int =
-  match month with
-  | `Jan -> 0
-  | `Feb -> 1
-  | `Mar -> 2
-  | `Apr -> 3
-  | `May -> 4
-  | `Jun -> 5
-  | `Jul -> 6
-  | `Aug -> 7
-  | `Sep -> 8
-  | `Oct -> 9
-  | `Nov -> 10
-  | `Dec -> 11
-
-let month_of_tm_int (x : int) : (month, unit) result =
-  match x with
-  | 0 -> Ok `Jan
-  | 1 -> Ok `Feb
-  | 2 -> Ok `Mar
-  | 3 -> Ok `Apr
-  | 4 -> Ok `May
-  | 5 -> Ok `Jun
-  | 6 -> Ok `Jul
-  | 7 -> Ok `Aug
-  | 8 -> Ok `Sep
-  | 9 -> Ok `Oct
-  | 10 -> Ok `Nov
-  | 11 -> Ok `Dec
-  | _ -> Error ()
-
-let human_int_of_month (month : month) : int = tm_int_of_month month + 1
-
-let month_of_human_int (x : int) : (month, unit) result = month_of_tm_int (x - 1)
-
-let compare_month (m1 : month) (m2 : month) : int =
-  compare (tm_int_of_month m1) (tm_int_of_month m2)
-
-module Month_set = struct
-  include CCSet.Make (struct
-      type t = month
-
-      let compare = compare_month
-    end)
-
-  let to_seq x = x |> to_list |> CCList.to_seq
-end
-
-let compare_weekday (d1 : weekday) (d2 : weekday) : int =
-  compare (tm_int_of_weekday d1) (tm_int_of_weekday d2)
-
-module Weekday_set = struct
-  include CCSet.Make (struct
-      type t = weekday
-
-      let compare = compare_weekday
-    end)
-
-  let to_seq x = x |> to_list |> CCList.to_seq
-end
-
-let is_leap_year ~year =
-  assert (year >= 0);
-  let divisible_by_4 = year mod 4 = 0 in
-  let divisible_by_100 = year mod 100 = 0 in
-  let divisible_by_400 = year mod 400 = 0 in
-  divisible_by_4 && ((not divisible_by_100) || divisible_by_400)
-
-let day_count_of_year ~year = if is_leap_year ~year then 366 else 365
-
-let day_count_of_month ~year ~(month : month) =
-  match month with
-  | `Jan -> 31
-  | `Feb -> if is_leap_year ~year then 29 else 28
-  | `Mar -> 31
-  | `Apr -> 30
-  | `May -> 31
-  | `Jun -> 30
-  | `Jul -> 31
-  | `Aug -> 31
-  | `Sep -> 30
-  | `Oct -> 31
-  | `Nov -> 30
-  | `Dec -> 31
-
-let weekday_of_month_day ~(year : int) ~(month : month) ~(mday : int) :
-  (weekday, unit) result =
-  match Ptime.(of_date (year, human_int_of_month month, mday)) with
-  | None -> Error ()
-  | Some wday -> Ok (Ptime.weekday wday)
 
 module Interval = struct
   type t = int64 * int64
@@ -1478,147 +1338,9 @@ module Check = struct
     (0 <= hour && hour < 24) && minute_second_is_valid ~minute ~second
 end
 
-module Pattern = struct
-  type t = {
-    years : Int_set.t;
-    months : Month_set.t;
-    month_days : Int_set.t;
-    weekdays : Weekday_set.t;
-    hours : Int_set.t;
-    minutes : Int_set.t;
-    seconds : Int_set.t;
-  }
-
-  let equal p1 p2 =
-    Int_set.equal p1.years p2.years
-    && Month_set.equal p1.months p2.months
-    && Int_set.equal p1.month_days p2.month_days
-    && Weekday_set.equal p1.weekdays p2.weekdays
-    && Int_set.equal p1.hours p2.hours
-    && Int_set.equal p1.minutes p2.minutes
-    && Int_set.equal p1.seconds p2.seconds
-
-  type error =
-    | Invalid_years of Int_set.t
-    | Invalid_month_days of Int_set.t
-    | Invalid_hours of Int_set.t
-    | Invalid_minutes of Int_set.t
-    | Invalid_seconds of Int_set.t
-
-  module Check = struct
-    let check_pattern (x : t) : (unit, error) result =
-      let invalid_years = Int_set.filter (fun x -> x < 0 || 9999 < x) x.years in
-      let invalid_month_days =
-        Int_set.filter (fun x -> x < 1 || 31 < x) x.month_days
-      in
-      let invalid_hours = Int_set.filter (fun x -> x < 0 || 23 < x) x.hours in
-      let invalid_minutes =
-        Int_set.filter (fun x -> x < 0 || 59 < x) x.minutes
-      in
-      let invalid_seconds =
-        Int_set.filter (fun x -> x < 0 || 59 < x) x.seconds
-      in
-      if Int_set.is_empty invalid_years then
-        if Int_set.is_empty invalid_month_days then
-          if Int_set.is_empty invalid_hours then
-            if Int_set.is_empty invalid_minutes then
-              if Int_set.is_empty invalid_seconds then Ok ()
-              else Error (Invalid_seconds invalid_seconds)
-            else Error (Invalid_minutes invalid_minutes)
-          else Error (Invalid_hours invalid_hours)
-        else Error (Invalid_month_days invalid_month_days)
-      else Error (Invalid_years invalid_years)
-  end
-
-  let union p1 p2 =
-    let union_sets (type a) ~(is_empty : a -> bool) ~(union : a -> a -> a)
-        ~(empty : a) (a : a) (b : a) =
-      if is_empty a || is_empty b then empty else union a b
-    in
-    let union_int_sets a b =
-      union_sets ~is_empty:Int_set.is_empty ~union:Int_set.union
-        ~empty:Int_set.empty a b
-    in
-    let union_month_sets a b =
-      union_sets ~is_empty:Month_set.is_empty ~union:Month_set.union
-        ~empty:Month_set.empty a b
-    in
-    let union_weekday_sets a b =
-      union_sets ~is_empty:Weekday_set.is_empty ~union:Weekday_set.union
-        ~empty:Weekday_set.empty a b
-    in
-    {
-      years = union_int_sets p1.years p2.years;
-      months = union_month_sets p1.months p2.months;
-      month_days = union_int_sets p1.month_days p2.month_days;
-      weekdays = union_weekday_sets p1.weekdays p2.weekdays;
-      hours = union_int_sets p1.hours p2.hours;
-      minutes = union_int_sets p1.minutes p2.minutes;
-      seconds = union_int_sets p1.seconds p2.seconds;
-    }
-
-  let inter p1 p2 =
-    let inter_sets (type a) ~(is_empty : a -> bool) ~(inter : a -> a -> a)
-        (a : a) (b : a) =
-      if is_empty a then Some b
-      else if is_empty b then Some a
-      else
-        let s = inter a b in
-        if is_empty s then None else Some s
-    in
-    let inter_int_sets a b =
-      inter_sets ~is_empty:Int_set.is_empty ~inter:Int_set.inter a b
-    in
-    let inter_month_sets a b =
-      inter_sets ~is_empty:Month_set.is_empty ~inter:Month_set.inter a b
-    in
-    let inter_weekday_sets a b =
-      inter_sets ~is_empty:Weekday_set.is_empty ~inter:Weekday_set.inter a b
-    in
-    match inter_int_sets p1.years p2.years with
-    | None -> None
-    | Some years -> (
-        match inter_month_sets p1.months p2.months with
-        | None -> None
-        | Some months -> (
-            match inter_int_sets p1.month_days p2.month_days with
-            | None -> None
-            | Some month_days -> (
-                match inter_weekday_sets p1.weekdays p2.weekdays with
-                | None -> None
-                | Some weekdays -> (
-                    match inter_int_sets p1.hours p2.hours with
-                    | None -> None
-                    | Some hours -> (
-                        match inter_int_sets p1.minutes p2.minutes with
-                        | None -> None
-                        | Some minutes -> (
-                            match inter_int_sets p1.seconds p2.seconds with
-                            | None -> None
-                            | Some seconds ->
-                              Some
-                                {
-                                  years;
-                                  months;
-                                  month_days;
-                                  weekdays;
-                                  hours;
-                                  minutes;
-                                  seconds;
-                                }))))))
-end
-
 type sign_expr =
   | Pos
   | Neg
-
-type unary_op =
-  | Not
-  | Drop_points of int
-  | Take_points of int
-  | Shift of int64
-  | Lengthen of int64
-  | With_tz of Time_zone.t
 
 type search_space = Interval.t list
 
@@ -1628,42 +1350,6 @@ let default_search_space_end_exc = max_timestamp
 
 let default_search_space : search_space =
   [ (default_search_space_start, default_search_space_end_exc) ]
-
-type chunked_unary_op_on_t =
-  | Chunk_disjoint_interval
-  | Chunk_at_year_boundary
-  | Chunk_at_month_boundary
-  | Chunk_by_duration of {
-      chunk_size : int64;
-      drop_partial : bool;
-    }
-
-type chunked_unary_op_on_chunked =
-  | Drop of int
-  | Take of int
-  | Take_nth of int
-  | Nth of int
-  | Chunk_again of chunked_unary_op_on_t
-
-type t =
-  | Empty
-  | All
-  | Timestamp_interval_seq of search_space * (int64 * int64) Seq.t
-  | Pattern of search_space * Pattern.t
-  | Unary_op of search_space * unary_op * t
-  | Interval_inc of search_space * timestamp * timestamp
-  | Interval_exc of search_space * timestamp * timestamp
-  | Round_robin_pick_list of search_space * t list
-  | Inter_seq of search_space * t Seq.t
-  | Union_seq of search_space * t Seq.t
-  | After of search_space * int64 * t * t
-  | Between_inc of search_space * int64 * t * t
-  | Between_exc of search_space * int64 * t * t
-  | Unchunk of search_space * chunked
-
-and chunked =
-  | Unary_op_on_t of chunked_unary_op_on_t * t
-  | Unary_op_on_chunked of chunked_unary_op_on_chunked * chunked
 
 let equal_unary_op op1 op2 =
   match (op1, op2) with
@@ -1678,7 +1364,7 @@ let equal t1 t2 =
     match (t1, t2) with
     | Empty, Empty -> true
     | All, All -> true
-    | Timestamp_interval_seq (_, s1), Timestamp_interval_seq (_, s2) ->
+    | Timestamp_interval_seq s1, Timestamp_interval_seq s2 ->
       OSeq.equal ~eq:( = ) s1 s2
     | Pattern (_, p1), Pattern (_, p2) -> Pattern.equal p1 p2
     | Unary_op (_, op1, t1), Unary_op (_, op2, t2) ->
@@ -1705,14 +1391,6 @@ let equal t1 t2 =
     | _, _ -> false
   in
   aux t1 t2
-
-type chunking =
-  [ `Disjoint_intervals
-  | `By_duration of Duration.t
-  | `By_duration_drop_partial of Duration.t
-  | `At_year_boundary
-  | `At_month_boundary
-  ]
 
 let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
   match chunking with
