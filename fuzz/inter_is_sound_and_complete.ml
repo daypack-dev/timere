@@ -1,7 +1,7 @@
 open Fuzz_utils
 
 let () =
-  Crowbar.add_test ~name:"inter_is_sound_and_complete" [ Crowbar.list time ]
+  Crowbar.add_test ~name:"inter_is_sound_and_complete" [ Crowbar.list time' ]
     (fun l ->
        let tz = Time_zone.utc in
        let s = Resolver.aux_inter tz (CCList.to_seq l) |> Resolver.normalize in

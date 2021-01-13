@@ -1,4 +1,5 @@
 open Fuzz_utils
+open Date_components
 
 let () =
   Crowbar.add_test ~name:"pattern_resolution_is_sound" [ search_space; pattern ]
@@ -18,7 +19,7 @@ let () =
                in
                let weekday =
                  CCResult.get_exn
-                 @@ Time.weekday_of_month_day ~year:dt.year ~month:dt.month
+                 @@ weekday_of_month_day ~year:dt.year ~month:dt.month
                    ~mday:dt.day
                in
                let year_is_fine =
@@ -26,14 +27,14 @@ let () =
                  || Int_set.mem dt.year pattern.years
                in
                let month_is_fine =
-                 Time.Month_set.is_empty pattern.months
-                 || Time.Month_set.mem dt.month pattern.months
+                 Month_set.is_empty pattern.months
+                 || Month_set.mem dt.month pattern.months
                in
                let mday_is_fine =
                  Int_set.is_empty pattern.month_days
                  ||
                  let day_count =
-                   Time.day_count_of_month ~year:dt.year ~month:dt.month
+                   day_count_of_month ~year:dt.year ~month:dt.month
                  in
                  pattern.month_days
                  |> Int_set.to_seq
@@ -42,8 +43,8 @@ let () =
                  |> OSeq.mem ~eq:( = ) dt.day
                in
                let wday_is_fine =
-                 Time.Weekday_set.is_empty pattern.weekdays
-                 || Time.Weekday_set.mem weekday pattern.weekdays
+                 Weekday_set.is_empty pattern.weekdays
+                 || Weekday_set.mem weekday pattern.weekdays
                in
                let hour_is_fine =
                  Int_set.is_empty pattern.hours

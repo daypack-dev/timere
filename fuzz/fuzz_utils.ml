@@ -1,3 +1,5 @@
+open Date_components
+
 let time =
   Crowbar.map
     [ Crowbar.range 2; Crowbar.range 4; Crowbar.list (Crowbar.range 1000) ]
@@ -6,6 +8,11 @@ let time =
        let max_branching = 1 + max_branching in
        Builder.build ~enable_extra_restrictions:false ~min_year:2000
          ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
+
+let time' =
+  Crowbar.map
+    [ time ]
+    Resolver.t_of_ast
 
 let pattern =
   Crowbar.map
@@ -23,13 +30,13 @@ let pattern =
            |> Int_set.of_seq
        in
        let months =
-         if rng () mod 2 = 0 then Time.Month_set.empty
+         if rng () mod 2 = 0 then Month_set.empty
          else
            let end_inc = min 5 (rng ()) in
            OSeq.(0 -- end_inc)
            |> Seq.map (fun _ ->
-               CCResult.get_exn @@ Time.month_of_tm_int (rng () mod 12))
-           |> Time.Month_set.of_seq
+               CCResult.get_exn @@ month_of_tm_int (rng () mod 12))
+           |> Month_set.of_seq
        in
        let month_days =
          if rng () mod 2 = 0 then Int_set.empty
@@ -42,13 +49,13 @@ let pattern =
            |> Int_set.of_seq
        in
        let weekdays =
-         if rng () mod 2 = 0 then Time.Weekday_set.empty
+         if rng () mod 2 = 0 then Weekday_set.empty
          else
            let end_inc = min 5 (rng ()) in
            OSeq.(0 -- end_inc)
            |> Seq.map (fun _ ->
-               CCResult.get_exn @@ Time.weekday_of_tm_int (rng () mod 7))
-           |> Time.Weekday_set.of_seq
+               CCResult.get_exn @@ weekday_of_tm_int (rng () mod 7))
+           |> Weekday_set.of_seq
        in
        let hours =
          if rng () mod 2 = 0 then Int_set.empty
@@ -74,7 +81,7 @@ let pattern =
            |> Seq.map (fun _ -> rng () mod 60)
            |> Int_set.of_seq
        in
-       Time.Pattern.
+       Pattern.
          { years; months; month_days; weekdays; hours; minutes; seconds })
 
 let search_space =

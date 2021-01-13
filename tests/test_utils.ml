@@ -1,3 +1,5 @@
+open Date_components
+
 module Print_utils = struct
   let small_nat = QCheck.Print.int
 
@@ -181,10 +183,10 @@ let time_slots_gen =
 
 let time_slots = QCheck.make ~print:Print_utils.time_slots time_slots_gen
 
-let weekday_gen : Time.weekday QCheck.Gen.t =
+let weekday_gen : weekday QCheck.Gen.t =
   QCheck.Gen.(oneofl [ `Sun; `Mon; `Tue; `Wed; `Thu; `Fri; `Sat ])
 
-let month_gen : Time.month QCheck.Gen.t =
+let month_gen : month QCheck.Gen.t =
   let open QCheck.Gen in
   oneofl
     [ `Jan; `Feb; `Mar; `Apr; `May; `Jun; `Jul; `Aug; `Sep; `Oct; `Nov; `Dec ]
@@ -194,7 +196,7 @@ let month_days_gen : int list QCheck.Gen.t =
 
 let month_days = QCheck.make ~print:QCheck.Print.(list int) month_days_gen
 
-let weekdays_gen : Time.weekday list QCheck.Gen.t =
+let weekdays_gen : weekday list QCheck.Gen.t =
   QCheck.Gen.(list_size (int_bound 10) weekday_gen)
 
 let weekdays =
@@ -262,7 +264,7 @@ let tz_testable : (module Alcotest.TESTABLE with type t = Time_zone.t) =
  *     let equal = ( = )
  *   end ) *)
 
-let time_gen : Time.t QCheck.Gen.t =
+let time_gen : Time_ast.t QCheck.Gen.t =
   let open QCheck.Gen in
   let search_start_dt =
     CCResult.get_exn
@@ -287,7 +289,7 @@ let time_gen : Time.t QCheck.Gen.t =
 
 let time = QCheck.make ~print:To_sexp.to_sexp_string time_gen
 
-let time_list_gen n : Time.t list QCheck.Gen.t =
+let time_list_gen n : Time_ast.t list QCheck.Gen.t =
   let open QCheck.Gen in
   list_size (int_bound n) time_gen
 

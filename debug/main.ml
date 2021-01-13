@@ -165,11 +165,13 @@ let debug_fuzz_after () =
       0 3
       [ 891; 891; 891; 926; 907 ]
   in
-  let s1 = Resolver.aux tz t1 in
-  let s2 = Resolver.aux tz t2 in
+  let t1' = Resolver.t_of_ast t1 in
+  let t2' = Resolver.t_of_ast t2 in
+  let s1 = Resolver.aux tz t1' in
+  let s2 = Resolver.aux tz t2' in
   let l1 = CCList.of_seq s1 in
   let l2 = CCList.of_seq s2 in
-  let s = Resolver.(aux_after tz Time.default_search_space bound s1 s2 t1 t2) in
+  let s = Resolver.(aux_after tz Resolver.default_search_space bound s1 s2 t1' t2') in
   print_endline "=====";
   print_endline (To_sexp.to_sexp_string t1);
   display_intervals ~display_using_tz:tz s1;
@@ -213,11 +215,13 @@ let debug_fuzz_between_exc () =
          ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
       1 3 [ 713 ]
   in
-  let s1 = Resolver.aux tz t1 in
-  let s2 = Resolver.aux tz t2 in
+  let t1' = Resolver.t_of_ast t1 in
+  let t2' = Resolver.t_of_ast t2 in
+  let s1 = Resolver.aux tz t1' in
+  let s2 = Resolver.aux tz t2' in
   let l1 = CCList.of_seq s1 in
   let l2 = CCList.of_seq s2 in
-  let s = Resolver.(aux_after tz Time.default_search_space bound s1 s2 t1 t2) in
+  let s = Resolver.(aux_after tz Resolver.default_search_space bound s1 s2 t1' t2') in
   print_endline "=====";
   display_intervals ~display_using_tz:tz s1;
   print_endline (To_sexp.to_sexp_string t1);
@@ -259,9 +263,11 @@ let debug_fuzz_union () =
          ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
       1 0 [ 113 ]
   in
-  let s1 = Resolver.aux tz t1 |> Resolver.normalize in
-  let s2 = Resolver.aux tz t2 in
-  let l = [ t1 ] in
+  let t1' = Resolver.t_of_ast t1 in
+  let t2' = Resolver.t_of_ast t2 in
+  let s1 = Resolver.aux tz t1' |> Resolver.normalize in
+  let s2 = Resolver.aux tz t2' in
+  let l = [ t1' ] in
   let s' =
     l
     |> List.map (Resolver.aux tz)

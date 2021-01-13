@@ -1,3 +1,5 @@
+open Date_components
+
 let make_rng ~randomness : unit -> int =
   let randomness = match randomness with [] -> [ 0 ] | _ -> randomness in
   let arr = Array.of_list randomness in
@@ -10,8 +12,8 @@ let make_rng ~randomness : unit -> int =
 
 let make_date_time ~rng ~min_year ~max_year_inc =
   let year = min max_year_inc (min_year + rng ()) in
-  let month = CCResult.get_exn @@ Time.month_of_tm_int (rng () mod 12) in
-  let day = 1 + (rng () mod Time.day_count_of_month ~year ~month) in
+  let month = CCResult.get_exn @@ month_of_tm_int (rng () mod 12) in
+  let day = 1 + (rng () mod day_count_of_month ~year ~month) in
   let hour = rng () mod 24 in
   let minute = rng () mod 60 in
   let second = rng () mod 60 in
@@ -60,7 +62,7 @@ let make_pattern ~rng ~min_year ~max_year_inc =
       let end_inc = min 5 (rng ()) in
       OSeq.(0 -- end_inc)
       |> Seq.map (fun _ ->
-          CCResult.get_exn @@ Time.month_of_tm_int (rng () mod 12))
+          CCResult.get_exn @@ month_of_tm_int (rng () mod 12))
       |> CCList.of_seq
   in
   let month_days =
@@ -79,7 +81,7 @@ let make_pattern ~rng ~min_year ~max_year_inc =
       let end_inc = min 5 (rng ()) in
       OSeq.(0 -- end_inc)
       |> Seq.map (fun _ ->
-          CCResult.get_exn @@ Time.weekday_of_tm_int (rng () mod 7))
+          CCResult.get_exn @@ weekday_of_tm_int (rng () mod 7))
       |> CCList.of_seq
   in
   let hours =
@@ -144,7 +146,7 @@ let make_duration ~rng =
   let seconds = 1 + rng () in
   Duration.make ~seconds ()
 
-let make_chunking ~rng : Time.chunking =
+let make_chunking ~rng : Time_ast.chunking =
   match rng () mod 5 with
   | 0 -> `Disjoint_intervals
   | 1 -> `By_duration (make_duration ~rng)
@@ -153,7 +155,7 @@ let make_chunking ~rng : Time.chunking =
   | 4 -> `At_month_boundary
   | _ -> failwith "Unexpected case"
 
-let make_chunk_selector ~rng : Time.chunked -> Time.chunked =
+let make_chunk_selector ~rng : Time_ast.chunked -> Time_ast.chunked =
   let open Infix in
   let rec aux f height =
     if height <= 1 then f
@@ -199,7 +201,7 @@ let make_unary_op ~min_year ~max_year_inc ~rng t =
   | _ -> failwith "Unexpected case"
 
 let build ~enable_extra_restrictions ~min_year ~max_year_inc ~max_height
-    ~max_branching ~(randomness : int list) : Time.t =
+    ~max_branching ~(randomness : int list) : Time_ast.t =
   let rng = make_rng ~randomness in
   let rec aux height =
     if height <= 1 then
