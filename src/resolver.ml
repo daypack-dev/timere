@@ -1,5 +1,5 @@
 open Int64_utils
-open Date_components
+open Time_ast
 
 type search_space = Time.Interval.t list
 
@@ -10,8 +10,63 @@ let default_search_space_end_exc = Time.max_timestamp
 let default_search_space : search_space =
   [ (default_search_space_start, default_search_space_end_exc) ]
 
-let get_search_space (time : Time.t) : Time.Interval.t list =
-  let open Time in
+type t =
+  | Empty
+  | All
+  | Timestamp_interval_seq of search_space * (int64 * int64) Seq.t
+  | Pattern of search_space * Pattern.t
+  | Unary_op of search_space * unary_op * t
+  | Interval_inc of search_space * timestamp * timestamp
+  | Interval_exc of search_space * timestamp * timestamp
+  | Round_robin_pick_list of search_space * t list
+  | Inter_seq of search_space * t Seq.t
+  | Union_seq of search_space * t Seq.t
+  | After of search_space * int64 * t * t
+  | Between_inc of search_space * int64 * t * t
+  | Between_exc of search_space * int64 * t * t
+  | Unchunk of search_space * chunked
+
+and chunked =
+  | Unary_op_on_t of chunked_unary_op_on_t * t
+  | Unary_op_on_chunked of chunked_unary_op_on_chunked * chunked
+
+let rec t_of_ast (ast : Time_ast.t) : t =
+  match ast with
+  | Empty -> Empty
+  | All -> All
+  | Timestamp_interval_seq s ->
+    Timestamp_interval_seq (default_search_space, s)
+  | Pattern p ->
+    Pattern (default_search_space, p)
+  | Unary_op (op, t) ->
+    Unary_op (default_search_space, op, t_of_ast t)
+  | Interval_inc (t1, t2) ->
+    Interval_inc (default_search_space, t1, t2)
+  | Interval_exc (t1, t2) ->
+    Interval_exc (default_search_space, t1, t2)
+  | Round_robin_pick_list l ->
+    Round_robin_pick_list (default_search_space, List.map t_of_ast l)
+  | Inter_seq s ->
+    Inter_seq (default_search_space, Seq.map t_of_ast s)
+  | Union_seq s ->
+    Union_seq (default_search_space, Seq.map t_of_ast s)
+  | After (bound, t1, t2) ->
+    After (default_search_space, bound, t_of_ast t1, t_of_ast t2)
+  | Between_inc (bound, t1, t2) ->
+    Between_inc (default_search_space, bound, t_of_ast t1, t_of_ast t2)
+  | Between_exc (bound, t1, t2) ->
+    Between_exc (default_search_space, bound, t_of_ast t1, t_of_ast t2)
+  | Unchunk chunked ->
+    Unchunk (default_search_space, chunked_of_ast_chunked chunked)
+
+and chunked_of_ast_chunked (c : Time_ast.chunked) : chunked =
+  match c with
+  | Unary_op_on_t (op, t) ->
+    Unary_op_on_t (op, t_of_ast t)
+  | Unary_op_on_chunked (op, chunked) ->
+    Unary_op_on_chunked (op, chunked_of_ast_chunked chunked)
+
+let get_search_space (time : t) : Time.Interval.t list =
   match time with
   | All -> default_search_space
   | Empty -> []
@@ -28,8 +83,7 @@ let get_search_space (time : Time.t) : Time.Interval.t list =
   | Between_exc (s, _, _, _) -> s
   | Unchunk (s, _) -> s
 
-let calibrate_search_space (time : Time.t) space : Time.search_space =
-  let open Time in
+let calibrate_search_space (time : t) space : search_space =
   match time with
   | All | Empty | Timestamp_interval_seq _ | Pattern _ -> space
   | Unary_op (_, op, _) -> (
@@ -47,8 +101,7 @@ let calibrate_search_space (time : Time.t) space : Time.search_space =
       match space with [] -> [] | (x, y) :: rest -> (Int64.sub x b, y) :: rest)
   | Unchunk _ -> space
 
-let set_search_space space (time : Time.t) : Time.t =
-  let open Time in
+let set_search_space space (time : t) : t =
   match time with
   | All -> All
   | Empty -> Empty
@@ -98,9 +151,9 @@ let search_space_of_year tz_offset_s year =
 
 let empty_search_space = []
 
-let propagate_search_space_bottom_up default_tz (time : Time.t) : Time.t =
+let propagate_search_space_bottom_up default_tz (time : t) : t =
   let open Time in
-  let rec aux (tz : Time_zone.t) time =
+  let rec aux (tz : Time_zone.t) (time : t) : t =
     match time with
     | All -> All
     | Empty -> Empty
@@ -200,7 +253,7 @@ let propagate_search_space_bottom_up default_tz (time : Time.t) : Time.t =
   in
   aux default_tz time
 
-let propagate_search_space_top_down (time : Time.t) : Time.t =
+let propagate_search_space_top_down (time : t) : t =
   let open Time in
   let restrict_search_space time (parent : search_space) (cur : search_space) =
     Intervals.Inter.inter ~skip_check:true (CCList.to_seq parent)
@@ -208,7 +261,7 @@ let propagate_search_space_top_down (time : Time.t) : Time.t =
     |> CCList.of_seq
     |> calibrate_search_space time
   in
-  let rec aux parent_search_space time =
+  let rec aux parent_search_space (time : t) : t =
     let stop_propagation = time in
     match time with
     | All -> All
@@ -357,7 +410,7 @@ let dynamic_search_space_adjustment_trigger_size =
 
 let inter_minimum_slice_size = Duration.(make ~days:10 () |> to_seconds)
 
-let slice_search_space ~start (t : Time.t) : Time.t =
+let slice_search_space ~start (t : t) : t =
   get_search_space t
   |> CCList.to_seq
   |> Time.Intervals.Slice.slice ~skip_check:true ~start
@@ -366,10 +419,10 @@ let slice_search_space ~start (t : Time.t) : Time.t =
   |> (fun space -> set_search_space space t)
   |> propagate_search_space_top_down
 
-let slice_search_space_multi ~start (l : Time.t list) : Time.t list =
+let slice_search_space_multi ~start (l : t list) : t list =
   List.map (slice_search_space ~start) l
 
-let slice_search_space_multi_seq ~start (s : Time.t Seq.t) : Time.t Seq.t =
+let slice_search_space_multi_seq ~start (s : t Seq.t) : t Seq.t =
   Seq.map (slice_search_space ~start) s
 
 let normalize s =
@@ -385,7 +438,7 @@ let rec aux search_using_tz time =
    | _ -> (
        match time with
        | Empty -> Seq.empty
-       | All -> CCList.to_seq Time.default_search_space
+       | All -> CCList.to_seq default_search_space
        | Timestamp_interval_seq (_, s) -> s
        | Pattern (space, pat) -> aux_pattern search_using_tz space pat
        | Unary_op (space, op, t) -> (
@@ -440,13 +493,13 @@ and aux_pattern search_using_tz space pat =
       in
       let params =
         Seq.map
-          (Resolve_pattern.Search_param.make ~search_using_tz
+          (Pattern_resolver.Search_param.make ~search_using_tz
              ~search_using_tz_offset_s:Time_zone.(entry.offset))
           space
       in
       Intervals.Union.union_multi_seq ~skip_check:true
         (Seq.map
-           (fun param -> Resolve_pattern.matching_intervals param pat)
+           (fun param -> Pattern_resolver.resolve param pat)
            params))
 
 and get_start_spec_of_after search_using_tz space t =
@@ -455,7 +508,7 @@ and get_start_spec_of_after search_using_tz space t =
   |> OSeq.drop_while (fun (start, _) -> start < search_space_start)
 
 and get_after_seq_and_maybe_sliced_timere ~start1 ~(s2 : Time.Interval.t Seq.t)
-    ~(t2 : Time.t) search_using_tz : Time.Interval.t Seq.t * Time.t =
+    ~(t2 : t) search_using_tz : Time.Interval.t Seq.t * t =
   match s2 () with
   | Seq.Nil -> (Seq.empty, t2)
   | Seq.Cons ((start2, _), _) ->
@@ -478,8 +531,8 @@ and get_after_seq_and_maybe_sliced_timere ~start1 ~(s2 : Time.Interval.t Seq.t)
     (s2, t2)
 
 and maybe_slice_start_spec_of_after ~last_start2
-    ~(rest1 : Time.Interval.t Seq.t) ~(t1 : Time.t) search_using_tz bound :
-  Time.Interval.t Seq.t * Time.t =
+    ~(rest1 : Time.Interval.t Seq.t) ~(t1 : t) search_using_tz bound :
+  Time.Interval.t Seq.t * t =
   match rest1 () with
   | Seq.Nil -> (Seq.empty, t1)
   | Seq.Cons ((start1, _), _) ->
@@ -569,11 +622,11 @@ and aux_between inc_or_exc search_using_tz space bound s1 s2 t1 t2 =
 
 and aux_union search_using_tz timeres =
   let open Time in
-  let resolve_and_merge (s : Time.t Seq.t) : Interval.t Seq.t =
+  let resolve_and_merge (s : t Seq.t) : Interval.t Seq.t =
     Seq.map (aux search_using_tz) s
     |> Time.Intervals.Merge.merge_multi_seq ~skip_check:true
   in
-  let rec aux_union' (timeres : Time.t Seq.t) (intervals : Interval.t Seq.t) =
+  let rec aux_union' (timeres : t Seq.t) (intervals : Interval.t Seq.t) =
     match intervals () with
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((start, end_exc), rest) ->
@@ -604,7 +657,7 @@ and aux_inter search_using_tz timeres =
       (fun s -> match s () with Seq.Nil -> None | Seq.Cons (x, _) -> Some x)
       l
   in
-  let rec aux_inter' ~start (timeres : Time.t list) =
+  let rec aux_inter' ~start (timeres : t list) =
     let interval_batches = resolve ~start search_using_tz timeres in
     let batch_for_sampling = collect_batch interval_batches in
     if List.exists CCOpt.is_none batch_for_sampling then Seq.empty
@@ -647,7 +700,7 @@ and aux_inter search_using_tz timeres =
   aux_inter' ~start:default_search_space_start (CCList.of_seq timeres)
   |> Seq.flat_map CCFun.id
 
-and aux_chunked search_using_tz (chunked : Time.chunked) =
+and aux_chunked search_using_tz (chunked : chunked) =
   let open Time in
   let chunk_based_on_op_on_t op s =
     match op with
@@ -668,7 +721,7 @@ and aux_chunked search_using_tz (chunked : Time.chunked) =
       | Take_nth n -> OSeq.take_nth n s
       | Chunk_again op -> chunk_based_on_op_on_t op s)
 
-let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
+let resolve' ~(search_using_tz) (time : t) :
   (Time.Interval.t Seq.t, string) result =
   let open Time in
   try
@@ -676,3 +729,7 @@ let resolve ?(search_using_tz = Time_zone.utc) (time : Time.t) :
   with
   | Interval_is_invalid -> Error "Invalid interval"
   | Intervals_are_not_sorted -> Error "Intervals are not sorted"
+
+let resolve ?(search_using_tz = Time_zone.utc) (time : Time_ast.t) :
+  (Time.Interval.t Seq.t, string) result =
+  resolve' ~search_using_tz (t_of_ast time)

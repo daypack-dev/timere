@@ -1,6 +1,8 @@
+open Date_components
+
 let of_date_time (dt : Time.Date_time'.t) : string =
   Printf.sprintf "%04d-%02d-%02dT%02d:%02d:%02d%s" dt.year
-    (Time.human_int_of_month dt.month)
+    (human_int_of_month dt.month)
     dt.day dt.hour dt.minute dt.second
     (match dt.tz_info with
      | `Tz_only _ -> invalid_arg "Date time has no exact offset"

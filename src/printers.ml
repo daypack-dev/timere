@@ -1,3 +1,5 @@
+open Date_components
+
 type case =
   | Upper
   | Lower
@@ -71,7 +73,7 @@ module Format_string_parsers = struct
          >> size_and_casing
          >>= fun x ->
          match
-           Time.weekday_of_month_day ~year:date_time.year ~month:date_time.month
+           weekday_of_month_day ~year:date_time.year ~month:date_time.month
              ~mday:date_time.day
          with
          | Error () -> fail "Invalid date time"

@@ -552,7 +552,7 @@ module Matching_years = struct
       |> Seq.map (fun year -> { overall_search_start with year })
 
   let matching_year_ranges ~(overall_search_start : Time.Date_time'.t)
-      ~(overall_search_end_inc : Time.Date_time'.t) (t : Time.Pattern.t) :
+      ~(overall_search_end_inc : Time.Date_time'.t) (t : Pattern.t) :
     Time.Date_time'.t Time.Range.range Seq.t =
     let range_map_inc ~(overall_search_start : Time.Date_time'.t)
         ~(overall_search_end_inc : Time.Date_time'.t) (x, y) =
@@ -598,9 +598,9 @@ let date_time_range_seq_of_timestamps ~search_using_tz (s : int64 Seq.t) :
   |> Seq.map (Time.Range.map ~f_inc:f ~f_exc:f)
   |> Seq.filter_map Time.Range_utils.result_range_get
 
-type error = Time.Pattern.error
+type error = Pattern.error
 
-let matching_date_times (search_param : Search_param.t) (pat : Time.Pattern.t)
+let matching_date_times (search_param : Search_param.t) (pat : Pattern.t)
   : Time.Date_time'.t Seq.t =
   let overall_search_start = search_param.start in
   let overall_search_end_inc = search_param.end_inc in
@@ -623,14 +623,14 @@ let matching_date_times (search_param : Search_param.t) (pat : Time.Pattern.t)
        ~overall_search_end_inc)
 
 let matching_date_time_ranges (search_param : Search_param.t)
-    (t : Time.Pattern.t) : Time.Date_time'.t Time.Range.range Seq.t =
+    (t : Pattern.t) : Time.Date_time'.t Time.Range.range Seq.t =
   let overall_search_start = search_param.start in
   let overall_search_end_inc = search_param.end_inc in
   match
     ( Int_set.is_empty t.years,
-      Time.Month_set.is_empty t.months,
+      Month_set.is_empty t.months,
       Int_set.is_empty t.month_days,
-      Time.Weekday_set.is_empty t.weekdays,
+      Weekday_set.is_empty t.weekdays,
       Int_set.is_empty t.hours,
       Int_set.is_empty t.minutes,
       Int_set.is_empty t.seconds )
@@ -739,7 +739,7 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
   |> Time.Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
 
 (* let matching_intervals_round_robin_non_decreasing
- *     (search_param : Search_param.t) (l : Time.Pattern.t list) :
+ *     (search_param : Search_param.t) (l : Pattern.t list) :
  *   ((int64 * int64) list Seq.t, error) result =
  *   let l = List.map (matching_intervals search_param) l in
  *   l
@@ -750,23 +750,23 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
  *   |> CCResult.ok
  * 
  * let matching_intervals_round_robin_non_decreasing_flat
- *     (search_param : Search_param.t) (l : Time.Pattern.t list) :
+ *     (search_param : Search_param.t) (l : Pattern.t list) :
  *   ((int64 * int64) Seq.t, error) result =
  *   matching_intervals_round_robin_non_decreasing search_param l
  *   |> CCResult.map (Seq.flat_map CCList.to_seq)
  * 
- * let next_match_date_time (search_param : Search_param.t) (t : Time.Pattern.t)
+ * let next_match_date_time (search_param : Search_param.t) (t : Pattern.t)
  *   : Time.Date_time'.t option =
  *   let s = matching_date_times search_param t in
  *   match s () with Seq.Nil -> None | Seq.Cons (x, _) -> Some x *)
 
-(* let next_match_timestamp (search_param : Search_param.t) (t : Time.Pattern.t)
+(* let next_match_timestamp (search_param : Search_param.t) (t : Pattern.t)
  *   : int64 option =
  *   match next_match_date_time search_param t with
  *   | None -> None
  *   | Some x -> Some (Time.Date_time'.to_timestamp x) *)
 
-(* let next_match_interval (search_param : Pattern_search_param.t) (t : Time.Pattern.t) :
+(* let next_match_interval (search_param : Pattern_search_param.t) (t : Pattern.t) :
  *   (int64 * int64) option =
  *   let s = matching_intervals search_param t in
  *   match s () with Seq.Nil -> None | Seq.Cons (x, _) -> Some x *)

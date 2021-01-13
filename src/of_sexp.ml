@@ -255,7 +255,7 @@ let of_sexp (x : CCSexp.t) =
       invalid_data
         (Printf.sprintf "Expected list for timere data: %s"
            (CCSexp.to_string x))
-  and aux_chunked f (x : CCSexp.t) : t =
+  and aux_chunked f (x : CCSexp.t) : Time_ast.t =
     let open Infix in
     match x with
     | `List l -> (

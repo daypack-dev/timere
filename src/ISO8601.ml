@@ -1,3 +1,5 @@
+open Date_components
+
 let to_date_time s : (Time.Date_time'.t, string) result =
   let open MParser in
   let open Parser_components in
@@ -52,7 +54,7 @@ let to_date_time s : (Time.Date_time'.t, string) result =
     char '-'
     >> two_digit_nat_zero
     >>= fun month ->
-    match Time.month_of_human_int month with
+    match month_of_human_int month with
     | Error () -> fail "Invalid month"
     | Ok month -> (
         char '-'
