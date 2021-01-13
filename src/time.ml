@@ -1342,15 +1342,6 @@ type sign_expr =
   | Pos
   | Neg
 
-type search_space = Interval.t list
-
-let default_search_space_start = min_timestamp
-
-let default_search_space_end_exc = max_timestamp
-
-let default_search_space : search_space =
-  [ (default_search_space_start, default_search_space_end_exc) ]
-
 let equal_unary_op op1 op2 =
   match (op1, op2) with
   | Not, Not -> true
@@ -1411,16 +1402,16 @@ let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
     if chunk_size < 1L then invalid_arg "chunk"
     else
       Unchunk
-        ( default_search_space,
+        ( 
           f
             (Unary_op_on_t
                (Chunk_by_duration { chunk_size; drop_partial = true }, t)) )
   | `At_year_boundary ->
     Unchunk
-      (default_search_space, f (Unary_op_on_t (Chunk_at_year_boundary, t)))
+      (f (Unary_op_on_t (Chunk_at_year_boundary, t)))
   | `At_month_boundary ->
     Unchunk
-      (default_search_space, f (Unary_op_on_t (Chunk_at_month_boundary, t)))
+      (f (Unary_op_on_t (Chunk_at_month_boundary, t)))
 
 let chunk_again (chunking : chunking) chunked : chunked =
   match chunking with
@@ -1456,10 +1447,10 @@ let chunk_again (chunking : chunking) chunked : chunked =
     Unary_op_on_chunked (Chunk_again Chunk_at_year_boundary, chunked)
 
 let shift (offset : Duration.t) (t : t) : t =
-  Unary_op (default_search_space, Shift (Duration.to_seconds offset), t)
+  Unary_op (Shift (Duration.to_seconds offset), t)
 
 let lengthen (x : Duration.t) (t : t) : t =
-  Unary_op (default_search_space, Lengthen (Duration.to_seconds x), t)
+  Unary_op (Lengthen (Duration.to_seconds x), t)
 
 let empty = Empty
 
@@ -1473,7 +1464,7 @@ type inter_pattern_acc =
 let inter_seq (s : t Seq.t) : t =
   let flatten s =
     Seq.flat_map
-      (fun x -> match x with Inter_seq (_, s) -> s | _ -> Seq.return x)
+      (fun x -> match x with Inter_seq (s) -> s | _ -> Seq.return x)
       s
   in
   let inter_patterns s =
@@ -1484,7 +1475,7 @@ let inter_seq (s : t Seq.t) : t =
       Seq.fold_left
         (fun acc x ->
            match x with
-           | Pattern (_, pat) -> (
+           | Pattern (pat) -> (
                match acc with
                | Uninitialized -> Some' pat
                | Unsatisfiable -> Unsatisfiable
@@ -1499,21 +1490,21 @@ let inter_seq (s : t Seq.t) : t =
     | Uninitialized -> Some rest
     | Unsatisfiable -> None
     | Some' pat ->
-      Some (fun () -> Seq.Cons (Pattern (default_search_space, pat), rest))
+      Some (fun () -> Seq.Cons (Pattern (pat), rest))
   in
   let s = flatten s in
   if OSeq.exists (fun x -> match x with Empty -> true | _ -> false) s then empty
   else
     match inter_patterns s with
     | None -> empty
-    | Some s -> Inter_seq (default_search_space, s)
+    | Some s -> Inter_seq (s)
 
 let inter (l : t list) : t = inter_seq (CCList.to_seq l)
 
 let union_seq (s : t Seq.t) : t =
   let flatten s =
     Seq.flat_map
-      (fun x -> match x with Union_seq (_, s) -> s | _ -> Seq.return x)
+      (fun x -> match x with Union_seq (s) -> s | _ -> Seq.return x)
       s
   in
   let s =
@@ -1521,22 +1512,22 @@ let union_seq (s : t Seq.t) : t =
     |> flatten
     |> Seq.filter (fun x -> match x with Empty -> false | _ -> true)
   in
-  Union_seq (default_search_space, s)
+  Union_seq (s)
 
 let union (l : t list) : t = union_seq (CCList.to_seq l)
 
 let round_robin_pick (l : t list) : t =
-  Round_robin_pick_list (default_search_space, l)
+  Round_robin_pick_list (l)
 
-let first_point (a : t) : t = Unary_op (default_search_space, Take_points 1, a)
+let first_point (a : t) : t = Unary_op (Take_points 1, a)
 
 let take_points (n : int) (t : t) : t =
   if n < 0 then invalid_arg "take_n_points: n < 0"
-  else Unary_op (default_search_space, Take_points n, t)
+  else Unary_op (Take_points n, t)
 
 let drop_points (n : int) (t : t) : t =
   if n < 0 then invalid_arg "drop_n_points: n < 0"
-  else Unary_op (default_search_space, Drop_points n, t)
+  else Unary_op (Drop_points n, t)
 
 let first (c : chunked) : chunked = Unary_op_on_chunked (Take 1, c)
 
@@ -1560,7 +1551,7 @@ let interval_inc (a : timestamp) (b : timestamp) : t =
       match Date_time'.of_timestamp b with
       | Error () -> invalid_arg "interval_inc: invalid timestamp"
       | Ok _ ->
-        if a <= b then Interval_inc (default_search_space, a, b)
+        if a <= b then Interval_inc (a, b)
         else invalid_arg "interval_inc: a > b")
 
 let interval_exc (a : timestamp) (b : timestamp) : t =
@@ -1570,7 +1561,7 @@ let interval_exc (a : timestamp) (b : timestamp) : t =
       match Date_time'.of_timestamp b with
       | Error () -> invalid_arg "interval_exc: invalid timestamp"
       | Ok _ ->
-        if a <= b then Interval_exc (default_search_space, a, b)
+        if a <= b then Interval_exc (a, b)
         else invalid_arg "interval_exc: a > b")
 
 let interval_dt_inc (a : Date_time'.t) (b : Date_time'.t) : t =
@@ -1580,7 +1571,7 @@ let interval_dt_inc (a : Date_time'.t) (b : Date_time'.t) : t =
   let b =
     CCOpt.get_exn Date_time'.(max_of_timestamp_local_result @@ to_timestamp b)
   in
-  if a <= b then Interval_inc (default_search_space, a, b)
+  if a <= b then Interval_inc (a, b)
   else invalid_arg "interval_dt_inc: a > b"
 
 let interval_dt_exc (a : Date_time'.t) (b : Date_time'.t) : t =
@@ -1590,12 +1581,12 @@ let interval_dt_exc (a : Date_time'.t) (b : Date_time'.t) : t =
   let b =
     CCOpt.get_exn Date_time'.(max_of_timestamp_local_result @@ to_timestamp b)
   in
-  if a <= b then Interval_exc (default_search_space, a, b)
+  if a <= b then Interval_exc (a, b)
   else invalid_arg "interval_dt_exc: a > b"
 
-let not (a : t) : t = Unary_op (default_search_space, Not, a)
+let not (a : t) : t = Unary_op (Not, a)
 
-let with_tz offset t = Unary_op (default_search_space, With_tz offset, t)
+let with_tz offset t = Unary_op (With_tz offset, t)
 
 (* let safe_month_day_range_inc ~years ~months =
  *   let contains_non_leap_year =
@@ -1659,7 +1650,7 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
       let minutes = Int_set.of_list minutes in
       let seconds = Int_set.of_list seconds in
       Pattern
-        ( default_search_space,
+        ( 
           {
             Pattern.years;
             months;
@@ -1699,13 +1690,13 @@ let minutes minutes = pattern ~minutes ()
 let seconds seconds = pattern ~seconds ()
 
 let after (bound : Duration.t) (t1 : t) (t2 : t) : t =
-  After (default_search_space, Duration.to_seconds bound, t1, t2)
+  After (Duration.to_seconds bound, t1, t2)
 
 let between_inc (bound : Duration.t) (t1 : t) (t2 : t) : t =
-  Between_inc (default_search_space, Duration.to_seconds bound, t1, t2)
+  Between_inc (Duration.to_seconds bound, t1, t2)
 
 let between_exc (bound : Duration.t) (t1 : t) (t2 : t) : t =
-  Between_exc (default_search_space, Duration.to_seconds bound, t1, t2)
+  Between_exc (Duration.to_seconds bound, t1, t2)
 
 (* let hms_interval_exc (hms_a : hms) (hms_b : hms) : t =
  *   let a = second_of_day_of_hms hms_a in
@@ -1760,7 +1751,7 @@ let of_sorted_interval_seq ?(skip_invalid : bool = false)
   in
   match s () with
   | Seq.Nil -> Empty
-  | _ -> Timestamp_interval_seq (default_search_space, s)
+  | _ -> Timestamp_interval_seq (s)
 
 let of_sorted_intervals ?(skip_invalid : bool = false)
     (l : (int64 * int64) list) : t =
@@ -1785,7 +1776,7 @@ let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
   in
   match s () with
   | Seq.Nil -> Empty
-  | _ -> Timestamp_interval_seq (default_search_space, s)
+  | _ -> Timestamp_interval_seq (s)
 
 let of_interval_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t) :
   t =
