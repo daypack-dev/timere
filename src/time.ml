@@ -1366,22 +1366,22 @@ let equal t1 t2 =
     | All, All -> true
     | Timestamp_interval_seq s1, Timestamp_interval_seq s2 ->
       OSeq.equal ~eq:( = ) s1 s2
-    | Pattern (_, p1), Pattern (_, p2) -> Pattern.equal p1 p2
-    | Unary_op (_, op1, t1), Unary_op (_, op2, t2) ->
+    | Pattern p1, Pattern p2 -> Pattern.equal p1 p2
+    | Unary_op (op1, t1), Unary_op (op2, t2) ->
       equal_unary_op op1 op2 && aux t1 t2
-    | Interval_inc (_, x11, x12), Interval_inc (_, x21, x22)
-    | Interval_exc (_, x11, x12), Interval_exc (_, x21, x22) ->
+    | Interval_inc (x11, x12), Interval_inc (x21, x22)
+    | Interval_exc (x11, x12), Interval_exc (x21, x22) ->
       x11 = x21 && x12 = x22
-    | After (_, b1, x11, x12), After (_, b2, x21, x22)
-    | Between_inc (_, b1, x11, x12), Between_inc (_, b2, x21, x22)
-    | Between_exc (_, b1, x11, x12), Between_exc (_, b2, x21, x22) ->
+    | After (b1, x11, x12), After (b2, x21, x22)
+    | Between_inc (b1, x11, x12), Between_inc (b2, x21, x22)
+    | Between_exc (b1, x11, x12), Between_exc (b2, x21, x22) ->
       b1 = b2 && aux x11 x21 && aux x12 x22
-    | Round_robin_pick_list (_, l1), Round_robin_pick_list (_, l2) ->
+    | Round_robin_pick_list (l1), Round_robin_pick_list (l2) ->
       List.for_all2 aux l1 l2
-    | Inter_seq (_, s1), Inter_seq (_, s2) | Union_seq (_, s1), Union_seq (_, s2)
+    | Inter_seq (s1), Inter_seq (s2) | Union_seq (s1), Union_seq (s2)
       ->
       OSeq.for_all2 aux s1 s2
-    | Unchunk (_, c1), Unchunk (_, c2) -> aux_chunked c1 c2
+    | Unchunk (c1), Unchunk (c2) -> aux_chunked c1 c2
     | _, _ -> false
   and aux_chunked c1 c2 =
     match (c1, c2) with
@@ -1396,13 +1396,13 @@ let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
   match chunking with
   | `Disjoint_intervals ->
     Unchunk
-      (default_search_space, f (Unary_op_on_t (Chunk_disjoint_interval, t)))
+      (f (Unary_op_on_t (Chunk_disjoint_interval, t)))
   | `By_duration duration ->
     let chunk_size = Duration.to_seconds duration in
     if chunk_size < 1L then invalid_arg "chunk"
     else
       Unchunk
-        ( default_search_space,
+        ( 
           f
             (Unary_op_on_t
                (Chunk_by_duration { chunk_size; drop_partial = false }, t)) )
