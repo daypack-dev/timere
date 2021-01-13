@@ -233,7 +233,7 @@ let build ~enable_extra_restrictions ~min_year ~max_year_inc ~max_height
         |> CCList.of_seq
         |> Time.union
       | 3 ->
-        Time.after (make_duration ~rng) (aux_restricted height)
+        Time.follow (make_duration ~rng) (aux_restricted height)
           (aux_restricted height)
       | 4 ->
         Time.between_inc (make_duration ~rng) (aux_restricted height)

@@ -195,7 +195,7 @@ module Intervals = struct
         | Seq.Nil -> Seq.empty
         | Seq.Cons ((ts_start, ts_end_exc), rest) ->
           if start <= ts_start then
-            (* entire time slot is after start, do nothing *)
+            (* entire time slot is follow start, do nothing *)
             intervals
           else if ts_start < start && start < ts_end_exc then
             (* time slot spans across the start mark, split time slot *)
@@ -213,7 +213,7 @@ module Intervals = struct
         | Seq.Nil -> Seq.empty
         | Seq.Cons ((ts_start, ts_end_exc), rest) ->
           if end_exc <= ts_start then
-            (* entire time slot is after end_exc mark, drop everything *)
+            (* entire time slot is follow end_exc mark, drop everything *)
             aux end_exc Seq.empty
           else if ts_start < end_exc && end_exc < ts_end_exc then
             (* time slot spans across the end_exc mark, split time slot,
@@ -1363,7 +1363,7 @@ let equal t1 t2 =
     | Interval_inc (x11, x12), Interval_inc (x21, x22)
     | Interval_exc (x11, x12), Interval_exc (x21, x22) ->
       x11 = x21 && x12 = x22
-    | After (b1, x11, x12), After (b2, x21, x22)
+    | Follow (b1, x11, x12), Follow (b2, x21, x22)
     | Between_inc (b1, x11, x12), Between_inc (b2, x21, x22)
     | Between_exc (b1, x11, x12), Between_exc (b2, x21, x22) ->
       b1 = b2 && aux x11 x21 && aux x12 x22
@@ -1689,8 +1689,8 @@ let minutes minutes = pattern ~minutes ()
 
 let seconds seconds = pattern ~seconds ()
 
-let after (bound : Duration.t) (t1 : t) (t2 : t) : t =
-  After (Duration.to_seconds bound, t1, t2)
+let follow (bound : Duration.t) (t1 : t) (t2 : t) : t =
+  Follow (Duration.to_seconds bound, t1, t2)
 
 let between_inc (bound : Duration.t) (t1 : t) (t2 : t) : t =
   Between_inc (Duration.to_seconds bound, t1, t2)
@@ -1828,7 +1828,7 @@ let of_timestamp x = of_timestamps [ x ]
 
 let nth_weekday_of_month (n : int) wday =
   let first_weekday_of_month wday =
-    after (Duration.make ~days:7 ()) (month_days [ 1 ]) (weekdays [ wday ])
+    follow (Duration.make ~days:7 ()) (month_days [ 1 ]) (weekdays [ wday ])
   in
   let second_weekday_of_month wday =
     shift (Duration.make ~days:7 ()) (first_weekday_of_month wday)
@@ -1840,7 +1840,7 @@ let nth_weekday_of_month (n : int) wday =
     shift (Duration.make ~days:21 ()) (first_weekday_of_month wday)
   in
   let fifth_weekday_of_month wday =
-    after (Duration.make ~days:7 ())
+    follow (Duration.make ~days:7 ())
       (shift (Duration.make ~days:1 ()) (fourth_weekday_of_month wday))
       (inter
          [

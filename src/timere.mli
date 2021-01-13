@@ -573,8 +573,8 @@ end
     While powerful and necessary for certain queries, may yield unexpected results.
 *)
 
-val after : Duration.t -> t -> t -> t
-(** [after bound s1 s2],
+val follow : Duration.t -> t -> t -> t
+(** [follow bound s1 s2],
     for every interval [(x1, y1)] in [s1],
     yields the earliest interval [(x2, y2)] in [s2] such that
     [y1 <= x2 && (x2 - y1) <= bound]

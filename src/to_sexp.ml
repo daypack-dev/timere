@@ -150,11 +150,11 @@ let to_sexp (t : Time_ast.t) : CCSexp.t =
       CCSexp.(list (atom "inter" :: (s |> Seq.map aux |> CCList.of_seq)))
     | Union_seq (s) ->
       CCSexp.(list (atom "union" :: (s |> Seq.map aux |> CCList.of_seq)))
-    | After (b, t1, t2) ->
+    | Follow (b, t1, t2) ->
       CCSexp.(
         list
           [
-            atom "after";
+            atom "follow";
             Duration.of_seconds b |> sexp_of_duration;
             aux t1;
             aux t2;

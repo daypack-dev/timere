@@ -47,7 +47,7 @@ let normalize (s : Time.Interval.t Seq.t) : Time.Interval.t Seq.t =
   |> Int64_set.to_seq
   |> intervals_of_timestamps
 
-let find_after bound ((start, _end_exc) : Time.Interval.t)
+let find_follow bound ((start, _end_exc) : Time.Interval.t)
     (s2 : Time.Interval.t Seq.t) =
   let s =
     s2
@@ -168,12 +168,12 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
           aux (x, Int64.add y n) search_using_tz t
           |> Seq.map (fun (x, y) -> (x, timestamp_safe_add n y))
         | With_tz tz -> aux search_space tz t)
-    | After (b, t1, t2) ->
+    | Follow (b, t1, t2) ->
       let x, y = search_space in
       let search_space = (timestamp_safe_sub x b, y) in
       let s1 = aux search_space search_using_tz t1 in
       let s2 = aux search_space search_using_tz t2 in
-      s1 |> Seq.filter_map (fun x -> find_after b x s2)
+      s1 |> Seq.filter_map (fun x -> find_follow b x s2)
     | Between_inc (b, t1, t2) ->
       let x, y = search_space in
       let search_space = (timestamp_safe_sub x b, y) in
@@ -181,7 +181,7 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
       let s2 = aux search_space search_using_tz t2 in
       s1
       |> Seq.filter_map (fun (start, end_exc) ->
-          find_after b (start, end_exc) s2
+          find_follow b (start, end_exc) s2
           |> CCOpt.map (fun (_, end_exc') -> (start, end_exc')))
     | Between_exc (b, t1, t2) ->
       let x, y = search_space in
@@ -190,7 +190,7 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
       let s2 = aux search_space search_using_tz t2 in
       s1
       |> Seq.filter_map (fun (start, end_exc) ->
-          find_after b (start, end_exc) s2
+          find_follow b (start, end_exc) s2
           |> CCOpt.map (fun (start', _) -> (start, start')))
     | Unchunk (chunked) -> aux_chunked search_using_tz chunked |> normalize
     | _ ->
@@ -293,7 +293,7 @@ and mem ?(search_using_tz = Time_zone.utc)
           start <= timestamp && timestamp < end_inc
         | Unary_op (_, _)
         | Round_robin_pick_list (_)
-        | After (_, _, _)
+        | Follow (_, _, _)
         | Between_inc (_, _, _)
         | Between_exc (_, _, _)
         | Unchunk _ ->

@@ -171,7 +171,7 @@ let debug_fuzz_after () =
   let s2 = Resolver.aux tz t2' in
   let l1 = CCList.of_seq s1 in
   let l2 = CCList.of_seq s2 in
-  let s = Resolver.(aux_after tz Resolver.default_search_space bound s1 s2 t1' t2') in
+  let s = Resolver.(aux_follow tz Resolver.default_search_space bound s1 s2 t1' t2') in
   print_endline "=====";
   print_endline (To_sexp.to_sexp_string t1);
   display_intervals ~display_using_tz:tz s1;
@@ -221,7 +221,7 @@ let debug_fuzz_between_exc () =
   let s2 = Resolver.aux tz t2' in
   let l1 = CCList.of_seq s1 in
   let l2 = CCList.of_seq s2 in
-  let s = Resolver.(aux_after tz Resolver.default_search_space bound s1 s2 t1' t2') in
+  let s = Resolver.(aux_follow tz Resolver.default_search_space bound s1 s2 t1' t2') in
   print_endline "=====";
   display_intervals ~display_using_tz:tz s1;
   print_endline (To_sexp.to_sexp_string t1);

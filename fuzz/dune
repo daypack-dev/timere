@@ -141,9 +141,9 @@
  (names     resolver_is_same_as_simple_resolver
             to_of_sexp
             of_sexp_string_does_not_crash
-            after_empty
-            after_is_sound
-            after_is_complete
+            follow_empty
+            follow_is_sound
+            follow_is_complete
             between_inc_empty
             between_inc_is_sound
             between_inc_is_complete

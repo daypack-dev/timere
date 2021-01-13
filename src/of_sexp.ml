@@ -241,8 +241,8 @@ let of_sexp (x : CCSexp.t) =
         | `Atom "round_robin" :: l -> round_robin_pick (List.map aux l)
         | `Atom "inter" :: l -> inter (List.map aux l)
         | `Atom "union" :: l -> union (List.map aux l)
-        | [ `Atom "after"; b; t1; t2 ] ->
-          after (duration_of_sexp b) (aux t1) (aux t2)
+        | [ `Atom "follow"; b; t1; t2 ] ->
+          follow (duration_of_sexp b) (aux t1) (aux t2)
         | [ `Atom "between_inc"; b; t1; t2 ] ->
           between_inc (duration_of_sexp b) (aux t1) (aux t2)
         | [ `Atom "between_exc"; b; t1; t2 ] ->

@@ -21,7 +21,7 @@ type t =
   | Round_robin_pick_list of search_space * t list
   | Inter_seq of search_space * t Seq.t
   | Union_seq of search_space * t Seq.t
-  | After of search_space * int64 * t * t
+  | Follow of search_space * int64 * t * t
   | Between_inc of search_space * int64 * t * t
   | Between_exc of search_space * int64 * t * t
   | Unchunk of search_space * chunked
@@ -50,8 +50,8 @@ let rec t_of_ast (ast : Time_ast.t) : t =
     Inter_seq (default_search_space, Seq.map t_of_ast s)
   | Union_seq s ->
     Union_seq (default_search_space, Seq.map t_of_ast s)
-  | After (bound, t1, t2) ->
-    After (default_search_space, bound, t_of_ast t1, t_of_ast t2)
+  | Follow (bound, t1, t2) ->
+    Follow (default_search_space, bound, t_of_ast t1, t_of_ast t2)
   | Between_inc (bound, t1, t2) ->
     Between_inc (default_search_space, bound, t_of_ast t1, t_of_ast t2)
   | Between_exc (bound, t1, t2) ->
@@ -78,7 +78,7 @@ let get_search_space (time : t) : Time.Interval.t list =
   | Round_robin_pick_list (s, _) -> s
   | Inter_seq (s, _) -> s
   | Union_seq (s, _) -> s
-  | After (s, _, _, _) -> s
+  | Follow (s, _, _, _) -> s
   | Between_inc (s, _, _, _) -> s
   | Between_exc (s, _, _, _) -> s
   | Unchunk (s, _) -> s
@@ -93,7 +93,7 @@ let calibrate_search_space (time : t) space : search_space =
   | Interval_exc _ | Interval_inc _ | Round_robin_pick_list _ | Inter_seq _
   | Union_seq _ ->
     space
-  | After (_, b, _, _) -> (
+  | Follow (_, b, _, _) -> (
       match space with [] -> [] | (x, y) :: rest -> (Int64.sub x b, y) :: rest)
   | Between_inc (_, b, _, _) -> (
       match space with [] -> [] | (x, y) :: rest -> (Int64.sub x b, y) :: rest)
@@ -113,7 +113,7 @@ let set_search_space space (time : t) : t =
   | Round_robin_pick_list (_, x) -> Round_robin_pick_list (space, x)
   | Inter_seq (_, x) -> Inter_seq (space, x)
   | Union_seq (_, x) -> Union_seq (space, x)
-  | After (_, b, x, y) -> After (space, b, x, y)
+  | Follow (_, b, x, y) -> Follow (space, b, x, y)
   | Between_inc (_, b, x, y) -> Between_inc (space, b, x, y)
   | Between_exc (_, b, x, y) -> Between_exc (space, b, x, y)
   | Unchunk (_, c) -> Unchunk (space, c)
@@ -205,14 +205,14 @@ let propagate_search_space_bottom_up default_tz (time : t) : t =
     | Union_seq (_, s) ->
       let space, s = aux_seq tz s in
       Union_seq (space, s)
-    | After (_, b, t1, t2) ->
+    | Follow (_, b, t1, t2) ->
       let space =
         Intervals.Union.union
           (CCList.to_seq @@ get_search_space t1)
           (CCList.to_seq @@ get_search_space t2)
         |> CCList.of_seq
       in
-      After (space, b, t1, t2)
+      Follow (space, b, t1, t2)
     | Between_inc (_, b, t1, t2) ->
       let space =
         Intervals.Union.union
@@ -293,9 +293,9 @@ let propagate_search_space_top_down (time : t) : t =
     | Union_seq (cur, s) ->
       let space = restrict_search_space time parent_search_space cur in
       set_search_space space (Union_seq (cur, aux_seq space s))
-    | After (cur, b, t1, t2) ->
+    | Follow (cur, b, t1, t2) ->
       let space = restrict_search_space time parent_search_space cur in
-      set_search_space space (After (cur, b, aux space t1, aux space t2))
+      set_search_space space (Follow (cur, b, aux space t1, aux space t2))
     | Between_inc (cur, b, t1, t2) ->
       let space = restrict_search_space time parent_search_space cur in
       set_search_space space
@@ -469,16 +469,16 @@ let rec aux search_using_tz time =
             .merge_multi_list_round_robin_non_decreasing ~skip_check:true
        | Inter_seq (_, s) -> aux_inter search_using_tz s
        | Union_seq (_, s) -> aux_union search_using_tz s
-       | After (space, b, t1, t2) ->
-         let s1 = get_start_spec_of_after search_using_tz space t1 in
+       | Follow (space, b, t1, t2) ->
+         let s1 = get_start_spec_of_follow search_using_tz space t1 in
          let s2 = aux search_using_tz t2 in
-         aux_after search_using_tz space b s1 s2 t1 t2
+         aux_follow search_using_tz space b s1 s2 t1 t2
        | Between_inc (space, b, t1, t2) ->
-         let s1 = get_start_spec_of_after search_using_tz space t1 in
+         let s1 = get_start_spec_of_follow search_using_tz space t1 in
          let s2 = aux search_using_tz t2 in
          aux_between Inc search_using_tz space b s1 s2 t1 t2
        | Between_exc (space, b, t1, t2) ->
-         let s1 = get_start_spec_of_after search_using_tz space t1 in
+         let s1 = get_start_spec_of_follow search_using_tz space t1 in
          let s2 = aux search_using_tz t2 in
          aux_between Exc search_using_tz space b s1 s2 t1 t2
        | Unchunk (_, c) -> aux_chunked search_using_tz c))
@@ -502,12 +502,12 @@ and aux_pattern search_using_tz space pat =
            (fun param -> Pattern_resolver.resolve param pat)
            params))
 
-and get_start_spec_of_after search_using_tz space t =
+and get_start_spec_of_follow search_using_tz space t =
   let search_space_start = fst (List.hd space) in
   aux search_using_tz t
   |> OSeq.drop_while (fun (start, _) -> start < search_space_start)
 
-and get_after_seq_and_maybe_sliced_timere ~start1 ~(s2 : Time.Interval.t Seq.t)
+and get_follow_seq_and_maybe_sliced_timere ~start1 ~(s2 : Time.Interval.t Seq.t)
     ~(t2 : t) search_using_tz : Time.Interval.t Seq.t * t =
   match s2 () with
   | Seq.Nil -> (Seq.empty, t2)
@@ -530,7 +530,7 @@ and get_after_seq_and_maybe_sliced_timere ~start1 ~(s2 : Time.Interval.t Seq.t)
     let s2 = OSeq.drop_while (fun (start', _) -> start' < start1) s2 in
     (s2, t2)
 
-and maybe_slice_start_spec_of_after ~last_start2
+and maybe_slice_start_spec_of_follow ~last_start2
     ~(rest1 : Time.Interval.t Seq.t) ~(t1 : t) search_using_tz bound :
   Time.Interval.t Seq.t * t =
   match rest1 () with
@@ -557,18 +557,18 @@ and maybe_slice_start_spec_of_after ~last_start2
       (s, t1)
     else (rest1, t1)
 
-and aux_after search_using_tz space bound s1 s2 t1 t2 =
+and aux_follow search_using_tz space bound s1 s2 t1 t2 =
   let _, search_space_end_exc =
     CCOpt.get_exn @@ Misc_utils.last_element_of_list space
   in
-  let rec aux_after' s1 s2 t1 t2 =
+  let rec aux_follow' s1 s2 t1 t2 =
     match s1 () with
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((start1, _end_exc1), rest1) -> (
         if search_space_end_exc <= start1 then Seq.empty
         else
           let s2, t2 =
-            get_after_seq_and_maybe_sliced_timere ~start1 ~s2 ~t2
+            get_follow_seq_and_maybe_sliced_timere ~start1 ~s2 ~t2
               search_using_tz
           in
           match s2 () with
@@ -576,15 +576,15 @@ and aux_after search_using_tz space bound s1 s2 t1 t2 =
           | Seq.Cons ((start2, end_exc2), _) ->
             if search_space_end_exc <= start2 then Seq.empty
             else if Int64.sub start2 start1 <= bound then fun () ->
-              Seq.Cons ((start2, end_exc2), aux_after' rest1 s2 t1 t2)
+              Seq.Cons ((start2, end_exc2), aux_follow' rest1 s2 t1 t2)
             else
               let s1, t1 =
-                maybe_slice_start_spec_of_after ~last_start2:start2 ~rest1 ~t1
+                maybe_slice_start_spec_of_follow ~last_start2:start2 ~rest1 ~t1
                   search_using_tz bound
               in
-              aux_after' s1 s2 t1 t2)
+              aux_follow' s1 s2 t1 t2)
   in
-  aux_after' s1 s2 t1 t2
+  aux_follow' s1 s2 t1 t2
 
 and aux_between inc_or_exc search_using_tz space bound s1 s2 t1 t2 =
   let _, search_space_end_exc =
@@ -597,7 +597,7 @@ and aux_between inc_or_exc search_using_tz space bound s1 s2 t1 t2 =
         if search_space_end_exc <= start1 then Seq.empty
         else
           let s2, t2 =
-            get_after_seq_and_maybe_sliced_timere ~start1 ~s2 ~t2
+            get_follow_seq_and_maybe_sliced_timere ~start1 ~s2 ~t2
               search_using_tz
           in
           match s2 () with
@@ -613,7 +613,7 @@ and aux_between inc_or_exc search_using_tz space bound s1 s2 t1 t2 =
               fun () -> Seq.Cons (interval, aux_between' rest1 s2 t1 t2)
             else
               let s1, t1 =
-                maybe_slice_start_spec_of_after ~last_start2:start2 ~rest1 ~t1
+                maybe_slice_start_spec_of_follow ~last_start2:start2 ~rest1 ~t1
                   search_using_tz bound
               in
               aux_between' s1 s2 t1 t2)

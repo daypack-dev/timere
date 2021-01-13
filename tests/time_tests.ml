@@ -11,10 +11,10 @@ module Alco = struct
       "same list" []
       (Time.inter [] |> Resolver.resolve |> CCResult.get_exn |> CCList.of_seq)
 
-  let after_empty () =
+  let follow_empty () =
     Alcotest.(check (list (pair int64 int64)))
       "same list" []
-      (Time.after (Duration.make ~days:1 ()) Time.empty Time.always
+      (Time.follow (Duration.make ~days:1 ()) Time.empty Time.always
        |> Resolver.resolve
        |> CCResult.get_exn
        |> CCList.of_seq)
@@ -39,7 +39,7 @@ module Alco = struct
     [
       Alcotest.test_case "union_empty" `Quick union_empty;
       Alcotest.test_case "inter_empty" `Quick inter_empty;
-      Alcotest.test_case "after_empty" `Quick after_empty;
+      Alcotest.test_case "follow_empty" `Quick follow_empty;
       Alcotest.test_case "between_inc_empty" `Quick between_inc_empty;
       Alcotest.test_case "between_exc_empty" `Quick between_exc_empty;
     ]
@@ -79,8 +79,8 @@ module Qc = struct
          let r2 = OSeq.take 10_000 @@ CCResult.get_exn @@ Resolver.resolve t2 in
          OSeq.equal ~eq:( = ) r1 r2)
 
-  let after_empty =
-    QCheck.Test.make ~count:10 ~name:"after_empty"
+  let follow_empty =
+    QCheck.Test.make ~count:10 ~name:"follow_empty"
       QCheck.(pair pos_int64 time)
       (fun (bound_offset, t1) ->
          let open QCheck in
@@ -92,16 +92,16 @@ module Qc = struct
          print_endline "=====";
          let s1 =
            CCResult.get_exn
-           @@ Resolver.resolve Time.(after (Duration.of_seconds bound) t1 empty)
+           @@ Resolver.resolve Time.(follow (Duration.of_seconds bound) t1 empty)
          in
          let s2 =
            CCResult.get_exn
-           @@ Resolver.resolve Time.(after (Duration.of_seconds bound) empty t1)
+           @@ Resolver.resolve Time.(follow (Duration.of_seconds bound) empty t1)
          in
          OSeq.is_empty s1 && OSeq.is_empty s2)
 
-  let after_soundness =
-    QCheck.Test.make ~count:10 ~name:"after_soundness"
+  let follow_soundness =
+    QCheck.Test.make ~count:10 ~name:"follow_soundness"
       QCheck.(triple pos_int64 time time)
       (fun (bound_offset, t1, t2) ->
          let open QCheck in
@@ -118,7 +118,7 @@ module Qc = struct
          let l1 = CCList.of_seq s1 in
          let s =
            CCResult.get_exn
-           @@ Resolver.resolve Time.(after (Duration.of_seconds bound) t1 t2)
+           @@ Resolver.resolve Time.(follow (Duration.of_seconds bound) t1 t2)
          in
          OSeq.for_all
            (fun (x, _y) ->
@@ -133,8 +133,8 @@ module Qc = struct
                 not (OSeq.exists (fun (x2, _y2) -> yr <= x2 && x2 < x) s2))
            s)
 
-  let after_completeness =
-    QCheck.Test.make ~count:10 ~name:"after_completeness"
+  let follow_completeness =
+    QCheck.Test.make ~count:10 ~name:"follow_completeness"
       QCheck.(triple pos_int64 time time)
       (fun (bound_offset, t1, t2) ->
          let open QCheck in
@@ -146,7 +146,7 @@ module Qc = struct
          let l2 = CCList.of_seq s2 in
          let s =
            CCResult.get_exn
-           @@ Resolver.resolve Time.(after (Duration.of_seconds bound) t1 t2)
+           @@ Resolver.resolve Time.(follow (Duration.of_seconds bound) t1 t2)
          in
          OSeq.for_all
            (fun (_x1, y1) ->
@@ -164,8 +164,8 @@ module Qc = struct
       to_of_sexp;
       union_order_does_not_matter;
       inter_order_does_not_matter;
-      (* after_empty;
-       * after_soundness;
-       * after_completeness; *)
+      (* follow_empty;
+       * follow_soundness;
+       * follow_completeness; *)
     ]
 end
