@@ -11,6 +11,30 @@
 )
 
 (rule
+ (targets date_components.ml)
+ (deps    ../src/date_components.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets pattern.ml)
+ (deps    ../src/pattern.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets pattern_resolver.ml)
+ (deps    ../src/pattern_resolver.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets time_ast.ml)
+ (deps    ../src/time_ast.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
  (targets time.ml)
  (deps    ../src/time.ml)
  (action  (copy %{deps} %{targets}))
