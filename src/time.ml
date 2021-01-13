@@ -1826,6 +1826,40 @@ let of_sorted_timestamps ?(skip_invalid = false) timestamps =
 
 let of_timestamp x = of_timestamps [ x ]
 
+let nth_weekday_of_month (n : int) wday =
+  let first_weekday_of_month wday =
+    after (Duration.make ~days:7 ()) (month_days [ 1 ]) (weekdays [ wday ])
+  in
+  let second_weekday_of_month wday =
+    shift (Duration.make ~days:7 ()) (first_weekday_of_month wday)
+  in
+  let third_weekday_of_month wday =
+    shift (Duration.make ~days:14 ()) (first_weekday_of_month wday)
+  in
+  let fourth_weekday_of_month wday =
+    shift (Duration.make ~days:21 ()) (first_weekday_of_month wday)
+  in
+  let fifth_weekday_of_month wday =
+    after (Duration.make ~days:7 ())
+      (shift (Duration.make ~days:1 ()) (fourth_weekday_of_month wday))
+      (inter
+         [
+           between_inc (Duration.make ~days:7 ())
+              (month_days [ -7 ])
+              (month_days [ -1 ]);
+           weekdays [ wday ];
+         ]
+      )
+  in
+  match n with
+  | 0 -> invalid_arg "nth_weekday_of_month: n = 0"
+  | 1 -> first_weekday_of_month wday
+  | 2 -> second_weekday_of_month wday
+  | 3 -> third_weekday_of_month wday
+  | 4 -> fourth_weekday_of_month wday
+  | 5 -> fifth_weekday_of_month wday
+  | _ -> invalid_arg "nth_weekday_of_month: n > 5"
+
 let full_string_of_weekday (wday : weekday) : string =
   match wday with
   | `Sun -> "Sunday"

@@ -104,6 +104,12 @@ val pattern :
     then [(dt.year is in p.years or p.year_ranges)] is [true].
 *)
 
+val nth_weekday_of_month : int -> weekday -> t
+(** [nth_weekday_of_month n wday] picks the nth weekday of all months, where [1 <= n && n <= 5]
+
+    @raise Invalid_argument if [n] is out of range
+*)
+
 (** {1 Algebraic operations} *)
 
 val inter : t list -> t
