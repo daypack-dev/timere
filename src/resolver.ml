@@ -206,19 +206,35 @@ let propagate_search_space_bottom_up default_tz (time : t) : t =
       in
       Follow (space, b, t1, t2)
     | Between_inc (_, b, t1, t2) ->
+      let space_start1 =
+        get_search_space t1
+        |> List.hd
+        |> fst
+      in
+      let space_end_exc2 =
+        get_search_space t2
+        |> Misc_utils.last_element_of_list
+        |> CCOpt.get_exn
+        |> snd
+      in
       let space =
-        Intervals.Union.union
-          (CCList.to_seq @@ get_search_space t1)
-          (CCList.to_seq @@ get_search_space t2)
-        |> CCList.of_seq
+        [ (space_start1, space_end_exc2) ]
       in
       Between_inc (space, b, t1, t2)
     | Between_exc (_, b, t1, t2) ->
+      let space_start1 =
+        get_search_space t1
+        |> List.hd
+        |> fst
+      in
+      let space_end_exc2 =
+        get_search_space t2
+        |> Misc_utils.last_element_of_list
+        |> CCOpt.get_exn
+        |> snd
+      in
       let space =
-        Intervals.Union.union
-          (CCList.to_seq @@ get_search_space t1)
-          (CCList.to_seq @@ get_search_space t2)
-        |> CCList.of_seq
+        [ (space_start1, space_end_exc2) ]
       in
       Between_exc (space, b, t1, t2)
     | Unchunk (_, c) -> Unchunk (aux_chunked tz c, c)
