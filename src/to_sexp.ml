@@ -178,7 +178,7 @@ let to_sexp (t : Time_ast.t) : CCSexp.t =
             atom "bounded_intervals";
             (match pick with
              | `Whole -> atom "whole"
-             | `End_exc -> atom "end_exc";
+             | `Snd -> atom "snd";
             );
             Duration.of_seconds bound |> sexp_of_duration;
             sexp_of_points start;

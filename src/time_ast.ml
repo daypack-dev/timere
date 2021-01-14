@@ -40,7 +40,7 @@ type t =
   | Unary_op of unary_op * t
   | Inter_seq of t Seq.t
   | Union_seq of t Seq.t
-  | Bounded_intervals of { pick : [ `Whole | `End_exc ];
+  | Bounded_intervals of { pick : [ `Whole | `Snd ];
                            bound : int64;
                            start : Points.t;
                            end_exc : Points.t }

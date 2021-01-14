@@ -56,7 +56,7 @@ let equal (pick1, tz_info1) (pick2, tz_info2) =
   &&
   CCOpt.equal tz_info_equal tz_info1 tz_info2
 
-let to_pattern t =
+let to_pattern (t, _tz_info) =
   let years =
     match t with
     | YMDHMS { year; _ } -> Int_set.add year Int_set.empty

@@ -474,6 +474,28 @@ val of_sorted_interval_seq : ?skip_invalid:bool -> interval Seq.t -> t
     @raise Intervals_are_not_sorted if [s] is not sorted
 *)
 
+(** {2 Pattern matching intervals} *)
+type points
+
+val make_points :
+  ?tz_info:tz_info ->
+  ?year:int ->
+  ?month:month ->
+  ?month_day:int ->
+  ?weekday:weekday ->
+  ?hour:int ->
+  ?minute:int ->
+  second:int ->
+  unit ->
+  points
+
+val bounded_intervals :
+  [`Whole | `Snd] ->
+  Duration.t ->
+  points ->
+  points ->
+  t
+
 (** {2 Hour minute second intervals} *)
 
 type hms = private {
@@ -486,11 +508,9 @@ val make_hms : hour:int -> minute:int -> second:int -> (hms, unit) result
 
 val make_hms_exn : hour:int -> minute:int -> second:int -> hms
 
-val hms_interval_inc : hms -> hms -> t
+val hms_intervals_inc : hms -> hms -> t
 
-val hms_interval_exc : hms -> hms -> t
-
-val of_hms_intervals : (hms * hms) Seq.t -> t
+val hms_intervals_exc : hms -> hms -> t
 
 (** {1 Chunking} *)
 
@@ -651,32 +671,4 @@ module Utils : sig
 
   val flatten_weekday_range_list :
     weekday range list -> (weekday list, unit) result
-
-  (** {1 Search oriented operations} *)
-
-  (** {e Warning}: These are low level operations used to communicate with the resolver directly.
-
-      While powerful and necessary for certain queries, may yield unexpected results.
-  *)
-
-  val follow : Duration.t -> t -> t -> t
-  (** [follow bound t1 t2],
-      let [s1 = resolve t1], [s2 = resolve t2]
-      for every interval [(x1, y1)] in [s1],
-      search for [(x2, y2)] in [s2] up to [x2 <= x1 + bound], and return [(x2, y2)] if found
-  *)
-
-  val between_inc : Duration.t -> t -> t -> t
-  (** [between_inc bound s1 s2],
-      let [s1 = resolve t1], [s2 = resolve t2]
-      for every interval [(x1, y1)] in [s1],
-      search for [(x2, y2)] in [s2] up to [x2 <= x1 + bound], and return [(x1, y2)] if found
-  *)
-
-  val between_exc : Duration.t -> t -> t -> t
-  (** [between_inc bound s1 s2],
-      let [s1 = resolve t1], [s2 = resolve t2]
-      for every interval [(x1, y1)] in [s1],
-      search for [(x2, y2)] in [s2] up to [x2 <= x1 + bound], and return [(x1, x2)] if found
-  *)
 end

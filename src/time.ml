@@ -1269,6 +1269,21 @@ module Date_time' = struct
 
   let max = CCResult.get_exn @@ of_timestamp max_timestamp
 
+  let of_points ?(default_tz_info = utc_tz_info) ((pick, tz_info) : Points.t) : t option =
+    let open Points in
+    match pick with
+    | YMDHMS { year; month; month_day; hour; minute; second } ->
+      Some {
+        year;
+        month;
+        day = month_day;
+        hour;
+        minute;
+        second;
+        tz_info = CCOpt.value ~default:default_tz_info tz_info;
+      }
+    | _ -> None
+
   let cur ?(tz_of_date_time = Time_zone.utc) () : (t, unit) result =
     cur_timestamp () |> of_timestamp ~tz_of_date_time
 

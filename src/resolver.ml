@@ -19,7 +19,7 @@ type t =
   | Inter_seq of search_space * t Seq.t
   | Union_seq of search_space * t Seq.t
   | Bounded_intervals of { search_space : search_space;
-                           pick : [ `Whole | `End_exc ];
+                           pick : [ `Whole | `Snd ];
                            bound : int64;
                            start : Points.t;
                            end_exc : Points.t }
@@ -116,8 +116,8 @@ let search_space_of_year_range tz year_range =
   | `Range_inc (start, end_inc) -> (aux_start start, aux_end_inc end_inc)
   | `Range_exc (start, end_exc) -> (aux_start start, aux_end_exc end_exc)
 
-let search_space_of_year tz_offset_s year =
-  search_space_of_year_range tz_offset_s (`Range_inc (year, year))
+let search_space_of_year tz year =
+  search_space_of_year_range tz (`Range_inc (year, year))
 
 let empty_search_space = []
 
@@ -166,38 +166,28 @@ let propagate_search_space_bottom_up default_tz (time : t) : t =
     | Union_seq (_, s) ->
       let space, s = aux_seq tz s in
       Union_seq (space, s)
-    | Between_inc (_, b, t1, t2) ->
-      let space_start1 =
-        get_search_space t1
-        |> List.hd
-        |> fst
+    | Bounded_intervals { search_space = _; pick; bound; start; end_exc } ->
+      let search_space =
+        match Time.Date_time'.of_points start with
+        | None -> default_search_space
+        | Some dt ->
+          let space_start =
+              dt
+              |> Time.Date_time'.to_timestamp
+              |> Time.Date_time'.min_of_timestamp_local_result
+          in
+          let space_end_exc =
+            dt
+            |> Time.Date_time'.to_timestamp
+            |> Time.Date_time'.max_of_timestamp_local_result
+            |> CCOpt.map (Int64.add bound)
+          in
+          match space_start, space_end_exc with
+          | None, _ | _, None -> []
+          | Some space_start, Some space_end_exc ->
+            [ (space_start, space_end_exc)]
       in
-      let space_end_exc2 =
-        get_search_space t2
-        |> Misc_utils.last_element_of_list
-        |> CCOpt.get_exn
-        |> snd
-      in
-      let space =
-        [ (space_start1, space_end_exc2) ]
-      in
-      Between_inc (space, b, t1, t2)
-    | Between_exc (_, b, t1, t2) ->
-      let space_start1 =
-        get_search_space t1
-        |> List.hd
-        |> fst
-      in
-      let space_end_exc2 =
-        get_search_space t2
-        |> Misc_utils.last_element_of_list
-        |> CCOpt.get_exn
-        |> snd
-      in
-      let space =
-        [ (space_start1, space_end_exc2) ]
-      in
-      Between_exc (space, b, t1, t2)
+      Bounded_intervals { search_space; pick; bound; start; end_exc }
     | Unchunk (_, c) -> Unchunk (aux_chunked tz c, c)
   and aux_chunked tz chunked : search_space =
     match chunked with
@@ -214,11 +204,6 @@ let propagate_search_space_bottom_up default_tz (time : t) : t =
       |> CCList.of_seq
     in
     (space, s)
-  and aux_list tz_offset_s l =
-    l
-    |> CCList.to_seq
-    |> aux_seq tz_offset_s
-    |> fun (space, s) -> (space, CCList.of_seq s)
   in
   aux default_tz time
 
@@ -235,7 +220,7 @@ let propagate_search_space_top_down (time : t) : t =
     match time with
     | All -> All
     | Empty -> Empty
-    | Timestamp_interval_seq (cur, _) ->
+    | Intervals (cur, _) ->
       set_search_space
         (restrict_search_space time parent_search_space cur)
         time
@@ -249,32 +234,17 @@ let propagate_search_space_top_down (time : t) : t =
         | _ ->
           let space = restrict_search_space time parent_search_space cur in
           set_search_space space (Unary_op (cur, op, aux space t)))
-    | Interval_exc (cur, _, _) | Interval_inc (cur, _, _) ->
-      set_search_space
-        (restrict_search_space time parent_search_space cur)
-        time
-    | Round_robin_pick_list (cur, l) ->
-      let space = restrict_search_space time parent_search_space cur in
-      set_search_space space (Round_robin_pick_list (cur, aux_list space l))
     | Inter_seq (cur, s) ->
       let space = restrict_search_space time parent_search_space cur in
       set_search_space space (Inter_seq (cur, aux_seq space s))
     | Union_seq (cur, s) ->
       let space = restrict_search_space time parent_search_space cur in
       set_search_space space (Union_seq (cur, aux_seq space s))
-    | Follow (cur, b, t1, t2) ->
-      let space = restrict_search_space time parent_search_space cur in
-      set_search_space space (Follow (cur, b, aux space t1, aux space t2))
-    | Between_inc (cur, b, t1, t2) ->
+    | Bounded_intervals { search_space = cur; pick; bound; start; end_exc } ->
       let space = restrict_search_space time parent_search_space cur in
       set_search_space space
-        (Between_inc (cur, b, aux space t1, aux space t2))
-    | Between_exc (cur, b, t1, t2) ->
-      let space = restrict_search_space time parent_search_space cur in
-      set_search_space space
-        (Between_exc (cur, b, aux space t1, aux space t2))
+        (Bounded_intervals { search_space = cur; pick; bound; start; end_exc })
     | Unchunk (_, _) -> stop_propagation
-  and aux_list parent_search_space l = List.map (aux parent_search_space) l
   and aux_seq parent_search_space l = Seq.map (aux parent_search_space) l in
   aux default_search_space time
 
@@ -408,7 +378,7 @@ let rec aux search_using_tz time =
        match time with
        | Empty -> Seq.empty
        | All -> CCList.to_seq default_search_space
-       | Timestamp_interval_seq (_, s) -> s
+       | Intervals (_, s) -> s
        | Pattern (space, pat) -> aux_pattern search_using_tz space pat
        | Unary_op (space, op, t) -> (
            let search_using_tz =
@@ -430,26 +400,10 @@ let rec aux search_using_tz time =
              s
              |> Seq.map (fun (start, end_exc) -> (start, Int64.add end_exc n))
            | With_tz _ -> s)
-       | Interval_inc (_, a, b) -> Seq.return (a, Int64.succ b)
-       | Interval_exc (_, a, b) -> Seq.return (a, b)
-       | Round_robin_pick_list (_, l) ->
-         List.map (aux search_using_tz) l
-         |> Time.Intervals.Round_robin
-            .merge_multi_list_round_robin_non_decreasing ~skip_check:true
        | Inter_seq (_, s) -> aux_inter search_using_tz s
        | Union_seq (_, s) -> aux_union search_using_tz s
-       | Follow (space, b, t1, t2) ->
-         let s1 = get_start_spec_of_follow search_using_tz space t1 in
-         let s2 = aux search_using_tz t2 in
-         aux_follow search_using_tz space b s1 s2 t1 t2
-       | Between_inc (space, b, t1, t2) ->
-         let s1 = get_start_spec_of_follow search_using_tz space t1 in
-         let s2 = aux search_using_tz t2 in
-         aux_between Inc search_using_tz space b s1 s2 t1 t2
-       | Between_exc (space, b, t1, t2) ->
-         let s1 = get_start_spec_of_follow search_using_tz space t1 in
-         let s2 = aux search_using_tz t2 in
-         aux_between Exc search_using_tz space b s1 s2 t1 t2
+       | Bounded_intervals { search_space; pick; bound; start; end_exc } ->
+         aux_bounded_intervals search_using_tz search_space pick bound start end_exc
        | Unchunk (_, c) -> aux_chunked search_using_tz c))
   |> normalize
 
@@ -469,123 +423,136 @@ and aux_pattern search_using_tz space pat =
       Intervals.Union.union_multi_seq ~skip_check:true
         (Seq.map (fun param -> Pattern_resolver.resolve param pat) params))
 
-and get_start_spec_of_follow search_using_tz space t =
-  let search_space_start = fst (List.hd space) in
-  aux search_using_tz t
-  |> OSeq.drop_while (fun (start, _) -> start < search_space_start)
+(* and aux_follow search_using_tz space bound s1 s2 t1 t2 =
+ *   let _, search_space_end_exc =
+ *     CCOpt.get_exn @@ Misc_utils.last_element_of_list space
+ *   in
+ *   let rec aux_follow' s1 s2 t1 t2 =
+ *     match s1 () with
+ *     | Seq.Nil -> Seq.empty
+ *     | Seq.Cons ((start1, _end_exc1), rest1) -> (
+ *         if search_space_end_exc <= start1 then Seq.empty
+ *         else
+ *           let s2, t2 =
+ *             get_points_after_start1
+ *             ~start1 ~p2 ~p2
+ *               search_using_tz
+ *           in
+ *           match s2 () with
+ *           | Seq.Nil -> Seq.empty
+ *           | Seq.Cons ((start2, end_exc2), _) ->
+ *             if search_space_end_exc <= start2 then Seq.empty
+ *             else if Int64.sub start2 start1 <= bound then fun () ->
+ *               Seq.Cons ((start2, end_exc2), aux_follow' rest1 s2 t1 t2)
+ *             else
+ *               let s1, t1 =
+ *                 maybe_slice_start_spec_of_follow ~last_start2:start2 ~rest1
+ *                   ~t1 search_using_tz bound
+ *               in
+ *               aux_follow' s1 s2 t1 t2)
+ *   in
+ *   aux_follow' s1 s2 t1 t2 *)
 
-and get_follow_seq_and_maybe_sliced_timere ~start1 ~(s2 : Time.Interval.t Seq.t)
-    ~(t2 : t) search_using_tz : Time.Interval.t Seq.t * t =
+and aux_points search_using_tz space (p, tz_info) : timestamp Seq.t =
+  let search_using_tz =
+    match tz_info with
+    | None -> search_using_tz
+    | Some tz_info ->
+      match tz_info with
+      | `Tz_only tz -> tz
+      | `Tz_offset_s_only x -> Time_zone.make_offset_only x
+      | `Tz_and_tz_offset_s (tz, _) ->
+        tz
+  in
+  aux_pattern search_using_tz space
+    (Points.to_pattern (p, tz_info))
+  |> Seq.map (fun (x, y) ->
+      assert (x -^ y = 1L);
+      x
+    )
+
+and get_points_after_start1 ~start1
+    ~(s2 : timestamp Seq.t)
+    ~(p2 : Points.t) search_using_tz space : timestamp Seq.t * search_space =
   match s2 () with
-  | Seq.Nil -> (Seq.empty, t2)
-  | Seq.Cons ((start2, _), _) ->
-    (* we search one extra second back so we can drop contiguous block that spans across start1
+  | Seq.Nil -> (Seq.empty, space)
+  | Seq.Cons (start2, _) ->
+    if
+      start2 < start1
+      && start1 -^ start2 >= dynamic_search_space_adjustment_trigger_size
+    then
+      let space =
+        space
+        |> CCList.to_seq
+        |> Time.Intervals.Slice.slice ~start:(Int64.succ start1)
+        |> CCList.of_seq
+      in
+      (aux_points search_using_tz space p2, space)
+    else
+      (
+        OSeq.drop_while (fun start2 ->
+            start2 <= start1
+          )
+          s2,
+        space
+      )
 
-       the drop happens at OSeq.drop_while (...)
-    *)
-    let safe_search_start = start1 -^ 1L in
-    let s2, t2 =
-      if
-        start2 <= start1
-        && Int64.sub start1 start2
-           >= dynamic_search_space_adjustment_trigger_size
-      then
-        let timere = slice_search_space ~start:safe_search_start t2 in
-        (aux search_using_tz timere, timere)
-      else (s2, t2)
-    in
-    let s2 = OSeq.drop_while (fun (start', _) -> start' < start1) s2 in
-    (s2, t2)
-
-and maybe_slice_start_spec_of_follow ~last_start2
-    ~(rest1 : Time.Interval.t Seq.t) ~(t1 : t) search_using_tz bound :
-  Time.Interval.t Seq.t * t =
+and skip_points_in_p1 ~last_start2
+    ~(rest1 : timestamp Seq.t)
+    ~(p1 : Points.t) search_using_tz bound space : timestamp Seq.t * search_space =
   match rest1 () with
-  | Seq.Nil -> (Seq.empty, t1)
-  | Seq.Cons ((start1, _), _) ->
+  | Seq.Nil -> (Seq.empty, space)
+  | Seq.Cons (start1, _) ->
     let distance = last_start2 -^ start1 in
     if
       start1 <= last_start2
       && distance >= bound
       && distance >= dynamic_search_space_adjustment_trigger_size
     then
-      let safe_start = last_start2 -^ bound in
-
-      (* we search one extra second back so we can drop contiguous block that spans across safe_start
-
-         the drop happens at OSeq.drop_while (...)
-      *)
-      let safe_search_start = safe_start -^ 1L in
-      let t1 = slice_search_space ~start:safe_search_start t1 in
-      let s =
-        aux search_using_tz t1
-        |> OSeq.drop_while (fun (start', _) -> start' < safe_start)
+      let search_start = last_start2 -^ bound in
+      let space =
+        space
+        |> CCList.to_seq
+        |> Time.Intervals.Slice.slice ~start:search_start
+        |> CCList.of_seq
       in
-      (s, t1)
-    else (rest1, t1)
+      (aux_points search_using_tz space p1, space)
+    else (rest1, space)
 
-and aux_follow search_using_tz space bound s1 s2 t1 t2 =
+and aux_bounded_intervals search_using_tz space pick bound p1 p2 =
   let _, search_space_end_exc =
     CCOpt.get_exn @@ Misc_utils.last_element_of_list space
   in
-  let rec aux_follow' s1 s2 t1 t2 =
+  let rec aux_bounded_intervals' s1 s2 space1 space2 p1 p2 =
     match s1 () with
     | Seq.Nil -> Seq.empty
-    | Seq.Cons ((start1, _end_exc1), rest1) -> (
+    | Seq.Cons (start1, rest1) -> (
         if search_space_end_exc <= start1 then Seq.empty
         else
-          let s2, t2 =
-            get_follow_seq_and_maybe_sliced_timere ~start1 ~s2 ~t2
-              search_using_tz
+          let s2, space2 =
+            get_points_after_start1 ~start1 ~s2 ~p2
+              search_using_tz space2
           in
           match s2 () with
           | Seq.Nil -> Seq.empty
-          | Seq.Cons ((start2, end_exc2), _) ->
-            if search_space_end_exc <= start2 then Seq.empty
-            else if Int64.sub start2 start1 <= bound then fun () ->
-              Seq.Cons ((start2, end_exc2), aux_follow' rest1 s2 t1 t2)
-            else
-              let s1, t1 =
-                maybe_slice_start_spec_of_follow ~last_start2:start2 ~rest1
-                  ~t1 search_using_tz bound
-              in
-              aux_follow' s1 s2 t1 t2)
-  in
-  aux_follow' s1 s2 t1 t2
-
-and aux_between inc_or_exc search_using_tz space bound s1 s2 t1 t2 =
-  let _, search_space_end_exc =
-    CCOpt.get_exn @@ Misc_utils.last_element_of_list space
-  in
-  let rec aux_between' s1 s2 t1 t2 =
-    match s1 () with
-    | Seq.Nil -> Seq.empty
-    | Seq.Cons ((start1, _end_exc1), rest1) -> (
-        if search_space_end_exc <= start1 then Seq.empty
-        else
-          let s2, t2 =
-            get_follow_seq_and_maybe_sliced_timere ~start1 ~s2 ~t2
-              search_using_tz
-          in
-          match s2 () with
-          | Seq.Nil -> Seq.empty
-          | Seq.Cons ((start2, end_exc2), _rest2) ->
+          | Seq.Cons (start2, _rest2) ->
             if search_space_end_exc <= start2 then Seq.empty
             else if start2 -^ start1 <= bound then
               let interval =
-                match inc_or_exc with
-                | Inc -> (start1, end_exc2)
-                | Exc -> (start1, start2)
+                match pick with
+                | `Whole -> (start1, start2)
+                | `Snd -> (start2, Int64.succ start2)
               in
-              fun () -> Seq.Cons (interval, aux_between' rest1 s2 t1 t2)
+              fun () -> Seq.Cons (interval, aux_bounded_intervals' rest1 s2 space1 space2 p1 p2)
             else
-              let s1, t1 =
-                maybe_slice_start_spec_of_follow ~last_start2:start2 ~rest1
-                  ~t1 search_using_tz bound
+              let s1, space1 =
+                skip_points_in_p1
+                 ~last_start2:start2 ~rest1
+                  ~p1 search_using_tz bound space1
               in
-              aux_between' s1 s2 t1 t2)
+              aux_bounded_intervals' s1 s2 space1 space2 p1 p2)
   in
-  aux_between' s1 s2 t1 t2
+  aux_bounded_intervals' (aux_points search_using_tz space p1) (aux_points search_using_tz space p2) space space p1 p2
 
 and aux_union search_using_tz timeres =
   let open Time in
