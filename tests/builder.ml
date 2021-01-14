@@ -102,25 +102,26 @@ let make_pattern ~rng ~min_year ~max_year_inc =
   in
   Time.pattern ~years ~months ~month_days ~weekdays ~hours ~minutes ~seconds ()
 
-let make_interval_inc ~rng ~min_year ~max_year_inc =
-  let start_dt = make_date_time ~rng ~min_year ~max_year_inc in
-  let start =
-    Time.Date_time'.to_timestamp start_dt
-    |> Time.Date_time'.min_of_timestamp_local_result
-    |> CCOpt.get_exn
+let make_points ~rng ~min_year ~max_year_inc =
+  let month_day =
+    if rng() mod 2 = 0 then
+      1 + (rng () mod 31)
+    else
+      -(1 + (rng () mod 31))
   in
-  let end_inc = Int64.add start (Int64.of_int (rng ())) in
-  Time.interval_inc start end_inc
-
-let make_interval_exc ~rng ~min_year ~max_year_inc =
-  let start_dt = make_date_time ~rng ~min_year ~max_year_inc in
-  let start =
-    Time.Date_time'.to_timestamp start_dt
-    |> Time.Date_time'.min_of_timestamp_local_result
-    |> CCOpt.get_exn
-  in
-  let end_exc = Int64.add start (Int64.of_int (rng ())) in
-  Time.interval_exc start end_exc
+  match rng () mod 7 with
+  | 0 -> Points.make ~second:(rng () mod 60) ()
+  | 1 -> Points.make ~minute:(rng () mod 60) ~second:(rng ()) ()
+  | 2 -> Points.make ~hour:(rng () mod 24) ~minute:(rng () mod 60) ~second:(rng ()) ()
+  | 3 -> Points.make ~weekday:(rng() mod 7 |> weekday_of_tm_int |> CCResult.get_exn) ~hour:(rng () mod 24) ~minute:(rng () mod 60) ~second:(rng ()) ()
+  | 4 ->
+    Points.make ~month_day ~hour:(rng () mod 24) ~minute:(rng () mod 60) ~second:(rng ()) ()
+  | 5 ->
+    Points.make ~month:(CCResult.get_exn @@ month_of_tm_int (rng () mod 12)) ~month_day ~hour:(rng () mod 24) ~minute:(rng () mod 60) ~second:(rng ()) ()
+  | 6 ->
+    Points.make ~year:(min max_year_inc (min_year + rng ()))
+      ~month:(CCResult.get_exn @@ month_of_tm_int (rng () mod 12)) ~month_day ~hour:(rng () mod 24) ~minute:(rng () mod 60) ~second:(rng ()) ()
+  | _ -> failwith "Unexpected case"
 
 let make_hms ~rng =
   Time.make_hms_exn
@@ -128,11 +129,11 @@ let make_hms ~rng =
     ~minute:(rng () mod 60)
     ~second:(rng () mod 60)
 
-let make_hms_interval_inc ~rng =
-  Time.hms_interval_inc (make_hms ~rng) (make_hms ~rng)
+let make_hms_intervals_inc ~rng =
+  Time.hms_intervals_inc (make_hms ~rng) (make_hms ~rng)
 
-let make_hms_interval_exc ~rng =
-  Time.hms_interval_exc (make_hms ~rng) (make_hms ~rng)
+let make_hms_intervals_exc ~rng =
+  Time.hms_intervals_exc (make_hms ~rng) (make_hms ~rng)
 
 let new_height ~rng height =
   assert (height > 1);
@@ -208,13 +209,11 @@ let build ~enable_extra_restrictions ~min_year ~max_year_inc ~max_height
       | 1 -> Time.always
       | 2 -> make_timestamp_intervals ~rng ~min_year ~max_year_inc
       | 3 -> make_pattern ~rng ~min_year ~max_year_inc
-      | 4 -> make_interval_inc ~rng ~min_year ~max_year_inc
-      | 5 -> make_interval_exc ~rng ~min_year ~max_year_inc
-      | 6 -> make_hms_interval_inc ~rng
-      | 7 -> make_hms_interval_exc ~rng
+      | 6 -> make_hms_intervals_inc ~rng
+      | 7 -> make_hms_intervals_exc ~rng
       | _ -> failwith "Unexpected case"
     else
-      match rng () mod 7 with
+      match rng () mod 5 with
       | 0 ->
         make_unary_op ~min_year ~max_year_inc ~rng
           (aux (new_height ~rng height))
@@ -231,22 +230,17 @@ let build ~enable_extra_restrictions ~min_year ~max_year_inc ~max_height
         |> CCList.of_seq
         |> Time.union
       | 3 ->
-        Time.follow (make_duration ~rng) (aux_restricted height)
-          (aux_restricted height)
+        let pick =
+          if rng () mod 2 = 0 then `Whole
+          else
+            `Snd
+        in
+        Time.bounded_intervals pick (make_duration ~rng)
+          (make_points ~rng ~min_year ~max_year_inc)
+          (make_points ~rng ~min_year ~max_year_inc)
       | 4 ->
-        Time.between_inc (make_duration ~rng) (aux_restricted height)
-          (aux_restricted height)
-      | 5 ->
-        Time.between_exc (make_duration ~rng) (aux_restricted height)
-          (aux_restricted height)
-      | 6 ->
         Time.chunk (make_chunking ~rng) (make_chunk_selector ~rng)
           (aux (new_height ~rng height))
-      (* | 3 ->
-       *   OSeq.(0 -- Stdlib.min max_branching (rng ()))
-       *   |> Seq.map (fun _ -> aux (new_height height))
-       *   |> List.of_seq
-       *   |> Time.round_robin_pick *)
       | _ -> failwith "Unexpected case"
   and aux_restricted height =
     if enable_extra_restrictions then
