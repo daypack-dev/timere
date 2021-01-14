@@ -660,26 +660,23 @@ module Utils : sig
   *)
 
   val follow : Duration.t -> t -> t -> t
-  (** [follow bound s1 s2],
+  (** [follow bound t1 t2],
+      let [s1 = resolve t1], [s2 = resolve t2]
       for every interval [(x1, y1)] in [s1],
-      yields the earliest interval [(x2, y2)] in [s2] such that
-      [y1 <= x2 && (x2 - y1) <= bound]
-      if exists
+      search for [(x2, y2)] in [s2] up to [x2 <= x1 + bound], and return [(x2, y2)] if found
   *)
 
   val between_inc : Duration.t -> t -> t -> t
   (** [between_inc bound s1 s2],
+      let [s1 = resolve t1], [s2 = resolve t2]
       for every interval [(x1, y1)] in [s1],
-      and the earliest interval [(x2, y2)] in [s2] such that
-      [y1 <= x2 && (x2 - y1) <= bound],
-      yields [(x1, y2)]
+      search for [(x2, y2)] in [s2] up to [x2 <= x1 + bound], and return [(x1, y2)] if found
   *)
 
   val between_exc : Duration.t -> t -> t -> t
   (** [between_inc bound s1 s2],
+      let [s1 = resolve t1], [s2 = resolve t2]
       for every interval [(x1, y1)] in [s1],
-      and the earliest interval [(x2, y2)] in [s2] such that
-      [y1 <= x2 && (x2 - y1) <= bound],
-      yields [(x1, x2)]
+      search for [(x2, y2)] in [s2] up to [x2 <= x1 + bound], and return [(x1, x2)] if found
   *)
 end
