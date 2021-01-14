@@ -13,17 +13,16 @@ let default_search_space : search_space =
 type t =
   | Empty
   | All
-  | Timestamp_interval_seq of search_space * (int64 * int64) Seq.t
+  | Intervals of search_space * (int64 * int64) Seq.t
   | Pattern of search_space * Pattern.t
   | Unary_op of search_space * unary_op * t
-  | Interval_inc of search_space * timestamp * timestamp
-  | Interval_exc of search_space * timestamp * timestamp
-  | Round_robin_pick_list of search_space * t list
   | Inter_seq of search_space * t Seq.t
   | Union_seq of search_space * t Seq.t
-  | Follow of search_space * int64 * t * t
-  | Between_inc of search_space * int64 * t * t
-  | Between_exc of search_space * int64 * t * t
+  | Bounded_intervals of { search_space : search_space;
+                           pick : [ `Whole | `End_exc ];
+                           bound : int64;
+                           start : Points.t;
+                           end_exc : Points.t }
   | Unchunk of search_space * chunked
 
 and chunked =
@@ -34,21 +33,13 @@ let rec t_of_ast (ast : Time_ast.t) : t =
   match ast with
   | Empty -> Empty
   | All -> All
-  | Timestamp_interval_seq s -> Timestamp_interval_seq (default_search_space, s)
+  | Intervals s -> Intervals (default_search_space, s)
   | Pattern p -> Pattern (default_search_space, p)
   | Unary_op (op, t) -> Unary_op (default_search_space, op, t_of_ast t)
-  | Interval_inc (t1, t2) -> Interval_inc (default_search_space, t1, t2)
-  | Interval_exc (t1, t2) -> Interval_exc (default_search_space, t1, t2)
-  | Round_robin_pick_list l ->
-    Round_robin_pick_list (default_search_space, List.map t_of_ast l)
   | Inter_seq s -> Inter_seq (default_search_space, Seq.map t_of_ast s)
   | Union_seq s -> Union_seq (default_search_space, Seq.map t_of_ast s)
-  | Follow (bound, t1, t2) ->
-    Follow (default_search_space, bound, t_of_ast t1, t_of_ast t2)
-  | Between_inc (bound, t1, t2) ->
-    Between_inc (default_search_space, bound, t_of_ast t1, t_of_ast t2)
-  | Between_exc (bound, t1, t2) ->
-    Between_exc (default_search_space, bound, t_of_ast t1, t_of_ast t2)
+  | Bounded_intervals { pick; bound; start; end_exc} ->
+    Bounded_intervals { search_space = default_search_space; pick; bound; start; end_exc }
   | Unchunk chunked ->
     Unchunk (default_search_space, chunked_of_ast_chunked chunked)
 
@@ -62,52 +53,39 @@ let get_search_space (time : t) : Time.Interval.t list =
   match time with
   | All -> default_search_space
   | Empty -> []
-  | Timestamp_interval_seq (s, _) -> s
+  | Intervals (s, _) -> s
   | Pattern (s, _) -> s
   | Unary_op (s, _, _) -> s
-  | Interval_exc (s, _, _) -> s
-  | Interval_inc (s, _, _) -> s
-  | Round_robin_pick_list (s, _) -> s
   | Inter_seq (s, _) -> s
   | Union_seq (s, _) -> s
-  | Follow (s, _, _, _) -> s
-  | Between_inc (s, _, _, _) -> s
-  | Between_exc (s, _, _, _) -> s
+  | Bounded_intervals { search_space; _ } -> search_space
   | Unchunk (s, _) -> s
 
 let calibrate_search_space (time : t) space : search_space =
   match time with
-  | All | Empty | Timestamp_interval_seq _ | Pattern _ -> space
+  | All | Empty | Intervals _ | Pattern _ -> space
   | Unary_op (_, op, _) -> (
       match op with
       | Shift n -> List.map (fun (x, y) -> (Int64.sub x n, Int64.sub y n)) space
       | _ -> space)
-  | Interval_exc _ | Interval_inc _ | Round_robin_pick_list _ | Inter_seq _
+  | Inter_seq _
   | Union_seq _ ->
     space
-  | Follow (_, b, _, _) -> (
-      match space with [] -> [] | (x, y) :: rest -> (Int64.sub x b, y) :: rest)
-  | Between_inc (_, b, _, _) -> (
-      match space with [] -> [] | (x, y) :: rest -> (Int64.sub x b, y) :: rest)
-  | Between_exc (_, b, _, _) -> (
-      match space with [] -> [] | (x, y) :: rest -> (Int64.sub x b, y) :: rest)
+  | Bounded_intervals { bound; _ } -> (
+      match space with [] -> [] | (x, y) :: rest -> (Int64.sub x bound, y) :: rest)
   | Unchunk _ -> space
 
 let set_search_space space (time : t) : t =
   match time with
   | All -> All
   | Empty -> Empty
-  | Timestamp_interval_seq (_, x) -> Timestamp_interval_seq (space, x)
+  | Intervals (_, x) -> Intervals (space, x)
   | Pattern (_, x) -> Pattern (space, x)
   | Unary_op (_, op, x) -> Unary_op (space, op, x)
-  | Interval_exc (_, x, y) -> Interval_exc (space, x, y)
-  | Interval_inc (_, x, y) -> Interval_inc (space, x, y)
-  | Round_robin_pick_list (_, x) -> Round_robin_pick_list (space, x)
   | Inter_seq (_, x) -> Inter_seq (space, x)
   | Union_seq (_, x) -> Union_seq (space, x)
-  | Follow (_, b, x, y) -> Follow (space, b, x, y)
-  | Between_inc (_, b, x, y) -> Between_inc (space, b, x, y)
-  | Between_exc (_, b, x, y) -> Between_exc (space, b, x, y)
+  | Bounded_intervals { search_space = _; pick; bound; start; end_exc; } ->
+    Bounded_intervals { search_space = space; pick; bound; start; end_exc; }
   | Unchunk (_, c) -> Unchunk (space, c)
 
 let search_space_of_year_range tz year_range =
@@ -149,11 +127,11 @@ let propagate_search_space_bottom_up default_tz (time : t) : t =
     match time with
     | All -> All
     | Empty -> Empty
-    | Timestamp_interval_seq (_, s) -> (
+    | Intervals (_, s) -> (
         match s () with
         | Seq.Nil -> time
         | Seq.Cons ((start, _), _) ->
-          Timestamp_interval_seq ([ (start, default_search_space_end_exc) ], s)
+          Intervals ([ (start, default_search_space_end_exc) ], s)
       )
     | Pattern (_, pat) ->
       if Int_set.is_empty pat.years then Pattern (default_search_space, pat)
@@ -185,26 +163,9 @@ let propagate_search_space_bottom_up default_tz (time : t) : t =
         |> CCList.of_seq
       in
       Inter_seq (space, s)
-    | Interval_exc (_, start, end_exc) ->
-      let space = [ (start, end_exc) ] in
-      Interval_exc (space, start, end_exc)
-    | Interval_inc (_, start, end_inc) ->
-      let space = [ (start, Int64.succ @@ end_inc) ] in
-      Interval_inc (space, start, end_inc)
-    | Round_robin_pick_list (_, l) ->
-      let space, l = aux_list tz l in
-      Round_robin_pick_list (space, l)
     | Union_seq (_, s) ->
       let space, s = aux_seq tz s in
       Union_seq (space, s)
-    | Follow (_, b, t1, t2) ->
-      let space =
-        Intervals.Union.union
-          (CCList.to_seq @@ get_search_space t1)
-          (CCList.to_seq @@ get_search_space t2)
-        |> CCList.of_seq
-      in
-      Follow (space, b, t1, t2)
     | Between_inc (_, b, t1, t2) ->
       let space_start1 =
         get_search_space t1
