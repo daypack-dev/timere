@@ -29,6 +29,12 @@
 )
 
 (rule
+ (targets points.ml)
+ (deps    ../src/points.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
  (targets time_ast.ml)
  (deps    ../src/time_ast.ml)
  (action  (copy %{deps} %{targets}))

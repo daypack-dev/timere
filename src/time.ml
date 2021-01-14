@@ -1122,12 +1122,6 @@ let slice_valid_interval s =
     ~end_exc:max_timestamp s
 
 module Date_time' = struct
-  type tz_info =
-    [ `Tz_only of Time_zone.t
-    | `Tz_offset_s_only of int
-    | `Tz_and_tz_offset_s of Time_zone.t * int
-    ]
-
   type t = {
     year : int;
     month : month;
@@ -1355,20 +1349,15 @@ let equal t1 t2 =
     match (t1, t2) with
     | Empty, Empty -> true
     | All, All -> true
-    | Timestamp_interval_seq s1, Timestamp_interval_seq s2 ->
+    | Intervals s1, Intervals s2 ->
       OSeq.equal ~eq:( = ) s1 s2
     | Pattern p1, Pattern p2 -> Pattern.equal p1 p2
     | Unary_op (op1, t1), Unary_op (op2, t2) ->
       equal_unary_op op1 op2 && aux t1 t2
-    | Interval_inc (x11, x12), Interval_inc (x21, x22)
-    | Interval_exc (x11, x12), Interval_exc (x21, x22) ->
-      x11 = x21 && x12 = x22
-    | Follow (b1, x11, x12), Follow (b2, x21, x22)
-    | Between_inc (b1, x11, x12), Between_inc (b2, x21, x22)
-    | Between_exc (b1, x11, x12), Between_exc (b2, x21, x22) ->
-      b1 = b2 && aux x11 x21 && aux x12 x22
-    | Round_robin_pick_list l1, Round_robin_pick_list l2 ->
-      List.for_all2 aux l1 l2
+    | Bounded_intervals { pick = pick1; bound = b1; start = start1; end_exc = end_exc1},
+      Bounded_intervals { pick = pick2; bound = b2; start = start2; end_exc = end_exc2} ->
+      pick1 = pick2 &&
+      b1 = b2 && Points.equal start1 start2 && Points.equal end_exc1 end_exc2
     | Inter_seq s1, Inter_seq s2 | Union_seq s1, Union_seq s2 ->
       OSeq.for_all2 aux s1 s2
     | Unchunk c1, Unchunk c2 -> aux_chunked c1 c2
@@ -1505,8 +1494,6 @@ let union_seq (s : t Seq.t) : t =
 
 let union (l : t list) : t = union_seq (CCList.to_seq l)
 
-let round_robin_pick (l : t list) : t = Round_robin_pick_list l
-
 let first_point (a : t) : t = Unary_op (Take_points 1, a)
 
 let take_points (n : int) (t : t) : t =
@@ -1532,43 +1519,43 @@ let nth (n : int) (c : chunked) : chunked =
 let drop (n : int) (c : chunked) : chunked =
   if n < 0 then invalid_arg "skip_n: n < 0" else Unary_op_on_chunked (Drop n, c)
 
-let interval_inc (a : timestamp) (b : timestamp) : t =
-  match Date_time'.of_timestamp a with
-  | Error () -> invalid_arg "interval_inc: invalid timestamp"
-  | Ok _ -> (
-      match Date_time'.of_timestamp b with
-      | Error () -> invalid_arg "interval_inc: invalid timestamp"
-      | Ok _ ->
-        if a <= b then Interval_inc (a, b)
-        else invalid_arg "interval_inc: a > b")
-
-let interval_exc (a : timestamp) (b : timestamp) : t =
-  match Date_time'.of_timestamp a with
-  | Error () -> invalid_arg "interval_exc: invalid timestamp"
-  | Ok _ -> (
-      match Date_time'.of_timestamp b with
-      | Error () -> invalid_arg "interval_exc: invalid timestamp"
-      | Ok _ ->
-        if a <= b then Interval_exc (a, b)
-        else invalid_arg "interval_exc: a > b")
-
-let interval_dt_inc (a : Date_time'.t) (b : Date_time'.t) : t =
-  let a =
-    CCOpt.get_exn Date_time'.(min_of_timestamp_local_result @@ to_timestamp a)
-  in
-  let b =
-    CCOpt.get_exn Date_time'.(max_of_timestamp_local_result @@ to_timestamp b)
-  in
-  if a <= b then Interval_inc (a, b) else invalid_arg "interval_dt_inc: a > b"
-
-let interval_dt_exc (a : Date_time'.t) (b : Date_time'.t) : t =
-  let a =
-    CCOpt.get_exn Date_time'.(min_of_timestamp_local_result @@ to_timestamp a)
-  in
-  let b =
-    CCOpt.get_exn Date_time'.(max_of_timestamp_local_result @@ to_timestamp b)
-  in
-  if a <= b then Interval_exc (a, b) else invalid_arg "interval_dt_exc: a > b"
+(* let interval_inc (a : timestamp) (b : timestamp) : t =
+ *   match Date_time'.of_timestamp a with
+ *   | Error () -> invalid_arg "interval_inc: invalid timestamp"
+ *   | Ok _ -> (
+ *       match Date_time'.of_timestamp b with
+ *       | Error () -> invalid_arg "interval_inc: invalid timestamp"
+ *       | Ok _ ->
+ *         if a <= b then Interval_inc (a, b)
+ *         else invalid_arg "interval_inc: a > b")
+ * 
+ * let interval_exc (a : timestamp) (b : timestamp) : t =
+ *   match Date_time'.of_timestamp a with
+ *   | Error () -> invalid_arg "interval_exc: invalid timestamp"
+ *   | Ok _ -> (
+ *       match Date_time'.of_timestamp b with
+ *       | Error () -> invalid_arg "interval_exc: invalid timestamp"
+ *       | Ok _ ->
+ *         if a <= b then Interval_exc (a, b)
+ *         else invalid_arg "interval_exc: a > b")
+ * 
+ * let interval_dt_inc (a : Date_time'.t) (b : Date_time'.t) : t =
+ *   let a =
+ *     CCOpt.get_exn Date_time'.(min_of_timestamp_local_result @@ to_timestamp a)
+ *   in
+ *   let b =
+ *     CCOpt.get_exn Date_time'.(max_of_timestamp_local_result @@ to_timestamp b)
+ *   in
+ *   if a <= b then Interval_inc (a, b) else invalid_arg "interval_dt_inc: a > b"
+ * 
+ * let interval_dt_exc (a : Date_time'.t) (b : Date_time'.t) : t =
+ *   let a =
+ *     CCOpt.get_exn Date_time'.(min_of_timestamp_local_result @@ to_timestamp a)
+ *   in
+ *   let b =
+ *     CCOpt.get_exn Date_time'.(max_of_timestamp_local_result @@ to_timestamp b)
+ *   in
+ *   if a <= b then Interval_exc (a, b) else invalid_arg "interval_dt_exc: a > b" *)
 
 let not (a : t) : t = Unary_op (Not, a)
 
@@ -1674,14 +1661,11 @@ let minutes minutes = pattern ~minutes ()
 
 let seconds seconds = pattern ~seconds ()
 
-let follow (bound : Duration.t) (t1 : t) (t2 : t) : t =
-  Follow (Duration.to_seconds bound, t1, t2)
-
-let between_inc (bound : Duration.t) (t1 : t) (t2 : t) : t =
-  Between_inc (Duration.to_seconds bound, t1, t2)
-
-let between_exc (bound : Duration.t) (t1 : t) (t2 : t) : t =
-  Between_exc (Duration.to_seconds bound, t1, t2)
+let bounded_intervals pick (bound : Duration.t) (start : Points.t) (end_exc : Points.t) : t =
+  Bounded_intervals
+    {
+      pick; bound = Duration.to_seconds bound; start; end_exc
+    }
 
 (* let hms_interval_exc (hms_a : hms) (hms_b : hms) : t =
  *   let a = second_of_day_of_hms hms_a in
@@ -1703,19 +1687,18 @@ let between_exc (bound : Duration.t) (t1 : t) (t2 : t) : t =
  *       (pattern ~hours:[ hms_a.hour ] ~minutes:[ hms_a.minute ]
  *          ~seconds:[ hms_a.second ] ()) *)
 
-let hms_interval_exc (hms_a : hms) (hms_b : hms) : t =
-  between_exc (Duration.make ~days:1 ())
-    (pattern ~hours:[ hms_a.hour ] ~minutes:[ hms_a.minute ]
-       ~seconds:[ hms_a.second ] ())
-    (pattern ~hours:[ hms_b.hour ] ~minutes:[ hms_b.minute ]
-       ~seconds:[ hms_b.second ] ())
+let hms_intervals_exc (hms_a : hms) (hms_b : hms) : t =
+  bounded_intervals `Whole (Duration.make ~days:1 ())
+    (Points.make ~hour:hms_a.hour ~minute:hms_a.minute
+       ~second:hms_a.second ()
+    )
+    (Points.make ~hour:hms_b.hour ~minute:hms_b.minute
+       ~second:hms_b.second ()
+    )
 
-let hms_interval_inc (hms_a : hms) (hms_b : hms) : t =
+let hms_intervals_inc (hms_a : hms) (hms_b : hms) : t =
   let hms_b = hms_b |> second_of_day_of_hms |> succ |> hms_of_second_of_day in
-  hms_interval_exc hms_a hms_b
-
-let of_hms_intervals (s : (hms * hms) Seq.t) : t =
-  s |> Seq.map (fun (a, b) -> hms_interval_exc a b) |> union_seq
+  hms_intervals_exc hms_a hms_b
 
 let of_sorted_interval_seq ?(skip_invalid : bool = false)
     (s : (int64 * int64) Seq.t) : t =
@@ -1734,7 +1717,7 @@ let of_sorted_interval_seq ?(skip_invalid : bool = false)
     |> Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
     |> slice_valid_interval
   in
-  match s () with Seq.Nil -> Empty | _ -> Timestamp_interval_seq s
+  match s () with Seq.Nil -> Empty | _ -> Intervals s
 
 let of_sorted_intervals ?(skip_invalid : bool = false)
     (l : (int64 * int64) list) : t =
@@ -1757,7 +1740,7 @@ let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
     |> Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
     |> slice_valid_interval
   in
-  match s () with Seq.Nil -> Empty | _ -> Timestamp_interval_seq s
+  match s () with Seq.Nil -> Empty | _ -> Intervals s
 
 let of_interval_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t) :
   t =
@@ -1809,27 +1792,19 @@ let of_timestamp x = of_timestamps [ x ]
 
 let nth_weekday_of_month (n : int) wday =
   let first_weekday_of_month wday =
-    follow (Duration.make ~days:7 ()) (month_days [ 1 ]) (weekdays [ wday ])
+    pattern ~month_day_ranges:[`Range_inc (1, 7)] ~weekdays:[wday] ()
   in
   let second_weekday_of_month wday =
-    shift (Duration.make ~days:7 ()) (first_weekday_of_month wday)
+    pattern ~month_day_ranges:[`Range_inc (8, 14)] ~weekdays:[wday] ()
   in
   let third_weekday_of_month wday =
-    shift (Duration.make ~days:14 ()) (first_weekday_of_month wday)
+    pattern ~month_day_ranges:[`Range_inc (15, 21)] ~weekdays:[wday] ()
   in
   let fourth_weekday_of_month wday =
-    shift (Duration.make ~days:21 ()) (first_weekday_of_month wday)
+    pattern ~month_day_ranges:[`Range_inc (22, 28)] ~weekdays:[wday] ()
   in
   let fifth_weekday_of_month wday =
-    follow (Duration.make ~days:7 ())
-      (shift (Duration.make ~days:1 ()) (fourth_weekday_of_month wday))
-      (inter
-         [
-           between_inc (Duration.make ~days:7 ())
-             (month_days [ -7 ])
-             (month_days [ -1 ]);
-           weekdays [ wday ];
-         ])
+    pattern ~month_days:[29; 30; 31] ~weekdays:[wday] ()
   in
   match n with
   | 0 -> invalid_arg "nth_weekday_of_month: n = 0"

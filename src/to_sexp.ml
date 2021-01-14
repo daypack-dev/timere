@@ -10,6 +10,45 @@ let sexp_list_of_ints l = List.map sexp_of_int l
 
 let sexp_of_tz t = CCSexp.atom (Time_zone.name t)
 
+let sexp_of_tz_info info =
+  let open CCSexp in
+  list
+    (match info with
+     | `Tz_only x -> [ atom "tz"; sexp_of_tz x ]
+     | `Tz_offset_s_only x -> [ atom "tz_offset_s"; sexp_of_int x ]
+     | `Tz_and_tz_offset_s (tz, tz_offset_s) ->
+       [
+         atom "tz_and_tz_offset_s"; sexp_of_tz tz; sexp_of_int tz_offset_s;
+       ])
+
+let sexp_of_points ((pick, tz_info)) =
+  let open CCSexp in
+  let open Points in
+  list (CCList.filter_map CCFun.id [
+      Some (atom "points");
+      Some (list (
+        atom "pick" ::
+        (
+          match pick with
+          | S x -> [ atom "s"; sexp_of_int x ]
+          | MS { minute; second } ->
+            [ atom "ms"; sexp_of_int minute; sexp_of_int second ]
+          | HMS { hour; minute; second } ->
+            [ atom "hms"; sexp_of_int hour; sexp_of_int minute; sexp_of_int second ]
+          | WHMS { weekday; hour; minute; second } ->
+            [ atom "whms"; sexp_of_weekday weekday; sexp_of_int hour; sexp_of_int minute; sexp_of_int second ]
+          | DHMS { month_day; hour; minute; second } ->
+            [ atom "dhms"; sexp_of_int month_day; sexp_of_int hour; sexp_of_int minute; sexp_of_int second ]
+          | MDHMS { month; month_day; hour; minute; second } ->
+            [ atom "mdhms"; sexp_of_month month; sexp_of_int month_day; sexp_of_int hour; sexp_of_int minute; sexp_of_int second ]
+          | YMDHMS { year; month; month_day; hour; minute; second } ->
+            [ atom "ymdhms"; sexp_of_int year; sexp_of_month month; sexp_of_int month_day; sexp_of_int hour; sexp_of_int minute; sexp_of_int second ]
+        )
+      ));
+      CCOpt.map sexp_of_tz_info tz_info;
+    ]
+    )
+
 let sexp_of_date_time (x : Time.Date_time'.t) =
   let open CCSexp in
   list
@@ -20,14 +59,7 @@ let sexp_of_date_time (x : Time.Date_time'.t) =
       sexp_of_int x.hour;
       sexp_of_int x.minute;
       sexp_of_int x.second;
-      list
-        (match x.tz_info with
-         | `Tz_only x -> [ atom "tz"; sexp_of_tz x ]
-         | `Tz_offset_s_only x -> [ atom "tz_offset_s"; sexp_of_int x ]
-         | `Tz_and_tz_offset_s (tz, tz_offset_s) ->
-           [
-             atom "tz_and_tz_offset_s"; sexp_of_tz tz; sexp_of_int tz_offset_s;
-           ]);
+      sexp_of_tz_info x.tz_info;
     ]
 
 let sexp_of_duration (x : Duration.t) =
@@ -125,7 +157,7 @@ let to_sexp (t : Time_ast.t) : CCSexp.t =
     match t with
     | All -> CCSexp.(list [ atom "all" ])
     | Empty -> CCSexp.(list [ atom "empty" ])
-    | Timestamp_interval_seq s ->
+    | Intervals s ->
       let l =
         s
         |> CCList.of_seq
@@ -135,44 +167,22 @@ let to_sexp (t : Time_ast.t) : CCSexp.t =
       CCSexp.list (CCSexp.atom "intervals" :: l)
     | Pattern pat -> sexp_of_pattern pat
     | Unary_op (op, t) -> CCSexp.list (sexp_list_of_unary_op op @ [ aux t ])
-    | Interval_inc (a, b) ->
-      let open CCSexp in
-      list [ atom "interval_inc"; sexp_of_timestamp a; sexp_of_timestamp b ]
-    | Interval_exc (a, b) ->
-      let open CCSexp in
-      list [ atom "interval_exc"; sexp_of_timestamp a; sexp_of_timestamp b ]
-    | Round_robin_pick_list l ->
-      CCSexp.(list (atom "round_robin" :: List.map aux l))
     | Inter_seq s ->
       CCSexp.(list (atom "inter" :: (s |> Seq.map aux |> CCList.of_seq)))
     | Union_seq s ->
       CCSexp.(list (atom "union" :: (s |> Seq.map aux |> CCList.of_seq)))
-    | Follow (b, t1, t2) ->
+    | Bounded_intervals { pick; bound; start; end_exc } ->
       CCSexp.(
         list
           [
-            atom "follow";
-            Duration.of_seconds b |> sexp_of_duration;
-            aux t1;
-            aux t2;
-          ])
-    | Between_inc (b, t1, t2) ->
-      CCSexp.(
-        list
-          [
-            atom "between_inc";
-            Duration.of_seconds b |> sexp_of_duration;
-            aux t1;
-            aux t2;
-          ])
-    | Between_exc (b, t1, t2) ->
-      CCSexp.(
-        list
-          [
-            atom "between_exc";
-            Duration.of_seconds b |> sexp_of_duration;
-            aux t1;
-            aux t2;
+            atom "bounded_intervals";
+            (match pick with
+             | `Whole -> atom "whole"
+             | `End_exc -> atom "end_exc";
+            );
+            Duration.of_seconds bound |> sexp_of_duration;
+            sexp_of_points start;
+            sexp_of_points end_exc;
           ])
     | Unchunk chunked -> CCSexp.(list [ atom "unchunk"; aux_chunked chunked ])
   and aux_chunked chunked =

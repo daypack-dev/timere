@@ -35,17 +35,15 @@ type chunked_unary_op_on_chunked =
 type t =
   | Empty
   | All
-  | Timestamp_interval_seq of (int64 * int64) Seq.t
+  | Intervals of (int64 * int64) Seq.t
   | Pattern of Pattern.t
   | Unary_op of unary_op * t
-  | Interval_inc of timestamp * timestamp
-  | Interval_exc of timestamp * timestamp
-  | Round_robin_pick_list of t list
   | Inter_seq of t Seq.t
   | Union_seq of t Seq.t
-  | Follow of int64 * t * t
-  | Between_inc of int64 * t * t
-  | Between_exc of int64 * t * t
+  | Bounded_intervals of { pick : [ `Whole | `End_exc ];
+                           bound : int64;
+                           start : Points.t;
+                           end_exc : Points.t }
   | Unchunk of chunked
 
 and chunked =
