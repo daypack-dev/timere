@@ -144,6 +144,37 @@ let debug_example () =
   | Error msg -> print_endline msg
   | Ok s -> display_intervals ~display_using_tz:tz s
 
+let debug_fuzz_bounded_intervals () =
+  let tz = Time_zone.utc in
+  let bound = Int64.of_int 1064 in
+  let p1 =
+    (fun randomness ->
+       let min_year = 0000 in
+       let max_year_inc = 9999 in
+       let rng = Builder.make_rng ~randomness in
+       Builder.make_points ~rng ~min_year ~max_year_inc)
+      []
+  in
+  let p2 =
+    (fun randomness ->
+       let min_year = 0000 in
+       let max_year_inc = 9999 in
+       let rng = Builder.make_rng ~randomness in
+       Builder.make_points ~rng ~min_year ~max_year_inc)
+      []
+  in
+  let s1 = Resolver.aux_points tz Resolver.default_search_space p1 in
+  let s2 = Resolver.aux_points tz Resolver.default_search_space p2 in
+  let s =
+    Resolver.(
+      aux_bounded_intervals tz Resolver.default_search_space `Whole bound p1 p2)
+  in
+  let s' =
+    Resolver.(
+      aux_bounded_intervals tz Resolver.default_search_space `Snd bound p1 p2)
+  in
+  print_endline "====="
+
 let debug_fuzz_union () =
   let tz = Time_zone.utc in
   let t1 =
@@ -193,7 +224,9 @@ let debug_fuzz_union () =
 
 (* let () = debug_parsing () *)
 
-let () = debug_resolver ()
+let () = debug_fuzz_bounded_intervals ()
+
+(* let () = debug_resolver () *)
 
 (* let () = debug_ccsexp_parse_string () *)
 
