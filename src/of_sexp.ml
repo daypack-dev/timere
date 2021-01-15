@@ -267,9 +267,9 @@ let points_of_sexp (x : CCSexp.t) =
     invalid_data (Printf.sprintf "Invalid points: %s" (CCSexp.to_string x))
   | `List l -> (
       match l with
-      | [ `Atom "points"; `List [ `Atom "pick"; `List pick ] ] ->
+      | [ `Atom "points"; `List (`Atom "pick" :: pick) ] ->
         (pick_of_sexp_list pick, None)
-      | [ `Atom "points"; `List [ `Atom "pick"; `List pick ]; tz_info ] ->
+      | [ `Atom "points"; `List (`Atom "pick" :: pick); tz_info ] ->
         (pick_of_sexp_list pick, Some (tz_info_of_sexp tz_info))
       | _ ->
         invalid_data
