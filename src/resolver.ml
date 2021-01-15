@@ -64,7 +64,7 @@ let get_search_space (time : t) : Time.Interval.t list =
   | Bounded_intervals { search_space; _ } -> search_space
   | Unchunk (s, _) -> s
 
-let calibrate_search_space (time : t) space : search_space =
+let calibrate_search_space_for_set (time : t) space : search_space =
   match time with
   | All | Empty | Intervals _ | Pattern _ -> space
   | Unary_op (_, op, _) -> (
@@ -151,6 +151,12 @@ let propagate_search_space_bottom_up default_tz (time : t) : t =
         | With_tz tz ->
           let t = aux tz t in
           Unary_op (get_search_space t, op, t)
+        | Shift n ->
+          let space =
+            get_search_space t
+            |> List.map (fun (x, y) -> (Int64.add x n, Int64.add y n))
+          in
+          Unary_op (space, op, t)
         | _ ->
           let t = aux tz t in
           Unary_op (get_search_space t, op, t))
@@ -215,7 +221,7 @@ let propagate_search_space_top_down (time : t) : t =
     Intervals.Inter.inter ~skip_check:true (CCList.to_seq parent)
       (CCList.to_seq cur)
     |> CCList.of_seq
-    |> calibrate_search_space time
+    |> calibrate_search_space_for_set time
   in
   let rec aux parent_search_space (time : t) : t =
     let stop_propagation = time in
@@ -356,7 +362,7 @@ let slice_search_space ~start (t : t) : t =
   |> CCList.to_seq
   |> Time.Intervals.Slice.slice ~skip_check:true ~start
   |> CCList.of_seq
-  |> calibrate_search_space t
+  |> calibrate_search_space_for_set t
   |> (fun space -> set_search_space space t)
   |> propagate_search_space_top_down
 
