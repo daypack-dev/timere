@@ -474,8 +474,9 @@ val of_sorted_interval_seq : ?skip_invalid:bool -> interval Seq.t -> t
     @raise Intervals_are_not_sorted if [s] is not sorted
 *)
 
-type points
 (** {2 Pattern matching intervals} *)
+
+type points
 
 val make_points :
   ?tz_info:tz_info ->
