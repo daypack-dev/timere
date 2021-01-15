@@ -115,10 +115,7 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
   let month_day =
     if rng () mod 2 = 0 then 1 + (rng () mod 31) else -(1 + (rng () mod 31))
   in
-  let precision =
-    min max_precision
-      (rng () mod 7)
-  in
+  let precision = min max_precision (rng () mod 7) in
   match precision with
   | 0 -> Points.make ~second:(rng () mod 60) ()
   | 1 -> Points.make ~minute:(rng () mod 60) ~second:(rng ()) ()
@@ -263,14 +260,12 @@ let build ~enable_extra_restrictions ~min_year ~max_year_inc ~max_height
         |> Time.union
       | 3 ->
         let pick = if rng () mod 2 = 0 then `Whole else `Snd in
-        let p1 =
-          make_points ~rng ~min_year ~max_year_inc ~max_precision:6
-        in
+        let p1 = make_points ~rng ~min_year ~max_year_inc ~max_precision:6 in
         let p2 =
-          make_points ~rng ~min_year ~max_year_inc ~max_precision:(Points.precision p1)
+          make_points ~rng ~min_year ~max_year_inc
+            ~max_precision:(Points.precision p1)
         in
-        Time.bounded_intervals pick (make_duration ~rng)
-          p1 p2
+        Time.bounded_intervals pick (make_duration ~rng) p1 p2
       | 4 ->
         Time.chunk (make_chunking ~rng) (make_chunk_selector ~rng)
           (aux (new_height ~rng height))
