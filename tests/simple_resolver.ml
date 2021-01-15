@@ -49,12 +49,12 @@ let normalize (s : Time.Interval.t Seq.t) : Time.Interval.t Seq.t =
   |> Int64_set.to_seq
   |> intervals_of_timestamps
 
-let find_follow bound ((start, _end_exc) : Time.Interval.t)
-    (s2 : Time.Interval.t Seq.t) =
+let find_follow bound (start : int64)
+    (s2 : int64 Seq.t) =
   let s =
     s2
-    |> OSeq.drop_while (fun (start', _) -> start' < start)
-    |> OSeq.take_while (fun (start', _) -> Int64.sub start' start <= bound)
+    |> OSeq.drop_while (fun start' -> start' <= start)
+    |> OSeq.take_while (fun start' -> Int64.sub start' start <= bound)
   in
   match s () with Seq.Nil -> None | Seq.Cons (x, _) -> Some x
 
@@ -118,6 +118,80 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
   in
   aux s
 
+let aux_pattern_mem search_using_tz (pattern : Pattern.t) timestamp =
+  let dt = CCResult.get_exn @@ Time.Date_time'.of_timestamp ~tz_of_date_time:search_using_tz timestamp in
+  let weekday =
+    CCResult.get_exn
+    @@ weekday_of_month_day ~year:dt.year ~month:dt.month ~mday:dt.day
+  in
+  let year_is_fine =
+    Int_set.is_empty pattern.years
+    || Int_set.mem dt.year pattern.years
+  in
+  let month_is_fine =
+    Month_set.is_empty pattern.months
+    || Month_set.mem dt.month pattern.months
+  in
+  let mday_is_fine =
+    Int_set.is_empty pattern.month_days
+    ||
+    let day_count =
+      day_count_of_month ~year:dt.year ~month:dt.month
+    in
+    pattern.month_days
+    |> Int_set.to_seq
+    |> Seq.map (fun mday ->
+        if mday < 0 then day_count + mday + 1 else mday)
+    |> OSeq.mem ~eq:( = ) dt.day
+  in
+  let wday_is_fine =
+    Weekday_set.is_empty pattern.weekdays
+    || Weekday_set.mem weekday pattern.weekdays
+  in
+  let hour_is_fine =
+    Int_set.is_empty pattern.hours
+    || Int_set.mem dt.hour pattern.hours
+  in
+  let minute_is_fine =
+    Int_set.is_empty pattern.minutes
+    || Int_set.mem dt.minute pattern.minutes
+  in
+  let second_is_fine =
+    Int_set.is_empty pattern.seconds
+    || Int_set.mem dt.second pattern.seconds
+  in
+  year_is_fine
+  && month_is_fine
+  && mday_is_fine
+  && wday_is_fine
+  && hour_is_fine
+  && minute_is_fine
+  && second_is_fine
+
+let aux_pattern search_using_tz search_space pattern =
+  Seq_utils.a_to_b_exc_int64 ~a:(fst search_space) ~b:(snd search_space)
+  |> Seq.filter (aux_pattern_mem search_using_tz pattern)
+  |> intervals_of_timestamps
+
+let aux_points_mem search_using_tz ((p, tz_info) : Points.t) timestamp =
+  let search_using_tz =
+    match tz_info with
+    | None -> search_using_tz
+    | Some tz_info ->
+      match tz_info with
+      | `Tz_only tz -> tz
+      | `Tz_offset_s_only x -> Time_zone.make_offset_only x
+      | `Tz_and_tz_offset_s (tz, _) ->
+        tz
+  in
+  aux_pattern_mem search_using_tz
+    (Points.to_pattern (p, tz_info))
+    timestamp
+
+let aux_points search_space search_using_tz points =
+  Seq_utils.a_to_b_exc_int64 ~a:(fst search_space) ~b:(snd search_space)
+  |> Seq.filter (aux_points_mem search_using_tz points)
+
 let rec resolve ?(search_using_tz = Time_zone.utc)
     ~(search_start : Time_ast.timestamp) ~(search_end_exc : Time_ast.timestamp)
     (t : Time_ast.t) : Time.Interval.t Seq.t =
@@ -133,12 +207,7 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
   let rec aux (search_space : Time.Interval.t) (search_using_tz : Time_zone.t) t
     =
     match t with
-    | Time_ast.Timestamp_interval_seq s -> s
-    | Round_robin_pick_list l ->
-      l
-      |> List.map (fun t -> aux search_space search_using_tz t)
-      |> Time.Intervals.Round_robin
-         .merge_multi_list_round_robin_non_decreasing ~skip_check:true
+    | Time_ast.Intervals s -> s
     | Unary_op (op, t) -> (
         match op with
         | Not ->
@@ -168,30 +237,19 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
           aux (x, Int64.add y n) search_using_tz t
           |> Seq.map (fun (x, y) -> (x, timestamp_safe_add n y))
         | With_tz tz -> aux search_space tz t)
-    | Follow (b, t1, t2) ->
+    | Bounded_intervals { pick; bound; start; end_exc } ->
       let x, y = search_space in
-      let search_space = (timestamp_safe_sub x b, y) in
-      let s1 = aux search_space search_using_tz t1 in
-      let s2 = aux search_space search_using_tz t2 in
-      s1 |> Seq.filter_map (fun x -> find_follow b x s2)
-    | Between_inc (b, t1, t2) ->
-      let x, y = search_space in
-      let search_space = (timestamp_safe_sub x b, y) in
-      let s1 = aux search_space search_using_tz t1 in
-      let s2 = aux search_space search_using_tz t2 in
+      let search_space = (timestamp_safe_sub x bound, y) in
+      let s1 = aux_points search_space search_using_tz start in
+      let s2 = aux_points search_space search_using_tz end_exc in
       s1
-      |> Seq.filter_map (fun (start, end_exc) ->
-          find_follow b (start, end_exc) s2
-          |> CCOpt.map (fun (_, end_exc') -> (start, end_exc')))
-    | Between_exc (b, t1, t2) ->
-      let x, y = search_space in
-      let search_space = (timestamp_safe_sub x b, y) in
-      let s1 = aux search_space search_using_tz t1 in
-      let s2 = aux search_space search_using_tz t2 in
-      s1
-      |> Seq.filter_map (fun (start, end_exc) ->
-          find_follow b (start, end_exc) s2
-          |> CCOpt.map (fun (start', _) -> (start, start')))
+      |> Seq.filter_map (fun start ->
+          find_follow bound start s2
+          |> CCOpt.map (fun x ->
+              match pick with
+              | `Whole -> (start, x)
+              | `Snd -> (x, Int64.succ x)
+            ))
     | Unchunk chunked -> aux_chunked search_using_tz chunked |> normalize
     | _ ->
       Seq_utils.a_to_b_exc_int64 ~a:(fst search_space) ~b:(snd search_space)
@@ -225,80 +283,22 @@ and mem ?(search_using_tz = Time_zone.utc)
     (timestamp : Time_ast.timestamp) : bool =
   let open Time_ast in
   let rec aux t timestamp =
-    match
-      Time.Date_time'.of_timestamp ~tz_of_date_time:search_using_tz timestamp
-    with
-    | Error () -> failwith (Printf.sprintf "Invalid timestamp: %Ld" timestamp)
-    | Ok dt -> (
-        let weekday =
-          CCResult.get_exn
-          @@ weekday_of_month_day ~year:dt.year ~month:dt.month ~mday:dt.day
-        in
-        match t with
-        | All -> true
-        | Empty -> false
-        | Timestamp_interval_seq s ->
-          OSeq.exists
-            (fun (start, end_exc) ->
-               start <= timestamp && timestamp < end_exc)
-            s
-        | Pattern pattern ->
-          let year_is_fine =
-            Int_set.is_empty pattern.years
-            || Int_set.mem dt.year pattern.years
-          in
-          let month_is_fine =
-            Month_set.is_empty pattern.months
-            || Month_set.mem dt.month pattern.months
-          in
-          let mday_is_fine =
-            Int_set.is_empty pattern.month_days
-            ||
-            let day_count =
-              day_count_of_month ~year:dt.year ~month:dt.month
-            in
-            pattern.month_days
-            |> Int_set.to_seq
-            |> Seq.map (fun mday ->
-                if mday < 0 then day_count + mday + 1 else mday)
-            |> OSeq.mem ~eq:( = ) dt.day
-          in
-          let wday_is_fine =
-            Weekday_set.is_empty pattern.weekdays
-            || Weekday_set.mem weekday pattern.weekdays
-          in
-          let hour_is_fine =
-            Int_set.is_empty pattern.hours
-            || Int_set.mem dt.hour pattern.hours
-          in
-          let minute_is_fine =
-            Int_set.is_empty pattern.minutes
-            || Int_set.mem dt.minute pattern.minutes
-          in
-          let second_is_fine =
-            Int_set.is_empty pattern.seconds
-            || Int_set.mem dt.second pattern.seconds
-          in
-          year_is_fine
-          && month_is_fine
-          && mday_is_fine
-          && wday_is_fine
-          && hour_is_fine
-          && minute_is_fine
-          && second_is_fine
-        | Interval_inc (start, end_inc) ->
-          start <= timestamp && timestamp <= end_inc
-        | Interval_exc (start, end_inc) ->
-          start <= timestamp && timestamp < end_inc
-        | Unary_op (_, _)
-        | Round_robin_pick_list _
-        | Follow (_, _, _)
-        | Between_inc (_, _, _)
-        | Between_exc (_, _, _)
-        | Unchunk _ ->
-          resolve ~search_using_tz ~search_start ~search_end_exc t
-          |> OSeq.exists (fun (x, y) -> x <= timestamp && timestamp < y)
-        | Inter_seq s -> OSeq.for_all (fun t -> aux t timestamp) s
-        | Union_seq s -> OSeq.exists (fun t -> aux t timestamp) s)
+    match t with
+    | All -> true
+    | Empty -> false
+    | Intervals s ->
+      OSeq.exists
+        (fun (start, end_exc) ->
+           start <= timestamp && timestamp < end_exc)
+        s
+    | Pattern pattern ->
+      aux_pattern_mem search_using_tz pattern timestamp
+    | Unary_op (_, _)
+    | Bounded_intervals _
+    | Unchunk _ ->
+      resolve ~search_using_tz ~search_start ~search_end_exc t
+      |> OSeq.exists (fun (x, y) -> x <= timestamp && timestamp < y)
+    | Inter_seq s -> OSeq.for_all (fun t -> aux t timestamp) s
+    | Union_seq s -> OSeq.exists (fun t -> aux t timestamp) s
   in
   aux t timestamp

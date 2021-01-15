@@ -147,15 +147,9 @@
  (names     resolver_is_same_as_simple_resolver
             to_of_sexp
             of_sexp_string_does_not_crash
-            follow_empty
-            follow_is_sound
-            follow_is_complete
-            between_inc_empty
-            between_inc_is_sound
-            between_inc_is_complete
-            between_exc_empty
-            between_exc_is_sound
-            between_exc_is_complete
+            bounded_intervals_empty
+            bounded_intervals_is_sound
+            bounded_intervals_is_complete
             union_is_sound_and_complete
             inter_is_sound_and_complete
             pattern_resolution_is_sound

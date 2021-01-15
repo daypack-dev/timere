@@ -27,6 +27,6 @@ let () =
          (CCResult.get_exn
           @@ Resolver.resolve
             Time.(
-              inter [ t; interval_dt_exc search_start_dt search_end_exc_dt ]))
+              inter [ t; of_intervals [ (search_start, search_end_exc) ] ]))
          (Simple_resolver.resolve ~search_start ~search_end_exc
             ~search_using_tz:Time_zone.utc t))

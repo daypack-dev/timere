@@ -2,34 +2,40 @@ open Fuzz_utils
 
 let () =
   Crowbar.add_test ~name:"between_exc_is_sound"
-    [ Crowbar.range 100_000; time'; time' ] (fun bound t1 t2 ->
+    [ Crowbar.range 100_000; points; points ] (fun bound p1 p2 ->
         let bound = Int64.of_int bound in
         let tz = Time_zone.utc in
-        let s1 = Resolver.aux tz t1 in
-        let s2 = Resolver.aux tz t2 in
+        let s1 = Resolver.aux_points tz Resolver.default_search_space p1 in
+        let s2 = Resolver.aux_points tz Resolver.default_search_space p2 in
         let s =
           Resolver.(
-            aux_between Exc tz Resolver.default_search_space bound s1 s2 t1 t2)
+            aux_bounded_intervals tz Resolver.default_search_space `Whole bound p1 p2)
+        in
+        let s' =
+          Resolver.(
+            aux_bounded_intervals tz Resolver.default_search_space `Snd bound p1 p2)
         in
         Crowbar.check
-          (OSeq.for_all
-             (fun (x, y) ->
-                let r1 = Seq.filter (fun (x1, _y1) -> x = x1) s1 in
-                match r1 () with
-                | Seq.Nil -> false
-                | Seq.Cons ((xr1, _yr1), rest1) -> (
-                    match rest1 () with
-                    | Seq.Nil -> (
-                        let r2 = Seq.filter (fun (x2, _y2) -> y = x2) s2 in
-                        match r2 () with
-                        | Seq.Nil -> false
-                        | Seq.Cons ((xr2, _yr2), rest2) -> (
-                            match rest2 () with
-                            | Seq.Nil ->
-                              not
-                                (OSeq.exists
-                                   (fun (x2, _y2) -> xr1 <= x2 && x2 < xr2)
-                                   s2)
-                            | _ -> false))
-                    | _ -> false))
-             s))
+          (
+            (OSeq.for_all
+               (fun (x, y) ->
+                  OSeq.mem ~eq:( = ) x s1
+                  && OSeq.mem ~eq:( = ) y s2
+                  && (not (OSeq.exists (fun x2 -> x < x2 && x2 < x) s2)))
+               s)
+            && (OSeq.for_all
+                  (fun (x, y) ->
+                     let r =
+                       OSeq.filter
+                         (fun x1 -> x1 < x && Int64.sub x x1 <= bound)
+                         s1
+                     in
+                     let xr =
+                       CCOpt.get_exn @@ Seq_utils.last_element_of_seq r
+                     in
+                     y = Int64.succ x
+                     && OSeq.mem ~eq:( = ) x s2
+                     && (not (OSeq.exists (fun x2 -> xr < x2 && x2 < x) s2)))
+                  s')
+          )
+      )

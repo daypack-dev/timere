@@ -18,67 +18,18 @@ let pattern =
        let min_year = 0000 in
        let max_year_inc = 9999 in
        let rng = Builder.make_rng ~randomness in
-       let years =
-         if rng () mod 2 = 0 then Int_set.empty
-         else
-           let end_inc = min 5 (rng ()) in
-           OSeq.(0 -- end_inc)
-           |> Seq.map (fun _ -> min max_year_inc (min_year + rng ()))
-           |> Int_set.of_seq
-       in
-       let months =
-         if rng () mod 2 = 0 then Month_set.empty
-         else
-           let end_inc = min 5 (rng ()) in
-           OSeq.(0 -- end_inc)
-           |> Seq.map (fun _ ->
-               CCResult.get_exn @@ month_of_tm_int (rng () mod 12))
-           |> Month_set.of_seq
-       in
-       let month_days =
-         if rng () mod 2 = 0 then Int_set.empty
-         else
-           let end_inc = min 5 (rng ()) in
-           OSeq.(0 -- end_inc)
-           |> Seq.map (fun _ ->
-               if rng () mod 2 = 0 then 1 + (rng () mod 31)
-               else -(1 + (rng () mod 31)))
-           |> Int_set.of_seq
-       in
-       let weekdays =
-         if rng () mod 2 = 0 then Weekday_set.empty
-         else
-           let end_inc = min 5 (rng ()) in
-           OSeq.(0 -- end_inc)
-           |> Seq.map (fun _ ->
-               CCResult.get_exn @@ weekday_of_tm_int (rng () mod 7))
-           |> Weekday_set.of_seq
-       in
-       let hours =
-         if rng () mod 2 = 0 then Int_set.empty
-         else
-           let end_inc = min 5 (rng ()) in
-           OSeq.(0 -- end_inc)
-           |> Seq.map (fun _ -> rng () mod 24)
-           |> Int_set.of_seq
-       in
-       let minutes =
-         if rng () mod 2 = 0 then Int_set.empty
-         else
-           let end_inc = min 5 (rng ()) in
-           OSeq.(0 -- end_inc)
-           |> Seq.map (fun _ -> rng () mod 60)
-           |> Int_set.of_seq
-       in
-       let seconds =
-         if rng () mod 2 = 0 then Int_set.empty
-         else
-           let end_inc = min 5 (rng ()) in
-           OSeq.(0 -- end_inc)
-           |> Seq.map (fun _ -> rng () mod 60)
-           |> Int_set.of_seq
-       in
-       Pattern.{ years; months; month_days; weekdays; hours; minutes; seconds })
+       Builder.make_pattern ~rng ~min_year ~max_year_inc
+       )
+
+let points : Points.t Crowbar.gen =
+  Crowbar.map
+    [ Crowbar.list (Crowbar.range 5000) ]
+    (fun randomness ->
+       let min_year = 0000 in
+       let max_year_inc = 9999 in
+       let rng = Builder.make_rng ~randomness in
+       Builder.make_points ~rng ~min_year ~max_year_inc
+    )
 
 let search_space =
   Crowbar.map
