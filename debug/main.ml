@@ -10,7 +10,7 @@ let display_intervals ~display_using_tz s =
   | Seq.Nil -> print_endline "No time intervals"
   | Seq.Cons _ ->
     s
-    |> OSeq.take 100
+    |> OSeq.take 50
     |> OSeq.iter (fun (x, y) ->
         let s = Printers.sprintf_interval ~display_using_tz (x, y) in
         let size = Duration.of_seconds (Int64.sub y x) in
@@ -18,26 +18,35 @@ let display_intervals ~display_using_tz s =
         Printf.printf "%s - %s\n" s size_str)
 
 let debug_resolver () =
-  (*   let s = {|
-   * (unchunk (drop 3 (chunk_at_month_boundary (all))))
-   *     |} in
-   *   let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in *)
+  let s =
+    {|
+(shift 1
+  (intervals
+    ((2002 Jun 9 20 15 29 (tz_and_tz_offset_s UTC 0))
+     (2002 Jun 9 20 18 34 (tz_and_tz_offset_s UTC 0))
+    ))
+)
+      |}
+  in
+  let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in
   (* let timere =
    *   (fun max_height max_branching randomness ->
+   *      let max_height = 1 + max_height in
+   *      let max_branching = 1 + max_branching in
    *      Builder.build ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching
-   *        ~randomness)
-   *     2 1 [ 231; 495; 914; 495 ]
+   *        ~randomness ~enable_extra_restrictions:false)
+   *     1 1 [ 15; 449; 968; 185 ]
    * in *)
-  let timere =
-    let open Time in
-    inter
-      [
-        shift
-          (Duration.make ~days:366 ())
-          (pattern ~years:[ 2020 ] ~months:[ `Jan ] ~month_days:[ 1 ] ());
-        pattern ~years:[ 2021 ] ~months:[ `Jan ] ~month_days:[ 1 ] ();
-      ]
-  in
+  (* let timere =
+   *   let open Time in
+   *   inter
+   *     [
+   *       shift
+   *         (Duration.make ~days:366 ())
+   *         (pattern ~years:[ 2020 ] ~months:[ `Jan ] ~month_days:[ 1 ] ());
+   *       pattern ~years:[ 2021 ] ~months:[ `Jan ] ~month_days:[ 1 ] ();
+   *     ]
+   * in *)
   (* let timere =
    *   let open Time in
    *   recur
@@ -94,15 +103,15 @@ let debug_resolver () =
   print_endline "^^^^^";
   print_endline (To_sexp.to_sexp_string timere');
   print_endline "=====";
-  (match Resolver.resolve timere with
+  (match Resolver.resolve timere' with
    | Error msg -> print_endline msg
    | Ok s -> display_intervals ~display_using_tz:tz s);
   print_endline "=====";
-  (* let s =
-   *   Simple_resolver.resolve ~search_start ~search_end_exc
-   *     ~search_using_tz:Time_zone.utc timere
-   * in
-   * display_intervals ~display_using_tz:tz s; *)
+  let s =
+    Simple_resolver.resolve ~search_start ~search_end_exc
+      ~search_using_tz:Time_zone.utc timere
+  in
+  display_intervals ~display_using_tz:tz s;
   print_newline ()
 
 let debug_ccsexp_parse_string () = CCSexp.parse_string "\"\\256\"" |> ignore
@@ -184,7 +193,7 @@ let debug_fuzz_union () =
        let max_branching = 1 + max_branching in
        Builder.build ~enable_extra_restrictions:false ~min_year:2000
          ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
-      0 3 [ 761; 143 ]
+      0 0 [ 4; 1 ]
   in
   let t2 =
     (fun max_height max_branching randomness ->
@@ -225,9 +234,9 @@ let debug_fuzz_union () =
 
 (* let () = debug_parsing () *)
 
-let () = debug_fuzz_bounded_intervals ()
+(* let () = debug_fuzz_bounded_intervals () *)
 
-(* let () = debug_resolver () *)
+let () = debug_resolver ()
 
 (* let () = debug_ccsexp_parse_string () *)
 
