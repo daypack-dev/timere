@@ -27,7 +27,7 @@ let points : Points.t Crowbar.gen =
        let min_year = 0000 in
        let max_year_inc = 9999 in
        let rng = Builder.make_rng ~randomness in
-       Builder.make_points ~rng ~min_year ~max_year_inc)
+       Builder.make_points ~rng ~min_year ~max_year_inc ~max_precision:7)
 
 let search_space =
   Crowbar.map
