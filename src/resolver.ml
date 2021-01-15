@@ -370,6 +370,41 @@ let normalize s =
     ~skip_sort:true
   |> Time.slice_valid_interval
 
+let aux_pattern search_using_tz space pat =
+  let open Time in
+  Time_zone.transition_seq search_using_tz
+  |> Seq.flat_map (fun ((x, y), entry) ->
+      let space =
+        Intervals.Inter.inter (Seq.return (x, y)) (CCList.to_seq space)
+      in
+      let params =
+        Seq.map
+          (Pattern_resolver.Search_param.make ~search_using_tz
+             ~search_using_tz_offset_s:Time_zone.(entry.offset))
+          space
+      in
+      Intervals.Union.union_multi_seq ~skip_check:true
+        (Seq.map (fun param -> Pattern_resolver.resolve param pat) params))
+
+let aux_points search_using_tz space (p, tz_info) : timestamp Seq.t =
+  let search_using_tz =
+    match tz_info with
+    | None -> search_using_tz
+    | Some tz_info ->
+      match tz_info with
+      | `Tz_only tz -> tz
+      | `Tz_offset_s_only x -> Time_zone.make_offset_only x
+      | `Tz_and_tz_offset_s (tz, _) ->
+        tz
+  in
+  aux_pattern search_using_tz space
+    (Points.to_pattern (p, tz_info))
+  |> Seq.map (fun (x, y) ->
+      assert (x -^ y = 1L);
+      x
+    )
+
+
 let rec aux search_using_tz time =
   let open Time in
   (match get_search_space time with
@@ -407,22 +442,6 @@ let rec aux search_using_tz time =
        | Unchunk (_, c) -> aux_chunked search_using_tz c))
   |> normalize
 
-and aux_pattern search_using_tz space pat =
-  let open Time in
-  Time_zone.transition_seq search_using_tz
-  |> Seq.flat_map (fun ((x, y), entry) ->
-      let space =
-        Intervals.Inter.inter (Seq.return (x, y)) (CCList.to_seq space)
-      in
-      let params =
-        Seq.map
-          (Pattern_resolver.Search_param.make ~search_using_tz
-             ~search_using_tz_offset_s:Time_zone.(entry.offset))
-          space
-      in
-      Intervals.Union.union_multi_seq ~skip_check:true
-        (Seq.map (fun param -> Pattern_resolver.resolve param pat) params))
-
 (* and aux_follow search_using_tz space bound s1 s2 t1 t2 =
  *   let _, search_space_end_exc =
  *     CCOpt.get_exn @@ Misc_utils.last_element_of_list space
@@ -452,24 +471,6 @@ and aux_pattern search_using_tz space pat =
  *               aux_follow' s1 s2 t1 t2)
  *   in
  *   aux_follow' s1 s2 t1 t2 *)
-
-and aux_points search_using_tz space (p, tz_info) : timestamp Seq.t =
-  let search_using_tz =
-    match tz_info with
-    | None -> search_using_tz
-    | Some tz_info ->
-      match tz_info with
-      | `Tz_only tz -> tz
-      | `Tz_offset_s_only x -> Time_zone.make_offset_only x
-      | `Tz_and_tz_offset_s (tz, _) ->
-        tz
-  in
-  aux_pattern search_using_tz space
-    (Points.to_pattern (p, tz_info))
-  |> Seq.map (fun (x, y) ->
-      assert (x -^ y = 1L);
-      x
-    )
 
 and get_points_after_start1 ~start1
     ~(s2 : timestamp Seq.t)
