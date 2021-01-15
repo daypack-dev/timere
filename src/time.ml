@@ -1683,7 +1683,11 @@ let seconds seconds = pattern ~seconds ()
 
 let bounded_intervals pick (bound : Duration.t) (start : Points.t)
     (end_exc : Points.t) : t =
-  Bounded_intervals { pick; bound = Duration.to_seconds bound; start; end_exc }
+  if Points.precision start < Points.precision end_exc then
+    invalid_arg "bounded_intervals: start is less precise than end_exc"
+  else
+    Bounded_intervals
+      { pick; bound = Duration.to_seconds bound; start; end_exc }
 
 (* let hms_interval_exc (hms_a : hms) (hms_b : hms) : t =
  *   let a = second_of_day_of_hms hms_a in

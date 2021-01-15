@@ -41,6 +41,16 @@ type pick =
 
 type t = pick * tz_info option
 
+let precision ((pick, _) : t) : int =
+  match pick with
+  | S _ -> 0
+  | MS _ -> 1
+  | HMS _ -> 2
+  | WHMS _ -> 3
+  | DHMS _ -> 4
+  | MDHMS _ -> 5
+  | YMDHMS _ -> 6
+
 let make ?tz_info ?year ?month ?month_day ?weekday ?hour ?minute ~second () =
   let pick =
     match (year, month, month_day, weekday, hour, minute) with
