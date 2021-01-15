@@ -33,7 +33,7 @@ let debug_resolver () =
     inter
       [
         shift
-          (Duration.make ~days:365 ())
+          (Duration.make ~days:366 ())
           (pattern ~years:[ 2020 ] ~months:[ `Jan ] ~month_days:[ 1 ] ());
         pattern ~years:[ 2021 ] ~months:[ `Jan ] ~month_days:[ 1 ] ();
       ]
