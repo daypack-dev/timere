@@ -5,7 +5,7 @@ let timestamp_safe_sub a b =
   else Constants.min_timestamp
 
 let timestamp_safe_add a b =
-  if Int64.sub Constants.max_timestamp a <= b then Int64.add a b
+  if Int64.sub Constants.max_timestamp a >= b then Int64.add a b
   else Constants.max_timestamp
 
 let do_chunk ~drop_partial (n : int64) (s : Time.Interval.t Seq.t) :
