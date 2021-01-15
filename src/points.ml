@@ -156,8 +156,8 @@ let to_pattern (t, _tz_info) =
     | WHMS { second; _ }
     | DHMS { second; _ }
     | HMS { second; _ }
-    | MS { second; _ } ->
+    | MS { second; _ }
+    | S second ->
       Int_set.add second Int_set.empty
-    | _ -> Int_set.empty
   in
   Pattern.{ years; months; month_days; weekdays; hours; minutes; seconds }
