@@ -157,6 +157,12 @@ let propagate_search_space_bottom_up default_tz (time : t) : t =
             |> List.map (fun (x, y) -> (Int64.add x n, Int64.add y n))
           in
           Unary_op (space, op, t)
+        | Lengthen n ->
+          let space =
+            get_search_space t
+            |> List.map (fun (x, y) -> (x, Int64.add y n))
+          in
+          Unary_op (space, op, t)
         | _ ->
           let t = aux tz t in
           Unary_op (get_search_space t, op, t))
