@@ -271,22 +271,18 @@ let time_gen : Time_ast.t QCheck.Gen.t =
     @@ Time.Date_time'.make ~year:2018 ~month:`Jan ~day:1 ~hour:0 ~minute:0
       ~second:0 ~tz:Time_zone.utc
   in
-  let search_start =
-    Time.Date_time'.to_timestamp_single search_start_dt
-  in
+  let search_start = Time.Date_time'.to_timestamp_single search_start_dt in
   let search_end_exc_dt =
     CCResult.get_exn
     @@ Time.Date_time'.make ~year:2021 ~month:`Jan ~day:1 ~hour:0 ~minute:0
       ~second:0 ~tz:Time_zone.utc
   in
-  let search_end_exc =
-    Time.Date_time'.to_timestamp_single search_end_exc_dt
-  in
+  let search_end_exc = Time.Date_time'.to_timestamp_single search_end_exc_dt in
   map3
     (fun max_height max_branching randomness ->
        Time.inter
          [
-           Time.of_intervals [(search_start, search_end_exc)];
+           Time.of_intervals [ (search_start, search_end_exc) ];
            Builder.build ~enable_extra_restrictions:true ~min_year:2018
              ~max_year_inc:2020 ~max_height ~max_branching ~randomness;
          ])

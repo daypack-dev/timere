@@ -18,10 +18,10 @@ let display_intervals ~display_using_tz s =
         Printf.printf "%s - %s\n" s size_str)
 
 let debug_resolver () =
-(*   let s = {|
- * (unchunk (drop 3 (chunk_at_month_boundary (all))))
- *     |} in
- *   let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in *)
+  (*   let s = {|
+   * (unchunk (drop 3 (chunk_at_month_boundary (all))))
+   *     |} in
+   *   let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in *)
   (* let timere =
    *   (fun max_height max_branching randomness ->
    *      Builder.build ~min_year:2000 ~max_year_inc:2002 ~max_height ~max_branching
@@ -30,10 +30,13 @@ let debug_resolver () =
    * in *)
   let timere =
     let open Time in
-    inter [
-      shift (Duration.make ~days:365 ()) (pattern ~years:[2020] ~months:[`Jan] ~month_days:[1] ());
-      (pattern ~years:[2021] ~months:[`Jan] ~month_days:[1] ());
-    ]
+    inter
+      [
+        shift
+          (Duration.make ~days:365 ())
+          (pattern ~years:[ 2020 ] ~months:[ `Jan ] ~month_days:[ 1 ] ());
+        pattern ~years:[ 2021 ] ~months:[ `Jan ] ~month_days:[ 1 ] ();
+      ]
   in
   (* let timere =
    *   let open Time in

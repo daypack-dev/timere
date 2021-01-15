@@ -17,37 +17,67 @@ let sexp_of_tz_info info =
      | `Tz_only x -> [ atom "tz"; sexp_of_tz x ]
      | `Tz_offset_s_only x -> [ atom "tz_offset_s"; sexp_of_int x ]
      | `Tz_and_tz_offset_s (tz, tz_offset_s) ->
-       [
-         atom "tz_and_tz_offset_s"; sexp_of_tz tz; sexp_of_int tz_offset_s;
-       ])
+       [ atom "tz_and_tz_offset_s"; sexp_of_tz tz; sexp_of_int tz_offset_s ])
 
-let sexp_of_points ((pick, tz_info)) =
+let sexp_of_points (pick, tz_info) =
   let open CCSexp in
   let open Points in
-  list (CCList.filter_map CCFun.id [
-      Some (atom "points");
-      Some (list (
-        atom "pick" ::
-        (
-          match pick with
-          | S x -> [ atom "s"; sexp_of_int x ]
-          | MS { minute; second } ->
-            [ atom "ms"; sexp_of_int minute; sexp_of_int second ]
-          | HMS { hour; minute; second } ->
-            [ atom "hms"; sexp_of_int hour; sexp_of_int minute; sexp_of_int second ]
-          | WHMS { weekday; hour; minute; second } ->
-            [ atom "whms"; sexp_of_weekday weekday; sexp_of_int hour; sexp_of_int minute; sexp_of_int second ]
-          | DHMS { month_day; hour; minute; second } ->
-            [ atom "dhms"; sexp_of_int month_day; sexp_of_int hour; sexp_of_int minute; sexp_of_int second ]
-          | MDHMS { month; month_day; hour; minute; second } ->
-            [ atom "mdhms"; sexp_of_month month; sexp_of_int month_day; sexp_of_int hour; sexp_of_int minute; sexp_of_int second ]
-          | YMDHMS { year; month; month_day; hour; minute; second } ->
-            [ atom "ymdhms"; sexp_of_int year; sexp_of_month month; sexp_of_int month_day; sexp_of_int hour; sexp_of_int minute; sexp_of_int second ]
-        )
-      ));
-      CCOpt.map sexp_of_tz_info tz_info;
-    ]
-    )
+  list
+    (CCList.filter_map CCFun.id
+       [
+         Some (atom "points");
+         Some
+           (list
+              (atom "pick"
+               ::
+               (match pick with
+                | S x -> [ atom "s"; sexp_of_int x ]
+                | MS { minute; second } ->
+                  [ atom "ms"; sexp_of_int minute; sexp_of_int second ]
+                | HMS { hour; minute; second } ->
+                  [
+                    atom "hms";
+                    sexp_of_int hour;
+                    sexp_of_int minute;
+                    sexp_of_int second;
+                  ]
+                | WHMS { weekday; hour; minute; second } ->
+                  [
+                    atom "whms";
+                    sexp_of_weekday weekday;
+                    sexp_of_int hour;
+                    sexp_of_int minute;
+                    sexp_of_int second;
+                  ]
+                | DHMS { month_day; hour; minute; second } ->
+                  [
+                    atom "dhms";
+                    sexp_of_int month_day;
+                    sexp_of_int hour;
+                    sexp_of_int minute;
+                    sexp_of_int second;
+                  ]
+                | MDHMS { month; month_day; hour; minute; second } ->
+                  [
+                    atom "mdhms";
+                    sexp_of_month month;
+                    sexp_of_int month_day;
+                    sexp_of_int hour;
+                    sexp_of_int minute;
+                    sexp_of_int second;
+                  ]
+                | YMDHMS { year; month; month_day; hour; minute; second } ->
+                  [
+                    atom "ymdhms";
+                    sexp_of_int year;
+                    sexp_of_month month;
+                    sexp_of_int month_day;
+                    sexp_of_int hour;
+                    sexp_of_int minute;
+                    sexp_of_int second;
+                  ])));
+         CCOpt.map sexp_of_tz_info tz_info;
+       ])
 
 let sexp_of_date_time (x : Time.Date_time'.t) =
   let open CCSexp in
@@ -176,10 +206,7 @@ let to_sexp (t : Time_ast.t) : CCSexp.t =
         list
           [
             atom "bounded_intervals";
-            (match pick with
-             | `Whole -> atom "whole"
-             | `Snd -> atom "snd";
-            );
+            (match pick with `Whole -> atom "whole" | `Snd -> atom "snd");
             Duration.of_seconds bound |> sexp_of_duration;
             sexp_of_points start;
             sexp_of_points end_exc;

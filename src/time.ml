@@ -1269,19 +1269,21 @@ module Date_time' = struct
 
   let max = CCResult.get_exn @@ of_timestamp max_timestamp
 
-  let of_points ?(default_tz_info = utc_tz_info) ((pick, tz_info) : Points.t) : t option =
+  let of_points ?(default_tz_info = utc_tz_info) ((pick, tz_info) : Points.t) :
+    t option =
     let open Points in
     match pick with
     | YMDHMS { year; month; month_day; hour; minute; second } ->
-      Some {
-        year;
-        month;
-        day = month_day;
-        hour;
-        minute;
-        second;
-        tz_info = CCOpt.value ~default:default_tz_info tz_info;
-      }
+      Some
+        {
+          year;
+          month;
+          day = month_day;
+          hour;
+          minute;
+          second;
+          tz_info = CCOpt.value ~default:default_tz_info tz_info;
+        }
     | _ -> None
 
   let cur ?(tz_of_date_time = Time_zone.utc) () : (t, unit) result =
@@ -1364,15 +1366,18 @@ let equal t1 t2 =
     match (t1, t2) with
     | Empty, Empty -> true
     | All, All -> true
-    | Intervals s1, Intervals s2 ->
-      OSeq.equal ~eq:( = ) s1 s2
+    | Intervals s1, Intervals s2 -> OSeq.equal ~eq:( = ) s1 s2
     | Pattern p1, Pattern p2 -> Pattern.equal p1 p2
     | Unary_op (op1, t1), Unary_op (op2, t2) ->
       equal_unary_op op1 op2 && aux t1 t2
-    | Bounded_intervals { pick = pick1; bound = b1; start = start1; end_exc = end_exc1},
-      Bounded_intervals { pick = pick2; bound = b2; start = start2; end_exc = end_exc2} ->
-      pick1 = pick2 &&
-      b1 = b2 && Points.equal start1 start2 && Points.equal end_exc1 end_exc2
+    | ( Bounded_intervals
+          { pick = pick1; bound = b1; start = start1; end_exc = end_exc1 },
+        Bounded_intervals
+          { pick = pick2; bound = b2; start = start2; end_exc = end_exc2 } ) ->
+      pick1 = pick2
+      && b1 = b2
+      && Points.equal start1 start2
+      && Points.equal end_exc1 end_exc2
     | Inter_seq s1, Inter_seq s2 | Union_seq s1, Union_seq s2 ->
       OSeq.for_all2 aux s1 s2
     | Unchunk c1, Unchunk c2 -> aux_chunked c1 c2
@@ -1676,11 +1681,9 @@ let minutes minutes = pattern ~minutes ()
 
 let seconds seconds = pattern ~seconds ()
 
-let bounded_intervals pick (bound : Duration.t) (start : Points.t) (end_exc : Points.t) : t =
-  Bounded_intervals
-    {
-      pick; bound = Duration.to_seconds bound; start; end_exc
-    }
+let bounded_intervals pick (bound : Duration.t) (start : Points.t)
+    (end_exc : Points.t) : t =
+  Bounded_intervals { pick; bound = Duration.to_seconds bound; start; end_exc }
 
 (* let hms_interval_exc (hms_a : hms) (hms_b : hms) : t =
  *   let a = second_of_day_of_hms hms_a in
@@ -1704,12 +1707,8 @@ let bounded_intervals pick (bound : Duration.t) (start : Points.t) (end_exc : Po
 
 let hms_intervals_exc (hms_a : hms) (hms_b : hms) : t =
   bounded_intervals `Whole (Duration.make ~days:1 ())
-    (Points.make ~hour:hms_a.hour ~minute:hms_a.minute
-       ~second:hms_a.second ()
-    )
-    (Points.make ~hour:hms_b.hour ~minute:hms_b.minute
-       ~second:hms_b.second ()
-    )
+    (Points.make ~hour:hms_a.hour ~minute:hms_a.minute ~second:hms_a.second ())
+    (Points.make ~hour:hms_b.hour ~minute:hms_b.minute ~second:hms_b.second ())
 
 let hms_intervals_inc (hms_a : hms) (hms_b : hms) : t =
   let hms_b = hms_b |> second_of_day_of_hms |> succ |> hms_of_second_of_day in
@@ -1807,19 +1806,19 @@ let of_timestamp x = of_timestamps [ x ]
 
 let nth_weekday_of_month (n : int) wday =
   let first_weekday_of_month wday =
-    pattern ~month_day_ranges:[`Range_inc (1, 7)] ~weekdays:[wday] ()
+    pattern ~month_day_ranges:[ `Range_inc (1, 7) ] ~weekdays:[ wday ] ()
   in
   let second_weekday_of_month wday =
-    pattern ~month_day_ranges:[`Range_inc (8, 14)] ~weekdays:[wday] ()
+    pattern ~month_day_ranges:[ `Range_inc (8, 14) ] ~weekdays:[ wday ] ()
   in
   let third_weekday_of_month wday =
-    pattern ~month_day_ranges:[`Range_inc (15, 21)] ~weekdays:[wday] ()
+    pattern ~month_day_ranges:[ `Range_inc (15, 21) ] ~weekdays:[ wday ] ()
   in
   let fourth_weekday_of_month wday =
-    pattern ~month_day_ranges:[`Range_inc (22, 28)] ~weekdays:[wday] ()
+    pattern ~month_day_ranges:[ `Range_inc (22, 28) ] ~weekdays:[ wday ] ()
   in
   let fifth_weekday_of_month wday =
-    pattern ~month_days:[29; 30; 31] ~weekdays:[wday] ()
+    pattern ~month_days:[ 29; 30; 31 ] ~weekdays:[ wday ] ()
   in
   match n with
   | 0 -> invalid_arg "nth_weekday_of_month: n = 0"

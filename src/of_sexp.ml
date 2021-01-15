@@ -75,17 +75,16 @@ let duration_of_sexp (x : CCSexp.t) =
 let tz_info_of_sexp (x : CCSexp.t) =
   match x with
   | `Atom _ ->
-    invalid_data
-      (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x))
-  | `List l ->
-    match l with
-    | [ `Atom "tz"; x ] -> `Tz_only (tz_of_sexp x)
-    | [ `Atom "tz_offset_s"; x ] -> `Tz_offset_s_only (int_of_sexp x)
-    | [ `Atom "tz_and_tz_offset_s"; tz; tz_offset_s ] ->
-      `Tz_and_tz_offset_s (tz_of_sexp tz, int_of_sexp tz_offset_s)
-    | _ ->
-      invalid_data
-        (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x))
+    invalid_data (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x))
+  | `List l -> (
+      match l with
+      | [ `Atom "tz"; x ] -> `Tz_only (tz_of_sexp x)
+      | [ `Atom "tz_offset_s"; x ] -> `Tz_offset_s_only (int_of_sexp x)
+      | [ `Atom "tz_and_tz_offset_s"; tz; tz_offset_s ] ->
+        `Tz_and_tz_offset_s (tz_of_sexp tz, int_of_sexp tz_offset_s)
+      | _ ->
+        invalid_data
+          (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x)))
 
 let date_time_of_sexp (x : CCSexp.t) =
   let invalid_data () =
@@ -99,9 +98,7 @@ let date_time_of_sexp (x : CCSexp.t) =
       let hour = int_of_sexp hour in
       let minute = int_of_sexp minute in
       let second = int_of_sexp second in
-      let tz_info =
-        tz_info_of_sexp tz_info
-      in
+      let tz_info = tz_info_of_sexp tz_info in
       match tz_info with
       | `Tz_only tz -> (
           match
@@ -217,30 +214,66 @@ let points_of_sexp (x : CCSexp.t) =
   let open Points in
   let pick_of_sexp_list (l : CCSexp.t list) : pick =
     match l with
-    | [`Atom "s"; x ] -> S (int_of_sexp x)
-    | [`Atom "ms"; minute; second ] -> MS { minute = int_of_sexp minute; second = int_of_sexp second }
-    | [`Atom "hms"; hour; minute; second ] -> HMS { hour = int_of_sexp hour; minute = int_of_sexp minute; second = int_of_sexp second }
-    | [`Atom "whms"; weekday; hour; minute; second ] -> WHMS { weekday = weekday_of_sexp weekday; hour = int_of_sexp hour; minute = int_of_sexp minute; second = int_of_sexp second }
-    | [`Atom "dhms"; month_day; hour; minute; second ] -> DHMS { month_day = int_of_sexp month_day; hour = int_of_sexp hour; minute = int_of_sexp minute; second = int_of_sexp second }
-    | [`Atom "mdhms"; month; month_day; hour; minute; second ] -> MDHMS { month = month_of_sexp month; month_day = int_of_sexp month_day; hour = int_of_sexp hour; minute = int_of_sexp minute; second = int_of_sexp second }
-    | [`Atom "ymdhms"; year; month; month_day; hour; minute; second ] -> YMDHMS { year = int_of_sexp year; month = month_of_sexp month; month_day = int_of_sexp month_day; hour = int_of_sexp hour; minute = int_of_sexp minute; second = int_of_sexp second }
+    | [ `Atom "s"; x ] -> S (int_of_sexp x)
+    | [ `Atom "ms"; minute; second ] ->
+      MS { minute = int_of_sexp minute; second = int_of_sexp second }
+    | [ `Atom "hms"; hour; minute; second ] ->
+      HMS
+        {
+          hour = int_of_sexp hour;
+          minute = int_of_sexp minute;
+          second = int_of_sexp second;
+        }
+    | [ `Atom "whms"; weekday; hour; minute; second ] ->
+      WHMS
+        {
+          weekday = weekday_of_sexp weekday;
+          hour = int_of_sexp hour;
+          minute = int_of_sexp minute;
+          second = int_of_sexp second;
+        }
+    | [ `Atom "dhms"; month_day; hour; minute; second ] ->
+      DHMS
+        {
+          month_day = int_of_sexp month_day;
+          hour = int_of_sexp hour;
+          minute = int_of_sexp minute;
+          second = int_of_sexp second;
+        }
+    | [ `Atom "mdhms"; month; month_day; hour; minute; second ] ->
+      MDHMS
+        {
+          month = month_of_sexp month;
+          month_day = int_of_sexp month_day;
+          hour = int_of_sexp hour;
+          minute = int_of_sexp minute;
+          second = int_of_sexp second;
+        }
+    | [ `Atom "ymdhms"; year; month; month_day; hour; minute; second ] ->
+      YMDHMS
+        {
+          year = int_of_sexp year;
+          month = month_of_sexp month;
+          month_day = int_of_sexp month_day;
+          hour = int_of_sexp hour;
+          minute = int_of_sexp minute;
+          second = int_of_sexp second;
+        }
     | _ ->
-      invalid_data
-        (Printf.sprintf "Invalid points: %s" (CCSexp.to_string x))
+      invalid_data (Printf.sprintf "Invalid points: %s" (CCSexp.to_string x))
   in
   match x with
   | `Atom _ ->
-    invalid_data
-      (Printf.sprintf "Invalid points: %s" (CCSexp.to_string x))
-  | `List l ->
-    match l with
-    | [`Atom "points"; `List [ `Atom "pick"; `List pick ] ] ->
-      (pick_of_sexp_list pick, None)
-    | [`Atom "points"; `List [ `Atom "pick"; `List pick ]; tz_info ] ->
-      (pick_of_sexp_list pick, Some (tz_info_of_sexp tz_info))
-    | _ ->
-      invalid_data
-        (Printf.sprintf "Invalid points: %s" (CCSexp.to_string x))
+    invalid_data (Printf.sprintf "Invalid points: %s" (CCSexp.to_string x))
+  | `List l -> (
+      match l with
+      | [ `Atom "points"; `List [ `Atom "pick"; `List pick ] ] ->
+        (pick_of_sexp_list pick, None)
+      | [ `Atom "points"; `List [ `Atom "pick"; `List pick ]; tz_info ] ->
+        (pick_of_sexp_list pick, Some (tz_info_of_sexp tz_info))
+      | _ ->
+        invalid_data
+          (Printf.sprintf "Invalid points: %s" (CCSexp.to_string x)))
 
 let of_sexp (x : CCSexp.t) =
   let open Time in
@@ -280,12 +313,10 @@ let of_sexp (x : CCSexp.t) =
             match pick with
             | "whole" -> `Whole
             | "snd" -> `Snd
-            | _ ->
-              invalid_data (Printf.sprintf "Invalid pick: %s" pick)
+            | _ -> invalid_data (Printf.sprintf "Invalid pick: %s" pick)
           in
           let bound = duration_of_sexp bound in
-          bounded_intervals pick bound
-            (points_of_sexp start)
+          bounded_intervals pick bound (points_of_sexp start)
             (points_of_sexp end_exc)
         | [ `Atom "unchunk"; x ] -> aux_chunked CCFun.id x
         | _ ->

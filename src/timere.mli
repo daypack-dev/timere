@@ -474,8 +474,8 @@ val of_sorted_interval_seq : ?skip_invalid:bool -> interval Seq.t -> t
     @raise Intervals_are_not_sorted if [s] is not sorted
 *)
 
-(** {2 Pattern matching intervals} *)
 type points
+(** {2 Pattern matching intervals} *)
 
 val make_points :
   ?tz_info:tz_info ->
@@ -489,12 +489,7 @@ val make_points :
   unit ->
   points
 
-val bounded_intervals :
-  [`Whole | `Snd] ->
-  Duration.t ->
-  points ->
-  points ->
-  t
+val bounded_intervals : [ `Whole | `Snd ] -> Duration.t -> points -> points -> t
 
 (** {2 Hour minute second intervals} *)
 

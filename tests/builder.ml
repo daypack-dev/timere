@@ -100,35 +100,55 @@ let make_pattern ~rng ~min_year ~max_year_inc : Pattern.t =
       let end_inc = min 5 (rng ()) in
       OSeq.(0 -- end_inc) |> Seq.map (fun _ -> rng () mod 60) |> CCList.of_seq
   in
-  Pattern. {
-    years = Int_set.of_list years;
-    months = Month_set.of_list months;
-    month_days = Int_set.of_list month_days;
-    weekdays = Weekday_set.of_list weekdays;
-    hours = Int_set.of_list hours;
-    minutes = Int_set.of_list minutes;
-    seconds = Int_set.of_list seconds;
-  }
+  Pattern.
+    {
+      years = Int_set.of_list years;
+      months = Month_set.of_list months;
+      month_days = Int_set.of_list month_days;
+      weekdays = Weekday_set.of_list weekdays;
+      hours = Int_set.of_list hours;
+      minutes = Int_set.of_list minutes;
+      seconds = Int_set.of_list seconds;
+    }
 
 let make_points ~rng ~min_year ~max_year_inc =
   let month_day =
-    if rng() mod 2 = 0 then
-      1 + (rng () mod 31)
-    else
-      -(1 + (rng () mod 31))
+    if rng () mod 2 = 0 then 1 + (rng () mod 31) else -(1 + (rng () mod 31))
   in
   match rng () mod 7 with
   | 0 -> Points.make ~second:(rng () mod 60) ()
   | 1 -> Points.make ~minute:(rng () mod 60) ~second:(rng ()) ()
-  | 2 -> Points.make ~hour:(rng () mod 24) ~minute:(rng () mod 60) ~second:(rng ()) ()
-  | 3 -> Points.make ~weekday:(rng() mod 7 |> weekday_of_tm_int |> CCResult.get_exn) ~hour:(rng () mod 24) ~minute:(rng () mod 60) ~second:(rng ()) ()
+  | 2 ->
+    Points.make
+      ~hour:(rng () mod 24)
+      ~minute:(rng () mod 60)
+      ~second:(rng ()) ()
+  | 3 ->
+    Points.make
+      ~weekday:(rng () mod 7 |> weekday_of_tm_int |> CCResult.get_exn)
+      ~hour:(rng () mod 24)
+      ~minute:(rng () mod 60)
+      ~second:(rng ()) ()
   | 4 ->
-    Points.make ~month_day ~hour:(rng () mod 24) ~minute:(rng () mod 60) ~second:(rng ()) ()
+    Points.make ~month_day
+      ~hour:(rng () mod 24)
+      ~minute:(rng () mod 60)
+      ~second:(rng ()) ()
   | 5 ->
-    Points.make ~month:(CCResult.get_exn @@ month_of_tm_int (rng () mod 12)) ~month_day ~hour:(rng () mod 24) ~minute:(rng () mod 60) ~second:(rng ()) ()
+    Points.make
+      ~month:(CCResult.get_exn @@ month_of_tm_int (rng () mod 12))
+      ~month_day
+      ~hour:(rng () mod 24)
+      ~minute:(rng () mod 60)
+      ~second:(rng ()) ()
   | 6 ->
-    Points.make ~year:(min max_year_inc (min_year + rng ()))
-      ~month:(CCResult.get_exn @@ month_of_tm_int (rng () mod 12)) ~month_day ~hour:(rng () mod 24) ~minute:(rng () mod 60) ~second:(rng ()) ()
+    Points.make
+      ~year:(min max_year_inc (min_year + rng ()))
+      ~month:(CCResult.get_exn @@ month_of_tm_int (rng () mod 12))
+      ~month_day
+      ~hour:(rng () mod 24)
+      ~minute:(rng () mod 60)
+      ~second:(rng ()) ()
   | _ -> failwith "Unexpected case"
 
 let make_hms ~rng =
@@ -238,11 +258,7 @@ let build ~enable_extra_restrictions ~min_year ~max_year_inc ~max_height
         |> CCList.of_seq
         |> Time.union
       | 3 ->
-        let pick =
-          if rng () mod 2 = 0 then `Whole
-          else
-            `Snd
-        in
+        let pick = if rng () mod 2 = 0 then `Whole else `Snd in
         Time.bounded_intervals pick (make_duration ~rng)
           (make_points ~rng ~min_year ~max_year_inc)
           (make_points ~rng ~min_year ~max_year_inc)
