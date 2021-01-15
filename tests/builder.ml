@@ -233,13 +233,13 @@ let build ~enable_extra_restrictions ~min_year ~max_year_inc ~max_height
   let rng = make_rng ~randomness in
   let rec aux height =
     if height <= 1 then
-      match rng () mod 8 with
+      match rng () mod 6 with
       | 0 -> Time.empty
       | 1 -> Time.always
       | 2 -> make_timestamp_intervals ~rng ~min_year ~max_year_inc
       | 3 -> Time_ast.Pattern (make_pattern ~rng ~min_year ~max_year_inc)
-      | 6 -> make_hms_intervals_inc ~rng
-      | 7 -> make_hms_intervals_exc ~rng
+      | 4 -> make_hms_intervals_inc ~rng
+      | 5 -> make_hms_intervals_exc ~rng
       | _ -> failwith "Unexpected case"
     else
       match rng () mod 5 with
