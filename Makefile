@@ -48,6 +48,10 @@ gen :
 	cd gen/ && dune build gen.exe
 	dune exec gen/gen.exe
 
+.PHONY: export-js
+export-js :
+	dune build export-js/main.bc.js
+
 .PHONY: cinaps
 cinaps :
 	cinaps -i $(SRCFILES)
