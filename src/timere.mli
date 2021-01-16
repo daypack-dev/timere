@@ -671,4 +671,8 @@ module Utils : sig
   val human_int_of_month : month -> int
 
   val tm_int_of_month : month -> int
+
+  val month_of_human_int : int -> (month, unit) result
+
+  val month_of_tm_int : int -> (month, unit) result
 end

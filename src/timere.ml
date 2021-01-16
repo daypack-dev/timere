@@ -91,4 +91,8 @@ module Utils = struct
   let human_int_of_month = human_int_of_month
 
   let tm_int_of_month = tm_int_of_month
+
+  let month_of_human_int = month_of_human_int
+
+  let month_of_tm_int = month_of_tm_int
 end
