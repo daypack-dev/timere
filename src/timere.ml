@@ -87,4 +87,8 @@ module Utils = struct
     (weekday list, unit) CCResult.t =
     try Ok (Weekday_ranges.Flatten.flatten_list weekdays)
     with Range.Range_is_invalid -> Error ()
+
+  let human_int_of_month = human_int_of_month
+
+  let tm_int_of_month = tm_int_of_month
 end

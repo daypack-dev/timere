@@ -667,4 +667,8 @@ module Utils : sig
 
   val flatten_weekday_range_list :
     weekday range list -> (weekday list, unit) result
+
+  val human_int_of_month : month -> int
+
+  val tm_int_of_month : month -> int
 end
