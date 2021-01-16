@@ -1,4 +1,4 @@
-include Timere_tz_data
+include Timere_tzdb
 
 type record = {
   recorded_offsets : int array;
@@ -194,7 +194,7 @@ let of_json_string s : (t, unit) result =
                 | `Int x -> x
                 | _ -> raise Invalid_data
               in
-              let entry = Timere_tz_data.{ is_dst; offset } in
+              let entry = Timere_tzdb.{ is_dst; offset } in
               (start, entry)
             | _ -> raise Invalid_data)
         |> Array.of_list

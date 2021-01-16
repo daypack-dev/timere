@@ -1,5 +1,5 @@
 (rule
- (targets timere_tz_data.ml)
+ (targets timere_tzdb.ml)
  (deps    ../gen-artifacts/time_zone_data.ml)
  (action  (copy %{deps} %{targets}))
 )
@@ -8,5 +8,5 @@
  (flags     (-w "+a-4-9-29-37-40-42-44-48-50-32-30@8"))
  (name      timere_tzdb_full)
  (public_name timere.tzdb.full)
- (implements timere_tz_data)
+ (implements timere_tzdb)
 )
