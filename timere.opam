@@ -20,6 +20,7 @@ depends: [
   "mparser"
   "containers" {>= "3.0"}
   "ptime"
+  "re"
   "yojson"
 ]
 build: [
