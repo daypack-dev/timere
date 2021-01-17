@@ -1,19 +1,5 @@
 open Js_of_ocaml
 
-let js_date_of_timestamp x =
-  let open Timere.Date_time in
-  let dt = CCResult.get_exn @@ of_timestamp x in
-  let date = new%js Js.date_now in
-  (* let date = new%js Js.date_sec dt.year (Timere.Utils.tm_int_of_month dt.month) dt.day dt.hour dt.minute dt.second in *)
-  let _ = date##setUTCFullYear dt.year in
-  let _ = date##setUTCMonth (Timere.Utils.tm_int_of_month dt.month) in
-  let _ = date##setUTCDate dt.day in
-  let _ = date##setUTCHours dt.hour in
-  let _ = date##setUTCMinutes dt.minute in
-  let _ = date##setUTCSeconds dt.second in
-  let _ = date##setUTCMilliseconds 0 in
-  date
-
 let list_of_js_array arr = arr |> Js.to_array |> Array.to_list
 
 let js_array_of_list l = l |> Array.of_list |> Js.array
@@ -29,6 +15,46 @@ let wrap f =
     f ()
   with
   | Invalid_argument msg -> raise_with_msg msg
+
+let js_date_of_date_time dt =
+  let open Timere.Date_time in
+  let date = new%js Js.date_now in
+  let _ = date##setUTCFullYear dt.year in
+  let _ = date##setUTCMonth (Timere.Utils.tm_int_of_month dt.month) in
+  let _ = date##setUTCDate dt.day in
+  let _ = date##setUTCHours dt.hour in
+  let _ = date##setUTCMinutes dt.minute in
+  let _ = date##setUTCSeconds dt.second in
+  let _ = date##setUTCMilliseconds 0 in
+  date
+
+let js_date_of_timestamp x =
+  match
+    Timere.Date_time.of_timestamp x with
+  | Error () -> raise_with_msg "Invalid timestamp"
+  | Ok dt ->
+    js_date_of_date_time dt
+
+let month_of_int x =
+  match Timere.Utils.month_of_tm_int x with
+  | Error () -> raise_with_msg "Invalid month"
+  | Ok x -> x
+
+let weekday_of_int x =
+  match Timere.Utils.weekday_of_tm_int x with
+  | Error () -> raise_with_msg "Invalid weekday"
+  | Ok x -> x
+
+let date_time_of_js_date (date : Js.date Js.t) =
+  let year = date##getUTCFullYear in
+  let month = month_of_int date##getUTCMonth in
+  let day = date##getUTCDate in
+  let hour = date##getUTCHours in
+  let minute = date##getUTCMinutes in
+  let second = date##getUTCSeconds in
+  match Timere.Date_time.make ~year ~month ~day ~hour ~minute ~second ~tz:Timere.Time_zone.utc with
+  | Error () -> raise_with_msg "Invalid date"
+  | Ok x -> x
 
 let _ =
   Js.export_all
@@ -56,12 +82,7 @@ let _ =
       method weekdays l =
         wrap (fun () ->
             list_of_js_array l
-            |> List.map (fun x ->
-                match Timere.Utils.weekday_of_tm_int x with
-                | Ok x -> x
-                | Error () ->
-                  raise_with_msg "Invalid weekday int"
-              )
+            |> List.map weekday_of_int
             |> Timere.weekdays
           )
 
@@ -79,6 +100,9 @@ let _ =
         wrap (fun () ->
             Timere.seconds (list_of_js_array l)
           )
+
+      method nthWeekdayOfMonth n weekday =
+        Timere.nth_weekday_of_month n (weekday_of_int weekday)
 
       method inter l =
         wrap (fun () ->
@@ -173,6 +197,36 @@ let _ =
             Timere.with_tz tz t
           )
 
+      method ofDate date =
+        Timere.of_date_time
+          (date_time_of_js_date date)
+
+      method ofDates dates =
+        dates
+        |> list_of_js_array
+        |> List.map date_time_of_js_date
+        |> Timere.of_date_times
+
+      val points = object%js
+        method s second =
+          Timere.make_points ~second ()
+
+        method ms minute second =
+          Timere.make_points ~minute ~second ()
+
+        method hms hour minute second =
+          Timere.make_points ~hour ~minute ~second ()
+
+        method whms weekday hour minute second =
+          Timere.make_points ~weekday:(weekday_of_int weekday) ~hour ~minute ~second ()
+
+        method dhms month_day hour minute second =
+          Timere.make_points ~month_day ~hour ~minute ~second ()
+
+        method mdhms month month_day hour minute second =
+          Timere.make_points ~month:(month_of_int month) ~month_day ~hour ~minute ~second ()
+      end
+
       method resolve t =
         match Timere.resolve ~search_using_tz:Timere.Time_zone.utc t with
         | Error msg -> raise_with_msg msg
@@ -189,4 +243,12 @@ let _ =
                 Js.some
                   (Js.array [| js_date_of_timestamp x; js_date_of_timestamp y |])
             )
+
+      method to_sexp_string t =
+        Js.string (Timere.to_sexp_string t)
+
+      method of_sexp_string s =
+        match Timere.of_sexp_string (Js.to_string s) with
+        | Error msg -> raise_with_msg msg
+        | Ok x -> x
     end)
