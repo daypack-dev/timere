@@ -51,7 +51,7 @@ let date_time_of_js_date (date : Js.date Js.t) =
   | Ok x -> x
 
 let to_be_exported =
-  (object%js
+  object%js
     val always = Timere.always
 
     val empty = Timere.empty
@@ -67,8 +67,7 @@ let to_be_exported =
               | Error () -> raise_with_msg "Invalid month int")
           |> Timere.months)
 
-    method monthDays l =
-      wrap (fun () -> Timere.month_days (list_of_js_array l))
+    method monthDays l = wrap (fun () -> Timere.month_days (list_of_js_array l))
 
     method weekdays l =
       wrap (fun () ->
@@ -129,8 +128,7 @@ let to_be_exported =
         val available_time_zones =
           js_array_of_list Timere.Time_zone.available_time_zones
 
-        method makeOffsetOnly offset =
-          Timere.Time_zone.make_offset_only offset
+        method makeOffsetOnly offset = Timere.Time_zone.make_offset_only offset
 
         method toJSONString t = Timere.Time_zone.to_json_string t
 
@@ -192,4 +190,4 @@ let to_be_exported =
       match Timere.of_sexp_string (Js.to_string s) with
       | Error msg -> raise_with_msg msg
       | Ok x -> x
-  end)
+  end
