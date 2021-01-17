@@ -675,4 +675,8 @@ module Utils : sig
   val month_of_human_int : int -> (month, unit) result
 
   val month_of_tm_int : int -> (month, unit) result
+
+  val weekday_of_tm_int : int -> (weekday, unit) result
+
+  val tm_int_of_weekday : weekday -> int
 end

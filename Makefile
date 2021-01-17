@@ -48,9 +48,13 @@ gen :
 	cd gen/ && dune build gen.exe
 	dune exec gen/gen.exe
 
-.PHONY: export-js
-export-js :
-	dune build export-js/main.bc.js
+.PHONY: export-js-tzdb-full
+export-js-tzdb-full :
+	dune build export-js-tzdb-full/main.bc.js
+
+.PHONY: export-js-tzdb-none
+export-js-tzdb-none :
+	dune build export-js-tzdb-none/main.bc.js
 
 .PHONY: cinaps
 cinaps :

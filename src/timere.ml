@@ -95,4 +95,8 @@ module Utils = struct
   let month_of_human_int = month_of_human_int
 
   let month_of_tm_int = month_of_tm_int
+
+  let weekday_of_tm_int = weekday_of_tm_int
+
+  let tm_int_of_weekday = tm_int_of_weekday
 end
