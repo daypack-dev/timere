@@ -51,7 +51,7 @@ let date_time_of_js_date (date : Js.date Js.t) =
   | Ok x -> x
 
 let _ =
-  Js.export_all
+  Js.export "timere"
     (object%js
       val always = Timere.always
 
