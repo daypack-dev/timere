@@ -3,8 +3,7 @@ open Date_components
 
 let () =
   Crowbar.add_test ~name:"pattern_resolution_is_complete"
-    [ search_space; pattern ] (fun search_space pattern ->
-        let tz = Time_zone.utc in
+    [ time_zone; search_space; pattern ] (fun tz search_space pattern ->
         let s =
           Resolver.aux_pattern tz search_space pattern |> Resolver.normalize
         in

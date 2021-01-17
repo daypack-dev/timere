@@ -29,6 +29,15 @@ let points : Points.t Crowbar.gen =
        let rng = Builder.make_rng ~randomness in
        Builder.make_points ~rng ~min_year ~max_year_inc ~max_precision:7)
 
+let time_zone : Time_zone.t Crowbar.gen =
+  let tz_count = List.length Time_zone.available_time_zones in
+  Crowbar.map
+    [ Crowbar.int ]
+    (fun n ->
+       let n = n mod tz_count in
+       Time_zone.make_exn (List.nth Time_zone.available_time_zones n)
+    )
+
 let search_space =
   Crowbar.map
     [

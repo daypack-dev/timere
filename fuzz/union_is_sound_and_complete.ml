@@ -1,9 +1,8 @@
 open Fuzz_utils
 
 let () =
-  Crowbar.add_test ~name:"union_is_sound_and_complete" [ Crowbar.list time' ]
-    (fun l ->
-       let tz = Time_zone.utc in
+  Crowbar.add_test ~name:"union_is_sound_and_complete" [ time_zone; Crowbar.list time' ]
+    (fun tz l ->
        let s = Resolver.aux_union tz (CCList.to_seq l) |> Resolver.normalize in
        let s' =
          l

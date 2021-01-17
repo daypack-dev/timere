@@ -2,9 +2,8 @@ open Fuzz_utils
 
 let () =
   Crowbar.add_test ~name:"bounded_intervals_is_complete"
-    [ Crowbar.range 100_000; points; points ] (fun bound p1 p2 ->
+    [ time_zone; Crowbar.range 100_000; points; points ] (fun tz bound p1 p2 ->
         let bound = Int64.of_int bound in
-        let tz = Time_zone.utc in
         let s1 = Resolver.aux_points tz Resolver.default_search_space p1 in
         let s2 = Resolver.aux_points tz Resolver.default_search_space p2 in
         let s =
