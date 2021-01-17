@@ -50,11 +50,13 @@ gen :
 
 .PHONY: export-js-tzdb-full
 export-js-tzdb-full :
-	dune build export-js-tzdb-full/main.bc.js
+	dune build export-js-tzdb-full/export.bc.js
+	dune build export-js-tzdb-full/export_all.bc.js
 
 .PHONY: export-js-tzdb-none
 export-js-tzdb-none :
-	dune build export-js-tzdb-none/main.bc.js
+	dune build export-js-tzdb-none/export.bc.js
+	dune build export-js-tzdb-none/export_all.bc.js
 
 .PHONY: cinaps
 cinaps :

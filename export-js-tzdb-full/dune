@@ -1,6 +1,6 @@
-(executable
+(executables
  (flags     (-w "+a-4-9-29-37-40-42-44-48-50-32-30@8"))
- (name main)
+ (names export export_all)
  (libraries js_of_ocaml js_of_ocaml-lwt timere timere.tzdb.full timere-parse)
  (preprocess (pps js_of_ocaml-ppx lwt_ppx))
  (js_of_ocaml (flags --source-map --debug-info))
