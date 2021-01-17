@@ -31,12 +31,9 @@ let points : Points.t Crowbar.gen =
 
 let time_zone : Time_zone.t Crowbar.gen =
   let tz_count = List.length Time_zone.available_time_zones in
-  Crowbar.map
-    [ Crowbar.int ]
-    (fun n ->
-       let n = n mod tz_count in
-       Time_zone.make_exn (List.nth Time_zone.available_time_zones n)
-    )
+  Crowbar.map [ Crowbar.int ] (fun n ->
+      let n = n mod tz_count in
+      Time_zone.make_exn (List.nth Time_zone.available_time_zones n))
 
 let search_space =
   Crowbar.map
