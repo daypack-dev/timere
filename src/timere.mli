@@ -410,30 +410,6 @@ val of_sorted_timestamp_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
 
 (** {1 Manual intervals} *)
 
-(* val interval_dt_inc : Date_time.t -> Date_time.t -> t
- * (\** [interval_dt_inc x y]
- * 
- *     @raise Invalid_argument if [x > y]
- * *\)
- * 
- * val interval_dt_exc : Date_time.t -> Date_time.t -> t
- * (\** [interval_dt_exc x y]
- * 
- *     @raise Invalid_argument if [x > y]
- * *\)
- * 
- * val interval_inc : timestamp -> timestamp -> t
- * (\** [interval_inc x y]
- *     @raise Invalid_argument if [x > y]
- *     @raise Invalid_argument if [x] or [y] is not a valid timestamp
- * *\)
- * 
- * val interval_exc : timestamp -> timestamp -> t
- * (\** [interval_exc x y]
- *     @raise Invalid_argument if [x > y]
- *     @raise Invalid_argument if [x] or [y] is not a valid timestamp
- * *\) *)
-
 exception Interval_is_invalid
 
 exception Intervals_are_not_sorted
