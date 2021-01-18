@@ -5,6 +5,8 @@ OCaml time reasoning library with platform independent time zone support and NLP
 
 __Note__: The project is largely complete, but still undergoing testing - you're welcome to use it in prototypes, but avoid using it in production for now
 
+__Disclaimer__: timere is not designed to handle prehistoric events. For prehistoric planning and booking software, please consult [appropriate experts](https://en.wikipedia.org/wiki/The_Flintstones)
+
 ## Introduction
 
 Timere (short for time reasoning) is a comprehensive library for handling time (timestamps/date times) which aims to make things often not straightforward to solve easily accessible
