@@ -1187,21 +1187,24 @@ module Date_time' = struct
 
   let of_timestamp ?(tz_of_date_time = Time_zone.utc) (x : int64) :
     (t, unit) result =
-    match Time_zone.lookup_timestamp_utc tz_of_date_time x with
-    | None -> Error ()
-    | Some entry -> (
-        match Ptime.of_float_s (Int64.to_float x) with
-        | None -> Error ()
-        | Some x ->
-          x
-          |> Ptime.to_date_time ~tz_offset_s:entry.offset
-          |> of_ptime_date_time_pretend_utc
-          |> CCResult.map (fun t ->
-              {
-                t with
-                tz_info =
-                  `Tz_and_tz_offset_s (tz_of_date_time, entry.offset);
-              }))
+    if not (min_timestamp <= x && x <= max_timestamp) then
+      Error ()
+    else
+      match Time_zone.lookup_timestamp_utc tz_of_date_time x with
+      | None -> Error ()
+      | Some entry -> (
+          match Ptime.of_float_s (Int64.to_float x) with
+          | None -> Error ()
+          | Some x ->
+            x
+            |> Ptime.to_date_time ~tz_offset_s:entry.offset
+            |> of_ptime_date_time_pretend_utc
+            |> CCResult.map (fun t ->
+                {
+                  t with
+                  tz_info =
+                    `Tz_and_tz_offset_s (tz_of_date_time, entry.offset);
+                }))
 
   let make ~year ~month ~day ~hour ~minute ~second ~tz =
     let dt =
