@@ -230,13 +230,132 @@ let debug_fuzz_union () =
   print_endline "=====";
   Printf.printf "%b\n" (OSeq.equal ~eq:( = ) s s')
 
+let debug_fuzz_pattern () =
+  let open Date_components in
+  let tz_count = List.length Time_zone.available_time_zones in
+  let tz =
+    (fun n ->
+       let n = max 0 n mod tz_count in
+       Time_zone.make_exn (List.nth Time_zone.available_time_zones n)
+    )
+      4014879592515549111
+  in
+  print_endline (Time_zone.name tz);
+  let search_space =
+    List.map
+      (fun (search_start, search_size) ->
+         let search_start =
+           min (max Time.min_timestamp search_start) Time.max_timestamp
+         in
+         let search_size = Int64.abs search_size in
+         let search_end_exc =
+           min Time.max_timestamp (Int64.add search_start search_size)
+         in
+         (search_start, search_end_exc))
+      [(-5208492133891178625L, 201999689168823L)]
+  in
+  let pattern =
+    (fun randomness ->
+       let min_year = 0000 in
+       let max_year_inc = 9999 in
+       let rng = Builder.make_rng ~randomness in
+       Builder.make_pattern ~rng ~min_year ~max_year_inc
+    )
+    []
+  in
+  print_endline (CCSexp.to_string (To_sexp.sexp_of_pattern pattern));
+  let s =
+    Resolver.aux_pattern tz search_space pattern |> Resolver.normalize
+  in
+  let r =
+  match search_space with
+  | [] -> (OSeq.is_empty s)
+  | _ ->
+    let s' =
+      Seq_utils.a_to_b_exc_int64
+        ~a:(fst (List.hd search_space))
+        ~b:
+          (snd
+             (CCOpt.get_exn
+              @@ Misc_utils.last_element_of_list search_space))
+      |> OSeq.filter (fun timestamp ->
+          List.exists
+            (fun (x, y) -> x <= timestamp && timestamp < y)
+            search_space)
+      |> OSeq.filter (fun timestamp ->
+          let dt =
+            CCResult.get_exn
+            @@ Time.Date_time'.of_timestamp ~tz_of_date_time:tz
+              timestamp
+          in
+          let weekday =
+            CCResult.get_exn
+            @@ weekday_of_month_day ~year:dt.year ~month:dt.month
+              ~mday:dt.day
+          in
+          let year_is_fine =
+            Int_set.is_empty pattern.years
+            || Int_set.mem dt.year pattern.years
+          in
+          let month_is_fine =
+            Month_set.is_empty pattern.months
+            || Month_set.mem dt.month pattern.months
+          in
+          let mday_is_fine =
+            Int_set.is_empty pattern.month_days
+            ||
+            let day_count =
+              day_count_of_month ~year:dt.year ~month:dt.month
+            in
+            pattern.month_days
+            |> Int_set.to_seq
+            |> Seq.map (fun mday ->
+                if mday < 0 then day_count + mday + 1 else mday)
+            |> OSeq.mem ~eq:( = ) dt.day
+          in
+          let wday_is_fine =
+            Weekday_set.is_empty pattern.weekdays
+            || Weekday_set.mem weekday pattern.weekdays
+          in
+          let hour_is_fine =
+            Int_set.is_empty pattern.hours
+            || Int_set.mem dt.hour pattern.hours
+          in
+          let minute_is_fine =
+            Int_set.is_empty pattern.minutes
+            || Int_set.mem dt.minute pattern.minutes
+          in
+          let second_is_fine =
+            Int_set.is_empty pattern.seconds
+            || Int_set.mem dt.second pattern.seconds
+          in
+          year_is_fine
+          && month_is_fine
+          && mday_is_fine
+          && wday_is_fine
+          && hour_is_fine
+          && minute_is_fine
+          && second_is_fine)
+    in
+      (OSeq.for_all
+         (fun x' -> if OSeq.exists (fun (x, y) -> x <= x' && x' < y
+                                   ) s then true else (
+             Printf.printf "x': %Ld\n" x'; false
+           )
+         )
+         s')
+      in
+      Printf.printf "%b\n" r
+
 (* let () = debug_branching () *)
 
 (* let () = debug_parsing () *)
 
 (* let () = debug_fuzz_bounded_intervals () *)
 
-let () = debug_resolver ()
+(* let () = debug_resolver () *)
+
+let () = debug_fuzz_pattern ()
 
 (* let () = debug_ccsexp_parse_string () *)
 
