@@ -1187,8 +1187,7 @@ module Date_time' = struct
 
   let of_timestamp ?(tz_of_date_time = Time_zone.utc) (x : int64) :
     (t, unit) result =
-    if not (min_timestamp <= x && x <= max_timestamp) then
-      Error ()
+    if not (min_timestamp <= x && x <= max_timestamp) then Error ()
     else
       match Time_zone.lookup_timestamp_utc tz_of_date_time x with
       | None -> Error ()
