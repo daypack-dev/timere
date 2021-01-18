@@ -389,101 +389,98 @@ let gen () =
         let write_line = CCIO.write_line oc in
         List.iter write_line all_time_zones);
   Printf.printf "Generating %s\n" output_file_name;
-  (* CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
-   *   output_file_name (fun oc ->
-   *       let write_line = CCIO.write_line oc in
-   *       write_line "type entry = {";
-   *       write_line "  is_dst : bool;";
-   *       write_line "  offset : int;";
-   *       write_line "}";
-   *       write_line "";
-   *       write_line "type table = (int64 * entry) array";
-   *       write_line "";
-   *       write_line
-   *         "module String_map = Map.Make (struct type t = string let compare = \
-   *          compare end)";
-   *       write_line "";
-   *       write_line "type db = table String_map.t";
-   *       write_line "";
-   *       write_line "let db : db =";
-   *       write_line "  String_map.empty";
-   *       List.iter
-   *         (fun (s, l) ->
-   *            write_line (Printf.sprintf "  |> String_map.add \"%s\"" s);
-   *            write_line "      [|";
-   *            List.iter
-   *              (fun r ->
-   *                 write_line
-   *                   (Printf.sprintf
-   *                      "        ((%LdL), { is_dst = %b; offset = (%d) });" r.start
-   *                      r.is_dst r.offset))
-   *              l;
-   *            write_line "      |]")
-   *         tables_utc;
-   *       write_line "";
-   *       write_line "let lookup name = String_map.find_opt name db";
-   *       write_line "";
-   *       write_line
-   *         "let available_time_zones = String_map.bindings db |> List.map fst"); *)
+  CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
+    output_file_name (fun oc ->
+        let write_line = CCIO.write_line oc in
+        write_line "type entry = {";
+        write_line "  is_dst : bool;";
+        write_line "  offset : int;";
+        write_line "}";
+        write_line "";
+        write_line "type table = (int64 * entry) array";
+        write_line "";
+        write_line
+          "module String_map = Map.Make (struct type t = string let compare = \
+           compare end)";
+        write_line "";
+        write_line "type db = table String_map.t";
+        write_line "";
+        write_line "let db : db =";
+        write_line "  String_map.empty";
+        List.iter
+          (fun (s, l) ->
+             write_line (Printf.sprintf "  |> String_map.add \"%s\"" s);
+             write_line "      [|";
+             List.iter
+               (fun r ->
+                  write_line
+                    (Printf.sprintf
+                       "        ((%LdL), { is_dst = %b; offset = (%d) });" r.start
+                       r.is_dst r.offset))
+               l;
+             write_line "      |]")
+          tables_utc;
+        write_line "";
+        write_line "let lookup name = String_map.find_opt name db";
+        write_line "";
+        write_line
+          "let available_time_zones = String_map.bindings db |> List.map fst");
   Printf.printf "Generating %s\n" tz_constants_file_name;
   CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
     tz_constants_file_name (fun oc ->
         let write_line = CCIO.write_line oc in
         let greatest_neg_tz_offset_s =
-          List.fold_left (fun pick (_, transitions) ->
-              List.fold_left (fun pick (r : transition_record) ->
-                  min r.offset pick
-                )
-                pick
-                transitions
-            )
-            0
-            tables_utc
+          List.fold_left
+            (fun pick (_, transitions) ->
+               List.fold_left
+                 (fun pick (r : transition_record) -> min r.offset pick)
+                 pick transitions)
+            0 tables_utc
           |> abs
         in
         let greatest_pos_tz_offset_s =
-          List.fold_left (fun pick (_, transitions) ->
-              List.fold_left (fun pick (r : transition_record) ->
-                  max r.offset pick
-                )
-                pick
-                transitions
-            )
-            0
-            tables_utc
+          List.fold_left
+            (fun pick (_, transitions) ->
+               List.fold_left
+                 (fun pick (r : transition_record) -> max r.offset pick)
+                 pick transitions)
+            0 tables_utc
         in
-        write_line (Printf.sprintf "let greatest_neg_tz_offset_s = %d" greatest_neg_tz_offset_s);
+        write_line
+          (Printf.sprintf "let greatest_neg_tz_offset_s = %d"
+             greatest_neg_tz_offset_s);
         write_line "";
-        write_line (Printf.sprintf "let greatest_pos_tz_offset_s = %d" greatest_pos_tz_offset_s);
-      );
-  (* print_endline "Generating tzdb JSON";
-   * List.combine all_time_zones_in_parts tables_utc
-   * |> List.iter (fun (time_zone_parts, (name, transitions)) ->
-   *     let len = List.length time_zone_parts in
-   *     assert (len > 0);
-   *     let dir_parts =
-   *       tzdb_json_output_dir :: CCList.take (len - 1) time_zone_parts
-   *     in
-   *     let dir = String.concat "/" dir_parts in
-   *     FileUtil.mkdir ~parent:true dir;
-   *     let output_file_name =
-   *       Filename.concat dir (List.nth time_zone_parts (len - 1) ^ ".json")
-   *     in
-   *     CCIO.with_out
-   *       ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
-   *       output_file_name (fun oc ->
-   *           let transition_count = List.length transitions in
-   *           let write_line = CCIO.write_line oc in
-   *           write_line "{";
-   *           write_line (Printf.sprintf "  \"name\" : \"%s\"," name);
-   *           write_line "  \"table\" : [";
-   *           List.iteri
-   *             (fun i (r : transition_record) ->
-   *                write_line
-   *                  (Printf.sprintf
-   *                     "    [\"%Ld\", { \"is_dst\" : %b, \"offset\" : %d }]%s"
-   *                     r.start r.is_dst r.offset
-   *                     (if i = transition_count - 1 then "" else ",")))
-   *             transitions;
-   *           write_line "  ]";
-   *           write_line "}")) *)
+        write_line
+          (Printf.sprintf "let greatest_pos_tz_offset_s = %d"
+             greatest_pos_tz_offset_s));
+  print_endline "Generating tzdb JSON";
+  List.combine all_time_zones_in_parts tables_utc
+  |> List.iter (fun (time_zone_parts, (name, transitions)) ->
+      let len = List.length time_zone_parts in
+      assert (len > 0);
+      let dir_parts =
+        tzdb_json_output_dir :: CCList.take (len - 1) time_zone_parts
+      in
+      let dir = String.concat "/" dir_parts in
+      FileUtil.mkdir ~parent:true dir;
+      let output_file_name =
+        Filename.concat dir (List.nth time_zone_parts (len - 1) ^ ".json")
+      in
+      CCIO.with_out
+        ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
+        output_file_name (fun oc ->
+            let transition_count = List.length transitions in
+            let write_line = CCIO.write_line oc in
+            write_line "{";
+            write_line (Printf.sprintf "  \"name\" : \"%s\"," name);
+            write_line "  \"table\" : [";
+            List.iteri
+              (fun i (r : transition_record) ->
+                 write_line
+                   (Printf.sprintf
+                      "    [\"%Ld\", { \"is_dst\" : %b, \"offset\" : %d }]%s"
+                      r.start r.is_dst r.offset
+                      (if i = transition_count - 1 then "" else ",")))
+              transitions;
+            write_line "  ]";
+            write_line "}"))
