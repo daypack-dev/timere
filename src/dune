@@ -1,3 +1,9 @@
+(rule
+ (targets time_zone_constants.ml)
+ (deps    ../gen-artifacts/time_zone_constants.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
 (library
  (flags     (-w "+a-4-9-29-37-40-42-44-48-50-32-30@8"))
  (name timere)

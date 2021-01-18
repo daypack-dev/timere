@@ -1,4 +1,10 @@
 (rule
+ (targets time_zone_constants.ml)
+ (deps    ../gen-artifacts/time_zone_constants.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
  (targets constants.ml)
  (deps    ../src/constants.ml)
  (action  (copy %{deps} %{targets}))
