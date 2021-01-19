@@ -158,6 +158,8 @@
             bounded_intervals_is_complete
             union_is_sound_and_complete
             inter_is_sound_and_complete
+            union_order_does_not_matter
+            inter_order_does_not_matter
             pattern_resolution_is_sound
             pattern_resolution_is_complete
  )
