@@ -1167,7 +1167,7 @@ module Date_time' = struct
         |> Int64.of_float
       )
 
-  let to_timestamp' (x : t) : timestamp Time_zone.local_result =
+  let to_timestamp_unsafe (x : t) : timestamp Time_zone.local_result =
     let timestamp_local = CCResult.get_exn @@ to_timestamp_pretend_utc x in
     match x.tz_info with
     | `Tz_offset_s_only offset | `Tz_and_tz_offset_s (_, offset) ->
@@ -1188,7 +1188,7 @@ module Date_time' = struct
     ]
 
   let to_timestamp x : timestamp local_result =
-    match to_timestamp' x with
+    match to_timestamp_unsafe x with
     | `None -> failwith "Unexpected case"
     | `Single x -> `Single x
     | `Ambiguous (x, y) -> `Ambiguous (x, y)
@@ -1223,7 +1223,7 @@ module Date_time' = struct
     let dt =
       { year; month; day; hour; minute; second; tz_info = `Tz_only tz }
     in
-    match to_timestamp' dt with
+    match to_timestamp_unsafe dt with
     | `None -> Error ()
     | `Single x -> Ok (of_timestamp ~tz_of_date_time:tz x |> CCResult.get_exn)
     | `Ambiguous _ -> Ok dt
@@ -1268,7 +1268,7 @@ module Date_time' = struct
     | Error () -> Error ()
     | Ok tz_info -> (
         let dt = { year; month; day; hour; minute; second; tz_info } in
-        match to_timestamp' dt with `None -> Error () | _ -> Ok dt)
+        match to_timestamp_unsafe dt with `None -> Error () | _ -> Ok dt)
 
   let make_precise_exn ?tz ~year ~month ~day ~hour ~minute ~second ~tz_offset_s
       () =
