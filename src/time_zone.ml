@@ -85,7 +85,7 @@ let local_interval_of_table (table : table) (i : int) =
   let start_utc, entry = table.(i) in
   let end_exc_utc =
     if i = Array.length table - 1 then
-      Ptime.(max |> to_float_s |> Int64.of_float)
+      Constants.max_timestamp
     else fst table.(i + 1)
   in
   ( Int64.add start_utc (Int64.of_int entry.offset),
