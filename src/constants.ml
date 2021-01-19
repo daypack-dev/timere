@@ -2,17 +2,13 @@ include Time_zone_constants
 open Int64_utils
 
 let min_timestamp =
-  let x = Ptime.min |> Ptime.to_float_s |> Int64.of_float in
+  let x = Ptime.min |> Ptime_utils.timestamp_of_ptime in
   Int64.add x (Int64.of_int greatest_neg_tz_offset_s)
 
 let max_timestamp =
-  let x = Ptime.max |> Ptime.to_float_s |> Int64.of_float |> Int64.pred in
+  let x = Ptime.max |> Ptime_utils.timestamp_of_ptime in
   Int64.sub x (Int64.of_int greatest_pos_tz_offset_s)
 
 let min_year = 0
 
 let max_year = 9999
-
-let s_to_ps_mult = 1_000_000_000_000L
-
-let seconds_in_day = 24L *^ 60L *^ 60L

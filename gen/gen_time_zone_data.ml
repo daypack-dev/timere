@@ -205,23 +205,21 @@ let timestamp_of_date_time_utc (x : date_time) : int64 =
   Ptime.of_date_time
     ((x.year, x.month, x.day), ((x.hour, x.minute, x.second), offset))
   |> CCOpt.get_exn
-  |> Ptime.to_float_s
-  |> Int64.of_float
+  |> Ptime_utils.timestamp_of_ptime
 
 let timestamp_of_date_time_local (x : date_time) : int64 =
   let offset = 0 in
   Ptime.of_date_time
     ((x.year, x.month, x.day), ((x.hour, x.minute, x.second), offset))
   |> CCOpt.get_exn
-  |> Ptime.to_float_s
-  |> Int64.of_float
+  |> Ptime_utils.timestamp_of_ptime
 
 let transition_record_indexed_by_utc_of_transition (x : transition) :
   transition_record =
   let start = timestamp_of_date_time_utc x.start_utc in
   let end_exc =
     match x.end_inc_utc with
-    | None -> Ptime.(max |> to_float_s |> Int64.of_float)
+    | None -> Ptime.max |> Ptime_utils.timestamp_of_ptime
     | Some end_inc_utc -> timestamp_of_date_time_utc end_inc_utc |> Int64.succ
   in
   { start; end_exc; tz = x.tz; is_dst = x.is_dst; offset = x.offset }
@@ -231,7 +229,7 @@ let transition_record_indexed_by_local_of_transition (x : transition) :
   let start = timestamp_of_date_time_local x.start_local in
   let end_exc =
     match x.end_inc_local with
-    | None -> Ptime.(max |> to_float_s |> Int64.of_float)
+    | None -> Ptime.max |> Ptime_utils.timestamp_of_ptime
     | Some end_inc_local ->
       timestamp_of_date_time_local end_inc_local |> Int64.succ
   in
@@ -264,10 +262,10 @@ let process_overlapping_transition_records (l : transition_record list) :
   in
   aux l
 
-let min_timestamp = Ptime.min |> Ptime.to_float_s |> Int64.of_float
+let min_timestamp = Ptime.min |> Ptime_utils.timestamp_of_ptime
 
 let max_timestamp =
-  Ptime.max |> Ptime.to_float_s |> Int64.of_float |> Int64.pred
+  Ptime.max |> Ptime_utils.timestamp_of_ptime
 
 module Int_set = Set.Make (struct
     type t = int

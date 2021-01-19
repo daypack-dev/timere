@@ -1,4 +1,16 @@
 (rule
+ (targets int64_utils.ml)
+ (deps    ../src/int64_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets ptime_utils.ml)
+ (deps    ../src/ptime_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
  (targets parser_components.ml)
  (deps    ../src/parser_components.ml)
  (action  (copy %{deps} %{targets}))
