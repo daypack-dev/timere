@@ -286,14 +286,11 @@ module Date_time : sig
   (** @raise Invalid_argument if [make_precise] fails *)
 
   type 'a local_result =
-    [ `None
-    | `Single of 'a
+    [ `Single of 'a
     | `Ambiguous of 'a * 'a
     ]
   (** Result for when a local date time may be involved, e.g. using a date time with no precise time zone offset attached.
 
-      - [`None] is yielded when the date time does not map to any ['a].
-        This happens when DST begins and "skips an hour" for instance.
       - [`Single] is yielded when the date time maps to exactly one ['a].
         This happens when date time carries an accurate offset,
         or when the date time is not affected by any offset shifts (thus an accurate offset can be inferred).

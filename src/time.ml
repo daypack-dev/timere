@@ -1154,15 +1154,21 @@ module Date_time' = struct
   let max_of_timestamp_local_result r : int64 option =
     match r with `None -> None | `Single x | `Ambiguous (_, x) -> Some x
 
-  let to_timestamp_pretend_utc (x : t) : timestamp =
-    to_ptime_date_time_pretend_utc x
-    |> Ptime.of_date_time
-    |> CCOpt.get_exn
-    |> Ptime.to_float_s
-    |> Int64.of_float
+  let to_timestamp_pretend_utc (x : t) : (timestamp, unit) result =
+    match
+      Ptime.of_date_time @@
+      to_ptime_date_time_pretend_utc x
+    with
+    | None -> Error ()
+    | Some x ->
+      Ok (
+        x
+        |> Ptime.to_float_s
+        |> Int64.of_float
+      )
 
-  let to_timestamp (x : t) : timestamp Time_zone.local_result =
-    let timestamp_local = to_timestamp_pretend_utc x in
+  let to_timestamp' (x : t) : timestamp Time_zone.local_result =
+    let timestamp_local = CCResult.get_exn @@ to_timestamp_pretend_utc x in
     match x.tz_info with
     | `Tz_offset_s_only offset | `Tz_and_tz_offset_s (_, offset) ->
       `Single (Int64.sub timestamp_local (Int64.of_int offset))
@@ -1176,11 +1182,19 @@ module Date_time' = struct
           let x2 = Int64.sub timestamp_local (Int64.of_int e2.offset) in
           `Ambiguous (min x1 x2, max x1 x2))
 
+  type 'a local_result =
+    [ `Single of 'a
+    | `Ambiguous of 'a * 'a
+    ]
+
+  let to_timestamp x : timestamp local_result =
+    match to_timestamp' x with
+    | `None -> failwith "Unexpected case"
+    | `Single x -> `Single x
+    | `Ambiguous (x, y) -> `Ambiguous (x, y)
+
   let to_timestamp_single (x : t) : timestamp =
     match to_timestamp x with
-    | `None ->
-      invalid_arg
-        "to_timestamp_single: date time does not map to any timestamp"
     | `Single x -> x
     | `Ambiguous _ ->
       invalid_arg "to_timestamp_single: date time maps to two timestamps"
@@ -1209,7 +1223,7 @@ module Date_time' = struct
     let dt =
       { year; month; day; hour; minute; second; tz_info = `Tz_only tz }
     in
-    match to_timestamp dt with
+    match to_timestamp' dt with
     | `None -> Error ()
     | `Single x -> Ok (of_timestamp ~tz_of_date_time:tz x |> CCResult.get_exn)
     | `Ambiguous _ -> Ok dt
@@ -1227,7 +1241,7 @@ module Date_time' = struct
           match make_tz_info ~tz ~tz_offset_s () with
           | Error () -> Error ()
           | Ok tz_info -> (
-              let timestamp_local =
+              match
                 to_timestamp_pretend_utc
                   {
                     year;
@@ -1238,21 +1252,23 @@ module Date_time' = struct
                     second;
                     tz_info = dummy_tz_info;
                   }
-              in
-              match Time_zone.lookup_timestamp_local tz timestamp_local with
-              | `None -> Error ()
-              | `Single e ->
-                if e.offset = tz_offset_s then Ok tz_info else Error ()
-              | `Ambiguous (e1, e2) ->
-                if e1.offset = tz_offset_s || e2.offset = tz_offset_s then
-                  Ok tz_info
-                else Error ()))
+              with
+              | Error () -> Error ()
+              | Ok timestamp_local ->
+                match Time_zone.lookup_timestamp_local tz timestamp_local with
+                | `None -> Error ()
+                | `Single e ->
+                  if e.offset = tz_offset_s then Ok tz_info else Error ()
+                | `Ambiguous (e1, e2) ->
+                  if e1.offset = tz_offset_s || e2.offset = tz_offset_s then
+                    Ok tz_info
+                  else Error ()))
     in
     match tz_info with
     | Error () -> Error ()
     | Ok tz_info -> (
         let dt = { year; month; day; hour; minute; second; tz_info } in
-        match to_timestamp dt with `None -> Error () | _ -> Ok dt)
+        match to_timestamp' dt with `None -> Error () | _ -> Ok dt)
 
   let make_precise_exn ?tz ~year ~month ~day ~hour ~minute ~second ~tz_offset_s
       () =
@@ -1274,6 +1290,22 @@ module Date_time' = struct
     t option =
     match pick with
     | Points.YMDHMS { year; month; month_day; hour; minute; second } -> (
+        Printf.printf "year: %d, month: %d, month_day: %d, hour: %d, minute: %d, second: %d\n"
+          year
+          (human_int_of_month month)
+          month_day
+          hour
+          minute
+          second
+        ;
+        flush stdout;
+        let day_count =
+          day_count_of_month ~year
+            ~month
+        in
+        let month_day =
+          if month_day < 0 then day_count + month_day + 1 else month_day
+        in
         let dt =
           match CCOpt.value ~default:default_tz_info tz_info with
           | `Tz_only tz ->

@@ -8,8 +8,6 @@ exception Invalid_format_string = Printers.Invalid_format_string
 module Date_time = struct
   include Time.Date_time'
 
-  type 'a local_result = 'a Time_zone.local_result
-
   let sprintf = Printers.sprintf_date_time
 
   let pp = Printers.pp_date_time
