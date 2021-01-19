@@ -117,33 +117,33 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
   in
   let precision = min max_precision (rng () mod 7) in
   match precision with
-  | 0 -> Points.make ~second:(rng () mod 60) ()
-  | 1 -> Points.make ~minute:(rng () mod 60) ~second:(rng ()) ()
+  | 0 -> Points.make_exn ~second:(rng () mod 60) ()
+  | 1 -> Points.make_exn ~minute:(rng () mod 60) ~second:(rng ()) ()
   | 2 ->
-    Points.make
+    Points.make_exn
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
       ~second:(rng ()) ()
   | 3 ->
-    Points.make
+    Points.make_exn
       ~weekday:(rng () mod 7 |> weekday_of_tm_int |> CCResult.get_exn)
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
       ~second:(rng ()) ()
   | 4 ->
-    Points.make ~month_day
+    Points.make_exn ~month_day
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
       ~second:(rng ()) ()
   | 5 ->
-    Points.make
+    Points.make_exn
       ~month:(CCResult.get_exn @@ month_of_tm_int (rng () mod 12))
       ~month_day
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
       ~second:(rng ()) ()
   | 6 ->
-    Points.make
+    Points.make_exn
       ~year:(min max_year_inc (min_year + rng ()))
       ~month:(CCResult.get_exn @@ month_of_tm_int (rng () mod 12))
       ~month_day
