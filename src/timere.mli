@@ -208,7 +208,7 @@ val with_tz : Time_zone.t -> t -> t
 
 (** {1 Date time and timestamps} *)
 
-type tz_info =
+type tz_info = private
   [ `Tz_only of Time_zone.t
   | `Tz_offset_s_only of int
   | `Tz_and_tz_offset_s of Time_zone.t * int
@@ -455,7 +455,21 @@ val of_sorted_interval_seq : ?skip_invalid:bool -> interval Seq.t -> t
 type points
 
 val make_points :
-  ?tz_info:tz_info ->
+  ?tz:Time_zone.t ->
+  ?tz_offset_s:Time_zone.t ->
+  ?year:int ->
+  ?month:month ->
+  ?month_day:int ->
+  ?weekday:weekday ->
+  ?hour:int ->
+  ?minute:int ->
+  second:int ->
+  unit ->
+  (points, unit) result
+
+val make_points_exn :
+  ?tz:Time_zone.t ->
+  ?tz_offset_s:Time_zone.t ->
   ?year:int ->
   ?month:month ->
   ?month_day:int ->

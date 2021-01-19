@@ -51,24 +51,47 @@ let precision ((pick, _) : t) : int =
   | MDHMS _ -> 5
   | YMDHMS _ -> 6
 
-let make ?tz_info ?year ?month ?month_day ?weekday ?hour ?minute ~second () =
-  let pick =
-    match (year, month, month_day, weekday, hour, minute) with
-    | None, None, None, None, None, None -> S second
-    | None, None, None, None, None, Some minute -> MS { minute; second }
-    | None, None, None, None, Some hour, Some minute ->
-      HMS { hour; minute; second }
-    | None, None, None, Some weekday, Some hour, Some minute ->
-      WHMS { weekday; hour; minute; second }
-    | None, None, Some month_day, None, Some hour, Some minute ->
-      DHMS { month_day; hour; minute; second }
-    | None, Some month, Some month_day, None, Some hour, Some minute ->
-      MDHMS { month; month_day; hour; minute; second }
-    | Some year, Some month, Some month_day, None, Some hour, Some minute ->
-      YMDHMS { year; month; month_day; hour; minute; second }
-    | _ -> invalid_arg "make"
+let make' ~tz ~tz_offset_s ~year ~month ~month_day ~weekday ~hour ~minute ~second () =
+  let tz_info =
+    match tz, tz_offset_s with
+    | None, None -> Ok None
+    | Some tz, None -> Ok (Some (`Tz_only tz))
+    | None, Some tz_offset_s -> Ok (Some (`Tz_offset_s_only tz_offset_s))
+    | Some tz, Some tz_offset_s ->
+      make_tz_info ~tz ~tz_offset_s ()
+      |> CCResult.map CCOpt.pure
   in
-  (pick, tz_info)
+  match tz_info with
+  | Error () -> Error ()
+  | Ok tz_info ->
+    let pick =
+      match (year, month, month_day, weekday, hour, minute) with
+      | None, None, None, None, None, None -> Ok (S second)
+      | None, None, None, None, None, Some minute -> Ok (MS { minute; second })
+      | None, None, None, None, Some hour, Some minute ->
+        Ok (HMS { hour; minute; second })
+      | None, None, None, Some weekday, Some hour, Some minute ->
+        Ok (WHMS { weekday; hour; minute; second })
+      | None, None, Some month_day, None, Some hour, Some minute ->
+        Ok (DHMS { month_day; hour; minute; second })
+      | None, Some month, Some month_day, None, Some hour, Some minute ->
+        Ok (MDHMS { month; month_day; hour; minute; second })
+      | Some year, Some month, Some month_day, None, Some hour, Some minute ->
+        Ok (YMDHMS { year; month; month_day; hour; minute; second })
+      | _ -> Error ()
+    in
+    match pick with
+    | Error () -> Error ()
+    | Ok pick ->
+      Ok (pick, tz_info)
+
+let make ?tz ?tz_offset_s ?year ?month ?month_day ?weekday ?hour ?minute ~second () =
+  make' ~tz ~tz_offset_s ~year ~month ~month_day ~weekday ~hour ~minute ~second ()
+
+let make_exn ?tz ?tz_offset_s ?year ?month ?month_day ?weekday ?hour ?minute ~second () =
+  match make' ~tz ~tz_offset_s ~year ~month ~month_day ~weekday ~hour ~minute ~second () with
+  | Error () -> invalid_arg "make"
+  | Ok x -> x
 
 let pick_equal t1 t2 =
   match (t1, t2) with

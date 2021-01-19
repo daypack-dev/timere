@@ -148,3 +148,14 @@ let tz_info_equal (x : tz_info) (y : tz_info) =
   | `Tz_and_tz_offset_s (tz1, x1), `Tz_and_tz_offset_s (tz2, x2) ->
     Time_zone.equal tz1 tz2 && x1 = x2
   | _, _ -> false
+
+let make_tz_info ?tz ?tz_offset_s () =
+  match tz, tz_offset_s with
+  | None, None -> invalid_arg "make_tz_info"
+  | Some tz, None -> Ok (`Tz_only tz)
+  | None, Some tz_offset_s -> Ok (`Tz_offset_s_only tz_offset_s)
+  | Some tz, Some tz_offset_s ->
+    if Time_zone.offset_is_recorded tz_offset_s tz then
+     Ok (`Tz_and_tz_offset_s (tz, tz_offset_s))
+    else
+      Error ()

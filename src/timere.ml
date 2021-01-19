@@ -37,6 +37,8 @@ type points = Points.t
 
 let make_points = Points.make
 
+let make_points_exn = Points.make_exn
+
 let resolve = Resolver.resolve
 
 let sprintf_timestamp = Printers.sprintf_timestamp

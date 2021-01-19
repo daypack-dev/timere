@@ -1224,7 +1224,9 @@ module Date_time' = struct
       match tz with
       | None -> Ok (`Tz_offset_s_only tz_offset_s)
       | Some tz ->
-        if Time_zone.offset_is_recorded tz_offset_s tz then
+        match make_tz_info ~tz ~tz_offset_s () with
+        | Error () -> Error ()
+        | Ok tz_info ->
           let timestamp_local =
             to_timestamp_pretend_utc
               {
@@ -1241,13 +1243,12 @@ module Date_time' = struct
           | `None -> Error ()
           | `Single e ->
             if e.offset = tz_offset_s then
-              Ok (`Tz_and_tz_offset_s (tz, tz_offset_s))
+              Ok tz_info
             else Error ()
           | `Ambiguous (e1, e2) ->
             if e1.offset = tz_offset_s || e2.offset = tz_offset_s then
-              Ok (`Tz_and_tz_offset_s (tz, tz_offset_s))
+              Ok tz_info
             else Error ()
-        else Error ()
     in
     match tz_info with
     | Error () -> Error ()
@@ -1273,19 +1274,21 @@ module Date_time' = struct
 
   let of_points ?(default_tz_info = utc_tz_info) ((pick, tz_info) : Points.t) :
     t option =
-    let open Points in
     match pick with
-    | YMDHMS { year; month; month_day; hour; minute; second } ->
-      Some
-        {
-          year;
-          month;
-          day = month_day;
-          hour;
-          minute;
-          second;
-          tz_info = CCOpt.value ~default:default_tz_info tz_info;
-        }
+    | Points.YMDHMS { year; month; month_day; hour; minute; second } -> (
+        let dt =
+        match CCOpt.value ~default:default_tz_info tz_info with
+        | `Tz_only tz ->
+          make ~year ~month ~day:month_day ~hour ~minute ~second ~tz
+        | `Tz_offset_s_only tz_offset_s ->
+          make_precise ~year ~month ~day:month_day ~hour ~minute ~second ~tz_offset_s ()
+        | `Tz_and_tz_offset_s (tz, tz_offset_s) ->
+          make_precise ~tz ~year ~month ~day:month_day ~hour ~minute ~second ~tz_offset_s ()
+        in
+        match dt with
+        | Error () -> None
+        | Ok dt -> Some dt
+      )
     | _ -> None
 
   let cur ?(tz_of_date_time = Time_zone.utc) () : (t, unit) result =
@@ -1713,8 +1716,8 @@ let bounded_intervals pick (bound : Duration.t) (start : Points.t)
 
 let hms_intervals_exc (hms_a : hms) (hms_b : hms) : t =
   bounded_intervals `Whole (Duration.make ~days:1 ())
-    (Points.make ~hour:hms_a.hour ~minute:hms_a.minute ~second:hms_a.second ())
-    (Points.make ~hour:hms_b.hour ~minute:hms_b.minute ~second:hms_b.second ())
+    (Points.make_exn ~hour:hms_a.hour ~minute:hms_a.minute ~second:hms_a.second ())
+    (Points.make_exn ~hour:hms_b.hour ~minute:hms_b.minute ~second:hms_b.second ())
 
 let hms_intervals_inc (hms_a : hms) (hms_b : hms) : t =
   let hms_b = hms_b |> second_of_day_of_hms |> succ |> hms_of_second_of_day in
