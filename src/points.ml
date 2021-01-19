@@ -64,24 +64,53 @@ let make' ~tz ~tz_offset_s ~year ~month ~month_day ~weekday ~hour ~minute
   match tz_info with
   | Error () -> Error ()
   | Ok tz_info -> (
-      let pick =
-        match (year, month, month_day, weekday, hour, minute) with
-        | None, None, None, None, None, None -> Ok (S second)
-        | None, None, None, None, None, Some minute ->
-          Ok (MS { minute; second })
-        | None, None, None, None, Some hour, Some minute ->
-          Ok (HMS { hour; minute; second })
-        | None, None, None, Some weekday, Some hour, Some minute ->
-          Ok (WHMS { weekday; hour; minute; second })
-        | None, None, Some month_day, None, Some hour, Some minute ->
-          Ok (DHMS { month_day; hour; minute; second })
-        | None, Some month, Some month_day, None, Some hour, Some minute ->
-          Ok (MDHMS { month; month_day; hour; minute; second })
-        | Some year, Some month, Some month_day, None, Some hour, Some minute ->
-          Ok (YMDHMS { year; month; month_day; hour; minute; second })
-        | _ -> Error ()
+      let year_is_fine =
+        match year with
+        | None -> true
+        | Some year -> Constants.min_year <= year && year <= Constants.max_year
       in
-      match pick with Error () -> Error () | Ok pick -> Ok (pick, tz_info))
+      let month_day_is_fine =
+        match month_day with
+        | None -> true
+        | Some x -> -31 <= x && x <= 31 && x <> 0
+      in
+      let hour_is_fine =
+        match hour with
+        | None -> true
+        | Some x -> 0 <= x && x < 24
+      in
+      let minute_is_fine =
+        match hour with
+        | None -> true
+        | Some x -> 0 <= x && x < 60
+      in
+      let second_is_fine =
+        match hour with
+        | None -> true
+        | Some x -> 0 <= x && x < 60
+      in
+      if year_is_fine && month_day_is_fine && hour_is_fine && minute_is_fine && second_is_fine then
+        let pick =
+          match (year, month, month_day, weekday, hour, minute) with
+          | None, None, None, None, None, None -> Ok (S second)
+          | None, None, None, None, None, Some minute ->
+            Ok (MS { minute; second })
+          | None, None, None, None, Some hour, Some minute ->
+            Ok (HMS { hour; minute; second })
+          | None, None, None, Some weekday, Some hour, Some minute ->
+            Ok (WHMS { weekday; hour; minute; second })
+          | None, None, Some month_day, None, Some hour, Some minute ->
+            Ok (DHMS { month_day; hour; minute; second })
+          | None, Some month, Some month_day, None, Some hour, Some minute ->
+            Ok (MDHMS { month; month_day; hour; minute; second })
+          | Some year, Some month, Some month_day, None, Some hour, Some minute ->
+            Ok (YMDHMS { year; month; month_day; hour; minute; second })
+          | _ -> Error ()
+        in
+        match pick with Error () -> Error () | Ok pick -> Ok (pick, tz_info)
+      else
+        Error ()
+    )
 
 let make ?tz ?tz_offset_s ?year ?month ?month_day ?weekday ?hour ?minute ~second
     () : (t, unit) result =

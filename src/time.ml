@@ -1644,7 +1644,7 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
     if
       List.for_all
         (fun year ->
-           Date_time'.min.year <= year && year <= Date_time'.max.year)
+           Constants.min_year <= year && year <= Constants.max_year)
         years
       && List.for_all (fun x -> -31 <= x && x <= 31 && x <> 0) month_days
       && List.for_all (fun x -> 0 <= x && x < 24) hours
