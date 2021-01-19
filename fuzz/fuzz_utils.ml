@@ -53,15 +53,18 @@ let search_space =
     (fun l -> CCList.to_seq l |> Time.Intervals.normalize |> CCList.of_seq)
 
 let permute (seed : int) (l : 'a list) : 'a list =
-  let len = List.length l in
-  let seed = max 0 seed mod len in
-  let l = ref l in
-  OSeq.(0 --^ len)
-  |> Seq.map (fun i ->
-      let l' = List.mapi (fun i x -> (i, x)) !l in
-      let len = List.length l' in
-      let pick = max 0 (i * seed) mod len in
-      let r = List.assoc pick l' in
-      l := List.remove_assoc pick l' |> List.map (fun (_, x) -> x);
-      r)
-  |> CCList.of_seq
+  match l with
+  | [] -> []
+  | _ ->
+    let len = List.length l in
+    let seed = max 0 seed mod len in
+    let l = ref l in
+    OSeq.(0 --^ len)
+    |> Seq.map (fun i ->
+        let l' = List.mapi (fun i x -> (i, x)) !l in
+        let len = List.length l' in
+        let pick = max 0 (i * seed) mod len in
+        let r = List.assoc pick l' in
+        l := List.remove_assoc pick l' |> List.map (fun (_, x) -> x);
+        r)
+    |> CCList.of_seq
