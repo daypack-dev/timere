@@ -187,13 +187,21 @@ let debug_fuzz_bounded_intervals () =
 
 let debug_fuzz_union () =
   let tz = Time_zone.utc in
+  (* let t1 =
+   *   (fun max_height max_branching randomness ->
+   *      let max_height = 1 + max_height in
+   *      let max_branching = 1 + max_branching in
+   *      Builder.build ~enable_extra_restrictions:false ~min_year:2000
+   *        ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
+   *     1 1 [265; 47; 268; 6]
+   * in *)
   let t1 =
-    (fun max_height max_branching randomness ->
-       let max_height = 1 + max_height in
-       let max_branching = 1 + max_branching in
-       Builder.build ~enable_extra_restrictions:false ~min_year:2000
-         ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
-      0 0 [ 4; 1 ]
+    let s =
+      {|
+(with_tz UTC (bounded_intervals whole (duration 1 0 0 0) (points (pick hms 1 6 28)) (points (pick hms 23 25 7))))
+      |}
+    in
+    CCResult.get_exn @@ Of_sexp.of_sexp_string s
   in
   let t2 =
     (fun max_height max_branching randomness ->
@@ -201,12 +209,20 @@ let debug_fuzz_union () =
        let max_branching = 1 + max_branching in
        Builder.build ~enable_extra_restrictions:false ~min_year:2000
          ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
-      1 0 [ 113 ]
+      1 3 [ 613; 937; 937 ]
   in
   let t1' = Resolver.t_of_ast t1 in
   let t2' = Resolver.t_of_ast t2 in
+  print_endline (To_sexp.to_sexp_string t1);
   let s1 = Resolver.aux tz t1' |> Resolver.normalize in
   let s2 = Resolver.aux tz t2' in
+  (match Resolver.resolve t1 with
+   | Error msg ->
+     print_endline msg;
+     flush stdout
+   | _ -> ());
+  let s1 = CCResult.get_exn @@ Resolver.resolve t1 in
+  let s2 = CCResult.get_exn @@ Resolver.resolve t2 in
   let l = [ t1' ] in
   let s' =
     l
@@ -219,7 +235,6 @@ let debug_fuzz_union () =
   let s = Resolver.aux_union tz (CCList.to_seq l) |> Resolver.normalize in
   print_endline "=====";
   display_intervals ~display_using_tz:tz s1;
-  print_endline (To_sexp.to_sexp_string t1);
   (* print_endline "=====";
    * display_intervals ~display_using_tz:tz s2;
    * print_endline (To_sexp.to_sexp_string t2); *)
@@ -349,7 +364,7 @@ let debug_fuzz_pattern () =
 
 (* let () = debug_resolver () *)
 
-let () = debug_fuzz_pattern ()
+(* let () = debug_fuzz_pattern () *)
 
 (* let () = debug_ccsexp_parse_string () *)
 
@@ -359,4 +374,4 @@ let () = debug_fuzz_pattern ()
 
 (* let () = debug_fuzz_between_exc () *)
 
-(* let () = debug_fuzz_union () *)
+let () = debug_fuzz_union ()
