@@ -13,8 +13,6 @@ let min_year = 0
 
 let max_year = 9999
 
-let s_to_ps_mult =
-  1_000_000_000_000L
+let s_to_ps_mult = 1_000_000_000_000L
 
-let seconds_in_day =
-  24L *^ 60L *^ 60L
+let seconds_in_day = 24L *^ 60L *^ 60L

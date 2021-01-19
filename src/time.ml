@@ -1161,24 +1161,24 @@ module Date_time' = struct
     | Some x ->
       let d, ps = x |> Ptime.to_span |> Ptime.Span.to_d_ps in
       let s = ps /^ Constants.s_to_ps_mult in
-      Ok (((Int64.of_int d) *^ Constants.seconds_in_day) +^ s)
+      Ok ((Int64.of_int d *^ Constants.seconds_in_day) +^ s)
 
   let to_timestamp_unsafe (x : t) : timestamp Time_zone.local_result =
     match to_timestamp_pretend_utc x with
     | Error () -> `None
-    | Ok timestamp_local ->
-    match x.tz_info with
-    | `Tz_offset_s_only offset | `Tz_and_tz_offset_s (_, offset) ->
-      `Single (Int64.sub timestamp_local (Int64.of_int offset))
-    | `Tz_only tz -> (
-        match Time_zone.lookup_timestamp_local tz timestamp_local with
-        | `None -> `None
-        | `Single e ->
-          `Single (Int64.sub timestamp_local (Int64.of_int e.offset))
-        | `Ambiguous (e1, e2) ->
-          let x1 = Int64.sub timestamp_local (Int64.of_int e1.offset) in
-          let x2 = Int64.sub timestamp_local (Int64.of_int e2.offset) in
-          `Ambiguous (min x1 x2, max x1 x2))
+    | Ok timestamp_local -> (
+        match x.tz_info with
+        | `Tz_offset_s_only offset | `Tz_and_tz_offset_s (_, offset) ->
+          `Single (Int64.sub timestamp_local (Int64.of_int offset))
+        | `Tz_only tz -> (
+            match Time_zone.lookup_timestamp_local tz timestamp_local with
+            | `None -> `None
+            | `Single e ->
+              `Single (Int64.sub timestamp_local (Int64.of_int e.offset))
+            | `Ambiguous (e1, e2) ->
+              let x1 = Int64.sub timestamp_local (Int64.of_int e1.offset) in
+              let x2 = Int64.sub timestamp_local (Int64.of_int e2.offset) in
+              `Ambiguous (min x1 x2, max x1 x2)))
 
   type 'a local_result =
     [ `Single of 'a
@@ -1207,41 +1207,33 @@ module Date_time' = struct
       | Some entry -> (
           let d, s =
             if x >= 0L then
-              (
-                x /^ Constants.seconds_in_day
-                |> Int64.to_int,
-                Int64.rem (Int64.abs x) Constants.seconds_in_day
-              )
+              ( x /^ Constants.seconds_in_day |> Int64.to_int,
+                Int64.rem (Int64.abs x) Constants.seconds_in_day )
             else
               let x = Int64.abs x in
               let s = Int64.rem x Constants.seconds_in_day in
-              (
-                -1 * (
-                   (x +^ (Constants.seconds_in_day -^ 1L))
-                   /^ Constants.seconds_in_day
-                   |> Int64.to_int
-                 )
-                ,
-                if s = 0L then s else
-                  Constants.seconds_in_day -^ s
-              )
+              ( -1
+                 * ((x +^ (Constants.seconds_in_day -^ 1L))
+                    /^ Constants.seconds_in_day
+                    |> Int64.to_int),
+                if s = 0L then s else Constants.seconds_in_day -^ s )
           in
           let ps = s *^ Constants.s_to_ps_mult in
           match Ptime.Span.of_d_ps (d, ps) with
           | None -> Error ()
-          | Some span ->
-          match Ptime.of_span span with
-          | None -> Error ()
-          | Some x ->
-            x
-            |> Ptime.to_date_time ~tz_offset_s:entry.offset
-            |> of_ptime_date_time_pretend_utc
-            |> CCResult.map (fun t ->
-                {
-                  t with
-                  tz_info =
-                    `Tz_and_tz_offset_s (tz_of_date_time, entry.offset);
-                }))
+          | Some span -> (
+              match Ptime.of_span span with
+              | None -> Error ()
+              | Some x ->
+                x
+                |> Ptime.to_date_time ~tz_offset_s:entry.offset
+                |> of_ptime_date_time_pretend_utc
+                |> CCResult.map (fun t ->
+                    {
+                      t with
+                      tz_info =
+                        `Tz_and_tz_offset_s (tz_of_date_time, entry.offset);
+                    })))
 
   let make ~year ~month ~day ~hour ~minute ~second ~tz =
     let dt =
@@ -1673,8 +1665,7 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
   | _ ->
     if
       List.for_all
-        (fun year ->
-           Constants.min_year <= year && year <= Constants.max_year)
+        (fun year -> Constants.min_year <= year && year <= Constants.max_year)
         years
       && List.for_all (fun x -> -31 <= x && x <= 31 && x <> 0) month_days
       && List.for_all (fun x -> 0 <= x && x < 24) hours
