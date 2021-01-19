@@ -1160,7 +1160,9 @@ module Date_time' = struct
     | Some x -> Ok (x |> Ptime.to_float_s |> Int64.of_float)
 
   let to_timestamp_unsafe (x : t) : timestamp Time_zone.local_result =
-    let timestamp_local = CCResult.get_exn @@ to_timestamp_pretend_utc x in
+    match to_timestamp_pretend_utc x with
+    | Error () -> `None
+    | Ok timestamp_local ->
     match x.tz_info with
     | `Tz_offset_s_only offset | `Tz_and_tz_offset_s (_, offset) ->
       `Single (Int64.sub timestamp_local (Int64.of_int offset))
