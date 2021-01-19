@@ -150,12 +150,11 @@ let tz_info_equal (x : tz_info) (y : tz_info) =
   | _, _ -> false
 
 let make_tz_info ?tz ?tz_offset_s () =
-  match tz, tz_offset_s with
+  match (tz, tz_offset_s) with
   | None, None -> invalid_arg "make_tz_info"
   | Some tz, None -> Ok (`Tz_only tz)
   | None, Some tz_offset_s -> Ok (`Tz_offset_s_only tz_offset_s)
   | Some tz, Some tz_offset_s ->
     if Time_zone.offset_is_recorded tz_offset_s tz then
-     Ok (`Tz_and_tz_offset_s (tz, tz_offset_s))
-    else
-      Error ()
+      Ok (`Tz_and_tz_offset_s (tz, tz_offset_s))
+    else Error ()
