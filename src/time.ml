@@ -1282,10 +1282,6 @@ module Date_time' = struct
     t option =
     match pick with
     | Points.YMDHMS { year; month; month_day; hour; minute; second } -> (
-        Printf.printf
-          "year: %d, month: %d, month_day: %d, hour: %d, minute: %d, second: %d\n"
-          year (human_int_of_month month) month_day hour minute second;
-        flush stdout;
         let day_count = day_count_of_month ~year ~month in
         let month_day =
           if month_day < 0 then day_count + month_day + 1 else month_day
