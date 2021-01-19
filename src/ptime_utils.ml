@@ -12,22 +12,16 @@ let ptime_of_timestamp x =
     else
       let x = Int64.abs x in
       let s = Int64.rem x seconds_in_day in
-      ( -1
-         * ((x +^ (seconds_in_day -^ 1L))
-            /^ seconds_in_day
-            |> Int64.to_int),
+      ( -1 * ((x +^ (seconds_in_day -^ 1L)) /^ seconds_in_day |> Int64.to_int),
         if s = 0L then s else seconds_in_day -^ s )
   in
   let ps = s *^ s_to_ps_mult in
   match Ptime.Span.of_d_ps (d, ps) with
   | None -> Error ()
   | Some span -> (
-      match Ptime.of_span span with
-      | None -> Error ()
-      | Some x -> Ok x
-    )
+      match Ptime.of_span span with None -> Error () | Some x -> Ok x)
 
 let timestamp_of_ptime x =
   let d, ps = x |> Ptime.to_span |> Ptime.Span.to_d_ps in
   let s = ps /^ s_to_ps_mult in
-  ((Int64.of_int d *^ seconds_in_day) +^ s)
+  (Int64.of_int d *^ seconds_in_day) +^ s

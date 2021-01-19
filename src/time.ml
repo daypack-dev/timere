@@ -1158,8 +1158,7 @@ module Date_time' = struct
     let open Int64_utils in
     match Ptime.of_date_time @@ to_ptime_date_time_pretend_utc x with
     | None -> Error ()
-    | Some x ->
-      Ok (Ptime_utils.timestamp_of_ptime x)
+    | Some x -> Ok (Ptime_utils.timestamp_of_ptime x)
 
   let to_timestamp_unsafe (x : t) : timestamp Time_zone.local_result =
     match to_timestamp_pretend_utc x with

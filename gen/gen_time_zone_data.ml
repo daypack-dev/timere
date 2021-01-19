@@ -264,8 +264,7 @@ let process_overlapping_transition_records (l : transition_record list) :
 
 let min_timestamp = Ptime.min |> Ptime_utils.timestamp_of_ptime
 
-let max_timestamp =
-  Ptime.max |> Ptime_utils.timestamp_of_ptime
+let max_timestamp = Ptime.max |> Ptime_utils.timestamp_of_ptime
 
 module Int_set = Set.Make (struct
     type t = int
