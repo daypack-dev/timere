@@ -17,8 +17,8 @@
 )
 
 (rule
- (targets date_components.ml)
- (deps    ../src/date_components.ml)
+ (targets date_time_components.ml)
+ (deps    ../src/date_time_components.ml)
  (action  (copy %{deps} %{targets}))
 )
 

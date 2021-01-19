@@ -1,4 +1,4 @@
-open Date_components
+open Date_time_components
 
 module Print_utils = struct
   let small_nat = QCheck.Print.int

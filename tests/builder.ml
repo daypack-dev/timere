@@ -1,4 +1,4 @@
-open Date_components
+open Date_time_components
 
 let make_rng ~randomness : unit -> int =
   let randomness = match randomness with [] -> [ 0 ] | _ -> randomness in

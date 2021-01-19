@@ -1,4 +1,4 @@
-open Date_components
+open Date_time_components
 
 let to_date_time s : (Time.Date_time'.t, string) result =
   let open MParser in

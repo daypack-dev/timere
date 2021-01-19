@@ -1,4 +1,4 @@
-open Date_components
+open Date_time_components
 
 module Search_param = struct
   type t = {

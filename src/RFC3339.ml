@@ -1,4 +1,4 @@
-open Date_components
+open Date_time_components
 
 let of_date_time (dt : Time.Date_time'.t) : string =
   Printf.sprintf "%04d-%02d-%02dT%02d:%02d:%02d%s" dt.year

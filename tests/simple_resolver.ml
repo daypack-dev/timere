@@ -1,4 +1,4 @@
-open Date_components
+open Date_time_components
 
 let timestamp_safe_sub a b =
   if Int64.sub a Constants.min_timestamp >= b then Int64.sub a b
