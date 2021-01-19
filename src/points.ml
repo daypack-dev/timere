@@ -85,7 +85,7 @@ let make' ~tz ~tz_offset_s ~year ~month ~month_day ~weekday ~hour ~minute ~secon
     | Ok pick ->
       Ok (pick, tz_info)
 
-let make ?tz ?tz_offset_s ?year ?month ?month_day ?weekday ?hour ?minute ~second () =
+let make ?tz ?tz_offset_s ?year ?month ?month_day ?weekday ?hour ?minute ~second () : (t, unit) result =
   make' ~tz ~tz_offset_s ~year ~month ~month_day ~weekday ~hour ~minute ~second ()
 
 let make_exn ?tz ?tz_offset_s ?year ?month ?month_day ?weekday ?hour ?minute ~second () =

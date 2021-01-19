@@ -456,7 +456,7 @@ type points
 
 val make_points :
   ?tz:Time_zone.t ->
-  ?tz_offset_s:Time_zone.t ->
+  ?tz_offset_s:int ->
   ?year:int ->
   ?month:month ->
   ?month_day:int ->
@@ -469,7 +469,7 @@ val make_points :
 
 val make_points_exn :
   ?tz:Time_zone.t ->
-  ?tz_offset_s:Time_zone.t ->
+  ?tz_offset_s:int ->
   ?year:int ->
   ?month:month ->
   ?month_day:int ->
