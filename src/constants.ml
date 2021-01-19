@@ -1,4 +1,5 @@
 include Time_zone_constants
+open Int64_utils
 
 let min_timestamp =
   let x = Ptime.min |> Ptime.to_float_s |> Int64.of_float in
@@ -11,3 +12,9 @@ let max_timestamp =
 let min_year = 0
 
 let max_year = 9999
+
+let s_to_ps_mult =
+  1_000_000_000_000L
+
+let seconds_in_day =
+  24L *^ 60L *^ 60L
