@@ -24,7 +24,10 @@ let process_table (table : table) : record =
       let first_row = table.(0) in
       if Constants.min_timestamp < fst first_row then
         Array.append [| (Constants.min_timestamp, snd first_row) |] table
-      else table
+      else (
+        table.(0) <- (Constants.min_timestamp, snd first_row);
+        table
+      )
     in
     let recorded_offsets =
       Array.fold_left
