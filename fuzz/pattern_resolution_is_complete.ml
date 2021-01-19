@@ -1,5 +1,5 @@
 open Fuzz_utils
-open Date_components
+open Date_time_components
 
 let () =
   Crowbar.add_test ~name:"pattern_resolution_is_complete"

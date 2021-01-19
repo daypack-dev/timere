@@ -246,7 +246,7 @@ let debug_fuzz_union () =
   Printf.printf "%b\n" (OSeq.equal ~eq:( = ) s s')
 
 let debug_fuzz_pattern () =
-  let open Date_components in
+  let open Date_time_components in
   let tz_count = List.length Time_zone.available_time_zones in
   let tz =
     (fun n ->
