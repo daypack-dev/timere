@@ -23,6 +23,12 @@
 )
 
 (rule
+ (targets ptime_utils.ml)
+ (deps    ../src/ptime_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
  (targets pattern.ml)
  (deps    ../src/pattern.ml)
  (action  (copy %{deps} %{targets}))

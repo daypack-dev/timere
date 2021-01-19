@@ -1159,7 +1159,7 @@ module Date_time' = struct
     match Ptime.of_date_time @@ to_ptime_date_time_pretend_utc x with
     | None -> Error ()
     | Some x ->
-      Ok (timestamp_of_ptime x)
+      Ok (Ptime_utils.timestamp_of_ptime x)
 
   let to_timestamp_unsafe (x : t) : timestamp Time_zone.local_result =
     match to_timestamp_pretend_utc x with
@@ -1203,7 +1203,7 @@ module Date_time' = struct
       match Time_zone.lookup_timestamp_utc tz_of_date_time x with
       | None -> Error ()
       | Some entry -> (
-          match ptime_of_timestamp x with
+          match Ptime_utils.ptime_of_timestamp x with
           | Error () -> Error ()
           | Ok x ->
             x
