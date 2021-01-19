@@ -1155,17 +1155,9 @@ module Date_time' = struct
     match r with `None -> None | `Single x | `Ambiguous (_, x) -> Some x
 
   let to_timestamp_pretend_utc (x : t) : (timestamp, unit) result =
-    match
-      Ptime.of_date_time @@
-      to_ptime_date_time_pretend_utc x
-    with
+    match Ptime.of_date_time @@ to_ptime_date_time_pretend_utc x with
     | None -> Error ()
-    | Some x ->
-      Ok (
-        x
-        |> Ptime.to_float_s
-        |> Int64.of_float
-      )
+    | Some x -> Ok (x |> Ptime.to_float_s |> Int64.of_float)
 
   let to_timestamp_unsafe (x : t) : timestamp Time_zone.local_result =
     let timestamp_local = CCResult.get_exn @@ to_timestamp_pretend_utc x in
@@ -1254,15 +1246,15 @@ module Date_time' = struct
                   }
               with
               | Error () -> Error ()
-              | Ok timestamp_local ->
-                match Time_zone.lookup_timestamp_local tz timestamp_local with
-                | `None -> Error ()
-                | `Single e ->
-                  if e.offset = tz_offset_s then Ok tz_info else Error ()
-                | `Ambiguous (e1, e2) ->
-                  if e1.offset = tz_offset_s || e2.offset = tz_offset_s then
-                    Ok tz_info
-                  else Error ()))
+              | Ok timestamp_local -> (
+                  match Time_zone.lookup_timestamp_local tz timestamp_local with
+                  | `None -> Error ()
+                  | `Single e ->
+                    if e.offset = tz_offset_s then Ok tz_info else Error ()
+                  | `Ambiguous (e1, e2) ->
+                    if e1.offset = tz_offset_s || e2.offset = tz_offset_s then
+                      Ok tz_info
+                    else Error ())))
     in
     match tz_info with
     | Error () -> Error ()
@@ -1290,19 +1282,11 @@ module Date_time' = struct
     t option =
     match pick with
     | Points.YMDHMS { year; month; month_day; hour; minute; second } -> (
-        Printf.printf "year: %d, month: %d, month_day: %d, hour: %d, minute: %d, second: %d\n"
-          year
-          (human_int_of_month month)
-          month_day
-          hour
-          minute
-          second
-        ;
+        Printf.printf
+          "year: %d, month: %d, month_day: %d, hour: %d, minute: %d, second: %d\n"
+          year (human_int_of_month month) month_day hour minute second;
         flush stdout;
-        let day_count =
-          day_count_of_month ~year
-            ~month
-        in
+        let day_count = day_count_of_month ~year ~month in
         let month_day =
           if month_day < 0 then day_count + month_day + 1 else month_day
         in
