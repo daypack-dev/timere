@@ -1595,7 +1595,7 @@ let drop (n : int) (c : chunked) : chunked =
 
 let not (a : t) : t = Unary_op (Not, a)
 
-let with_tz offset t = Unary_op (With_tz offset, t)
+let with_tz tz t = Unary_op (With_tz tz, t)
 
 (* let safe_month_day_range_inc ~years ~months =
  *   let contains_non_leap_year =
