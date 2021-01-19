@@ -385,10 +385,11 @@ let normalize s =
 
 let aux_pattern search_using_tz space pat =
   let open Time in
+  let space = CCList.to_seq space in
   Time_zone.transition_seq search_using_tz
   |> Seq.flat_map (fun ((x, y), entry) ->
       let space =
-        Intervals.Inter.inter (Seq.return (x, y)) (CCList.to_seq space)
+        Intervals.Inter.inter (Seq.return (x, y)) space
       in
       let params =
         Seq.map
