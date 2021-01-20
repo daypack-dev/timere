@@ -16,6 +16,33 @@ type 'a local_result =
   | `Ambiguous of 'a * 'a
   ]
 
+let check_table (table : table) : bool =
+  let (_, has_no_dup) =
+    CCArray.fold_while (fun (acc, _) (offset, _) ->
+        if Int64_set.mem offset acc then
+          ((acc, false), `Stop)
+        else
+          ((Int64_set.add offset acc, true), `Continue)
+      )
+      (Int64_set.empty, true)
+      table
+  in
+  let (_, is_sorted) =
+    CCArray.fold_while (fun (last, _) (offset, _) ->
+        match last with
+        | None -> ((Some offset, true), `Continue)
+        | Some last ->
+          if last < offset then
+            ((Some offset, true), `Continue)
+          else
+            ((Some offset, false), `Stop)
+      )
+      (None, true)
+      table
+  in
+  has_no_dup
+  && is_sorted
+
 let process_table (table : table) : record =
   let len = Array.length table in
   if len = 0 then failwith "Time zone record table is empty"
@@ -200,15 +227,10 @@ let of_json_string s : (t, unit) result =
             | _ -> raise Invalid_data)
         |> Array.of_list
       in
-      Array.fold_left
-        (fun last_start (start, _) ->
-           match last_start with
-           | None -> Some start
-           | Some last_start ->
-             if last_start < start then Some start else raise Invalid_data)
-        None table
-      |> ignore;
-      Ok { name; record = process_table table }
+      if check_table table then
+        Ok { name; record = process_table table }
+      else
+        raise Invalid_data
     | _ -> raise Invalid_data
   with _ -> Error ()
 
