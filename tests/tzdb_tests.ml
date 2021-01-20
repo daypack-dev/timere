@@ -5,10 +5,7 @@ module Alco = struct
     Alcotest.(check bool)
       "all tables can go through make"
       (List.for_all
-         (fun s ->
-            CCResult.is_ok @@
-            Time_zone.make s
-         )
+         (fun s -> CCResult.is_ok @@ Time_zone.make s)
          Time_zone.available_time_zones)
       true
 
@@ -33,8 +30,7 @@ module Alco = struct
 
   let suite =
     [
-      Alcotest.test_case "tzdb_make_all" `Quick
-        tzdb_make_all;
+      Alcotest.test_case "tzdb_make_all" `Quick tzdb_make_all;
       Alcotest.test_case "tzdb_json_loads_correctly" `Quick
         tzdb_json_loads_correctly;
     ]
