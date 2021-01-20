@@ -60,7 +60,7 @@ let process_table (table : table) : record =
 let lookup_ref : (string -> table option) ref = ref lookup
 
 let lookup_record name : record option =
-  name |> !lookup_ref |> CCOpt.map process_table
+  name |> !lookup_ref |> CCOpt.map (fun table -> assert (check_table table); process_table table)
 
 let name t = t.name
 
