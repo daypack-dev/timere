@@ -17,31 +17,24 @@ type 'a local_result =
   ]
 
 let check_table (table : table) : bool =
-  let (_, has_no_dup) =
-    CCArray.fold_while (fun (acc, _) (offset, _) ->
-        if Int64_set.mem offset acc then
-          ((acc, false), `Stop)
-        else
-          ((Int64_set.add offset acc, true), `Continue)
-      )
-      (Int64_set.empty, true)
-      table
+  let _, has_no_dup =
+    CCArray.fold_while
+      (fun (acc, _) (offset, _) ->
+         if Int64_set.mem offset acc then ((acc, false), `Stop)
+         else ((Int64_set.add offset acc, true), `Continue))
+      (Int64_set.empty, true) table
   in
-  let (_, is_sorted) =
-    CCArray.fold_while (fun (last, _) (offset, _) ->
-        match last with
-        | None -> ((Some offset, true), `Continue)
-        | Some last ->
-          if last < offset then
-            ((Some offset, true), `Continue)
-          else
-            ((Some offset, false), `Stop)
-      )
-      (None, true)
-      table
+  let _, is_sorted =
+    CCArray.fold_while
+      (fun (last, _) (offset, _) ->
+         match last with
+         | None -> ((Some offset, true), `Continue)
+         | Some last ->
+           if last < offset then ((Some offset, true), `Continue)
+           else ((Some offset, false), `Stop))
+      (None, true) table
   in
-  has_no_dup
-  && is_sorted
+  has_no_dup && is_sorted
 
 let process_table (table : table) : record =
   let len = Array.length table in
@@ -227,10 +220,8 @@ let of_json_string s : (t, unit) result =
             | _ -> raise Invalid_data)
         |> Array.of_list
       in
-      if check_table table then
-        Ok { name; record = process_table table }
-      else
-        raise Invalid_data
+      if check_table table then Ok { name; record = process_table table }
+      else raise Invalid_data
     | _ -> raise Invalid_data
   with _ -> Error ()
 
