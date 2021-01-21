@@ -155,10 +155,12 @@ let debug_example () =
 
 let debug_fuzz_bounded_intervals () =
   let tz_count = List.length Time_zone.available_time_zones in
-  let tz = (fun n ->
-      let n = max 0 n mod tz_count in
-      Time_zone.make_exn (List.nth Time_zone.available_time_zones n)
-    ) 140733971657571 in
+  let tz =
+    (fun n ->
+       let n = max 0 n mod tz_count in
+       Time_zone.make_exn (List.nth Time_zone.available_time_zones n))
+      140733971657571
+  in
   let bound = Int64.of_int 82400 in
   let p1 =
     (fun randomness ->
@@ -166,7 +168,7 @@ let debug_fuzz_bounded_intervals () =
        let max_year_inc = 9999 in
        let rng = Builder.make_rng ~randomness in
        Builder.make_points ~rng ~min_year ~max_year_inc ~max_precision:7)
-      [3779; 0]
+      [ 3779; 0 ]
   in
   let p2 =
     (fun randomness ->
@@ -199,17 +201,14 @@ let debug_fuzz_bounded_intervals () =
           with
           | Seq.Nil -> true
           | Seq.Cons (xr2, _) ->
-            if 
-            OSeq.mem ~eq:( = ) (x1, xr2) s
-            && OSeq.mem ~eq:( = ) (xr2, Int64.succ xr2) s'
-            then
-              true
-            else
-              (
-                print_endline (Printers.sprintf_timestamp ~display_using_tz:tz xr2);
-                false
-              )
-       )
+            if
+              OSeq.mem ~eq:( = ) (x1, xr2) s
+              && OSeq.mem ~eq:( = ) (xr2, Int64.succ xr2) s'
+            then true
+            else (
+              print_endline
+                (Printers.sprintf_timestamp ~display_using_tz:tz xr2);
+              false))
        s1)
 
 let debug_fuzz_union () =
