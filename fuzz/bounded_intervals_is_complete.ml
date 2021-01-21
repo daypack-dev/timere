@@ -20,7 +20,7 @@ let () =
           (OSeq.for_all
              (fun x1 ->
                 match
-                  Seq.filter (fun x2 -> x1 <= x2 && Int64.sub x2 x1 <= bound) s2 ()
+                  Seq.filter (fun x2 -> x1 < x2 && Int64.sub x2 x1 <= bound) s2 ()
                 with
                 | Seq.Nil -> true
                 | Seq.Cons (xr2, _) ->
