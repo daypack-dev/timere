@@ -1,7 +1,7 @@
 open Fuzz_utils
 
 let () =
-  Crowbar.add_test ~name:"between_exc_is_sound"
+  Crowbar.add_test ~name:"bounded_intervals_is_sound"
     [ time_zone; Crowbar.range 100_000; points; points ] (fun tz bound p1 p2 ->
         let bound = Int64.of_int bound in
         let s1 = Resolver.aux_points tz Resolver.default_search_space p1 in
@@ -21,7 +21,8 @@ let () =
              (fun (x, y) ->
                 OSeq.mem ~eq:( = ) x s1
                 && OSeq.mem ~eq:( = ) y s2
-                && not (OSeq.exists (fun x2 -> x < x2 && x2 < x) s2))
+                && Int64.sub y x <= bound
+                && not (OSeq.exists (fun x2 -> x < x2 && x2 < y) s2))
              s
            && OSeq.for_all
              (fun (x, y) ->
