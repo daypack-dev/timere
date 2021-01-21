@@ -49,7 +49,7 @@ let normalize (s : Time.Interval.t Seq.t) : Time.Interval.t Seq.t =
   |> Int64_set.to_seq
   |> intervals_of_timestamps
 
-let find_follow bound (start : int64) (s2 : int64 Seq.t) =
+let find_after bound (start : int64) (s2 : int64 Seq.t) =
   let s =
     s2
     |> OSeq.drop_while (fun start' -> start' <= start)
@@ -235,7 +235,7 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
       let s2 = aux_points search_space search_using_tz end_exc in
       s1
       |> Seq.filter_map (fun start ->
-          find_follow bound start s2
+          find_after bound start s2
           |> CCOpt.map (fun x ->
               match pick with
               | `Whole -> (start, x)
