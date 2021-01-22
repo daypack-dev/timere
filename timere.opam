@@ -1,8 +1,9 @@
 opam-version: "2.0"
-synopsis: "OCaml time handling and reasoning library with platform independent time zone support and NLP-style parsing"
+synopsis: "OCaml time handling and reasoning library"
 description: """
-Timere provides facilities for handling timestamp and date time with time zone support,
-and reasoning over time intervals, e.g. union, intersect, relative complement
+Features:
+- Timestamp and date time handling with platform independent time zone support
+- Reasoning over time intervals, e.g. union, intersect, relative complement, shift, chunk
 """
 maintainer: "Darren Ldl <darrenldldev@gmail.com>"
 authors: "Daypack developers"

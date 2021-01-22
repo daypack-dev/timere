@@ -1,5 +1,5 @@
 # Timere
-OCaml time handling and reasoning library with platform independent time zone support and NLP-style parsing
+OCaml time handling and reasoning library
 
 [API documentation](https://daypack-dev.github.io/timere/)
 
@@ -7,42 +7,32 @@ __Note__: The project core is largely complete, but still undergoing testing - y
 
 __Disclaimer__: timere is not designed to handle prehistoric events. For prehistoric planning and booking software, please consult [appropriate experts](https://en.wikipedia.org/wiki/The_Flintstones).
 
-## Introduction
+## Features
 
-Timere (short for time reasoning) is a comprehensive library for handling time (timestamps/date times) which aims to make things often not straightforward to solve easily accessible
+- Timestamp and date time handling with platform independent time zone support
 
-This includes
+  - Subset of the IANA time zone database is built into this library
+  
+- Reasoning over time intervals via `timere` objects/expressions, examples:
 
-- Platform independent time zone aware date times (the IANA time zone database is built into this library)
+  - Pattern matching of date time (e.g. day is 23th, hour is 9am)
 
-- Efficient time query resolution
+  - Intersection and union
 
-  - A time query (or a `timere` object) is an expression language that represent sequence of time intervals, that can be further combined or modified via use of various combinators, e.g.
-
-    - Intersection and union
-
-    - Pattern matching of time (e.g. day is 23th, hour is 9am)
-
-      - This is time zone aware and works across DST boundaries
-
-    - Chunking at year or month boundary, or in fixed sizes
+  - Chunking at year or month boundary, or in fixed sizes
 
     - Evaluate expressions with a different time zone (e.g. intersection of 9am to 5pm of Australia and 9am to 5pm of New York)
-
-  - Time query can thus be used as a robust solution for various applications, e.g.
-
-    - Part of your scheduling process (e.g. 9am to 10am time intervals between two dates)
-
-    - Obtaining explicit time intervals from a natural representation to be used for log analysis
+    
+  - Mix subexpressions with different time zones
 
 ## Usage
 
-Include `timere` in the `libraries` in your dune file, and optionally one of the following two to select
+Include `timere` in the `libraries` stanza in your dune file, and optionally one of the following two to select
 a concrete implementation of time zone data source
 
 - `timere.tzdb.full`
 
-  - This is the default implementation which embeds the full IANA time zone database from year 1850 to year 2100 exclusive
+  - This is the default implementation which embeds the IANA time zone database from year 1850 to year 2100 exclusive
 
 - `timere.tzdb.none`
 
