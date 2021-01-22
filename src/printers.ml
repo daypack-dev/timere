@@ -152,7 +152,7 @@ exception Invalid_format_string of string
 
 let invalid_format_string s = raise (Invalid_format_string s)
 
-let sprintf_date_time ?(format : string = default_date_time_format_string)
+let string_of_date_time ?(format : string = default_date_time_format_string)
     (x : Time.Date_time'.t) : string =
   let open MParser in
   let open Parser_components in
@@ -174,19 +174,19 @@ let sprintf_date_time ?(format : string = default_date_time_format_string)
   | Ok l -> String.concat "" l
 
 let pp_date_time ?(format = default_interval_format_string) formatter x =
-  Format.fprintf formatter "%s" (sprintf_date_time ~format x)
+  Format.fprintf formatter "%s" (string_of_date_time ~format x)
 
-let sprintf_timestamp ?(display_using_tz = Time_zone.utc)
+let string_of_timestamp ?(display_using_tz = Time_zone.utc)
     ?(format = default_date_time_format_string) (time : int64) : string =
   match Time.Date_time'.of_timestamp ~tz_of_date_time:display_using_tz time with
   | Error () -> invalid_arg "Invalid unix second"
-  | Ok dt -> sprintf_date_time ~format dt
+  | Ok dt -> string_of_date_time ~format dt
 
 let pp_timestamp ?(display_using_tz = Time_zone.utc)
     ?(format = default_date_time_format_string) formatter x =
-  Format.fprintf formatter "%s" (sprintf_timestamp ~display_using_tz ~format x)
+  Format.fprintf formatter "%s" (string_of_timestamp ~display_using_tz ~format x)
 
-let sprintf_interval ?(display_using_tz = Time_zone.utc)
+let string_of_interval ?(display_using_tz = Time_zone.utc)
     ?(format : string = default_interval_format_string)
     ((s, e) : Time.Interval.t) : string =
   let open MParser in
@@ -237,9 +237,9 @@ let sprintf_interval ?(display_using_tz = Time_zone.utc)
 let pp_interval ?(display_using_tz = Time_zone.utc)
     ?(format = default_interval_format_string) formatter interval =
   Format.fprintf formatter "%s"
-    (sprintf_interval ~display_using_tz ~format interval)
+    (string_of_interval ~display_using_tz ~format interval)
 
-let sprint_duration ({ days; hours; minutes; seconds } : Duration.t) : string =
+let string_of_duration ({ days; hours; minutes; seconds } : Duration.t) : string =
   if days > 0 then
     Printf.sprintf "%d days %d hours %d mins %d secs" days hours minutes seconds
   else if hours > 0 then
@@ -247,6 +247,6 @@ let sprint_duration ({ days; hours; minutes; seconds } : Duration.t) : string =
   else if minutes > 0 then Printf.sprintf "%d mins %d secs" minutes seconds
   else Printf.sprintf "%d secs" seconds
 
-let pp_duration formatter x = Format.fprintf formatter "%s" (sprint_duration x)
+let pp_duration formatter x = Format.fprintf formatter "%s" (string_of_duration x)
 
 let pp_sexp formatter t = CCSexp.pp formatter (To_sexp.to_sexp t)

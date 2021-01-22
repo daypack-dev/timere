@@ -12,9 +12,9 @@ let display_intervals ~display_using_tz s =
     s
     |> OSeq.take 50
     |> OSeq.iter (fun (x, y) ->
-        let s = Printers.sprintf_interval ~display_using_tz (x, y) in
+        let s = Printers.string_of_interval ~display_using_tz (x, y) in
         let size = Duration.of_seconds (Int64.sub y x) in
-        let size_str = Printers.sprint_duration size in
+        let size_str = Printers.string_of_duration size in
         Printf.printf "%s - %s\n" s size_str)
 
 let debug_resolver () =
@@ -124,9 +124,9 @@ let debug_example () =
       s
       |> OSeq.take 60
       |> OSeq.iter (fun (x, y) ->
-          let s = Printers.sprintf_interval ~display_using_tz (x, y) in
+          let s = Printers.string_of_interval ~display_using_tz (x, y) in
           let size = Duration.of_seconds (Int64.sub y x) in
-          let size_str = Printers.sprint_duration size in
+          let size_str = Printers.string_of_duration size in
           Printf.printf "%s - %s\n" s size_str)
   in
   let tz = Time_zone.make_exn "Australia/Sydney" in
@@ -207,7 +207,7 @@ let debug_fuzz_bounded_intervals () =
             then true
             else (
               print_endline
-                (Printers.sprintf_timestamp ~display_using_tz:tz xr2);
+                (Printers.string_of_timestamp ~display_using_tz:tz xr2);
               false))
        s1)
 

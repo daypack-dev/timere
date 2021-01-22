@@ -8,7 +8,7 @@ exception Invalid_format_string = Printers.Invalid_format_string
 module Date_time = struct
   include Time.Date_time'
 
-  let sprintf = Printers.sprintf_date_time
+  let to_string = Printers.string_of_date_time
 
   let pp = Printers.pp_date_time
 
@@ -20,7 +20,7 @@ end
 module Duration = struct
   include Duration
 
-  let sprint = Printers.sprint_duration
+  let to_string = Printers.string_of_duration
 
   let pp = Printers.pp_duration
 end
@@ -39,11 +39,11 @@ let make_points_exn = Points.make_exn
 
 let resolve = Resolver.resolve
 
-let sprintf_timestamp = Printers.sprintf_timestamp
+let string_of_timestamp = Printers.string_of_timestamp
 
 let pp_timestamp = Printers.pp_timestamp
 
-let sprintf_interval = Printers.sprintf_interval
+let string_of_interval = Printers.string_of_interval
 
 let pp_interval = Printers.pp_interval
 

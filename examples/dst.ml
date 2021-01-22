@@ -5,11 +5,11 @@ let display_intervals ~display_using_tz s =
     s
     |> OSeq.take 60
     |> OSeq.iter (fun (x, y) ->
-        let s = Timere.sprintf_interval ~display_using_tz (x, y) in
+        let s = Timere.string_of_interval ~display_using_tz (x, y) in
         let size =
           Timere.Duration.of_seconds (Int64.sub y x)
         in
-        let size_str = Timere.Duration.sprint size in
+        let size_str = Timere.Duration.to_string size in
         Printf.printf "%s - %s\n" s size_str
       )
 

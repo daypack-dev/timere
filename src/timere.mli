@@ -176,7 +176,7 @@ module Duration : sig
 
   val to_seconds : t -> int64
 
-  val sprint : t -> string
+  val to_string : t -> string
 
   val pp : Format.formatter -> t -> unit
 end
@@ -216,7 +216,7 @@ module Time_zone : sig
   (** This is mainly used for when you only have an offset to work with,
       and you don't need to do any accurate search over time zones.
 
-      One use of this is to create a time zone for sprintf functions.
+      One use of this is to create a time zone for [to_string] functions.
   *)
 
   val to_json_string : t -> string
@@ -339,7 +339,7 @@ module Date_time : sig
 
   val cur : ?tz_of_date_time:Time_zone.t -> unit -> (t, unit) result
 
-  val sprintf : ?format:string -> t -> string
+  val to_string : ?format:string -> t -> string
   (**
      Pretty printing for date time.
 
@@ -601,11 +601,11 @@ val resolve :
 
 (** {1 Pretty printers} *)
 
-val sprintf_timestamp :
+val string_of_timestamp :
   ?display_using_tz:Time_zone.t -> ?format:string -> timestamp -> string
 (** Pretty printing for timestamp.
 
-    Follows same format string rules and default format string as {!val:Date_time.sprintf}.
+    Follows same format string rules and default format string as {!val:Date_time.to_string}.
 *)
 
 val pp_timestamp :
@@ -615,7 +615,7 @@ val pp_timestamp :
   timestamp ->
   unit
 
-val sprintf_interval :
+val string_of_interval :
   ?display_using_tz:Time_zone.t -> ?format:string -> interval -> string
 (** Pretty printing for interval.
 
@@ -627,7 +627,7 @@ val sprintf_interval :
 {etzoff-sign}{etzoff-hour:0X}:{etzoff-min:0X}:{etzoff-sec:0X})
     v}
 
-    Follows same format string rules as {!val:Date_time.sprintf}, but tags are prefixed with 's' for "start time", and 'e' for "end exc time",
+    Follows same format string rules as {!val:Date_time.to_string}, but tags are prefixed with 's' for "start time", and 'e' for "end exc time",
     e.g. for interval [(x, y)]
 
     - [{syear}] gives year of the [x]
