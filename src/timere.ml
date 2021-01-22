@@ -47,6 +47,8 @@ let string_of_interval = Printers.string_of_interval
 
 let pp_interval = Printers.pp_interval
 
+let pp_intervals = Printers.pp_intervals
+
 let to_sexp = To_sexp.to_sexp
 
 let pp_sexp = Printers.pp_sexp

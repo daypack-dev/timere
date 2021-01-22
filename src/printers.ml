@@ -173,7 +173,7 @@ let string_of_date_time ?(format : string = default_date_time_format_string)
   | Error msg -> invalid_format_string msg
   | Ok l -> String.concat "" l
 
-let pp_date_time ?(format = default_interval_format_string) formatter x =
+let pp_date_time ?(format = default_interval_format_string) () formatter x =
   Format.fprintf formatter "%s" (string_of_date_time ~format x)
 
 let string_of_timestamp ?(display_using_tz = Time_zone.utc)
@@ -183,7 +183,7 @@ let string_of_timestamp ?(display_using_tz = Time_zone.utc)
   | Ok dt -> string_of_date_time ~format dt
 
 let pp_timestamp ?(display_using_tz = Time_zone.utc)
-    ?(format = default_date_time_format_string) formatter x =
+    ?(format = default_date_time_format_string) () formatter x =
   Format.fprintf formatter "%s" (string_of_timestamp ~display_using_tz ~format x)
 
 let string_of_interval ?(display_using_tz = Time_zone.utc)
@@ -235,9 +235,13 @@ let string_of_interval ?(display_using_tz = Time_zone.utc)
           | Ok l -> String.concat "" l))
 
 let pp_interval ?(display_using_tz = Time_zone.utc)
-    ?(format = default_interval_format_string) formatter interval =
+    ?(format = default_interval_format_string) () formatter interval =
   Fmt.pf formatter "%s"
     (string_of_interval ~display_using_tz ~format interval)
+
+let pp_intervals ?(display_using_tz = Time_zone.utc)
+    ?(format = default_interval_format_string) ?(sep = Fmt.cut) () formatter intervals =
+  Fmt.seq ~sep (pp_interval ~display_using_tz ~format ()) formatter intervals
 
 let string_of_duration ({ days; hours; minutes; seconds } : Duration.t) : string =
   if days > 0 then

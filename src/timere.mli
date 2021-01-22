@@ -380,7 +380,7 @@ module Date_time : sig
      v}
   *)
 
-  val pp : ?format:string -> Format.formatter -> t -> unit
+  val pp : ?format:string -> unit -> Format.formatter -> t -> unit
 
   val to_rfc3339 : t -> string
 
@@ -611,6 +611,7 @@ val string_of_timestamp :
 val pp_timestamp :
   ?display_using_tz:Time_zone.t ->
   ?format:string ->
+  unit ->
   Format.formatter ->
   timestamp ->
   unit
@@ -637,8 +638,18 @@ val string_of_interval :
 val pp_interval :
   ?display_using_tz:Time_zone.t ->
   ?format:string ->
+  unit ->
   Format.formatter ->
   interval ->
+  unit
+
+val pp_intervals :
+  ?display_using_tz:Time_zone.t ->
+  ?format:string ->
+  ?sep:unit Fmt.t ->
+  unit ->
+  Format.formatter ->
+  interval Seq.t ->
   unit
 
 (** {1 S-expressions} *)
