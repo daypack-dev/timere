@@ -282,7 +282,7 @@ let time_gen : Time_ast.t QCheck.Gen.t =
     (fun max_height max_branching randomness ->
        Time.inter
          [
-           Time.of_intervals [ (search_start, search_end_exc) ];
+           Time.intervals [ (search_start, search_end_exc) ];
            Builder.build ~enable_extra_restrictions:true ~min_year:2018
              ~max_year_inc:2020 ~max_height ~max_branching ~randomness;
          ])

@@ -98,7 +98,7 @@ let debug_resolver () =
     |> CCOpt.get_exn
   in
   let timere' =
-    Time.(inter [ timere; of_intervals [ (search_start, search_end_exc) ] ])
+    Time.(inter [ timere; intervals [ (search_start, search_end_exc) ] ])
   in
   print_endline "^^^^^";
   print_endline (To_sexp.to_sexp_string timere');

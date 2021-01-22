@@ -1737,7 +1737,7 @@ let hms_intervals_inc (hms_a : hms) (hms_b : hms) : t =
   let hms_b = hms_b |> second_of_day_of_hms |> succ |> hms_of_second_of_day in
   hms_intervals_exc hms_a hms_b
 
-let of_sorted_interval_seq ?(skip_invalid : bool = false)
+let sorted_interval_seq ?(skip_invalid : bool = false)
     (s : (int64 * int64) Seq.t) : t =
   let s =
     s
@@ -1756,11 +1756,11 @@ let of_sorted_interval_seq ?(skip_invalid : bool = false)
   in
   match s () with Seq.Nil -> Empty | _ -> Intervals s
 
-let of_sorted_intervals ?(skip_invalid : bool = false)
+let sorted_intervals ?(skip_invalid : bool = false)
     (l : (int64 * int64) list) : t =
-  l |> CCList.to_seq |> of_sorted_interval_seq ~skip_invalid
+  l |> CCList.to_seq |> sorted_interval_seq ~skip_invalid
 
-let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
+let intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
   let s =
     l
     |> Intervals.Filter.filter_empty_list
@@ -1779,53 +1779,53 @@ let of_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
   in
   match s () with Seq.Nil -> Empty | _ -> Intervals s
 
-let of_interval_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t) :
+let interval_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t) :
   t =
-  s |> CCList.of_seq |> of_intervals ~skip_invalid
+  s |> CCList.of_seq |> intervals ~skip_invalid
 
 let interval_of_date_time date_time =
   let x = Date_time'.to_timestamp_single date_time in
   (x, Int64.succ x)
 
-let of_date_time_seq date_times =
-  date_times |> Seq.map interval_of_date_time |> of_interval_seq
+let date_time_seq date_times =
+  date_times |> Seq.map interval_of_date_time |> interval_seq
 
-let of_date_times date_times = date_times |> CCList.to_seq |> of_date_time_seq
+let date_times date_times = date_times |> CCList.to_seq |> date_time_seq
 
-let of_sorted_date_time_seq date_times =
-  date_times |> Seq.map interval_of_date_time |> of_sorted_interval_seq
+let sorted_date_time_seq date_times =
+  date_times |> Seq.map interval_of_date_time |> sorted_interval_seq
 
-let of_sorted_date_times date_times =
-  date_times |> CCList.to_seq |> of_sorted_date_time_seq
+let sorted_date_times date_times =
+  date_times |> CCList.to_seq |> sorted_date_time_seq
 
-let of_date_time date_time = of_date_times [ date_time ]
+let date_time date_time = date_times [ date_time ]
 
 let interval_of_timestamp ~skip_invalid x =
   match Date_time'.of_timestamp x with
   | Ok _ -> Some (x, Int64.succ x)
   | Error () -> if skip_invalid then None else raise Invalid_timestamp
 
-let of_timestamp_seq ?(skip_invalid = false) timestamps =
+let timestamp_seq ?(skip_invalid = false) timestamps =
   timestamps
   |> Seq.filter_map (interval_of_timestamp ~skip_invalid)
-  |> of_interval_seq
+  |> interval_seq
 
-let of_timestamps ?(skip_invalid = false) timestamps =
+let timestamps ?(skip_invalid = false) timestamps =
   timestamps
   |> CCList.filter_map (interval_of_timestamp ~skip_invalid)
-  |> of_intervals
+  |> intervals
 
-let of_sorted_timestamp_seq ?(skip_invalid = false) timestamps =
+let sorted_timestamp_seq ?(skip_invalid = false) timestamps =
   timestamps
   |> Seq.filter_map (interval_of_timestamp ~skip_invalid)
-  |> of_sorted_interval_seq
+  |> sorted_interval_seq
 
-let of_sorted_timestamps ?(skip_invalid = false) timestamps =
+let sorted_timestamps ?(skip_invalid = false) timestamps =
   timestamps
   |> CCList.filter_map (interval_of_timestamp ~skip_invalid)
-  |> of_sorted_intervals
+  |> sorted_intervals
 
-let of_timestamp x = of_timestamps [ x ]
+let timestamp x = timestamps [ x ]
 
 let nth_weekday_of_month (n : int) wday =
   let first_weekday_of_month wday =

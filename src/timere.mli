@@ -366,15 +366,15 @@ module Date_time : sig
   val of_iso8601 : string -> (t, string) result
 end
 
-val of_date_time : Date_time.t -> t
+val date_time : Date_time.t -> t
 
-val of_date_times : Date_time.t list -> t
+val date_times : Date_time.t list -> t
 
-val of_date_time_seq : Date_time.t Seq.t -> t
+val date_time_seq : Date_time.t Seq.t -> t
 
-val of_sorted_date_times : Date_time.t list -> t
+val sorted_date_times : Date_time.t list -> t
 
-val of_sorted_date_time_seq : Date_time.t Seq.t -> t
+val sorted_date_time_seq : Date_time.t Seq.t -> t
 
 val cur_timestamp : unit -> int64
 
@@ -384,27 +384,27 @@ val max_timestamp : int64
 
 exception Invalid_timestamp
 
-val of_timestamp : timestamp -> t
+val timestamp : timestamp -> t
 
-val of_timestamps : ?skip_invalid:bool -> timestamp list -> t
-(** [of_timestamps l]
+val timestamps : ?skip_invalid:bool -> timestamp list -> t
+(** [timestamps l]
 
     [skip_invalid] defaults to [false]
 
     @raise Invalid_timestamp if [not skip_invalid] and [l] contains an invalid timestamp
 *)
 
-val of_timestamp_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
-(** [of_timestamps s]
+val timestamp_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
+(** [timestamps s]
 
     [skip_invalid] defaults to [false]
 
     @raise Invalid_timestamp if [not skip_invalid] and [s] contains an invalid timestamp
 *)
 
-val of_sorted_timestamps : ?skip_invalid:bool -> timestamp list -> t
+val sorted_timestamps : ?skip_invalid:bool -> timestamp list -> t
 
-val of_sorted_timestamp_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
+val sorted_timestamp_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
 
 (** {1 Manual intervals} *)
 
@@ -414,24 +414,24 @@ exception Intervals_are_not_sorted
 
 type interval = timestamp * timestamp
 
-val of_intervals : ?skip_invalid:bool -> interval list -> t
-(** [of_intervals l]
+val intervals : ?skip_invalid:bool -> interval list -> t
+(** [intervals l]
 
     [skip_invalid] defaults to [false]
 
     @raise Interval_is_invalid if [not skip_invalid] and [l] contains an invalid interval
 *)
 
-val of_interval_seq : ?skip_invalid:bool -> interval Seq.t -> t
-(** [of_interval_seq s]
+val interval_seq : ?skip_invalid:bool -> interval Seq.t -> t
+(** [interval_seq s]
 
     [skip_invalid] defaults to [false]
 
     @raise Interval_is_invalid if [not skip_invalid] and [s] contains an invalid interval
 *)
 
-val of_sorted_intervals : ?skip_invalid:bool -> interval list -> t
-(** [of_sorted_intervals l]
+val sorted_intervals : ?skip_invalid:bool -> interval list -> t
+(** [sorted_intervals l]
 
     [skip_invalid] defaults to [false]
 
@@ -439,8 +439,8 @@ val of_sorted_intervals : ?skip_invalid:bool -> interval list -> t
     @raise Intervals_are_not_sorted if [l] is not sorted
 *)
 
-val of_sorted_interval_seq : ?skip_invalid:bool -> interval Seq.t -> t
-(** [of_sorted_interval_seq s]
+val sorted_interval_seq : ?skip_invalid:bool -> interval Seq.t -> t
+(** [sorted_interval_seq s]
 
     [skip_invalid] defaults to [false]
 

@@ -292,7 +292,7 @@ let of_sexp (x : CCSexp.t) =
                 invalid_data
                   (Printf.sprintf "Expected list for interval: %s"
                      (CCSexp.to_string x)))
-          |> of_sorted_intervals ~skip_invalid:false
+          |> sorted_intervals ~skip_invalid:false
         | `Atom "pattern" :: _ -> pattern_of_sexp x
         | [ `Atom "not"; x ] -> not (aux x)
         | [ `Atom "drop_points"; n; x ] -> drop_points (int_of_sexp n) (aux x)

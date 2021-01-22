@@ -45,7 +45,7 @@ let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
   |> CCList.of_seq
   |> List.sort_uniq Time.Interval.compare
   |> CCList.to_seq
-  |> Time.of_interval_seq
+  |> Time.interval_seq
 
 let make_pattern ~rng ~min_year ~max_year_inc : Pattern.t =
   let years =

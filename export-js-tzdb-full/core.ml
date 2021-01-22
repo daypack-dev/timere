@@ -140,13 +140,13 @@ let to_be_exported =
 
     method withTZ tz t = wrap (fun () -> Timere.with_tz tz t)
 
-    method ofDate date = Timere.of_date_time (date_time_of_js_date date)
+    method date date = Timere.date_time (date_time_of_js_date date)
 
-    method ofDates dates =
+    method dates dates =
       dates
       |> list_of_js_array
       |> List.map date_time_of_js_date
-      |> Timere.of_date_times
+      |> Timere.date_times
 
     val points =
       object%js
