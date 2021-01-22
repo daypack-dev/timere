@@ -139,7 +139,7 @@ let debug_example () =
            union
              [
                pattern ~months:[ `Apr ]
-                 ~month_day_ranges:[ `Range_inc (3, 6) ]
+                 ~day_ranges:[ `Range_inc (3, 6) ]
                  ()
                (* in April 3 to 6 *);
                (* pattern ~months:[`Oct] ~month_day_ranges:[`Range_inc (2, 5)] () (\* or in Oct 2 to 5 *\); *)

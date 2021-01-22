@@ -67,7 +67,7 @@ let to_be_exported =
               | Error () -> raise_with_msg "Invalid month int")
           |> Timere.months)
 
-    method monthDays l = wrap (fun () -> Timere.month_days (list_of_js_array l))
+    method days l = wrap (fun () -> Timere.days (list_of_js_array l))
 
     method weekdays l =
       wrap (fun () ->
