@@ -327,9 +327,9 @@ module Date_time : sig
   val to_timestamp_single : t -> timestamp
   (** @raise Invalid_argument if [to_timestamp] does not yield a [`Single] result *)
 
-  val min_of_timestamp_local_result : timestamp local_result -> timestamp option
+  val min_of_timestamp_local_result : timestamp local_result -> timestamp
 
-  val max_of_timestamp_local_result : timestamp local_result -> timestamp option
+  val max_of_timestamp_local_result : timestamp local_result -> timestamp
 
   val of_timestamp :
     ?tz_of_date_time:Time_zone.t -> timestamp -> (t, unit) result

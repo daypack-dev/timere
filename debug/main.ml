@@ -85,7 +85,6 @@ let debug_resolver () =
   let search_start =
     Time.Date_time'.to_timestamp search_start_dt
     |> Time.Date_time'.min_of_timestamp_local_result
-    |> CCOpt.get_exn
   in
   let search_end_exc_dt =
     Time.Date_time'.make ~year:2003 ~month:`Jan ~day:1 ~hour:0 ~minute:0
@@ -95,7 +94,6 @@ let debug_resolver () =
   let search_end_exc =
     Time.Date_time'.to_timestamp search_end_exc_dt
     |> Time.Date_time'.max_of_timestamp_local_result
-    |> CCOpt.get_exn
   in
   let timere' =
     Time.(inter [ timere; intervals [ (search_start, search_end_exc) ] ])

@@ -98,14 +98,12 @@ let search_space_of_year_range tz year_range =
       { Date_time'.min with year = start; tz_info = `Tz_only tz }
     |> Date_time'.to_timestamp
     |> Date_time'.min_of_timestamp_local_result
-    |> CCOpt.get_exn
   in
   let aux_end_inc end_exc =
     Date_time'.set_to_last_month_day_hour_min_sec
       { Date_time'.min with year = end_exc; tz_info = `Tz_only tz }
     |> Date_time'.to_timestamp
     |> Date_time'.min_of_timestamp_local_result
-    |> CCOpt.get_exn
     |> Int64.succ
   in
   let aux_end_exc end_exc =
@@ -113,7 +111,6 @@ let search_space_of_year_range tz year_range =
       { Date_time'.min with year = end_exc; tz_info = `Tz_only tz }
     |> Date_time'.to_timestamp
     |> Date_time'.min_of_timestamp_local_result
-    |> CCOpt.get_exn
   in
   match year_range with
   | `Range_inc (start, end_inc) -> (aux_start start, aux_end_inc end_inc)
@@ -193,11 +190,8 @@ let propagate_search_space_bottom_up default_tz (time : t) : t =
               dt
               |> Time.Date_time'.to_timestamp
               |> Time.Date_time'.max_of_timestamp_local_result
-              |> CCOpt.map (Int64.add bound)
+              |> Int64.add bound
             in
-            match (space_start, space_end_exc) with
-            | None, _ | _, None -> []
-            | Some space_start, Some space_end_exc ->
               [ (space_start, space_end_exc) ])
       in
       Bounded_intervals { search_space; pick; bound; start; end_exc }
@@ -319,7 +313,6 @@ let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) =
           Date_time'.set_to_last_month_day_hour_min_sec dt1
           |> Date_time'.to_timestamp
           |> Date_time'.max_of_timestamp_local_result
-          |> CCOpt.get_exn
           |> Int64.succ
         in
         fun () ->
@@ -349,7 +342,6 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
           Date_time'.set_to_last_day_hour_min_sec dt1
           |> Date_time'.to_timestamp
           |> Date_time'.max_of_timestamp_local_result
-          |> CCOpt.get_exn
           |> Int64.succ
         in
         fun () ->

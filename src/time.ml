@@ -1844,7 +1844,7 @@ let before_timestamp timestamp =
   intervals [ (timestamp_min, timestamp )]
 
 let after_timestamp timestamp =
-  intervals [ (timestamp, timestamp_max )]
+  intervals [ (Int64.succ timestamp, timestamp_max )]
 
 let before dt =
   before_timestamp (Date_time'.(to_timestamp dt |> min_of_timestamp_local_result))

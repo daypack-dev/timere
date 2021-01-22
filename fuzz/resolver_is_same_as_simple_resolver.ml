@@ -8,7 +8,6 @@ let search_start_dt =
 let search_start =
   Time.Date_time'.to_timestamp search_start_dt
   |> Time.Date_time'.min_of_timestamp_local_result
-  |> CCOpt.get_exn
 
 let search_end_exc_dt =
   CCResult.get_exn
@@ -18,7 +17,6 @@ let search_end_exc_dt =
 let search_end_exc =
   Time.Date_time'.to_timestamp search_end_exc_dt
   |> Time.Date_time'.max_of_timestamp_local_result
-  |> CCOpt.get_exn
 
 let () =
   Crowbar.add_test ~name:"resolver_is_same_as_simple_resolver" [ time ]
