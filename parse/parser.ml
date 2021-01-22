@@ -122,14 +122,10 @@ let months : (string * Timere.month) list =
   ]
 
 let parse_weekday (s : string) : (Timere.weekday, unit) CCResult.t =
-  match prefix_string_match weekdays s with
-  | [ (_, x) ] -> Ok x
-  | _ -> Error ()
+  match prefix_string_match weekdays s with [ (_, x) ] -> Ok x | _ -> Error ()
 
 let parse_month (s : string) : (Timere.month, unit) CCResult.t =
-  match prefix_string_match months s with
-  | [ (_, x) ] -> Ok x
-  | _ -> Error ()
+  match prefix_string_match months s with [ (_, x) ] -> Ok x | _ -> Error ()
 
 let weekday_p : (Timere.weekday, unit) t =
   alpha_string
