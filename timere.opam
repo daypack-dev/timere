@@ -1,9 +1,8 @@
 opam-version: "2.0"
-synopsis: "OCaml time reasoning library with platform independent time zone support and NLP-style parsing"
+synopsis: "OCaml time handling and reasoning library with platform independent time zone support and NLP-style parsing"
 description: """
-Timere provides facilities for reasoning over time intervals, e.g. union, intersect, relative complement
-
-See Timere-parse for the natural language parsing component
+Timere provides facilities for handling timestamp and date time with time zone support,
+and reasoning over time intervals, e.g. union, intersect, relative complement
 """
 maintainer: "Darren Ldl <darrenldldev@gmail.com>"
 authors: "Daypack developers"
@@ -20,7 +19,6 @@ depends: [
   "mparser"
   "containers" {>= "3.0"}
   "ptime"
-  "re"
   "yojson"
 ]
 build: [

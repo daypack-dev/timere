@@ -3,6 +3,13 @@ open Parser_components
 
 exception Invalid_data of string
 
+let prefix_string_match (choices : (string * 'a) list) (s : string) :
+  (string * 'a) list =
+  let regexp = Re.Str.regexp_case_fold s in
+  choices
+  |> List.filter (fun (k, _) ->
+      try Re.Str.search_forward regexp k 0 = 0 with Not_found -> false)
+
 let invalid_data s = raise (Invalid_data s)
 
 type guess =
