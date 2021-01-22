@@ -1850,7 +1850,7 @@ let before dt =
   before_timestamp (Date_time'.(to_timestamp dt |> min_of_timestamp_local_result))
 
 let after dt =
-  before_timestamp (Date_time'.(to_timestamp dt |> max_of_timestamp_local_result))
+  after_timestamp (Date_time'.(to_timestamp dt |> max_of_timestamp_local_result))
 
 let nth_weekday_of_month (n : int) wday =
   let first_weekday_of_month wday =
