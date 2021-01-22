@@ -27,7 +27,7 @@ jobs:
 
       - name: Build
         run: |
-          opam install dune ptime oseq re mparser containers odoc yojson
+          opam install dune ptime oseq re mparser containers odoc yojson fmt
           eval $(opam env); make doc
           mkdir public
           cp -r _build/default/_doc/_html/* public/
