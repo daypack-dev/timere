@@ -503,6 +503,8 @@ val bounded_intervals : [ `Whole | `Snd ] -> Duration.t -> points -> points -> t
 
 (** {2 Hour minute second intervals} *)
 
+(** Convenience wrappers around [points] and [bounded_intervals] *)
+
 type hms = private {
   hour : int;
   minute : int;
