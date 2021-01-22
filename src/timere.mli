@@ -27,6 +27,9 @@ val empty : t
 val years : int list -> t
 (** [years l] is a shorthand for [pattern ~years:l ()] *)
 
+val year_ranges : int range list -> t
+(** [year_ranges l] is a shorthand for [pattern ~year_ranges:l ()] *)
+
 type month =
   [ `Jan
   | `Feb
@@ -45,8 +48,14 @@ type month =
 val months : month list -> t
 (** [months l] is a shorthand for [pattern ~months:l ()] *)
 
+val month_ranges : month range list -> t
+(** [month_ranges l] is a shorthand for [pattern ~month_ranges:l ()] *)
+
 val month_days : int list -> t
 (** [month_days l] is a shorthand for [pattern ~month_days:l ()] *)
+
+val month_day_ranges : int range list -> t
+(** [month_day_ranges l] is a shorthand for [pattern ~month_day_ranges:l ()] *)
 
 type weekday =
   [ `Sun
@@ -61,14 +70,26 @@ type weekday =
 val weekdays : weekday list -> t
 (** [weekdays l] is a shorthand for [pattern ~weekdays:l ()] *)
 
+val weekday_ranges : weekday range list -> t
+(** [weekday_ranges l] is a shorthand for [pattern ~weekday_ranges:l ()] *)
+
 val hours : int list -> t
 (** [hours l] is a shorthand for [pattern ~hours:l ()] *)
+
+val hour_ranges : int range list -> t
+(** [hour_ranges l] is a shorthand for [pattern ~hour_ranges:l ()] *)
 
 val minutes : int list -> t
 (** [minutes l] is a shorthand for [pattern ~minutes:l ()] *)
 
+val minute_ranges : int range list -> t
+(** [minute_ranges l] is a shorthand for [pattern ~minute_ranges:l ()] *)
+
 val seconds : int list -> t
 (** [seconds l] is a shorthand for [pattern ~seconds:l ()] *)
+
+val second_ranges : int range list -> t
+(** [second_ranges l] is a shorthand for [pattern ~second_ranges:l ()] *)
 
 val pattern :
   ?years:int list ->

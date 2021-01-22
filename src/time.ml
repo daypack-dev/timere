@@ -1666,6 +1666,20 @@ let minutes minutes = pattern ~minutes ()
 
 let seconds seconds = pattern ~seconds ()
 
+let year_ranges year_ranges = pattern ~year_ranges ()
+
+let month_ranges month_ranges = pattern ~month_ranges ()
+
+let month_day_ranges month_day_ranges = pattern ~month_day_ranges ()
+
+let weekday_ranges weekday_ranges = pattern ~weekday_ranges ()
+
+let hour_ranges hour_ranges = pattern ~hour_ranges ()
+
+let minute_ranges minute_ranges = pattern ~minute_ranges ()
+
+let second_ranges second_ranges = pattern ~second_ranges ()
+
 let bounded_intervals pick (bound : Duration.t) (start : Points.t)
     (end_exc : Points.t) : t =
   if Points.precision start < Points.precision end_exc then
