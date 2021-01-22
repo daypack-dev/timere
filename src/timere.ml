@@ -1,6 +1,7 @@
 include Date_time_components
 include Time_ast
 include Time
+include Infix
 module Time_zone = Time_zone
 
 exception Invalid_format_string = Printers.Invalid_format_string
@@ -28,8 +29,6 @@ end
 type 'a range = 'a Range.range
 
 type interval = Interval.t
-
-module Infix = Infix
 
 type points = Points.t
 

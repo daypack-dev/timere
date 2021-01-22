@@ -558,7 +558,7 @@ val chunk : chunking -> (chunked -> chunked) -> t -> t
 
 (** {2 Chunked selectors} *)
 
-(** You may find {!val:Infix.(%>)} useful for chaining selectors together, e.g. [drop 5 %> take 2]
+(** You may find {!val:(%>)} useful for chaining selectors together, e.g. [drop 5 %> take 2]
 *)
 
 val chunk_again : chunking -> chunked -> chunked
@@ -590,19 +590,17 @@ val drop_points : int -> t -> t
 
 (** {1 Infix operators} *)
 
-module Infix : sig
-  val ( & ) : t -> t -> t
-  (** {!val:inter} *)
+val ( & ) : t -> t -> t
+(** {!val:inter} *)
 
-  val ( ||| ) : t -> t -> t
-  (** {!val:union} *)
+val ( ||| ) : t -> t -> t
+(** {!val:union} *)
 
-  val ( %> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
-  (** Composition, mainly for chunked selectors
+val ( %> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
+(** Composition, mainly for chunked selectors
 
-      [f1 %> f2] is equivalent to [fun x -> x |> f1 |> f2].
-  *)
-end
+    [f1 %> f2] is equivalent to [fun x -> x |> f1 |> f2].
+*)
 
 (** {1 Resolution} *)
 

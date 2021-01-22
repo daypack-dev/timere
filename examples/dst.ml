@@ -17,8 +17,6 @@ let tz = Timere.Time_zone.make_exn "Australia/Sydney"
 
 let timere =
   let open Timere in
-  let open Infix in
-
   with_tz tz
     (
       years [2020] (* in year 2020 *)
