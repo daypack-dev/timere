@@ -18,6 +18,9 @@ type 'a range =
 
 (** {1 Basic constructors} *)
 
+val now : unit -> t
+(** Time right now *)
+
 val always : t
 (** Entire interval that Timere can handle, i.e. [\[min_timestamp, max_timestamp)] *)
 
@@ -337,7 +340,7 @@ module Date_time : sig
 
   val max : t
 
-  val cur : ?tz_of_date_time:Time_zone.t -> unit -> (t, unit) result
+  val now : ?tz_of_date_time:Time_zone.t -> unit -> t
 
   val to_string : ?format:string -> t -> string
   (**
@@ -397,7 +400,7 @@ val sorted_date_times : Date_time.t list -> t
 
 val sorted_date_time_seq : Date_time.t Seq.t -> t
 
-val cur_timestamp : unit -> int64
+val timestamp_now : unit -> timestamp
 
 val min_timestamp : int64
 

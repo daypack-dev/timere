@@ -1111,7 +1111,7 @@ module Year_ranges = Ranges_small.Make (struct
     let of_int x = x
   end)
 
-let cur_timestamp () : int64 = Unix.time () |> Int64.of_float
+let timestamp_now () : int64 = Unix.time () |> Int64.of_float
 
 let min_timestamp = Constants.min_timestamp
 
@@ -1304,8 +1304,9 @@ module Date_time' = struct
         match dt with Error () -> None | Ok dt -> Some dt)
     | _ -> None
 
-  let cur ?(tz_of_date_time = Time_zone.utc) () : (t, unit) result =
-    cur_timestamp () |> of_timestamp ~tz_of_date_time
+  let now ?(tz_of_date_time = Time_zone.utc) () : t =
+    timestamp_now () |> of_timestamp ~tz_of_date_time
+    |> CCResult.get_exn
 
   let equal (x : t) (y : t) : bool =
     x.year = y.year
@@ -1840,6 +1841,9 @@ let sorted_timestamps ?(skip_invalid = false) timestamps =
   |> sorted_intervals
 
 let timestamp x = timestamps [ x ]
+
+let now () =
+  timestamp (timestamp_now ())
 
 let nth_weekday_of_month (n : int) wday =
   let first_weekday_of_month wday =
