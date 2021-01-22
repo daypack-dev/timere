@@ -171,8 +171,7 @@ let pattern_of_sexp (x : CCSexp.t) =
           in
           let days, l =
             match l with
-            | `List (`Atom "days" :: days) :: l ->
-              (List.map int_of_sexp days, l)
+            | `List (`Atom "days" :: days) :: l -> (List.map int_of_sexp days, l)
             | _ -> ([], l)
           in
           let weekdays, l =

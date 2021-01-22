@@ -184,7 +184,8 @@ let string_of_timestamp ?(display_using_tz = Time_zone.utc)
 
 let pp_timestamp ?(display_using_tz = Time_zone.utc)
     ?(format = default_date_time_format_string) () formatter x =
-  Format.fprintf formatter "%s" (string_of_timestamp ~display_using_tz ~format x)
+  Format.fprintf formatter "%s"
+    (string_of_timestamp ~display_using_tz ~format x)
 
 let string_of_interval ?(display_using_tz = Time_zone.utc)
     ?(format : string = default_interval_format_string)
@@ -236,14 +237,15 @@ let string_of_interval ?(display_using_tz = Time_zone.utc)
 
 let pp_interval ?(display_using_tz = Time_zone.utc)
     ?(format = default_interval_format_string) () formatter interval =
-  Fmt.pf formatter "%s"
-    (string_of_interval ~display_using_tz ~format interval)
+  Fmt.pf formatter "%s" (string_of_interval ~display_using_tz ~format interval)
 
 let pp_intervals ?(display_using_tz = Time_zone.utc)
-    ?(format = default_interval_format_string) ?(sep = Fmt.cut) () formatter intervals =
+    ?(format = default_interval_format_string) ?(sep = Fmt.cut) () formatter
+    intervals =
   Fmt.seq ~sep (pp_interval ~display_using_tz ~format ()) formatter intervals
 
-let string_of_duration ({ days; hours; minutes; seconds } : Duration.t) : string =
+let string_of_duration ({ days; hours; minutes; seconds } : Duration.t) : string
+  =
   if days > 0 then
     Printf.sprintf "%d days %d hours %d mins %d secs" days hours minutes seconds
   else if hours > 0 then
@@ -251,6 +253,7 @@ let string_of_duration ({ days; hours; minutes; seconds } : Duration.t) : string
   else if minutes > 0 then Printf.sprintf "%d mins %d secs" minutes seconds
   else Printf.sprintf "%d secs" seconds
 
-let pp_duration formatter x = Format.fprintf formatter "%s" (string_of_duration x)
+let pp_duration formatter x =
+  Format.fprintf formatter "%s" (string_of_duration x)
 
 let pp_sexp formatter t = CCSexp.pp formatter (To_sexp.to_sexp t)

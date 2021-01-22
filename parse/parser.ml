@@ -562,8 +562,8 @@ let flatten_month_days pos (l : int Timere.range list) =
       Some
         (Printf.sprintf "%s: Invalid month day ranges" (string_of_pos pos)))
 
-let pattern ?(years = []) ?(months = []) ?pos_days ?(days = [])
-    ?(weekdays = []) ?(hms : Timere.hms option) () =
+let pattern ?(years = []) ?(months = []) ?pos_days ?(days = []) ?(weekdays = [])
+    ?(hms : Timere.hms option) () =
   if not (List.for_all (fun x -> 1 <= x && x <= 31) days) then
     Error
       (Some
@@ -574,9 +574,8 @@ let pattern ?(years = []) ?(months = []) ?pos_days ?(days = [])
     | None -> Ok (Timere.pattern ~years ~months ~days ~weekdays ())
     | Some hms ->
       Ok
-        (Timere.pattern ~years ~months ~days ~weekdays
-           ~hours:[ hms.hour ] ~minutes:[ hms.minute ] ~seconds:[ hms.second ]
-           ())
+        (Timere.pattern ~years ~months ~days ~weekdays ~hours:[ hms.hour ]
+           ~minutes:[ hms.minute ] ~seconds:[ hms.second ] ())
 
 let t_rules : (token list -> (Timere.t, string option) CCResult.t) list =
   [
@@ -603,26 +602,20 @@ let t_rules : (token list -> (Timere.t, string option) CCResult.t) list =
       | [ (_, Nat year); (_, Month month); (pos_days, Nat day); (_, Rd) ]
       | [ (_, Nat year); (_, Month month); (pos_days, Nat day); (_, Th) ]
         when year > 31 ->
-        pattern ~years:[ year ] ~months:[ month ] ~pos_days
-          ~days:[ day ] ()
-      | [ (pos_days, Nat day); (_, Month month); (_, Nat year) ]
-        when year > 31 ->
-        pattern ~years:[ year ] ~months:[ month ] ~pos_days
-          ~days:[ day ] ()
+        pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ()
+      | [ (pos_days, Nat day); (_, Month month); (_, Nat year) ] when year > 31 ->
+        pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ()
       | [ (_, Nat year); (pos_days, Nat day); (_, Of); (_, Month month) ] ->
-        pattern ~years:[ year ] ~months:[ month ] ~pos_days
-          ~days:[ day ] ()
+        pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ()
       | _ -> Error None);
     (function
       | [ (_, Month month); (pos_days, Nat day); (_, Hms hms) ] ->
         pattern ~months:[ month ] ~pos_days ~days:[ day ] ~hms ()
       | _ -> Error None);
     (function
-      | [
-        (_, Nat year); (_, Month month); (pos_days, Nat day); (_, Hms hms);
-      ] ->
-        pattern ~years:[ year ] ~months:[ month ] ~pos_days
-          ~days:[ day ] ~hms ()
+      | [ (_, Nat year); (_, Month month); (pos_days, Nat day); (_, Hms hms) ] ->
+        pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ~hms
+          ()
       | _ -> Error None);
   ]
 

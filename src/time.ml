@@ -1305,8 +1305,7 @@ module Date_time' = struct
     | _ -> None
 
   let now ?(tz_of_date_time = Time_zone.utc) () : t =
-    timestamp_now () |> of_timestamp ~tz_of_date_time
-    |> CCResult.get_exn
+    timestamp_now () |> of_timestamp ~tz_of_date_time |> CCResult.get_exn
 
   let equal (x : t) (y : t) : bool =
     x.year = y.year
@@ -1626,15 +1625,12 @@ let with_tz tz t = Unary_op (With_tz tz, t)
  *   aux (-31) 31 (Month_ranges.Flatten.flatten @@ CCList.to_seq @@ months) *)
 
 let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
-    ?(month_ranges = []) ?(days = []) ?(day_ranges = [])
-    ?(weekdays = []) ?(weekday_ranges = []) ?(hours = []) ?(hour_ranges = [])
-    ?(minutes = []) ?(minute_ranges = []) ?(seconds = []) ?(second_ranges = [])
-    () : t =
+    ?(month_ranges = []) ?(days = []) ?(day_ranges = []) ?(weekdays = [])
+    ?(weekday_ranges = []) ?(hours = []) ?(hour_ranges = []) ?(minutes = [])
+    ?(minute_ranges = []) ?(seconds = []) ?(second_ranges = []) () : t =
   let years = years @ Year_ranges.Flatten.flatten_list year_ranges in
   let months = months @ Month_ranges.Flatten.flatten_list month_ranges in
-  let month_days =
-    days @ Month_day_ranges.Flatten.flatten_list day_ranges
-  in
+  let month_days = days @ Month_day_ranges.Flatten.flatten_list day_ranges in
   let weekdays =
     weekdays @ Weekday_ranges.Flatten.flatten_list weekday_ranges
   in
@@ -1842,8 +1838,7 @@ let sorted_timestamps ?(skip_invalid = false) timestamps =
 
 let timestamp x = timestamps [ x ]
 
-let now () =
-  timestamp (timestamp_now ())
+let now () = timestamp (timestamp_now ())
 
 let nth_weekday_of_month (n : int) wday =
   let first_weekday_of_month wday =

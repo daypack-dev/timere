@@ -138,9 +138,7 @@ let debug_example () =
            years [ 2020; 2021; 2022; 2023; 2025; 2026 ] (* in year 2020 *);
            union
              [
-               pattern ~months:[ `Apr ]
-                 ~day_ranges:[ `Range_inc (3, 6) ]
-                 ()
+               pattern ~months:[ `Apr ] ~day_ranges:[ `Range_inc (3, 6) ] ()
                (* in April 3 to 6 *);
                (* pattern ~months:[`Oct] ~month_day_ranges:[`Range_inc (2, 5)] () (\* or in Oct 2 to 5 *\); *)
              ];
