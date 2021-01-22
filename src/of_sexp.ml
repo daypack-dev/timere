@@ -169,10 +169,10 @@ let pattern_of_sexp (x : CCSexp.t) =
               (List.map month_of_sexp months, l)
             | _ -> ([], l)
           in
-          let month_days, l =
+          let days, l =
             match l with
-            | `List (`Atom "month_days" :: month_days) :: l ->
-              (List.map int_of_sexp month_days, l)
+            | `List (`Atom "days" :: days) :: l ->
+              (List.map int_of_sexp days, l)
             | _ -> ([], l)
           in
           let weekdays, l =
@@ -201,7 +201,7 @@ let pattern_of_sexp (x : CCSexp.t) =
           in
           match l with
           | [] ->
-            Time.pattern ~years ~months ~month_days ~weekdays ~hours ~minutes
+            Time.pattern ~years ~months ~days ~weekdays ~hours ~minutes
               ~seconds ()
           | _ ->
             invalid_data

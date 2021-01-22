@@ -51,11 +51,11 @@ val months : month list -> t
 val month_ranges : month range list -> t
 (** [month_ranges l] is a shorthand for [pattern ~month_ranges:l ()] *)
 
-val month_days : int list -> t
-(** [month_days l] is a shorthand for [pattern ~month_days:l ()] *)
+val days : int list -> t
+(** [days l] is a shorthand for [pattern ~month_days:l ()] *)
 
-val month_day_ranges : int range list -> t
-(** [month_day_ranges l] is a shorthand for [pattern ~month_day_ranges:l ()] *)
+val day_ranges : int range list -> t
+(** [day_ranges l] is a shorthand for [pattern ~month_day_ranges:l ()] *)
 
 type weekday =
   [ `Sun
@@ -96,8 +96,8 @@ val pattern :
   ?year_ranges:int range list ->
   ?months:month list ->
   ?month_ranges:month range list ->
-  ?month_days:int list ->
-  ?month_day_ranges:int range list ->
+  ?days:int list ->
+  ?day_ranges:int range list ->
   ?weekdays:weekday list ->
   ?weekday_ranges:weekday range list ->
   ?hours:int list ->

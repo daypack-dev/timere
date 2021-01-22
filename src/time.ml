@@ -1625,14 +1625,14 @@ let with_tz tz t = Unary_op (With_tz tz, t)
  *   aux (-31) 31 (Month_ranges.Flatten.flatten @@ CCList.to_seq @@ months) *)
 
 let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
-    ?(month_ranges = []) ?(month_days = []) ?(month_day_ranges = [])
+    ?(month_ranges = []) ?(days = []) ?(day_ranges = [])
     ?(weekdays = []) ?(weekday_ranges = []) ?(hours = []) ?(hour_ranges = [])
     ?(minutes = []) ?(minute_ranges = []) ?(seconds = []) ?(second_ranges = [])
     () : t =
   let years = years @ Year_ranges.Flatten.flatten_list year_ranges in
   let months = months @ Month_ranges.Flatten.flatten_list month_ranges in
   let month_days =
-    month_days @ Month_day_ranges.Flatten.flatten_list month_day_ranges
+    days @ Month_day_ranges.Flatten.flatten_list day_ranges
   in
   let weekdays =
     weekdays @ Weekday_ranges.Flatten.flatten_list weekday_ranges
@@ -1688,7 +1688,7 @@ let years years = pattern ~years ()
 
 let months months = pattern ~months ()
 
-let month_days month_days = pattern ~month_days ()
+let days days = pattern ~days ()
 
 let weekdays weekdays = pattern ~weekdays ()
 
@@ -1702,7 +1702,7 @@ let year_ranges year_ranges = pattern ~year_ranges ()
 
 let month_ranges month_ranges = pattern ~month_ranges ()
 
-let month_day_ranges month_day_ranges = pattern ~month_day_ranges ()
+let day_ranges day_ranges = pattern ~day_ranges ()
 
 let weekday_ranges weekday_ranges = pattern ~weekday_ranges ()
 
@@ -1843,19 +1843,19 @@ let timestamp x = timestamps [ x ]
 
 let nth_weekday_of_month (n : int) wday =
   let first_weekday_of_month wday =
-    pattern ~month_day_ranges:[ `Range_inc (1, 7) ] ~weekdays:[ wday ] ()
+    pattern ~day_ranges:[ `Range_inc (1, 7) ] ~weekdays:[ wday ] ()
   in
   let second_weekday_of_month wday =
-    pattern ~month_day_ranges:[ `Range_inc (8, 14) ] ~weekdays:[ wday ] ()
+    pattern ~day_ranges:[ `Range_inc (8, 14) ] ~weekdays:[ wday ] ()
   in
   let third_weekday_of_month wday =
-    pattern ~month_day_ranges:[ `Range_inc (15, 21) ] ~weekdays:[ wday ] ()
+    pattern ~day_ranges:[ `Range_inc (15, 21) ] ~weekdays:[ wday ] ()
   in
   let fourth_weekday_of_month wday =
-    pattern ~month_day_ranges:[ `Range_inc (22, 28) ] ~weekdays:[ wday ] ()
+    pattern ~day_ranges:[ `Range_inc (22, 28) ] ~weekdays:[ wday ] ()
   in
   let fifth_weekday_of_month wday =
-    pattern ~month_days:[ 29; 30; 31 ] ~weekdays:[ wday ] ()
+    pattern ~days:[ 29; 30; 31 ] ~weekdays:[ wday ] ()
   in
   match n with
   | 0 -> invalid_arg "nth_weekday_of_month: n = 0"
