@@ -17,15 +17,15 @@ let () =
   let open Infix in
   match
     resolve (
-      year_ranges [`Range_inc (2015, 2025)]
+      after (Date_time.now ())
       & months [`Dec]
-      & month_days [25]
+      & days [25]
       & weekdays [`Wed]
     )
   with
   | Error msg -> failwith msg
   | Ok s ->
-    Fmt.pr "%a@." (pp_intervals ()) s
+    Fmt.pr "%a@." (pp_intervals ~sep:(Fmt.any "@.") ()) s
 ```
 
 gives
@@ -33,6 +33,7 @@ gives
 ```
 [2019 Dec 25 00:00:00 +00:00:00, 2019 Dec 26 00:00:00 +00:00:00)
 [2024 Dec 25 00:00:00 +00:00:00, 2024 Dec 26 00:00:00 +00:00:00)
+...
 ```
 
 ## Features
