@@ -22,7 +22,7 @@ val now : unit -> t
 (** Time right now *)
 
 val always : t
-(** Entire interval that Timere can handle, i.e. [\[min_timestamp, max_timestamp)] *)
+(** Entire interval that Timere can handle, i.e. [\[0000 Jan 01 14:00:00 +00:00:00, 9999 Dec 31 09:59:58 +00:00:00)] *)
 
 val empty : t
 (** Empty interval *)
