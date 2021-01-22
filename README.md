@@ -25,9 +25,7 @@ let () =
   with
   | Error msg -> failwith msg
   | Ok s ->
-    Seq.iter (fun x ->
-      print_endline (sprintf_interval x)
-    ) s
+    Fmt.pr "%a@." (pp_intervals ()) s
 ```
 
 gives
