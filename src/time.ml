@@ -1008,16 +1008,48 @@ module Hour_ranges = Ranges_small.Make (struct
     let of_int x = x
   end)
 
-let make_hms ~hour ~minute ~second = Points.make ~hour ~minute ~second ()
+type hms = {
+  hour : int;
+  minute : int;
+  second : int;
+}
+
+let make_hms ~hour ~minute ~second =
+  if
+    0 <= hour
+    && hour < 24
+    && 0 <= minute
+    && minute < 60
+    && 0 <= second
+    && second < 60
+  then Ok { hour; minute; second }
+  else Error ()
 
 let make_hms_exn ~hour ~minute ~second =
-  Points.make_exn ~hour ~minute ~second ()
+  match make_hms ~hour ~minute ~second with
+  | Ok x -> x
+  | Error () -> invalid_arg "make_hms_exn"
+
+let second_of_day_of_hms x =
+  Duration.make ~hours:x.hour ~minutes:x.minute ~seconds:x.second ()
+  |> Duration.to_seconds
+  |> Int64.to_int
 
 let hms_of_second_of_day x =
   let ({ hours; minutes; seconds; _ } : Duration.t) =
     x |> Int64.of_int |> Duration.of_seconds
   in
   CCResult.get_exn @@ make_hms ~hour:hours ~minute:minutes ~second:seconds
+
+module Hms_ranges = Ranges_small.Make (struct
+    type t = hms
+
+    let modulo = None
+
+    let to_int = second_of_day_of_hms
+
+    let of_int = hms_of_second_of_day
+  end)
 
 module Weekday_tm_int_ranges = Ranges_small.Make (struct
     type t = int
@@ -1707,6 +1739,17 @@ let bounded_intervals pick (bound : Duration.t) (start : Points.t)
  *     lengthen gap_to_use
  *       (pattern ~hours:[ hms_a.hour ] ~minutes:[ hms_a.minute ]
  *          ~seconds:[ hms_a.second ] ()) *)
+
+let hms_intervals_exc (hms_a : hms) (hms_b : hms) : t =
+  bounded_intervals `Whole (Duration.make ~days:1 ())
+    (Points.make_exn ~hour:hms_a.hour ~minute:hms_a.minute ~second:hms_a.second
+       ())
+    (Points.make_exn ~hour:hms_b.hour ~minute:hms_b.minute ~second:hms_b.second
+       ())
+
+let hms_intervals_inc (hms_a : hms) (hms_b : hms) : t =
+  let hms_b = hms_b |> second_of_day_of_hms |> succ |> hms_of_second_of_day in
+  hms_intervals_exc hms_a hms_b
 
 let sorted_interval_seq ?(skip_invalid : bool = false)
     (s : (int64 * int64) Seq.t) : t =
