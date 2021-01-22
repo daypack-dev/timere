@@ -11,7 +11,7 @@ __Disclaimer__: timere is not designed to handle prehistoric events. For prehist
 
 Christmases which fall on Wednesday from now
 
-```
+```ocaml
 let () =
   let open Timere in
   let open Infix in
