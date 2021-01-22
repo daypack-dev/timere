@@ -402,9 +402,9 @@ val sorted_date_time_seq : Date_time.t Seq.t -> t
 
 val timestamp_now : unit -> timestamp
 
-val min_timestamp : int64
+val timestamp_min : int64
 
-val max_timestamp : int64
+val timestamp_max : int64
 
 exception Invalid_timestamp
 

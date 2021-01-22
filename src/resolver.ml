@@ -3,9 +3,9 @@ open Time_ast
 
 type search_space = Time.Interval.t list
 
-let default_search_space_start = Time.min_timestamp
+let default_search_space_start = Time.timestamp_min
 
-let default_search_space_end_exc = Time.max_timestamp
+let default_search_space_end_exc = Time.timestamp_max
 
 let default_search_space : search_space =
   [ (default_search_space_start, default_search_space_end_exc) ]

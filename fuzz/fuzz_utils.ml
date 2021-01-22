@@ -42,11 +42,11 @@ let search_space =
         (Crowbar.map [ Crowbar.int64; Crowbar.int64 ]
            (fun search_start search_size ->
               let search_start =
-                min (max Time.min_timestamp search_start) Time.max_timestamp
+                min (max Time.timestamp_min search_start) Time.timestamp_max
               in
               let search_size = Int64.abs search_size in
               let search_end_exc =
-                min Time.max_timestamp (Int64.add search_start search_size)
+                min Time.timestamp_max (Int64.add search_start search_size)
               in
               (search_start, search_end_exc)));
     ]

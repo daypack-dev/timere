@@ -1113,13 +1113,13 @@ module Year_ranges = Ranges_small.Make (struct
 
 let timestamp_now () : int64 = Unix.time () |> Int64.of_float
 
-let min_timestamp = Constants.min_timestamp
+let timestamp_min = Constants.timestamp_min
 
-let max_timestamp = Constants.max_timestamp
+let timestamp_max = Constants.timestamp_max
 
 let slice_valid_interval s =
-  Intervals.Slice.slice ~skip_check:true ~start:min_timestamp
-    ~end_exc:max_timestamp s
+  Intervals.Slice.slice ~skip_check:true ~start:timestamp_min
+    ~end_exc:timestamp_max s
 
 module Date_time' = struct
   type t = {
@@ -1197,7 +1197,7 @@ module Date_time' = struct
   let of_timestamp ?(tz_of_date_time = Time_zone.utc) (x : int64) :
     (t, unit) result =
     let open Int64_utils in
-    if not (min_timestamp <= x && x <= max_timestamp) then Error ()
+    if not (timestamp_min <= x && x <= timestamp_max) then Error ()
     else
       match Time_zone.lookup_timestamp_utc tz_of_date_time x with
       | None -> Error ()
@@ -1278,9 +1278,9 @@ module Date_time' = struct
     in
     match x with Error () -> invalid_arg "make_precise_exn" | Ok x -> x
 
-  let min = CCResult.get_exn @@ of_timestamp min_timestamp
+  let min = CCResult.get_exn @@ of_timestamp timestamp_min
 
-  let max = CCResult.get_exn @@ of_timestamp max_timestamp
+  let max = CCResult.get_exn @@ of_timestamp timestamp_max
 
   let of_points ?(default_tz_info = utc_tz_info) ((pick, tz_info) : Points.t) :
     t option =

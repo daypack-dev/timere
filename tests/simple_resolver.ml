@@ -1,12 +1,12 @@
 open Date_time_components
 
 let timestamp_safe_sub a b =
-  if Int64.sub a Constants.min_timestamp >= b then Int64.sub a b
-  else Constants.min_timestamp
+  if Int64.sub a Constants.timestamp_min >= b then Int64.sub a b
+  else Constants.timestamp_min
 
 let timestamp_safe_add a b =
-  if Int64.sub Constants.max_timestamp a >= b then Int64.add a b
-  else Constants.max_timestamp
+  if Int64.sub Constants.timestamp_max a >= b then Int64.add a b
+  else Constants.timestamp_max
 
 let do_chunk ~drop_partial (n : int64) (s : Time.Interval.t Seq.t) :
   Time.Interval.t Seq.t =
@@ -186,7 +186,7 @@ let aux_points search_space search_using_tz points =
 let rec resolve ?(search_using_tz = Time_zone.utc)
     ~(search_start : Time_ast.timestamp) ~(search_end_exc : Time_ast.timestamp)
     (t : Time_ast.t) : Time.Interval.t Seq.t =
-  let default_search_space = Time.(min_timestamp, max_timestamp) in
+  let default_search_space = Time.(timestamp_min, timestamp_max) in
   let filter s =
     Seq.filter_map
       (fun (x, y) ->
@@ -202,8 +202,8 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
     | Unary_op (op, t) -> (
         match op with
         | Not ->
-          Seq_utils.a_to_b_exc_int64 ~a:Time.min_timestamp
-            ~b:Time.max_timestamp
+          Seq_utils.a_to_b_exc_int64 ~a:Time.timestamp_min
+            ~b:Time.timestamp_max
           |> Seq.filter (fun x -> not (mem search_space ~search_using_tz t x))
           |> intervals_of_timestamps
         | Drop_points n ->

@@ -42,10 +42,10 @@ let process_table (table : table) : record =
   else
     let table =
       let first_row = table.(0) in
-      if Constants.min_timestamp < fst first_row then
-        Array.append [| (Constants.min_timestamp, snd first_row) |] table
+      if Constants.timestamp_min < fst first_row then
+        Array.append [| (Constants.timestamp_min, snd first_row) |] table
       else (
-        table.(0) <- (Constants.min_timestamp, snd first_row);
+        table.(0) <- (Constants.timestamp_min, snd first_row);
         table)
     in
     let recorded_offsets =
@@ -86,7 +86,7 @@ let utc : t =
     name = "UTC";
     record =
       process_table
-        [| (Constants.min_timestamp, { is_dst = false; offset = 0 }) |];
+        [| (Constants.timestamp_min, { is_dst = false; offset = 0 }) |];
   }
 
 let dummy_entry : entry = { is_dst = false; offset = 0 }
@@ -108,7 +108,7 @@ let lookup_timestamp_utc (t : t) timestamp =
 let local_interval_of_table (table : table) (i : int) =
   let start_utc, entry = table.(i) in
   let end_exc_utc =
-    if i = Array.length table - 1 then Constants.max_timestamp
+    if i = Array.length table - 1 then Constants.timestamp_max
     else fst table.(i + 1)
   in
   ( Int64.add start_utc (Int64.of_int entry.offset),
@@ -165,7 +165,7 @@ let transition_seq (t : t) : ((int64 * int64) * entry) Seq.t =
         match s () with
         | Seq.Nil ->
           fun () ->
-            Seq.Cons (((k1, Constants.max_timestamp), entry1), aux Seq.empty)
+            Seq.Cons (((k1, Constants.timestamp_max), entry1), aux Seq.empty)
         | Seq.Cons ((k2, entry2), rest) ->
           fun () ->
             Seq.Cons
@@ -184,7 +184,7 @@ let make_offset_only ?(name = "dummy") (offset : int) =
   {
     name;
     record =
-      process_table [| (Constants.min_timestamp, { is_dst = false; offset }) |];
+      process_table [| (Constants.timestamp_min, { is_dst = false; offset }) |];
   }
 
 let of_json_string s : (t, unit) result =

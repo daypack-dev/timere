@@ -253,8 +253,8 @@ let debug_fuzz_union () =
     |> List.map (Resolver.aux tz)
     |> CCList.to_seq
     |> Time.Intervals.Union.union_multi_seq
-    |> Time.Intervals.Slice.slice ~start:Time.min_timestamp
-      ~end_exc:Time.max_timestamp
+    |> Time.Intervals.Slice.slice ~start:Time.timestamp_min
+      ~end_exc:Time.timestamp_max
   in
   let s = Resolver.aux_union tz (CCList.to_seq l) |> Resolver.normalize in
   print_endline "=====";
@@ -283,11 +283,11 @@ let debug_fuzz_pattern () =
     List.map
       (fun (search_start, search_size) ->
          let search_start =
-           min (max Time.min_timestamp search_start) Time.max_timestamp
+           min (max Time.timestamp_min search_start) Time.timestamp_max
          in
          let search_size = Int64.abs search_size in
          let search_end_exc =
-           min Time.max_timestamp (Int64.add search_start search_size)
+           min Time.timestamp_max (Int64.add search_start search_size)
          in
          (search_start, search_end_exc))
       [ (-5208492133891178625L, 201999689168823L) ]
