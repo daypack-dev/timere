@@ -1756,8 +1756,8 @@ let sorted_interval_seq ?(skip_invalid : bool = false)
   in
   match s () with Seq.Nil -> Empty | _ -> Intervals s
 
-let sorted_intervals ?(skip_invalid : bool = false)
-    (l : (int64 * int64) list) : t =
+let sorted_intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) :
+  t =
   l |> CCList.to_seq |> sorted_interval_seq ~skip_invalid
 
 let intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
@@ -1779,8 +1779,8 @@ let intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
   in
   match s () with Seq.Nil -> Empty | _ -> Intervals s
 
-let interval_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t) :
-  t =
+let interval_seq ?(skip_invalid : bool = false) (s : (int64 * int64) Seq.t) : t
+  =
   s |> CCList.of_seq |> intervals ~skip_invalid
 
 let interval_of_date_time date_time =
