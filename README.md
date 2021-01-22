@@ -7,6 +7,34 @@ __Note__: The project core is largely complete, but still undergoing testing - y
 
 __Disclaimer__: timere is not designed to handle prehistoric events. For prehistoric planning and booking software, please consult [appropriate experts](https://en.wikipedia.org/wiki/The_Flintstones).
 
+## Examples
+
+```
+let () =
+  let open Timere in
+  let open Infix in
+  match
+    resolve (
+      year_ranges [`Range_inc (2015, 2025)]
+      & months [`Dec]
+      & month_days [25]
+      & weekdays [`Wed]
+    )
+  with
+  | Error msg -> failwith msg
+  | Ok s ->
+    Seq.iter (fun x ->
+      print_endline (sprintf_interval x)
+    ) s
+```
+
+gives
+
+```
+[2019 Dec 25 00:00:00 +00:00:00, 2019 Dec 26 00:00:00 +00:00:00)
+[2024 Dec 25 00:00:00 +00:00:00, 2024 Dec 26 00:00:00 +00:00:00)
+```
+
 ## Features
 
 - Timestamp and date time handling with platform independent time zone support
@@ -15,8 +43,8 @@ __Disclaimer__: timere is not designed to handle prehistoric events. For prehist
   
 - Reasoning over time intervals via `timere` objects/expressions, examples:
 
-  - Pattern matching of date time (e.g. day is 23th, hour is 9am)
-
+  - Pattern matching time and intervals. These work across DST boundaries.
+  
   - Intersection and union
 
   - Chunking at year or month boundary, or in fixed sizes
