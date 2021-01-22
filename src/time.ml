@@ -1148,12 +1148,6 @@ module Date_time' = struct
       Ok { year; month; day; hour; minute; second; tz_info = utc_tz_info }
     | Error () -> Error ()
 
-  let min_of_timestamp_local_result r : int64 option =
-    match r with `None -> None | `Single x | `Ambiguous (x, _) -> Some x
-
-  let max_of_timestamp_local_result r : int64 option =
-    match r with `None -> None | `Single x | `Ambiguous (_, x) -> Some x
-
   let to_timestamp_pretend_utc (x : t) : (timestamp, unit) result =
     let open Int64_utils in
     match Ptime.of_date_time @@ to_ptime_date_time_pretend_utc x with
@@ -1181,6 +1175,12 @@ module Date_time' = struct
     [ `Single of 'a
     | `Ambiguous of 'a * 'a
     ]
+
+  let min_of_timestamp_local_result (r : int64 local_result) : int64 =
+    match r with `Single x | `Ambiguous (x, _) -> x
+
+  let max_of_timestamp_local_result (r : int64 local_result) : int64 =
+    match r with `Single x | `Ambiguous (_, x) -> x
 
   let to_timestamp x : timestamp local_result =
     match to_timestamp_unsafe x with
@@ -1839,6 +1839,18 @@ let sorted_timestamps ?(skip_invalid = false) timestamps =
 let timestamp x = timestamps [ x ]
 
 let now () = timestamp (timestamp_now ())
+
+let before_timestamp timestamp =
+  intervals [ (timestamp_min, timestamp )]
+
+let after_timestamp timestamp =
+  intervals [ (timestamp, timestamp_max )]
+
+let before dt =
+  before_timestamp (Date_time'.(to_timestamp dt |> min_of_timestamp_local_result))
+
+let after dt =
+  before_timestamp (Date_time'.(to_timestamp dt |> max_of_timestamp_local_result))
 
 let nth_weekday_of_month (n : int) wday =
   let first_weekday_of_month wday =
