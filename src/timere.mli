@@ -482,19 +482,11 @@ val bounded_intervals : [ `Whole | `Snd ] -> Duration.t -> points -> points -> t
 
 (** {2 Hour minute second intervals} *)
 
-type hms = private {
-  hour : int;
-  minute : int;
-  second : int;
-}
+(** Wrappers for [make_points] *)
 
-val make_hms : hour:int -> minute:int -> second:int -> (hms, unit) result
+val make_hms : hour:int -> minute:int -> second:int -> (points, unit) result
 
-val make_hms_exn : hour:int -> minute:int -> second:int -> hms
-
-val hms_intervals_inc : hms -> hms -> t
-
-val hms_intervals_exc : hms -> hms -> t
+val make_hms_exn : hour:int -> minute:int -> second:int -> points
 
 (** {1 Chunking} *)
 
