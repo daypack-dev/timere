@@ -166,5 +166,6 @@
             containers
             ptime.clock.os
             yojson
+            fmt
    )
 )

@@ -150,5 +150,6 @@
             mparser
             containers
             yojson
+            fmt
             )
  )

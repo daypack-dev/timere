@@ -177,5 +177,6 @@
             containers
             re
             yojson
+            fmt
  )
  )

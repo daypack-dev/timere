@@ -236,7 +236,7 @@ let string_of_interval ?(display_using_tz = Time_zone.utc)
 
 let pp_interval ?(display_using_tz = Time_zone.utc)
     ?(format = default_interval_format_string) formatter interval =
-  Format.fprintf formatter "%s"
+  Fmt.pf formatter "%s"
     (string_of_interval ~display_using_tz ~format interval)
 
 let string_of_duration ({ days; hours; minutes; seconds } : Duration.t) : string =
