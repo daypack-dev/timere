@@ -242,7 +242,7 @@ let build ~enable_extra_restrictions ~min_year ~max_year_inc ~max_height
         Time.pattern
           ~years:(Int_set.to_list pat.years)
           ~months:(Month_set.to_list pat.months)
-          ~month_days:(Int_set.to_list pat.month_days)
+          ~days:(Int_set.to_list pat.month_days)
           ~weekdays:(Weekday_set.to_list pat.weekdays)
           ~hours:(Int_set.to_list pat.hours)
           ~minutes:(Int_set.to_list pat.minutes)
