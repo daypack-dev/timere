@@ -40,6 +40,8 @@ gives
 ...
 ```
 
+See `examples/` for more examples
+
 ## Features
 
 - Timestamp and date time handling with platform independent time zone support
