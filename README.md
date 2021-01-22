@@ -9,6 +9,8 @@ __Disclaimer__: timere is not designed to handle prehistoric events. For prehist
 
 ## Examples
 
+Christmases which fall on Wednesday from 2015 to 2025
+
 ```
 let () =
   let open Timere in
