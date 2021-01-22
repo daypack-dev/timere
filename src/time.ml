@@ -1840,17 +1840,16 @@ let timestamp x = timestamps [ x ]
 
 let now () = timestamp (timestamp_now ())
 
-let before_timestamp timestamp =
-  intervals [ (timestamp_min, timestamp )]
+let before_timestamp timestamp = intervals [ (timestamp_min, timestamp) ]
 
 let after_timestamp timestamp =
-  intervals [ (Int64.succ timestamp, timestamp_max )]
+  intervals [ (Int64.succ timestamp, timestamp_max) ]
 
 let before dt =
-  before_timestamp (Date_time'.(to_timestamp dt |> min_of_timestamp_local_result))
+  before_timestamp Date_time'.(to_timestamp dt |> min_of_timestamp_local_result)
 
 let after dt =
-  after_timestamp (Date_time'.(to_timestamp dt |> max_of_timestamp_local_result))
+  after_timestamp Date_time'.(to_timestamp dt |> max_of_timestamp_local_result)
 
 let nth_weekday_of_month (n : int) wday =
   let first_weekday_of_month wday =

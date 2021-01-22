@@ -180,19 +180,19 @@ let propagate_search_space_bottom_up default_tz (time : t) : t =
       let search_space =
         match Time.Date_time'.of_points start with
         | None -> default_search_space
-        | Some dt -> (
-            let space_start =
-              dt
-              |> Time.Date_time'.to_timestamp
-              |> Time.Date_time'.min_of_timestamp_local_result
-            in
-            let space_end_exc =
-              dt
-              |> Time.Date_time'.to_timestamp
-              |> Time.Date_time'.max_of_timestamp_local_result
-              |> Int64.add bound
-            in
-              [ (space_start, space_end_exc) ])
+        | Some dt ->
+          let space_start =
+            dt
+            |> Time.Date_time'.to_timestamp
+            |> Time.Date_time'.min_of_timestamp_local_result
+          in
+          let space_end_exc =
+            dt
+            |> Time.Date_time'.to_timestamp
+            |> Time.Date_time'.max_of_timestamp_local_result
+            |> Int64.add bound
+          in
+          [ (space_start, space_end_exc) ]
       in
       Bounded_intervals { search_space; pick; bound; start; end_exc }
     | Unchunk (_, c) -> Unchunk (aux_chunked tz c, c)
