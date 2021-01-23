@@ -438,7 +438,9 @@ val sorted_timestamps : ?skip_invalid:bool -> timestamp list -> t
 
 val sorted_timestamp_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
 
-(** {1 Manual intervals} *)
+(** {1 Intervals} *)
+
+(** {2 Explicit} *)
 
 exception Interval_is_invalid
 
@@ -480,7 +482,11 @@ val sorted_interval_seq : ?skip_invalid:bool -> interval Seq.t -> t
     @raise Intervals_are_not_sorted if [s] is not sorted
 *)
 
-(** {2 Pattern matching intervals} *)
+(** {2 Pattern matching} *)
+
+(** Pattern matching intervals are designed to handle intervals where start and end points follow some pattern, but cannot be captured by [pattern] efficiently,
+    e.g. you cannot represent "5:30pm to 6:11pm" via a single [pattern].
+*)
 
 type points
 
@@ -489,13 +495,26 @@ val make_points :
   ?tz_offset_s:int ->
   ?year:int ->
   ?month:month ->
-  ?month_day:int ->
+  ?day:int ->
   ?weekday:weekday ->
   ?hour:int ->
   ?minute:int ->
   second:int ->
   unit ->
   (points, unit) result
+(** [make_points] call must be exactly one of the following form (ignoring [tz] and [tz_offset_s] which are optional in all cases)
+    {[
+      make_points ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
+      make_points         ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
+      make_points                  ~day:_     ~hour:_ ~minute:_ ~second:_ ()
+      make_points                  ~weekday:_ ~hour:_ ~minute:_ ~second:_ ()
+      make_points                             ~hour:_ ~minute:_ ~second:_ ()
+      make_points                                     ~minute:_ ~second:_ ()
+      make_points                                               ~second:_ ()
+    ]}
+
+    @raise Invalid_argument otherwise
+*)
 
 val make_points_exn :
   ?tz:Time_zone.t ->
@@ -511,6 +530,22 @@ val make_points_exn :
   points
 
 val bounded_intervals : [ `Whole | `Snd ] -> Duration.t -> points -> points -> t
+(** [bounded_intervals mode bound p1 p2] for each point [x] matched by [p1],
+    then for each earliest point [y] matched by [p2] such that [x < y && y - x <= bound]
+    - if [mode = `Whole], yields (x, y)
+    - if [mode = `Snd], yields (y, y + 1)
+
+    Examples:
+
+    {[
+      bounded_intervals `Whole (Duration.make ~days:1 ())
+        (make_points ~hour:13 ~minute:0 ~second:0 ()) (* p1 *)
+        (make_points ~hour:14 ~minute:0 ~second:0 ()) (* p2 *)
+    ]}
+    yields all the "1pm to 2pm" intervals, since at each "1pm" mark represented by [p1],
+    searching forward up to 24 hour period, we can find a "2pm" mark in [p2]
+
+*)
 
 (** {2 Hour minute second intervals} *)
 
