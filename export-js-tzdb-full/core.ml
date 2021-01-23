@@ -165,8 +165,8 @@ let to_be_exported =
           Timere.make_points ~day ~hour ~minute ~second ()
 
         method mdhms month day hour minute second =
-          Timere.make_points ~month:(month_of_int month) ~day ~hour
-            ~minute ~second ()
+          Timere.make_points ~month:(month_of_int month) ~day ~hour ~minute
+            ~second ()
       end
 
     method resolve t =

@@ -505,12 +505,12 @@ val make_points :
 (** [make_points] call must be exactly one of the following form (ignoring [tz] and [tz_offset_s] which are optional in all cases)
     {[
       make_points ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
-      make_points         ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
-      make_points                  ~day:_     ~hour:_ ~minute:_ ~second:_ ()
-      make_points                  ~weekday:_ ~hour:_ ~minute:_ ~second:_ ()
-      make_points                             ~hour:_ ~minute:_ ~second:_ ()
-      make_points                                     ~minute:_ ~second:_ ()
-      make_points                                               ~second:_ ()
+        make_points         ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
+        make_points                  ~day:_     ~hour:_ ~minute:_ ~second:_ ()
+        make_points                  ~weekday:_ ~hour:_ ~minute:_ ~second:_ ()
+        make_points                             ~hour:_ ~minute:_ ~second:_ ()
+        make_points                                     ~minute:_ ~second:_ ()
+        make_points                                               ~second:_ ()
     ]}
 
     @raise Invalid_argument otherwise
