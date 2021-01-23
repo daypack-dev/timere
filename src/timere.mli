@@ -582,8 +582,12 @@ val make_hms : hour:int -> minute:int -> second:int -> (hms, unit) result
 val make_hms_exn : hour:int -> minute:int -> second:int -> hms
 
 val hms_intervals_inc : hms -> hms -> t
+(** Same as [hms_intervals_exc ...] with end point increased by one second
+*)
 
 val hms_intervals_exc : hms -> hms -> t
+(** Same as [bounded_intervals ...] with bound fixed to [Duration.make ~days:1 ()]
+*)
 
 (** {1 Chunking} *)
 
