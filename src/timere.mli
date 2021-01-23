@@ -545,6 +545,25 @@ val bounded_intervals : [ `Whole | `Snd ] -> Duration.t -> points -> points -> t
     yields all the "1pm to 2pm" intervals, since at each "1pm" mark represented by [p1],
     searching forward up to 24 hour period, we can find a "2pm" mark in [p2]
 
+    {[
+      bounded_intervals `Whole (Duration.make ~days:1 ())
+        (make_points ~month:`Feb ~day:10 ~hour:13 ~minute:0 ~second:0 ()) (* p1 *)
+        (make_points                     ~hour:14 ~minute:0 ~second:0 ()) (* p2 *)
+    ]}
+    yields all the "Feb 10th 1pm to 2pm" intervals (or specifically "Feb 10th 1pm to Feb 10th 2pm")
+
+    {[
+      bounded_intervals `Whole (Duration.make ~days:1 ())
+        (make_points ~month:`Feb ~day:10 ~hour:23 ~minute:0 ~second:0 ()) (* p1 *)
+        (make_points                     ~hour:3  ~minute:0 ~second:0 ()) (* p2 *)
+    ]}
+    yields all the "Feb 10th 11pm to 3am" intervals (or specifically "Feb 10th 11pm to Feb 11th 3am")
+
+    @raise Invalid_argument if precision (number of date time arguments passed to [make_points] during construction)
+    of [p1] < precision of [p2]
+
+    For example, [make_points_exn ~hour:3 ~minute:0 ~second:0 ()]
+    has a lower precision than [make_points_exn ~day:10 ~hour:12 ~minute:30 ~second:0 ()]
 *)
 
 (** {2 Hour minute second intervals} *)
