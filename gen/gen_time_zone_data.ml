@@ -397,17 +397,13 @@ let gen () =
         write_line "";
         write_line "type table = (int64 * entry) array";
         write_line "";
-        write_line
-          "module String_map = Map.Make (struct type t = string let compare = \
-           compare end)";
-        write_line "";
-        write_line "type db = table String_map.t";
+        write_line "type db = (string, table) Hashtbl.t";
         write_line "";
         write_line "let db : db =";
-        write_line "  String_map.empty";
+        write_line (Printf.sprintf "  Hashtbl.create %d" (List.length all_time_zones));
         List.iter
           (fun (s, l) ->
-             write_line (Printf.sprintf "  |> String_map.add \"%s\"" s);
+             write_line (Printf.sprintf "let () = Hashtbl.add db \"%s\"" s);
              write_line "      [|";
              List.iter
                (fun r ->
@@ -416,13 +412,15 @@ let gen () =
                        "        ((%LdL), { is_dst = %b; offset = (%d) });" r.start
                        r.is_dst r.offset))
                l;
-             write_line "      |]")
+             write_line "      |]";
+             write_line "";
+          )
           tables_utc;
         write_line "";
-        write_line "let lookup name = String_map.find_opt name db";
+        write_line "let lookup name = Hashtbl.find_opt db name";
         write_line "";
         write_line
-          "let available_time_zones = String_map.bindings db |> List.map fst");
+          "let available_time_zones = CCHashtbl.keys_list db");
   Printf.printf "Generating %s\n" tz_constants_file_name;
   CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
     tz_constants_file_name (fun oc ->
