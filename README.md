@@ -55,10 +55,8 @@ See `examples/` for more examples
 
   - Chunking at year or month boundary, or in fixed sizes
 
-    - Evaluate expressions with a different time zone (e.g. intersection of 9am to 5pm of Australia and 9am to 5pm of New York)
+  - Evaluate (sub)expressions with a different time zone (e.g. intersection of 9am to 5pm of Sydney and 9am to 5pm of New York)
     
-  - Mix subexpressions with different time zones
-
 ## Usage
 
 Include `timere` in the `libraries` stanza in your dune file, and optionally one of the following two to select
