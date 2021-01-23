@@ -173,7 +173,7 @@ let string_of_date_time ?(format : string = default_date_time_format_string)
   | Error msg -> invalid_format_string msg
   | Ok l -> String.concat "" l
 
-let pp_date_time ?(format = default_interval_format_string) () formatter x =
+let pp_date_time ?(format = default_date_time_format_string) () formatter x =
   Format.fprintf formatter "%s" (string_of_date_time ~format x)
 
 let string_of_timestamp ?(display_using_tz = Time_zone.utc)
