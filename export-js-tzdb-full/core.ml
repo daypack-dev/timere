@@ -161,11 +161,11 @@ let to_be_exported =
           Timere.make_points ~weekday:(weekday_of_int weekday) ~hour ~minute
             ~second ()
 
-        method dhms month_day hour minute second =
-          Timere.make_points ~month_day ~hour ~minute ~second ()
+        method dhms day hour minute second =
+          Timere.make_points ~day ~hour ~minute ~second ()
 
-        method mdhms month month_day hour minute second =
-          Timere.make_points ~month:(month_of_int month) ~month_day ~hour
+        method mdhms month day hour minute second =
+          Timere.make_points ~month:(month_of_int month) ~day ~hour
             ~minute ~second ()
       end
 

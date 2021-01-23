@@ -111,7 +111,7 @@ let make_pattern ~rng ~min_year ~max_year_inc : Pattern.t =
     }
 
 let make_points ~rng ~min_year ~max_year_inc ~max_precision =
-  let month_day =
+  let day =
     if rng () mod 2 = 0 then 1 + (rng () mod 31) else -(1 + (rng () mod 31))
   in
   let precision = min max_precision (rng () mod 7) in
@@ -130,14 +130,14 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
       ~minute:(rng () mod 60)
       ~second:(rng ()) ()
   | 4 ->
-    Points.make_exn ~month_day
+    Points.make_exn ~day
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
       ~second:(rng ()) ()
   | 5 ->
     Points.make_exn
       ~month:(CCResult.get_exn @@ month_of_tm_int (rng () mod 12))
-      ~month_day
+      ~day
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
       ~second:(rng ()) ()
@@ -145,7 +145,7 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
     Points.make_exn
       ~year:(min max_year_inc (min_year + rng ()))
       ~month:(CCResult.get_exn @@ month_of_tm_int (rng () mod 12))
-      ~month_day
+      ~day
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
       ~second:(rng ()) ()

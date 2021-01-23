@@ -521,7 +521,7 @@ val make_points_exn :
   ?tz_offset_s:int ->
   ?year:int ->
   ?month:month ->
-  ?month_day:int ->
+  ?day:int ->
   ?weekday:weekday ->
   ?hour:int ->
   ?minute:int ->
