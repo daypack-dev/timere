@@ -1,5 +1,13 @@
 # Timere examples
 
+## Simple
+
+`simple.ml` is the one shown in repo README
+
+## Date time
+
+`date_time.ml` demonstrates basic date time handling with time zone
+
 ## Querying across DST boundary
 
 (See `dst.ml` for full runnable example)
