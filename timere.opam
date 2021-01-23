@@ -2,8 +2,20 @@ opam-version: "2.0"
 synopsis: "OCaml time handling and reasoning library"
 description: """
 Features:
+
 - Timestamp and date time handling with platform independent time zone support
-- Reasoning over time intervals, e.g. union, intersect, relative complement, shift, chunk
+
+  - Subset of the IANA time zone database is built into this library
+
+- Reasoning over time intervals via `timere` objects/expressions, examples:
+
+  - Pattern matching time and intervals. These work across DST boundaries.
+ 
+  - Intersection and union
+
+  - Chunking at year or month boundary, or in fixed sizes
+
+  - Evaluate (sub)expressions with a different time zone (e.g. intersection of 9am to 5pm of Sydney and 9am to 5pm of New York)
 """
 maintainer: "Darren Ldl <darrenldldev@gmail.com>"
 authors: "Daypack developers"
