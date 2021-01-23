@@ -401,6 +401,7 @@ let gen () =
         write_line "";
         write_line "let db : db =";
         write_line (Printf.sprintf "  Hashtbl.create %d" (List.length all_time_zones));
+        write_line "";
         List.iter
           (fun (s, l) ->
              write_line (Printf.sprintf "let () = Hashtbl.add db \"%s\"" s);
