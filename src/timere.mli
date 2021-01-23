@@ -513,7 +513,7 @@ val make_points :
         make_points                                               ~second:_ ()
     ]}
 
-    @raise Invalid_argument otherwise
+    returns [Error] otherwise
 *)
 
 val make_points_exn :
@@ -528,6 +528,7 @@ val make_points_exn :
   second:int ->
   unit ->
   points
+(** @raise Invalid_argument if [make_points] fails *)
 
 val bounded_intervals : [ `Whole | `Snd ] -> Duration.t -> points -> points -> t
 (** [bounded_intervals mode bound p1 p2] for each point [x] matched by [p1],
