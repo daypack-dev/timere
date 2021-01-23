@@ -15,7 +15,7 @@ let () =
     (* since it is ordinary, we can get a single/unique timestamp out of it *)
     Timere.Date_time.to_timestamp_single ordinary_dt
   in
-  Fmt.pr "%a@." (Timere.pp_timestamp ()) ordinary_timestamp;
+  Fmt.pr "%a@." (Timere.pp_timestamp ~display_using_tz:tz ()) ordinary_timestamp;
 
   print_endline "=====";
 
@@ -27,8 +27,8 @@ let () =
   (match Timere.Date_time.to_timestamp ambiguous_dt with
    | `Single _ -> failwith "Unexpected case"
    | `Ambiguous (x, y) ->
-     Fmt.pr "%a@." (Timere.pp_timestamp ()) x;
-     Fmt.pr "%a@." (Timere.pp_timestamp ()) y;
+     Fmt.pr "%a@." (Timere.pp_timestamp ~display_using_tz:tz ()) x;
+     Fmt.pr "%a@." (Timere.pp_timestamp ~display_using_tz:tz ()) y;
   );
 
   print_endline "=====";
@@ -37,4 +37,6 @@ let () =
     (* this date time doesn't exist due to DST starting *)
     Timere.Date_time.make ~tz ~year:2021 ~month:`Oct ~day:3 ~hour:2 ~minute:30 ~second:0
   in
-  assert (CCResult.is_error non_existent_dt)
+  match non_existent_dt with
+  | Error _ -> print_endline "Failed to construct date time"
+  | Ok _ -> failwith "Unexpected case"
