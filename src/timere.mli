@@ -251,13 +251,13 @@ module Date_time : sig
   }
 
   val make :
+    tz:Time_zone.t ->
     year:int ->
     month:month ->
     day:int ->
     hour:int ->
     minute:int ->
     second:int ->
-    tz:Time_zone.t ->
     (t, unit) result
   (** Constructs a date time providing only a time zone.
 
@@ -269,13 +269,13 @@ module Date_time : sig
   *)
 
   val make_exn :
+    tz:Time_zone.t ->
     year:int ->
     month:month ->
     day:int ->
     hour:int ->
     minute:int ->
     second:int ->
-    tz:Time_zone.t ->
     t
   (** @raise Invalid_argument if [make] fails *)
 

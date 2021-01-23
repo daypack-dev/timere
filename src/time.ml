@@ -1215,7 +1215,7 @@ module Date_time' = struct
                     `Tz_and_tz_offset_s (tz_of_date_time, entry.offset);
                 }))
 
-  let make ~year ~month ~day ~hour ~minute ~second ~tz =
+  let make ~tz ~year ~month ~day ~hour ~minute ~second =
     let dt =
       { year; month; day; hour; minute; second; tz_info = `Tz_only tz }
     in
@@ -1224,7 +1224,7 @@ module Date_time' = struct
     | `Single x -> Ok (of_timestamp ~tz_of_date_time:tz x |> CCResult.get_exn)
     | `Ambiguous _ -> Ok dt
 
-  let make_exn ~year ~month ~day ~hour ~minute ~second ~tz =
+  let make_exn ~tz ~year ~month ~day ~hour ~minute ~second =
     match make ~year ~month ~day ~hour ~minute ~second ~tz with
     | Ok x -> x
     | Error () -> invalid_arg "make_exn"
