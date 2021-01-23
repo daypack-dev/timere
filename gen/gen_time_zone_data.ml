@@ -43,6 +43,8 @@ type transition_record = {
 
 type transition_table = string * transition_record list
 
+let array_literal_max_size = 100
+
 let output_dir = "gen-artifacts/"
 
 let output_list_file_name = output_dir ^ "available-time-zones.txt"
@@ -191,7 +193,7 @@ let transitions_of_zdump_lines (l : zdump_line list) : transition list =
         when x.date_time_local.tz = String "LMT"
           && y.date_time_local.tz = String "LMT" ->
         aux (succ line_num) rest
-      | x :: y :: rest when x.date_time_local.tz <> y.date_time_local.tz ->
+      | x :: y :: rest when x.date_time_local.tz <> y.date_time_local.tz || x.offset <> y.offset ->
         aux (succ line_num) (y :: rest)
       | _ -> (line_num, l)
     in
@@ -404,16 +406,38 @@ let gen () =
         write_line "";
         List.iter
           (fun (s, l) ->
-             write_line (Printf.sprintf "let () = Hashtbl.add db \"%s\"" s);
-             write_line "      [|";
-             List.iter
-               (fun r ->
-                  write_line
-                    (Printf.sprintf
-                       "        ((%LdL), { is_dst = %b; offset = (%d) });" r.start
-                       r.is_dst r.offset))
+             let l =
+               List.fold_left (fun acc (r : transition_record) ->
+                   match acc with
+                   | [] -> [[r]]
+                   | x :: xs ->
+                     if List.length x = array_literal_max_size then
+                       [r] :: x :: xs
+                     else
+                       (r :: x) :: xs
+                 )
+                 []
+                 l
+             in
+             write_line "let () =";
+             List.iteri
+               (fun i rs ->
+                  if i = 0 then
+                    write_line (Printf.sprintf "  Hashtbl.add db %S (" s)
+                  else (
+                    write_line (Printf.sprintf "  ;Hashtbl.add db %S (Array.append (Hashtbl.find db %S)" s s);
+                  );
+                  write_line "      [|";
+                  List.iter (fun r ->
+                      write_line
+                        (Printf.sprintf
+                           "        ((%LdL), { is_dst = %b; offset = (%d) });" r.start
+                           r.is_dst r.offset);
+                    )
+                    rs;
+                  write_line "      |])";
+               )
                l;
-             write_line "      |]";
              write_line "";
           )
           tables_utc;

@@ -9,4 +9,5 @@
  (name      timere_tzdb_full)
  (public_name timere.tzdb.full)
  (implements timere_tzdb)
+ (libraries containers)
 )
