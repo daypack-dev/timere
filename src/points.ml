@@ -111,15 +111,15 @@ let make' ~tz ~tz_offset_s ~year ~month ~month_day ~weekday ~hour ~minute
       match pick with Error () -> Error () | Ok pick -> Ok (pick, tz_info)
     else Error ()
 
-let make ?tz ?tz_offset_s ?year ?month ?month_day ?weekday ?hour ?minute ~second
+let make ?tz ?tz_offset_s ?year ?month ?day ?weekday ?hour ?minute ~second
     () : (t, unit) result =
-  make' ~tz ~tz_offset_s ~year ~month ~month_day ~weekday ~hour ~minute ~second
+  make' ~tz ~tz_offset_s ~year ~month ~month_day:day ~weekday ~hour ~minute ~second
     ()
 
-let make_exn ?tz ?tz_offset_s ?year ?month ?month_day ?weekday ?hour ?minute
+let make_exn ?tz ?tz_offset_s ?year ?month ?day ?weekday ?hour ?minute
     ~second () =
   match
-    make' ~tz ~tz_offset_s ~year ~month ~month_day ~weekday ~hour ~minute
+    make' ~tz ~tz_offset_s ~year ~month ~month_day:day ~weekday ~hour ~minute
       ~second ()
   with
   | Error () -> invalid_arg "make"
