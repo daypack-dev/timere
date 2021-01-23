@@ -14,7 +14,6 @@ Christmases which fall on Wednesday from now
 ```ocaml
 let () =
   let open Timere in
-  let open Infix in
   match
     resolve (
       after (Date_time.now ())
