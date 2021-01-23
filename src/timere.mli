@@ -485,7 +485,7 @@ val sorted_interval_seq : ?skip_invalid:bool -> interval Seq.t -> t
 (** {2 Pattern matching} *)
 
 (** Pattern matching intervals are designed to handle intervals where start and end points follow some pattern, but cannot be captured by [pattern] efficiently,
-    e.g. you cannot represent "5:30pm to 6:11pm" via a single [pattern].
+    e.g. you cannot represent "5:30pm to 6:11pm" via a single [pattern]
 *)
 
 type points
