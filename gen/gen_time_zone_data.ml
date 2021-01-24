@@ -43,7 +43,7 @@ type transition_record = {
 
 type transition_table = string * transition_record list
 
-let array_literal_max_size = 20
+let array_literal_max_size = 200
 
 let output_dir = "gen-artifacts/"
 
@@ -58,6 +58,20 @@ let tzdb_json_output_dir = "tzdb-json/"
 let year_start = 1850
 
 let year_end_exc = 2100
+
+let actual_use_year_start = 1950
+
+let actual_use_year_end_exc = 2050
+
+let actual_use_start =
+  Ptime.of_date_time ((actual_use_year_start, 1, 1), ((0, 0, 0), 0))
+  |> CCOpt.get_exn
+  |> Ptime_utils.timestamp_of_ptime
+
+let actual_use_end_exc =
+  Ptime.of_date_time ((actual_use_year_end_exc, 1, 1), ((0, 0, 0), 0))
+  |> CCOpt.get_exn
+  |> Ptime_utils.timestamp_of_ptime
 
 let human_int_of_month s =
   match s with
@@ -377,6 +391,20 @@ let gen () =
             else x :: xs
         in
         (s, l))
+    |> Seq.map (fun (s, l) ->
+        let l =
+          List.filter_map (fun (r : transition_record) ->
+              if r.end_exc <= actual_use_start || actual_use_end_exc <= r.start then
+                None
+              else
+              if r.start <= actual_use_start then
+                Some { r with start = actual_use_start }
+              else
+                Some { r with end_exc = actual_use_end_exc }
+            ) l
+        in
+        (s, l)
+      )
     |> CCList.of_seq
   in
   print_newline ();
@@ -419,6 +447,7 @@ let gen () =
                  )
                  []
                  l
+               |> List.map List.rev
              in
              List.iteri
                (fun i rs ->
