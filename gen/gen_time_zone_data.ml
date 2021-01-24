@@ -43,7 +43,7 @@ type transition_record = {
 
 type transition_table = string * transition_record list
 
-let array_literal_max_size = 100
+let array_literal_max_size = 20
 
 let output_dir = "gen-artifacts/"
 
@@ -404,6 +404,7 @@ let gen () =
         write_line "let db : db =";
         write_line (Printf.sprintf "  Hashtbl.create %d" (List.length all_time_zones));
         write_line "";
+        let add_count = ref 0 in
         List.iter
           (fun (s, l) ->
              let l =
@@ -419,11 +420,13 @@ let gen () =
                  []
                  l
              in
-             write_line "let () =";
              List.iteri
                (fun i rs ->
+                  if !add_count mod 50 = 0 then
+                    write_line "let () = ()";
+                  add_count := !add_count + 1;
                   if i = 0 then
-                    write_line (Printf.sprintf "  Hashtbl.add db %S (" s)
+                    write_line (Printf.sprintf "  ;Hashtbl.add db %S (" s)
                   else (
                     write_line (Printf.sprintf "  ;Hashtbl.add db %S (Array.append (Hashtbl.find db %S)" s s);
                   );
