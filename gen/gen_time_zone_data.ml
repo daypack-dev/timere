@@ -393,7 +393,7 @@ let gen () =
         (s, l))
     |> Seq.map (fun (s, l) ->
         let l =
-          List.filter_map (fun (r : transition_record) ->
+          CCList.filter_map (fun (r : transition_record) ->
               if r.end_exc <= actual_use_start || actual_use_end_exc <= r.start then
                 None
               else
