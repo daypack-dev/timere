@@ -34,6 +34,11 @@ depends: [
   "ptime"
   "yojson"
   "fmt"
+  "crowbar" {with-test}
+  "fileutils" {with-test}
+  "alcotest" {with-test}
+  "qcheck-alcotest" {with-test}
+  "qcheck" {with-test}
 ]
 build: [
   ["dune" "build" "-p" name "-j" jobs]
