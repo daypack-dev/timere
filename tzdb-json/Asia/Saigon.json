@@ -1,9 +1,6 @@
 {
   "name" : "Asia/Saigon",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : 28800 }],
-    ["-457776000", { "is_dst" : false, "offset" : 25200 }],
-    ["-315648000", { "is_dst" : false, "offset" : 28800 }],
-    ["171820800", { "is_dst" : false, "offset" : 25200 }]
+    ["946684800", { "is_dst" : false, "offset" : 25200 }]
   ]
 }

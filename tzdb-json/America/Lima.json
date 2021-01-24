@@ -1,14 +1,6 @@
 {
   "name" : "America/Lima",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : -18000 }],
-    ["504939600", { "is_dst" : true, "offset" : -14400 }],
-    ["512712000", { "is_dst" : false, "offset" : -18000 }],
-    ["536475600", { "is_dst" : true, "offset" : -14400 }],
-    ["544248000", { "is_dst" : false, "offset" : -18000 }],
-    ["631170000", { "is_dst" : true, "offset" : -14400 }],
-    ["638942400", { "is_dst" : false, "offset" : -18000 }],
-    ["757400400", { "is_dst" : true, "offset" : -14400 }],
-    ["765172800", { "is_dst" : false, "offset" : -18000 }]
+    ["946684800", { "is_dst" : false, "offset" : -18000 }]
   ]
 }

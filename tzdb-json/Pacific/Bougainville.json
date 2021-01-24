@@ -1,7 +1,7 @@
 {
   "name" : "Pacific/Bougainville",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : 36000 }],
+    ["946684800", { "is_dst" : false, "offset" : 36000 }],
     ["1419696000", { "is_dst" : false, "offset" : 39600 }]
   ]
 }

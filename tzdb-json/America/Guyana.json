@@ -1,8 +1,6 @@
 {
   "name" : "America/Guyana",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : -13500 }],
-    ["176010300", { "is_dst" : false, "offset" : -10800 }],
-    ["662698800", { "is_dst" : false, "offset" : -14400 }]
+    ["946684800", { "is_dst" : false, "offset" : -14400 }]
   ]
 }

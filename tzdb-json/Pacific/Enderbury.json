@@ -1,8 +1,6 @@
 {
   "name" : "Pacific/Enderbury",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : -43200 }],
-    ["307627200", { "is_dst" : false, "offset" : -39600 }],
-    ["788871600", { "is_dst" : false, "offset" : 46800 }]
+    ["946684800", { "is_dst" : false, "offset" : 46800 }]
   ]
 }

@@ -1,8 +1,6 @@
 {
   "name" : "Antarctica/DumontDUrville",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : 36000 }],
-    ["-566992800", { "is_dst" : false, "offset" : 0 }],
-    ["-415497600", { "is_dst" : false, "offset" : 36000 }]
+    ["946684800", { "is_dst" : false, "offset" : 36000 }]
   ]
 }

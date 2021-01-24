@@ -1,8 +1,7 @@
 {
   "name" : "America/Caracas",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : -16200 }],
-    ["-157750200", { "is_dst" : false, "offset" : -14400 }],
+    ["946684800", { "is_dst" : false, "offset" : -14400 }],
     ["1197183600", { "is_dst" : false, "offset" : -16200 }],
     ["1462086000", { "is_dst" : false, "offset" : -14400 }]
   ]

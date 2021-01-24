@@ -1,7 +1,6 @@
 {
   "name" : "Pacific/Pitcairn",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : -30600 }],
-    ["893665800", { "is_dst" : false, "offset" : -28800 }]
+    ["946684800", { "is_dst" : false, "offset" : -28800 }]
   ]
 }

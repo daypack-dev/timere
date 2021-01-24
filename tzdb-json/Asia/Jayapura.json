@@ -1,7 +1,6 @@
 {
   "name" : "Asia/Jayapura",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : 34200 }],
-    ["-189423000", { "is_dst" : false, "offset" : 32400 }]
+    ["946684800", { "is_dst" : false, "offset" : 32400 }]
   ]
 }

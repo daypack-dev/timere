@@ -1,17 +1,7 @@
 {
   "name" : "America/Cancun",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : -21600 }],
-    ["377935200", { "is_dst" : false, "offset" : -18000 }],
-    ["828860400", { "is_dst" : true, "offset" : -14400 }],
-    ["846396000", { "is_dst" : false, "offset" : -18000 }],
-    ["860310000", { "is_dst" : true, "offset" : -14400 }],
-    ["877845600", { "is_dst" : false, "offset" : -18000 }],
-    ["891759600", { "is_dst" : true, "offset" : -14400 }],
-    ["902037600", { "is_dst" : true, "offset" : -18000 }],
-    ["909298800", { "is_dst" : false, "offset" : -21600 }],
-    ["923212800", { "is_dst" : true, "offset" : -18000 }],
-    ["941353200", { "is_dst" : false, "offset" : -21600 }],
+    ["946684800", { "is_dst" : false, "offset" : -21600 }],
     ["954662400", { "is_dst" : true, "offset" : -18000 }],
     ["972802800", { "is_dst" : false, "offset" : -21600 }],
     ["989136000", { "is_dst" : true, "offset" : -18000 }],

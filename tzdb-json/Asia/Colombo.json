@@ -1,9 +1,7 @@
 {
   "name" : "Asia/Colombo",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : 19800 }],
-    ["832962600", { "is_dst" : false, "offset" : 23400 }],
-    ["846266400", { "is_dst" : false, "offset" : 21600 }],
+    ["946684800", { "is_dst" : false, "offset" : 21600 }],
     ["1145039400", { "is_dst" : false, "offset" : 19800 }]
   ]
 }

@@ -1,25 +1,6 @@
 {
   "name" : "Canada/Saskatchewan",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : -25200 }],
-    ["-620838000", { "is_dst" : true, "offset" : -21600 }],
-    ["-608140800", { "is_dst" : false, "offset" : -25200 }],
-    ["-589388400", { "is_dst" : true, "offset" : -21600 }],
-    ["-576086400", { "is_dst" : false, "offset" : -25200 }],
-    ["-557938800", { "is_dst" : true, "offset" : -21600 }],
-    ["-544636800", { "is_dst" : false, "offset" : -25200 }],
-    ["-526489200", { "is_dst" : true, "offset" : -21600 }],
-    ["-513187200", { "is_dst" : false, "offset" : -25200 }],
-    ["-495039600", { "is_dst" : true, "offset" : -21600 }],
-    ["-481737600", { "is_dst" : false, "offset" : -25200 }],
-    ["-463590000", { "is_dst" : true, "offset" : -21600 }],
-    ["-450288000", { "is_dst" : false, "offset" : -25200 }],
-    ["-431535600", { "is_dst" : true, "offset" : -21600 }],
-    ["-418233600", { "is_dst" : false, "offset" : -25200 }],
-    ["-400086000", { "is_dst" : true, "offset" : -21600 }],
-    ["-386784000", { "is_dst" : false, "offset" : -25200 }],
-    ["-337186800", { "is_dst" : true, "offset" : -21600 }],
-    ["-321465600", { "is_dst" : false, "offset" : -25200 }],
-    ["-305737200", { "is_dst" : false, "offset" : -21600 }]
+    ["946684800", { "is_dst" : false, "offset" : -21600 }]
   ]
 }

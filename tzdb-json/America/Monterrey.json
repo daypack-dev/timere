@@ -1,17 +1,7 @@
 {
   "name" : "America/Monterrey",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : -21600 }],
-    ["576057600", { "is_dst" : true, "offset" : -18000 }],
-    ["594198000", { "is_dst" : false, "offset" : -21600 }],
-    ["828864000", { "is_dst" : true, "offset" : -18000 }],
-    ["846399600", { "is_dst" : false, "offset" : -21600 }],
-    ["860313600", { "is_dst" : true, "offset" : -18000 }],
-    ["877849200", { "is_dst" : false, "offset" : -21600 }],
-    ["891763200", { "is_dst" : true, "offset" : -18000 }],
-    ["909298800", { "is_dst" : false, "offset" : -21600 }],
-    ["923212800", { "is_dst" : true, "offset" : -18000 }],
-    ["941353200", { "is_dst" : false, "offset" : -21600 }],
+    ["946684800", { "is_dst" : false, "offset" : -21600 }],
     ["954662400", { "is_dst" : true, "offset" : -18000 }],
     ["972802800", { "is_dst" : false, "offset" : -21600 }],
     ["989136000", { "is_dst" : true, "offset" : -18000 }],

@@ -1,8 +1,7 @@
 {
   "name" : "Pacific/Apia",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : -41400 }],
-    ["-631110600", { "is_dst" : false, "offset" : -39600 }],
+    ["946684800", { "is_dst" : false, "offset" : -39600 }],
     ["1285498800", { "is_dst" : true, "offset" : -36000 }],
     ["1301752800", { "is_dst" : false, "offset" : -39600 }],
     ["1316872800", { "is_dst" : true, "offset" : -36000 }],

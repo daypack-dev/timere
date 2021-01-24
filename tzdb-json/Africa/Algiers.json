@@ -1,18 +1,6 @@
 {
   "name" : "Africa/Algiers",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : 0 }],
-    ["-439430400", { "is_dst" : false, "offset" : 3600 }],
-    ["-212029200", { "is_dst" : false, "offset" : 0 }],
-    ["41468400", { "is_dst" : true, "offset" : 3600 }],
-    ["54774000", { "is_dst" : false, "offset" : 0 }],
-    ["231724800", { "is_dst" : true, "offset" : 3600 }],
-    ["246236400", { "is_dst" : false, "offset" : 3600 }],
-    ["259545600", { "is_dst" : true, "offset" : 7200 }],
-    ["275274000", { "is_dst" : false, "offset" : 3600 }],
-    ["309740400", { "is_dst" : false, "offset" : 0 }],
-    ["325468800", { "is_dst" : true, "offset" : 3600 }],
-    ["341802000", { "is_dst" : false, "offset" : 0 }],
-    ["357523200", { "is_dst" : false, "offset" : 3600 }]
+    ["946684800", { "is_dst" : false, "offset" : 3600 }]
   ]
 }

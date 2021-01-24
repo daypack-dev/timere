@@ -1,16 +1,7 @@
 {
   "name" : "America/Mazatlan",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : -28800 }],
-    ["28800", { "is_dst" : false, "offset" : -25200 }],
-    ["828867600", { "is_dst" : true, "offset" : -21600 }],
-    ["846403200", { "is_dst" : false, "offset" : -25200 }],
-    ["860317200", { "is_dst" : true, "offset" : -21600 }],
-    ["877852800", { "is_dst" : false, "offset" : -25200 }],
-    ["891766800", { "is_dst" : true, "offset" : -21600 }],
-    ["909302400", { "is_dst" : false, "offset" : -25200 }],
-    ["923216400", { "is_dst" : true, "offset" : -21600 }],
-    ["941356800", { "is_dst" : false, "offset" : -25200 }],
+    ["946684800", { "is_dst" : false, "offset" : -25200 }],
     ["954666000", { "is_dst" : true, "offset" : -21600 }],
     ["972806400", { "is_dst" : false, "offset" : -25200 }],
     ["989139600", { "is_dst" : true, "offset" : -21600 }],

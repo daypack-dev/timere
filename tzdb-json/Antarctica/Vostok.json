@@ -1,7 +1,6 @@
 {
   "name" : "Antarctica/Vostok",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : 21600 }],
-    ["-380073600", { "is_dst" : false, "offset" : 21600 }]
+    ["946684800", { "is_dst" : false, "offset" : 21600 }]
   ]
 }

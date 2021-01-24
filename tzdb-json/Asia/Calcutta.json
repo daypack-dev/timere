@@ -1,6 +1,6 @@
 {
   "name" : "Asia/Calcutta",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : 19800 }]
+    ["946684800", { "is_dst" : false, "offset" : 19800 }]
   ]
 }

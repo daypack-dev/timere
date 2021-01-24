@@ -1,6 +1,6 @@
 {
   "name" : "Asia/Bangkok",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : 25200 }]
+    ["946684800", { "is_dst" : false, "offset" : 25200 }]
   ]
 }

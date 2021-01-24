@@ -1,8 +1,6 @@
 {
   "name" : "Pacific/Kosrae",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : 39600 }],
-    ["-7988400", { "is_dst" : false, "offset" : 43200 }],
-    ["915105600", { "is_dst" : false, "offset" : 39600 }]
+    ["946684800", { "is_dst" : false, "offset" : 39600 }]
   ]
 }

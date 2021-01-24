@@ -1,7 +1,7 @@
 {
   "name" : "Asia/Pyongyang",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : 32400 }],
+    ["946684800", { "is_dst" : false, "offset" : 32400 }],
     ["1439564400", { "is_dst" : false, "offset" : 30600 }],
     ["1525446000", { "is_dst" : false, "offset" : 32400 }]
   ]

@@ -1,8 +1,6 @@
 {
   "name" : "Africa/Ndjamena",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : 3600 }],
-    ["308703600", { "is_dst" : true, "offset" : 7200 }],
-    ["321314400", { "is_dst" : false, "offset" : 3600 }]
+    ["946684800", { "is_dst" : false, "offset" : 3600 }]
   ]
 }

@@ -1,13 +1,7 @@
 {
   "name" : "Australia/West",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : 28800 }],
-    ["152042400", { "is_dst" : true, "offset" : 32400 }],
-    ["162928800", { "is_dst" : false, "offset" : 28800 }],
-    ["436298400", { "is_dst" : true, "offset" : 32400 }],
-    ["447184800", { "is_dst" : false, "offset" : 28800 }],
-    ["690314400", { "is_dst" : true, "offset" : 32400 }],
-    ["699386400", { "is_dst" : false, "offset" : 28800 }],
+    ["946684800", { "is_dst" : false, "offset" : 28800 }],
     ["1165082400", { "is_dst" : true, "offset" : 32400 }],
     ["1174759200", { "is_dst" : false, "offset" : 28800 }],
     ["1193508000", { "is_dst" : true, "offset" : 32400 }],

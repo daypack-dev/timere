@@ -1,7 +1,7 @@
 {
   "name" : "Pacific/Fakaofo",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : -39600 }],
+    ["946684800", { "is_dst" : false, "offset" : -39600 }],
     ["1325242800", { "is_dst" : false, "offset" : 46800 }]
   ]
 }

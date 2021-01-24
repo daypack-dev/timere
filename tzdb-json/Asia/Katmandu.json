@@ -1,7 +1,6 @@
 {
   "name" : "Asia/Katmandu",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : 19800 }],
-    ["504901800", { "is_dst" : false, "offset" : 20700 }]
+    ["946684800", { "is_dst" : false, "offset" : 20700 }]
   ]
 }

@@ -1,14 +1,6 @@
 {
   "name" : "America/Costa_Rica",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : -21600 }],
-    ["288770400", { "is_dst" : true, "offset" : -18000 }],
-    ["297234000", { "is_dst" : false, "offset" : -21600 }],
-    ["320220000", { "is_dst" : true, "offset" : -18000 }],
-    ["328683600", { "is_dst" : false, "offset" : -21600 }],
-    ["664264800", { "is_dst" : true, "offset" : -18000 }],
-    ["678344400", { "is_dst" : false, "offset" : -21600 }],
-    ["695714400", { "is_dst" : true, "offset" : -18000 }],
-    ["700635600", { "is_dst" : false, "offset" : -21600 }]
+    ["946684800", { "is_dst" : false, "offset" : -21600 }]
   ]
 }

@@ -64,7 +64,7 @@ a concrete implementation of time zone data source
 
 - `timere.tzdb.full`
 
-  - This is the default implementation which embeds the IANA time zone database from year 1850 to year 2100 exclusive
+  - This is the default implementation which embeds the IANA time zone database from year 2000 to year 2050 exclusive
 
 - `timere.tzdb.none`
 

@@ -1,18 +1,6 @@
 {
   "name" : "Africa/Accra",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : 0 }],
-    ["-610149600", { "is_dst" : true, "offset" : 1800 }],
-    ["-599610600", { "is_dst" : false, "offset" : 0 }],
-    ["-578613600", { "is_dst" : true, "offset" : 1800 }],
-    ["-568074600", { "is_dst" : false, "offset" : 0 }],
-    ["-546991200", { "is_dst" : true, "offset" : 1800 }],
-    ["-536452200", { "is_dst" : false, "offset" : 0 }],
-    ["-515455200", { "is_dst" : true, "offset" : 1800 }],
-    ["-504916200", { "is_dst" : false, "offset" : 0 }],
-    ["-483919200", { "is_dst" : true, "offset" : 1800 }],
-    ["-473380200", { "is_dst" : false, "offset" : 0 }],
-    ["-452383200", { "is_dst" : true, "offset" : 1800 }],
-    ["-441844200", { "is_dst" : false, "offset" : 0 }]
+    ["946684800", { "is_dst" : false, "offset" : 0 }]
   ]
 }

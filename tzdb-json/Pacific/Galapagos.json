@@ -1,9 +1,6 @@
 {
   "name" : "Pacific/Galapagos",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : -18000 }],
-    ["504939600", { "is_dst" : false, "offset" : -21600 }],
-    ["722930400", { "is_dst" : true, "offset" : -18000 }],
-    ["728888400", { "is_dst" : false, "offset" : -21600 }]
+    ["946684800", { "is_dst" : false, "offset" : -21600 }]
   ]
 }

@@ -1,15 +1,6 @@
 {
   "name" : "America/Swift_Current",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : -25200 }],
-    ["-400086000", { "is_dst" : true, "offset" : -21600 }],
-    ["-384364800", { "is_dst" : false, "offset" : -25200 }],
-    ["-337186800", { "is_dst" : true, "offset" : -21600 }],
-    ["-321465600", { "is_dst" : false, "offset" : -25200 }],
-    ["-305737200", { "is_dst" : true, "offset" : -21600 }],
-    ["-292435200", { "is_dst" : false, "offset" : -25200 }],
-    ["-273682800", { "is_dst" : true, "offset" : -21600 }],
-    ["-260985600", { "is_dst" : false, "offset" : -25200 }],
-    ["73472400", { "is_dst" : false, "offset" : -21600 }]
+    ["946684800", { "is_dst" : false, "offset" : -21600 }]
   ]
 }

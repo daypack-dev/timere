@@ -1,7 +1,6 @@
 {
   "name" : "America/Curacao",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : -16200 }],
-    ["-157750200", { "is_dst" : false, "offset" : -14400 }]
+    ["946684800", { "is_dst" : false, "offset" : -14400 }]
   ]
 }

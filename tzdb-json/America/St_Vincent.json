@@ -1,6 +1,6 @@
 {
   "name" : "America/St_Vincent",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : -14400 }]
+    ["946684800", { "is_dst" : false, "offset" : -14400 }]
   ]
 }

@@ -1,7 +1,6 @@
 {
   "name" : "Africa/Monrovia",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : -2670 }],
-    ["63593070", { "is_dst" : false, "offset" : 0 }]
+    ["946684800", { "is_dst" : false, "offset" : 0 }]
   ]
 }

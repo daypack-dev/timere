@@ -1,6 +1,6 @@
 {
   "name" : "Africa/Dar_es_Salaam",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : 10800 }]
+    ["946684800", { "is_dst" : false, "offset" : 10800 }]
   ]
 }

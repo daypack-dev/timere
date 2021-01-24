@@ -1,8 +1,6 @@
 {
   "name" : "America/Guayaquil",
   "table" : [
-    ["-631152000", { "is_dst" : false, "offset" : -18000 }],
-    ["722926800", { "is_dst" : true, "offset" : -14400 }],
-    ["728884800", { "is_dst" : false, "offset" : -18000 }]
+    ["946684800", { "is_dst" : false, "offset" : -18000 }]
   ]
 }
