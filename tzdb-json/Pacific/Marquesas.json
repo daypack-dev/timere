@@ -1,6 +1,7 @@
 {
   "name" : "Pacific/Marquesas",
   "table" : [
-    ["946684800", { "is_dst" : false, "offset" : -34200 }]
+    ["-62167219200", { "is_dst" : false, "offset" : -34200 }],
+    ["-1806676920", { "is_dst" : false, "offset" : -34200 }]
   ]
 }

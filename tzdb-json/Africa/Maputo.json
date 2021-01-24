@@ -1,6 +1,7 @@
 {
   "name" : "Africa/Maputo",
   "table" : [
-    ["946684800", { "is_dst" : false, "offset" : 7200 }]
+    ["-62167219200", { "is_dst" : false, "offset" : 7200 }],
+    ["-2109291020", { "is_dst" : false, "offset" : 7200 }]
   ]
 }

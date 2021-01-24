@@ -1,6 +1,13 @@
 {
   "name" : "America/Coral_Harbour",
   "table" : [
-    ["946684800", { "is_dst" : false, "offset" : -18000 }]
+    ["-62167219200", { "is_dst" : false, "offset" : -21600 }],
+    ["-2366733212", { "is_dst" : false, "offset" : -21600 }],
+    ["-1632067200", { "is_dst" : true, "offset" : -18000 }],
+    ["-1615136400", { "is_dst" : false, "offset" : -21600 }],
+    ["-923248800", { "is_dst" : true, "offset" : -18000 }],
+    ["-880214400", { "is_dst" : true, "offset" : -18000 }],
+    ["-769395600", { "is_dst" : true, "offset" : -18000 }],
+    ["-765392400", { "is_dst" : false, "offset" : -18000 }]
   ]
 }

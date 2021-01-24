@@ -1,6 +1,9 @@
 {
   "name" : "America/Creston",
   "table" : [
-    ["946684800", { "is_dst" : false, "offset" : -25200 }]
+    ["-62167219200", { "is_dst" : false, "offset" : -25200 }],
+    ["-2713882436", { "is_dst" : false, "offset" : -25200 }],
+    ["-1680454800", { "is_dst" : false, "offset" : -28800 }],
+    ["-1627833600", { "is_dst" : false, "offset" : -25200 }]
   ]
 }

@@ -1,7 +1,11 @@
 {
   "name" : "Pacific/Bougainville",
   "table" : [
-    ["946684800", { "is_dst" : false, "offset" : 36000 }],
+    ["-62167219200", { "is_dst" : false, "offset" : 35312 }],
+    ["-2840178136", { "is_dst" : false, "offset" : 35312 }],
+    ["-2366790512", { "is_dst" : false, "offset" : 36000 }],
+    ["-868010400", { "is_dst" : false, "offset" : 32400 }],
+    ["-768906000", { "is_dst" : false, "offset" : 36000 }],
     ["1419696000", { "is_dst" : false, "offset" : 39600 }]
   ]
 }

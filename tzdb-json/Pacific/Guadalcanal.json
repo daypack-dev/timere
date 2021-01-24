@@ -1,6 +1,7 @@
 {
   "name" : "Pacific/Guadalcanal",
   "table" : [
-    ["946684800", { "is_dst" : false, "offset" : 39600 }]
+    ["-62167219200", { "is_dst" : false, "offset" : 39600 }],
+    ["-1806748788", { "is_dst" : false, "offset" : 39600 }]
   ]
 }

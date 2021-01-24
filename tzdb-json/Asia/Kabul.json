@@ -1,6 +1,8 @@
 {
   "name" : "Asia/Kabul",
   "table" : [
-    ["946684800", { "is_dst" : false, "offset" : 16200 }]
+    ["-62167219200", { "is_dst" : false, "offset" : 14400 }],
+    ["-2524538208", { "is_dst" : false, "offset" : 14400 }],
+    ["-788932800", { "is_dst" : false, "offset" : 16200 }]
   ]
 }

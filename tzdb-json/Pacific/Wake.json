@@ -1,6 +1,7 @@
 {
   "name" : "Pacific/Wake",
   "table" : [
-    ["946684800", { "is_dst" : false, "offset" : 43200 }]
+    ["-62167219200", { "is_dst" : false, "offset" : 43200 }],
+    ["-2177492788", { "is_dst" : false, "offset" : 43200 }]
   ]
 }

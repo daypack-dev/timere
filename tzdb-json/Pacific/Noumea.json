@@ -1,6 +1,13 @@
 {
   "name" : "Pacific/Noumea",
   "table" : [
-    ["946684800", { "is_dst" : false, "offset" : 39600 }]
+    ["-62167219200", { "is_dst" : false, "offset" : 39600 }],
+    ["-1829387148", { "is_dst" : false, "offset" : 39600 }],
+    ["250002000", { "is_dst" : true, "offset" : 43200 }],
+    ["257342400", { "is_dst" : false, "offset" : 39600 }],
+    ["281451600", { "is_dst" : true, "offset" : 43200 }],
+    ["288878400", { "is_dst" : false, "offset" : 39600 }],
+    ["849366000", { "is_dst" : true, "offset" : 43200 }],
+    ["857228400", { "is_dst" : false, "offset" : 39600 }]
   ]
 }
