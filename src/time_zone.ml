@@ -65,7 +65,7 @@ let lookup_record name : record option =
   name
   |> !lookup_ref
   |> CCOpt.map (fun (idx, slots) ->
-      let table = Array.map2 (fun a b -> (a,b)) idx slots in
+      let table = Array.mapi (fun i slot -> idx.{i},slot) slots in
       assert (check_table table);
       process_table table)
 

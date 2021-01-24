@@ -401,7 +401,8 @@ let gen () =
             l
         in
         let entries = CCArray.of_list entries in
-        let slots = CCArray.of_list slots in
+        let slots =
+          Bigarray.(Array1.of_array Int64 C_layout) @@ CCArray.of_list slots in
         (s, (slots, entries))
       )
     |> M.of_list
@@ -415,7 +416,9 @@ type entry = {
   is_dst : bool;
   offset : int;
 }
-type table = int64 array * entry array
+type table =
+  (int64, Bigarray.int64_elt, Bigarray.c_layout) Bigarray.Array1.t *
+  entry array
 type db = table M.t
 
 let db : db = Marshal.from_string %S 0
