@@ -1,5 +1,7 @@
 include Timere_tzdb
 
+type table = (int64 * entry) array
+
 type record = {
   recorded_offsets : int array;
   table : table;
@@ -57,12 +59,13 @@ let process_table (table : table) : record =
     in
     { recorded_offsets; table }
 
-let lookup_ref : (string -> table option) ref = ref lookup
+let lookup_ref : (string -> Timere_tzdb.table option) ref = ref lookup
 
 let lookup_record name : record option =
   name
   |> !lookup_ref
-  |> CCOpt.map (fun table ->
+  |> CCOpt.map (fun (idx, slots) ->
+      let table = Array.map2 (fun a b -> (a,b)) idx slots in
       assert (check_table table);
       process_table table)
 

@@ -270,12 +270,6 @@ let process_overlapping_transition_records (l : transition_record list) :
   in
   aux l
 
-module Int_set = Set.Make (struct
-    type t = int
-
-    let compare = compare
-  end)
-
 let gen () =
   let zoneinfo_file_dir = "/usr/share/zoneinfo/posix" in
   let all_zoneinfo_file_paths =
@@ -394,34 +388,41 @@ let gen () =
         List.iter write_line all_time_zones);
 
   Printf.printf "Generating %s\n" output_file_name;
-  let hashtbl_utc : (string, Timere_tzdb.table) Hashtbl.t =
+  let hashtbl_utc : Timere_tzdb.table Map.Make(String).t =
+    let module M = CCMap.Make(String) in
+    let h = Hashtbl.create 17 in
+    let get k = CCHashtbl.get_or_add h ~f:(fun x -> x) ~k in
     tables_utc
     |> List.map (fun (s,l) ->
-        let l =
-          List.map (fun r ->
-              (r.start, {Timere_tzdb. is_dst = r.is_dst ; offset = r.offset}))
+        let slots, entries =
+          List.split @@
+          List.map (fun (r : transition_record) ->
+              r.start, get {Timere_tzdb. is_dst = r.is_dst ; offset = r.offset})
             l
         in
-        (s, CCArray.of_list l)
+        let entries = CCArray.of_list entries in
+        let slots = CCArray.of_list slots in
+        (s, (slots, entries))
       )
-    |> CCHashtbl.of_list
+    |> M.of_list
   in
       
   CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc ] output_file_name
     begin fun oc ->
       Printf.fprintf oc {x|
+module M = Map.Make(String)
 type entry = {
   is_dst : bool;
   offset : int;
 }
-type table = (int64 * entry) array
-type db = (string, table) Hashtbl.t
+type table = int64 array * entry array
+type db = table M.t
 
 let db : db = Marshal.from_string %S 0
 
-let lookup name = Hashtbl.find_opt db name
+let lookup name = M.find_opt name db
 
-let available_time_zones = CCHashtbl.keys_list db
+let available_time_zones = List.map fst (M.bindings db)
 |x}
         (Marshal.to_string hashtbl_utc []);
     end;

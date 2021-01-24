@@ -3,7 +3,7 @@ type entry = {
   offset : int;
 }
 
-type table = (int64 * entry) array
+type table = int64 array * entry array
 
 val lookup : string -> table option
 
