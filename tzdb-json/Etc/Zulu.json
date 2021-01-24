@@ -1,6 +1,6 @@
 {
   "name" : "Etc/Zulu",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 0 }]
+    ["-631152000", { "is_dst" : false, "offset" : 0 }]
   ]
 }

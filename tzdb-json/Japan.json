@@ -1,12 +1,7 @@
 {
   "name" : "Japan",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 32400 }],
-    ["-2587712400", { "is_dst" : false, "offset" : 32400 }],
-    ["-683802000", { "is_dst" : true, "offset" : 36000 }],
-    ["-672310800", { "is_dst" : false, "offset" : 32400 }],
-    ["-654771600", { "is_dst" : true, "offset" : 36000 }],
-    ["-640861200", { "is_dst" : false, "offset" : 32400 }],
+    ["-631152000", { "is_dst" : false, "offset" : 32400 }],
     ["-620298000", { "is_dst" : true, "offset" : 36000 }],
     ["-609411600", { "is_dst" : false, "offset" : 32400 }],
     ["-588848400", { "is_dst" : true, "offset" : 36000 }],

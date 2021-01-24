@@ -1,8 +1,7 @@
 {
   "name" : "Asia/Ulan_Bator",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 25200 }],
-    ["-2032931252", { "is_dst" : false, "offset" : 25200 }],
+    ["-631152000", { "is_dst" : false, "offset" : 25200 }],
     ["252435600", { "is_dst" : false, "offset" : 28800 }],
     ["417974400", { "is_dst" : true, "offset" : 32400 }],
     ["433782000", { "is_dst" : false, "offset" : 28800 }],

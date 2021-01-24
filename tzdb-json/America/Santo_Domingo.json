@@ -1,9 +1,7 @@
 {
   "name" : "America/Santo_Domingo",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -16800 }],
-    ["-2524504824", { "is_dst" : false, "offset" : -16800 }],
-    ["-1159773600", { "is_dst" : false, "offset" : -18000 }],
+    ["-631152000", { "is_dst" : false, "offset" : -18000 }],
     ["-100119600", { "is_dst" : true, "offset" : -14400 }],
     ["-89668800", { "is_dst" : false, "offset" : -18000 }],
     ["-5770800", { "is_dst" : true, "offset" : -16200 }],

@@ -1,14 +1,7 @@
 {
   "name" : "ROK",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 30600 }],
-    ["-1948782472", { "is_dst" : false, "offset" : 30600 }],
-    ["-1830414600", { "is_dst" : false, "offset" : 32400 }],
-    ["-767350800", { "is_dst" : false, "offset" : 32400 }],
-    ["-681210000", { "is_dst" : true, "offset" : 36000 }],
-    ["-672228000", { "is_dst" : false, "offset" : 32400 }],
-    ["-654771600", { "is_dst" : true, "offset" : 36000 }],
-    ["-640864800", { "is_dst" : false, "offset" : 32400 }],
+    ["-631152000", { "is_dst" : false, "offset" : 32400 }],
     ["-623408400", { "is_dst" : true, "offset" : 36000 }],
     ["-609415200", { "is_dst" : false, "offset" : 32400 }],
     ["-588848400", { "is_dst" : true, "offset" : 36000 }],

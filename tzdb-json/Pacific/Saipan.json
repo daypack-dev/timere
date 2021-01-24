@@ -1,10 +1,7 @@
 {
   "name" : "Pacific/Saipan",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 36000 }],
-    ["-2177487540", { "is_dst" : false, "offset" : 36000 }],
-    ["-885549600", { "is_dst" : false, "offset" : 32400 }],
-    ["-802256400", { "is_dst" : false, "offset" : 36000 }],
+    ["-631152000", { "is_dst" : false, "offset" : 36000 }],
     ["-331891200", { "is_dst" : true, "offset" : 39600 }],
     ["-281610000", { "is_dst" : false, "offset" : 36000 }],
     ["-73728000", { "is_dst" : true, "offset" : 39600 }],

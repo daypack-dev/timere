@@ -1,6 +1,6 @@
 {
   "name" : "Etc/GMT-13",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -46800 }]
+    ["-631152000", { "is_dst" : false, "offset" : -46800 }]
   ]
 }

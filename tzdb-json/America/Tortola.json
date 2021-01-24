@@ -1,7 +1,6 @@
 {
   "name" : "America/Tortola",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -14400 }],
-    ["-1825098836", { "is_dst" : false, "offset" : -14400 }]
+    ["-631152000", { "is_dst" : false, "offset" : -14400 }]
   ]
 }

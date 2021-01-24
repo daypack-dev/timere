@@ -1,8 +1,6 @@
 {
   "name" : "Asia/Phnom_Penh",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 24124 }],
-    ["-2840164924", { "is_dst" : false, "offset" : 24124 }],
-    ["-1570084924", { "is_dst" : false, "offset" : 25200 }]
+    ["-631152000", { "is_dst" : false, "offset" : 25200 }]
   ]
 }

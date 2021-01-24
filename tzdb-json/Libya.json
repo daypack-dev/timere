@@ -1,8 +1,7 @@
 {
   "name" : "Libya",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 3600 }],
-    ["-1577926364", { "is_dst" : false, "offset" : 3600 }],
+    ["-631152000", { "is_dst" : false, "offset" : 3600 }],
     ["-574902000", { "is_dst" : true, "offset" : 7200 }],
     ["-568087200", { "is_dst" : false, "offset" : 3600 }],
     ["-512175600", { "is_dst" : true, "offset" : 7200 }],

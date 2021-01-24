@@ -1,9 +1,7 @@
 {
   "name" : "Asia/Baghdad",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 10656 }],
-    ["-2524532260", { "is_dst" : false, "offset" : 10656 }],
-    ["-1641005856", { "is_dst" : false, "offset" : 10800 }],
+    ["-631152000", { "is_dst" : false, "offset" : 10800 }],
     ["389048400", { "is_dst" : true, "offset" : 14400 }],
     ["402264000", { "is_dst" : false, "offset" : 10800 }],
     ["417906000", { "is_dst" : true, "offset" : 14400 }],

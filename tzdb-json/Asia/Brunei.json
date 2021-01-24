@@ -1,8 +1,6 @@
 {
   "name" : "Asia/Brunei",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 27000 }],
-    ["-1383464380", { "is_dst" : false, "offset" : 27000 }],
-    ["-1167636600", { "is_dst" : false, "offset" : 28800 }]
+    ["-631152000", { "is_dst" : false, "offset" : 28800 }]
   ]
 }

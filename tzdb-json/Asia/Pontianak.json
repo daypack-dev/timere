@@ -1,12 +1,7 @@
 {
   "name" : "Asia/Pontianak",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 26240 }],
-    ["-1946186240", { "is_dst" : false, "offset" : 26240 }],
-    ["-1172906240", { "is_dst" : false, "offset" : 27000 }],
-    ["-881220600", { "is_dst" : false, "offset" : 32400 }],
-    ["-766054800", { "is_dst" : false, "offset" : 27000 }],
-    ["-683883000", { "is_dst" : false, "offset" : 28800 }],
+    ["-631152000", { "is_dst" : false, "offset" : 28800 }],
     ["-620812800", { "is_dst" : false, "offset" : 27000 }],
     ["-189415800", { "is_dst" : false, "offset" : 28800 }],
     ["567964800", { "is_dst" : false, "offset" : 25200 }]

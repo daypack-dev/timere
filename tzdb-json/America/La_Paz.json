@@ -1,9 +1,6 @@
 {
   "name" : "America/La_Paz",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -16356 }],
-    ["-2524505244", { "is_dst" : false, "offset" : -16356 }],
-    ["-1205954844", { "is_dst" : true, "offset" : -12756 }],
-    ["-1192307244", { "is_dst" : false, "offset" : -14400 }]
+    ["-631152000", { "is_dst" : false, "offset" : -14400 }]
   ]
 }

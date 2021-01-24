@@ -1,9 +1,7 @@
 {
   "name" : "Asia/Anadyr",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 43200 }],
-    ["-1441194596", { "is_dst" : false, "offset" : 43200 }],
-    ["-1247572800", { "is_dst" : false, "offset" : 46800 }],
+    ["-631152000", { "is_dst" : false, "offset" : 46800 }],
     ["354884400", { "is_dst" : true, "offset" : 50400 }],
     ["370692000", { "is_dst" : false, "offset" : 46800 }],
     ["386420400", { "is_dst" : true, "offset" : 46800 }],

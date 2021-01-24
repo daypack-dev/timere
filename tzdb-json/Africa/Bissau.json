@@ -1,8 +1,7 @@
 {
   "name" : "Africa/Bissau",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -3600 }],
-    ["-1830380400", { "is_dst" : false, "offset" : -3600 }],
+    ["-631152000", { "is_dst" : false, "offset" : -3600 }],
     ["157770000", { "is_dst" : false, "offset" : 0 }]
   ]
 }

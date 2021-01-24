@@ -1,6 +1,6 @@
 {
   "name" : "HST",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -36000 }]
+    ["-631152000", { "is_dst" : false, "offset" : -36000 }]
   ]
 }

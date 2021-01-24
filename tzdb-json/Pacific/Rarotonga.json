@@ -1,8 +1,7 @@
 {
   "name" : "Pacific/Rarotonga",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -37800 }],
-    ["-2177414456", { "is_dst" : false, "offset" : -37800 }],
+    ["-631152000", { "is_dst" : false, "offset" : -37800 }],
     ["279714600", { "is_dst" : true, "offset" : -34200 }],
     ["289387800", { "is_dst" : false, "offset" : -36000 }],
     ["309952800", { "is_dst" : true, "offset" : -34200 }],

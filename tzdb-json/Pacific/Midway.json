@@ -1,7 +1,6 @@
 {
   "name" : "Pacific/Midway",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -39600 }],
-    ["-1861879032", { "is_dst" : false, "offset" : -39600 }]
+    ["-631152000", { "is_dst" : false, "offset" : -39600 }]
   ]
 }

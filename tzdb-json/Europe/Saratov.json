@@ -1,9 +1,7 @@
 {
   "name" : "Europe/Saratov",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 10800 }],
-    ["-1593820800", { "is_dst" : false, "offset" : 10800 }],
-    ["-1247540400", { "is_dst" : false, "offset" : 14400 }],
+    ["-631152000", { "is_dst" : false, "offset" : 14400 }],
     ["354916800", { "is_dst" : true, "offset" : 18000 }],
     ["370724400", { "is_dst" : false, "offset" : 14400 }],
     ["386452800", { "is_dst" : true, "offset" : 18000 }],

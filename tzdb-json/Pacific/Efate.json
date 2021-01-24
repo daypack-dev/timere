@@ -1,8 +1,7 @@
 {
   "name" : "Pacific/Efate",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 39600 }],
-    ["-1829387596", { "is_dst" : false, "offset" : 39600 }],
+    ["-631152000", { "is_dst" : false, "offset" : 39600 }],
     ["125409600", { "is_dst" : true, "offset" : 43200 }],
     ["133876800", { "is_dst" : false, "offset" : 39600 }],
     ["433256400", { "is_dst" : true, "offset" : 43200 }],

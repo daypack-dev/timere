@@ -1,7 +1,7 @@
 {
   "name" : "Antarctica/Davis",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 25200 }],
+    ["-631152000", { "is_dst" : false, "offset" : 25200 }],
     ["-409190400", { "is_dst" : false, "offset" : 25200 }],
     ["-163062000", { "is_dst" : false, "offset" : 0 }],
     ["-28857600", { "is_dst" : false, "offset" : 25200 }],

@@ -1,9 +1,7 @@
 {
   "name" : "Asia/Srednekolymsk",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 36000 }],
-    ["-1441188892", { "is_dst" : false, "offset" : 36000 }],
-    ["-1247565600", { "is_dst" : false, "offset" : 39600 }],
+    ["-631152000", { "is_dst" : false, "offset" : 39600 }],
     ["354891600", { "is_dst" : true, "offset" : 43200 }],
     ["370699200", { "is_dst" : false, "offset" : 39600 }],
     ["386427600", { "is_dst" : true, "offset" : 43200 }],

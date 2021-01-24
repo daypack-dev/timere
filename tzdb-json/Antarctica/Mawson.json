@@ -1,7 +1,7 @@
 {
   "name" : "Antarctica/Mawson",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 21600 }],
+    ["-631152000", { "is_dst" : false, "offset" : 21600 }],
     ["-501206400", { "is_dst" : false, "offset" : 21600 }],
     ["1255809600", { "is_dst" : false, "offset" : 18000 }]
   ]

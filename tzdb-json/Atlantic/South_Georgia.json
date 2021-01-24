@@ -1,7 +1,6 @@
 {
   "name" : "Atlantic/South_Georgia",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -7200 }],
-    ["-2524512832", { "is_dst" : false, "offset" : -7200 }]
+    ["-631152000", { "is_dst" : false, "offset" : -7200 }]
   ]
 }

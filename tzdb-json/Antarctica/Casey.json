@@ -1,7 +1,7 @@
 {
   "name" : "Antarctica/Casey",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 28800 }],
+    ["-631152000", { "is_dst" : false, "offset" : 28800 }],
     ["-31536000", { "is_dst" : false, "offset" : 28800 }],
     ["1255802400", { "is_dst" : false, "offset" : 39600 }],
     ["1267714800", { "is_dst" : false, "offset" : 28800 }],

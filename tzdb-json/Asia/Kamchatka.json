@@ -1,9 +1,7 @@
 {
   "name" : "Asia/Kamchatka",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 39600 }],
-    ["-1487759676", { "is_dst" : false, "offset" : 39600 }],
-    ["-1247569200", { "is_dst" : false, "offset" : 43200 }],
+    ["-631152000", { "is_dst" : false, "offset" : 43200 }],
     ["354888000", { "is_dst" : true, "offset" : 46800 }],
     ["370695600", { "is_dst" : false, "offset" : 43200 }],
     ["386424000", { "is_dst" : true, "offset" : 46800 }],

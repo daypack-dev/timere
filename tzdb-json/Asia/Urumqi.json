@@ -1,7 +1,6 @@
 {
   "name" : "Asia/Urumqi",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 21600 }],
-    ["-1325483420", { "is_dst" : false, "offset" : 21600 }]
+    ["-631152000", { "is_dst" : false, "offset" : 21600 }]
   ]
 }

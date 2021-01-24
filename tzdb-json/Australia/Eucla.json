@@ -1,14 +1,7 @@
 {
   "name" : "Australia/Eucla",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 31500 }],
-    ["-2337928528", { "is_dst" : false, "offset" : 31500 }],
-    ["-1672555500", { "is_dst" : true, "offset" : 35100 }],
-    ["-1665384300", { "is_dst" : false, "offset" : 31500 }],
-    ["-883637100", { "is_dst" : true, "offset" : 35100 }],
-    ["-876120300", { "is_dst" : false, "offset" : 31500 }],
-    ["-860395500", { "is_dst" : true, "offset" : 35100 }],
-    ["-844670700", { "is_dst" : false, "offset" : 31500 }],
+    ["-631152000", { "is_dst" : false, "offset" : 31500 }],
     ["152039700", { "is_dst" : true, "offset" : 35100 }],
     ["162926100", { "is_dst" : false, "offset" : 31500 }],
     ["436295700", { "is_dst" : true, "offset" : 35100 }],

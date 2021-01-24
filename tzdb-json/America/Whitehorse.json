@@ -1,15 +1,7 @@
 {
   "name" : "America/Whitehorse",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -32400 }],
-    ["-2188997988", { "is_dst" : false, "offset" : -32400 }],
-    ["-1632056400", { "is_dst" : true, "offset" : -28800 }],
-    ["-1615125600", { "is_dst" : false, "offset" : -32400 }],
-    ["-1596978000", { "is_dst" : true, "offset" : -28800 }],
-    ["-1583164800", { "is_dst" : false, "offset" : -32400 }],
-    ["-880203600", { "is_dst" : true, "offset" : -28800 }],
-    ["-769395600", { "is_dst" : true, "offset" : -28800 }],
-    ["-765381600", { "is_dst" : false, "offset" : -32400 }],
+    ["-631152000", { "is_dst" : false, "offset" : -32400 }],
     ["-147884400", { "is_dst" : true, "offset" : -25200 }],
     ["-131554800", { "is_dst" : false, "offset" : -32400 }],
     ["-81961200", { "is_dst" : false, "offset" : -28800 }],

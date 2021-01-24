@@ -1,9 +1,7 @@
 {
   "name" : "Asia/Yakutsk",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 28800 }],
-    ["-1579423138", { "is_dst" : false, "offset" : 28800 }],
-    ["-1247558400", { "is_dst" : false, "offset" : 32400 }],
+    ["-631152000", { "is_dst" : false, "offset" : 32400 }],
     ["354898800", { "is_dst" : true, "offset" : 36000 }],
     ["370706400", { "is_dst" : false, "offset" : 32400 }],
     ["386434800", { "is_dst" : true, "offset" : 36000 }],

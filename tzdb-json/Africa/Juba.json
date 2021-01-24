@@ -1,8 +1,7 @@
 {
   "name" : "Africa/Juba",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 7200 }],
-    ["-1230775588", { "is_dst" : false, "offset" : 7200 }],
+    ["-631152000", { "is_dst" : false, "offset" : 7200 }],
     ["10360800", { "is_dst" : true, "offset" : 10800 }],
     ["24786000", { "is_dst" : false, "offset" : 7200 }],
     ["41810400", { "is_dst" : true, "offset" : 10800 }],

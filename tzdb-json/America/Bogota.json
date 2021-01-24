@@ -1,9 +1,7 @@
 {
   "name" : "America/Bogota",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -17776 }],
-    ["-2707671824", { "is_dst" : false, "offset" : -17776 }],
-    ["-1739041424", { "is_dst" : false, "offset" : -18000 }],
+    ["-631152000", { "is_dst" : false, "offset" : -18000 }],
     ["704869200", { "is_dst" : true, "offset" : -14400 }],
     ["733896000", { "is_dst" : false, "offset" : -18000 }]
   ]

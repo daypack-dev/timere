@@ -1,9 +1,7 @@
 {
   "name" : "Asia/Aqtau",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 14400 }],
-    ["-1441164064", { "is_dst" : false, "offset" : 14400 }],
-    ["-1247544000", { "is_dst" : false, "offset" : 18000 }],
+    ["-631152000", { "is_dst" : false, "offset" : 18000 }],
     ["370724400", { "is_dst" : false, "offset" : 21600 }],
     ["386445600", { "is_dst" : true, "offset" : 21600 }],
     ["402256800", { "is_dst" : false, "offset" : 18000 }],

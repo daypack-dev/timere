@@ -1,16 +1,7 @@
 {
   "name" : "Australia/Lindeman",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 36000 }],
-    ["-2366790956", { "is_dst" : false, "offset" : 36000 }],
-    ["-1672560000", { "is_dst" : true, "offset" : 39600 }],
-    ["-1665388800", { "is_dst" : false, "offset" : 36000 }],
-    ["-883641600", { "is_dst" : true, "offset" : 39600 }],
-    ["-876124800", { "is_dst" : false, "offset" : 36000 }],
-    ["-860400000", { "is_dst" : true, "offset" : 39600 }],
-    ["-844675200", { "is_dst" : false, "offset" : 36000 }],
-    ["-828345600", { "is_dst" : true, "offset" : 39600 }],
-    ["-813225600", { "is_dst" : false, "offset" : 36000 }],
+    ["-631152000", { "is_dst" : false, "offset" : 36000 }],
     ["57686400", { "is_dst" : true, "offset" : 39600 }],
     ["67968000", { "is_dst" : false, "offset" : 36000 }],
     ["625593600", { "is_dst" : true, "offset" : 39600 }],

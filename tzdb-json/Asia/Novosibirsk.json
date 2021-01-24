@@ -1,9 +1,7 @@
 {
   "name" : "Asia/Novosibirsk",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 21600 }],
-    ["-1579476700", { "is_dst" : false, "offset" : 21600 }],
-    ["-1247551200", { "is_dst" : false, "offset" : 25200 }],
+    ["-631152000", { "is_dst" : false, "offset" : 25200 }],
     ["354906000", { "is_dst" : true, "offset" : 28800 }],
     ["370713600", { "is_dst" : false, "offset" : 25200 }],
     ["386442000", { "is_dst" : true, "offset" : 28800 }],

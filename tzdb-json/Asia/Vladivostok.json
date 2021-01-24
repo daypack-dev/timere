@@ -1,9 +1,7 @@
 {
   "name" : "Asia/Vladivostok",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 32400 }],
-    ["-1487321251", { "is_dst" : false, "offset" : 32400 }],
-    ["-1247562000", { "is_dst" : false, "offset" : 36000 }],
+    ["-631152000", { "is_dst" : false, "offset" : 36000 }],
     ["354895200", { "is_dst" : true, "offset" : 39600 }],
     ["370702800", { "is_dst" : false, "offset" : 36000 }],
     ["386431200", { "is_dst" : true, "offset" : 39600 }],

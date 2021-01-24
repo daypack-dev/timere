@@ -1,13 +1,7 @@
 {
   "name" : "Brazil/West",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -14400 }],
-    ["-1767211196", { "is_dst" : false, "offset" : -14400 }],
-    ["-1206954000", { "is_dst" : true, "offset" : -10800 }],
-    ["-1191358800", { "is_dst" : false, "offset" : -14400 }],
-    ["-1175371200", { "is_dst" : true, "offset" : -10800 }],
-    ["-1159822800", { "is_dst" : false, "offset" : -14400 }],
-    ["-633816000", { "is_dst" : true, "offset" : -10800 }],
+    ["-631152000", { "is_dst" : true, "offset" : -10800 }],
     ["-622065600", { "is_dst" : false, "offset" : -14400 }],
     ["-602280000", { "is_dst" : true, "offset" : -10800 }],
     ["-591829200", { "is_dst" : false, "offset" : -14400 }],

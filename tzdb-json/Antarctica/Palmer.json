@@ -1,7 +1,7 @@
 {
   "name" : "Antarctica/Palmer",
   "table" : [
-    ["-62167219200", { "is_dst" : true, "offset" : -10800 }],
+    ["-631152000", { "is_dst" : true, "offset" : -10800 }],
     ["-157766400", { "is_dst" : true, "offset" : -10800 }],
     ["-152658000", { "is_dst" : false, "offset" : -14400 }],
     ["-132955200", { "is_dst" : true, "offset" : -10800 }],

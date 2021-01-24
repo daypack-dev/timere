@@ -1,13 +1,7 @@
 {
   "name" : "America/Noronha",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -7200 }],
-    ["-1767217820", { "is_dst" : false, "offset" : -7200 }],
-    ["-1206961200", { "is_dst" : true, "offset" : -3600 }],
-    ["-1191366000", { "is_dst" : false, "offset" : -7200 }],
-    ["-1175378400", { "is_dst" : true, "offset" : -3600 }],
-    ["-1159830000", { "is_dst" : false, "offset" : -7200 }],
-    ["-633823200", { "is_dst" : true, "offset" : -3600 }],
+    ["-631152000", { "is_dst" : true, "offset" : -3600 }],
     ["-622072800", { "is_dst" : false, "offset" : -7200 }],
     ["-602287200", { "is_dst" : true, "offset" : -3600 }],
     ["-591836400", { "is_dst" : false, "offset" : -7200 }],

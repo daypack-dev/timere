@@ -1,9 +1,7 @@
 {
   "name" : "Asia/Oral",
   "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 10800 }],
-    ["-1441164324", { "is_dst" : false, "offset" : 10800 }],
-    ["-1247540400", { "is_dst" : false, "offset" : 18000 }],
+    ["-631152000", { "is_dst" : false, "offset" : 18000 }],
     ["354913200", { "is_dst" : true, "offset" : 21600 }],
     ["370720800", { "is_dst" : false, "offset" : 21600 }],
     ["386445600", { "is_dst" : true, "offset" : 21600 }],
