@@ -207,7 +207,9 @@ let transitions_of_zdump_lines (l : zdump_line list) : transition list =
         when x.date_time_local.tz = String "LMT"
           && y.date_time_local.tz = String "LMT" ->
         aux (succ line_num) rest
-      | x :: y :: rest when x.date_time_local.tz <> y.date_time_local.tz || x.offset <> y.offset ->
+      | x :: y :: rest
+        when x.date_time_local.tz <> y.date_time_local.tz
+          || x.offset <> y.offset ->
         aux (succ line_num) (y :: rest)
       | _ -> (line_num, l)
     in
@@ -393,18 +395,18 @@ let gen () =
         (s, l))
     |> Seq.map (fun (s, l) ->
         let l =
-          CCList.filter_map (fun (r : transition_record) ->
-              if r.end_exc <= actual_use_start || actual_use_end_exc <= r.start then
-                None
-              else
-              if r.start <= actual_use_start then
-                Some { r with start = actual_use_start }
-              else
-                Some { r with end_exc = actual_use_end_exc }
-            ) l
+          CCList.filter_map
+            (fun (r : transition_record) ->
+               if
+                 r.end_exc <= actual_use_start
+                 || actual_use_end_exc <= r.start
+               then None
+               else if r.start <= actual_use_start then
+                 Some { r with start = actual_use_start }
+               else Some { r with end_exc = actual_use_end_exc })
+            l
         in
-        (s, l)
-      )
+        (s, l))
     |> CCList.of_seq
   in
   print_newline ();
@@ -430,54 +432,51 @@ let gen () =
         write_line "type db = (string, table) Hashtbl.t";
         write_line "";
         write_line "let db : db =";
-        write_line (Printf.sprintf "  Hashtbl.create %d" (List.length all_time_zones));
+        write_line
+          (Printf.sprintf "  Hashtbl.create %d" (List.length all_time_zones));
         write_line "";
         let add_count = ref 0 in
         List.iter
           (fun (s, l) ->
              let l =
-               List.fold_left (fun acc (r : transition_record) ->
-                   match acc with
-                   | [] -> [[r]]
-                   | x :: xs ->
-                     if List.length x = array_literal_max_size then
-                       [r] :: x :: xs
-                     else
-                       (r :: x) :: xs
-                 )
-                 []
-                 l
+               List.fold_left
+                 (fun acc (r : transition_record) ->
+                    match acc with
+                    | [] -> [ [ r ] ]
+                    | x :: xs ->
+                      if List.length x = array_literal_max_size then
+                        [ r ] :: x :: xs
+                      else (r :: x) :: xs)
+                 [] l
                |> List.map List.rev
              in
              List.iteri
                (fun i rs ->
-                  if !add_count mod 50 = 0 then
-                    write_line "let () = ()";
+                  if !add_count mod 50 = 0 then write_line "let () = ()";
                   add_count := !add_count + 1;
                   if i = 0 then
                     write_line (Printf.sprintf "  ;Hashtbl.add db %S (" s)
-                  else (
-                    write_line (Printf.sprintf "  ;Hashtbl.add db %S (Array.append (Hashtbl.find db %S)" s s);
-                  );
+                  else
+                    write_line
+                      (Printf.sprintf
+                         "  ;Hashtbl.add db %S (Array.append (Hashtbl.find db %S)" s
+                         s);
                   write_line "      [|";
-                  List.iter (fun r ->
-                      write_line
-                        (Printf.sprintf
-                           "        ((%LdL), { is_dst = %b; offset = (%d) });" r.start
-                           r.is_dst r.offset);
-                    )
+                  List.iter
+                    (fun r ->
+                       write_line
+                         (Printf.sprintf
+                            "        ((%LdL), { is_dst = %b; offset = (%d) });"
+                            r.start r.is_dst r.offset))
                     rs;
-                  write_line "      |])";
-               )
+                  write_line "      |])")
                l;
-             write_line "";
-          )
+             write_line "")
           tables_utc;
         write_line "";
         write_line "let lookup name = Hashtbl.find_opt db name";
         write_line "";
-        write_line
-          "let available_time_zones = CCHashtbl.keys_list db");
+        write_line "let available_time_zones = CCHashtbl.keys_list db");
   Printf.printf "Generating %s\n" tz_constants_file_name;
   CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
     tz_constants_file_name (fun oc ->
