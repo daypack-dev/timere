@@ -1,6 +1,7 @@
 {
   "name" : "Pacific/Tarawa",
   "table" : [
-    ["946684800", { "is_dst" : false, "offset" : 43200 }]
+    ["-62167219200", { "is_dst" : false, "offset" : 43200 }],
+    ["-2177494324", { "is_dst" : false, "offset" : 43200 }]
   ]
 }

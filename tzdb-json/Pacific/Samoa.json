@@ -1,6 +1,7 @@
 {
   "name" : "Pacific/Samoa",
   "table" : [
-    ["946684800", { "is_dst" : false, "offset" : -39600 }]
+    ["-62167219200", { "is_dst" : false, "offset" : -39600 }],
+    ["-1861879032", { "is_dst" : false, "offset" : -39600 }]
   ]
 }

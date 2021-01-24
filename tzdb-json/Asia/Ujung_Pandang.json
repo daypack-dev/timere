@@ -1,6 +1,10 @@
 {
   "name" : "Asia/Ujung_Pandang",
   "table" : [
-    ["946684800", { "is_dst" : false, "offset" : 28800 }]
+    ["-62167219200", { "is_dst" : false, "offset" : 28656 }],
+    ["-1577951856", { "is_dst" : false, "offset" : 28656 }],
+    ["-1172908656", { "is_dst" : false, "offset" : 28800 }],
+    ["-880272000", { "is_dst" : false, "offset" : 32400 }],
+    ["-766054800", { "is_dst" : false, "offset" : 28800 }]
   ]
 }

@@ -1,6 +1,7 @@
 {
   "name" : "Asia/Muscat",
   "table" : [
-    ["946684800", { "is_dst" : false, "offset" : 14400 }]
+    ["-62167219200", { "is_dst" : false, "offset" : 14400 }],
+    ["-1577936472", { "is_dst" : false, "offset" : 14400 }]
   ]
 }

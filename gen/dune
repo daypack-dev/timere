@@ -25,5 +25,6 @@
             containers
             fileutils
             ptime
+            timere.tzdb.none
  )
 )

@@ -59,20 +59,6 @@ let year_start = 1850
 
 let year_end_exc = 2100
 
-let actual_use_year_start = 2000
-
-let actual_use_year_end_exc = 2050
-
-let actual_use_start =
-  Ptime.of_date_time ((actual_use_year_start, 1, 1), ((0, 0, 0), 0))
-  |> CCOpt.get_exn
-  |> Ptime_utils.timestamp_of_ptime
-
-let actual_use_end_exc =
-  Ptime.of_date_time ((actual_use_year_end_exc, 1, 1), ((0, 0, 0), 0))
-  |> CCOpt.get_exn
-  |> Ptime_utils.timestamp_of_ptime
-
 let human_int_of_month s =
   match s with
   | "Jan" -> 1
@@ -338,8 +324,7 @@ let gen () =
     List.combine all_time_zones transitions
     |> CCList.to_seq
     |> Seq.map (fun (s, l) ->
-        Printf.printf "Constructing transition table for time_zone: %s\n" s;
-        flush stdout;
+        Printf.printf "Constructing transition table for time_zone: %s\n%!" s;
         let l =
           l
           |> List.map transition_record_indexed_by_utc_of_transition
@@ -378,7 +363,7 @@ let gen () =
                          "Unrecognized time zone during special case \
                           handling: %s"
                          s)))
-          | x :: xs ->
+          | (x :: _) ->
             if x.start <> min_timestamp then
               let filler =
                 {
@@ -389,22 +374,8 @@ let gen () =
                   offset = x.offset;
                 }
               in
-              filler :: x :: xs
-            else x :: xs
-        in
-        (s, l))
-    |> Seq.map (fun (s, l) ->
-        let l =
-          CCList.filter_map
-            (fun (r : transition_record) ->
-               if
-                 r.end_exc <= actual_use_start
-                 || actual_use_end_exc <= r.start
-               then None
-               else if r.start <= actual_use_start then
-                 Some { r with start = actual_use_start }
-               else Some { r with end_exc = actual_use_end_exc })
-            l
+              filler :: l
+            else l
         in
         (s, l))
     |> CCList.of_seq
@@ -412,75 +383,52 @@ let gen () =
   print_newline ();
   Printf.printf "Number of time_zones: %d\n" (List.length all_time_zones);
   print_newline ();
+  Printf.printf "Maximum number of records: %d\n"
+    (CCList.fold_left (fun x (_,l) -> max (List.length l) x) 0 tables_utc);
+  print_newline ();
   FileUtil.mkdir ~parent:true output_dir;
   Printf.printf "Generating %s\n" output_list_file_name;
   CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
     output_list_file_name (fun oc ->
         let write_line = CCIO.write_line oc in
         List.iter write_line all_time_zones);
+
   Printf.printf "Generating %s\n" output_file_name;
-  CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
-    output_file_name (fun oc ->
-        let write_line = CCIO.write_line oc in
-        write_line "type entry = {";
-        write_line "  is_dst : bool;";
-        write_line "  offset : int;";
-        write_line "}";
-        write_line "";
-        write_line "type table = (int64 * entry) array";
-        write_line "";
-        write_line "type db = (string, table) Hashtbl.t";
-        write_line "";
-        write_line "let db : db =";
-        write_line
-          (Printf.sprintf "  Hashtbl.create %d" (List.length all_time_zones));
-        write_line "";
-        let add_count = ref 0 in
-        List.iter
-          (fun (s, l) ->
-             let l =
-               List.fold_left
-                 (fun acc (r : transition_record) ->
-                    match acc with
-                    | [] -> [ [ r ] ]
-                    | x :: xs ->
-                      if List.length x = array_literal_max_size then
-                        [ r ] :: x :: xs
-                      else (r :: x) :: xs)
-                 [] l
-               |> List.map List.rev
-             in
-             List.iteri
-               (fun i rs ->
-                  if !add_count mod 50 = 0 then write_line "let () = ()";
-                  add_count := !add_count + 1;
-                  if i = 0 then
-                    write_line (Printf.sprintf "  ;Hashtbl.add db %S (" s)
-                  else
-                    write_line
-                      (Printf.sprintf
-                         "  ;Hashtbl.add db %S (Array.append (Hashtbl.find db %S)" s
-                         s);
-                  write_line "      [|";
-                  List.iter
-                    (fun r ->
-                       write_line
-                         (Printf.sprintf
-                            "        ((%LdL), { is_dst = %b; offset = (%d) });"
-                            r.start r.is_dst r.offset))
-                    rs;
-                  write_line "      |])")
-               l;
-             write_line "")
-          tables_utc;
-        write_line "";
-        write_line "let lookup name = Hashtbl.find_opt db name";
-        write_line "";
-        write_line "let available_time_zones = CCHashtbl.keys_list db");
+  let hashtbl_utc : (string, Timere_tzdb.table) Hashtbl.t =
+    tables_utc
+    |> List.map (fun (s,l) ->
+        let l =
+          List.map (fun r ->
+              (r.start, {Timere_tzdb. is_dst = r.is_dst ; offset = r.offset}))
+            l
+        in
+        (s, CCArray.of_list l)
+      )
+    |> CCHashtbl.of_list
+  in
+      
+  CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc ] output_file_name
+    begin fun oc ->
+      Printf.fprintf oc {x|
+type entry = {
+  is_dst : bool;
+  offset : int;
+}
+type table = (int64 * entry) array
+type db = (string, table) Hashtbl.t
+
+let db : db = Marshal.from_string %S 0
+
+let lookup name = Hashtbl.find_opt db name
+
+let available_time_zones = CCHashtbl.keys_list db
+|x}
+        (Marshal.to_string hashtbl_utc []);
+    end;
+  
   Printf.printf "Generating %s\n" tz_constants_file_name;
   CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
     tz_constants_file_name (fun oc ->
-        let write_line = CCIO.write_line oc in
         let greatest_neg_tz_offset_s =
           List.fold_left
             (fun pick (_, transitions) ->
@@ -498,13 +446,14 @@ let gen () =
                  pick transitions)
             0 tables_utc
         in
-        write_line
-          (Printf.sprintf "let greatest_neg_tz_offset_s = %d"
-             greatest_neg_tz_offset_s);
-        write_line "";
-        write_line
-          (Printf.sprintf "let greatest_pos_tz_offset_s = %d"
-             greatest_pos_tz_offset_s));
+        Printf.fprintf oc {|
+let greatest_neg_tz_offset_s = %d
+let greatest_pos_tz_offset_s = %d
+|}
+          greatest_neg_tz_offset_s
+          greatest_pos_tz_offset_s
+      );
+
   print_endline "Generating tzdb JSON";
   List.combine all_time_zones_in_parts tables_utc
   |> List.iter (fun (time_zone_parts, (name, transitions)) ->

@@ -1,6 +1,10 @@
 {
   "name" : "Africa/Douala",
   "table" : [
-    ["946684800", { "is_dst" : false, "offset" : 3600 }]
+    ["-62167219200", { "is_dst" : false, "offset" : 0 }],
+    ["-2035584815", { "is_dst" : false, "offset" : 0 }],
+    ["-1940889600", { "is_dst" : false, "offset" : 815 }],
+    ["-1767226415", { "is_dst" : false, "offset" : 1800 }],
+    ["-1588465800", { "is_dst" : false, "offset" : 3600 }]
   ]
 }

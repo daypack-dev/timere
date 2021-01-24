@@ -1,6 +1,8 @@
 {
   "name" : "Pacific/Port_Moresby",
   "table" : [
-    ["946684800", { "is_dst" : false, "offset" : 36000 }]
+    ["-62167219200", { "is_dst" : false, "offset" : 35312 }],
+    ["-2840176120", { "is_dst" : false, "offset" : 35312 }],
+    ["-2366790512", { "is_dst" : false, "offset" : 36000 }]
   ]
 }

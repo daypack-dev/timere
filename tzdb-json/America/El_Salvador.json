@@ -1,6 +1,11 @@
 {
   "name" : "America/El_Salvador",
   "table" : [
-    ["946684800", { "is_dst" : false, "offset" : -21600 }]
+    ["-62167219200", { "is_dst" : false, "offset" : -21600 }],
+    ["-1546279392", { "is_dst" : false, "offset" : -21600 }],
+    ["547020000", { "is_dst" : true, "offset" : -18000 }],
+    ["559717200", { "is_dst" : false, "offset" : -21600 }],
+    ["578469600", { "is_dst" : true, "offset" : -18000 }],
+    ["591166800", { "is_dst" : false, "offset" : -21600 }]
   ]
 }

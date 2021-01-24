@@ -1,6 +1,6 @@
 {
   "name" : "UCT",
   "table" : [
-    ["946684800", { "is_dst" : false, "offset" : 0 }]
+    ["-62167219200", { "is_dst" : false, "offset" : 0 }]
   ]
 }
