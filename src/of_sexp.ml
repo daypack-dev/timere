@@ -50,7 +50,7 @@ let ints_of_sexp_list (x : CCSexp.t) =
       (Printf.sprintf "Expected list for ints: %s" (CCSexp.to_string x))
   | `List l -> List.map int_of_sexp l
 
-let tz_of_sexp (x : CCSexp.t) =
+let tz_make_of_sexp (x : CCSexp.t) =
   match x with
   | `Atom s -> (
       match Time_zone.make s with
@@ -78,10 +78,10 @@ let tz_info_of_sexp (x : CCSexp.t) =
     invalid_data (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x))
   | `List l -> (
       match l with
-      | [ `Atom "tz"; x ] -> `Tz_only (tz_of_sexp x)
+      | [ `Atom "tz"; x ] -> `Tz_only (tz_make_of_sexp x)
       | [ `Atom "tz_offset_s"; x ] -> `Tz_offset_s_only (int_of_sexp x)
       | [ `Atom "tz_and_tz_offset_s"; tz; tz_offset_s ] ->
-        `Tz_and_tz_offset_s (tz_of_sexp tz, int_of_sexp tz_offset_s)
+        `Tz_and_tz_offset_s (tz_make_of_sexp tz, int_of_sexp tz_offset_s)
       | _ ->
         invalid_data
           (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x)))
@@ -304,7 +304,7 @@ let of_sexp (x : CCSexp.t) =
           let n = Duration.of_seconds (int64_of_sexp n) in
           lengthen n (aux x)
         | [ `Atom "with_tz"; n; x ] ->
-          let tz = tz_of_sexp n in
+          let tz = tz_make_of_sexp n in
           with_tz tz (aux x)
         | `Atom "inter" :: l -> inter (List.map aux l)
         | `Atom "union" :: l -> union (List.map aux l)

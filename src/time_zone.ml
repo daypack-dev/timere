@@ -1,6 +1,6 @@
 include Timere_tzdb
 
-type table = (int64 * entry) array
+type table' = (int64 * entry) array
 
 type record = {
   recorded_offsets : int array;
@@ -18,46 +18,68 @@ type 'a local_result =
   | `Ambiguous of 'a * 'a
   ]
 
-let check_table (table : table) : bool =
-  let _, has_no_dup =
-    CCArray.fold_while
-      (fun (acc, _) (offset, _) ->
-         if Int64_set.mem offset acc then ((acc, false), `Stop)
-         else ((Int64_set.add offset acc, true), `Continue))
-      (Int64_set.empty, true) table
+let check_table ((offsets, entries) : table) : bool =
+  let size = Bigarray.Array1.dim offsets in
+  assert (size = Array.length entries);
+  let has_no_dup =
+    let seen = ref Int64_set.empty in
+    let has_no_dup = ref true in
+    let i = ref 0 in
+    while !has_no_dup && !i < size do
+      let offset = Bigarray.Array1.get offsets !i in
+      (
+        if Int64_set.mem offset !seen then
+          has_no_dup := false
+        else
+          seen := Int64_set.add offset !seen
+      );
+      i := !i + 1;
+    done;
+    !has_no_dup
   in
-  let _, is_sorted =
-    CCArray.fold_while
-      (fun (last, _) (offset, _) ->
-         match last with
-         | None -> ((Some offset, true), `Continue)
-         | Some last ->
-           if last < offset then ((Some offset, true), `Continue)
-           else ((Some offset, false), `Stop))
-      (None, true) table
+  let is_sorted =
+    let i = ref 0 in
+    let is_sorted = ref true in
+    while !is_sorted && !i < size do
+      (
+        if !i > 0 then
+          let cur = Bigarray.Array1.get offsets !i in
+          let prev = Bigarray.Array1.get offsets (!i - 1) in
+          if cur < prev then is_sorted := false;
+      );
+      i := !i + 1;
+    done;
+    !is_sorted
   in
   has_no_dup && is_sorted
 
-let process_table (table : table) : record =
-  let len = Array.length table in
-  if len = 0 then failwith "Time zone record table is empty"
+let process_table ((offsets, entries) : table) : record =
+  let size = Bigarray.Array1.dim offsets in
+  assert (size = Array.length entries);
+  if size = 0 then failwith "Time zone record table is empty"
   else
-    let table =
-      let first_row = table.(0) in
-      if Constants.timestamp_min < fst first_row then
-        Array.append [| (Constants.timestamp_min, snd first_row) |] table
+    let (offsets, entries) =
+      let first_offset = Bigarray.Array1.get offsets 0 in
+      let first_entry = entries.(0) in
+      if Constants.timestamp_min < first_offset then
+        let offsets' = Bigarray.Array1.create (Bigarray.Array1.kind offsets) (Bigarray.Array1.layout offsets) (size + 1) in
+        let sub = Bigarray.Array1.sub offsets' 1 size in
+        Bigarray.Array1.set offsets' 0 Constants.timestamp_min;
+        Bigarray.Array1.blit offsets sub;
+        (offsets', Array.append [| first_entry |] entries)
       else (
-        table.(0) <- (Constants.timestamp_min, snd first_row);
-        table)
+        Bigarray.Array1.set offsets 0 Constants.timestamp_min;
+        (offsets, entries)
+      )
     in
     let recorded_offsets =
       Array.fold_left
-        (fun acc (_, entry) -> Int_set.add entry.offset acc)
-        Int_set.empty table
+        (fun acc entry -> Int_set.add entry.offset acc)
+        Int_set.empty entries
       |> Int_set.to_list
       |> CCArray.of_list
     in
-    { recorded_offsets; table }
+    { recorded_offsets; table = (offsets, entries) }
 
 let lookup_ref : (string -> Timere_tzdb.table option) ref = ref lookup
 
