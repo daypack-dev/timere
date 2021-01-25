@@ -222,6 +222,10 @@ module Time_zone : sig
       One use of this is to create a time zone for [to_string] functions.
   *)
 
+  val to_sexp_string : t -> string
+
+  val of_sexp_string : string -> (t, unit) result
+
   val to_json_string : t -> string
 
   val of_json_string : string -> (t, unit) result
