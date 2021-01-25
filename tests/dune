@@ -23,6 +23,12 @@
 )
 
 (rule
+ (targets bigarray_utils.ml)
+ (deps    ../src/bigarray_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
  (targets ptime_utils.ml)
  (deps    ../src/ptime_utils.ml)
  (action  (copy %{deps} %{targets}))
@@ -151,5 +157,6 @@
             containers
             yojson
             fmt
+            bigarray
             )
  )

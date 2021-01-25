@@ -26,5 +26,6 @@
             fileutils
             ptime
             timere.tzdb.none
+            bigarray
  )
 )

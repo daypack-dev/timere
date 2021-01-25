@@ -18,5 +18,6 @@
             seq
             yojson
             fmt
+            bigarray
  )
 )
