@@ -188,7 +188,7 @@ let lookup_timestamp_local (t : t) timestamp : entry local_result =
         `Ambiguous (x, y)
       | Some _, Some _, Some _ -> failwith "Unexpected case")
 
-let transition_seq (t : t) : ((int64 * int64) * entry) Seq.t =
+let to_transition_seq (t : t) : ((int64 * int64) * entry) Seq.t =
   let table = t.record.table in
   let offsets, entries = table in
   let size = Bigarray.Array1.dim offsets in
@@ -212,8 +212,8 @@ let transition_seq (t : t) : ((int64 * int64) * entry) Seq.t =
     )
   |> aux
 
-let transitions (t : t) : ((int64 * int64) * entry) list =
-  CCList.of_seq @@ transition_seq t
+let to_transitions (t : t) : ((int64 * int64) * entry) list =
+  CCList.of_seq @@ to_transition_seq t
 
 let of_transitions ~name (l : (int64 * entry) list) : (t, unit) result =
   let table =
@@ -300,7 +300,7 @@ let to_sexp (t : t) : CCSexp.t =
               )
             ]
           )
-          (transitions t)
+          (to_transitions t)
       )
     )
   )
@@ -359,7 +359,7 @@ let to_json_string (t : t) : string =
         ("name", `String t.name);
         ( "table",
           `List
-            (transition_seq t
+            (to_transition_seq t
              |> Seq.map (fun ((start, _), entry) ->
                  `List
                    [

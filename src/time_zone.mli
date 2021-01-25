@@ -29,9 +29,9 @@ val lookup_timestamp_local : t -> int64 -> entry local_result
 
 val of_transitions : name:string -> (int64 * entry) list -> (t, unit) result
 
-val transitions : t -> ((int64 * int64) * entry) list
+val to_transitions : t -> ((int64 * int64) * entry) list
 
-val transition_seq : t -> ((int64 * int64) * entry) Seq.t
+val to_transition_seq : t -> ((int64 * int64) * entry) Seq.t
 
 val offset_is_recorded : int -> t -> bool
 
