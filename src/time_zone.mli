@@ -5,6 +5,10 @@ type entry = {
   offset : int;
 }
 
+type table =
+  (int64, Bigarray.int64_elt, Bigarray.c_layout) Bigarray.Array1.t *
+  entry array
+
 type 'a local_result =
   [ `None
   | `Single of 'a
@@ -29,7 +33,7 @@ val lookup_timestamp_local : t -> int64 -> entry local_result
 
 module Raw : sig
   val table_of_transitions :
-    (int64 * entry) list -> (Timere_tzdb.table, unit) result
+    (int64 * entry) list -> (table, unit) result
 
   val of_transitions : name:string -> (int64 * entry) list -> (t, unit) result
 

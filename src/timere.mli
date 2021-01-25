@@ -223,15 +223,18 @@ module Time_zone : sig
   *)
 
   (** {2 Importing and exporting}*)
-
   type entry = {
     is_dst : bool;
     offset : int;
   }
 
+  type table =
+    (int64, Bigarray.int64_elt, Bigarray.c_layout) Bigarray.Array1.t *
+    entry array
+
   module Raw : sig
     val table_of_transitions :
-      (int64 * entry) list -> (Timere_tzdb.table, unit) result
+      (int64 * entry) list -> (table, unit) result
 
     val of_transitions : name:string -> (int64 * entry) list -> (t, unit) result
 
