@@ -1,7 +1,5 @@
 include Timere_tzdb
 
-type table' = (int64 * entry) array
-
 type record = {
   recorded_offsets : int array;
   table : table;
@@ -26,7 +24,7 @@ let check_table ((offsets, entries) : table) : bool =
     let has_no_dup = ref true in
     let i = ref 0 in
     while !has_no_dup && !i < size do
-      let offset = Bigarray.Array1.get offsets !i in
+      let offset = offsets.{!i} in
       (
         if Int64_set.mem offset !seen then
           has_no_dup := false
@@ -43,8 +41,8 @@ let check_table ((offsets, entries) : table) : bool =
     while !is_sorted && !i < size do
       (
         if !i > 0 then
-          let cur = Bigarray.Array1.get offsets !i in
-          let prev = Bigarray.Array1.get offsets (!i - 1) in
+          let cur = offsets.{!i} in
+          let prev = offsets.{!i - 1} in
           if cur < prev then is_sorted := false;
       );
       i := !i + 1;
@@ -59,16 +57,16 @@ let process_table ((offsets, entries) : table) : record =
   if size = 0 then failwith "Time zone record table is empty"
   else
     let (offsets, entries) =
-      let first_offset = Bigarray.Array1.get offsets 0 in
+      let first_offset = offsets.{0} in
       let first_entry = entries.(0) in
       if Constants.timestamp_min < first_offset then
-        let offsets' = Bigarray.Array1.create (Bigarray.Array1.kind offsets) (Bigarray.Array1.layout offsets) (size + 1) in
+        let offsets' = Bigarray.Array1.create Bigarray.Int64 Bigarray.c_layout (size + 1) in
         let sub = Bigarray.Array1.sub offsets' 1 size in
-        Bigarray.Array1.set offsets' 0 Constants.timestamp_min;
+        offsets'.{0} <- Constants.timestamp_min;
         Bigarray.Array1.blit offsets sub;
         (offsets', Array.append [| first_entry |] entries)
       else (
-        Bigarray.Array1.set offsets 0 Constants.timestamp_min;
+        offsets.{0} <- Constants.timestamp_min;
         (offsets, entries)
       )
     in
@@ -81,13 +79,12 @@ let process_table ((offsets, entries) : table) : record =
     in
     { recorded_offsets; table = (offsets, entries) }
 
-let lookup_ref : (string -> Timere_tzdb.table option) ref = ref lookup
+let lookup_ref : (string -> table option) ref = ref lookup
 
 let lookup_record name : record option =
   name
   |> !lookup_ref
-  |> CCOpt.map (fun (idx, slots) ->
-      let table = Array.mapi (fun i slot -> idx.{i},slot) slots in
+  |> CCOpt.map (fun table ->
       assert (check_table table);
       process_table table)
 
@@ -95,8 +92,10 @@ let name t = t.name
 
 let equal t1 t2 =
   t1.name = t2.name
-  && Array.length t1.record.table = Array.length t2.record.table
-  && CCArray.for_all2 (fun e1 e2 -> e1 = e2) t1.record.table t2.record.table
+  && Bigarray.Array1.dim (fst t1.record.table) =
+     Bigarray.Array1.dim (fst t2.record.table)
+  && Array.length (snd t1.record.table) = Array.length (snd t2.record.table)
+  && CCArray.for_all2 (fun e1 e2 -> e1 = e2) (snd t1.record.table) (snd t2.record.table)
 
 let make name : (t, unit) result =
   match lookup_record name with
@@ -111,30 +110,36 @@ let utc : t =
     name = "UTC";
     record =
       process_table
-        [| (Constants.timestamp_min, { is_dst = false; offset = 0 }) |];
+        (Bigarray.Array1.of_array Bigarray.Int64 Bigarray.C_layout
+           [|Constants.timestamp_min|],
+         [| { is_dst = false; offset = 0 } |]
+        )
   }
 
 let dummy_entry : entry = { is_dst = false; offset = 0 }
 
-let bsearch_table timestamp (table : table) =
-  CCArray.bsearch
-    ~cmp:(fun (k1, _) (k2, _) -> Int64.compare k1 k2)
-    (timestamp, dummy_entry) table
+let bsearch_table timestamp ((offsets, _) : table) =
+  Bigarray_utils.bsearch
+    ~cmp:Int64.compare
+    timestamp offsets
 
 let lookup_timestamp_utc (t : t) timestamp =
   let table = t.record.table in
+  let entries = snd table in
   match bsearch_table timestamp table with
-  | `At i -> Some (snd table.(i))
-  | `All_lower -> Some (snd table.(Array.length table - 1))
+  | `At i -> Some entries.(i)
+  | `All_lower -> Some (entries.(Array.length entries - 1))
   | `All_bigger -> None
-  | `Just_after i -> Some (snd table.(i))
+  | `Just_after i -> Some entries.(i)
   | `Empty -> None
 
-let local_interval_of_table (table : table) (i : int) =
-  let start_utc, entry = table.(i) in
+let local_interval_of_table ((offsets, entries) : table) (i : int) =
+  let size = Bigarray.Array1.dim offsets in
+  let start_utc = offsets.{i} in
+  let entry = entries.(i) in
   let end_exc_utc =
-    if i = Array.length table - 1 then Constants.timestamp_max
-    else fst table.(i + 1)
+    if i = size - 1 then Constants.timestamp_max
+    else offsets.{i + 1}
   in
   ( Int64.add start_utc (Int64.of_int entry.offset),
     Int64.add end_exc_utc (Int64.of_int entry.offset) )
@@ -143,10 +148,12 @@ let interval_mem (t : int64) ((x, y) : int64 * int64) = x <= t && t < y
 
 let lookup_timestamp_local (t : t) timestamp : entry local_result =
   let table = t.record.table in
+  let offsets, entries = table in
+  let size = Bigarray.Array1.dim offsets in
   let index =
     match bsearch_table timestamp table with
     | `At i -> Some i
-    | `All_lower -> Some (Array.length table - 1)
+    | `All_lower -> Some (size - 1)
     | `All_bigger -> Some 0
     | `Just_after i -> Some i
     | `Empty -> None
@@ -158,19 +165,19 @@ let lookup_timestamp_local (t : t) timestamp : entry local_result =
         if
           index > 0
           && interval_mem timestamp (local_interval_of_table table (index - 1))
-        then Some (snd table.(index - 1))
+        then Some entries.(index - 1)
         else None
       in
       let x2 =
         if interval_mem timestamp (local_interval_of_table table index) then
-          Some (snd table.(index))
+          Some entries.(index)
         else None
       in
       let x3 =
         if
-          index < Array.length table - 1
+          index < size - 1
           && interval_mem timestamp (local_interval_of_table table (index + 1))
-        then Some (snd table.(index + 1))
+        then Some entries.(index + 1)
         else None
       in
       match (x1, x2, x3) with
@@ -183,6 +190,8 @@ let lookup_timestamp_local (t : t) timestamp : entry local_result =
 
 let transition_seq (t : t) : ((int64 * int64) * entry) Seq.t =
   let table = t.record.table in
+  let offsets, entries = table in
+  let size = Bigarray.Array1.dim offsets in
   let rec aux s =
     match s () with
     | Seq.Nil -> Seq.empty
@@ -197,7 +206,11 @@ let transition_seq (t : t) : ((int64 * int64) * entry) Seq.t =
               ( ((k1, k2), entry1),
                 aux (fun () -> Seq.Cons ((k2, entry2), rest)) ))
   in
-  CCArray.to_seq table |> aux
+  OSeq.(0 --^ size)
+  |> OSeq.map (fun i ->
+      (offsets.{i}, entries.(i))
+    )
+  |> aux
 
 let transitions (t : t) : ((int64 * int64) * entry) list =
   CCList.of_seq @@ transition_seq t
@@ -209,7 +222,11 @@ let make_offset_only ?(name = "dummy") (offset : int) =
   {
     name;
     record =
-      process_table [| (Constants.timestamp_min, { is_dst = false; offset }) |];
+      process_table
+        (Bigarray.Array1.of_array Bigarray.Int64 Bigarray.C_layout
+           [|Constants.timestamp_min|],
+         [| { is_dst = false; offset } |]
+        )
   }
 
 let of_json_string s : (t, unit) result =
@@ -247,7 +264,16 @@ let of_json_string s : (t, unit) result =
               let entry = Timere_tzdb.{ is_dst; offset } in
               (start, entry)
             | _ -> raise Invalid_data)
-        |> Array.of_list
+        |> List.split
+        |> (fun (offsets, entries) ->
+            let offsets =
+              offsets
+              |> Array.of_list
+              |> Bigarray.Array1.of_array Bigarray.Int64 Bigarray.C_layout
+            in
+            let entries = Array.of_list entries in
+            (offsets, entries)
+          )
       in
       if check_table table then Ok { name; record = process_table table }
       else raise Invalid_data
@@ -261,8 +287,8 @@ let to_json_string (t : t) : string =
         ("name", `String t.name);
         ( "table",
           `List
-            (Array.to_list t.record.table
-             |> List.map (fun (start, entry) ->
+            (transition_seq t
+             |> Seq.map (fun ((start, _), entry) ->
                  `List
                    [
                      `String (Int64.to_string start);
@@ -271,7 +297,9 @@ let to_json_string (t : t) : string =
                          ("is_dst", `Bool entry.is_dst);
                          ("offset", `Int entry.offset);
                        ];
-                   ])) );
+                   ])
+             |> CCList.of_seq
+            ) );
       ]
   in
   Yojson.Basic.to_string json
