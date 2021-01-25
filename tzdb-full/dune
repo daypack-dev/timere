@@ -1,6 +1,6 @@
 (rule
  (targets timere_tzdb.ml)
- (deps    (:gen ../gen/gen_tzdb_full.exe))
+ (deps    (:gen ../gen-build/gen_tzdb_full.exe))
  (action  (run %{gen} -o %{targets}))
 )
 
