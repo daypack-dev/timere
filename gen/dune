@@ -25,6 +25,7 @@
             containers
             fileutils
             ptime
+            timere
             timere.tzdb.none
             bigarray
  )

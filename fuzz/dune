@@ -23,6 +23,18 @@
 )
 
 (rule
+ (targets of_sexp_utils.ml)
+ (deps    ../src/of_sexp_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets to_sexp_utils.ml)
+ (deps    ../src/to_sexp_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
  (targets bigarray_utils.ml)
  (deps    ../src/bigarray_utils.ml)
  (action  (copy %{deps} %{targets}))
