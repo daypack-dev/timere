@@ -230,29 +230,31 @@ module Time_zone : sig
   }
 
   module Raw : sig
-    val table_of_transitions : (int64 * entry) list -> (Timere_tzdb.table, unit) result
-  val of_transitions : name:string -> (int64 * entry) list -> (t, unit) result
+    val table_of_transitions :
+      (int64 * entry) list -> (Timere_tzdb.table, unit) result
 
-  val to_transitions : t -> ((int64 * int64) * entry) list
+    val of_transitions : name:string -> (int64 * entry) list -> (t, unit) result
 
-  val to_transition_seq : t -> ((int64 * int64) * entry) Seq.t
-      end
+    val to_transitions : t -> ((int64 * int64) * entry) list
+
+    val to_transition_seq : t -> ((int64 * int64) * entry) Seq.t
+  end
 
   module Sexp : sig
-  val to_sexp : t -> CCSexp.t
+    val to_sexp : t -> CCSexp.t
 
-  val of_sexp : CCSexp.t -> (t, unit) result
+    val of_sexp : CCSexp.t -> (t, unit) result
 
-  val to_string : t -> string
+    val to_string : t -> string
 
-  val of_string : string -> (t, unit) result
-      end
+    val of_string : string -> (t, unit) result
+  end
 
   module JSON : sig
-  val to_string : t -> string
+    val to_string : t -> string
 
-  val of_string : string -> (t, unit) result
-      end
+    val of_string : string -> (t, unit) result
+  end
 end
 
 val with_tz : Time_zone.t -> t -> t

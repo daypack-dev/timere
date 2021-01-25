@@ -359,7 +359,7 @@ let gen () =
                          "Unrecognized time zone during special case \
                           handling: %s"
                          s)))
-          | (x :: _) ->
+          | x :: _ ->
             if x.start <> min_timestamp then
               let filler =
                 {
@@ -380,7 +380,7 @@ let gen () =
   Printf.printf "Number of time_zones: %d\n" (List.length all_time_zones);
   print_newline ();
   Printf.printf "Maximum number of records: %d\n"
-    (CCList.fold_left (fun x (_,l) -> max (List.length l) x) 0 tables_utc);
+    (CCList.fold_left (fun x (_, l) -> max (List.length l) x) 0 tables_utc);
   print_newline ();
   FileUtil.mkdir ~parent:true output_dir;
   Printf.printf "Generating %s\n" output_list_file_name;
@@ -391,25 +391,26 @@ let gen () =
 
   Printf.printf "Generating %s\n" gen_output_file_name;
   let time_zones : Timere.Time_zone.t list =
-    List.map (fun (name, l) ->
-        let transitions =
-          List.map (fun (r : transition_record) ->
-              (r.start, { Timere.Time_zone.is_dst = r.is_dst; offset = r.offset })
-            )
-            l
-        in
-        CCResult.get_exn @@
-        Timere.Time_zone.Raw.of_transitions ~name transitions
-      )
+    List.map
+      (fun (name, l) ->
+         let transitions =
+           List.map
+             (fun (r : transition_record) ->
+                ( r.start,
+                  { Timere.Time_zone.is_dst = r.is_dst; offset = r.offset } ))
+             l
+         in
+         CCResult.get_exn
+         @@ Timere.Time_zone.Raw.of_transitions ~name transitions)
       tables_utc
   in
   let time_zones_sexp =
-    CCSexp.list
-      (List.map Timere.Time_zone.Sexp.to_sexp time_zones)
+    CCSexp.list (List.map Timere.Time_zone.Sexp.to_sexp time_zones)
   in
-  CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc ] gen_output_file_name
-    (fun oc ->
-       Printf.fprintf oc {x|
+  CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc ]
+    gen_output_file_name (fun oc ->
+        Printf.fprintf oc
+          {x|
 module M = CCMap.Make (String)
 type db = Timere_tzdb.table M.t
 
@@ -459,9 +460,8 @@ let available_time_zones = List.map fst (M.bindings db)
          (Marshal.to_string db [])
     )
 |x}
-         (CCSexp.to_string time_zones_sexp)
-         output_file_name
-    );
+          (CCSexp.to_string time_zones_sexp)
+          output_file_name);
 
   Printf.printf "Generating %s\n" tz_constants_file_name;
   CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
@@ -483,13 +483,12 @@ let available_time_zones = List.map fst (M.bindings db)
                  pick transitions)
             0 tables_utc
         in
-        Printf.fprintf oc {|
+        Printf.fprintf oc
+          {|
 let greatest_neg_tz_offset_s = %d
 let greatest_pos_tz_offset_s = %d
 |}
-          greatest_neg_tz_offset_s
-          greatest_pos_tz_offset_s
-      );
+          greatest_neg_tz_offset_s greatest_pos_tz_offset_s);
 
   print_endline "Generating tzdb JSON";
   List.combine all_time_zones_in_parts tables_utc

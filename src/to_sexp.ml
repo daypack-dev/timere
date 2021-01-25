@@ -20,7 +20,9 @@ let sexp_of_tz_info info =
      | `Tz_only x -> [ atom "tz"; sexp_of_tz_name x ]
      | `Tz_offset_s_only x -> [ atom "tz_offset_s"; sexp_of_int x ]
      | `Tz_and_tz_offset_s (tz, tz_offset_s) ->
-       [ atom "tz_and_tz_offset_s"; sexp_of_tz_name tz; sexp_of_int tz_offset_s ])
+       [
+         atom "tz_and_tz_offset_s"; sexp_of_tz_name tz; sexp_of_int tz_offset_s;
+       ])
 
 let sexp_of_points (pick, tz_info) =
   let open CCSexp in
