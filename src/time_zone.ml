@@ -421,7 +421,5 @@ module Db = struct
         with _ -> Error "Failed to parse string into sexp"
       in
       match res with Error _ -> Error () | Ok x -> of_sexp x
-
-    let to_string t = CCSexp.to_string (to_sexp t)
   end
 end

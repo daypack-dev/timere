@@ -280,8 +280,8 @@ module Time_zone : sig
     end
 
     module Sexp : sig
-      val to_string : db -> string
-
+      val of_sexp : CCSexp.t -> (db, unit) result
+      val to_sexp : db -> CCSexp.t
       val of_string : string -> (db, unit) result
     end
   end

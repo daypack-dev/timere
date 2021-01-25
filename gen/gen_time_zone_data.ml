@@ -51,7 +51,7 @@ let output_dir = "gen-artifacts/"
 
 let output_list_file_name = output_dir ^ "available-time-zones.txt"
 
-let data_output_file_name = output_dir ^ "time_zone_db.ml"
+let data_output_file_name = output_dir ^ "time_zone_db.sexp"
 
 let output_file_name = "timere_tzdb.ml"
 
@@ -409,10 +409,8 @@ let () =
   let db = Timere.Time_zone.Db.of_seq @@ CCList.to_seq time_zones in
   CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc ]
     data_output_file_name (fun oc ->
-        Printf.fprintf oc {x|
-let s = %S
-|x}
-          (Timere.Time_zone.Db.Sexp.to_string db));
+        Format.fprintf (CCFormat.of_chan oc) "%a@."
+          CCSexp.pp (Timere.Time_zone.Db.Sexp.to_sexp db));
 
   Printf.printf "Generating %s\n" tz_constants_file_name;
   CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]

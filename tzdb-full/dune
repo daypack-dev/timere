@@ -1,7 +1,7 @@
 (rule
- (targets timere_tzdb.ml)
- (deps    (:gen ../gen-build/gen_tzdb_full.exe))
- (action  (run %{gen} -o %{targets}))
+ (targets tzdb_marshalled.ml)
+ (deps    (:gen ../gen-build/gen_tzdb_full.exe ) ../gen-artifacts/time_zone_db.sexp)
+ (action  (run %{gen} ../gen-artifacts/time_zone_db.sexp %{targets}))
 )
 
 (library
