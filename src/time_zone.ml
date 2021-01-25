@@ -220,8 +220,7 @@ module Raw = struct
     in
     if check_table table then Ok table else Error ()
 
-  let of_table ~name table =
-    { name; record = process_table table }
+  let of_table ~name table = { name; record = process_table table }
 
   let of_transitions ~name (l : (int64 * entry) list) : (t, unit) result =
     match table_of_transitions l with
@@ -369,39 +368,28 @@ module Db = struct
 
   let empty = String_map.empty
 
-  let add tz db =
-    String_map.add tz.name tz.record.table db
+  let add tz db = String_map.add tz.name tz.record.table db
 
   let find_opt name db =
     String_map.find_opt name db
-    |> CCOpt.map (fun table ->
-        Raw.of_table ~name table
-      )
+    |> CCOpt.map (fun table -> Raw.of_table ~name table)
 
-  let remove name db =
-    String_map.remove name db
+  let remove name db = String_map.remove name db
 
   let of_seq s : db =
-    s
-    |> Seq.map (fun tz -> (tz.name, tz.record.table))
-    |> String_map.of_seq
+    s |> Seq.map (fun tz -> (tz.name, tz.record.table)) |> String_map.of_seq
 
   let add_seq db s : db =
-    s
-    |> Seq.map (fun tz -> (tz.name, tz.record.table))
-    |> String_map.add_seq db
+    s |> Seq.map (fun tz -> (tz.name, tz.record.table)) |> String_map.add_seq db
 
-  let names db =
-    List.map fst (String_map.bindings db)
+  let names db = List.map fst (String_map.bindings db)
 
   module Raw' = Raw
 
   module Raw = struct
-    let dump (db : db) : string =
-      Marshal.to_string db []
+    let dump (db : db) : string = Marshal.to_string db []
 
-    let load s : db =
-      Marshal.from_string s 0
+    let load s : db = Marshal.from_string s 0
   end
 
   module Sexp = struct
@@ -411,22 +399,19 @@ module Db = struct
         match x with
         | `Atom _ -> invalid_data ""
         | `List l ->
-          Ok (
-            l
-            |> CCList.to_seq
-            |> Seq.map (fun x -> match Sexp.of_sexp x with
-                | Error () -> invalid_data ""
-                | Ok x -> x)
-            |> of_seq
-          )
-      with
-      | _ -> Error ()
+          Ok
+            (l
+             |> CCList.to_seq
+             |> Seq.map (fun x ->
+                 match Sexp.of_sexp x with
+                 | Error () -> invalid_data ""
+                 | Ok x -> x)
+             |> of_seq)
+      with _ -> Error ()
 
     let to_sexp db =
       String_map.bindings db
-      |> List.map (fun (name, table) ->
-          Raw'.of_table ~name table
-        )
+      |> List.map (fun (name, table) -> Raw'.of_table ~name table)
       |> List.map Sexp.to_sexp
       |> CCSexp.list
 
