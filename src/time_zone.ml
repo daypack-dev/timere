@@ -220,6 +220,9 @@ module Raw = struct
     in
     if check_table table then Ok table else Error ()
 
+  let of_table ~name table =
+    { name; record = process_table table }
+
   let of_transitions ~name (l : (int64 * entry) list) : (t, unit) result =
     match table_of_transitions l with
     | Ok table -> Ok { name; record = process_table table }
@@ -357,4 +360,74 @@ module JSON = struct
         ]
     in
     Yojson.Basic.to_string json
+end
+
+module Db = struct
+  type tz = t
+
+  type db = table String_map.t
+
+  let empty = String_map.empty
+
+  let add tz db =
+    String_map.add tz.name tz.record.table db
+
+  let remove name db =
+    String_map.remove name db
+
+  let of_seq s : db =
+    s
+    |> Seq.map (fun tz -> (tz.name, tz.record.table))
+    |> String_map.of_seq
+
+  let add_seq db s : db =
+    s
+    |> Seq.map (fun tz -> (tz.name, tz.record.table))
+    |> String_map.add_seq db
+
+  module Raw' = Raw
+
+  module Raw = struct
+    let dump (db : db) : string =
+      Marshal.to_string db []
+
+    let load s : db =
+      Marshal.from_string s 0
+  end
+
+  module Sexp = struct
+    let of_sexp (x : CCSexp.t) : (db, unit) result =
+      let open Of_sexp_utils in
+      try
+        match x with
+        | `Atom _ -> invalid_data ""
+        | `List l ->
+          Ok (
+            l
+            |> CCList.to_seq
+            |> Seq.map (fun x -> match Sexp.of_sexp x with
+                | Error () -> invalid_data ""
+                | Ok x -> x)
+            |> of_seq
+          )
+      with
+      | _ -> Error ()
+
+    let to_sexp db =
+      String_map.bindings db
+      |> List.map (fun (name, table) ->
+          Raw'.of_table ~name table
+        )
+      |> List.map Sexp.to_sexp
+      |> CCSexp.list
+
+    let of_string s =
+      let res =
+        try CCSexp.parse_string s
+        with _ -> Error "Failed to parse string into sexp"
+      in
+      match res with Error _ -> Error () | Ok x -> of_sexp x
+
+    let to_string t = CCSexp.to_string (to_sexp t)
+  end
 end

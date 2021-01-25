@@ -233,9 +233,6 @@ module Time_zone : sig
     entry array
 
   module Raw : sig
-    val table_of_transitions :
-      (int64 * entry) list -> (table, unit) result
-
     val of_transitions : name:string -> (int64 * entry) list -> (t, unit) result
 
     val to_transitions : t -> ((int64 * int64) * entry) list
@@ -257,6 +254,32 @@ module Time_zone : sig
     val to_string : t -> string
 
     val of_string : string -> (t, unit) result
+  end
+
+  module Db : sig
+    type db
+
+    val empty : db
+
+    val add : t -> db -> db
+
+    val remove : string -> db -> db
+
+    val of_seq : t Seq.t -> db
+
+    val add_seq : db -> t Seq.t -> db
+
+    module Raw : sig
+      val dump : db -> string
+
+      val load : string -> db
+    end
+
+    module Sexp : sig
+      val to_string : db -> string
+
+      val of_string : string -> (db, unit) result
+    end
   end
 end
 
