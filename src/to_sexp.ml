@@ -1,23 +1,26 @@
 open Date_time_components
+open To_sexp_utils
 
 let sexp_of_month x = CCSexp.atom @@ Time.abbr_string_of_month x
 
 let sexp_of_weekday x = CCSexp.atom @@ Time.abbr_string_of_weekday x
 
+let sexp_of_int64 x = CCSexp.atom @@ Int64.to_string x
+
 let sexp_of_int x = CCSexp.atom @@ string_of_int x
 
 let sexp_list_of_ints l = List.map sexp_of_int l
 
-let sexp_of_tz t = CCSexp.atom (Time_zone.name t)
+let sexp_of_tz_name t = CCSexp.atom (Time_zone.name t)
 
 let sexp_of_tz_info info =
   let open CCSexp in
   list
     (match info with
-     | `Tz_only x -> [ atom "tz"; sexp_of_tz x ]
+     | `Tz_only x -> [ atom "tz"; sexp_of_tz_name x ]
      | `Tz_offset_s_only x -> [ atom "tz_offset_s"; sexp_of_int x ]
      | `Tz_and_tz_offset_s (tz, tz_offset_s) ->
-       [ atom "tz_and_tz_offset_s"; sexp_of_tz tz; sexp_of_int tz_offset_s ])
+       [ atom "tz_and_tz_offset_s"; sexp_of_tz_name tz; sexp_of_int tz_offset_s ])
 
 let sexp_of_points (pick, tz_info) =
   let open CCSexp in
