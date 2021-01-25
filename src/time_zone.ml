@@ -216,22 +216,28 @@ let to_transition_seq (t : t) : ((int64 * int64) * entry) Seq.t =
 let to_transitions (t : t) : ((int64 * int64) * entry) list =
   CCList.of_seq @@ to_transition_seq t
 
-let of_transitions ~name (l : (int64 * entry) list) : (t, unit) result =
+let table_of_transitions (l : (int64 * entry) list) : (table, unit) result =
   let table =
-    l
-    |> List.split
-    |> (fun (offsets, entries) ->
-        let offsets =
-          offsets
-          |> Array.of_list
-          |> Bigarray.Array1.of_array Bigarray.Int64 Bigarray.C_layout
-        in
-        let entries = Array.of_list entries in
-        (offsets, entries)
-      )
+  l
+  |> List.split
+  |> (fun (offsets, entries) ->
+      let offsets =
+        offsets
+        |> Array.of_list
+        |> Bigarray.Array1.of_array Bigarray.Int64 Bigarray.C_layout
+      in
+      let entries = Array.of_list entries in
+      (offsets, entries)
+    )
   in
-  if check_table table then Ok { name; record = process_table table }
+  if check_table table then Ok table
   else Error ()
+
+let of_transitions ~name (l : (int64 * entry) list) : (t, unit) result =
+  match table_of_transitions l with
+  | Ok table ->
+    Ok { name; record = process_table table }
+  | Error () -> Error ()
       end
 
 let offset_is_recorded offset (t : t) =

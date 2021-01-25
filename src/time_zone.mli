@@ -28,6 +28,7 @@ val lookup_timestamp_utc : t -> int64 -> entry option
 val lookup_timestamp_local : t -> int64 -> entry local_result
 
 module Raw : sig
+  val table_of_transitions : (int64 * entry) list -> (Timere_tzdb.table, unit) result
 val of_transitions : name:string -> (int64 * entry) list -> (t, unit) result
 
 val to_transitions : t -> ((int64 * int64) * entry) list
