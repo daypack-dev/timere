@@ -388,8 +388,7 @@ let () =
   Printf.printf "Generating %s\n" output_list_file_name;
   CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
     output_list_file_name (fun oc ->
-        let write_line = CCIO.write_line oc in
-        List.iter write_line all_time_zones);
+        CCIO.write_lines_l oc all_time_zones);
 
   Printf.printf "Generating %s\n" data_output_file_name;
   let time_zones : Timere.Time_zone.t list =
@@ -407,33 +406,29 @@ let () =
       tables_utc
   in
   let db = Timere.Time_zone.Db.of_seq @@ CCList.to_seq time_zones in
-  CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc ]
+  CCIO.with_out ~flags:[ Open_wronly; Open_creat ]
     data_output_file_name (fun oc ->
         Format.fprintf (CCFormat.of_chan oc) "%a@."
           CCSexp.pp (Timere.Time_zone.Db.Sexp.to_sexp db));
 
   Printf.printf "Generating %s\n" tz_constants_file_name;
-  CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
+  CCIO.with_out ~flags:[ Open_wronly; Open_creat ]
     tz_constants_file_name (fun oc ->
-        let greatest_neg_tz_offset_s =
+        let walk f start = 
           List.fold_left
             (fun pick (_, transitions) ->
                List.fold_left
-                 (fun pick (r : transition_record) -> min r.offset pick)
+                 (fun pick (r : transition_record) -> f r pick)
                  pick transitions)
-            0 tables_utc
-          |> abs
+            start tables_utc
         in
-        let greatest_pos_tz_offset_s =
-          List.fold_left
-            (fun pick (_, transitions) ->
-               List.fold_left
-                 (fun pick (r : transition_record) -> max r.offset pick)
-                 pick transitions)
-            0 tables_utc
+        let greatest_neg_tz_offset_s, greatest_pos_tz_offset_s =
+          walk
+            (fun r (low, high) -> (min r.offset low, max r.offset high))
+            (max_int, min_int)
         in
-        Printf.fprintf oc
-          {|
+        let greatest_neg_tz_offset_s = abs greatest_neg_tz_offset_s in
+        Printf.fprintf oc {|
 let greatest_neg_tz_offset_s = %d
 let greatest_pos_tz_offset_s = %d
 |}
@@ -453,6 +448,6 @@ let greatest_pos_tz_offset_s = %d
         Filename.concat dir (List.nth time_zone_parts (len - 1) ^ ".json")
       in
       CCIO.with_out
-        ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
+        ~flags:[ Open_wronly; Open_creat ]
         output_file_name (fun oc ->
             CCIO.write_line oc (Timere.Time_zone.JSON.to_string tz)))
