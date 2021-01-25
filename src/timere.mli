@@ -222,6 +222,21 @@ module Time_zone : sig
       One use of this is to create a time zone for [to_string] functions.
   *)
 
+  (** {2 Importing and exporting}*)
+
+  type entry = private {
+    is_dst : bool;
+    offset : int;
+  }
+
+  val transitions : t -> ((int64 * int64) * entry) list
+
+  val transition_seq : t -> ((int64 * int64) * entry) Seq.t
+
+  val to_sexp : t -> CCSexp.t
+
+  val of_sexp : CCSexp.t -> (t, unit) result
+
   val to_sexp_string : t -> string
 
   val of_sexp_string : string -> (t, unit) result
