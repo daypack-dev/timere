@@ -35,6 +35,14 @@ val offset_is_recorded : int -> t -> bool
 
 val make_offset_only : ?name:string -> int -> t
 
+val to_sexp : t -> CCSexp.t
+
+val of_sexp : CCSexp.t -> (t, unit) result
+
+val to_sexp_string : t -> string
+
+val of_sexp_string : string -> (t, unit) result
+
 val to_json_string : t -> string
 
 val of_json_string : string -> (t, unit) result

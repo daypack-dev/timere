@@ -229,6 +229,87 @@ let make_offset_only ?(name = "dummy") (offset : int) =
         )
   }
 
+let of_sexp (x : CCSexp.t) : (t, unit) result =
+  let open Of_sexp_utils in
+  try
+  match x with
+  | `List l -> (
+      match l with
+      | `Atom "tz" :: `Atom name :: transitions -> (
+          let table =
+            transitions
+            |>
+            List.map (fun x ->
+                match x with
+                | `List [start; `List [`Atom is_dst; offset]] ->
+                  let start = int64_of_sexp start in
+                  let is_dst =
+                    match is_dst with
+                    | "t" -> true
+                    | "f" -> false
+                    | _ -> invalid_data ""
+                  in
+                  let offset =
+                    int_of_sexp offset in
+                  let entry =
+                    { is_dst; offset }
+                  in
+                  (start, entry)
+                | _ -> invalid_data ""
+              )
+            |> List.split
+            |> (fun (offsets, entries) ->
+                let offsets =
+                  offsets
+                  |> Array.of_list
+                  |> Bigarray.Array1.of_array Bigarray.Int64 Bigarray.C_layout
+                in
+                let entries = Array.of_list entries in
+                (offsets, entries)
+              )
+          in
+          if check_table table then Ok { name; record = process_table table }
+          else invalid_data ""
+        )
+      | _ ->
+        invalid_data ""
+    )
+  | `Atom _ ->
+    invalid_data ""
+  with
+  | _ -> Error ()
+
+let to_sexp (t : t) : CCSexp.t =
+  let open To_sexp_utils in
+  CCSexp.(
+    list (
+      (atom "tz") ::
+      (atom t.name) ::
+      (
+        List.map (fun ((start, _), entry) ->
+            list [
+              sexp_of_int64 start;
+              (list [
+                  if entry.is_dst then atom "t" else atom "f";
+                  sexp_of_int entry.offset;
+                ]
+              )
+            ]
+          )
+          (transitions t)
+      )
+    )
+  )
+
+let of_sexp_string s =
+  let res =
+    try CCSexp.parse_string s
+    with _ -> Error "Failed to parse string into sexp"
+  in
+  match res with Error _ -> Error () | Ok x -> of_sexp x
+
+let to_sexp_string t = CCSexp.to_string (to_sexp t)
+
 let of_json_string s : (t, unit) result =
   let exception Invalid_data in
   try
@@ -261,7 +342,7 @@ let of_json_string s : (t, unit) result =
                 | `Int x -> x
                 | _ -> raise Invalid_data
               in
-              let entry = Timere_tzdb.{ is_dst; offset } in
+              let entry = { is_dst; offset } in
               (start, entry)
             | _ -> raise Invalid_data)
         |> List.split
