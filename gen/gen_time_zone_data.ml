@@ -49,7 +49,9 @@ let output_dir = "gen-artifacts/"
 
 let output_list_file_name = output_dir ^ "available-time-zones.txt"
 
-let output_file_name = output_dir ^ "time_zone_data.ml"
+let gen_output_file_name = output_dir ^ "gen_tzdb_full.ml"
+
+let output_file_name = "timere_tzdb.ml"
 
 let tz_constants_file_name = output_dir ^ "time_zone_constants.ml"
 
@@ -387,30 +389,57 @@ let gen () =
         let write_line = CCIO.write_line oc in
         List.iter write_line all_time_zones);
 
-  Printf.printf "Generating %s\n" output_file_name;
-  let hashtbl_utc : Timere_tzdb.table Map.Make(String).t =
-    let module M = CCMap.Make(String) in
-    let h = Hashtbl.create 17 in
-    let get k = CCHashtbl.get_or_add h ~f:(fun x -> x) ~k in
-    tables_utc
-    |> List.map (fun (s,l) ->
-        let slots, entries =
-          List.split @@
+  Printf.printf "Generating %s\n" gen_output_file_name;
+  let time_zones : Timere.Time_zone.t list =
+    List.map (fun (name, l) ->
+        let transitions =
           List.map (fun (r : transition_record) ->
-              r.start, get {Timere_tzdb. is_dst = r.is_dst ; offset = r.offset})
+              (r.start, { Timere.Time_zone.is_dst = r.is_dst; offset = r.offset })
+            )
             l
         in
-        let entries = CCArray.of_list entries in
-        let slots =
-          Bigarray.(Array1.of_array Int64 C_layout) @@ CCArray.of_list slots in
-        (s, (slots, entries))
+        CCResult.get_exn @@
+        Timere.Time_zone.Raw.of_transitions ~name transitions
       )
-    |> M.of_list
+      tables_utc
   in
-      
-  CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc ] output_file_name
-    begin fun oc ->
-      Printf.fprintf oc {x|
+  let time_zones_sexp =
+    CCSexp.list
+      (List.map Timere.Time_zone.Sexp.to_sexp time_zones)
+  in
+  CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc ] gen_output_file_name
+    (fun oc ->
+       Printf.fprintf oc {x|
+module M = CCMap.Make (String)
+type db = Timere_tzdb.table M.t
+
+let s = %S
+
+let time_zones : Timere.Time_zone.t list =
+  CCSexp.parse_string s
+  |> CCResult.get_exn
+  |> (fun x -> match x with | `List l -> l | _ -> failwith "Unexpected case")
+  |> List.map Timere.Time_zone.Sexp.of_sexp
+  |> List.map CCResult.get_exn
+
+let names : string list =
+  List.map Timere.Time_zone.name time_zones
+
+let tables : Timere_tzdb.table list =
+  time_zones
+  |> List.map Timere.Time_zone.Raw.to_transitions
+  |> List.map (List.map (fun ((x, _), entry) -> (x, entry)))
+  |> List.map Timere.Time_zone.Raw.table_of_transitions
+  |> List.map CCResult.get_exn
+
+let db : db =
+  M.of_list
+    (CCList.combine names tables)
+
+let () =
+  CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc ] %S
+    (fun oc ->
+      Printf.fprintf oc {a|
 module M = Map.Make(String)
 type entry = {
   is_dst : bool;
@@ -421,15 +450,19 @@ type table =
   entry array
 type db = table M.t
 
-let db : db = Marshal.from_string %S 0
+let db : db = Marshal.from_string %%S 0
 
 let lookup name = M.find_opt name db
 
 let available_time_zones = List.map fst (M.bindings db)
+     |a}
+         (Marshal.to_string db [])
+    )
 |x}
-        (Marshal.to_string hashtbl_utc []);
-    end;
-  
+         (CCSexp.to_string time_zones_sexp)
+         output_file_name
+    );
+
   Printf.printf "Generating %s\n" tz_constants_file_name;
   CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
     tz_constants_file_name (fun oc ->

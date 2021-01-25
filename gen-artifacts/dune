@@ -1,0 +1,12 @@
+(executable
+ (flags     (-w "+a-4-9-29-37-40-42-44-48-50-32-30@8"))
+ (name gen_tzdb_full)
+ (libraries oseq
+            containers
+            fileutils
+            ptime
+            timere
+            timere.tzdb.none
+            bigarray
+ )
+)

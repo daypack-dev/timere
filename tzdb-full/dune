@@ -1,7 +1,7 @@
 (rule
  (targets timere_tzdb.ml)
- (deps    ../gen-artifacts/time_zone_data.ml)
- (action  (copy %{deps} %{targets}))
+ (deps    (:gen ../gen-artifacts/gen_tzdb_full.exe))
+ (action  (run %{gen} -o %{targets}))
 )
 
 (library
