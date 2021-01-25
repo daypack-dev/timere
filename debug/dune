@@ -89,12 +89,6 @@
 )
 
 (rule
- (targets timere_tzdb.ml)
- (deps    ../gen-artifacts/time_zone_data.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
  (targets int64_utils.ml)
  (deps    ../src/int64_utils.ml)
  (action  (copy %{deps} %{targets}))
@@ -186,5 +180,6 @@
             yojson
             fmt
             bigarray
+            timere.tzdb.none
    )
 )
