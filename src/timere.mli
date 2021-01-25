@@ -224,10 +224,12 @@ module Time_zone : sig
 
   (** {2 Importing and exporting}*)
 
-  type entry = private {
+  type entry = {
     is_dst : bool;
     offset : int;
   }
+
+  val of_transitions : name:string -> (int64 * entry) list -> (t, unit) result
 
   val transitions : t -> ((int64 * int64) * entry) list
 

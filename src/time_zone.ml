@@ -215,6 +215,23 @@ let transition_seq (t : t) : ((int64 * int64) * entry) Seq.t =
 let transitions (t : t) : ((int64 * int64) * entry) list =
   CCList.of_seq @@ transition_seq t
 
+let of_transitions ~name (l : (int64 * entry) list) : (t, unit) result =
+  let table =
+    l
+    |> List.split
+    |> (fun (offsets, entries) ->
+        let offsets =
+          offsets
+          |> Array.of_list
+          |> Bigarray.Array1.of_array Bigarray.Int64 Bigarray.C_layout
+        in
+        let entries = Array.of_list entries in
+        (offsets, entries)
+      )
+  in
+  if check_table table then Ok { name; record = process_table table }
+  else Error ()
+
 let offset_is_recorded offset (t : t) =
   Array.mem offset t.record.recorded_offsets
 
@@ -236,40 +253,27 @@ let of_sexp (x : CCSexp.t) : (t, unit) result =
   | `List l -> (
       match l with
       | `Atom "tz" :: `Atom name :: transitions -> (
-          let table =
-            transitions
-            |>
-            List.map (fun x ->
-                match x with
-                | `List [start; `List [`Atom is_dst; offset]] ->
-                  let start = int64_of_sexp start in
-                  let is_dst =
-                    match is_dst with
-                    | "t" -> true
-                    | "f" -> false
-                    | _ -> invalid_data ""
-                  in
-                  let offset =
-                    int_of_sexp offset in
-                  let entry =
-                    { is_dst; offset }
-                  in
-                  (start, entry)
-                | _ -> invalid_data ""
-              )
-            |> List.split
-            |> (fun (offsets, entries) ->
-                let offsets =
-                  offsets
-                  |> Array.of_list
-                  |> Bigarray.Array1.of_array Bigarray.Int64 Bigarray.C_layout
+          transitions
+          |>
+          List.map (fun x ->
+              match x with
+              | `List [start; `List [`Atom is_dst; offset]] ->
+                let start = int64_of_sexp start in
+                let is_dst =
+                  match is_dst with
+                  | "t" -> true
+                  | "f" -> false
+                  | _ -> invalid_data ""
                 in
-                let entries = Array.of_list entries in
-                (offsets, entries)
-              )
-          in
-          if check_table table then Ok { name; record = process_table table }
-          else invalid_data ""
+                let offset =
+                  int_of_sexp offset in
+                let entry =
+                  { is_dst; offset }
+                in
+                (start, entry)
+              | _ -> invalid_data ""
+            )
+          |> of_transitions ~name
         )
       | _ ->
         invalid_data ""
@@ -326,38 +330,25 @@ let of_json_string s : (t, unit) result =
         | `List l -> l
         | _ -> raise Invalid_data
       in
-      let table =
-        table_rows
-        |> List.map (fun row ->
-            match row with
-            | `List [ `String s; `Assoc e ] ->
-              let start = Int64.of_string s in
-              let is_dst =
-                match List.assoc "is_dst" e with
-                | `Bool b -> b
-                | _ -> raise Invalid_data
-              in
-              let offset =
-                match List.assoc "offset" e with
-                | `Int x -> x
-                | _ -> raise Invalid_data
-              in
-              let entry = { is_dst; offset } in
-              (start, entry)
-            | _ -> raise Invalid_data)
-        |> List.split
-        |> (fun (offsets, entries) ->
-            let offsets =
-              offsets
-              |> Array.of_list
-              |> Bigarray.Array1.of_array Bigarray.Int64 Bigarray.C_layout
+      table_rows
+      |> List.map (fun row ->
+          match row with
+          | `List [ `String s; `Assoc e ] ->
+            let start = Int64.of_string s in
+            let is_dst =
+              match List.assoc "is_dst" e with
+              | `Bool b -> b
+              | _ -> raise Invalid_data
             in
-            let entries = Array.of_list entries in
-            (offsets, entries)
-          )
-      in
-      if check_table table then Ok { name; record = process_table table }
-      else raise Invalid_data
+            let offset =
+              match List.assoc "offset" e with
+              | `Int x -> x
+              | _ -> raise Invalid_data
+            in
+            let entry = { is_dst; offset } in
+            (start, entry)
+          | _ -> raise Invalid_data)
+      |> of_transitions ~name
     | _ -> raise Invalid_data
   with _ -> Error ()
 

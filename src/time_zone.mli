@@ -1,6 +1,6 @@
 type t
 
-type entry = private {
+type entry = {
   is_dst : bool;
   offset : int;
 }
@@ -26,6 +26,8 @@ val available_time_zones : string list
 val lookup_timestamp_utc : t -> int64 -> entry option
 
 val lookup_timestamp_local : t -> int64 -> entry local_result
+
+val of_transitions : name:string -> (int64 * entry) list -> (t, unit) result
 
 val transitions : t -> ((int64 * int64) * entry) list
 
