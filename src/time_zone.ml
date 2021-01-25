@@ -188,6 +188,7 @@ let lookup_timestamp_local (t : t) timestamp : entry local_result =
         `Ambiguous (x, y)
       | Some _, Some _, Some _ -> failwith "Unexpected case")
 
+module Raw = struct
 let to_transition_seq (t : t) : ((int64 * int64) * entry) Seq.t =
   let table = t.record.table in
   let offsets, entries = table in
@@ -231,6 +232,7 @@ let of_transitions ~name (l : (int64 * entry) list) : (t, unit) result =
   in
   if check_table table then Ok { name; record = process_table table }
   else Error ()
+      end
 
 let offset_is_recorded offset (t : t) =
   Array.mem offset t.record.recorded_offsets
@@ -246,6 +248,7 @@ let make_offset_only ?(name = "dummy") (offset : int) =
         )
   }
 
+module Sexp = struct
 let of_sexp (x : CCSexp.t) : (t, unit) result =
   let open Of_sexp_utils in
   try
@@ -273,7 +276,7 @@ let of_sexp (x : CCSexp.t) : (t, unit) result =
                 (start, entry)
               | _ -> invalid_data ""
             )
-          |> of_transitions ~name
+          |> Raw.of_transitions ~name
         )
       | _ ->
         invalid_data ""
@@ -300,21 +303,23 @@ let to_sexp (t : t) : CCSexp.t =
               )
             ]
           )
-          (to_transitions t)
+          (Raw.to_transitions t)
       )
     )
   )
 
-let of_sexp_string s =
+let of_string s =
   let res =
     try CCSexp.parse_string s
     with _ -> Error "Failed to parse string into sexp"
   in
   match res with Error _ -> Error () | Ok x -> of_sexp x
 
-let to_sexp_string t = CCSexp.to_string (to_sexp t)
+let to_string t = CCSexp.to_string (to_sexp t)
+    end
 
-let of_json_string s : (t, unit) result =
+module JSON = struct
+let of_string s : (t, unit) result =
   let exception Invalid_data in
   try
     let json = Yojson.Basic.from_string s in
@@ -348,18 +353,18 @@ let of_json_string s : (t, unit) result =
             let entry = { is_dst; offset } in
             (start, entry)
           | _ -> raise Invalid_data)
-      |> of_transitions ~name
+      |> Raw.of_transitions ~name
     | _ -> raise Invalid_data
   with _ -> Error ()
 
-let to_json_string (t : t) : string =
+let to_string (t : t) : string =
   let json =
     `Assoc
       [
         ("name", `String t.name);
         ( "table",
           `List
-            (to_transition_seq t
+            (Raw.to_transition_seq t
              |> Seq.map (fun ((start, _), entry) ->
                  `List
                    [
@@ -375,3 +380,4 @@ let to_json_string (t : t) : string =
       ]
   in
   Yojson.Basic.to_string json
+end

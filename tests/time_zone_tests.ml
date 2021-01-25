@@ -6,8 +6,8 @@ module Qc = struct
       (fun tz ->
          let tz' =
            tz
-           |> Time_zone.to_json_string
-           |> Time_zone.of_json_string
+           |> Time_zone.JSON.to_string
+           |> Time_zone.JSON.of_string
            |> CCResult.get_exn
          in
          Time_zone.equal tz tz')

@@ -130,10 +130,10 @@ let to_be_exported =
 
         method makeOffsetOnly offset = Timere.Time_zone.make_offset_only offset
 
-        method toJSONString t = Timere.Time_zone.to_json_string t
+        method toJSONString t = Timere.Time_zone.JSON.to_string t
 
         method ofJSONString s =
-          match Timere.Time_zone.of_json_string (Js.to_string s) with
+          match Timere.Time_zone.JSON.of_string (Js.to_string s) with
           | Error () -> raise_with_msg "Invalid JSON string"
           | Ok x -> x
       end

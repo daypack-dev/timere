@@ -229,23 +229,29 @@ module Time_zone : sig
     offset : int;
   }
 
+  module Raw : sig
   val of_transitions : name:string -> (int64 * entry) list -> (t, unit) result
 
   val to_transitions : t -> ((int64 * int64) * entry) list
 
   val to_transition_seq : t -> ((int64 * int64) * entry) Seq.t
+      end
 
+  module Sexp : sig
   val to_sexp : t -> CCSexp.t
 
   val of_sexp : CCSexp.t -> (t, unit) result
 
-  val to_sexp_string : t -> string
+  val to_string : t -> string
 
-  val of_sexp_string : string -> (t, unit) result
+  val of_string : string -> (t, unit) result
+      end
 
-  val to_json_string : t -> string
+  module JSON : sig
+  val to_string : t -> string
 
-  val of_json_string : string -> (t, unit) result
+  val of_string : string -> (t, unit) result
+      end
 end
 
 val with_tz : Time_zone.t -> t -> t

@@ -22,7 +22,7 @@ module Alco = struct
                  let json_string = CCIO.read_all ic in
                  let tz_in_memory = Time_zone.make_exn s in
                  let tz_from_json =
-                   CCResult.get_exn @@ Time_zone.of_json_string json_string
+                   CCResult.get_exn @@ Time_zone.JSON.of_string json_string
                  in
                  assert (Time_zone.equal tz_in_memory tz_from_json)))
          Time_zone.available_time_zones)

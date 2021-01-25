@@ -27,24 +27,30 @@ val lookup_timestamp_utc : t -> int64 -> entry option
 
 val lookup_timestamp_local : t -> int64 -> entry local_result
 
+module Raw : sig
 val of_transitions : name:string -> (int64 * entry) list -> (t, unit) result
 
 val to_transitions : t -> ((int64 * int64) * entry) list
 
 val to_transition_seq : t -> ((int64 * int64) * entry) Seq.t
+    end
 
 val offset_is_recorded : int -> t -> bool
 
 val make_offset_only : ?name:string -> int -> t
 
+module Sexp : sig
 val to_sexp : t -> CCSexp.t
 
 val of_sexp : CCSexp.t -> (t, unit) result
 
-val to_sexp_string : t -> string
+val to_string : t -> string
 
-val of_sexp_string : string -> (t, unit) result
+val of_string : string -> (t, unit) result
+    end
 
-val to_json_string : t -> string
+module JSON : sig
+val to_string : t -> string
 
-val of_json_string : string -> (t, unit) result
+val of_string : string -> (t, unit) result
+end
