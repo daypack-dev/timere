@@ -1,10 +1,1 @@
-{
-  "name" : "America/Martinique",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -14660 }],
-    ["-2524506940", { "is_dst" : false, "offset" : -14660 }],
-    ["-1851537340", { "is_dst" : false, "offset" : -14400 }],
-    ["323841600", { "is_dst" : true, "offset" : -10800 }],
-    ["338958000", { "is_dst" : false, "offset" : -14400 }]
-  ]
-}
+{"name":"America/Martinique","table":[["-62167199424",{"is_dst":false,"offset":-14660}],["-2524506940",{"is_dst":false,"offset":-14660}],["-1851537340",{"is_dst":false,"offset":-14400}],["323841600",{"is_dst":true,"offset":-10800}],["338958000",{"is_dst":false,"offset":-14400}]]}

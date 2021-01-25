@@ -1,10 +1,1 @@
-{
-  "name" : "Asia/Yangon",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 23087 }],
-    ["-2840163887", { "is_dst" : false, "offset" : 23087 }],
-    ["-1577946287", { "is_dst" : false, "offset" : 23400 }],
-    ["-873268200", { "is_dst" : false, "offset" : 32400 }],
-    ["-778410000", { "is_dst" : false, "offset" : 23400 }]
-  ]
-}
+{"name":"Asia/Yangon","table":[["-62167199424",{"is_dst":false,"offset":23087}],["-2840163887",{"is_dst":false,"offset":23087}],["-1577946287",{"is_dst":false,"offset":23400}],["-873268200",{"is_dst":false,"offset":32400}],["-778410000",{"is_dst":false,"offset":23400}]]}

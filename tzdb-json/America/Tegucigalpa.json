@@ -1,13 +1,1 @@
-{
-  "name" : "America/Tegucigalpa",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -21600 }],
-    ["-1538503868", { "is_dst" : false, "offset" : -21600 }],
-    ["547020000", { "is_dst" : true, "offset" : -18000 }],
-    ["559717200", { "is_dst" : false, "offset" : -21600 }],
-    ["578469600", { "is_dst" : true, "offset" : -18000 }],
-    ["591166800", { "is_dst" : false, "offset" : -21600 }],
-    ["1146981600", { "is_dst" : true, "offset" : -18000 }],
-    ["1154926800", { "is_dst" : false, "offset" : -21600 }]
-  ]
-}
+{"name":"America/Tegucigalpa","table":[["-62167199424",{"is_dst":false,"offset":-21600}],["-1538503868",{"is_dst":false,"offset":-21600}],["547020000",{"is_dst":true,"offset":-18000}],["559717200",{"is_dst":false,"offset":-21600}],["578469600",{"is_dst":true,"offset":-18000}],["591166800",{"is_dst":false,"offset":-21600}],["1146981600",{"is_dst":true,"offset":-18000}],["1154926800",{"is_dst":false,"offset":-21600}]]}

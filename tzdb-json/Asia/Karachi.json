@@ -1,17 +1,1 @@
-{
-  "name" : "Asia/Karachi",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 19800 }],
-    ["-1988166492", { "is_dst" : false, "offset" : 19800 }],
-    ["-862637400", { "is_dst" : true, "offset" : 23400 }],
-    ["-764145000", { "is_dst" : false, "offset" : 19800 }],
-    ["-576135000", { "is_dst" : false, "offset" : 18000 }],
-    ["38775600", { "is_dst" : false, "offset" : 18000 }],
-    ["1018119600", { "is_dst" : true, "offset" : 21600 }],
-    ["1033840800", { "is_dst" : false, "offset" : 18000 }],
-    ["1212260400", { "is_dst" : true, "offset" : 21600 }],
-    ["1225476000", { "is_dst" : false, "offset" : 18000 }],
-    ["1239735600", { "is_dst" : true, "offset" : 21600 }],
-    ["1257012000", { "is_dst" : false, "offset" : 18000 }]
-  ]
-}
+{"name":"Asia/Karachi","table":[["-62167199424",{"is_dst":false,"offset":19800}],["-1988166492",{"is_dst":false,"offset":19800}],["-862637400",{"is_dst":true,"offset":23400}],["-764145000",{"is_dst":false,"offset":19800}],["-576135000",{"is_dst":false,"offset":18000}],["38775600",{"is_dst":false,"offset":18000}],["1018119600",{"is_dst":true,"offset":21600}],["1033840800",{"is_dst":false,"offset":18000}],["1212260400",{"is_dst":true,"offset":21600}],["1225476000",{"is_dst":false,"offset":18000}],["1239735600",{"is_dst":true,"offset":21600}],["1257012000",{"is_dst":false,"offset":18000}]]}

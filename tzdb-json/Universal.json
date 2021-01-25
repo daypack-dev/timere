@@ -1,6 +1,1 @@
-{
-  "name" : "Universal",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 0 }]
-  ]
-}
+{"name":"Universal","table":[["-62167199424",{"is_dst":false,"offset":0}]]}

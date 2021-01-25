@@ -1,10 +1,1 @@
-{
-  "name" : "Asia/Dili",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 28800 }],
-    ["-1830414140", { "is_dst" : false, "offset" : 28800 }],
-    ["-879152400", { "is_dst" : false, "offset" : 32400 }],
-    ["199897200", { "is_dst" : false, "offset" : 28800 }],
-    ["969120000", { "is_dst" : false, "offset" : 32400 }]
-  ]
-}
+{"name":"Asia/Dili","table":[["-62167199424",{"is_dst":false,"offset":28800}],["-1830414140",{"is_dst":false,"offset":28800}],["-879152400",{"is_dst":false,"offset":32400}],["199897200",{"is_dst":false,"offset":28800}],["969120000",{"is_dst":false,"offset":32400}]]}

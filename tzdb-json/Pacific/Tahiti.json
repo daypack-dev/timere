@@ -1,7 +1,1 @@
-{
-  "name" : "Pacific/Tahiti",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -36000 }],
-    ["-1806674504", { "is_dst" : false, "offset" : -36000 }]
-  ]
-}
+{"name":"Pacific/Tahiti","table":[["-62167199424",{"is_dst":false,"offset":-36000}],["-1806674504",{"is_dst":false,"offset":-36000}]]}

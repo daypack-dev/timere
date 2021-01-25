@@ -1,7 +1,1 @@
-{
-  "name" : "Indian/Christmas",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 25200 }],
-    ["-2364102172", { "is_dst" : false, "offset" : 25200 }]
-  ]
-}
+{"name":"Indian/Christmas","table":[["-62167199424",{"is_dst":false,"offset":25200}],["-2364102172",{"is_dst":false,"offset":25200}]]}

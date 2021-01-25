@@ -263,11 +263,15 @@ module Time_zone : sig
 
     val add : t -> db -> db
 
+    val find_opt : string -> db -> t option
+
     val remove : string -> db -> db
 
     val of_seq : t Seq.t -> db
 
     val add_seq : db -> t Seq.t -> db
+
+    val names : db -> string list
 
     module Raw : sig
       val dump : db -> string

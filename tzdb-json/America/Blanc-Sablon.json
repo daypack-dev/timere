@@ -1,12 +1,1 @@
-{
-  "name" : "America/Blanc-Sablon",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -14400 }],
-    ["-2713896692", { "is_dst" : false, "offset" : -14400 }],
-    ["-1632074400", { "is_dst" : true, "offset" : -10800 }],
-    ["-1615143600", { "is_dst" : false, "offset" : -14400 }],
-    ["-880221600", { "is_dst" : true, "offset" : -10800 }],
-    ["-769395600", { "is_dst" : true, "offset" : -10800 }],
-    ["-765399600", { "is_dst" : false, "offset" : -14400 }]
-  ]
-}
+{"name":"America/Blanc-Sablon","table":[["-62167199424",{"is_dst":false,"offset":-14400}],["-2713896692",{"is_dst":false,"offset":-14400}],["-1632074400",{"is_dst":true,"offset":-10800}],["-1615143600",{"is_dst":false,"offset":-14400}],["-880221600",{"is_dst":true,"offset":-10800}],["-769395600",{"is_dst":true,"offset":-10800}],["-765399600",{"is_dst":false,"offset":-14400}]]}

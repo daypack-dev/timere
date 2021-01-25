@@ -1,10 +1,1 @@
-{
-  "name" : "Asia/Makassar",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 28656 }],
-    ["-1577951856", { "is_dst" : false, "offset" : 28656 }],
-    ["-1172908656", { "is_dst" : false, "offset" : 28800 }],
-    ["-880272000", { "is_dst" : false, "offset" : 32400 }],
-    ["-766054800", { "is_dst" : false, "offset" : 28800 }]
-  ]
-}
+{"name":"Asia/Makassar","table":[["-62167199424",{"is_dst":false,"offset":28656}],["-1577951856",{"is_dst":false,"offset":28656}],["-1172908656",{"is_dst":false,"offset":28800}],["-880272000",{"is_dst":false,"offset":32400}],["-766054800",{"is_dst":false,"offset":28800}]]}

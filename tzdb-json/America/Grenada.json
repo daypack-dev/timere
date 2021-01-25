@@ -1,7 +1,1 @@
-{
-  "name" : "America/Grenada",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -14400 }],
-    ["-1825098836", { "is_dst" : false, "offset" : -14400 }]
-  ]
-}
+{"name":"America/Grenada","table":[["-62167199424",{"is_dst":false,"offset":-14400}],["-1825098836",{"is_dst":false,"offset":-14400}]]}

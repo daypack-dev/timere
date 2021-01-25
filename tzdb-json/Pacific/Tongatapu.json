@@ -1,16 +1,1 @@
-{
-  "name" : "Pacific/Tongatapu",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 44400 }],
-    ["-2177497160", { "is_dst" : false, "offset" : 44400 }],
-    ["-915193200", { "is_dst" : false, "offset" : 46800 }],
-    ["939214800", { "is_dst" : true, "offset" : 50400 }],
-    ["953384400", { "is_dst" : false, "offset" : 46800 }],
-    ["973342800", { "is_dst" : true, "offset" : 50400 }],
-    ["980596800", { "is_dst" : false, "offset" : 46800 }],
-    ["1004792400", { "is_dst" : true, "offset" : 50400 }],
-    ["1012046400", { "is_dst" : false, "offset" : 46800 }],
-    ["1478350800", { "is_dst" : true, "offset" : 50400 }],
-    ["1484398800", { "is_dst" : false, "offset" : 46800 }]
-  ]
-}
+{"name":"Pacific/Tongatapu","table":[["-62167199424",{"is_dst":false,"offset":44400}],["-2177497160",{"is_dst":false,"offset":44400}],["-915193200",{"is_dst":false,"offset":46800}],["939214800",{"is_dst":true,"offset":50400}],["953384400",{"is_dst":false,"offset":46800}],["973342800",{"is_dst":true,"offset":50400}],["980596800",{"is_dst":false,"offset":46800}],["1004792400",{"is_dst":true,"offset":50400}],["1012046400",{"is_dst":false,"offset":46800}],["1478350800",{"is_dst":true,"offset":50400}],["1484398800",{"is_dst":false,"offset":46800}]]}

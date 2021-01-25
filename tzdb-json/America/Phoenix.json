@@ -1,17 +1,1 @@
-{
-  "name" : "America/Phoenix",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -25200 }],
-    ["-2717643600", { "is_dst" : false, "offset" : -25200 }],
-    ["-1633273200", { "is_dst" : true, "offset" : -21600 }],
-    ["-1615132800", { "is_dst" : false, "offset" : -25200 }],
-    ["-1601823600", { "is_dst" : true, "offset" : -21600 }],
-    ["-1583683200", { "is_dst" : false, "offset" : -25200 }],
-    ["-880210800", { "is_dst" : true, "offset" : -21600 }],
-    ["-820519140", { "is_dst" : false, "offset" : -25200 }],
-    ["-812653140", { "is_dst" : true, "offset" : -21600 }],
-    ["-796845540", { "is_dst" : false, "offset" : -25200 }],
-    ["-84380400", { "is_dst" : true, "offset" : -21600 }],
-    ["-68659200", { "is_dst" : false, "offset" : -25200 }]
-  ]
-}
+{"name":"America/Phoenix","table":[["-62167199424",{"is_dst":false,"offset":-25200}],["-2717643600",{"is_dst":false,"offset":-25200}],["-1633273200",{"is_dst":true,"offset":-21600}],["-1615132800",{"is_dst":false,"offset":-25200}],["-1601823600",{"is_dst":true,"offset":-21600}],["-1583683200",{"is_dst":false,"offset":-25200}],["-880210800",{"is_dst":true,"offset":-21600}],["-820519140",{"is_dst":false,"offset":-25200}],["-812653140",{"is_dst":true,"offset":-21600}],["-796845540",{"is_dst":false,"offset":-25200}],["-84380400",{"is_dst":true,"offset":-21600}],["-68659200",{"is_dst":false,"offset":-25200}]]}

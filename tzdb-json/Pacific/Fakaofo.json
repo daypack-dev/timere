@@ -1,8 +1,1 @@
-{
-  "name" : "Pacific/Fakaofo",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -39600 }],
-    ["-2177411704", { "is_dst" : false, "offset" : -39600 }],
-    ["1325242800", { "is_dst" : false, "offset" : 46800 }]
-  ]
-}
+{"name":"Pacific/Fakaofo","table":[["-62167199424",{"is_dst":false,"offset":-39600}],["-2177411704",{"is_dst":false,"offset":-39600}],["1325242800",{"is_dst":false,"offset":46800}]]}

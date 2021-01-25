@@ -372,6 +372,12 @@ module Db = struct
   let add tz db =
     String_map.add tz.name tz.record.table db
 
+  let find_opt name db =
+    String_map.find_opt name db
+    |> CCOpt.map (fun table ->
+        Raw.of_table ~name table
+      )
+
   let remove name db =
     String_map.remove name db
 
@@ -384,6 +390,9 @@ module Db = struct
     s
     |> Seq.map (fun tz -> (tz.name, tz.record.table))
     |> String_map.add_seq db
+
+  let names db =
+    List.map fst (String_map.bindings db)
 
   module Raw' = Raw
 

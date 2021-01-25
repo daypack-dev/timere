@@ -1,7 +1,1 @@
-{
-  "name" : "Antarctica/Rothera",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -10800 }],
-    ["218246400", { "is_dst" : false, "offset" : -10800 }]
-  ]
-}
+{"name":"Antarctica/Rothera","table":[["-62167199424",{"is_dst":false,"offset":-10800}],["218246400",{"is_dst":false,"offset":-10800}]]}

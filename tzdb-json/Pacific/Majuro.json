@@ -1,13 +1,1 @@
-{
-  "name" : "Pacific/Majuro",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 39600 }],
-    ["-2177493888", { "is_dst" : false, "offset" : 39600 }],
-    ["-1743678000", { "is_dst" : false, "offset" : 32400 }],
-    ["-1606813200", { "is_dst" : false, "offset" : 39600 }],
-    ["-1041418800", { "is_dst" : false, "offset" : 36000 }],
-    ["-907408800", { "is_dst" : false, "offset" : 32400 }],
-    ["-818067600", { "is_dst" : false, "offset" : 39600 }],
-    ["-7988400", { "is_dst" : false, "offset" : 43200 }]
-  ]
-}
+{"name":"Pacific/Majuro","table":[["-62167199424",{"is_dst":false,"offset":39600}],["-2177493888",{"is_dst":false,"offset":39600}],["-1743678000",{"is_dst":false,"offset":32400}],["-1606813200",{"is_dst":false,"offset":39600}],["-1041418800",{"is_dst":false,"offset":36000}],["-907408800",{"is_dst":false,"offset":32400}],["-818067600",{"is_dst":false,"offset":39600}],["-7988400",{"is_dst":false,"offset":43200}]]}

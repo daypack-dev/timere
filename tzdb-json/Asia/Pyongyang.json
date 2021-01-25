@@ -1,11 +1,1 @@
-{
-  "name" : "Asia/Pyongyang",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 30600 }],
-    ["-1948782180", { "is_dst" : false, "offset" : 30600 }],
-    ["-1830414600", { "is_dst" : false, "offset" : 32400 }],
-    ["-768646800", { "is_dst" : false, "offset" : 32400 }],
-    ["1439564400", { "is_dst" : false, "offset" : 30600 }],
-    ["1525446000", { "is_dst" : false, "offset" : 32400 }]
-  ]
-}
+{"name":"Asia/Pyongyang","table":[["-62167199424",{"is_dst":false,"offset":30600}],["-1948782180",{"is_dst":false,"offset":30600}],["-1830414600",{"is_dst":false,"offset":32400}],["-768646800",{"is_dst":false,"offset":32400}],["1439564400",{"is_dst":false,"offset":30600}],["1525446000",{"is_dst":false,"offset":32400}]]}

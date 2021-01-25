@@ -1,7 +1,1 @@
-{
-  "name" : "Pacific/Marquesas",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -34200 }],
-    ["-1806676920", { "is_dst" : false, "offset" : -34200 }]
-  ]
-}
+{"name":"Pacific/Marquesas","table":[["-62167199424",{"is_dst":false,"offset":-34200}],["-1806676920",{"is_dst":false,"offset":-34200}]]}

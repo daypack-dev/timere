@@ -1,9 +1,1 @@
-{
-  "name" : "Africa/Monrovia",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -2588 }],
-    ["-2776979812", { "is_dst" : false, "offset" : -2588 }],
-    ["-1604359012", { "is_dst" : false, "offset" : -2670 }],
-    ["63593070", { "is_dst" : false, "offset" : 0 }]
-  ]
-}
+{"name":"Africa/Monrovia","table":[["-62167199424",{"is_dst":false,"offset":-2588}],["-2776979812",{"is_dst":false,"offset":-2588}],["-1604359012",{"is_dst":false,"offset":-2670}],["63593070",{"is_dst":false,"offset":0}]]}

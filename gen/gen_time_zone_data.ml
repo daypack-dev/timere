@@ -45,11 +45,13 @@ type transition_table = string * transition_record list
 
 let array_literal_max_size = 200
 
+let self_dir = "gen/"
+
 let output_dir = "gen-artifacts/"
 
 let output_list_file_name = output_dir ^ "available-time-zones.txt"
 
-let gen_output_file_name = output_dir ^ "gen_tzdb_full.ml"
+let data_output_file_name = self_dir ^ "time_zone_db.ml"
 
 let output_file_name = "timere_tzdb.ml"
 
@@ -389,7 +391,7 @@ let () =
         let write_line = CCIO.write_line oc in
         List.iter write_line all_time_zones);
 
-  Printf.printf "Generating %s\n" gen_output_file_name;
+  Printf.printf "Generating %s\n" data_output_file_name;
   let time_zones : Timere.Time_zone.t list =
     List.map
       (fun (name, l) ->
@@ -404,64 +406,18 @@ let () =
          @@ Timere.Time_zone.Raw.of_transitions ~name transitions)
       tables_utc
   in
-  let time_zones_sexp =
-    CCSexp.list (List.map Timere.Time_zone.Sexp.to_sexp time_zones)
+  let db =
+    Timere.Time_zone.Db.of_seq
+      @@ CCList.to_seq time_zones
   in
   CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc ]
-    gen_output_file_name (fun oc ->
+    data_output_file_name (fun oc ->
         Printf.fprintf oc
           {x|
-module M = CCMap.Make (String)
-type db = Timere_tzdb.table M.t
-
 let s = %S
-
-let time_zones : Timere.Time_zone.t list =
-  CCSexp.parse_string s
-  |> CCResult.get_exn
-  |> (fun x -> match x with | `List l -> l | _ -> failwith "Unexpected case")
-  |> List.map Timere.Time_zone.Sexp.of_sexp
-  |> List.map CCResult.get_exn
-
-let names : string list =
-  List.map Timere.Time_zone.name time_zones
-
-let tables : Timere_tzdb.table list =
-  time_zones
-  |> List.map Timere.Time_zone.Raw.to_transitions
-  |> List.map (List.map (fun ((x, _), entry) -> (x, entry)))
-  |> List.map Timere.Time_zone.Raw.table_of_transitions
-  |> List.map CCResult.get_exn
-
-let db : db =
-  M.of_list
-    (CCList.combine names tables)
-
-let () =
-  CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc ] %S
-    (fun oc ->
-      Printf.fprintf oc {a|
-module M = Map.Make(String)
-type entry = {
-  is_dst : bool;
-  offset : int;
-}
-type table =
-  (int64, Bigarray.int64_elt, Bigarray.c_layout) Bigarray.Array1.t *
-  entry array
-type db = table M.t
-
-let db : db = Marshal.from_string %%S 0
-
-let lookup name = M.find_opt name db
-
-let available_time_zones = List.map fst (M.bindings db)
-     |a}
-         (Marshal.to_string db [])
-    )
 |x}
-          (CCSexp.to_string time_zones_sexp)
-          output_file_name);
+          (Timere.Time_zone.Db.Sexp.to_string db)
+      );
 
   Printf.printf "Generating %s\n" tz_constants_file_name;
   CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
@@ -491,8 +447,8 @@ let greatest_pos_tz_offset_s = %d
           greatest_neg_tz_offset_s greatest_pos_tz_offset_s);
 
   print_endline "Generating tzdb JSON";
-  List.combine all_time_zones_in_parts tables_utc
-  |> List.iter (fun (time_zone_parts, (name, transitions)) ->
+  List.combine all_time_zones_in_parts time_zones
+  |> List.iter (fun (time_zone_parts, tz) ->
       let len = List.length time_zone_parts in
       assert (len > 0);
       let dir_parts =
@@ -506,18 +462,7 @@ let greatest_pos_tz_offset_s = %d
       CCIO.with_out
         ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
         output_file_name (fun oc ->
-            let transition_count = List.length transitions in
-            let write_line = CCIO.write_line oc in
-            write_line "{";
-            write_line (Printf.sprintf "  \"name\" : \"%s\"," name);
-            write_line "  \"table\" : [";
-            List.iteri
-              (fun i (r : transition_record) ->
-                 write_line
-                   (Printf.sprintf
-                      "    [\"%Ld\", { \"is_dst\" : %b, \"offset\" : %d }]%s"
-                      r.start r.is_dst r.offset
-                      (if i = transition_count - 1 then "" else ",")))
-              transitions;
-            write_line "  ]";
-            write_line "}"))
+            CCIO.write_line oc
+              (Timere.Time_zone.JSON.to_string tz)
+          )
+    )

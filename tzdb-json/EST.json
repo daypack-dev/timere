@@ -1,6 +1,1 @@
-{
-  "name" : "EST",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -18000 }]
-  ]
-}
+{"name":"EST","table":[["-62167199424",{"is_dst":false,"offset":-18000}]]}

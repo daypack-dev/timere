@@ -1,9 +1,1 @@
-{
-  "name" : "Africa/Sao_Tome",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : 0 }],
-    ["-1830384000", { "is_dst" : false, "offset" : 0 }],
-    ["1514768400", { "is_dst" : false, "offset" : 3600 }],
-    ["1546304400", { "is_dst" : false, "offset" : 0 }]
-  ]
-}
+{"name":"Africa/Sao_Tome","table":[["-62167199424",{"is_dst":false,"offset":0}],["-1830384000",{"is_dst":false,"offset":0}],["1514768400",{"is_dst":false,"offset":3600}],["1546304400",{"is_dst":false,"offset":0}]]}

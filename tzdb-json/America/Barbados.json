@@ -1,16 +1,1 @@
-{
-  "name" : "America/Barbados",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -14309 }],
-    ["-1451678491", { "is_dst" : false, "offset" : -14309 }],
-    ["-1199217691", { "is_dst" : false, "offset" : -14400 }],
-    ["234943200", { "is_dst" : true, "offset" : -10800 }],
-    ["244616400", { "is_dst" : false, "offset" : -14400 }],
-    ["261554400", { "is_dst" : true, "offset" : -10800 }],
-    ["276066000", { "is_dst" : false, "offset" : -14400 }],
-    ["293004000", { "is_dst" : true, "offset" : -10800 }],
-    ["307515600", { "is_dst" : false, "offset" : -14400 }],
-    ["325058400", { "is_dst" : true, "offset" : -10800 }],
-    ["338706000", { "is_dst" : false, "offset" : -14400 }]
-  ]
-}
+{"name":"America/Barbados","table":[["-62167199424",{"is_dst":false,"offset":-14309}],["-1451678491",{"is_dst":false,"offset":-14309}],["-1199217691",{"is_dst":false,"offset":-14400}],["234943200",{"is_dst":true,"offset":-10800}],["244616400",{"is_dst":false,"offset":-14400}],["261554400",{"is_dst":true,"offset":-10800}],["276066000",{"is_dst":false,"offset":-14400}],["293004000",{"is_dst":true,"offset":-10800}],["307515600",{"is_dst":false,"offset":-14400}],["325058400",{"is_dst":true,"offset":-10800}],["338706000",{"is_dst":false,"offset":-14400}]]}

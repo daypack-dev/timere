@@ -1,6 +1,1 @@
-{
-  "name" : "Etc/GMT-5",
-  "table" : [
-    ["-62167219200", { "is_dst" : false, "offset" : -18000 }]
-  ]
-}
+{"name":"Etc/GMT-5","table":[["-62167199424",{"is_dst":false,"offset":-18000}]]}
