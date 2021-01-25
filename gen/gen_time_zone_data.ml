@@ -272,7 +272,7 @@ let process_overlapping_transition_records (l : transition_record list) :
   in
   aux l
 
-let gen () =
+let () =
   let zoneinfo_file_dir = "/usr/share/zoneinfo/posix" in
   let all_zoneinfo_file_paths =
     FileUtil.(find Is_file zoneinfo_file_dir (fun x y -> y :: x) [])
