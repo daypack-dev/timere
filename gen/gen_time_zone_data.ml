@@ -449,5 +449,5 @@ let greatest_pos_tz_offset_s = %d
       in
       CCIO.with_out ~flags:[ Open_wronly; Open_creat ] output_file_name
         (fun oc ->
-           Format.fprintf (CCFormat.of_chan oc) "%a@." Yojson.Basic.pp
+           Yojson.Basic.pretty_to_channel oc
              (Timere.Time_zone.JSON.to_json tz)))
