@@ -1,1 +1,9 @@
-{"name":"Asia/Jayapura","table":[["-62167168800",{"is_dst":false,"offset":32400}],["-1172913768",{"is_dst":false,"offset":32400}],["-799491600",{"is_dst":false,"offset":34200}],["-189423000",{"is_dst":false,"offset":32400}]]}
+{
+  "name": "Asia/Jayapura",
+  "table": [
+    [ "-62167168800", { "is_dst": false, "offset": 32400 } ],
+    [ "-1172913768", { "is_dst": false, "offset": 32400 } ],
+    [ "-799491600", { "is_dst": false, "offset": 34200 } ],
+    [ "-189423000", { "is_dst": false, "offset": 32400 } ]
+  ]
+}

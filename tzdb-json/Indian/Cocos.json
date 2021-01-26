@@ -1,1 +1,7 @@
-{"name":"Indian/Cocos","table":[["-62167168800",{"is_dst":false,"offset":23400}],["-2209012060",{"is_dst":false,"offset":23400}]]}
+{
+  "name": "Indian/Cocos",
+  "table": [
+    [ "-62167168800", { "is_dst": false, "offset": 23400 } ],
+    [ "-2209012060", { "is_dst": false, "offset": 23400 } ]
+  ]
+}

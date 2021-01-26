@@ -1,1 +1,10 @@
-{"name":"Pacific/Nauru","table":[["-62167168800",{"is_dst":false,"offset":41400}],["-1545131260",{"is_dst":false,"offset":41400}],["-862918200",{"is_dst":false,"offset":32400}],["-767350800",{"is_dst":false,"offset":41400}],["287418600",{"is_dst":false,"offset":43200}]]}
+{
+  "name": "Pacific/Nauru",
+  "table": [
+    [ "-62167168800", { "is_dst": false, "offset": 41400 } ],
+    [ "-1545131260", { "is_dst": false, "offset": 41400 } ],
+    [ "-862918200", { "is_dst": false, "offset": 32400 } ],
+    [ "-767350800", { "is_dst": false, "offset": 41400 } ],
+    [ "287418600", { "is_dst": false, "offset": 43200 } ]
+  ]
+}

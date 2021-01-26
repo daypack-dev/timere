@@ -1,1 +1,4 @@
-{"name":"Etc/GMT-3","table":[["-62167168800",{"is_dst":false,"offset":-10800}]]}
+{
+  "name": "Etc/GMT-3",
+  "table": [ [ "-62167168800", { "is_dst": false, "offset": -10800 } ] ]
+}

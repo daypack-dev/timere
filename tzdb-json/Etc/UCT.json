@@ -1,1 +1,4 @@
-{"name":"Etc/UCT","table":[["-62167168800",{"is_dst":false,"offset":0}]]}
+{
+  "name": "Etc/UCT",
+  "table": [ [ "-62167168800", { "is_dst": false, "offset": 0 } ] ]
+}

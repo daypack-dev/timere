@@ -1,1 +1,8 @@
-{"name":"Pacific/Pitcairn","table":[["-62167168800",{"is_dst":false,"offset":-30600}],["-2177421580",{"is_dst":false,"offset":-30600}],["893665800",{"is_dst":false,"offset":-28800}]]}
+{
+  "name": "Pacific/Pitcairn",
+  "table": [
+    [ "-62167168800", { "is_dst": false, "offset": -30600 } ],
+    [ "-2177421580", { "is_dst": false, "offset": -30600 } ],
+    [ "893665800", { "is_dst": false, "offset": -28800 } ]
+  ]
+}

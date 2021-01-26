@@ -1,1 +1,10 @@
-{"name":"America/Paramaribo","table":[["-62167168800",{"is_dst":false,"offset":-13252}],["-1861906760",{"is_dst":false,"offset":-13252}],["-1104524348",{"is_dst":false,"offset":-13236}],["-765317964",{"is_dst":false,"offset":-12600}],["465449400",{"is_dst":false,"offset":-10800}]]}
+{
+  "name": "America/Paramaribo",
+  "table": [
+    [ "-62167168800", { "is_dst": false, "offset": -13252 } ],
+    [ "-1861906760", { "is_dst": false, "offset": -13252 } ],
+    [ "-1104524348", { "is_dst": false, "offset": -13236 } ],
+    [ "-765317964", { "is_dst": false, "offset": -12600 } ],
+    [ "465449400", { "is_dst": false, "offset": -10800 } ]
+  ]
+}

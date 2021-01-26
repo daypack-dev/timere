@@ -1,1 +1,11 @@
-{"name":"America/Caracas","table":[["-62167168800",{"is_dst":false,"offset":-16060}],["-2524505536",{"is_dst":false,"offset":-16060}],["-1826739140",{"is_dst":false,"offset":-16200}],["-157750200",{"is_dst":false,"offset":-14400}],["1197183600",{"is_dst":false,"offset":-16200}],["1462086000",{"is_dst":false,"offset":-14400}]]}
+{
+  "name": "America/Caracas",
+  "table": [
+    [ "-62167168800", { "is_dst": false, "offset": -16060 } ],
+    [ "-2524505536", { "is_dst": false, "offset": -16060 } ],
+    [ "-1826739140", { "is_dst": false, "offset": -16200 } ],
+    [ "-157750200", { "is_dst": false, "offset": -14400 } ],
+    [ "1197183600", { "is_dst": false, "offset": -16200 } ],
+    [ "1462086000", { "is_dst": false, "offset": -14400 } ]
+  ]
+}

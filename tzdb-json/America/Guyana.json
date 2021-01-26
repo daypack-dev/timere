@@ -1,1 +1,9 @@
-{"name":"America/Guyana","table":[["-62167168800",{"is_dst":false,"offset":-13500}],["-1730578040",{"is_dst":false,"offset":-13500}],["176010300",{"is_dst":false,"offset":-10800}],["662698800",{"is_dst":false,"offset":-14400}]]}
+{
+  "name": "America/Guyana",
+  "table": [
+    [ "-62167168800", { "is_dst": false, "offset": -13500 } ],
+    [ "-1730578040", { "is_dst": false, "offset": -13500 } ],
+    [ "176010300", { "is_dst": false, "offset": -10800 } ],
+    [ "662698800", { "is_dst": false, "offset": -14400 } ]
+  ]
+}

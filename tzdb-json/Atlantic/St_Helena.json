@@ -1,1 +1,7 @@
-{"name":"Atlantic/St_Helena","table":[["-62167168800",{"is_dst":false,"offset":0}],["-1830383032",{"is_dst":false,"offset":0}]]}
+{
+  "name": "Atlantic/St_Helena",
+  "table": [
+    [ "-62167168800", { "is_dst": false, "offset": 0 } ],
+    [ "-1830383032", { "is_dst": false, "offset": 0 } ]
+  ]
+}

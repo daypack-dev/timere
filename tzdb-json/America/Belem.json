@@ -1,1 +1,35 @@
-{"name":"America/Belem","table":[["-62167168800",{"is_dst":false,"offset":-10800}],["-1767213964",{"is_dst":false,"offset":-10800}],["-1206957600",{"is_dst":true,"offset":-7200}],["-1191362400",{"is_dst":false,"offset":-10800}],["-1175374800",{"is_dst":true,"offset":-7200}],["-1159826400",{"is_dst":false,"offset":-10800}],["-633819600",{"is_dst":true,"offset":-7200}],["-622069200",{"is_dst":false,"offset":-10800}],["-602283600",{"is_dst":true,"offset":-7200}],["-591832800",{"is_dst":false,"offset":-10800}],["-570747600",{"is_dst":true,"offset":-7200}],["-560210400",{"is_dst":false,"offset":-10800}],["-539125200",{"is_dst":true,"offset":-7200}],["-531352800",{"is_dst":false,"offset":-10800}],["-191365200",{"is_dst":true,"offset":-7200}],["-184197600",{"is_dst":false,"offset":-10800}],["-155163600",{"is_dst":true,"offset":-7200}],["-150069600",{"is_dst":false,"offset":-10800}],["-128898000",{"is_dst":true,"offset":-7200}],["-121125600",{"is_dst":false,"offset":-10800}],["-99954000",{"is_dst":true,"offset":-7200}],["-89589600",{"is_dst":false,"offset":-10800}],["-68418000",{"is_dst":true,"offset":-7200}],["-57967200",{"is_dst":false,"offset":-10800}],["499748400",{"is_dst":true,"offset":-7200}],["511236000",{"is_dst":false,"offset":-10800}],["530593200",{"is_dst":true,"offset":-7200}],["540266400",{"is_dst":false,"offset":-10800}],["562129200",{"is_dst":true,"offset":-7200}],["571197600",{"is_dst":false,"offset":-10800}]]}
+{
+  "name": "America/Belem",
+  "table": [
+    [ "-62167168800", { "is_dst": false, "offset": -10800 } ],
+    [ "-1767213964", { "is_dst": false, "offset": -10800 } ],
+    [ "-1206957600", { "is_dst": true, "offset": -7200 } ],
+    [ "-1191362400", { "is_dst": false, "offset": -10800 } ],
+    [ "-1175374800", { "is_dst": true, "offset": -7200 } ],
+    [ "-1159826400", { "is_dst": false, "offset": -10800 } ],
+    [ "-633819600", { "is_dst": true, "offset": -7200 } ],
+    [ "-622069200", { "is_dst": false, "offset": -10800 } ],
+    [ "-602283600", { "is_dst": true, "offset": -7200 } ],
+    [ "-591832800", { "is_dst": false, "offset": -10800 } ],
+    [ "-570747600", { "is_dst": true, "offset": -7200 } ],
+    [ "-560210400", { "is_dst": false, "offset": -10800 } ],
+    [ "-539125200", { "is_dst": true, "offset": -7200 } ],
+    [ "-531352800", { "is_dst": false, "offset": -10800 } ],
+    [ "-191365200", { "is_dst": true, "offset": -7200 } ],
+    [ "-184197600", { "is_dst": false, "offset": -10800 } ],
+    [ "-155163600", { "is_dst": true, "offset": -7200 } ],
+    [ "-150069600", { "is_dst": false, "offset": -10800 } ],
+    [ "-128898000", { "is_dst": true, "offset": -7200 } ],
+    [ "-121125600", { "is_dst": false, "offset": -10800 } ],
+    [ "-99954000", { "is_dst": true, "offset": -7200 } ],
+    [ "-89589600", { "is_dst": false, "offset": -10800 } ],
+    [ "-68418000", { "is_dst": true, "offset": -7200 } ],
+    [ "-57967200", { "is_dst": false, "offset": -10800 } ],
+    [ "499748400", { "is_dst": true, "offset": -7200 } ],
+    [ "511236000", { "is_dst": false, "offset": -10800 } ],
+    [ "530593200", { "is_dst": true, "offset": -7200 } ],
+    [ "540266400", { "is_dst": false, "offset": -10800 } ],
+    [ "562129200", { "is_dst": true, "offset": -7200 } ],
+    [ "571197600", { "is_dst": false, "offset": -10800 } ]
+  ]
+}

@@ -1,1 +1,11 @@
-{"name":"Africa/Addis_Ababa","table":[["-62167168800",{"is_dst":false,"offset":9000}],["-1946168836",{"is_dst":false,"offset":9000}],["-1309746600",{"is_dst":false,"offset":10800}],["-1261969200",{"is_dst":false,"offset":9000}],["-1041388200",{"is_dst":false,"offset":9900}],["-865305900",{"is_dst":false,"offset":10800}]]}
+{
+  "name": "Africa/Addis_Ababa",
+  "table": [
+    [ "-62167168800", { "is_dst": false, "offset": 9000 } ],
+    [ "-1946168836", { "is_dst": false, "offset": 9000 } ],
+    [ "-1309746600", { "is_dst": false, "offset": 10800 } ],
+    [ "-1261969200", { "is_dst": false, "offset": 9000 } ],
+    [ "-1041388200", { "is_dst": false, "offset": 9900 } ],
+    [ "-865305900", { "is_dst": false, "offset": 10800 } ]
+  ]
+}

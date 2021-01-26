@@ -1,1 +1,29 @@
-{"name":"Pacific/Efate","table":[["-62167168800",{"is_dst":false,"offset":39600}],["-1829387596",{"is_dst":false,"offset":39600}],["125409600",{"is_dst":true,"offset":43200}],["133876800",{"is_dst":false,"offset":39600}],["433256400",{"is_dst":true,"offset":43200}],["448977600",{"is_dst":false,"offset":39600}],["464706000",{"is_dst":true,"offset":43200}],["480427200",{"is_dst":false,"offset":39600}],["496760400",{"is_dst":true,"offset":43200}],["511876800",{"is_dst":false,"offset":39600}],["528210000",{"is_dst":true,"offset":43200}],["543931200",{"is_dst":false,"offset":39600}],["559659600",{"is_dst":true,"offset":43200}],["575380800",{"is_dst":false,"offset":39600}],["591109200",{"is_dst":true,"offset":43200}],["606830400",{"is_dst":false,"offset":39600}],["622558800",{"is_dst":true,"offset":43200}],["638280000",{"is_dst":false,"offset":39600}],["654008400",{"is_dst":true,"offset":43200}],["669729600",{"is_dst":false,"offset":39600}],["686062800",{"is_dst":true,"offset":43200}],["696340800",{"is_dst":false,"offset":39600}],["719931600",{"is_dst":true,"offset":43200}],["727790400",{"is_dst":false,"offset":39600}]]}
+{
+  "name": "Pacific/Efate",
+  "table": [
+    [ "-62167168800", { "is_dst": false, "offset": 39600 } ],
+    [ "-1829387596", { "is_dst": false, "offset": 39600 } ],
+    [ "125409600", { "is_dst": true, "offset": 43200 } ],
+    [ "133876800", { "is_dst": false, "offset": 39600 } ],
+    [ "433256400", { "is_dst": true, "offset": 43200 } ],
+    [ "448977600", { "is_dst": false, "offset": 39600 } ],
+    [ "464706000", { "is_dst": true, "offset": 43200 } ],
+    [ "480427200", { "is_dst": false, "offset": 39600 } ],
+    [ "496760400", { "is_dst": true, "offset": 43200 } ],
+    [ "511876800", { "is_dst": false, "offset": 39600 } ],
+    [ "528210000", { "is_dst": true, "offset": 43200 } ],
+    [ "543931200", { "is_dst": false, "offset": 39600 } ],
+    [ "559659600", { "is_dst": true, "offset": 43200 } ],
+    [ "575380800", { "is_dst": false, "offset": 39600 } ],
+    [ "591109200", { "is_dst": true, "offset": 43200 } ],
+    [ "606830400", { "is_dst": false, "offset": 39600 } ],
+    [ "622558800", { "is_dst": true, "offset": 43200 } ],
+    [ "638280000", { "is_dst": false, "offset": 39600 } ],
+    [ "654008400", { "is_dst": true, "offset": 43200 } ],
+    [ "669729600", { "is_dst": false, "offset": 39600 } ],
+    [ "686062800", { "is_dst": true, "offset": 43200 } ],
+    [ "696340800", { "is_dst": false, "offset": 39600 } ],
+    [ "719931600", { "is_dst": true, "offset": 43200 } ],
+    [ "727790400", { "is_dst": false, "offset": 39600 } ]
+  ]
+}

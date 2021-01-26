@@ -1,1 +1,7 @@
-{"name":"Asia/Kashgar","table":[["-62167168800",{"is_dst":false,"offset":21600}],["-1325483420",{"is_dst":false,"offset":21600}]]}
+{
+  "name": "Asia/Kashgar",
+  "table": [
+    [ "-62167168800", { "is_dst": false, "offset": 21600 } ],
+    [ "-1325483420", { "is_dst": false, "offset": 21600 } ]
+  ]
+}

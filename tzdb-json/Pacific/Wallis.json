@@ -1,1 +1,7 @@
-{"name":"Pacific/Wallis","table":[["-62167168800",{"is_dst":false,"offset":43200}],["-2177496920",{"is_dst":false,"offset":43200}]]}
+{
+  "name": "Pacific/Wallis",
+  "table": [
+    [ "-62167168800", { "is_dst": false, "offset": 43200 } ],
+    [ "-2177496920", { "is_dst": false, "offset": 43200 } ]
+  ]
+}

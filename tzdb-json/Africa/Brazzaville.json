@@ -1,1 +1,10 @@
-{"name":"Africa/Brazzaville","table":[["-62167168800",{"is_dst":false,"offset":0}],["-2035584815",{"is_dst":false,"offset":0}],["-1940889600",{"is_dst":false,"offset":815}],["-1767226415",{"is_dst":false,"offset":1800}],["-1588465800",{"is_dst":false,"offset":3600}]]}
+{
+  "name": "Africa/Brazzaville",
+  "table": [
+    [ "-62167168800", { "is_dst": false, "offset": 0 } ],
+    [ "-2035584815", { "is_dst": false, "offset": 0 } ],
+    [ "-1940889600", { "is_dst": false, "offset": 815 } ],
+    [ "-1767226415", { "is_dst": false, "offset": 1800 } ],
+    [ "-1588465800", { "is_dst": false, "offset": 3600 } ]
+  ]
+}

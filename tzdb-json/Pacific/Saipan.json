@@ -1,1 +1,26 @@
-{"name":"Pacific/Saipan","table":[["-62167168800",{"is_dst":false,"offset":36000}],["-2177487540",{"is_dst":false,"offset":36000}],["-885549600",{"is_dst":false,"offset":32400}],["-802256400",{"is_dst":false,"offset":36000}],["-331891200",{"is_dst":true,"offset":39600}],["-281610000",{"is_dst":false,"offset":36000}],["-73728000",{"is_dst":true,"offset":39600}],["-29415540",{"is_dst":false,"offset":36000}],["-16704000",{"is_dst":true,"offset":39600}],["-10659600",{"is_dst":false,"offset":36000}],["9907200",{"is_dst":true,"offset":39600}],["21394800",{"is_dst":false,"offset":36000}],["41356800",{"is_dst":true,"offset":39600}],["52844400",{"is_dst":false,"offset":36000}],["124819200",{"is_dst":true,"offset":39600}],["130863600",{"is_dst":false,"offset":36000}],["201888000",{"is_dst":true,"offset":39600}],["209487660",{"is_dst":false,"offset":36000}],["230659200",{"is_dst":true,"offset":39600}],["241542000",{"is_dst":false,"offset":36000}],["977493600",{"is_dst":false,"offset":36000}]]}
+{
+  "name": "Pacific/Saipan",
+  "table": [
+    [ "-62167168800", { "is_dst": false, "offset": 36000 } ],
+    [ "-2177487540", { "is_dst": false, "offset": 36000 } ],
+    [ "-885549600", { "is_dst": false, "offset": 32400 } ],
+    [ "-802256400", { "is_dst": false, "offset": 36000 } ],
+    [ "-331891200", { "is_dst": true, "offset": 39600 } ],
+    [ "-281610000", { "is_dst": false, "offset": 36000 } ],
+    [ "-73728000", { "is_dst": true, "offset": 39600 } ],
+    [ "-29415540", { "is_dst": false, "offset": 36000 } ],
+    [ "-16704000", { "is_dst": true, "offset": 39600 } ],
+    [ "-10659600", { "is_dst": false, "offset": 36000 } ],
+    [ "9907200", { "is_dst": true, "offset": 39600 } ],
+    [ "21394800", { "is_dst": false, "offset": 36000 } ],
+    [ "41356800", { "is_dst": true, "offset": 39600 } ],
+    [ "52844400", { "is_dst": false, "offset": 36000 } ],
+    [ "124819200", { "is_dst": true, "offset": 39600 } ],
+    [ "130863600", { "is_dst": false, "offset": 36000 } ],
+    [ "201888000", { "is_dst": true, "offset": 39600 } ],
+    [ "209487660", { "is_dst": false, "offset": 36000 } ],
+    [ "230659200", { "is_dst": true, "offset": 39600 } ],
+    [ "241542000", { "is_dst": false, "offset": 36000 } ],
+    [ "977493600", { "is_dst": false, "offset": 36000 } ]
+  ]
+}

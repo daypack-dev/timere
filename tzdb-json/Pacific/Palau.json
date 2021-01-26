@@ -1,1 +1,7 @@
-{"name":"Pacific/Palau","table":[["-62167168800",{"is_dst":false,"offset":32400}],["-2177485076",{"is_dst":false,"offset":32400}]]}
+{
+  "name": "Pacific/Palau",
+  "table": [
+    [ "-62167168800", { "is_dst": false, "offset": 32400 } ],
+    [ "-2177485076", { "is_dst": false, "offset": 32400 } ]
+  ]
+}

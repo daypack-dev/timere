@@ -1,1 +1,7 @@
-{"name":"Asia/Aden","table":[["-62167168800",{"is_dst":false,"offset":10800}],["-719636812",{"is_dst":false,"offset":10800}]]}
+{
+  "name": "Asia/Aden",
+  "table": [
+    [ "-62167168800", { "is_dst": false, "offset": 10800 } ],
+    [ "-719636812", { "is_dst": false, "offset": 10800 } ]
+  ]
+}
