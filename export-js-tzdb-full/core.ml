@@ -130,7 +130,8 @@ let to_be_exported =
 
         method makeOffsetOnly offset = Timere.Time_zone.make_offset_only offset
 
-        method toJSONString t = Yojson.Basic.to_string @@ Timere.Time_zone.JSON.to_json t
+        method toJSONString t =
+          Yojson.Basic.to_string @@ Timere.Time_zone.JSON.to_json t
 
         method ofJSONString s =
           match Timere.Time_zone.JSON.of_string (Js.to_string s) with

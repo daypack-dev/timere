@@ -330,12 +330,7 @@ module JSON = struct
       | _ -> raise Invalid_data
     with _ -> None
 
-  let of_string s =
-    try
-      of_json @@
-      Yojson.Basic.from_string s
-    with
-    | _ -> None
+  let of_string s = try of_json @@ Yojson.Basic.from_string s with _ -> None
 
   let to_json (t : t) : Yojson.Basic.t =
     `Assoc
