@@ -191,6 +191,6 @@
             yojson
             fmt
             bigarray
-            timere.tzdb.none
+            timere.tzdb.full
  )
  )
