@@ -362,8 +362,6 @@ module JSON = struct
 end
 
 module Db = struct
-  type tz = t
-
   type db = table String_map.t
 
   let empty = String_map.empty

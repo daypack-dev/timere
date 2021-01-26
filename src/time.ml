@@ -1149,7 +1149,6 @@ module Date_time' = struct
     | Error () -> Error ()
 
   let to_timestamp_pretend_utc (x : t) : (timestamp, unit) result =
-    let open Int64_utils in
     match Ptime.of_date_time @@ to_ptime_date_time_pretend_utc x with
     | None -> Error ()
     | Some x -> Ok (Ptime_utils.timestamp_of_ptime x)
@@ -1196,7 +1195,6 @@ module Date_time' = struct
 
   let of_timestamp ?(tz_of_date_time = Time_zone.utc) (x : int64) :
     (t, unit) result =
-    let open Int64_utils in
     if not (timestamp_min <= x && x <= timestamp_max) then Error ()
     else
       match Time_zone.lookup_timestamp_utc tz_of_date_time x with

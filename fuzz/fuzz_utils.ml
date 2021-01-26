@@ -1,5 +1,3 @@
-open Date_time_components
-
 let time =
   Crowbar.map
     [ Crowbar.range 2; Crowbar.range 4; Crowbar.list (Crowbar.range 1000) ]

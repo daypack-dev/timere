@@ -1,5 +1,3 @@
-open Test_utils
-
 module Alco = struct
   let tzdb_make_all () =
     Alcotest.(check bool)

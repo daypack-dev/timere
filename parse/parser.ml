@@ -83,8 +83,8 @@ let string_of_token (_, guess) =
   | Minutes -> "minutes"
   | Seconds -> "seconds"
   | Nat n -> string_of_int n
-  | Nats l -> "nats"
-  | Hms hms -> "hms"
+  | Nats _ -> "nats"
+  | Hms _ -> "hms"
   | Hmss _ -> "hmss"
   | Weekday _ -> "weekday"
   | Weekdays _ -> "weekdays"

@@ -1,5 +1,3 @@
-open Test_utils
-
 module Qc = struct
   (* let find_follow_empty =
    *   QCheck.Test.make ~count:10_000 ~name:"find_follow_empty"

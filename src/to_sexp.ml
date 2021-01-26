@@ -1,5 +1,4 @@
 open Date_time_components
-open To_sexp_utils
 
 let sexp_of_month x = CCSexp.atom @@ Time.abbr_string_of_month x
 
