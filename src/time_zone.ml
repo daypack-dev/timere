@@ -224,9 +224,7 @@ module Raw = struct
 
   let of_transitions ~name (l : (int64 * entry) list) : t option =
     table_of_transitions l
-    |> CCOpt.map (fun table ->
-        { name; record = process_table table }
-      )
+    |> CCOpt.map (fun table -> { name; record = process_table table })
 end
 
 let offset_is_recorded offset (t : t) =

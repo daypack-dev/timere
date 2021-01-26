@@ -279,11 +279,11 @@ let build ~enable_extra_restrictions:_ ~min_year ~max_year_inc ~max_height
         Time.chunk (make_chunking ~rng) (make_chunk_selector ~rng)
           (aux (new_height ~rng height))
       | _ -> failwith "Unexpected case"
-  (* and aux_restricted height =
-   *   if enable_extra_restrictions then
-   *     Time.chunk `Disjoint_intervals
-   *       Time.(take 100)
-   *       (aux (new_height ~rng height))
-   *   else aux (new_height ~rng height) *)
+      (* and aux_restricted height =
+       *   if enable_extra_restrictions then
+       *     Time.chunk `Disjoint_intervals
+       *       Time.(take 100)
+       *       (aux (new_height ~rng height))
+       *   else aux (new_height ~rng height) *)
   in
   aux max_height

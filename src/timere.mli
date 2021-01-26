@@ -281,7 +281,9 @@ module Time_zone : sig
 
     module Sexp : sig
       val of_sexp : CCSexp.t -> db option
+
       val to_sexp : db -> CCSexp.t
+
       val of_string : string -> db option
     end
   end
@@ -391,8 +393,7 @@ module Date_time : sig
 
   val max_of_timestamp_local_result : timestamp local_result -> timestamp
 
-  val of_timestamp :
-    ?tz_of_date_time:Time_zone.t -> timestamp -> t option
+  val of_timestamp : ?tz_of_date_time:Time_zone.t -> timestamp -> t option
 
   val equal : t -> t -> bool
 
@@ -808,15 +809,13 @@ module Utils : sig
 
   val flatten_month_day_ranges : int range Seq.t -> int Seq.t option
 
-  val flatten_weekday_ranges :
-    weekday range Seq.t -> weekday Seq.t option
+  val flatten_weekday_ranges : weekday range Seq.t -> weekday Seq.t option
 
   val flatten_month_range_list : month range list -> month list option
 
   val flatten_month_day_range_list : int range list -> int list option
 
-  val flatten_weekday_range_list :
-    weekday range list -> weekday list option
+  val flatten_weekday_range_list : weekday range list -> weekday list option
 
   val human_int_of_month : month -> int
 

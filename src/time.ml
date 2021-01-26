@@ -604,8 +604,7 @@ module Range = struct
 end
 
 module Range_utils = struct
-  let option_range_get (x : 'a option Range.range) : 'a Range.range option
-    =
+  let option_range_get (x : 'a option Range.range) : 'a Range.range option =
     match x with
     | `Range_inc (x, y) -> (
         match (x, y) with
@@ -1157,13 +1156,12 @@ module Date_time' = struct
          Ptime.date * Ptime.time) : t option =
     month_of_human_int month
     |> CCOpt.map (fun month ->
-        { year; month; day; hour; minute; second; tz_info = utc_tz_info }
-      )
+        { year; month; day; hour; minute; second; tz_info = utc_tz_info })
 
   let to_timestamp_pretend_utc (x : t) : timestamp option =
-     to_ptime_date_time_pretend_utc x
-     |> Ptime.of_date_time
-     |> CCOpt.map Ptime_utils.timestamp_of_ptime
+    to_ptime_date_time_pretend_utc x
+    |> Ptime.of_date_time
+    |> CCOpt.map Ptime_utils.timestamp_of_ptime
 
   let to_timestamp_unsafe (x : t) : timestamp Time_zone.local_result =
     match to_timestamp_pretend_utc x with
@@ -1205,8 +1203,7 @@ module Date_time' = struct
     | `Ambiguous _ ->
       invalid_arg "to_timestamp_single: date time maps to two timestamps"
 
-  let of_timestamp ?(tz_of_date_time = Time_zone.utc) (x : int64) :
-    t option =
+  let of_timestamp ?(tz_of_date_time = Time_zone.utc) (x : int64) : t option =
     if not (timestamp_min <= x && x <= timestamp_max) then None
     else
       match Time_zone.lookup_timestamp_utc tz_of_date_time x with
@@ -1308,8 +1305,7 @@ module Date_time' = struct
             ~tz_offset_s ()
         | `Tz_and_tz_offset_s (tz, tz_offset_s) ->
           make_precise ~tz ~year ~month ~day:month_day ~hour ~minute ~second
-            ~tz_offset_s ()
-      )
+            ~tz_offset_s ())
     | _ -> None
 
   let now ?(tz_of_date_time = Time_zone.utc) () : t =

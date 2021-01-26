@@ -83,7 +83,9 @@ module Db : sig
 
   module Sexp : sig
     val of_sexp : CCSexp.t -> db option
+
     val to_sexp : db -> CCSexp.t
+
     val of_string : string -> db option
   end
 end

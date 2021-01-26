@@ -387,8 +387,7 @@ let () =
   FileUtil.mkdir ~parent:true output_dir;
   Printf.printf "Generating %s\n" output_list_file_name;
   CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
-    output_list_file_name (fun oc ->
-        CCIO.write_lines_l oc all_time_zones);
+    output_list_file_name (fun oc -> CCIO.write_lines_l oc all_time_zones);
 
   Printf.printf "Generating %s\n" data_output_file_name;
   let time_zones : Timere.Time_zone.t list =
@@ -401,38 +400,38 @@ let () =
                   { Timere.Time_zone.is_dst = r.is_dst; offset = r.offset } ))
              l
          in
-         CCOpt.get_exn
-         @@ Timere.Time_zone.Raw.of_transitions ~name transitions)
+         CCOpt.get_exn @@ Timere.Time_zone.Raw.of_transitions ~name transitions)
       tables_utc
   in
   let db = Timere.Time_zone.Db.of_seq @@ CCList.to_seq time_zones in
-  CCIO.with_out ~flags:[ Open_wronly; Open_creat ]
-    data_output_file_name (fun oc ->
-        Format.fprintf (CCFormat.of_chan oc) "%a@."
-          CCSexp.pp (Timere.Time_zone.Db.Sexp.to_sexp db));
+  CCIO.with_out ~flags:[ Open_wronly; Open_creat ] data_output_file_name
+    (fun oc ->
+       Format.fprintf (CCFormat.of_chan oc) "%a@." CCSexp.pp
+         (Timere.Time_zone.Db.Sexp.to_sexp db));
 
   Printf.printf "Generating %s\n" tz_constants_file_name;
-  CCIO.with_out ~flags:[ Open_wronly; Open_creat ]
-    tz_constants_file_name (fun oc ->
-        let walk f start = 
-          List.fold_left
-            (fun pick (_, transitions) ->
-               List.fold_left
-                 (fun pick (r : transition_record) -> f r pick)
-                 pick transitions)
-            start tables_utc
-        in
-        let greatest_neg_tz_offset_s, greatest_pos_tz_offset_s =
-          walk
-            (fun r (low, high) -> (min r.offset low, max r.offset high))
-            (max_int, min_int)
-        in
-        let greatest_neg_tz_offset_s = abs greatest_neg_tz_offset_s in
-        Printf.fprintf oc {|
+  CCIO.with_out ~flags:[ Open_wronly; Open_creat ] tz_constants_file_name
+    (fun oc ->
+       let walk f start =
+         List.fold_left
+           (fun pick (_, transitions) ->
+              List.fold_left
+                (fun pick (r : transition_record) -> f r pick)
+                pick transitions)
+           start tables_utc
+       in
+       let greatest_neg_tz_offset_s, greatest_pos_tz_offset_s =
+         walk
+           (fun r (low, high) -> (min r.offset low, max r.offset high))
+           (max_int, min_int)
+       in
+       let greatest_neg_tz_offset_s = abs greatest_neg_tz_offset_s in
+       Printf.fprintf oc
+         {|
 let greatest_neg_tz_offset_s = %d
 let greatest_pos_tz_offset_s = %d
 |}
-          greatest_neg_tz_offset_s greatest_pos_tz_offset_s);
+         greatest_neg_tz_offset_s greatest_pos_tz_offset_s);
 
   print_endline "Generating tzdb JSON";
   List.combine all_time_zones_in_parts time_zones
@@ -447,7 +446,5 @@ let greatest_pos_tz_offset_s = %d
       let output_file_name =
         Filename.concat dir (List.nth time_zone_parts (len - 1) ^ ".json")
       in
-      CCIO.with_out
-        ~flags:[ Open_wronly; Open_creat ]
-        output_file_name (fun oc ->
-            CCIO.write_line oc (Timere.Time_zone.JSON.to_string tz)))
+      CCIO.with_out ~flags:[ Open_wronly; Open_creat ] output_file_name
+        (fun oc -> CCIO.write_line oc (Timere.Time_zone.JSON.to_string tz)))

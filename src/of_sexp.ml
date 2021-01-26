@@ -15,8 +15,7 @@ let weekday_of_sexp (x : CCSexp.t) =
   | `Atom s -> (
       match Time.weekday_of_abbr_string s with
       | Some x -> x
-      | None ->
-        invalid_data (Printf.sprintf "Failed to parse weekday: %s" s))
+      | None -> invalid_data (Printf.sprintf "Failed to parse weekday: %s" s))
   | `List _ ->
     invalid_data
       (Printf.sprintf "Expected atom for weekday: %s" (CCSexp.to_string x))
@@ -43,8 +42,7 @@ let tz_make_of_sexp (x : CCSexp.t) =
   | `Atom s -> (
       match Time_zone.make s with
       | Some x -> x
-      | None -> invalid_data (Printf.sprintf "Unrecognized time zone: %s" s)
-    )
+      | None -> invalid_data (Printf.sprintf "Unrecognized time zone: %s" s))
   | `List _ ->
     invalid_data
       (Printf.sprintf "Expected atom for time zone: %s" (CCSexp.to_string x))

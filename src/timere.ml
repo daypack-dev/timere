@@ -59,18 +59,16 @@ let of_sexp = Of_sexp.of_sexp
 let of_sexp_string = Of_sexp.of_sexp_string
 
 module Utils = struct
-  let flatten_month_ranges (months : month range Seq.t) :
-    month Seq.t option =
+  let flatten_month_ranges (months : month range Seq.t) : month Seq.t option =
     try Some (Month_ranges.Flatten.flatten months)
     with Range.Range_is_invalid -> None
 
-  let flatten_month_range_list (months : month range list) :
-    month list option =
+  let flatten_month_range_list (months : month range list) : month list option =
     try Some (Month_ranges.Flatten.flatten_list months)
     with Range.Range_is_invalid -> None
 
-  let flatten_month_day_ranges (month_days : int range Seq.t) :
-    int Seq.t option =
+  let flatten_month_day_ranges (month_days : int range Seq.t) : int Seq.t option
+    =
     try Some (Month_day_ranges.Flatten.flatten month_days)
     with Range.Range_is_invalid -> None
 
