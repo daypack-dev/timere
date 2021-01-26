@@ -55,8 +55,8 @@ let to_date_time s : (Time.Date_time'.t, string) result =
     >> two_digit_nat_zero
     >>= fun month ->
     match month_of_human_int month with
-    | Error () -> fail "Invalid month"
-    | Ok month -> (
+    | None -> fail "Invalid month"
+    | Some month -> (
         char '-'
         >> two_digit_nat_zero
         >>= fun day ->
@@ -69,7 +69,7 @@ let to_date_time s : (Time.Date_time'.t, string) result =
           Time.Date_time'.make_precise ~year ~month ~day ~hour ~minute ~second
             ~tz_offset_s:offset ()
         with
-        | Error () -> fail "Invalid date time"
-        | Ok x -> return x)
+        | None -> fail "Invalid date time"
+        | Some x -> return x)
   in
   parse_string p s () |> result_of_mparser_result

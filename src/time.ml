@@ -604,17 +604,29 @@ module Range = struct
 end
 
 module Range_utils = struct
-  let result_range_get (x : ('a, 'b) result Range.range) : 'a Range.range option
+  let option_range_get (x : 'a option Range.range) : 'a Range.range option
     =
     match x with
     | `Range_inc (x, y) -> (
         match (x, y) with
-        | Ok x, Ok y -> Some (`Range_inc (x, y))
+        | Some x, Some y -> Some (`Range_inc (x, y))
         | _, _ -> None)
     | `Range_exc (x, y) -> (
         match (x, y) with
-        | Ok x, Ok y -> Some (`Range_exc (x, y))
+        | Some x, Some y -> Some (`Range_exc (x, y))
         | _, _ -> None)
+
+  (* let result_range_get (x : ('a, 'b) result Range.range) : 'a Range.range option
+   *   =
+   *   match x with
+   *   | `Range_inc (x, y) -> (
+   *       match (x, y) with
+   *       | Ok x, Ok y -> Some (`Range_inc (x, y))
+   *       | _, _ -> None)
+   *   | `Range_exc (x, y) -> (
+   *       match (x, y) with
+   *       | Ok x, Ok y -> Some (`Range_exc (x, y))
+   *       | _, _ -> None) *)
 end
 
 module Range_small = struct
@@ -1022,13 +1034,13 @@ let make_hms ~hour ~minute ~second =
     && minute < 60
     && 0 <= second
     && second < 60
-  then Ok { hour; minute; second }
-  else Error ()
+  then Some { hour; minute; second }
+  else None
 
 let make_hms_exn ~hour ~minute ~second =
   match make_hms ~hour ~minute ~second with
-  | Ok x -> x
-  | Error () -> invalid_arg "make_hms_exn"
+  | Some x -> x
+  | None -> invalid_arg "make_hms_exn"
 
 let second_of_day_of_hms x =
   Duration.make ~hours:x.hour ~minutes:x.minute ~seconds:x.second ()
@@ -1039,7 +1051,7 @@ let hms_of_second_of_day x =
   let ({ hours; minutes; seconds; _ } : Duration.t) =
     x |> Int64.of_int |> Duration.of_seconds
   in
-  CCResult.get_exn @@ make_hms ~hour:hours ~minute:minutes ~second:seconds
+  CCOpt.get_exn @@ make_hms ~hour:hours ~minute:minutes ~second:seconds
 
 module Hms_ranges = Ranges_small.Make (struct
     type t = hms
@@ -1068,7 +1080,7 @@ module Weekday_ranges = Ranges_small.Make (struct
 
     let to_int = tm_int_of_weekday
 
-    let of_int x = x |> weekday_of_tm_int |> CCResult.get_exn
+    let of_int x = x |> weekday_of_tm_int |> CCOpt.get_exn
   end)
 
 module Month_day_ranges = Ranges_small.Make (struct
@@ -1098,7 +1110,7 @@ module Month_ranges = Ranges_small.Make (struct
 
     let to_int = human_int_of_month
 
-    let of_int x = x |> month_of_human_int |> CCResult.get_exn
+    let of_int x = x |> month_of_human_int |> CCOpt.get_exn
   end)
 
 module Year_ranges = Ranges_small.Make (struct
@@ -1142,21 +1154,21 @@ module Date_time' = struct
 
   let of_ptime_date_time_pretend_utc
       (((year, month, day), ((hour, minute, second), _tz_offset_s)) :
-         Ptime.date * Ptime.time) : (t, unit) result =
-    match month_of_human_int month with
-    | Ok month ->
-      Ok { year; month; day; hour; minute; second; tz_info = utc_tz_info }
-    | Error () -> Error ()
+         Ptime.date * Ptime.time) : t option =
+    month_of_human_int month
+    |> CCOpt.map (fun month ->
+        { year; month; day; hour; minute; second; tz_info = utc_tz_info }
+      )
 
-  let to_timestamp_pretend_utc (x : t) : (timestamp, unit) result =
-    match Ptime.of_date_time @@ to_ptime_date_time_pretend_utc x with
-    | None -> Error ()
-    | Some x -> Ok (Ptime_utils.timestamp_of_ptime x)
+  let to_timestamp_pretend_utc (x : t) : timestamp option =
+     to_ptime_date_time_pretend_utc x
+     |> Ptime.of_date_time
+     |> CCOpt.map Ptime_utils.timestamp_of_ptime
 
   let to_timestamp_unsafe (x : t) : timestamp Time_zone.local_result =
     match to_timestamp_pretend_utc x with
-    | Error () -> `None
-    | Ok timestamp_local -> (
+    | None -> `None
+    | Some timestamp_local -> (
         match x.tz_info with
         | `Tz_offset_s_only offset | `Tz_and_tz_offset_s (_, offset) ->
           `Single (Int64.sub timestamp_local (Int64.of_int offset))
@@ -1194,19 +1206,19 @@ module Date_time' = struct
       invalid_arg "to_timestamp_single: date time maps to two timestamps"
 
   let of_timestamp ?(tz_of_date_time = Time_zone.utc) (x : int64) :
-    (t, unit) result =
-    if not (timestamp_min <= x && x <= timestamp_max) then Error ()
+    t option =
+    if not (timestamp_min <= x && x <= timestamp_max) then None
     else
       match Time_zone.lookup_timestamp_utc tz_of_date_time x with
-      | None -> Error ()
+      | None -> None
       | Some entry -> (
           match Ptime_utils.ptime_of_timestamp x with
-          | Error () -> Error ()
-          | Ok x ->
+          | None -> None
+          | Some x ->
             x
             |> Ptime.to_date_time ~tz_offset_s:entry.offset
             |> of_ptime_date_time_pretend_utc
-            |> CCResult.map (fun t ->
+            |> CCOpt.map (fun t ->
                 {
                   t with
                   tz_info =
@@ -1218,23 +1230,23 @@ module Date_time' = struct
       { year; month; day; hour; minute; second; tz_info = `Tz_only tz }
     in
     match to_timestamp_unsafe dt with
-    | `None -> Error ()
-    | `Single x -> Ok (of_timestamp ~tz_of_date_time:tz x |> CCResult.get_exn)
-    | `Ambiguous _ -> Ok dt
+    | `None -> None
+    | `Single x -> Some (of_timestamp ~tz_of_date_time:tz x |> CCOpt.get_exn)
+    | `Ambiguous _ -> Some dt
 
   let make_exn ~tz ~year ~month ~day ~hour ~minute ~second =
     match make ~year ~month ~day ~hour ~minute ~second ~tz with
-    | Ok x -> x
-    | Error () -> invalid_arg "make_exn"
+    | Some x -> x
+    | None -> invalid_arg "make_exn"
 
   let make_precise ?tz ~year ~month ~day ~hour ~minute ~second ~tz_offset_s () =
-    let tz_info : (tz_info, unit) result =
+    let tz_info : tz_info option =
       match tz with
-      | None -> Ok (`Tz_offset_s_only tz_offset_s)
+      | None -> Some (`Tz_offset_s_only tz_offset_s)
       | Some tz -> (
           match make_tz_info ~tz ~tz_offset_s () with
-          | Error () -> Error ()
-          | Ok tz_info -> (
+          | None -> None
+          | Some tz_info -> (
               match
                 to_timestamp_pretend_utc
                   {
@@ -1247,22 +1259,22 @@ module Date_time' = struct
                     tz_info = dummy_tz_info;
                   }
               with
-              | Error () -> Error ()
-              | Ok timestamp_local -> (
+              | None -> None
+              | Some timestamp_local -> (
                   match Time_zone.lookup_timestamp_local tz timestamp_local with
-                  | `None -> Error ()
+                  | `None -> None
                   | `Single e ->
-                    if e.offset = tz_offset_s then Ok tz_info else Error ()
+                    if e.offset = tz_offset_s then Some tz_info else None
                   | `Ambiguous (e1, e2) ->
                     if e1.offset = tz_offset_s || e2.offset = tz_offset_s then
-                      Ok tz_info
-                    else Error ())))
+                      Some tz_info
+                    else None)))
     in
     match tz_info with
-    | Error () -> Error ()
-    | Ok tz_info -> (
+    | None -> None
+    | Some tz_info -> (
         let dt = { year; month; day; hour; minute; second; tz_info } in
-        match to_timestamp_unsafe dt with `None -> Error () | _ -> Ok dt)
+        match to_timestamp_unsafe dt with `None -> None | _ -> Some dt)
 
   let make_precise_exn ?tz ~year ~month ~day ~hour ~minute ~second ~tz_offset_s
       () =
@@ -1274,11 +1286,11 @@ module Date_time' = struct
         make_precise ~tz ~year ~month ~day ~hour ~minute ~second ~tz_offset_s
           ()
     in
-    match x with Error () -> invalid_arg "make_precise_exn" | Ok x -> x
+    match x with None -> invalid_arg "make_precise_exn" | Some x -> x
 
-  let min = CCResult.get_exn @@ of_timestamp timestamp_min
+  let min = CCOpt.get_exn @@ of_timestamp timestamp_min
 
-  let max = CCResult.get_exn @@ of_timestamp timestamp_max
+  let max = CCOpt.get_exn @@ of_timestamp timestamp_max
 
   let of_points ?(default_tz_info = utc_tz_info) ((pick, tz_info) : Points.t) :
     t option =
@@ -1288,22 +1300,20 @@ module Date_time' = struct
         let month_day =
           if month_day < 0 then day_count + month_day + 1 else month_day
         in
-        let dt =
-          match CCOpt.value ~default:default_tz_info tz_info with
-          | `Tz_only tz ->
-            make ~year ~month ~day:month_day ~hour ~minute ~second ~tz
-          | `Tz_offset_s_only tz_offset_s ->
-            make_precise ~year ~month ~day:month_day ~hour ~minute ~second
-              ~tz_offset_s ()
-          | `Tz_and_tz_offset_s (tz, tz_offset_s) ->
-            make_precise ~tz ~year ~month ~day:month_day ~hour ~minute ~second
-              ~tz_offset_s ()
-        in
-        match dt with Error () -> None | Ok dt -> Some dt)
+        match CCOpt.value ~default:default_tz_info tz_info with
+        | `Tz_only tz ->
+          make ~year ~month ~day:month_day ~hour ~minute ~second ~tz
+        | `Tz_offset_s_only tz_offset_s ->
+          make_precise ~year ~month ~day:month_day ~hour ~minute ~second
+            ~tz_offset_s ()
+        | `Tz_and_tz_offset_s (tz, tz_offset_s) ->
+          make_precise ~tz ~year ~month ~day:month_day ~hour ~minute ~second
+            ~tz_offset_s ()
+      )
     | _ -> None
 
   let now ?(tz_of_date_time = Time_zone.utc) () : t =
-    timestamp_now () |> of_timestamp ~tz_of_date_time |> CCResult.get_exn
+    timestamp_now () |> of_timestamp ~tz_of_date_time |> CCOpt.get_exn
 
   let equal (x : t) (y : t) : bool =
     x.year = y.year
@@ -1353,7 +1363,7 @@ end
 
 module Check = struct
   let timestamp_is_valid (x : int64) : bool =
-    match Date_time'.of_timestamp x with Ok _ -> true | Error () -> false
+    CCOpt.is_some @@ Date_time'.of_timestamp x
 
   let second_is_valid ~(second : int) : bool = 0 <= second && second < 60
 
@@ -1557,20 +1567,20 @@ let drop (n : int) (c : chunked) : chunked =
 
 (* let interval_inc (a : timestamp) (b : timestamp) : t =
  *   match Date_time'.of_timestamp a with
- *   | Error () -> invalid_arg "interval_inc: invalid timestamp"
+ *   | None -> invalid_arg "interval_inc: invalid timestamp"
  *   | Ok _ -> (
  *       match Date_time'.of_timestamp b with
- *       | Error () -> invalid_arg "interval_inc: invalid timestamp"
+ *       | None -> invalid_arg "interval_inc: invalid timestamp"
  *       | Ok _ ->
  *         if a <= b then Interval_inc (a, b)
  *         else invalid_arg "interval_inc: a > b")
  * 
  * let interval_exc (a : timestamp) (b : timestamp) : t =
  *   match Date_time'.of_timestamp a with
- *   | Error () -> invalid_arg "interval_exc: invalid timestamp"
+ *   | None -> invalid_arg "interval_exc: invalid timestamp"
  *   | Ok _ -> (
  *       match Date_time'.of_timestamp b with
- *       | Error () -> invalid_arg "interval_exc: invalid timestamp"
+ *       | None -> invalid_arg "interval_exc: invalid timestamp"
  *       | Ok _ ->
  *         if a <= b then Interval_exc (a, b)
  *         else invalid_arg "interval_exc: a > b")
@@ -1757,7 +1767,7 @@ let sorted_interval_seq ?(skip_invalid : bool = false)
         match
           (Date_time'.of_timestamp x, Date_time'.of_timestamp (Int64.pred y))
         with
-        | Ok _, Ok _ -> Some (x, y)
+        | Some _, Some _ -> Some (x, y)
         | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
     |> Intervals.Check.check_if_sorted
     |> Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
@@ -1779,7 +1789,7 @@ let intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
         match
           (Date_time'.of_timestamp x, Date_time'.of_timestamp (Int64.pred y))
         with
-        | Ok _, Ok _ -> Some (x, y)
+        | Some _, Some _ -> Some (x, y)
         | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
     |> Intervals.Sort.sort_uniq_intervals_list
     |> CCList.to_seq
@@ -1811,8 +1821,8 @@ let date_time date_time = date_times [ date_time ]
 
 let interval_of_timestamp ~skip_invalid x =
   match Date_time'.of_timestamp x with
-  | Ok _ -> Some (x, Int64.succ x)
-  | Error () -> if skip_invalid then None else raise Invalid_timestamp
+  | Some _ -> Some (x, Int64.succ x)
+  | None -> if skip_invalid then None else raise Invalid_timestamp
 
 let timestamp_seq ?(skip_invalid = false) timestamps =
   timestamps
@@ -1884,30 +1894,30 @@ let full_string_of_weekday (wday : weekday) : string =
   | `Fri -> "Friday"
   | `Sat -> "Saturday"
 
-let weekday_of_full_string s : (weekday, unit) result =
+let weekday_of_full_string s : weekday option =
   match s with
-  | "Sunday" -> Ok `Sun
-  | "Monday" -> Ok `Mon
-  | "Tuesday" -> Ok `Tue
-  | "Wednesday" -> Ok `Wed
-  | "Thursday" -> Ok `Thu
-  | "Friday" -> Ok `Fri
-  | "Saturday" -> Ok `Sat
-  | _ -> Error ()
+  | "Sunday" -> Some `Sun
+  | "Monday" -> Some `Mon
+  | "Tuesday" -> Some `Tue
+  | "Wednesday" -> Some `Wed
+  | "Thursday" -> Some `Thu
+  | "Friday" -> Some `Fri
+  | "Saturday" -> Some `Sat
+  | _ -> None
 
 let abbr_string_of_weekday (wday : weekday) : string =
   String.sub (full_string_of_weekday wday) 0 3
 
-let weekday_of_abbr_string s : (weekday, unit) result =
+let weekday_of_abbr_string s : weekday option =
   match s with
-  | "Sun" -> Ok `Sun
-  | "Mon" -> Ok `Mon
-  | "Tue" -> Ok `Tue
-  | "Wed" -> Ok `Wed
-  | "Thu" -> Ok `Thu
-  | "Fri" -> Ok `Fri
-  | "Sat" -> Ok `Sat
-  | _ -> Error ()
+  | "Sun" -> Some `Sun
+  | "Mon" -> Some `Mon
+  | "Tue" -> Some `Tue
+  | "Wed" -> Some `Wed
+  | "Thu" -> Some `Thu
+  | "Fri" -> Some `Fri
+  | "Sat" -> Some `Sat
+  | _ -> None
 
 let full_string_of_month (month : month) : string =
   match month with
@@ -1924,37 +1934,37 @@ let full_string_of_month (month : month) : string =
   | `Nov -> "November"
   | `Dec -> "December"
 
-let month_of_full_string s : (month, unit) result =
+let month_of_full_string s : month option =
   match s with
-  | "January" -> Ok `Jan
-  | "February" -> Ok `Feb
-  | "March" -> Ok `Mar
-  | "April" -> Ok `Apr
-  | "May" -> Ok `May
-  | "June" -> Ok `Jun
-  | "July" -> Ok `Jul
-  | "August" -> Ok `Aug
-  | "September" -> Ok `Sep
-  | "October" -> Ok `Oct
-  | "November" -> Ok `Nov
-  | "December" -> Ok `Dec
-  | _ -> Error ()
+  | "January" -> Some `Jan
+  | "February" -> Some `Feb
+  | "March" -> Some `Mar
+  | "April" -> Some `Apr
+  | "May" -> Some `May
+  | "June" -> Some `Jun
+  | "July" -> Some `Jul
+  | "August" -> Some `Aug
+  | "September" -> Some `Sep
+  | "October" -> Some `Oct
+  | "November" -> Some `Nov
+  | "December" -> Some `Dec
+  | _ -> None
 
 let abbr_string_of_month (month : month) : string =
   String.sub (full_string_of_month month) 0 3
 
-let month_of_abbr_string s : (month, unit) result =
+let month_of_abbr_string s : month option =
   match s with
-  | "Jan" -> Ok `Jan
-  | "Feb" -> Ok `Feb
-  | "Mar" -> Ok `Mar
-  | "Apr" -> Ok `Apr
-  | "May" -> Ok `May
-  | "Jun" -> Ok `Jun
-  | "Jul" -> Ok `Jul
-  | "Aug" -> Ok `Aug
-  | "Sep" -> Ok `Sep
-  | "Oct" -> Ok `Oct
-  | "Nov" -> Ok `Nov
-  | "Dec" -> Ok `Dec
-  | _ -> Error ()
+  | "Jan" -> Some `Jan
+  | "Feb" -> Some `Feb
+  | "Mar" -> Some `Mar
+  | "Apr" -> Some `Apr
+  | "May" -> Some `May
+  | "Jun" -> Some `Jun
+  | "Jul" -> Some `Jul
+  | "Aug" -> Some `Aug
+  | "Sep" -> Some `Sep
+  | "Oct" -> Some `Oct
+  | "Nov" -> Some `Nov
+  | "Dec" -> Some `Dec
+  | _ -> None

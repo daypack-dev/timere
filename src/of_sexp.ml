@@ -4,8 +4,8 @@ let month_of_sexp (x : CCSexp.t) =
   match x with
   | `Atom s -> (
       match Time.month_of_abbr_string s with
-      | Ok x -> x
-      | Error () -> invalid_data (Printf.sprintf "Failed to parse month: %s" s))
+      | Some x -> x
+      | None -> invalid_data (Printf.sprintf "Failed to parse month: %s" s))
   | `List _ ->
     invalid_data
       (Printf.sprintf "Expected atom for month: %s" (CCSexp.to_string x))
@@ -14,8 +14,8 @@ let weekday_of_sexp (x : CCSexp.t) =
   match x with
   | `Atom s -> (
       match Time.weekday_of_abbr_string s with
-      | Ok x -> x
-      | Error () ->
+      | Some x -> x
+      | None ->
         invalid_data (Printf.sprintf "Failed to parse weekday: %s" s))
   | `List _ ->
     invalid_data
@@ -42,8 +42,8 @@ let tz_make_of_sexp (x : CCSexp.t) =
   match x with
   | `Atom s -> (
       match Time_zone.make s with
-      | Ok x -> x
-      | Error () -> invalid_data (Printf.sprintf "Unrecognized time zone: %s" s)
+      | Some x -> x
+      | None -> invalid_data (Printf.sprintf "Unrecognized time zone: %s" s)
     )
   | `List _ ->
     invalid_data
@@ -92,22 +92,22 @@ let date_time_of_sexp (x : CCSexp.t) =
           match
             Time.Date_time'.make ~year ~month ~day ~hour ~minute ~second ~tz
           with
-          | Ok x -> x
-          | Error () -> invalid_data ())
+          | Some x -> x
+          | None -> invalid_data ())
       | `Tz_offset_s_only tz_offset_s -> (
           match
             Time.Date_time'.make_precise ~year ~month ~day ~hour ~minute ~second
               ~tz_offset_s ()
           with
-          | Ok x -> x
-          | Error () -> invalid_data ())
+          | Some x -> x
+          | None -> invalid_data ())
       | `Tz_and_tz_offset_s (tz, tz_offset_s) -> (
           match
             Time.Date_time'.make_precise ~tz ~year ~month ~day ~hour ~minute
               ~second ~tz_offset_s ()
           with
-          | Ok x -> x
-          | Error () -> invalid_data ()))
+          | Some x -> x
+          | None -> invalid_data ()))
   | _ -> invalid_data ()
 
 let timestamp_of_sexp x =

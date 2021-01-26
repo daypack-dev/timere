@@ -53,17 +53,17 @@ let precision ((pick, _) : t) : int =
 
 let make' ~tz ~tz_offset_s ~year ~month ~month_day ~weekday ~hour ~minute
     ~second () =
-  let tz_info =
+  let tz_info : tz_info option option =
     match (tz, tz_offset_s) with
-    | None, None -> Ok None
-    | Some tz, None -> Ok (Some (`Tz_only tz))
-    | None, Some tz_offset_s -> Ok (Some (`Tz_offset_s_only tz_offset_s))
+    | None, None -> Some None
+    | Some tz, None -> Some (Some (`Tz_only tz))
+    | None, Some tz_offset_s -> Some (Some (`Tz_offset_s_only tz_offset_s))
     | Some tz, Some tz_offset_s ->
-      make_tz_info ~tz ~tz_offset_s () |> CCResult.map CCOpt.pure
+      make_tz_info ~tz ~tz_offset_s () |> CCOpt.map CCOpt.pure
   in
   match tz_info with
-  | Error () -> Error ()
-  | Ok tz_info ->
+  | None -> None
+  | Some tz_info ->
     let year_is_fine =
       match year with
       | None -> true
@@ -92,27 +92,27 @@ let make' ~tz ~tz_offset_s ~year ~month ~month_day ~weekday ~hour ~minute
     then
       let pick =
         match (year, month, month_day, weekday, hour, minute) with
-        | None, None, None, None, None, None -> Ok (S second)
+        | None, None, None, None, None, None -> Some (S second)
         | None, None, None, None, None, Some minute ->
-          Ok (MS { minute; second })
+          Some (MS { minute; second })
         | None, None, None, None, Some hour, Some minute ->
-          Ok (HMS { hour; minute; second })
+          Some (HMS { hour; minute; second })
         | None, None, None, Some weekday, Some hour, Some minute ->
-          Ok (WHMS { weekday; hour; minute; second })
+          Some (WHMS { weekday; hour; minute; second })
         | None, None, Some month_day, None, Some hour, Some minute ->
-          Ok (DHMS { month_day; hour; minute; second })
+          Some (DHMS { month_day; hour; minute; second })
         | None, Some month, Some month_day, None, Some hour, Some minute ->
-          Ok (MDHMS { month; month_day; hour; minute; second })
+          Some (MDHMS { month; month_day; hour; minute; second })
         | Some year, Some month, Some month_day, None, Some hour, Some minute
           ->
-          Ok (YMDHMS { year; month; month_day; hour; minute; second })
-        | _ -> Error ()
+          Some (YMDHMS { year; month; month_day; hour; minute; second })
+        | _ -> None
       in
-      match pick with Error () -> Error () | Ok pick -> Ok (pick, tz_info)
-    else Error ()
+      CCOpt.map (fun pick -> (pick, tz_info)) pick
+    else None
 
 let make ?tz ?tz_offset_s ?year ?month ?day ?weekday ?hour ?minute ~second () :
-  (t, unit) result =
+  t option =
   make' ~tz ~tz_offset_s ~year ~month ~month_day:day ~weekday ~hour ~minute
     ~second ()
 
@@ -122,8 +122,8 @@ let make_exn ?tz ?tz_offset_s ?year ?month ?day ?weekday ?hour ?minute ~second
     make' ~tz ~tz_offset_s ~year ~month ~month_day:day ~weekday ~hour ~minute
       ~second ()
   with
-  | Error () -> invalid_arg "make"
-  | Ok x -> x
+  | None -> invalid_arg "make"
+  | Some x -> x
 
 let pick_equal t1 t2 =
   match (t1, t2) with

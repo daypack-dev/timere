@@ -33,16 +33,16 @@ let tm_int_of_weekday (wday : weekday) : int =
   | `Fri -> 5
   | `Sat -> 6
 
-let weekday_of_tm_int (x : int) : (weekday, unit) result =
+let weekday_of_tm_int (x : int) : weekday option =
   match x with
-  | 0 -> Ok `Sun
-  | 1 -> Ok `Mon
-  | 2 -> Ok `Tue
-  | 3 -> Ok `Wed
-  | 4 -> Ok `Thu
-  | 5 -> Ok `Fri
-  | 6 -> Ok `Sat
-  | _ -> Error ()
+  | 0 -> Some `Sun
+  | 1 -> Some `Mon
+  | 2 -> Some `Tue
+  | 3 -> Some `Wed
+  | 4 -> Some `Thu
+  | 5 -> Some `Fri
+  | 6 -> Some `Sat
+  | _ -> None
 
 let tm_int_of_month (month : month) : int =
   match month with
@@ -59,25 +59,25 @@ let tm_int_of_month (month : month) : int =
   | `Nov -> 10
   | `Dec -> 11
 
-let month_of_tm_int (x : int) : (month, unit) result =
+let month_of_tm_int (x : int) : month option =
   match x with
-  | 0 -> Ok `Jan
-  | 1 -> Ok `Feb
-  | 2 -> Ok `Mar
-  | 3 -> Ok `Apr
-  | 4 -> Ok `May
-  | 5 -> Ok `Jun
-  | 6 -> Ok `Jul
-  | 7 -> Ok `Aug
-  | 8 -> Ok `Sep
-  | 9 -> Ok `Oct
-  | 10 -> Ok `Nov
-  | 11 -> Ok `Dec
-  | _ -> Error ()
+  | 0 -> Some `Jan
+  | 1 -> Some `Feb
+  | 2 -> Some `Mar
+  | 3 -> Some `Apr
+  | 4 -> Some `May
+  | 5 -> Some `Jun
+  | 6 -> Some `Jul
+  | 7 -> Some `Aug
+  | 8 -> Some `Sep
+  | 9 -> Some `Oct
+  | 10 -> Some `Nov
+  | 11 -> Some `Dec
+  | _ -> None
 
 let human_int_of_month (month : month) : int = tm_int_of_month month + 1
 
-let month_of_human_int (x : int) : (month, unit) result = month_of_tm_int (x - 1)
+let month_of_human_int (x : int) : month option = month_of_tm_int (x - 1)
 
 let compare_month (m1 : month) (m2 : month) : int =
   compare (tm_int_of_month m1) (tm_int_of_month m2)
@@ -106,10 +106,9 @@ module Weekday_set = struct
 end
 
 let weekday_of_month_day ~(year : int) ~(month : month) ~(mday : int) :
-  (weekday, unit) result =
-  match Ptime.(of_date (year, human_int_of_month month, mday)) with
-  | None -> Error ()
-  | Some wday -> Ok (Ptime.weekday wday)
+  weekday option =
+  Ptime.(of_date (year, human_int_of_month month, mday))
+  |> CCOpt.map Ptime.weekday
 
 let is_leap_year ~year =
   assert (year >= 0);
@@ -152,9 +151,9 @@ let tz_info_equal (x : tz_info) (y : tz_info) =
 let make_tz_info ?tz ?tz_offset_s () =
   match (tz, tz_offset_s) with
   | None, None -> invalid_arg "make_tz_info"
-  | Some tz, None -> Ok (`Tz_only tz)
-  | None, Some tz_offset_s -> Ok (`Tz_offset_s_only tz_offset_s)
+  | Some tz, None -> Some (`Tz_only tz)
+  | None, Some tz_offset_s -> Some (`Tz_offset_s_only tz_offset_s)
   | Some tz, Some tz_offset_s ->
     if Time_zone.offset_is_recorded tz_offset_s tz then
-      Ok (`Tz_and_tz_offset_s (tz, tz_offset_s))
-    else Error ()
+      Some (`Tz_and_tz_offset_s (tz, tz_offset_s))
+    else None

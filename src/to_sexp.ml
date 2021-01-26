@@ -108,7 +108,7 @@ let sexp_of_duration (x : Duration.t) =
     ]
 
 let sexp_of_timestamp x =
-  x |> Time.Date_time'.of_timestamp |> CCResult.get_exn |> sexp_of_date_time
+  x |> Time.Date_time'.of_timestamp |> CCOpt.get_exn |> sexp_of_date_time
 
 let sexp_of_range ~(f : 'a -> CCSexp.t) (r : 'a Time.Range.range) =
   match r with

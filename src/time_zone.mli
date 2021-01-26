@@ -20,7 +20,7 @@ val name : t -> string
 
 val utc : t
 
-val make : string -> (t, unit) result
+val make : string -> t option
 
 val make_exn : string -> t
 
@@ -31,7 +31,7 @@ val lookup_timestamp_utc : t -> int64 -> entry option
 val lookup_timestamp_local : t -> int64 -> entry local_result
 
 module Raw : sig
-  val of_transitions : name:string -> (int64 * entry) list -> (t, unit) result
+  val of_transitions : name:string -> (int64 * entry) list -> t option
 
   val to_transitions : t -> ((int64 * int64) * entry) list
 
@@ -45,17 +45,17 @@ val make_offset_only : ?name:string -> int -> t
 module Sexp : sig
   val to_sexp : t -> CCSexp.t
 
-  val of_sexp : CCSexp.t -> (t, unit) result
+  val of_sexp : CCSexp.t -> t option
 
   val to_string : t -> string
 
-  val of_string : string -> (t, unit) result
+  val of_string : string -> t option
 end
 
 module JSON : sig
   val to_string : t -> string
 
-  val of_string : string -> (t, unit) result
+  val of_string : string -> t option
 end
 
 module Db : sig
@@ -82,8 +82,8 @@ module Db : sig
   end
 
   module Sexp : sig
-    val of_sexp : CCSexp.t -> (db, unit) result
+    val of_sexp : CCSexp.t -> db option
     val to_sexp : db -> CCSexp.t
-    val of_string : string -> (db, unit) result
+    val of_string : string -> db option
   end
 end

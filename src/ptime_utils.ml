@@ -17,9 +17,9 @@ let ptime_of_timestamp x =
   in
   let ps = s *^ s_to_ps_mult in
   match Ptime.Span.of_d_ps (d, ps) with
-  | None -> Error ()
+  | None -> None
   | Some span -> (
-      match Ptime.of_span span with None -> Error () | Some x -> Ok x)
+      Ptime.of_span span)
 
 let timestamp_of_ptime x =
   let d, ps = x |> Ptime.to_span |> Ptime.Span.to_d_ps in

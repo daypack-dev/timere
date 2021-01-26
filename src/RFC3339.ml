@@ -17,7 +17,7 @@ let pp_date_time formatter dt = Format.fprintf formatter "%s" (of_date_time dt)
 
 let of_timestamp (x : int64) : string =
   match Time.Date_time'.of_timestamp x with
-  | Error () -> invalid_arg "Invalid timestamp"
-  | Ok dt -> of_date_time dt
+  | None -> invalid_arg "Invalid timestamp"
+  | Some dt -> of_date_time dt
 
 let pp_timestamp formatter x = Format.fprintf formatter "%s" (of_timestamp x)

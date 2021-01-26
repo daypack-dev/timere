@@ -94,13 +94,13 @@ let equal t1 t2 =
     (fun e1 e2 -> e1 = e2)
     (snd t1.record.table) (snd t2.record.table)
 
-let make name : (t, unit) result =
+let make name : t option =
   match lookup_record name with
-  | Some record -> Ok { name; record }
-  | None -> Error ()
+  | Some record -> Some { name; record }
+  | None -> None
 
 let make_exn name : t =
-  match make name with Ok x -> x | Error () -> invalid_arg "make_exn"
+  match make name with Some x -> x | None -> invalid_arg "make_exn"
 
 let utc : t =
   {
@@ -205,7 +205,7 @@ module Raw = struct
   let to_transitions (t : t) : ((int64 * int64) * entry) list =
     CCList.of_seq @@ to_transition_seq t
 
-  let table_of_transitions (l : (int64 * entry) list) : (table, unit) result =
+  let table_of_transitions (l : (int64 * entry) list) : table option =
     let table =
       l
       |> List.split
@@ -218,14 +218,15 @@ module Raw = struct
       let entries = Array.of_list entries in
       (offsets, entries)
     in
-    if check_table table then Ok table else Error ()
+    if check_table table then Some table else None
 
   let of_table ~name table = { name; record = process_table table }
 
-  let of_transitions ~name (l : (int64 * entry) list) : (t, unit) result =
-    match table_of_transitions l with
-    | Ok table -> Ok { name; record = process_table table }
-    | Error () -> Error ()
+  let of_transitions ~name (l : (int64 * entry) list) : t option =
+    table_of_transitions l
+    |> CCOpt.map (fun table ->
+        { name; record = process_table table }
+      )
 end
 
 let offset_is_recorded offset (t : t) =
@@ -242,7 +243,7 @@ let make_offset_only ?(name = "dummy") (offset : int) =
   }
 
 module Sexp = struct
-  let of_sexp (x : CCSexp.t) : (t, unit) result =
+  let of_sexp (x : CCSexp.t) : t option =
     let open Of_sexp_utils in
     try
       match x with
@@ -267,7 +268,7 @@ module Sexp = struct
             |> Raw.of_transitions ~name
           | _ -> invalid_data "")
       | `Atom _ -> invalid_data ""
-    with _ -> Error ()
+    with _ -> None
 
   let to_sexp (t : t) : CCSexp.t =
     let open To_sexp_utils in
@@ -293,13 +294,13 @@ module Sexp = struct
       try CCSexp.parse_string s
       with _ -> Error "Failed to parse string into sexp"
     in
-    match res with Error _ -> Error () | Ok x -> of_sexp x
+    match res with Error _ -> None | Ok x -> of_sexp x
 
   let to_string t = CCSexp.to_string (to_sexp t)
 end
 
 module JSON = struct
-  let of_string s : (t, unit) result =
+  let of_string s : t option =
     let exception Invalid_data in
     try
       let json = Yojson.Basic.from_string s in
@@ -335,7 +336,7 @@ module JSON = struct
             | _ -> raise Invalid_data)
         |> Raw.of_transitions ~name
       | _ -> raise Invalid_data
-    with _ -> Error ()
+    with _ -> None
 
   let to_string (t : t) : string =
     let json =
@@ -391,21 +392,21 @@ module Db = struct
   end
 
   module Sexp = struct
-    let of_sexp (x : CCSexp.t) : (db, unit) result =
+    let of_sexp (x : CCSexp.t) : db option =
       let open Of_sexp_utils in
       try
         match x with
         | `Atom _ -> invalid_data ""
         | `List l ->
-          Ok
+          Some
             (l
              |> CCList.to_seq
              |> Seq.map (fun x ->
                  match Sexp.of_sexp x with
-                 | Error () -> invalid_data ""
-                 | Ok x -> x)
+                 | None -> invalid_data ""
+                 | Some x -> x)
              |> of_seq)
-      with _ -> Error ()
+      with _ -> None
 
     let to_sexp db =
       String_map.bindings db
@@ -418,6 +419,6 @@ module Db = struct
         try CCSexp.parse_string s
         with _ -> Error "Failed to parse string into sexp"
       in
-      match res with Error _ -> Error () | Ok x -> of_sexp x
+      match res with Error _ -> None | Ok x -> of_sexp x
   end
 end

@@ -193,7 +193,7 @@ val lengthen : Duration.t -> t -> t
 module Time_zone : sig
   type t
 
-  val make : string -> (t, unit) result
+  val make : string -> t option
   (** Makes a time zone from name.
 
       Naming follows the convention used in [/usr/share/zoneinfo/posix/] distributed on Linux, e.g. "Australia/Sydney".
@@ -233,7 +233,7 @@ module Time_zone : sig
     * entry array
 
   module Raw : sig
-    val of_transitions : name:string -> (int64 * entry) list -> (t, unit) result
+    val of_transitions : name:string -> (int64 * entry) list -> t option
 
     val to_transitions : t -> ((int64 * int64) * entry) list
 
@@ -243,17 +243,17 @@ module Time_zone : sig
   module Sexp : sig
     val to_sexp : t -> CCSexp.t
 
-    val of_sexp : CCSexp.t -> (t, unit) result
+    val of_sexp : CCSexp.t -> t option
 
     val to_string : t -> string
 
-    val of_string : string -> (t, unit) result
+    val of_string : string -> t option
   end
 
   module JSON : sig
     val to_string : t -> string
 
-    val of_string : string -> (t, unit) result
+    val of_string : string -> t option
   end
 
   module Db : sig
@@ -280,9 +280,9 @@ module Time_zone : sig
     end
 
     module Sexp : sig
-      val of_sexp : CCSexp.t -> (db, unit) result
+      val of_sexp : CCSexp.t -> db option
       val to_sexp : db -> CCSexp.t
-      val of_string : string -> (db, unit) result
+      val of_string : string -> db option
     end
   end
 end
@@ -318,7 +318,7 @@ module Date_time : sig
     hour:int ->
     minute:int ->
     second:int ->
-    (t, unit) result
+    t option
   (** Constructs a date time providing only a time zone.
 
       A precise offset is inferred if possible.
@@ -349,7 +349,7 @@ module Date_time : sig
     second:int ->
     tz_offset_s:tz_offset_s ->
     unit ->
-    (t, unit) result
+    t option
   (** Constructs a date time providing time zone offset in seconds, and optionally a time zone.
 
       If a time zone is provided, then the offset is checked against the time zone record to make sure
@@ -392,7 +392,7 @@ module Date_time : sig
   val max_of_timestamp_local_result : timestamp local_result -> timestamp
 
   val of_timestamp :
-    ?tz_of_date_time:Time_zone.t -> timestamp -> (t, unit) result
+    ?tz_of_date_time:Time_zone.t -> timestamp -> t option
 
   val equal : t -> t -> bool
 
@@ -561,7 +561,7 @@ val make_points :
   ?minute:int ->
   second:int ->
   unit ->
-  (points, unit) result
+  points option
 (** [make_points] call must be exactly one of the following form (ignoring [tz] and [tz_offset_s] which are optional in all cases)
     {v
 make_points ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
@@ -637,7 +637,7 @@ type hms = private {
   second : int;
 }
 
-val make_hms : hour:int -> minute:int -> second:int -> (hms, unit) result
+val make_hms : hour:int -> minute:int -> second:int -> hms option
 
 val make_hms_exn : hour:int -> minute:int -> second:int -> hms
 
@@ -804,29 +804,29 @@ val of_sexp_string : string -> (t, string) result
 module Utils : sig
   (** {1 Range flattening} *)
 
-  val flatten_month_ranges : month range Seq.t -> (month Seq.t, unit) result
+  val flatten_month_ranges : month range Seq.t -> month Seq.t option
 
-  val flatten_month_day_ranges : int range Seq.t -> (int Seq.t, unit) result
+  val flatten_month_day_ranges : int range Seq.t -> int Seq.t option
 
   val flatten_weekday_ranges :
-    weekday range Seq.t -> (weekday Seq.t, unit) result
+    weekday range Seq.t -> weekday Seq.t option
 
-  val flatten_month_range_list : month range list -> (month list, unit) result
+  val flatten_month_range_list : month range list -> month list option
 
-  val flatten_month_day_range_list : int range list -> (int list, unit) result
+  val flatten_month_day_range_list : int range list -> int list option
 
   val flatten_weekday_range_list :
-    weekday range list -> (weekday list, unit) result
+    weekday range list -> weekday list option
 
   val human_int_of_month : month -> int
 
   val tm_int_of_month : month -> int
 
-  val month_of_human_int : int -> (month, unit) result
+  val month_of_human_int : int -> month option
 
-  val month_of_tm_int : int -> (month, unit) result
+  val month_of_tm_int : int -> month option
 
-  val weekday_of_tm_int : int -> (weekday, unit) result
+  val weekday_of_tm_int : int -> weekday option
 
   val tm_int_of_weekday : weekday -> int
 end

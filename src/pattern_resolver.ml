@@ -12,10 +12,10 @@ module Search_param = struct
     {
       search_using_tz_offset_s;
       start =
-        CCResult.get_exn
+        CCOpt.get_exn
         @@ Time.Date_time'.of_timestamp ~tz_of_date_time:search_using_tz start;
       end_inc =
-        CCResult.get_exn
+        CCOpt.get_exn
         @@ Time.Date_time'.of_timestamp ~tz_of_date_time:search_using_tz
           (Int64.pred end_exc);
     }
@@ -335,8 +335,8 @@ module Matching_days = struct
             weekday_of_month_day ~year:cur_branch_search_start.year
               ~month:cur_branch_search_start.month ~mday
           with
-          | Ok wday -> Weekday_set.mem wday t.weekdays
-          | Error () -> false)
+          | Some wday -> Weekday_set.mem wday t.weekdays
+          | None -> false)
 
   let direct_matching_int_month_days
       ~(cur_branch_search_start : Time.Date_time'.t)
@@ -464,7 +464,7 @@ module Matching_months = struct
     in
     if Month_set.is_empty t.months then
       OSeq.(month_start_int -- month_end_inc_int)
-      |> Seq.map (fun month -> month_of_human_int month |> CCResult.get_exn)
+      |> Seq.map (fun month -> month_of_human_int month |> CCOpt.get_exn)
       |> Seq.map (fun month -> { cur_branch_search_start with month })
     else
       t.months
@@ -472,7 +472,7 @@ module Matching_months = struct
       |> Seq.map human_int_of_month
       |> Seq.filter (fun month ->
           month_start_int <= month && month <= month_end_inc_int)
-      |> Seq.map (fun month -> month_of_human_int month |> CCResult.get_exn)
+      |> Seq.map (fun month -> month_of_human_int month |> CCOpt.get_exn)
       |> Seq.map (fun month -> { cur_branch_search_start with month })
 
   let matching_month_ranges (t : Pattern.t)
@@ -515,7 +515,7 @@ module Matching_months = struct
       |> Seq.map human_int_of_month
       |> Seq.filter (fun month ->
           month_start_int <= month && month <= month_end_inc_int)
-      |> Seq.map (fun month -> month_of_human_int month |> CCResult.get_exn)
+      |> Seq.map (fun month -> month_of_human_int month |> CCOpt.get_exn)
       |> Time.Month_ranges.Of_seq.range_seq_of_seq
       |> Seq.map
         (Time.Range.map
@@ -585,7 +585,7 @@ let date_time_range_seq_of_timestamps ~search_using_tz (s : int64 Seq.t) :
   |> Time.Ranges.Of_seq.range_seq_of_seq ~modulo:None ~to_int64:CCFun.id
     ~of_int64:CCFun.id
   |> Seq.map (Time.Range.map ~f_inc:f ~f_exc:f)
-  |> Seq.filter_map Time.Range_utils.result_range_get
+  |> Seq.filter_map Time.Range_utils.option_range_get
 
 type error = Pattern.error
 

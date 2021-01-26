@@ -299,13 +299,13 @@ let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) =
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((t1, t2), rest) ->
       let dt1 =
-        CCResult.get_exn @@ Date_time'.of_timestamp ~tz_of_date_time:tz t1
+        CCOpt.get_exn @@ Date_time'.of_timestamp ~tz_of_date_time:tz t1
       in
       let dt2 =
         t2
         |> Int64.pred
         |> Date_time'.of_timestamp ~tz_of_date_time:tz
-        |> CCResult.get_exn
+        |> CCOpt.get_exn
       in
       if dt1.year = dt2.year then fun () -> Seq.Cons ((t1, t2), aux rest)
       else
@@ -327,13 +327,13 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((t1, t2), rest) ->
       let dt1 =
-        CCResult.get_exn @@ Date_time'.of_timestamp ~tz_of_date_time:tz t1
+        CCOpt.get_exn @@ Date_time'.of_timestamp ~tz_of_date_time:tz t1
       in
       let dt2 =
         t2
         |> Int64.pred
         |> Date_time'.of_timestamp ~tz_of_date_time:tz
-        |> CCResult.get_exn
+        |> CCOpt.get_exn
       in
       if dt1.year = dt2.year && dt1.month = dt2.month then fun () ->
         Seq.Cons ((t1, t2), aux rest)

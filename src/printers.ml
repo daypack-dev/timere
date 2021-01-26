@@ -76,8 +76,8 @@ module Format_string_parsers = struct
            weekday_of_month_day ~year:date_time.year ~month:date_time.month
              ~mday:date_time.day
          with
-         | Error () -> fail "Invalid date time"
-         | Ok wday ->
+         | None -> fail "Invalid date time"
+         | Some wday ->
            return
              (map_string_to_size_and_casing x
                 (Time.full_string_of_weekday wday)));
@@ -179,8 +179,8 @@ let pp_date_time ?(format = default_date_time_format_string) () formatter x =
 let string_of_timestamp ?(display_using_tz = Time_zone.utc)
     ?(format = default_date_time_format_string) (time : int64) : string =
   match Time.Date_time'.of_timestamp ~tz_of_date_time:display_using_tz time with
-  | Error () -> invalid_arg "Invalid unix second"
-  | Ok dt -> string_of_date_time ~format dt
+  | None -> invalid_arg "Invalid unix second"
+  | Some dt -> string_of_date_time ~format dt
 
 let pp_timestamp ?(display_using_tz = Time_zone.utc)
     ?(format = default_date_time_format_string) () formatter x =
@@ -211,13 +211,13 @@ let string_of_interval ?(display_using_tz = Time_zone.utc)
     many (single start_date_time end_date_time)
   in
   match Time.Date_time'.of_timestamp ~tz_of_date_time:display_using_tz s with
-  | Error () -> invalid_arg "Invalid start unix time"
-  | Ok s -> (
+  | None -> invalid_arg "Invalid start unix time"
+  | Some s -> (
       match
         Time.Date_time'.of_timestamp ~tz_of_date_time:display_using_tz e
       with
-      | Error () -> invalid_arg "Invalid end unix time"
-      | Ok e -> (
+      | None -> invalid_arg "Invalid end unix time"
+      | Some e -> (
           match
             result_of_mparser_result
             @@ parse_string

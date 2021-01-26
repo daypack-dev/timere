@@ -60,34 +60,34 @@ let of_sexp_string = Of_sexp.of_sexp_string
 
 module Utils = struct
   let flatten_month_ranges (months : month range Seq.t) :
-    (month Seq.t, unit) CCResult.t =
-    try Ok (Month_ranges.Flatten.flatten months)
-    with Range.Range_is_invalid -> Error ()
+    month Seq.t option =
+    try Some (Month_ranges.Flatten.flatten months)
+    with Range.Range_is_invalid -> None
 
   let flatten_month_range_list (months : month range list) :
-    (month list, unit) CCResult.t =
-    try Ok (Month_ranges.Flatten.flatten_list months)
-    with Range.Range_is_invalid -> Error ()
+    month list option =
+    try Some (Month_ranges.Flatten.flatten_list months)
+    with Range.Range_is_invalid -> None
 
   let flatten_month_day_ranges (month_days : int range Seq.t) :
-    (int Seq.t, unit) CCResult.t =
-    try Ok (Month_day_ranges.Flatten.flatten month_days)
-    with Range.Range_is_invalid -> Error ()
+    int Seq.t option =
+    try Some (Month_day_ranges.Flatten.flatten month_days)
+    with Range.Range_is_invalid -> None
 
   let flatten_month_day_range_list (month_days : int range list) :
-    (int list, unit) CCResult.t =
-    try Ok (Month_day_ranges.Flatten.flatten_list month_days)
-    with Range.Range_is_invalid -> Error ()
+    int list option =
+    try Some (Month_day_ranges.Flatten.flatten_list month_days)
+    with Range.Range_is_invalid -> None
 
   let flatten_weekday_ranges (weekdays : weekday range Seq.t) :
-    (weekday Seq.t, unit) CCResult.t =
-    try Ok (Weekday_ranges.Flatten.flatten weekdays)
-    with Range.Range_is_invalid -> Error ()
+    weekday Seq.t option =
+    try Some (Weekday_ranges.Flatten.flatten weekdays)
+    with Range.Range_is_invalid -> None
 
   let flatten_weekday_range_list (weekdays : weekday range list) :
-    (weekday list, unit) CCResult.t =
-    try Ok (Weekday_ranges.Flatten.flatten_list weekdays)
-    with Range.Range_is_invalid -> Error ()
+    weekday list option =
+    try Some (Weekday_ranges.Flatten.flatten_list weekdays)
+    with Range.Range_is_invalid -> None
 
   let human_int_of_month = human_int_of_month
 
