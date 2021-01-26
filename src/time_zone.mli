@@ -44,13 +44,13 @@ module Sexp : sig
 
   val of_sexp : CCSexp.t -> t option
 
-  val to_string : t -> string
-
   val of_string : string -> t option
 end
 
 module JSON : sig
-  val to_string : t -> string
+  val to_json : t -> Yojson.Basic.t
+
+  val of_json : Yojson.Basic.t -> t option
 
   val of_string : string -> t option
 end

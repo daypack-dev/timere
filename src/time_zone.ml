@@ -290,15 +290,12 @@ module Sexp = struct
       with _ -> Error "Failed to parse string into sexp"
     in
     match res with Error _ -> None | Ok x -> of_sexp x
-
-  let to_string t = CCSexp.to_string (to_sexp t)
 end
 
 module JSON = struct
-  let of_string s : t option =
+  let of_json json : t option =
     let exception Invalid_data in
     try
-      let json = Yojson.Basic.from_string s in
       match json with
       | `Assoc l ->
         let name =
@@ -333,28 +330,32 @@ module JSON = struct
       | _ -> raise Invalid_data
     with _ -> None
 
-  let to_string (t : t) : string =
-    let json =
-      `Assoc
-        [
-          ("name", `String t.name);
-          ( "table",
-            `List
-              (Raw.to_transition_seq t
-               |> Seq.map (fun ((start, _), entry) ->
-                   `List
-                     [
-                       `String (Int64.to_string start);
-                       `Assoc
-                         [
-                           ("is_dst", `Bool entry.is_dst);
-                           ("offset", `Int entry.offset);
-                         ];
-                     ])
-               |> CCList.of_seq) );
-        ]
-    in
-    Yojson.Basic.to_string json
+  let of_string s =
+    try
+      of_json @@
+      Yojson.Basic.from_string s
+    with
+    | _ -> None
+
+  let to_json (t : t) : Yojson.Basic.t =
+    `Assoc
+      [
+        ("name", `String t.name);
+        ( "table",
+          `List
+            (Raw.to_transition_seq t
+             |> Seq.map (fun ((start, _), entry) ->
+                 `List
+                   [
+                     `String (Int64.to_string start);
+                     `Assoc
+                       [
+                         ("is_dst", `Bool entry.is_dst);
+                         ("offset", `Int entry.offset);
+                       ];
+                   ])
+             |> CCList.of_seq) );
+      ]
 end
 
 module Db = struct
