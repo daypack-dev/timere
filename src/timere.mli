@@ -229,10 +229,6 @@ module Time_zone : sig
     offset : int;
   }
 
-  type table =
-    (int64, Bigarray.int64_elt, Bigarray.c_layout) Bigarray.Array1.t
-    * entry array
-
   module Raw : sig
     val of_transitions : name:string -> (int64 * entry) list -> t option
 
