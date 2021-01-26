@@ -4,8 +4,7 @@ type entry = {
 }
 
 type table =
-  (int64, Bigarray.int64_elt, Bigarray.c_layout) Bigarray.Array1.t *
-  entry array
+  (int64, Bigarray.int64_elt, Bigarray.c_layout) Bigarray.Array1.t * entry array
 
 let lookup _ = None
 
