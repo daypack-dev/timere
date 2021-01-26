@@ -64,13 +64,13 @@ let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) =
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((t1, t2), rest) ->
       let dt1 =
-        CCResult.get_exn @@ Date_time'.of_timestamp ~tz_of_date_time:tz t1
+        CCOpt.get_exn @@ Date_time'.of_timestamp ~tz_of_date_time:tz t1
       in
       let dt2 =
         t2
         |> Int64.pred
         |> Date_time'.of_timestamp ~tz_of_date_time:tz
-        |> CCResult.get_exn
+        |> CCOpt.get_exn
       in
       if dt1.year = dt2.year && dt1.month = dt2.month then fun () ->
         Seq.Cons ((t1, t2), aux rest)
@@ -93,13 +93,13 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((t1, t2), rest) ->
       let dt1 =
-        CCResult.get_exn @@ Date_time'.of_timestamp ~tz_of_date_time:tz t1
+        CCOpt.get_exn @@ Date_time'.of_timestamp ~tz_of_date_time:tz t1
       in
       let dt2 =
         t2
         |> Int64.pred
         |> Date_time'.of_timestamp ~tz_of_date_time:tz
-        |> CCResult.get_exn
+        |> CCOpt.get_exn
       in
       if dt1.year = dt2.year && dt1.month = dt2.month then fun () ->
         Seq.Cons ((t1, t2), aux rest)
@@ -117,11 +117,11 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
 
 let aux_pattern_mem search_using_tz (pattern : Pattern.t) timestamp =
   let dt =
-    CCResult.get_exn
+    CCOpt.get_exn
     @@ Time.Date_time'.of_timestamp ~tz_of_date_time:search_using_tz timestamp
   in
   let weekday =
-    CCResult.get_exn
+    CCOpt.get_exn
     @@ weekday_of_month_day ~year:dt.year ~month:dt.month ~mday:dt.day
   in
   let year_is_fine =

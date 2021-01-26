@@ -1,7 +1,7 @@
 open Fuzz_utils
 
 let search_start_dt =
-  CCResult.get_exn
+  CCOpt.get_exn
   @@ Time.Date_time'.make ~year:2000 ~month:`Jan ~day:1 ~hour:0 ~minute:0
     ~second:0 ~tz:Time_zone.utc
 
@@ -10,7 +10,7 @@ let search_start =
   |> Time.Date_time'.min_of_timestamp_local_result
 
 let search_end_exc_dt =
-  CCResult.get_exn
+  CCOpt.get_exn
   @@ Time.Date_time'.make ~year:2003 ~month:`Jan ~day:1 ~hour:0 ~minute:0
     ~second:0 ~tz:Time_zone.utc
 

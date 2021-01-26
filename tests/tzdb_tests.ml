@@ -3,7 +3,7 @@ module Alco = struct
     Alcotest.(check bool)
       "all tables can go through make"
       (List.for_all
-         (fun s -> CCResult.is_ok @@ Time_zone.make s)
+         (fun s -> CCOpt.is_some @@ Time_zone.make s)
          Time_zone.available_time_zones)
       true
 
@@ -20,7 +20,7 @@ module Alco = struct
                  let json_string = CCIO.read_all ic in
                  let tz_in_memory = Time_zone.make_exn s in
                  let tz_from_json =
-                   CCResult.get_exn @@ Time_zone.JSON.of_string json_string
+                   CCOpt.get_exn @@ Time_zone.JSON.of_string json_string
                  in
                  assert (Time_zone.equal tz_in_memory tz_from_json)))
          Time_zone.available_time_zones)

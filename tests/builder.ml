@@ -12,7 +12,7 @@ let make_rng ~randomness : unit -> int =
 
 let make_date_time ~rng ~min_year ~max_year_inc =
   let year = min max_year_inc (min_year + rng ()) in
-  let month = CCResult.get_exn @@ month_of_tm_int (rng () mod 12) in
+  let month = CCOpt.get_exn @@ month_of_tm_int (rng () mod 12) in
   let day = 1 + (rng () mod day_count_of_month ~year ~month) in
   let hour = rng () mod 24 in
   let minute = rng () mod 60 in
@@ -24,11 +24,11 @@ let make_date_time ~rng ~min_year ~max_year_inc =
     |> Time_zone.make_exn
   in
   match Time.Date_time'.make ~year ~month ~day ~hour ~minute ~second ~tz with
-  | Error () ->
+  | None ->
     Time.Date_time'.make ~year ~month ~day ~hour ~minute ~second
       ~tz:Time_zone.utc
-    |> CCResult.get_exn
-  | Ok x -> x
+    |> CCOpt.get_exn
+  | Some x -> x
 
 let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
   let len = min 5 (rng ()) in
@@ -60,7 +60,7 @@ let make_pattern ~rng ~min_year ~max_year_inc : Pattern.t =
     else
       let end_inc = min 5 (rng ()) in
       OSeq.(0 -- end_inc)
-      |> Seq.map (fun _ -> CCResult.get_exn @@ month_of_tm_int (rng () mod 12))
+      |> Seq.map (fun _ -> CCOpt.get_exn @@ month_of_tm_int (rng () mod 12))
       |> CCList.of_seq
   in
   let month_days =
@@ -78,7 +78,7 @@ let make_pattern ~rng ~min_year ~max_year_inc : Pattern.t =
     else
       let end_inc = min 5 (rng ()) in
       OSeq.(0 -- end_inc)
-      |> Seq.map (fun _ -> CCResult.get_exn @@ weekday_of_tm_int (rng () mod 7))
+      |> Seq.map (fun _ -> CCOpt.get_exn @@ weekday_of_tm_int (rng () mod 7))
       |> CCList.of_seq
   in
   let hours =
@@ -125,7 +125,7 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
       ~second:(rng ()) ()
   | 3 ->
     Points.make_exn
-      ~weekday:(rng () mod 7 |> weekday_of_tm_int |> CCResult.get_exn)
+      ~weekday:(rng () mod 7 |> weekday_of_tm_int |> CCOpt.get_exn)
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
       ~second:(rng ()) ()
@@ -136,7 +136,7 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
       ~second:(rng ()) ()
   | 5 ->
     Points.make_exn
-      ~month:(CCResult.get_exn @@ month_of_tm_int (rng () mod 12))
+      ~month:(CCOpt.get_exn @@ month_of_tm_int (rng () mod 12))
       ~day
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
@@ -144,7 +144,7 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
   | 6 ->
     Points.make_exn
       ~year:(min max_year_inc (min_year + rng ()))
-      ~month:(CCResult.get_exn @@ month_of_tm_int (rng () mod 12))
+      ~month:(CCOpt.get_exn @@ month_of_tm_int (rng () mod 12))
       ~day
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)

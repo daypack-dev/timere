@@ -80,7 +80,7 @@ let debug_resolver () =
   let search_start_dt =
     Time.Date_time'.make ~year:2000 ~month:`Jan ~day:1 ~hour:10 ~minute:0
       ~second:0 ~tz
-    |> CCResult.get_exn
+    |> CCOpt.get_exn
   in
   let search_start =
     Time.Date_time'.to_timestamp search_start_dt
@@ -89,7 +89,7 @@ let debug_resolver () =
   let search_end_exc_dt =
     Time.Date_time'.make ~year:2003 ~month:`Jan ~day:1 ~hour:0 ~minute:0
       ~second:0 ~tz
-    |> CCResult.get_exn
+    |> CCOpt.get_exn
   in
   let search_end_exc =
     Time.Date_time'.to_timestamp search_end_exc_dt
@@ -316,11 +316,11 @@ let debug_fuzz_pattern () =
               search_space)
         |> OSeq.filter (fun timestamp ->
             let dt =
-              CCResult.get_exn
+              CCOpt.get_exn
               @@ Time.Date_time'.of_timestamp ~tz_of_date_time:tz timestamp
             in
             let weekday =
-              CCResult.get_exn
+              CCOpt.get_exn
               @@ weekday_of_month_day ~year:dt.year ~month:dt.month
                 ~mday:dt.day
             in

@@ -23,12 +23,12 @@ let () =
                   search_space)
             |> OSeq.filter (fun timestamp ->
                 let dt =
-                  CCResult.get_exn
+                  CCOpt.get_exn
                   @@ Time.Date_time'.of_timestamp ~tz_of_date_time:tz
                     timestamp
                 in
                 let weekday =
-                  CCResult.get_exn
+                  CCOpt.get_exn
                   @@ weekday_of_month_day ~year:dt.year ~month:dt.month
                     ~mday:dt.day
                 in

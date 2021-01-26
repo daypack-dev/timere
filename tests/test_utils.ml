@@ -267,13 +267,13 @@ let tz_testable : (module Alcotest.TESTABLE with type t = Time_zone.t) =
 let time_gen : Time_ast.t QCheck.Gen.t =
   let open QCheck.Gen in
   let search_start_dt =
-    CCResult.get_exn
+    CCOpt.get_exn
     @@ Time.Date_time'.make ~year:2018 ~month:`Jan ~day:1 ~hour:0 ~minute:0
       ~second:0 ~tz:Time_zone.utc
   in
   let search_start = Time.Date_time'.to_timestamp_single search_start_dt in
   let search_end_exc_dt =
-    CCResult.get_exn
+    CCOpt.get_exn
     @@ Time.Date_time'.make ~year:2021 ~month:`Jan ~day:1 ~hour:0 ~minute:0
       ~second:0 ~tz:Time_zone.utc
   in

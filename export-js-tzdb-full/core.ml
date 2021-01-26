@@ -23,18 +23,18 @@ let js_date_of_date_time dt =
 
 let js_date_of_timestamp x =
   match Timere.Date_time.of_timestamp x with
-  | Error () -> raise_with_msg "Invalid timestamp"
-  | Ok dt -> js_date_of_date_time dt
+  | None -> raise_with_msg "Invalid timestamp"
+  | Some dt -> js_date_of_date_time dt
 
 let month_of_int x =
   match Timere.Utils.month_of_tm_int x with
-  | Error () -> raise_with_msg "Invalid month"
-  | Ok x -> x
+  | None -> raise_with_msg "Invalid month"
+  | Some x -> x
 
 let weekday_of_int x =
   match Timere.Utils.weekday_of_tm_int x with
-  | Error () -> raise_with_msg "Invalid weekday"
-  | Ok x -> x
+  | None -> raise_with_msg "Invalid weekday"
+  | Some x -> x
 
 let date_time_of_js_date (date : Js.date Js.t) =
   let year = date##getUTCFullYear in
@@ -47,8 +47,8 @@ let date_time_of_js_date (date : Js.date Js.t) =
     Timere.Date_time.make ~year ~month ~day ~hour ~minute ~second
       ~tz:Timere.Time_zone.utc
   with
-  | Error () -> raise_with_msg "Invalid date"
-  | Ok x -> x
+  | None -> raise_with_msg "Invalid date"
+  | Some x -> x
 
 let to_be_exported =
   object%js
@@ -63,8 +63,8 @@ let to_be_exported =
           list_of_js_array l
           |> List.map (fun x ->
               match Timere.Utils.month_of_human_int x with
-              | Ok x -> x
-              | Error () -> raise_with_msg "Invalid month int")
+              | Some x -> x
+              | None -> raise_with_msg "Invalid month int")
           |> Timere.months)
 
     method days l = wrap (fun () -> Timere.days (list_of_js_array l))
@@ -134,8 +134,8 @@ let to_be_exported =
 
         method ofJSONString s =
           match Timere.Time_zone.JSON.of_string (Js.to_string s) with
-          | Error () -> raise_with_msg "Invalid JSON string"
-          | Ok x -> x
+          | None -> raise_with_msg "Invalid JSON string"
+          | Some x -> x
       end
 
     method withTZ tz t = wrap (fun () -> Timere.with_tz tz t)

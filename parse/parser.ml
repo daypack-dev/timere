@@ -547,20 +547,21 @@ let parse_into_ast (s : string) : (ast, string) CCResult.t =
   |> result_of_mparser_result
 
 let flatten_months pos (l : Timere.month Timere.range list) =
-  Timere.Utils.flatten_month_range_list l
-  |> CCResult.map_err (fun () ->
-      Some (Printf.sprintf "%s: Invalid month ranges" (string_of_pos pos)))
+  match Timere.Utils.flatten_month_range_list l with
+  | Some x -> Ok x
+  | None -> Error (Some (Printf.sprintf "%s: Invalid month ranges" (string_of_pos pos)))
 
 let flatten_weekdays pos (l : Timere.weekday Timere.range list) =
-  Timere.Utils.flatten_weekday_range_list l
-  |> CCResult.map_err (fun () ->
-      Some (Printf.sprintf "%s: Invalid weekday ranges" (string_of_pos pos)))
+  match Timere.Utils.flatten_weekday_range_list l with
+  | Some x -> Ok x
+  | None ->
+    Error (Some (Printf.sprintf "%s: Invalid weekday ranges" (string_of_pos pos)))
 
 let flatten_month_days pos (l : int Timere.range list) =
-  Timere.Utils.flatten_month_day_range_list l
-  |> CCResult.map_err (fun () ->
-      Some
-        (Printf.sprintf "%s: Invalid month day ranges" (string_of_pos pos)))
+  match Timere.Utils.flatten_month_day_range_list l with
+  | Some x -> Ok x
+  | None ->
+    Error (Some (Printf.sprintf "%s: Invalid month day ranges" (string_of_pos pos)))
 
 let pattern ?(years = []) ?(months = []) ?pos_days ?(days = []) ?(weekdays = [])
     ?(hms : Timere.hms option) () =
@@ -673,15 +674,21 @@ let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t
   =
   match ast with
   | Tokens [ (_, Nat year); (_, Month month); (_, Nat day); (_, Hms hms) ]
-    when year > 31 ->
-    Timere.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
-      ~second:hms.second ~tz
-    |> CCResult.map_err (fun () -> "Invalid date time")
+    when year > 31 -> (
+      match Timere.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
+        ~second:hms.second ~tz
+      with
+      | Some x -> Ok x
+      | None -> Error "Invalid date time"
+    )
   | Tokens [ (_, Nat day); (_, Month month); (_, Nat year); (_, Hms hms) ]
-    when year > 31 ->
-    Timere.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
-      ~second:hms.second ~tz
-    |> CCResult.map_err (fun () -> "Invalid date time")
+    when year > 31 -> (
+      match Timere.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
+        ~second:hms.second ~tz
+        with
+        | Some x -> Ok x
+        | None -> Error "Invalid date time"
+    )
   | Tokens
       [ (_, Nat year); (_, Month month); (_, Nat day); (_, St); (_, Hms hms) ]
   | Tokens
@@ -690,10 +697,13 @@ let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t
       [ (_, Nat year); (_, Month month); (_, Nat day); (_, Rd); (_, Hms hms) ]
   | Tokens
       [ (_, Nat year); (_, Month month); (_, Nat day); (_, Th); (_, Hms hms) ]
-    ->
-    Timere.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
-      ~second:hms.second ~tz
-    |> CCResult.map_err (fun () -> "Invalid date time")
+    -> (
+        match Timere.Date_time.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
+          ~second:hms.second ~tz
+        with
+        | Some x -> Ok x
+        | None -> Error "Invalid date time"
+      )
   | _ -> Error "Unrecognized pattern"
 
 let parse_date_time ?(tz = Timere.Time_zone.utc) s =

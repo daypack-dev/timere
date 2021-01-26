@@ -401,7 +401,7 @@ let () =
                   { Timere.Time_zone.is_dst = r.is_dst; offset = r.offset } ))
              l
          in
-         CCResult.get_exn
+         CCOpt.get_exn
          @@ Timere.Time_zone.Raw.of_transitions ~name transitions)
       tables_utc
   in

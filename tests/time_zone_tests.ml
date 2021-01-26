@@ -8,7 +8,7 @@ module Qc = struct
            tz
            |> Time_zone.JSON.to_string
            |> Time_zone.JSON.of_string
-           |> CCResult.get_exn
+           |> CCOpt.get_exn
          in
          Time_zone.equal tz tz')
 

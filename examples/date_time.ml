@@ -38,5 +38,5 @@ let () =
     Timere.Date_time.make ~tz ~year:2021 ~month:`Oct ~day:3 ~hour:2 ~minute:30 ~second:0
   in
   match non_existent_dt with
-  | Error _ -> print_endline "Failed to construct date time"
-  | Ok _ -> failwith "Unexpected case"
+  | None -> print_endline "Failed to construct date time"
+  | Some _ -> failwith "Unexpected case"
