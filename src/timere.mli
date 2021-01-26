@@ -222,11 +222,12 @@ module Time_zone : sig
       One use of this is to create a time zone for [to_string] functions.
   *)
 
+  (** {2 Importing and exporting}*)
+
   type entry = {
     is_dst : bool;
     offset : int;
   }
-  (** {2 Importing and exporting}*)
 
   type table =
     (int64, Bigarray.int64_elt, Bigarray.c_layout) Bigarray.Array1.t
