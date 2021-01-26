@@ -448,4 +448,7 @@ let greatest_pos_tz_offset_s = %d
         Filename.concat dir (List.nth time_zone_parts (len - 1) ^ ".json")
       in
       CCIO.with_out ~flags:[ Open_wronly; Open_creat ] output_file_name
-        (fun oc -> CCIO.write_line oc (Timere.Time_zone.JSON.to_string tz)))
+        (fun oc ->
+           Format.fprintf (CCFormat.of_chan oc) "%a@." Yojson.Basic.pp
+             (Timere.Time_zone.JSON.to_json tz)
+        ))
