@@ -11,7 +11,3 @@ type table =
 type db = table M.t
 
 let db : db = Marshal.from_string Tzdb_marshalled.s 0
-
-let lookup name = M.find_opt name db
-
-let available_time_zones = List.map fst (M.bindings db)

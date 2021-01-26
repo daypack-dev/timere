@@ -74,11 +74,8 @@ let process_table ((offsets, entries) : table) : record =
     in
     { recorded_offsets; table = (offsets, entries) }
 
-let lookup_ref : (string -> table option) ref = ref lookup
-
 let lookup_record name : record option =
-  name
-  |> !lookup_ref
+  M.find_opt name db
   |> CCOpt.map (fun table ->
       assert (check_table table);
       process_table table)
@@ -361,25 +358,26 @@ module JSON = struct
 end
 
 module Db = struct
-  type db = table String_map.t
+  type db = table M.t
 
-  let empty = String_map.empty
+  let empty = M.empty
 
-  let add tz db = String_map.add tz.name tz.record.table db
+  let add tz db = M.add tz.name tz.record.table db
 
   let find_opt name db =
-    String_map.find_opt name db
+    M.find_opt name db
     |> CCOpt.map (fun table -> Raw.of_table ~name table)
 
-  let remove name db = String_map.remove name db
-
-  let of_seq s : db =
-    s |> Seq.map (fun tz -> (tz.name, tz.record.table)) |> String_map.of_seq
+  let remove name db = M.remove name db
 
   let add_seq db s : db =
-    s |> Seq.map (fun tz -> (tz.name, tz.record.table)) |> String_map.add_seq db
+    s
+    |> Seq.fold_left (fun db tz -> add tz db) db
 
-  let names db = List.map fst (String_map.bindings db)
+  let of_seq s : db =
+    add_seq empty s
+
+  let names db = List.map fst (M.bindings db)
 
   module Raw' = Raw
 
@@ -407,7 +405,7 @@ module Db = struct
       with _ -> None
 
     let to_sexp db =
-      String_map.bindings db
+      M.bindings db
       |> List.map (fun (name, table) -> Raw'.of_table ~name table)
       |> List.map Sexp.to_sexp
       |> CCSexp.list
@@ -420,3 +418,5 @@ module Db = struct
       match res with Error _ -> None | Ok x -> of_sexp x
   end
 end
+
+let available_time_zones = Db.names db

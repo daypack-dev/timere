@@ -1,3 +1,5 @@
+module M : Map.S with type key = string
+
 type entry = {
   is_dst : bool;
   offset : int;
@@ -6,6 +8,4 @@ type entry = {
 type table =
   (int64, Bigarray.int64_elt, Bigarray.c_layout) Bigarray.Array1.t * entry array
 
-val lookup : string -> table option
-
-val available_time_zones : string list
+val db : table M.t
