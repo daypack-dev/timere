@@ -365,17 +365,13 @@ module Db = struct
   let add tz db = M.add tz.name tz.record.table db
 
   let find_opt name db =
-    M.find_opt name db
-    |> CCOpt.map (fun table -> Raw.of_table ~name table)
+    M.find_opt name db |> CCOpt.map (fun table -> Raw.of_table ~name table)
 
   let remove name db = M.remove name db
 
-  let add_seq db s : db =
-    s
-    |> Seq.fold_left (fun db tz -> add tz db) db
+  let add_seq db s : db = Seq.fold_left (fun db tz -> add tz db) db s
 
-  let of_seq s : db =
-    add_seq empty s
+  let of_seq s : db = add_seq empty s
 
   let names db = List.map fst (M.bindings db)
 
