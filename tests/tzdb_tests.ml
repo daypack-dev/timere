@@ -7,7 +7,7 @@ module Alco = struct
          Time_zone.available_time_zones)
       true
 
-  let tzdb_json_loads_correctly () =
+  let tzdb_jsons_load_correctly () =
     Alcotest.(check unit)
       "everything loads correctly"
       (List.iter
@@ -29,7 +29,7 @@ module Alco = struct
   let suite =
     [
       Alcotest.test_case "tzdb_make_all" `Quick tzdb_make_all;
-      Alcotest.test_case "tzdb_json_loads_correctly" `Quick
-        tzdb_json_loads_correctly;
+      Alcotest.test_case "tzdb_jsons_load_correctly" `Quick
+        tzdb_jsons_load_correctly;
     ]
 end
