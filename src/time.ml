@@ -1633,46 +1633,33 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
     ?(weekday_ranges = []) ?(hours = []) ?(hour_ranges = []) ?(minutes = [])
     ?(minute_ranges = []) ?(seconds = []) ?(second_ranges = []) () : t =
   let years =
-    try
-      years @ Year_ranges.Flatten.flatten_list year_ranges
-    with
-    | Range.Range_is_invalid -> invalid_arg "pattern: invalid year range"
+    try years @ Year_ranges.Flatten.flatten_list year_ranges
+    with Range.Range_is_invalid -> invalid_arg "pattern: invalid year range"
   in
   let months =
-    try
-      months @ Month_ranges.Flatten.flatten_list month_ranges
-    with
-    | Range.Range_is_invalid -> invalid_arg "pattern: invalid month range"
+    try months @ Month_ranges.Flatten.flatten_list month_ranges
+    with Range.Range_is_invalid -> invalid_arg "pattern: invalid month range"
   in
   let month_days =
-    try
-      days @ Month_day_ranges.Flatten.flatten_list day_ranges
-    with
-    | Range.Range_is_invalid -> invalid_arg "pattern: invalid day range"
+    try days @ Month_day_ranges.Flatten.flatten_list day_ranges
+    with Range.Range_is_invalid -> invalid_arg "pattern: invalid day range"
   in
   let weekdays =
-    try
-    weekdays @ Weekday_ranges.Flatten.flatten_list weekday_ranges
-    with
-    | Range.Range_is_invalid -> invalid_arg "pattern: invalid weekday range"
+    try weekdays @ Weekday_ranges.Flatten.flatten_list weekday_ranges
+    with Range.Range_is_invalid ->
+      invalid_arg "pattern: invalid weekday range"
   in
   let hours =
-    try
-      hours @ Hour_ranges.Flatten.flatten_list hour_ranges
-    with
-    | Range.Range_is_invalid -> invalid_arg "pattern: invalid hour range"
+    try hours @ Hour_ranges.Flatten.flatten_list hour_ranges
+    with Range.Range_is_invalid -> invalid_arg "pattern: invalid hour range"
   in
   let minutes =
-    try
-      minutes @ Minute_ranges.Flatten.flatten_list minute_ranges
-    with
-    | Range.Range_is_invalid -> invalid_arg "pattern: invalid minute range"
+    try minutes @ Minute_ranges.Flatten.flatten_list minute_ranges
+    with Range.Range_is_invalid -> invalid_arg "pattern: invalid minute range"
   in
   let seconds =
-    try
-      seconds @ Second_ranges.Flatten.flatten_list second_ranges
-    with
-    | Range.Range_is_invalid -> invalid_arg "pattern: invalid second range"
+    try seconds @ Second_ranges.Flatten.flatten_list second_ranges
+    with Range.Range_is_invalid -> invalid_arg "pattern: invalid second range"
   in
   match (years, months, month_days, weekdays, hours, minutes, seconds) with
   | [], [], [], [], [], [], [] -> All
