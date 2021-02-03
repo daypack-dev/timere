@@ -698,8 +698,7 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.hms option)
 
 module Rules = struct
   let rule_star l =
-    match l with
-    | [ (_, Star) ] -> Ok Timere.always | _ -> Error None
+    match l with [ (_, Star) ] -> Ok Timere.always | _ -> Error None
 
   let rule_weekdays l =
     match l with
@@ -767,171 +766,169 @@ module Rules = struct
 
   let rule_ymd_hms_to_ymd_hms l =
     match l with
-| [
-        (_, Nat year1);
-        (_, Month month1);
-        (pos_day1, Nat day1);
-        (_, Hms hms1);
-        (_, To);
-        (_, Nat year2);
-        (_, Month month2);
-        (pos_day2, Nat day2);
-        (_, Hms hms2);
-      ]
-      | [
-        (_, Nat year1);
-        (_, Month month1);
-        (pos_day1, Nat day1);
-        (_, Hms hms1);
-        (_, To);
-        (_, Nat year2);
-        (_, Month month2);
-        (pos_day2, Month_day day2);
-        (_, Hms hms2);
-      ]
-      | [
-        (_, Nat year1);
-        (_, Month month1);
-        (pos_day1, Month_day day1);
-        (_, Hms hms1);
-        (_, To);
-        (_, Nat year2);
-        (_, Month month2);
-        (pos_day2, Nat day2);
-        (_, Hms hms2);
-      ]
-      | [
-        (_, Nat year1);
-        (_, Month month1);
-        (pos_day1, Month_day day1);
-        (_, Hms hms1);
-        (_, To);
-        (_, Nat year2);
-        (_, Month month2);
-        (pos_day2, Month_day day2);
-        (_, Hms hms2);
-      ] -> (
-          match
-            ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
-                ~hms:hms1 `Front,
-              points ~year:year2 ~month:month2 ~pos_day:pos_day2 ~day:day2
-                ~hms:hms2 `Back )
-          with
-          | Ok p1, Ok p2 ->
-            Ok
-              (Timere.bounded_intervals `Whole
-                 (Timere.Duration.make ~days:((year2 - year1 + 1) * 366) ())
-                 p1 p2)
-          | _, _ -> Error None)
-      | _ -> Error None
+    | [
+      (_, Nat year1);
+      (_, Month month1);
+      (pos_day1, Nat day1);
+      (_, Hms hms1);
+      (_, To);
+      (_, Nat year2);
+      (_, Month month2);
+      (pos_day2, Nat day2);
+      (_, Hms hms2);
+    ]
+    | [
+      (_, Nat year1);
+      (_, Month month1);
+      (pos_day1, Nat day1);
+      (_, Hms hms1);
+      (_, To);
+      (_, Nat year2);
+      (_, Month month2);
+      (pos_day2, Month_day day2);
+      (_, Hms hms2);
+    ]
+    | [
+      (_, Nat year1);
+      (_, Month month1);
+      (pos_day1, Month_day day1);
+      (_, Hms hms1);
+      (_, To);
+      (_, Nat year2);
+      (_, Month month2);
+      (pos_day2, Nat day2);
+      (_, Hms hms2);
+    ]
+    | [
+      (_, Nat year1);
+      (_, Month month1);
+      (pos_day1, Month_day day1);
+      (_, Hms hms1);
+      (_, To);
+      (_, Nat year2);
+      (_, Month month2);
+      (pos_day2, Month_day day2);
+      (_, Hms hms2);
+    ] -> (
+        match
+          ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
+              ~hms:hms1 `Front,
+            points ~year:year2 ~month:month2 ~pos_day:pos_day2 ~day:day2
+              ~hms:hms2 `Back )
+        with
+        | Ok p1, Ok p2 ->
+          Ok
+            (Timere.bounded_intervals `Whole
+               (Timere.Duration.make ~days:((year2 - year1 + 1) * 366) ())
+               p1 p2)
+        | _, _ -> Error None)
+    | _ -> Error None
 
   let rule_ymd_hms_to_md_hms l =
     match l with
-| [
-        (_, Nat year1);
-        (_, Month month1);
-        (pos_day1, Nat day1);
-        (_, Hms hms1);
-        (_, To);
-        (_, Month month2);
-        (pos_day2, Nat day2);
-        (_, Hms hms2);
-      ]
-      | [
-        (_, Nat year1);
-        (_, Month month1);
-        (pos_day1, Nat day1);
-        (_, Hms hms1);
-        (_, To);
-        (_, Month month2);
-        (pos_day2, Month_day day2);
-        (_, Hms hms2);
-      ]
-      | [
-        (_, Nat year1);
-        (_, Month month1);
-        (pos_day1, Month_day day1);
-        (_, Hms hms1);
-        (_, To);
-        (_, Month month2);
-        (pos_day2, Nat day2);
-        (_, Hms hms2);
-      ]
-      | [
-        (_, Nat year1);
-        (_, Month month1);
-        (pos_day1, Month_day day1);
-        (_, Hms hms1);
-        (_, To);
-        (_, Month month2);
-        (pos_day2, Month_day day2);
-        (_, Hms hms2);
-      ] -> (
-          match
-            ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
-                ~hms:hms1 `Front,
-              points ~month:month2 ~pos_day:pos_day2 ~day:day2
-                ~hms:hms2 `Back )
-          with
-          | Ok p1, Ok p2 ->
-            Ok
-              (Timere.bounded_intervals `Whole
-                 (Timere.Duration.make ~days:366 ())
-                 p1 p2)
-          | _, _ -> Error None)
-      | _ -> Error None
+    | [
+      (_, Nat year1);
+      (_, Month month1);
+      (pos_day1, Nat day1);
+      (_, Hms hms1);
+      (_, To);
+      (_, Month month2);
+      (pos_day2, Nat day2);
+      (_, Hms hms2);
+    ]
+    | [
+      (_, Nat year1);
+      (_, Month month1);
+      (pos_day1, Nat day1);
+      (_, Hms hms1);
+      (_, To);
+      (_, Month month2);
+      (pos_day2, Month_day day2);
+      (_, Hms hms2);
+    ]
+    | [
+      (_, Nat year1);
+      (_, Month month1);
+      (pos_day1, Month_day day1);
+      (_, Hms hms1);
+      (_, To);
+      (_, Month month2);
+      (pos_day2, Nat day2);
+      (_, Hms hms2);
+    ]
+    | [
+      (_, Nat year1);
+      (_, Month month1);
+      (pos_day1, Month_day day1);
+      (_, Hms hms1);
+      (_, To);
+      (_, Month month2);
+      (pos_day2, Month_day day2);
+      (_, Hms hms2);
+    ] -> (
+        match
+          ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
+              ~hms:hms1 `Front,
+            points ~month:month2 ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Back )
+        with
+        | Ok p1, Ok p2 ->
+          Ok
+            (Timere.bounded_intervals `Whole
+               (Timere.Duration.make ~days:366 ())
+               p1 p2)
+        | _, _ -> Error None)
+    | _ -> Error None
 
   let rule_ymd_hms_to_d_hms l =
     match l with
-| [
-        (_, Nat year1);
-        (_, Month month1);
-        (pos_day1, Nat day1);
-        (_, Hms hms1);
-        (_, To);
-        (pos_day2, Nat day2);
-        (_, Hms hms2);
-      ]
-      | [
-        (_, Nat year1);
-        (_, Month month1);
-        (pos_day1, Nat day1);
-        (_, Hms hms1);
-        (_, To);
-        (pos_day2, Month_day day2);
-        (_, Hms hms2);
-      ]
-      | [
-        (_, Nat year1);
-        (_, Month month1);
-        (pos_day1, Month_day day1);
-        (_, Hms hms1);
-        (_, To);
-        (pos_day2, Nat day2);
-        (_, Hms hms2);
-      ]
-      | [
-        (_, Nat year1);
-        (_, Month month1);
-        (pos_day1, Month_day day1);
-        (_, Hms hms1);
-        (_, To);
-        (pos_day2, Month_day day2);
-        (_, Hms hms2);
-      ] -> (
-          match
-            ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
-                ~hms:hms1 `Front,
-              points ~pos_day:pos_day2 ~day:day2
-                ~hms:hms2 `Back )
-          with
-          | Ok p1, Ok p2 ->
-            Ok
-              (Timere.bounded_intervals `Whole
-                 (Timere.Duration.make ~days:366 ())
-                 p1 p2)
-          | _, _ -> Error None)
-      | _ -> Error None
+    | [
+      (_, Nat year1);
+      (_, Month month1);
+      (pos_day1, Nat day1);
+      (_, Hms hms1);
+      (_, To);
+      (pos_day2, Nat day2);
+      (_, Hms hms2);
+    ]
+    | [
+      (_, Nat year1);
+      (_, Month month1);
+      (pos_day1, Nat day1);
+      (_, Hms hms1);
+      (_, To);
+      (pos_day2, Month_day day2);
+      (_, Hms hms2);
+    ]
+    | [
+      (_, Nat year1);
+      (_, Month month1);
+      (pos_day1, Month_day day1);
+      (_, Hms hms1);
+      (_, To);
+      (pos_day2, Nat day2);
+      (_, Hms hms2);
+    ]
+    | [
+      (_, Nat year1);
+      (_, Month month1);
+      (pos_day1, Month_day day1);
+      (_, Hms hms1);
+      (_, To);
+      (pos_day2, Month_day day2);
+      (_, Hms hms2);
+    ] -> (
+        match
+          ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
+              ~hms:hms1 `Front,
+            points ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Back )
+        with
+        | Ok p1, Ok p2 ->
+          Ok
+            (Timere.bounded_intervals `Whole
+               (Timere.Duration.make ~days:366 ())
+               p1 p2)
+        | _, _ -> Error None)
+    | _ -> Error None
 
   let rule_ymd_hms_to_hms l =
     match l with
@@ -954,8 +951,7 @@ module Rules = struct
         match
           ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
               ~hms:hms1 `Front,
-            points
-              ~hms:hms2 `Back )
+            points ~hms:hms2 `Back )
         with
         | Ok p1, Ok p2 ->
           Ok
