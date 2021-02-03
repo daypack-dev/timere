@@ -696,61 +696,78 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.hms option)
              ~minute:default_minute ~second:default_second ())
       | _ -> invalid_arg "points")
 
-let t_rules : (token list -> (Timere.t, string option) CCResult.t) list =
-  [
-    (function [ (_, Star) ] -> Ok Timere.always | _ -> Error None);
-    (function
-      | [ (_, Weekday x) ] -> Ok (Timere.weekdays [ x ])
-      | [ (pos, Weekdays l) ] ->
-        flatten_weekdays pos l |> CCResult.map (fun l -> Timere.weekdays l)
-      | _ -> Error None);
-    (function
-      | [ (_, Month_day x) ] -> Ok (Timere.days [ x ])
-      | [ (pos, Month_days l) ] ->
-        flatten_month_days pos l |> CCResult.map (fun l -> Timere.days l)
-      | _ -> Error None);
-    (function
-      | [ (_, Month month); (pos_days, Month_day day) ]
-      | [ (_, Month month); (pos_days, Nat day) ] ->
-        pattern ~months:[ month ] ~pos_days ~days:[ day ] ()
-      | [ (_, Month month); (pos_days, Month_days day_ranges) ]
-      | [ (_, Month month); (pos_days, Nats day_ranges) ] -> (
-          match flatten_month_days pos_days day_ranges with
-          | Error x -> Error x
-          | Ok days -> pattern ~months:[ month ] ~pos_days ~days ())
-      | _ -> Error None);
-    (function
-      | [ (_, Month x) ] -> Ok (Timere.months [ x ])
-      | [ (pos, Months l) ] ->
-        flatten_months pos l |> CCResult.map (fun l -> Timere.months l)
-      | _ -> Error None);
-    (function
-      | [ (_, Nat year); (_, Month month); (pos_days, Nat day) ]
-      | [ (_, Nat year); (_, Month month); (pos_days, Nat day); (_, St) ]
-      | [ (_, Nat year); (_, Month month); (pos_days, Nat day); (_, Nd) ]
-      | [ (_, Nat year); (_, Month month); (pos_days, Nat day); (_, Rd) ]
-      | [ (_, Nat year); (_, Month month); (pos_days, Nat day); (_, Th) ]
-        when year > 31 ->
-        pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ()
-      | [ (pos_days, Nat day); (_, Month month); (_, Nat year) ] when year > 31 ->
-        pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ()
-      | [ (_, Nat year); (pos_days, Nat day); (_, Of); (_, Month month) ] ->
-        pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ()
-      | _ -> Error None);
-    (function
-      | [ (_, Month month); (pos_days, Nat day); (_, Hms hms) ] ->
-        pattern ~months:[ month ] ~pos_days ~days:[ day ] ~hms ()
-      | _ -> Error None);
-    (function
-      | [ (_, Nat year); (_, Month month); (pos_days, Nat day); (_, Hms hms) ]
-      | [
-        (_, Nat year); (_, Month month); (pos_days, Month_day day); (_, Hms hms);
-      ] ->
-        pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ~hms
-          ()
-      | _ -> Error None);
-    (function
-      | [
+module Rules = struct
+  let rule_star l =
+    match l with
+    | [ (_, Star) ] -> Ok Timere.always | _ -> Error None
+
+  let rule_weekdays l =
+    match l with
+    | [ (_, Weekday x) ] -> Ok (Timere.weekdays [ x ])
+    | [ (pos, Weekdays l) ] ->
+      flatten_weekdays pos l |> CCResult.map (fun l -> Timere.weekdays l)
+    | _ -> Error None
+
+  (* let rule_month_day l =
+   *   match l with
+   *   | [ (_, Month_day x) ] -> Ok (Timere.days [ x ])
+   *   | [ (pos, Month_days l) ] ->
+   *     flatten_month_days pos l |> CCResult.map (fun l -> Timere.days l)
+   *   | _ -> Error None *)
+
+  let rule_month_days l =
+    match l with
+    | [ (_, Month month); (pos_days, Month_day day) ]
+    | [ (_, Month month); (pos_days, Nat day) ] ->
+      pattern ~months:[ month ] ~pos_days ~days:[ day ] ()
+    | [ (_, Month month); (pos_days, Month_days day_ranges) ]
+    | [ (_, Month month); (pos_days, Nats day_ranges) ] -> (
+        match flatten_month_days pos_days day_ranges with
+        | Error x -> Error x
+        | Ok days -> pattern ~months:[ month ] ~pos_days ~days ())
+    | _ -> Error None
+
+  let rule_month l =
+    match l with
+    | [ (_, Month x) ] -> Ok (Timere.months [ x ])
+    | [ (pos, Months l) ] ->
+      flatten_months pos l |> CCResult.map (fun l -> Timere.months l)
+    | _ -> Error None
+
+  let rule_ymd l =
+    match l with
+    | [ (_, Nat year); (_, Month month); (pos_days, Nat day) ]
+    | [ (_, Nat year); (_, Month month); (pos_days, Nat day); (_, St) ]
+    | [ (_, Nat year); (_, Month month); (pos_days, Nat day); (_, Nd) ]
+    | [ (_, Nat year); (_, Month month); (pos_days, Nat day); (_, Rd) ]
+    | [ (_, Nat year); (_, Month month); (pos_days, Nat day); (_, Th) ]
+      when year > 31 ->
+      pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ()
+    | [ (pos_days, Nat day); (_, Month month); (_, Nat year) ] when year > 31 ->
+      pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ()
+    | [ (_, Nat year); (pos_days, Nat day); (_, Of); (_, Month month) ] ->
+      pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ()
+    | _ -> Error None
+
+  let rule_md_hms l =
+    match l with
+    | [ (_, Month month); (pos_days, Nat day); (_, Hms hms) ] ->
+      pattern ~months:[ month ] ~pos_days ~days:[ day ] ~hms ()
+    | _ -> Error None
+
+  let rule_ymd_hms l =
+    match l with
+    | [ (_, Nat year); (_, Month month); (pos_days, Nat day); (_, Hms hms) ]
+    | [
+      (_, Nat year); (_, Month month); (pos_days, Month_day day); (_, Hms hms);
+    ] ->
+      pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ~hms
+        ()
+    | _ -> Error None
+
+  let rule_ymd_hms_to_ymd_hms l =
+    match l with
+| [
         (_, Nat year1);
         (_, Month month1);
         (pos_day1, Nat day1);
@@ -806,8 +823,162 @@ let t_rules : (token list -> (Timere.t, string option) CCResult.t) list =
                  (Timere.Duration.make ~days:((year2 - year1 + 1) * 366) ())
                  p1 p2)
           | _, _ -> Error None)
-      | _ -> Error None);
-  ]
+      | _ -> Error None
+
+  let rule_ymd_hms_to_md_hms l =
+    match l with
+| [
+        (_, Nat year1);
+        (_, Month month1);
+        (pos_day1, Nat day1);
+        (_, Hms hms1);
+        (_, To);
+        (_, Month month2);
+        (pos_day2, Nat day2);
+        (_, Hms hms2);
+      ]
+      | [
+        (_, Nat year1);
+        (_, Month month1);
+        (pos_day1, Nat day1);
+        (_, Hms hms1);
+        (_, To);
+        (_, Month month2);
+        (pos_day2, Month_day day2);
+        (_, Hms hms2);
+      ]
+      | [
+        (_, Nat year1);
+        (_, Month month1);
+        (pos_day1, Month_day day1);
+        (_, Hms hms1);
+        (_, To);
+        (_, Month month2);
+        (pos_day2, Nat day2);
+        (_, Hms hms2);
+      ]
+      | [
+        (_, Nat year1);
+        (_, Month month1);
+        (pos_day1, Month_day day1);
+        (_, Hms hms1);
+        (_, To);
+        (_, Month month2);
+        (pos_day2, Month_day day2);
+        (_, Hms hms2);
+      ] -> (
+          match
+            ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
+                ~hms:hms1 `Front,
+              points ~month:month2 ~pos_day:pos_day2 ~day:day2
+                ~hms:hms2 `Back )
+          with
+          | Ok p1, Ok p2 ->
+            Ok
+              (Timere.bounded_intervals `Whole
+                 (Timere.Duration.make ~days:366 ())
+                 p1 p2)
+          | _, _ -> Error None)
+      | _ -> Error None
+
+  let rule_ymd_hms_to_d_hms l =
+    match l with
+| [
+        (_, Nat year1);
+        (_, Month month1);
+        (pos_day1, Nat day1);
+        (_, Hms hms1);
+        (_, To);
+        (pos_day2, Nat day2);
+        (_, Hms hms2);
+      ]
+      | [
+        (_, Nat year1);
+        (_, Month month1);
+        (pos_day1, Nat day1);
+        (_, Hms hms1);
+        (_, To);
+        (pos_day2, Month_day day2);
+        (_, Hms hms2);
+      ]
+      | [
+        (_, Nat year1);
+        (_, Month month1);
+        (pos_day1, Month_day day1);
+        (_, Hms hms1);
+        (_, To);
+        (pos_day2, Nat day2);
+        (_, Hms hms2);
+      ]
+      | [
+        (_, Nat year1);
+        (_, Month month1);
+        (pos_day1, Month_day day1);
+        (_, Hms hms1);
+        (_, To);
+        (pos_day2, Month_day day2);
+        (_, Hms hms2);
+      ] -> (
+          match
+            ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
+                ~hms:hms1 `Front,
+              points ~pos_day:pos_day2 ~day:day2
+                ~hms:hms2 `Back )
+          with
+          | Ok p1, Ok p2 ->
+            Ok
+              (Timere.bounded_intervals `Whole
+                 (Timere.Duration.make ~days:366 ())
+                 p1 p2)
+          | _, _ -> Error None)
+      | _ -> Error None
+
+  let rule_ymd_hms_to_hms l =
+    match l with
+    | [
+      (_, Nat year1);
+      (_, Month month1);
+      (pos_day1, Nat day1);
+      (_, Hms hms1);
+      (_, To);
+      (_, Hms hms2);
+    ]
+    | [
+      (_, Nat year1);
+      (_, Month month1);
+      (pos_day1, Month_day day1);
+      (_, Hms hms1);
+      (_, To);
+      (_, Hms hms2);
+    ] -> (
+        match
+          ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
+              ~hms:hms1 `Front,
+            points
+              ~hms:hms2 `Back )
+        with
+        | Ok p1, Ok p2 ->
+          Ok
+            (Timere.bounded_intervals `Whole
+               (Timere.Duration.make ~days:366 ())
+               p1 p2)
+        | _, _ -> Error None)
+    | _ -> Error None
+
+  let rules : (token list -> (Timere.t, string option) CCResult.t) list =
+    [
+      rule_star;
+      rule_weekdays;
+      rule_month_days;
+      rule_ymd;
+      rule_md_hms;
+      rule_ymd_hms;
+      rule_ymd_hms_to_ymd_hms;
+      rule_ymd_hms_to_md_hms;
+      rule_ymd_hms_to_d_hms;
+      rule_ymd_hms_to_hms;
+    ]
+end
 
 let t_of_tokens (tokens : token list) : (Timere.t, string) CCResult.t =
   let rec aux tokens rules =
@@ -825,7 +996,7 @@ let t_of_tokens (tokens : token list) : (Timere.t, string) CCResult.t =
         | Error None -> aux tokens rest
         | Error (Some msg) -> Error msg)
   in
-  aux tokens t_rules
+  aux tokens Rules.rules
 
 let t_of_ast (ast : ast) : (Timere.t, string) CCResult.t =
   let rec aux ast =
