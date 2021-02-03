@@ -1,5 +1,5 @@
 let debug_parsing () =
-  let expr = "jun 1 00:00 to feb 1 00:00" in
+  let expr = "(mar 2 1pm to 4th 14:00 || jun) && thursday" in
   print_endline expr;
   print_newline ();
   print_endline "gives";

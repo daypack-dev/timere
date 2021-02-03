@@ -198,13 +198,13 @@ let token_p : (token, unit) MParser.t =
 let tokens_p = spaces >> many1 token_p << spaces
 
 let inter : (ast -> ast -> ast, unit) t =
-  string "&&" >> return (fun a b -> Binary_op (Inter, a, b))
+  spaces >> string "&&" >> spaces >> return (fun a b -> Binary_op (Inter, a, b))
 
 let union : (ast -> ast -> ast, unit) t =
-  string "||" >> return (fun a b -> Binary_op (Union, a, b))
+  spaces >> string "||" >> spaces >> return (fun a b -> Binary_op (Union, a, b))
 
-let round_robin_pick : (ast -> ast -> ast, unit) t =
-  string ">>" >> return (fun a b -> Round_robin_pick [ a; b ])
+(* let round_robin_pick : (ast -> ast -> ast, unit) t =
+ *   spaces >> string ">>" >> return (fun a b -> Round_robin_pick [ a; b ]) *)
 
 let expr =
   let rec expr mparser_state =
