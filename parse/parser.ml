@@ -224,39 +224,39 @@ module Ast_normalize = struct
       ~(extract_grouped : guess -> a Timere.range list option)
       ~(constr_grouped : a Timere.range list -> guess) (l : token list) :
     token list =
-    let rec recognize_single_interval first_run tokens : token list =
+    let rec recognize_single_interval tokens : token list =
       match tokens with
       | [ (pos_x, x) ] -> (
           match extract_single x with
-          | Some x when not first_run ->
+          | Some x ->
             (pos_x, constr_grouped [ `Range_inc (x, x) ])
-            :: recognize_single_interval false []
+            :: recognize_single_interval []
           | _ -> recognize_fallback tokens)
       | (pos_x, x) :: (pos_comma, Comma) :: rest -> (
           match extract_single x with
           | Some x ->
             (pos_x, constr_grouped [ `Range_inc (x, x) ])
             :: (pos_comma, Comma)
-            :: recognize_single_interval false rest
+            :: recognize_single_interval rest
           | _ -> recognize_fallback tokens)
       | (pos_x, x) :: (_, To) :: (_, y) :: (pos_comma, Comma) :: rest -> (
           match (extract_single x, extract_single y) with
           | Some x, Some y ->
             (pos_x, constr_grouped [ `Range_inc (x, y) ])
             :: (pos_comma, Comma)
-            :: recognize_single_interval false rest
+            :: recognize_single_interval rest
           | _, _ -> recognize_fallback tokens)
       | (pos_x, x) :: (_, To) :: (_, y) :: rest -> (
           match (extract_single x, extract_single y) with
           | Some x, Some y ->
             (pos_x, constr_grouped [ `Range_inc (x, y) ])
-            :: recognize_single_interval false rest
+            :: recognize_single_interval rest
           | _, _ -> recognize_fallback tokens)
       | _ -> recognize_fallback tokens
     and recognize_fallback l =
       match l with
       | [] -> []
-      | token :: rest -> token :: recognize_single_interval false rest
+      | token :: rest -> token :: recognize_single_interval rest
     in
     let rec merge_intervals tokens : token list =
       match tokens with
@@ -269,13 +269,35 @@ module Ast_normalize = struct
     and merge_fallback l =
       match l with [] -> [] | token :: rest -> token :: merge_intervals rest
     in
-    l |> recognize_single_interval true |> merge_intervals
+    l |> recognize_single_interval |> merge_intervals
+
+  let ungroup (type a)
+      ~(extract_grouped : guess -> a Timere.range list option)
+      ~(constr_single : a -> guess) (l : token list) :
+    token list =
+    let rec aux tokens =
+      match tokens with
+      | [] -> []
+      | (pos_x, x) :: rest ->
+        match extract_grouped x with
+        | Some [ `Range_inc (x1, x2)] when x1 = x2 ->
+          (pos_x, constr_single x1) :: aux rest
+        | _ ->
+          (pos_x, x) :: aux rest
+    in
+    aux l
 
   let group_nats (l : token list) : token list =
     group
       ~extract_single:(function Nat x -> Some x | _ -> None)
       ~extract_grouped:(function Nats l -> Some l | _ -> None)
       ~constr_grouped:(fun l -> Nats l)
+      l
+
+  let ungroup_nats l =
+    ungroup
+      ~extract_grouped:(function Nats l -> Some l | _ -> None)
+      ~constr_single:(fun x -> Nat x)
       l
 
   let group_months (l : token list) : token list =
@@ -285,11 +307,23 @@ module Ast_normalize = struct
       ~constr_grouped:(fun x -> Months x)
       l
 
+  let ungroup_months l =
+    ungroup
+      ~extract_grouped:(function Months l -> Some l | _ -> None)
+      ~constr_single:(fun x -> Month x)
+      l
+
   let group_weekdays (l : token list) : token list =
     group
       ~extract_single:(function Weekday x -> Some x | _ -> None)
       ~extract_grouped:(function Weekdays l -> Some l | _ -> None)
       ~constr_grouped:(fun x -> Weekdays x)
+      l
+
+  let ungroup_weekdays l =
+    ungroup
+      ~extract_grouped:(function Weekdays l -> Some l | _ -> None)
+      ~constr_single:(fun x -> Weekday x)
       l
 
   let recognize_month_day (l : token list) : token list =
@@ -328,6 +362,12 @@ module Ast_normalize = struct
       ~extract_single:(function Month_day x -> Some x | _ -> None)
       ~extract_grouped:(function Month_days l -> Some l | _ -> None)
       ~constr_grouped:(fun x -> Month_days x)
+      l
+
+  let ungroup_month_days l =
+    ungroup
+      ~extract_grouped:(function Month_days l -> Some l | _ -> None)
+      ~constr_single:(fun x -> Month_day x)
       l
 
   type hms_mode =
@@ -432,6 +472,12 @@ module Ast_normalize = struct
       ~constr_grouped:(fun x -> Hmss x)
       l
 
+  let ungroup_hms l =
+    ungroup
+      ~extract_grouped:(function Hmss l -> Some l | _ -> None)
+      ~constr_single:(fun x -> Hms x)
+      l
+
   let recognize_duration (l : token list) : token list =
     let make_duration ~pos ~days ~hours ~minutes ~seconds =
       ( CCOpt.get_exn pos,
@@ -499,11 +545,16 @@ module Ast_normalize = struct
       | Tokens l ->
         let l =
           l |> recognize_hms |> recognize_duration |> recognize_month_day
-          (* |> group_nats
-           * |> group_month_days
-           * |> group_weekdays
-           * |> group_months
-           * |> group_hms *)
+          |> group_nats
+          |> group_month_days
+          |> group_weekdays
+          |> group_months
+          |> group_hms
+          |> ungroup_nats
+          |> ungroup_month_days
+          |> ungroup_weekdays
+          |> ungroup_months
+          |> ungroup_hms
         in
         Tokens l
       | Binary_op (op, e1, e2) -> Binary_op (op, aux e1, aux e2)
@@ -596,6 +647,22 @@ let t_rules : (token list -> (Timere.t, string option) CCResult.t) list =
       | [ (pos, Month_days l) ] ->
         flatten_month_days pos l |> CCResult.map (fun l -> Timere.days l)
       | _ -> Error None);
+    (function
+      | [ (_, Month month); (pos_days, Month_day day) ]
+      | [ (_, Month month); (pos_days, Nat day) ]
+        ->
+        pattern ~months:[ month ] ~pos_days ~days: [ day ] ()
+      | [ (_, Month month); (pos_days, Month_days day_ranges) ]
+      | [ (_, Month month); (pos_days, Nats day_ranges) ] -> (
+          match
+            flatten_month_days pos_days day_ranges
+          with
+          | Error x -> Error x
+          | Ok days ->
+            pattern ~months:[ month ] ~pos_days ~days ()
+        )
+      | _ -> Error None
+    );
     (function
       | [ (_, Month x) ] -> Ok (Timere.months [ x ])
       | [ (pos, Months l) ] ->
