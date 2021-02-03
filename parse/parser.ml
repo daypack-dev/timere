@@ -727,8 +727,6 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.hms option) (lean_
          )
     | _ -> invalid_arg "points"
 
-let default_tz = Timere.Time_zone.utc
-
 let t_rules : (token list -> (Timere.t, string option) CCResult.t) list =
   [
     (function [ (_, Star) ] -> Ok Timere.always | _ -> Error None);
@@ -787,33 +785,23 @@ let t_rules : (token list -> (Timere.t, string option) CCResult.t) list =
           ()
       | _ -> Error None);
     (function
-      | [ (_, Nat year1); (_, Month month1); (_pos_day1, Nat day1); (_, Hms hms1);
-          (_, To); (_, Nat year2); (_, Month month2); (_pos_day2, Nat day2); (_, Hms hms2) ]
-      | [ (_, Nat year1); (_, Month month1); (_pos_day1, Nat day1); (_, Hms hms1);
-          (_, To); (_, Nat year2); (_, Month month2); (_pos_day2, Month_day day2); (_, Hms hms2) ]
-      | [ (_, Nat year1); (_, Month month1); (_pos_day1, Month_day day1); (_, Hms hms1);
-          (_, To); (_, Nat year2); (_, Month month2); (_pos_day2, Nat day2); (_, Hms hms2) ]
-      | [ (_, Nat year1); (_, Month month1); (_pos_day1, Month_day day1); (_, Hms hms1);
-          (_, To); (_, Nat year2); (_, Month month2); (_pos_day2, Month_day day2); (_, Hms hms2) ] -> (
+      | [ (_, Nat year1); (_, Month month1); (pos_day1, Nat day1); (_, Hms hms1);
+          (_, To); (_, Nat year2); (_, Month month2); (pos_day2, Nat day2); (_, Hms hms2) ]
+      | [ (_, Nat year1); (_, Month month1); (pos_day1, Nat day1); (_, Hms hms1);
+          (_, To); (_, Nat year2); (_, Month month2); (pos_day2, Month_day day2); (_, Hms hms2) ]
+      | [ (_, Nat year1); (_, Month month1); (pos_day1, Month_day day1); (_, Hms hms1);
+          (_, To); (_, Nat year2); (_, Month month2); (pos_day2, Nat day2); (_, Hms hms2) ]
+      | [ (_, Nat year1); (_, Month month1); (pos_day1, Month_day day1); (_, Hms hms1);
+          (_, To); (_, Nat year2); (_, Month month2); (pos_day2, Month_day day2); (_, Hms hms2) ] -> (
           match
-            Timere.Date_time.make
-              ~tz:default_tz
-              ~year:year1 ~month:month1 ~day:day1 ~hour:hms1.hour ~minute:hms1.minute ~second:hms1.second
+            points
+              ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front
             ,
-            Timere.Date_time.make
-              ~tz:default_tz
-              ~year:year2 ~month:month2 ~day:day2 ~hour:hms2.hour ~minute:hms2.minute ~second:hms2.second
+            points
+              ~year:year2 ~month:month2 ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Back
           with
-          | Some dt1, Some dt2 ->
-            let t1 =
-              Timere.Date_time.to_timestamp dt1
-              |> Timere.Date_time.min_of_timestamp_local_result
-            in
-            let t2 =
-              Timere.Date_time.to_timestamp dt2
-              |> Timere.Date_time.max_of_timestamp_local_result
-            in
-            Ok (Timere.intervals [(t1, t2)])
+          | Ok p1, Ok p2 ->
+            Ok (Timere.bounded_intervals `Whole (Timere.Duration.make ~days:((year2 - year1 + 1) * 366) ()) p1 p2)
           | _, _ ->
             Error None
         )
