@@ -1632,15 +1632,48 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
     ?(month_ranges = []) ?(days = []) ?(day_ranges = []) ?(weekdays = [])
     ?(weekday_ranges = []) ?(hours = []) ?(hour_ranges = []) ?(minutes = [])
     ?(minute_ranges = []) ?(seconds = []) ?(second_ranges = []) () : t =
-  let years = years @ Year_ranges.Flatten.flatten_list year_ranges in
-  let months = months @ Month_ranges.Flatten.flatten_list month_ranges in
-  let month_days = days @ Month_day_ranges.Flatten.flatten_list day_ranges in
-  let weekdays =
-    weekdays @ Weekday_ranges.Flatten.flatten_list weekday_ranges
+  let years =
+    try
+      years @ Year_ranges.Flatten.flatten_list year_ranges
+    with
+    | Range.Range_is_invalid -> invalid_arg "pattern: invalid year range"
   in
-  let hours = hours @ Hour_ranges.Flatten.flatten_list hour_ranges in
-  let minutes = minutes @ Minute_ranges.Flatten.flatten_list minute_ranges in
-  let seconds = seconds @ Second_ranges.Flatten.flatten_list second_ranges in
+  let months =
+    try
+      months @ Month_ranges.Flatten.flatten_list month_ranges
+    with
+    | Range.Range_is_invalid -> invalid_arg "pattern: invalid month range"
+  in
+  let month_days =
+    try
+      days @ Month_day_ranges.Flatten.flatten_list day_ranges
+    with
+    | Range.Range_is_invalid -> invalid_arg "pattern: invalid day range"
+  in
+  let weekdays =
+    try
+    weekdays @ Weekday_ranges.Flatten.flatten_list weekday_ranges
+    with
+    | Range.Range_is_invalid -> invalid_arg "pattern: invalid weekday range"
+  in
+  let hours =
+    try
+      hours @ Hour_ranges.Flatten.flatten_list hour_ranges
+    with
+    | Range.Range_is_invalid -> invalid_arg "pattern: invalid hour range"
+  in
+  let minutes =
+    try
+      minutes @ Minute_ranges.Flatten.flatten_list minute_ranges
+    with
+    | Range.Range_is_invalid -> invalid_arg "pattern: invalid minute range"
+  in
+  let seconds =
+    try
+      seconds @ Second_ranges.Flatten.flatten_list second_ranges
+    with
+    | Range.Range_is_invalid -> invalid_arg "pattern: invalid second range"
+  in
   match (years, months, month_days, weekdays, hours, minutes, seconds) with
   | [], [], [], [], [], [], [] -> All
   | _ ->
