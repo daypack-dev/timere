@@ -1000,8 +1000,7 @@ module Rules = struct
       (_, Hms hms2);
     ] -> (
         match
-          ( points ~month:month1 ~pos_day:pos_day1 ~day:day1
-              ~hms:hms1 `Front,
+          ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
             points ~month:month2 ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Back )
         with
         | Ok p1, Ok p2 ->
@@ -1047,8 +1046,7 @@ module Rules = struct
       (_, Hms hms2);
     ] -> (
         match
-          ( points ~month:month1 ~pos_day:pos_day1 ~day:day1
-              ~hms:hms1 `Front,
+          ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
             points ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Back )
         with
         | Ok p1, Ok p2 ->
@@ -1076,8 +1074,7 @@ module Rules = struct
       (_, Hms hms2);
     ] -> (
         match
-          ( points ~month:month1 ~pos_day:pos_day1 ~day:day1
-              ~hms:hms1 `Front,
+          ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
             points ~hms:hms2 `Back )
         with
         | Ok p1, Ok p2 ->
@@ -1119,8 +1116,7 @@ module Rules = struct
       (_, Hms hms2);
     ] -> (
         match
-          ( points ~pos_day:pos_day1 ~day:day1
-              ~hms:hms1 `Front,
+          ( points ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
             points ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Back )
         with
         | Ok p1, Ok p2 ->
@@ -1133,21 +1129,10 @@ module Rules = struct
 
   let rule_d_hms_to_hms l =
     match l with
-    | [
-      (pos_day1, Nat day1);
-      (_, Hms hms1);
-      (_, To);
-      (_, Hms hms2);
-    ]
-    | [
-      (pos_day1, Month_day day1);
-      (_, Hms hms1);
-      (_, To);
-      (_, Hms hms2);
-    ] -> (
+    | [ (pos_day1, Nat day1); (_, Hms hms1); (_, To); (_, Hms hms2) ]
+    | [ (pos_day1, Month_day day1); (_, Hms hms1); (_, To); (_, Hms hms2) ] -> (
         match
-          ( points ~pos_day:pos_day1 ~day:day1
-              ~hms:hms1 `Front,
+          ( points ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
             points ~hms:hms2 `Back )
         with
         | Ok p1, Ok p2 ->
@@ -1160,17 +1145,8 @@ module Rules = struct
 
   let rule_hms_to_hms l =
     match l with
-    | [
-      (_, Hms hms1);
-      (_, To);
-      (_, Hms hms2);
-    ]
-    -> (
-        match
-          ( points
-              ~hms:hms1 `Front,
-            points ~hms:hms2 `Back )
-        with
+    | [ (_, Hms hms1); (_, To); (_, Hms hms2) ] -> (
+        match (points ~hms:hms1 `Front, points ~hms:hms2 `Back) with
         | Ok p1, Ok p2 ->
           Ok
             (Timere.bounded_intervals `Whole
