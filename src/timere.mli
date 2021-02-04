@@ -211,6 +211,8 @@ module Time_zone : sig
 
   val utc : t
 
+  val local : unit -> t option
+
   val equal : t -> t -> bool
 
   val available_time_zones : string list

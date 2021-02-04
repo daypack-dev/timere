@@ -17,6 +17,8 @@ val name : t -> string
 
 val utc : t
 
+val local : unit -> t option
+
 val make : string -> t option
 
 val make_exn : string -> t
