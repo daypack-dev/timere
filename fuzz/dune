@@ -191,6 +191,7 @@
             yojson
             fmt
             bigarray
+            fileutils
             timere.tzdb.full
  )
  )
