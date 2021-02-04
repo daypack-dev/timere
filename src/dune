@@ -10,6 +10,7 @@
  (public_name timere)
  (libraries
             timere.tzdb
+            timere.tzlocal
             unix
             ptime
             oseq

@@ -182,5 +182,6 @@
             bigarray
             fileutils
             timere.tzdb.none
+            timere.tzlocal.unix
    )
 )

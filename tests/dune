@@ -166,5 +166,6 @@
             bigarray
             fileutils
             timere.tzdb.full
+            timere.tzlocal.unix
             )
  )
