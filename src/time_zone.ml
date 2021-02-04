@@ -417,11 +417,6 @@ let local () : t option =
   match Timere_tzlocal.local () with
   | [] -> None
   | l ->
-    List.fold_left (fun tz name ->
-        match tz with
-        | Some tz -> Some tz
-        | None ->
-          make name
-      )
-      None
-      l
+    List.fold_left
+      (fun tz name -> match tz with Some tz -> Some tz | None -> make name)
+      None l
