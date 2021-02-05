@@ -765,19 +765,17 @@ module Rules = struct
     | [ (_, Month month); (pos_days, Nat day); (_, Nd) ]
     | [ (_, Month month); (pos_days, Nat day); (_, Rd) ]
     | [ (_, Month month); (pos_days, Nat day); (_, Th) ]
-    | [ (pos_days, Nat day); (_, Month month); ]
-    | [ (pos_days, Nat day); (_, St); (_, Month month); ]
-    | [ (pos_days, Nat day); (_, Nd); (_, Month month); ]
-    | [ (pos_days, Nat day); (_, Rd); (_, Month month); ]
-    | [ (pos_days, Nat day); (_, Th); (_, Month month); ]
-      ->
+    | [ (pos_days, Nat day); (_, Month month) ]
+    | [ (pos_days, Nat day); (_, St); (_, Month month) ]
+    | [ (pos_days, Nat day); (_, Nd); (_, Month month) ]
+    | [ (pos_days, Nat day); (_, Rd); (_, Month month) ]
+    | [ (pos_days, Nat day); (_, Th); (_, Month month) ] ->
       pattern ~months:[ month ] ~pos_days ~days:[ day ] ()
     | [ (pos_days, Nat day); (_, Of); (_, Month month) ]
     | [ (pos_days, Nat day); (_, St); (_, Of); (_, Month month) ]
     | [ (pos_days, Nat day); (_, Nd); (_, Of); (_, Month month) ]
     | [ (pos_days, Nat day); (_, Rd); (_, Of); (_, Month month) ]
-    | [ (pos_days, Nat day); (_, Th); (_, Of); (_, Month month) ]
-      ->
+    | [ (pos_days, Nat day); (_, Th); (_, Of); (_, Month month) ] ->
       pattern ~months:[ month ] ~pos_days ~days:[ day ] ()
     | _ -> Error None
 
@@ -786,8 +784,7 @@ module Rules = struct
     | [ (pos_days, Nat day); (_, St) ]
     | [ (pos_days, Nat day); (_, Nd) ]
     | [ (pos_days, Nat day); (_, Rd) ]
-    | [ (pos_days, Nat day); (_, Th) ]
-      ->
+    | [ (pos_days, Nat day); (_, Th) ] ->
       pattern ~pos_days ~days:[ day ] ()
     | _ -> Error None
 
