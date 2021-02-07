@@ -597,11 +597,11 @@ let parse_into_ast (s : string) : (ast, string) CCResult.t =
     s ()
   |> result_of_mparser_result
 
-type 'a rule_result = [
-  | `Some of 'a
+type 'a rule_result =
+  [ `Some of 'a
   | `None
   | `Error of string
-]
+  ]
 
 let map_rule_result (f : 'a -> 'b) (x : 'a rule_result) : 'b rule_result =
   match x with
@@ -609,35 +609,32 @@ let map_rule_result (f : 'a -> 'b) (x : 'a rule_result) : 'b rule_result =
   | `None -> `None
   | `Error msg -> `Error msg
 
-let flatten_months pos (l : Timere.month Timere.range list) : Timere.month list rule_result =
+let flatten_months pos (l : Timere.month Timere.range list) :
+  Timere.month list rule_result =
   match Timere.Utils.flatten_month_range_list l with
   | Some x -> `Some x
   | None ->
-    `Error
-      ((Printf.sprintf "%s: Invalid month ranges" (string_of_pos pos)))
+    `Error (Printf.sprintf "%s: Invalid month ranges" (string_of_pos pos))
 
-let flatten_weekdays pos (l : Timere.weekday Timere.range list) : Timere.weekday list rule_result =
+let flatten_weekdays pos (l : Timere.weekday Timere.range list) :
+  Timere.weekday list rule_result =
   match Timere.Utils.flatten_weekday_range_list l with
   | Some x -> `Some x
   | None ->
-    `Error
-      ((Printf.sprintf "%s: Invalid weekday ranges" (string_of_pos pos)))
+    `Error (Printf.sprintf "%s: Invalid weekday ranges" (string_of_pos pos))
 
 let flatten_month_days pos (l : int Timere.range list) : int list rule_result =
   match Timere.Utils.flatten_month_day_range_list l with
   | Some x -> `Some x
   | None ->
-    `Error
-      (
-         (Printf.sprintf "%s: Invalid month day ranges" (string_of_pos pos)))
+    `Error (Printf.sprintf "%s: Invalid month day ranges" (string_of_pos pos))
 
 let pattern ?(years = []) ?(months = []) ?pos_days ?(days = []) ?(weekdays = [])
     ?(hms : Timere.hms option) () : Timere.t rule_result =
   if not (List.for_all (fun x -> 1 <= x && x <= 31) days) then
     `Error
-      (
-         (Printf.sprintf "%s: Invalid month days"
-            (string_of_pos @@ CCOpt.get_exn @@ pos_days)))
+      (Printf.sprintf "%s: Invalid month days"
+         (string_of_pos @@ CCOpt.get_exn @@ pos_days))
   else
     let f = Timere.pattern ~years ~months ~days ~weekdays in
     match hms with
@@ -669,9 +666,9 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.hms option)
       let default_second = match lean_toward with `Front -> 0 | `Back -> 59 in
       match (year, month, day, weekday, hms) with
       | None, None, None, None, Some hms ->
-       `Some
-         (Timere.make_points_exn ~hour:hms.hour ~minute:hms.minute
-            ~second:hms.second ())
+        `Some
+          (Timere.make_points_exn ~hour:hms.hour ~minute:hms.minute
+             ~second:hms.second ())
       | None, None, None, Some weekday, Some hms ->
         `Some
           (Timere.make_points_exn ~weekday ~hour:hms.hour ~minute:hms.minute
@@ -735,8 +732,7 @@ module Rules = struct
         match flatten_month_days pos_days day_ranges with
         | `Some days -> pattern ~months:[ month ] ~pos_days ~days ()
         | `None -> `None
-        | `Error msg -> `Error msg
-      )
+        | `Error msg -> `Error msg)
     | _ -> `None
 
   let rule_month l =
