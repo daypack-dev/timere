@@ -9,6 +9,8 @@ exception Invalid_format_string = Printers.Invalid_format_string
 module Date_time = struct
   include Time.Date_time'
 
+  type tz_info = Date_time_components.tz_info
+
   let to_string = Printers.string_of_date_time
 
   let pp = Printers.pp_date_time

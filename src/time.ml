@@ -1133,8 +1133,6 @@ let slice_valid_interval s =
     ~end_exc:timestamp_max s
 
 module Date_time' = struct
-  type tz_info = Date_time_components.tz_info
-
   type t = {
     year : int;
     month : month;
