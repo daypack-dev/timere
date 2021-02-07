@@ -597,41 +597,53 @@ let parse_into_ast (s : string) : (ast, string) CCResult.t =
     s ()
   |> result_of_mparser_result
 
-let flatten_months pos (l : Timere.month Timere.range list) =
+type 'a rule_result = [
+  | `Some of 'a
+  | `None
+  | `Error of string
+]
+
+let map_rule_result (f : 'a -> 'b) (x : 'a rule_result) : 'b rule_result =
+  match x with
+  | `Some x -> `Some (f x)
+  | `None -> `None
+  | `Error msg -> `Error msg
+
+let flatten_months pos (l : Timere.month Timere.range list) : Timere.month list rule_result =
   match Timere.Utils.flatten_month_range_list l with
-  | Some x -> Ok x
+  | Some x -> `Some x
   | None ->
-    Error
-      (Some (Printf.sprintf "%s: Invalid month ranges" (string_of_pos pos)))
+    `Error
+      ((Printf.sprintf "%s: Invalid month ranges" (string_of_pos pos)))
 
-let flatten_weekdays pos (l : Timere.weekday Timere.range list) =
+let flatten_weekdays pos (l : Timere.weekday Timere.range list) : Timere.weekday list rule_result =
   match Timere.Utils.flatten_weekday_range_list l with
-  | Some x -> Ok x
+  | Some x -> `Some x
   | None ->
-    Error
-      (Some (Printf.sprintf "%s: Invalid weekday ranges" (string_of_pos pos)))
+    `Error
+      ((Printf.sprintf "%s: Invalid weekday ranges" (string_of_pos pos)))
 
-let flatten_month_days pos (l : int Timere.range list) =
+let flatten_month_days pos (l : int Timere.range list) : int list rule_result =
   match Timere.Utils.flatten_month_day_range_list l with
-  | Some x -> Ok x
+  | Some x -> `Some x
   | None ->
-    Error
-      (Some
+    `Error
+      (
          (Printf.sprintf "%s: Invalid month day ranges" (string_of_pos pos)))
 
 let pattern ?(years = []) ?(months = []) ?pos_days ?(days = []) ?(weekdays = [])
-    ?(hms : Timere.hms option) () =
+    ?(hms : Timere.hms option) () : Timere.t rule_result =
   if not (List.for_all (fun x -> 1 <= x && x <= 31) days) then
-    Error
-      (Some
+    `Error
+      (
          (Printf.sprintf "%s: Invalid month days"
             (string_of_pos @@ CCOpt.get_exn @@ pos_days)))
   else
     let f = Timere.pattern ~years ~months ~days ~weekdays in
     match hms with
-    | None -> Ok (f ())
+    | None -> `Some (f ())
     | Some hms ->
-      Ok
+      `Some
         (f ~hours:[ hms.hour ] ~minutes:[ hms.minute ] ~seconds:[ hms.second ]
            ())
 
@@ -641,13 +653,12 @@ type lean_toward =
   ]
 
 let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.hms option)
-    (lean_toward : lean_toward) =
+    (lean_toward : lean_toward) : Timere.points rule_result =
   match day with
   | Some day when not (1 <= day && day <= 31) ->
-    Error
-      (Some
-         (Printf.sprintf "%s: Invalid month days"
-            (string_of_pos @@ CCOpt.get_exn @@ pos_day)))
+    `Error
+      (Printf.sprintf "%s: Invalid month days"
+         (string_of_pos @@ CCOpt.get_exn @@ pos_day))
   | _ -> (
       let default_month =
         match lean_toward with `Front -> `Jan | `Back -> `Dec
@@ -658,54 +669,54 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.hms option)
       let default_second = match lean_toward with `Front -> 0 | `Back -> 59 in
       match (year, month, day, weekday, hms) with
       | None, None, None, None, Some hms ->
-        Ok
-          (Timere.make_points_exn ~hour:hms.hour ~minute:hms.minute
-             ~second:hms.second ())
+       `Some
+         (Timere.make_points_exn ~hour:hms.hour ~minute:hms.minute
+            ~second:hms.second ())
       | None, None, None, Some weekday, Some hms ->
-        Ok
+        `Some
           (Timere.make_points_exn ~weekday ~hour:hms.hour ~minute:hms.minute
              ~second:hms.second ())
       | None, None, Some day, None, Some hms ->
-        Ok
+        `Some
           (Timere.make_points_exn ~day ~hour:hms.hour ~minute:hms.minute
              ~second:hms.second ())
       | None, Some month, Some day, None, Some hms ->
-        Ok
+        `Some
           (Timere.make_points_exn ~month ~day ~hour:hms.hour
              ~minute:hms.minute ~second:hms.second ())
       | Some year, Some month, Some day, None, Some hms ->
-        Ok
+        `Some
           (Timere.make_points_exn ~year ~month ~day ~hour:hms.hour
              ~minute:hms.minute ~second:hms.second ())
       | Some year, None, None, None, None ->
-        Ok
+        `Some
           (Timere.make_points_exn ~year ~month:default_month ~day:default_day
              ~hour:default_hour ~minute:default_minute ~second:default_second
              ())
       | None, Some month, None, None, None ->
-        Ok
+        `Some
           (Timere.make_points_exn ~month ~day:default_day ~hour:default_hour
              ~minute:default_minute ~second:default_second ())
       | None, None, Some day, None, None ->
-        Ok
+        `Some
           (Timere.make_points_exn ~day ~hour:default_hour
              ~minute:default_minute ~second:default_second ())
       | None, None, None, Some weekday, None ->
-        Ok
+        `Some
           (Timere.make_points_exn ~weekday ~hour:default_hour
              ~minute:default_minute ~second:default_second ())
       | _ -> invalid_arg "points")
 
 module Rules = struct
   let rule_star l =
-    match l with [ (_, Star) ] -> Ok Timere.always | _ -> Error None
+    match l with [ (_, Star) ] -> `Some Timere.always | _ -> `None
 
   let rule_weekdays l =
     match l with
-    | [ (_, Weekday x) ] -> Ok (Timere.weekdays [ x ])
+    | [ (_, Weekday x) ] -> `Some (Timere.weekdays [ x ])
     | [ (pos, Weekdays l) ] ->
-      flatten_weekdays pos l |> CCResult.map (fun l -> Timere.weekdays l)
-    | _ -> Error None
+      flatten_weekdays pos l |> map_rule_result (fun l -> Timere.weekdays l)
+    | _ -> `None
 
   (* let rule_month_day l =
    *   match l with
@@ -722,16 +733,18 @@ module Rules = struct
     | [ (_, Month month); (pos_days, Month_days day_ranges) ]
     | [ (_, Month month); (pos_days, Nats day_ranges) ] -> (
         match flatten_month_days pos_days day_ranges with
-        | Error x -> Error x
-        | Ok days -> pattern ~months:[ month ] ~pos_days ~days ())
-    | _ -> Error None
+        | `Some days -> pattern ~months:[ month ] ~pos_days ~days ()
+        | `None -> `None
+        | `Error msg -> `Error msg
+      )
+    | _ -> `None
 
   let rule_month l =
     match l with
-    | [ (_, Month x) ] -> Ok (Timere.months [ x ])
+    | [ (_, Month x) ] -> `Some (Timere.months [ x ])
     | [ (pos, Months l) ] ->
-      flatten_months pos l |> CCResult.map (fun l -> Timere.months l)
-    | _ -> Error None
+      flatten_months pos l |> map_rule_result (fun l -> Timere.months l)
+    | _ -> `None
 
   let rule_ymd l =
     match l with
@@ -756,7 +769,7 @@ module Rules = struct
     | [ (_, Nat year); (pos_days, Nat day); (_, Th); (_, Of); (_, Month month) ]
       ->
       pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ()
-    | _ -> Error None
+    | _ -> `None
 
   let rule_md l =
     match l with
@@ -777,7 +790,7 @@ module Rules = struct
     | [ (pos_days, Nat day); (_, Rd); (_, Of); (_, Month month) ]
     | [ (pos_days, Nat day); (_, Th); (_, Of); (_, Month month) ] ->
       pattern ~months:[ month ] ~pos_days ~days:[ day ] ()
-    | _ -> Error None
+    | _ -> `None
 
   let rule_d l =
     match l with
@@ -786,13 +799,13 @@ module Rules = struct
     | [ (pos_days, Nat day); (_, Rd) ]
     | [ (pos_days, Nat day); (_, Th) ] ->
       pattern ~pos_days ~days:[ day ] ()
-    | _ -> Error None
+    | _ -> `None
 
   let rule_md_hms l =
     match l with
     | [ (_, Month month); (pos_days, Nat day); (_, Hms hms) ] ->
       pattern ~months:[ month ] ~pos_days ~days:[ day ] ~hms ()
-    | _ -> Error None
+    | _ -> `None
 
   let rule_ymd_hms l =
     match l with
@@ -802,7 +815,7 @@ module Rules = struct
     ] ->
       pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ~hms
         ()
-    | _ -> Error None
+    | _ -> `None
 
   let rule_ymd_hms_to_ymd_hms l =
     match l with
@@ -856,13 +869,13 @@ module Rules = struct
             points ~year:year2 ~month:month2 ~pos_day:pos_day2 ~day:day2
               ~hms:hms2 `Back )
         with
-        | Ok p1, Ok p2 ->
-          Ok
+        | `Some p1, `Some p2 ->
+          `Some
             (Timere.bounded_intervals `Whole
                (Timere.Duration.make ~days:((year2 - year1 + 1) * 366) ())
                p1 p2)
-        | _, _ -> Error None)
-    | _ -> Error None
+        | _, _ -> `None)
+    | _ -> `None
 
   let rule_ymd_hms_to_md_hms l =
     match l with
@@ -911,13 +924,13 @@ module Rules = struct
               ~hms:hms1 `Front,
             points ~month:month2 ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Back )
         with
-        | Ok p1, Ok p2 ->
-          Ok
+        | `Some p1, `Some p2 ->
+          `Some
             (Timere.bounded_intervals `Whole
                (Timere.Duration.make ~days:366 ())
                p1 p2)
-        | _, _ -> Error None)
-    | _ -> Error None
+        | _, _ -> `None)
+    | _ -> `None
 
   let rule_ymd_hms_to_d_hms l =
     match l with
@@ -962,13 +975,13 @@ module Rules = struct
               ~hms:hms1 `Front,
             points ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Back )
         with
-        | Ok p1, Ok p2 ->
-          Ok
+        | `Some p1, `Some p2 ->
+          `Some
             (Timere.bounded_intervals `Whole
                (Timere.Duration.make ~days:366 ())
                p1 p2)
-        | _, _ -> Error None)
-    | _ -> Error None
+        | _, _ -> `None)
+    | _ -> `None
 
   let rule_ymd_hms_to_hms l =
     match l with
@@ -993,13 +1006,13 @@ module Rules = struct
               ~hms:hms1 `Front,
             points ~hms:hms2 `Back )
         with
-        | Ok p1, Ok p2 ->
-          Ok
+        | `Some p1, `Some p2 ->
+          `Some
             (Timere.bounded_intervals `Whole
                (Timere.Duration.make ~days:366 ())
                p1 p2)
-        | _, _ -> Error None)
-    | _ -> Error None
+        | _, _ -> `None)
+    | _ -> `None
 
   let rule_md_hms_to_md_hms l =
     match l with
@@ -1043,13 +1056,13 @@ module Rules = struct
           ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
             points ~month:month2 ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Back )
         with
-        | Ok p1, Ok p2 ->
-          Ok
+        | `Some p1, `Some p2 ->
+          `Some
             (Timere.bounded_intervals `Whole
                (Timere.Duration.make ~days:366 ())
                p1 p2)
-        | _, _ -> Error None)
-    | _ -> Error None
+        | _, _ -> `None)
+    | _ -> `None
 
   let rule_md_hms_to_d_hms l =
     match l with
@@ -1089,13 +1102,13 @@ module Rules = struct
           ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
             points ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Back )
         with
-        | Ok p1, Ok p2 ->
-          Ok
+        | `Some p1, `Some p2 ->
+          `Some
             (Timere.bounded_intervals `Whole
                (Timere.Duration.make ~days:366 ())
                p1 p2)
-        | _, _ -> Error None)
-    | _ -> Error None
+        | _, _ -> `None)
+    | _ -> `None
 
   let rule_md_hms_to_hms l =
     match l with
@@ -1117,13 +1130,13 @@ module Rules = struct
           ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
             points ~hms:hms2 `Back )
         with
-        | Ok p1, Ok p2 ->
-          Ok
+        | `Some p1, `Some p2 ->
+          `Some
             (Timere.bounded_intervals `Whole
                (Timere.Duration.make ~days:366 ())
                p1 p2)
-        | _, _ -> Error None)
-    | _ -> Error None
+        | _, _ -> `None)
+    | _ -> `None
 
   let rule_d_hms_to_d_hms l =
     match l with
@@ -1159,13 +1172,13 @@ module Rules = struct
           ( points ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
             points ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Back )
         with
-        | Ok p1, Ok p2 ->
-          Ok
+        | `Some p1, `Some p2 ->
+          `Some
             (Timere.bounded_intervals `Whole
                (Timere.Duration.make ~days:366 ())
                p1 p2)
-        | _, _ -> Error None)
-    | _ -> Error None
+        | _, _ -> `None)
+    | _ -> `None
 
   let rule_d_hms_to_hms l =
     match l with
@@ -1175,27 +1188,27 @@ module Rules = struct
           ( points ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
             points ~hms:hms2 `Back )
         with
-        | Ok p1, Ok p2 ->
-          Ok
+        | `Some p1, `Some p2 ->
+          `Some
             (Timere.bounded_intervals `Whole
                (Timere.Duration.make ~days:366 ())
                p1 p2)
-        | _, _ -> Error None)
-    | _ -> Error None
+        | _, _ -> `None)
+    | _ -> `None
 
   let rule_hms_to_hms l =
     match l with
     | [ (_, Hms hms1); (_, To); (_, Hms hms2) ] -> (
         match (points ~hms:hms1 `Front, points ~hms:hms2 `Back) with
-        | Ok p1, Ok p2 ->
-          Ok
+        | `Some p1, `Some p2 ->
+          `Some
             (Timere.bounded_intervals `Whole
                (Timere.Duration.make ~days:366 ())
                p1 p2)
-        | _, _ -> Error None)
-    | _ -> Error None
+        | _, _ -> `None)
+    | _ -> `None
 
-  let rules : (token list -> (Timere.t, string option) CCResult.t) list =
+  let rules : (token list -> Timere.t rule_result) list =
     [
       rule_star;
       rule_weekdays;
@@ -1231,9 +1244,9 @@ let t_of_tokens (tokens : token list) : (Timere.t, string) CCResult.t =
         (Printf.sprintf "%s: Unrecognized token pattern" (string_of_pos pos))
     | rule :: rest -> (
         match rule tokens with
-        | Ok time -> Ok time
-        | Error None -> aux tokens rest
-        | Error (Some msg) -> Error msg)
+        | `Some time -> Ok time
+        | `None -> aux tokens rest
+        | `Error msg -> Error msg)
   in
   aux tokens Rules.rules
 
