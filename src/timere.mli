@@ -293,14 +293,14 @@ val with_tz : Time_zone.t -> t -> t
 
 (** {1 Date time and timestamps} *)
 
-type tz_info =
-  private
-  [ `Tz_only of Time_zone.t
-  | `Tz_offset_s_only of int
-  | `Tz_and_tz_offset_s of Time_zone.t * int
-  ]
-
 module Date_time : sig
+  type tz_info =
+    private
+    [ `Tz_only of Time_zone.t
+    | `Tz_offset_s_only of int
+    | `Tz_and_tz_offset_s of Time_zone.t * int
+    ]
+
   type t = private {
     year : int;
     month : month;
