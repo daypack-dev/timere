@@ -175,6 +175,9 @@ let token_p : (token, unit) MParser.t =
       attempt (string "nd") >>$ Nd;
       attempt (string "rd") >>$ Rd;
       attempt (string "th") >>$ Th;
+      attempt (string "days") >>$ Days;
+      attempt (string "day") >>$ Days;
+      attempt (string "d") >>$ Days;
       attempt (string "hours") >>$ Hours;
       attempt (string "hour") >>$ Hours;
       attempt (string "h") >>$ Hours;
