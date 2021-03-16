@@ -256,4 +256,7 @@ let string_of_duration ({ days; hours; minutes; seconds } : Duration.t) : string
 let pp_duration formatter x =
   Format.fprintf formatter "%s" (string_of_duration x)
 
-let pp_sexp formatter t = CCSexp.pp formatter (To_sexp.to_sexp t)
+let wrap_to_sexp_into_pp_sexp (f : 'a -> CCSexp.t) : Format.formatter -> 'a -> unit =
+  fun formatter x -> CCSexp.pp formatter (f x)
+
+let pp_sexp = wrap_to_sexp_into_pp_sexp To_sexp.to_sexp

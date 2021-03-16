@@ -18,6 +18,16 @@ module Date_time = struct
   let to_rfc3339 = RFC3339.of_date_time
 
   let of_iso8601 = ISO8601.to_date_time
+
+  let to_sexp = To_sexp.sexp_of_date_time
+
+  let to_sexp_string x = CCSexp.to_string (To_sexp.sexp_of_date_time x)
+
+  let of_sexp = Of_sexp.(wrap_of_sexp date_time_of_sexp)
+
+  let of_sexp_string = Of_sexp.(wrap_of_sexp_into_of_sexp_string date_time_of_sexp)
+
+  let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_date_time
 end
 
 module Duration = struct
@@ -26,6 +36,16 @@ module Duration = struct
   let to_string = Printers.string_of_duration
 
   let pp = Printers.pp_duration
+
+  let to_sexp = To_sexp.sexp_of_duration
+
+  let to_sexp_string = To_sexp.(wrap_to_sexp_into_to_sexp_string sexp_of_duration)
+
+  let of_sexp = Of_sexp.(wrap_of_sexp duration_of_sexp)
+
+  let of_sexp_string = Of_sexp.(wrap_of_sexp_into_of_sexp_string duration_of_sexp)
+
+  let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_duration
 end
 
 type 'a range = 'a Range.range
@@ -52,13 +72,13 @@ let pp_intervals = Printers.pp_intervals
 
 let to_sexp = To_sexp.to_sexp
 
-let pp_sexp = Printers.pp_sexp
-
 let to_sexp_string = To_sexp.to_sexp_string
 
-let of_sexp = Of_sexp.of_sexp
+let of_sexp = Of_sexp.(wrap_of_sexp of_sexp)
 
 let of_sexp_string = Of_sexp.of_sexp_string
+
+let pp_sexp = Printers.pp_sexp
 
 module Utils = struct
   let flatten_month_ranges (months : month range Seq.t) : month Seq.t option =

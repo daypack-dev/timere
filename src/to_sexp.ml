@@ -251,4 +251,6 @@ let to_sexp (t : Time_ast.t) : CCSexp.t =
   in
   aux t
 
-let to_sexp_string t = CCSexp.to_string (to_sexp t)
+let wrap_to_sexp_into_to_sexp_string (f : 'a -> CCSexp.t) = fun x -> CCSexp.to_string (f x)
+
+let to_sexp_string = wrap_to_sexp_into_to_sexp_string to_sexp

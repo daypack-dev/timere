@@ -182,6 +182,16 @@ module Duration : sig
   val to_string : t -> string
 
   val pp : Format.formatter -> t -> unit
+
+  val to_sexp : t -> CCSexp.t
+
+  val to_sexp_string : t -> string
+
+  val of_sexp : CCSexp.t -> (t, string) result
+
+  val of_sexp_string : string -> (t, string) result
+
+  val pp_sexp : Format.formatter -> t -> unit
 end
 
 val shift : Duration.t -> t -> t
@@ -448,6 +458,16 @@ module Date_time : sig
   val to_rfc3339 : t -> string
 
   val of_iso8601 : string -> (t, string) result
+
+  val to_sexp : t -> CCSexp.t
+
+  val to_sexp_string : t -> string
+
+  val of_sexp : CCSexp.t -> (t, string) result
+
+  val of_sexp_string : string -> (t, string) result
+
+  val pp_sexp : Format.formatter -> t -> unit
 end
 
 val date_time : Date_time.t -> t
@@ -791,13 +811,13 @@ val pp_intervals :
 
 val to_sexp : t -> CCSexp.t
 
-val pp_sexp : Format.formatter -> t -> unit
-
 val to_sexp_string : t -> string
 
 val of_sexp : CCSexp.t -> (t, string) result
 
 val of_sexp_string : string -> (t, string) result
+
+val pp_sexp : Format.formatter -> t -> unit
 
 (** {1 Misc} *)
 

@@ -377,13 +377,18 @@ let of_sexp (x : CCSexp.t) =
         (Printf.sprintf "Expected list for timere data: %s"
            (CCSexp.to_string x))
   in
-  try Ok (aux x) with
+  aux x
+
+let wrap_of_sexp (f : CCSexp.t -> 'a) : CCSexp.t -> ('a, string) result = fun x ->
+  try Ok (f x) with
   | Invalid_data msg -> Error msg
   | Invalid_argument msg -> Error msg
 
-let of_sexp_string s =
+let wrap_of_sexp_into_of_sexp_string (f : CCSexp.t -> 'a) : string -> ('a, string) result = fun s ->
   let res =
     try CCSexp.parse_string s
     with _ -> Error "Failed to parse string into sexp"
   in
-  match res with Error msg -> Error msg | Ok x -> of_sexp x
+  match res with Error msg -> Error msg | Ok x -> (wrap_of_sexp f) x
+
+let of_sexp_string = wrap_of_sexp_into_of_sexp_string of_sexp
