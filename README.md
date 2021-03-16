@@ -1,5 +1,5 @@
 # Timere
-OCaml time handling and reasoning library
+OCaml date time handling and reasoning library
 
 [API documentation](https://daypack-dev.github.io/timere/)
 
