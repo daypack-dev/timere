@@ -552,7 +552,7 @@ module Ast_normalize = struct
           |> group_month_days
           |> group_weekdays
           |> group_months
-          |> group_hms
+          (* |> group_hms *)
           |> ungroup_nats
           |> ungroup_month_days
           |> ungroup_weekdays
@@ -770,6 +770,13 @@ module Rules = struct
       pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ()
     | _ -> `None
 
+  let rule_ym l =
+    match l with
+    | [ (_, Nat year); (_, Month month) ]
+      when year > 31 ->
+      pattern ~years:[year] ~months:[ month ] ()
+    | _ -> `None
+
   let rule_md l =
     match l with
     | [ (_, Month month); (pos_days, Nat day) ]
@@ -793,10 +800,8 @@ module Rules = struct
 
   let rule_d l =
     match l with
-    | [ (pos_days, Nat day); (_, St) ]
-    | [ (pos_days, Nat day); (_, Nd) ]
-    | [ (pos_days, Nat day); (_, Rd) ]
-    | [ (pos_days, Nat day); (_, Th) ] ->
+    | [ (pos_days, Month_day day); ]
+     ->
       pattern ~pos_days ~days:[ day ] ()
     | _ -> `None
 
@@ -1214,6 +1219,7 @@ module Rules = struct
       rule_month_days;
       rule_month;
       rule_ymd;
+      rule_ym;
       rule_md;
       rule_d;
       rule_md_hms;

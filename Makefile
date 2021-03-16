@@ -16,10 +16,6 @@ all :
 lib :
 	dune build src
 
-.PHONY: corpus-date-time
-corpus-date-time:
-	dune exec ./corpus/date_time.exe
-
 .PHONY: test
 test : lib
 	OCAMLRUNPARAM=b dune exec ./tests/main.exe
@@ -37,6 +33,18 @@ debug : lib
 .PHONY: debug-parse
 debug-parse : lib
 	dune exec ./debug-parse/main.exe
+
+.PHONY: corpus-timeres
+corpus-timeres:
+	dune exec ./corpus/timeres.exe
+
+.PHONY: corpus-date-times
+corpus-date-times:
+	dune exec ./corpus/date_times.exe
+
+.PHONY: corpus-durations
+corpus-durations:
+	dune exec ./corpus/durations.exe
 
 .PHONY: doc
 doc :

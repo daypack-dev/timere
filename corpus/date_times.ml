@@ -18,5 +18,6 @@ let () =
         Printf.printf "  Ok %s\n\n" (Timere.Date_time.to_rfc3339 dt)
       | Error msg ->
         Printf.printf "  Error %s\n" msg;
-        print_endline "  ^^^^^\n\n";
+        print_endline "  ^^^^^";
+        print_newline ();
     ) texts
