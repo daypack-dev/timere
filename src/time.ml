@@ -1203,7 +1203,7 @@ module Date_time' = struct
     | `Ambiguous _ ->
       invalid_arg "to_timestamp_single: date time maps to two timestamps"
 
-  let of_timestamp ?(tz_of_date_time = Time_zone.utc) (x : int64) : t option =
+  let of_timestamp ?(tz_of_date_time = CCOpt.get_exn @@ Time_zone.local ()) (x : int64) : t option =
     if not (timestamp_min <= x && x <= timestamp_max) then None
     else
       match Time_zone.lookup_timestamp_utc tz_of_date_time x with
@@ -1289,7 +1289,7 @@ module Date_time' = struct
 
   let max = CCOpt.get_exn @@ of_timestamp timestamp_max
 
-  let of_points ?(default_tz_info = utc_tz_info) ((pick, tz_info) : Points.t) :
+  let of_points ?(default_tz_info = CCOpt.get_exn @@ make_tz_info ~tz:(CCOpt.get_exn @@ Time_zone.local ()) ()) ((pick, tz_info) : Points.t) :
     t option =
     match pick with
     | Points.YMDHMS { year; month; month_day; hour; minute; second } -> (
@@ -1308,7 +1308,7 @@ module Date_time' = struct
             ~tz_offset_s ())
     | _ -> None
 
-  let now ?(tz_of_date_time = Time_zone.utc) () : t =
+  let now ?(tz_of_date_time = CCOpt.get_exn @@ Time_zone.local ()) () : t =
     timestamp_now () |> of_timestamp ~tz_of_date_time |> CCOpt.get_exn
 
   let equal (x : t) (y : t) : bool =
