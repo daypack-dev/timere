@@ -1301,13 +1301,9 @@ let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t
       | Some x -> Ok x
       | None -> Error "Invalid date time")
   | Tokens
-      [ (_, Nat year); (_, Month month); (_, Nat day); (_, St); (_, Hms hms) ]
+      [ (_, Nat year); (_, Month month); (_, Month_day day); (_, Hms hms) ]
   | Tokens
-      [ (_, Nat year); (_, Month month); (_, Nat day); (_, Nd); (_, Hms hms) ]
-  | Tokens
-      [ (_, Nat year); (_, Month month); (_, Nat day); (_, Rd); (_, Hms hms) ]
-  | Tokens
-      [ (_, Nat year); (_, Month month); (_, Nat day); (_, Th); (_, Hms hms) ]
+      [ (_, Month_day day); (_, Month month); (_, Nat year); (_, Hms hms) ]
     -> (
         match
           Timere.Date_time.make ~year ~month ~day ~hour:hms.hour
