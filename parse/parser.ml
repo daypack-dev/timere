@@ -728,14 +728,12 @@ module Rules = struct
 
   let rule_month_days l =
     match l with
-    | [ (pos_days, Month_day day) ] ->
-      pattern ~pos_days ~days:[ day ] ()
+    | [ (pos_days, Month_day day) ] -> pattern ~pos_days ~days:[ day ] ()
     | [ (pos_days, Month_days day_ranges) ] -> (
-      match flatten_month_days pos_days day_ranges with
-      | `Some days ->
-                        pattern ~pos_days ~days ()
-      | `None -> `None
-      | `Error msg -> `Error msg)
+        match flatten_month_days pos_days day_ranges with
+        | `Some days -> pattern ~pos_days ~days ()
+        | `None -> `None
+        | `Error msg -> `Error msg)
     | _ -> `None
 
   let rule_month_and_days l =
@@ -785,9 +783,8 @@ module Rules = struct
 
   let rule_ym l =
     match l with
-    | [ (_, Nat year); (_, Month month) ]
-      when year > 31 ->
-      pattern ~years:[year] ~months:[ month ] ()
+    | [ (_, Nat year); (_, Month month) ] when year > 31 ->
+      pattern ~years:[ year ] ~months:[ month ] ()
     | _ -> `None
 
   let rule_md l =
@@ -813,9 +810,7 @@ module Rules = struct
 
   let rule_d l =
     match l with
-    | [ (pos_days, Month_day day); ]
-     ->
-      pattern ~pos_days ~days:[ day ] ()
+    | [ (pos_days, Month_day day) ] -> pattern ~pos_days ~days:[ day ] ()
     | _ -> `None
 
   let rule_md_hms l =
@@ -1320,10 +1315,8 @@ let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t
       with
       | Some x -> Ok x
       | None -> Error "Invalid date time")
-  | Tokens
-      [ (_, Nat year); (_, Month month); (_, Month_day day); (_, Hms hms) ]
-  | Tokens
-      [ (_, Month_day day); (_, Month month); (_, Nat year); (_, Hms hms) ]
+  | Tokens [ (_, Nat year); (_, Month month); (_, Month_day day); (_, Hms hms) ]
+  | Tokens [ (_, Month_day day); (_, Month month); (_, Nat year); (_, Hms hms) ]
     -> (
         match
           Timere.Date_time.make ~year ~month ~day ~hour:hms.hour
