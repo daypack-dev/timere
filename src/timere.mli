@@ -562,7 +562,7 @@ val make_points :
   second:int ->
   unit ->
   points option
-(** [make_points] call must be exactly one of the following form (ignoring [tz] and [tz_offset_s] which are optional in all cases)
+(** [make_points] call must be exactly one of the following forms (ignoring [tz] and [tz_offset_s] which are optional in all cases)
     {v
 make_points ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
 make_points         ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
