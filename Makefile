@@ -16,6 +16,10 @@ all :
 lib :
 	dune build src
 
+.PHONY: corpus-date-time
+corpus-date-time:
+	dune exec ./corpus/date_time.exe
+
 .PHONY: test
 test : lib
 	OCAMLRUNPARAM=b dune exec ./tests/main.exe
