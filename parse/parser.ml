@@ -249,10 +249,11 @@ module Ast_normalize = struct
             :: (pos_comma, Comma)
             :: recognize_single_interval rest
           | _, _ -> recognize_fallback tokens)
-      | (pos_x, x) :: (_, To) :: (_, y) :: rest -> (
+      | (pos_comma, Comma) :: (pos_x, x) :: (_, To) :: (_, y) :: rest -> (
           match (extract_single x, extract_single y) with
           | Some x, Some y ->
-            (pos_x, constr_grouped [ `Range_inc (x, y) ])
+            (pos_comma, Comma)
+            :: (pos_x, constr_grouped [ `Range_inc (x, y) ])
             :: recognize_single_interval rest
           | _, _ -> recognize_fallback tokens)
       | _ -> recognize_fallback tokens
@@ -552,7 +553,7 @@ module Ast_normalize = struct
           |> group_month_days
           |> group_weekdays
           |> group_months
-          (* |> group_hms *)
+          |> group_hms
           |> ungroup_nats
           |> ungroup_month_days
           |> ungroup_weekdays
@@ -726,6 +727,18 @@ module Rules = struct
    *   | _ -> Error None *)
 
   let rule_month_days l =
+    match l with
+    | [ (pos_days, Month_day day) ] ->
+      pattern ~pos_days ~days:[ day ] ()
+    | [ (pos_days, Month_days day_ranges) ] -> (
+      match flatten_month_days pos_days day_ranges with
+      | `Some days ->
+                        pattern ~pos_days ~days ()
+      | `None -> `None
+      | `Error msg -> `Error msg)
+    | _ -> `None
+
+  let rule_month_and_days l =
     match l with
     | [ (_, Month month); (pos_days, Month_day day) ]
     | [ (_, Month month); (pos_days, Nat day) ] ->
@@ -1217,6 +1230,7 @@ module Rules = struct
       rule_star;
       rule_weekdays;
       rule_month_days;
+      rule_month_and_days;
       rule_month;
       rule_ymd;
       rule_ym;

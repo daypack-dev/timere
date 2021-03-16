@@ -6,7 +6,10 @@ let texts = [
   "jan 6 00:00";
   "jan 6 12pm to 2pm";
   "12pm to 2pm";
-  "12th, 13th";
+  "jun 12, 13th";
+  "12th, 13, 20";
+  "12th, 13 to 15, 20";
+  "10 to 12, 13th to 15, 20";
 ]
 
 let () =
