@@ -1203,7 +1203,8 @@ module Date_time' = struct
     | `Ambiguous _ ->
       invalid_arg "to_timestamp_single: date time maps to two timestamps"
 
-  let of_timestamp ?(tz_of_date_time = CCOpt.get_exn @@ Time_zone.local ()) (x : int64) : t option =
+  let of_timestamp ?(tz_of_date_time = CCOpt.get_exn @@ Time_zone.local ())
+      (x : int64) : t option =
     if not (timestamp_min <= x && x <= timestamp_max) then None
     else
       match Time_zone.lookup_timestamp_utc tz_of_date_time x with
@@ -1285,12 +1286,17 @@ module Date_time' = struct
     in
     match x with None -> invalid_arg "make_precise_exn" | Some x -> x
 
-  let min = CCOpt.get_exn @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_min
+  let min =
+    CCOpt.get_exn @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_min
 
-  let max = CCOpt.get_exn @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_max
+  let max =
+    CCOpt.get_exn @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_max
 
-  let of_points ?(default_tz_info = CCOpt.get_exn @@ make_tz_info ~tz:(CCOpt.get_exn @@ Time_zone.local ()) ()) ((pick, tz_info) : Points.t) :
-    t option =
+  let of_points
+      ?(default_tz_info =
+        CCOpt.get_exn
+        @@ make_tz_info ~tz:(CCOpt.get_exn @@ Time_zone.local ()) ())
+      ((pick, tz_info) : Points.t) : t option =
     match pick with
     | Points.YMDHMS { year; month; month_day; hour; minute; second } -> (
         let day_count = day_count_of_month ~year ~month in

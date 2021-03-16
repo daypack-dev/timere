@@ -25,7 +25,8 @@ module Date_time = struct
 
   let of_sexp = Of_sexp.(wrap_of_sexp date_time_of_sexp)
 
-  let of_sexp_string = Of_sexp.(wrap_of_sexp_into_of_sexp_string date_time_of_sexp)
+  let of_sexp_string =
+    Of_sexp.(wrap_of_sexp_into_of_sexp_string date_time_of_sexp)
 
   let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_date_time
 end
@@ -39,11 +40,13 @@ module Duration = struct
 
   let to_sexp = To_sexp.sexp_of_duration
 
-  let to_sexp_string = To_sexp.(wrap_to_sexp_into_to_sexp_string sexp_of_duration)
+  let to_sexp_string =
+    To_sexp.(wrap_to_sexp_into_to_sexp_string sexp_of_duration)
 
   let of_sexp = Of_sexp.(wrap_of_sexp duration_of_sexp)
 
-  let of_sexp_string = Of_sexp.(wrap_of_sexp_into_of_sexp_string duration_of_sexp)
+  let of_sexp_string =
+    Of_sexp.(wrap_of_sexp_into_of_sexp_string duration_of_sexp)
 
   let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_duration
 end
