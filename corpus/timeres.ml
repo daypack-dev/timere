@@ -10,6 +10,7 @@ let texts = [
   "12th, 13, 20";
   "12th, 13 to 15, 20";
   "10 to 12, 13th to 15, 20";
+  "10am to 4pm";
 ]
 
 let () =
@@ -17,7 +18,7 @@ let () =
       Printf.printf "%d. %S\n" i text;
       match Timere_parse.timere text with
       | Ok timere ->
-        Printf.printf "  Ok %s\n\n" (Timere.to_sexp_string timere)
+        Fmt.pr "  Ok %a\n\n" Timere.pp_sexp timere
       | Error msg ->
         Printf.printf "  Error %s\n" msg;
         print_endline "  ^^^^^";
