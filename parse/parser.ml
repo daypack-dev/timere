@@ -813,9 +813,17 @@ module Rules = struct
     | [ (pos_days, Month_day day) ] -> pattern ~pos_days ~days:[ day ] ()
     | _ -> `None
 
+  let rule_d_hms l =
+    match l with
+    | [ (pos_days, Month_day day); (_, Hms hms) ] ->
+      pattern ~pos_days ~days:[ day ] ~hms ()
+    | _ -> `None
+
   let rule_md_hms l =
     match l with
-    | [ (_, Month month); (pos_days, Nat day); (_, Hms hms) ] ->
+    | [ (_, Month month); (pos_days, Nat day); (_, Hms hms) ]
+    | [ (_, Month month); (pos_days, Month_day day); (_, Hms hms) ]
+      ->
       pattern ~months:[ month ] ~pos_days ~days:[ day ] ~hms ()
     | _ -> `None
 
@@ -1231,6 +1239,7 @@ module Rules = struct
       rule_ym;
       rule_md;
       rule_d;
+      rule_d_hms;
       rule_md_hms;
       rule_ymd_hms;
       rule_ymd_hms_to_ymd_hms;
