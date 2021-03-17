@@ -58,3 +58,7 @@
 19. "16th 11am to 6am"
   Ok (bounded_intervals whole (duration 366 0 0 0) (points (pick dhms 16 11 0 0)) (points (pick hms 6 0 0)))
 
+20. "16th 6am to 8am, 9am, 10am to 11am"
+  Error 1:1: Unrecognized token pattern
+  ^^^^^
+
