@@ -15,7 +15,7 @@ let () =
       Printf.printf "%d. %S\n" i text;
       match Timere_parse.date_time text with
       | Ok dt ->
-        Fmt.pr "  Ok %a\n\n" Timere.Date_time.pp_sexp dt
+        Printf.printf "  Ok %s\n\n" (Timere.Date_time.to_rfc3339 dt)
       | Error msg ->
         Printf.printf "  Error %s\n" msg;
         print_endline "  ^^^^^";
