@@ -708,24 +708,22 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.hms option)
 
 let bounded_intervals_of_hmss (hmss : Timere.hms Timere.range list) =
   match
-    List.map (fun hms_range ->
-        match hms_range with
-        | `Range_inc (x, y) -> (
-            match
-              points ~hms:x `Front,
-              points ~hms:y `Front with
-            | (`Some p1, `Some p2) -> Ok Timere.(bounded_intervals `Whole
-                                                   (Duration.make ~days:1 ()) p1 p2
-                                                )
-            | _ -> Error ()
-          )
-        | _ -> failwith "unexpected case"
-      ) hmss
+    List.map
+      (fun hms_range ->
+         match hms_range with
+         | `Range_inc (x, y) -> (
+             match (points ~hms:x `Front, points ~hms:y `Front) with
+             | `Some p1, `Some p2 ->
+               Ok
+                 Timere.(
+                   bounded_intervals `Whole (Duration.make ~days:1 ()) p1 p2)
+             | _ -> Error ())
+         | _ -> failwith "unexpected case")
+      hmss
     |> Misc_utils.get_ok_error_list
   with
-  | Ok l -> `Some (List.fold_left Timere.(|||) Timere.always l)
-  | Error _ ->
-    `None
+  | Ok l -> `Some (List.fold_left Timere.( ||| ) Timere.always l)
+  | Error _ -> `None
 
 module Rules = struct
   let rule_star l =
@@ -841,21 +839,20 @@ module Rules = struct
   let rule_d_hmss l =
     match l with
     | [ (pos_days, Month_day day); (_, Hmss hmss) ] -> (
-        match pattern ~pos_days ~days:[ day ] (), bounded_intervals_of_hmss hmss with
-        | `Some t, `Some t' ->
-          `Some Timere.(t & t')
+        match
+          (pattern ~pos_days ~days:[ day ] (), bounded_intervals_of_hmss hmss)
+        with
+        | `Some t, `Some t' -> `Some Timere.(t & t')
         | `None, _ -> `None
         | _, `None -> `None
         | `Error msg, _ -> `Error msg
-        | _, `Error msg -> `Error msg
-      )
+        | _, `Error msg -> `Error msg)
     | _ -> `None
 
   let rule_md_hms l =
     match l with
     | [ (_, Month month); (pos_days, Nat day); (_, Hms hms) ]
-    | [ (_, Month month); (pos_days, Month_day day); (_, Hms hms) ]
-      ->
+    | [ (_, Month month); (pos_days, Month_day day); (_, Hms hms) ] ->
       pattern ~months:[ month ] ~pos_days ~days:[ day ] ~hms ()
     | _ -> `None
 
