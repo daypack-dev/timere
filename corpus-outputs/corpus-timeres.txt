@@ -55,3 +55,6 @@
 18. "16th 7:30am to 11am"
   Ok (bounded_intervals whole (duration 366 0 0 0) (points (pick dhms 16 7 30 0)) (points (pick hms 11 0 0)))
 
+19. "16th 11am to 6am"
+  Ok (bounded_intervals whole (duration 366 0 0 0) (points (pick dhms 16 11 0 0)) (points (pick hms 6 0 0)))
+
