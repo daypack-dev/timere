@@ -239,15 +239,13 @@ module Ast_normalize = struct
           match extract_single x with
           | Some x ->
             (pos_x, constr_grouped [ `Range_inc (x, x) ])
-            :: (pos_comma, Comma)
-            :: recognize_single_interval rest
+            :: recognize_single_interval ((pos_comma, Comma) :: rest)
           | _ -> recognize_fallback tokens)
       | (pos_x, x) :: (_, To) :: (_, y) :: (pos_comma, Comma) :: rest -> (
           match (extract_single x, extract_single y) with
           | Some x, Some y ->
             (pos_x, constr_grouped [ `Range_inc (x, y) ])
-            :: (pos_comma, Comma)
-            :: recognize_single_interval rest
+            :: recognize_single_interval ((pos_comma, Comma) :: rest)
           | _, _ -> recognize_fallback tokens)
       | (pos_comma, Comma) :: (pos_x, x) :: (_, To) :: (_, y) :: rest -> (
           match (extract_single x, extract_single y) with
@@ -708,6 +706,27 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.hms option)
              ~minute:default_minute ~second:default_second ())
       | _ -> invalid_arg "points")
 
+let bounded_intervals_of_hmss (hmss : Timere.hms Timere.range list) =
+  match
+    List.map (fun hms_range ->
+        match hms_range with
+        | `Range_inc (x, y) -> (
+            match
+              points ~hms:x `Front,
+              points ~hms:y `Front with
+            | (`Some p1, `Some p2) -> Ok Timere.(bounded_intervals `Whole
+                                                   (Duration.make ~days:1 ()) p1 p2
+                                                )
+            | _ -> Error ()
+          )
+        | _ -> failwith "unexpected case"
+      ) hmss
+    |> Misc_utils.get_ok_error_list
+  with
+  | Ok l -> `Some (List.fold_left Timere.(|||) Timere.always l)
+  | Error _ ->
+    `None
+
 module Rules = struct
   let rule_star l =
     match l with [ (_, Star) ] -> `Some Timere.always | _ -> `None
@@ -817,6 +836,19 @@ module Rules = struct
     match l with
     | [ (pos_days, Month_day day); (_, Hms hms) ] ->
       pattern ~pos_days ~days:[ day ] ~hms ()
+    | _ -> `None
+
+  let rule_d_hmss l =
+    match l with
+    | [ (pos_days, Month_day day); (_, Hmss hmss) ] -> (
+        match pattern ~pos_days ~days:[ day ] (), bounded_intervals_of_hmss hmss with
+        | `Some t, `Some t' ->
+          `Some Timere.(t & t')
+        | `None, _ -> `None
+        | _, `None -> `None
+        | `Error msg, _ -> `Error msg
+        | _, `Error msg -> `Error msg
+      )
     | _ -> `None
 
   let rule_md_hms l =
@@ -1240,6 +1272,7 @@ module Rules = struct
       rule_md;
       rule_d;
       rule_d_hms;
+      rule_d_hmss;
       rule_md_hms;
       rule_ymd_hms;
       rule_ymd_hms_to_ymd_hms;

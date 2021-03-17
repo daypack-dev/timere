@@ -19,6 +19,7 @@ let texts = [
   "16th 20:30:01";
   "16th 7:30am to 11am";
   "16th 11am to 6am";
+  "16th 8am to 10am, 11am to 12pm";
   "16th 6am to 8am, 9am, 10am to 11am";
 ]
 
