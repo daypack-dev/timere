@@ -36,15 +36,15 @@ debug-parse : lib
 
 .PHONY: corpus-timeres
 corpus-timeres:
-	dune exec ./corpus/timeres.exe
+	dune exec ./corpus/timeres.exe > gen-artifacts/corpus-timeres.txt
 
 .PHONY: corpus-date-times
 corpus-date-times:
-	dune exec ./corpus/date_times.exe
+	dune exec ./corpus/date_times.exe > gen-artifacts/corpus-date-times.txt
 
 .PHONY: corpus-durations
 corpus-durations:
-	dune exec ./corpus/durations.exe
+	dune exec ./corpus/durations.exe > gen-artifacts/corpus-durations.txt
 
 .PHONY: doc
 doc :

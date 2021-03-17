@@ -1,0 +1,6 @@
+0. "24h"
+  Ok 1 days 0 hours 0 mins 0 secs
+
+1. "1h20min"
+  Ok 1 hours 20 mins 0 secs
+
