@@ -1,5 +1,6 @@
 let texts = [
   "24h";
+  "16.5 hours";
   "1h20min";
 ]
 

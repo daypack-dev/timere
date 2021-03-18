@@ -37,6 +37,7 @@ type guess =
   | Seconds
   | Nat of int
   | Nats of int Timere.range list
+  | Float of float
   | Hms of Timere.hms
   | Hmss of Timere.hms Timere.range list
   | Weekday of Timere.weekday
@@ -84,6 +85,7 @@ let string_of_token (_, guess) =
   | Seconds -> "seconds"
   | Nat n -> string_of_int n
   | Nats _ -> "nats"
+  | Float n -> string_of_float n
   | Hms _ -> "hms"
   | Hmss _ -> "hmss"
   | Weekday _ -> "weekday"
@@ -157,6 +159,7 @@ let token_p : (token, unit) MParser.t =
       attempt (char '-') >>$ Hyphen;
       attempt (char ':') >>$ Colon;
       attempt (char '*') >>$ Star;
+      (attempt float_non_neg |>> fun x -> Float x);
       (attempt nat_zero |>> fun x -> Nat x);
       (attempt weekday_p |>> fun x -> Weekday x);
       (attempt month_p |>> fun x -> Month x);
@@ -481,15 +484,17 @@ module Ast_normalize = struct
     let make_duration ~pos ~days ~hours ~minutes ~seconds =
       ( CCOpt.get_exn pos,
         Duration
-          (Timere.Duration.make
-             ~days:(CCOpt.value ~default:0 days)
-             ~hours:(CCOpt.value ~default:0 hours)
-             ~minutes:(CCOpt.value ~default:0 minutes)
+          (Timere.Duration.make_frac
+             ~days:(CCOpt.value ~default:0.0 days)
+             ~hours:(CCOpt.value ~default:0.0 hours)
+             ~minutes:(CCOpt.value ~default:0.0 minutes)
              ~seconds ()) )
     in
     let rec aux_start_with_days acc l =
       match l with
       | (pos, Nat days) :: (_, Days) :: rest ->
+        aux_start_with_hours ~pos:(Some pos) ~days:(Some (float_of_int days)) acc rest
+      | (pos, Float days) :: (_, Days) :: rest ->
         aux_start_with_hours ~pos:(Some pos) ~days:(Some days) acc rest
       | _ -> aux_start_with_hours ~pos:None ~days:None acc l
     and aux_start_with_hours ~pos ~days acc l =
@@ -497,11 +502,19 @@ module Ast_normalize = struct
       | (pos_hours, Nat hours) :: (_, Hours) :: rest ->
         aux_start_with_minutes
           ~pos:(Some (CCOpt.value ~default:pos_hours pos))
+          ~days ~hours:(Some (float_of_int hours)) acc rest
+      | (pos_hours, Float hours) :: (_, Hours) :: rest ->
+        aux_start_with_minutes
+          ~pos:(Some (CCOpt.value ~default:pos_hours pos))
           ~days ~hours:(Some hours) acc rest
       | _ -> aux_start_with_minutes ~pos ~days ~hours:None acc l
     and aux_start_with_minutes ~pos ~days ~hours acc l =
       match l with
       | (pos_minutes, Nat minutes) :: (_, Minutes) :: rest ->
+        aux_start_with_seconds
+          ~pos:(Some (CCOpt.value ~default:pos_minutes pos))
+          ~days ~hours ~minutes:(Some (float_of_int minutes)) acc rest
+      | (pos_minutes, Float minutes) :: (_, Minutes) :: rest ->
         aux_start_with_seconds
           ~pos:(Some (CCOpt.value ~default:pos_minutes pos))
           ~days ~hours ~minutes:(Some minutes) acc rest
@@ -512,10 +525,10 @@ module Ast_normalize = struct
         let token =
           ( CCOpt.value ~default:pos_seconds pos,
             Duration
-              (Timere.Duration.make
-                 ~days:(CCOpt.value ~default:0 days)
-                 ~hours:(CCOpt.value ~default:0 hours)
-                 ~minutes:(CCOpt.value ~default:0 minutes)
+              (Timere.Duration.make_frac
+                 ~days:(CCOpt.value ~default:0.0 days)
+                 ~hours:(CCOpt.value ~default:0.0 hours)
+                 ~minutes:(CCOpt.value ~default:0.0 minutes)
                  ~seconds ()) )
         in
         aux_start_with_days (token :: acc) rest
