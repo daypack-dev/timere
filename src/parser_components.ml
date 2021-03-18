@@ -31,7 +31,8 @@ let nat_zero : (int, unit) t =
 let float_non_neg : (float, unit) t =
   many1_satisfy (function '0' .. '9' -> true | _ -> false)
   >>= fun x ->
-    (char '.' >> many1_satisfy (function '0' .. '9' -> true | _ -> false))
+  char '.'
+  >> many1_satisfy (function '0' .. '9' -> true | _ -> false)
   >>= fun y ->
   let s = x ^ "." ^ y in
   try return (float_of_string s)
