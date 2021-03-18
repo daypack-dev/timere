@@ -151,10 +151,12 @@ let month_p : (Timere.month, unit) t =
 
 let symbols = "()[]&|>"
 
+module String_map = CCMap.Make (String)
+
 let time_zones =
-  List.map
-    (fun x -> (String.lowercase_ascii x, x))
-    Timere.Time_zone.available_time_zones
+  Timere.Time_zone.available_time_zones
+  |> List.map (fun x -> (String.lowercase_ascii x, x))
+  |> String_map.of_list
 
 let token_p : (token, unit) MParser.t =
   get_pos
@@ -204,7 +206,7 @@ let token_p : (token, unit) MParser.t =
       attempt
         (many1_satisfy (fun c -> c <> ' ' && not (String.contains symbols c))
          >>= fun s ->
-         match List.assoc_opt (String.lowercase_ascii s) time_zones with
+         match String_map.find_opt (String.lowercase_ascii s) time_zones with
          | None -> fail ""
          | Some s -> (
              match Timere.Time_zone.make s with
