@@ -152,10 +152,9 @@ let month_p : (Timere.month, unit) t =
 let symbols = "()[]&|>"
 
 let time_zones =
-  List.map (fun x ->
-      (String.lowercase_ascii x, x)
-    )
-  Timere.Time_zone.available_time_zones
+  List.map
+    (fun x -> (String.lowercase_ascii x, x))
+    Timere.Time_zone.available_time_zones
 
 let token_p : (token, unit) MParser.t =
   get_pos
@@ -202,17 +201,15 @@ let token_p : (token, unit) MParser.t =
       attempt (string "secs") >>$ Seconds;
       attempt (string "sec") >>$ Seconds;
       attempt (string "s") >>$ Seconds;
-      (attempt
-         (many1_satisfy (fun c -> c <> ' ' && not (String.contains symbols c))
-          >>= fun s ->
-          match List.assoc_opt (String.lowercase_ascii s) time_zones with
-          | None -> fail ""
-          | Some s ->
-            match Timere.Time_zone.make s with
-            | None -> fail ""
-            | Some tz -> return (Time_zone tz)
-         )
-      );
+      attempt
+        (many1_satisfy (fun c -> c <> ' ' && not (String.contains symbols c))
+         >>= fun s ->
+         match List.assoc_opt (String.lowercase_ascii s) time_zones with
+         | None -> fail ""
+         | Some s -> (
+             match Timere.Time_zone.make s with
+             | None -> fail ""
+             | Some tz -> return (Time_zone tz)));
       (attempt
          (many1_satisfy (fun c -> c <> ' ' && not (String.contains symbols c)))
        >>= fun s ->
@@ -1384,7 +1381,14 @@ let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t
       with
       | Some x -> Ok x
       | None -> Error "Invalid date time")
-  | Tokens [ (_, Time_zone tz); (_, Nat year); (_, Month month); (_, Nat day); (_, Hms hms) ]
+  | Tokens
+      [
+        (_, Time_zone tz);
+        (_, Nat year);
+        (_, Month month);
+        (_, Nat day);
+        (_, Hms hms);
+      ]
     when year > 31 -> (
       match
         Timere.Date_time.make ~year ~month ~day ~hour:hms.hour

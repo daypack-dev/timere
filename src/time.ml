@@ -1223,7 +1223,8 @@ module Date_time' = struct
                     `Tz_and_tz_offset_s (tz_of_date_time, entry.offset);
                 }))
 
-  let make ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ~year ~month ~day ~hour ~minute ~second =
+  let make ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ~year ~month ~day ~hour
+      ~minute ~second =
     let dt =
       { year; month; day; hour; minute; second; tz_info = `Tz_only tz }
     in
@@ -1232,7 +1233,8 @@ module Date_time' = struct
     | `Single x -> Some (of_timestamp ~tz_of_date_time:tz x |> CCOpt.get_exn)
     | `Ambiguous _ -> Some dt
 
-  let make_exn ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ~year ~month ~day ~hour ~minute ~second =
+  let make_exn ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ~year ~month ~day
+      ~hour ~minute ~second =
     match make ~year ~month ~day ~hour ~minute ~second ~tz with
     | Some x -> x
     | None -> invalid_arg "make_exn"
