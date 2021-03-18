@@ -493,7 +493,9 @@ module Ast_normalize = struct
     let rec aux_start_with_days acc l =
       match l with
       | (pos, Nat days) :: (_, Days) :: rest ->
-        aux_start_with_hours ~pos:(Some pos) ~days:(Some (float_of_int days)) acc rest
+        aux_start_with_hours ~pos:(Some pos)
+          ~days:(Some (float_of_int days))
+          acc rest
       | (pos, Float days) :: (_, Days) :: rest ->
         aux_start_with_hours ~pos:(Some pos) ~days:(Some days) acc rest
       | _ -> aux_start_with_hours ~pos:None ~days:None acc l
@@ -502,7 +504,9 @@ module Ast_normalize = struct
       | (pos_hours, Nat hours) :: (_, Hours) :: rest ->
         aux_start_with_minutes
           ~pos:(Some (CCOpt.value ~default:pos_hours pos))
-          ~days ~hours:(Some (float_of_int hours)) acc rest
+          ~days
+          ~hours:(Some (float_of_int hours))
+          acc rest
       | (pos_hours, Float hours) :: (_, Hours) :: rest ->
         aux_start_with_minutes
           ~pos:(Some (CCOpt.value ~default:pos_hours pos))
@@ -513,7 +517,9 @@ module Ast_normalize = struct
       | (pos_minutes, Nat minutes) :: (_, Minutes) :: rest ->
         aux_start_with_seconds
           ~pos:(Some (CCOpt.value ~default:pos_minutes pos))
-          ~days ~hours ~minutes:(Some (float_of_int minutes)) acc rest
+          ~days ~hours
+          ~minutes:(Some (float_of_int minutes))
+          acc rest
       | (pos_minutes, Float minutes) :: (_, Minutes) :: rest ->
         aux_start_with_seconds
           ~pos:(Some (CCOpt.value ~default:pos_minutes pos))
