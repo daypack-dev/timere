@@ -22,3 +22,6 @@
 7. "2.25 minutes 1 seconds"
   Ok 2 mins 16 secs
 
+8. "5 days 6.5 hours"
+  Ok 5 days 6 hours 30 mins 0 secs
+
