@@ -322,7 +322,7 @@ module Date_time : sig
   }
 
   val make :
-    tz:Time_zone.t ->
+    ?tz:Time_zone.t ->
     year:int ->
     month:month ->
     day:int ->
@@ -330,7 +330,7 @@ module Date_time : sig
     minute:int ->
     second:int ->
     t option
-  (** Constructs a date time providing only a time zone.
+  (** Constructs a date time providing only a time zone (defaults to local time zone).
 
       A precise offset is inferred if possible.
 
@@ -340,7 +340,7 @@ module Date_time : sig
   *)
 
   val make_exn :
-    tz:Time_zone.t ->
+    ?tz:Time_zone.t ->
     year:int ->
     month:month ->
     day:int ->
