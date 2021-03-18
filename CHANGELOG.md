@@ -6,7 +6,7 @@
 
 - Added local time zone detection (`Timere.Time_zone.local`)
 
-- Swapped to using local time zone by default
+- Swapped to using local time zone by default in `Timere.Date_time` API
 
 - Added missing to/of sexp functions for `Date_time` and `Duration` modules
 
