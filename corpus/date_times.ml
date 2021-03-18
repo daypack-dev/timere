@@ -7,6 +7,7 @@ let texts = [
   "2020 jun 6th 10:15";
   "6 jun 2020 10:15";
   "6th jun 2020 10:15";
+  "Australia/Sydney 2020 jun 6 10am";
   "2020-06-01 10:10"
 ]
 

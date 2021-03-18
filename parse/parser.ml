@@ -47,6 +47,7 @@ type guess =
   | Month of Timere.month
   | Months of Timere.month Timere.range list
   | Duration of Timere.Duration.t
+  | Time_zone of Timere.Time_zone.t
 
 type token = (int * int * int) * guess
 
@@ -95,6 +96,7 @@ let string_of_token (_, guess) =
   | Month _ -> "month"
   | Months _ -> "months"
   | Duration _ -> "duration"
+  | Time_zone tz -> Timere.Time_zone.name tz
 
 let weekdays : (string * Timere.weekday) list =
   [
@@ -149,6 +151,12 @@ let month_p : (Timere.month, unit) t =
 
 let symbols = "()[]&|>"
 
+let time_zones =
+  List.map (fun x ->
+      (String.lowercase_ascii x, x)
+    )
+  Timere.Time_zone.available_time_zones
+
 let token_p : (token, unit) MParser.t =
   get_pos
   >>= fun pos ->
@@ -194,6 +202,17 @@ let token_p : (token, unit) MParser.t =
       attempt (string "secs") >>$ Seconds;
       attempt (string "sec") >>$ Seconds;
       attempt (string "s") >>$ Seconds;
+      (attempt
+         (many1_satisfy (fun c -> c <> ' ' && not (String.contains symbols c))
+          >>= fun s ->
+          match List.assoc_opt (String.lowercase_ascii s) time_zones with
+          | None -> fail ""
+          | Some s ->
+            match Timere.Time_zone.make s with
+            | None -> fail ""
+            | Some tz -> return (Time_zone tz)
+         )
+      );
       (attempt
          (many1_satisfy (fun c -> c <> ' ' && not (String.contains symbols c)))
        >>= fun s ->
@@ -1358,6 +1377,14 @@ let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t
   =
   match ast with
   | Tokens [ (_, Nat year); (_, Month month); (_, Nat day); (_, Hms hms) ]
+    when year > 31 -> (
+      match
+        Timere.Date_time.make ~year ~month ~day ~hour:hms.hour
+          ~minute:hms.minute ~second:hms.second ~tz
+      with
+      | Some x -> Ok x
+      | None -> Error "Invalid date time")
+  | Tokens [ (_, Time_zone tz); (_, Nat year); (_, Month month); (_, Nat day); (_, Hms hms) ]
     when year > 31 -> (
       match
         Timere.Date_time.make ~year ~month ~day ~hour:hms.hour
