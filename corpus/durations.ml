@@ -2,6 +2,11 @@ let texts = [
   "24h";
   "16.5 hours";
   "1h20min";
+  "1 hour 2.5 minutes";
+  "0 seconds";
+  "10 seconds";
+  "100 seconds";
+  "2.25 minutes 1 seconds";
 ]
 
 let () =

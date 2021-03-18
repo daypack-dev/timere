@@ -7,3 +7,18 @@
 2. "1h20min"
   Ok 1 hours 20 mins 0 secs
 
+3. "1 hour 2.5 minutes"
+  Ok 1 hours 2 mins 30 secs
+
+4. "0 seconds"
+  Ok 0 secs
+
+5. "10 seconds"
+  Ok 10 secs
+
+6. "100 seconds"
+  Ok 1 mins 40 secs
+
+7. "2.25 minutes 1 seconds"
+  Ok 2 mins 16 secs
+
