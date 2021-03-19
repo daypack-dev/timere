@@ -64,3 +64,6 @@
 21. "16th 6am to 8am, 9am, 10am to 11am"
   Ok (inter (pattern (month_days 16)) (union (all) (bounded_intervals whole (duration 1 0 0 0) (points (pick hms 6 0 0)) (points (pick hms 8 0 0))) (bounded_intervals whole (duration 1 0 0 0) (points (pick hms 9 0 0)) (points (pick hms 9 0 0))) (bounded_intervals whole (duration 1 0 0 0) (points (pick hms 10 0 0)) (points (pick hms 11 0 0)))))
 
+22. "jan || Feb"
+  Ok (union (pattern (months Jan)) (pattern (months Feb)))
+
