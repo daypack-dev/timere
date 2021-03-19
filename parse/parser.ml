@@ -1437,8 +1437,8 @@ let parse_timere s =
 let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t
   =
   match ast with
-  | Tokens [ (_, Nat year); (_, Month month); (_, Nat day); (_, Hms hms) ]
-    when year > 31 -> (
+  | Tokens [ (_, Ymd ((_, year), (_, month), (_, day))); (_, Hms hms) ]
+  | Tokens [ (_, Hms hms); (_, Ymd ((_, year), (_, month), (_, day))) ] -> (
       match
         Timere.Date_time.make ~year ~month ~day ~hour:hms.hour
           ~minute:hms.minute ~second:hms.second ~tz
@@ -1448,35 +1448,33 @@ let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t
   | Tokens
       [
         (_, Time_zone tz);
-        (_, Nat year);
-        (_, Month month);
-        (_, Nat day);
+        (_, Ymd ((_, year), (_, month), (_, day)));
         (_, Hms hms);
       ]
-    when year > 31 -> (
+  | Tokens
+      [
+        (_, Ymd ((_, year), (_, month), (_, day)));
+        (_, Hms hms);
+        (_, Time_zone tz);
+      ]
+  | Tokens
+      [
+        (_, Time_zone tz);
+        (_, Hms hms);
+        (_, Ymd ((_, year), (_, month), (_, day)));
+      ]
+  | Tokens
+      [
+        (_, Hms hms);
+        (_, Ymd ((_, year), (_, month), (_, day)));
+        (_, Time_zone tz);
+      ] -> (
       match
         Timere.Date_time.make ~year ~month ~day ~hour:hms.hour
           ~minute:hms.minute ~second:hms.second ~tz
       with
       | Some x -> Ok x
       | None -> Error "Invalid date time")
-  | Tokens [ (_, Nat day); (_, Month month); (_, Nat year); (_, Hms hms) ]
-    when year > 31 -> (
-      match
-        Timere.Date_time.make ~year ~month ~day ~hour:hms.hour
-          ~minute:hms.minute ~second:hms.second ~tz
-      with
-      | Some x -> Ok x
-      | None -> Error "Invalid date time")
-  | Tokens [ (_, Nat year); (_, Month month); (_, Month_day day); (_, Hms hms) ]
-  | Tokens [ (_, Month_day day); (_, Month month); (_, Nat year); (_, Hms hms) ]
-    -> (
-        match
-          Timere.Date_time.make ~year ~month ~day ~hour:hms.hour
-            ~minute:hms.minute ~second:hms.second ~tz
-        with
-        | Some x -> Ok x
-        | None -> Error "Invalid date time")
   | _ -> Error "Unrecognized pattern"
 
 let parse_date_time ?(tz = Timere.Time_zone.utc) s =
