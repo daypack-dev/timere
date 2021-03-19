@@ -47,7 +47,8 @@ type guess =
   | Month_days of int Timere.range list
   | Month of Timere.month
   | Months of Timere.month Timere.range list
-  | Ymd of int * Timere.month * int
+  | Ymd of
+      (MParser.pos * int) * (MParser.pos * Timere.month) * (MParser.pos * int)
   | Duration of Timere.Duration.t
   | Time_zone of Timere.Time_zone.t
 
@@ -584,38 +585,53 @@ module Ast_normalize = struct
     let rec aux l =
       match l with
       | [] -> []
-      | (pos_year, Nat year) :: (_, Month month) :: (_, Nat day) :: rest
-      | (pos_year, Nat year) :: (_, Month month) :: (_, Month_day day) :: rest
+      | (pos_year, Nat year)
+        :: (pos_month, Month month) :: (pos_day, Nat day) :: rest
+      | (pos_year, Nat year)
+        :: (pos_month, Month month) :: (pos_day, Month_day day) :: rest
         when year > 31 ->
-        (pos_year, Ymd (year, month, day)) :: aux rest
-      | (pos_day, Nat day) :: (_, Month month) :: (_, Nat year) :: rest
-      | (pos_day, Month_day day) :: (_, Month month) :: (_, Nat year) :: rest
+        (pos_year, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
+        :: aux rest
+      | (pos_day, Nat day)
+        :: (pos_month, Month month) :: (pos_year, Nat year) :: rest
+      | (pos_day, Month_day day)
+        :: (pos_month, Month month) :: (pos_year, Nat year) :: rest
         when year > 31 ->
-        (pos_day, Ymd (year, month, day)) :: aux rest
+        (pos_day, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
+        :: aux rest
       | (pos_year, Nat year)
         :: (_, Hyphen)
-        :: (pos_month, Nat month) :: (_, Hyphen) :: (_, Nat day) :: rest
+        :: (pos_month, Nat month)
+        :: (_, Hyphen) :: (pos_day, Nat day) :: rest
       | (pos_year, Nat year)
         :: (_, Slash)
-        :: (pos_month, Nat month) :: (_, Slash) :: (_, Nat day) :: rest
+        :: (pos_month, Nat month) :: (_, Slash) :: (pos_day, Nat day) :: rest
         when year > 31 -> (
           match Timere.Utils.month_of_human_int month with
           | None ->
             invalid_data
               (Printf.sprintf "%s: Invalid month" (string_of_pos pos_month))
-          | Some month -> (pos_year, Ymd (year, month, day)) :: aux rest)
+          | Some month ->
+            ( pos_year,
+              Ymd ((pos_year, year), (pos_month, month), (pos_day, day)) )
+            :: aux rest)
       | (pos_day, Nat day)
         :: (_, Hyphen)
-        :: (pos_month, Nat month) :: (_, Hyphen) :: (_, Nat year) :: rest
+        :: (pos_month, Nat month)
+        :: (_, Hyphen) :: (pos_year, Nat year) :: rest
       | (pos_day, Nat day)
         :: (_, Slash)
-        :: (pos_month, Nat month) :: (_, Slash) :: (_, Nat year) :: rest
+        :: (pos_month, Nat month)
+        :: (_, Slash) :: (pos_year, Nat year) :: rest
         when year > 31 -> (
           match Timere.Utils.month_of_human_int month with
           | None ->
             invalid_data
               (Printf.sprintf "%s: Invalid month" (string_of_pos pos_month))
-          | Some month -> (pos_day, Ymd (year, month, day)) :: aux rest)
+          | Some month ->
+            ( pos_day,
+              Ymd ((pos_year, year), (pos_month, month), (pos_day, day)) )
+            :: aux rest)
       | x :: xs -> x :: aux xs
     in
     aux l
