@@ -592,9 +592,30 @@ module Ast_normalize = struct
         when year > 31 ->
         (pos_year, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
         :: aux rest
+      | (pos_year, Nat year)
+        :: (pos_day, Nat day)
+        :: (_, Of)
+        :: (pos_month, Month month) :: rest
+      | (pos_year, Nat year)
+        :: (pos_day, Month_day day)
+        :: (_, Of)
+        :: (pos_month, Month month)
+        :: rest
+        when year > 31 ->
+        (pos_year, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
+        :: aux rest
       | (pos_day, Nat day)
         :: (pos_month, Month month) :: (pos_year, Nat year) :: rest
       | (pos_day, Month_day day)
+        :: (pos_month, Month month) :: (pos_year, Nat year) :: rest
+        when year > 31 ->
+        (pos_day, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
+        :: aux rest
+      | (pos_day, Nat day)
+        :: (_, Of)
+        :: (pos_month, Month month) :: (pos_year, Nat year) :: rest
+      | (pos_day, Month_day day)
+        :: (_, Of)
         :: (pos_month, Month month) :: (pos_year, Nat year) :: rest
         when year > 31 ->
         (pos_day, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
@@ -874,26 +895,7 @@ module Rules = struct
 
   let rule_ymd l =
     match l with
-    | [ (_, Nat year); (_, Month month); (pos_days, Nat day) ]
-    | [ (_, Nat year); (_, Month month); (pos_days, Nat day); (_, St) ]
-    | [ (_, Nat year); (_, Month month); (pos_days, Nat day); (_, Nd) ]
-    | [ (_, Nat year); (_, Month month); (pos_days, Nat day); (_, Rd) ]
-    | [ (_, Nat year); (_, Month month); (pos_days, Nat day); (_, Th) ]
-      when year > 31 ->
-      pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ()
-    | [ (pos_days, Nat day); (_, Month month); (_, Nat year) ]
-    | [ (pos_days, Nat day); (_, St); (_, Month month); (_, Nat year) ]
-    | [ (pos_days, Nat day); (_, Nd); (_, Month month); (_, Nat year) ]
-    | [ (pos_days, Nat day); (_, Rd); (_, Month month); (_, Nat year) ]
-    | [ (pos_days, Nat day); (_, Th); (_, Month month); (_, Nat year) ]
-      when year > 31 ->
-      pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ()
-    | [ (_, Nat year); (pos_days, Nat day); (_, Of); (_, Month month) ]
-    | [ (_, Nat year); (pos_days, Nat day); (_, St); (_, Of); (_, Month month) ]
-    | [ (_, Nat year); (pos_days, Nat day); (_, Nd); (_, Of); (_, Month month) ]
-    | [ (_, Nat year); (pos_days, Nat day); (_, Rd); (_, Of); (_, Month month) ]
-    | [ (_, Nat year); (pos_days, Nat day); (_, Th); (_, Of); (_, Month month) ]
-      ->
+    | [ (_, Ymd ((_, year), (_, month), (pos_days, day)))] ->
       pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ()
     | _ -> `None
 
@@ -957,10 +959,8 @@ module Rules = struct
 
   let rule_ymd_hms l =
     match l with
-    | [ (_, Nat year); (_, Month month); (pos_days, Nat day); (_, Hms hms) ]
-    | [
-      (_, Nat year); (_, Month month); (pos_days, Month_day day); (_, Hms hms);
-    ] ->
+    | [ (_, Ymd ((_, year), (_, month), (pos_days, day))); (_, Hms hms) ]
+      ->
       pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ~hms
         ()
     | _ -> `None
