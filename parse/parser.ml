@@ -836,7 +836,7 @@ let bounded_intervals_of_hmss (hmss : Timere.hms Timere.range list) =
       hmss
     |> Misc_utils.get_ok_error_list
   with
-  | Ok l -> `Some (List.fold_left Timere.( ||| ) Timere.always l)
+  | Ok l -> `Some (List.fold_left Timere.( ||| ) Timere.empty l)
   | Error _ -> `None
 
 module Rules = struct
