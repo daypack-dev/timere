@@ -16,6 +16,7 @@ type guess =
   | Dot
   | Comma
   | Hyphen
+  | Slash
   | Colon
   | Star
   | Not
@@ -46,6 +47,7 @@ type guess =
   | Month_days of int Timere.range list
   | Month of Timere.month
   | Months of Timere.month Timere.range list
+  | Ymd of int * Timere.month * int
   | Duration of Timere.Duration.t
   | Time_zone of Timere.Time_zone.t
 
@@ -65,6 +67,7 @@ let string_of_token (_, guess) =
   | Dot -> "DOT"
   | Comma -> "COMMA"
   | Hyphen -> "HYPHEN"
+  | Slash -> "SLASH"
   | Colon -> "COLON"
   | Star -> "STAR"
   | Not -> "NOT"
@@ -95,6 +98,7 @@ let string_of_token (_, guess) =
   | Month_days _ -> "month_days"
   | Month _ -> "month"
   | Months _ -> "months"
+  | Ymd _ -> "ymd"
   | Duration _ -> "duration"
   | Time_zone tz -> Timere.Time_zone.name tz
 
@@ -166,6 +170,7 @@ let token_p : (token, unit) MParser.t =
       attempt (char '.') >>$ Dot;
       attempt (char ',') >>$ Comma;
       attempt (char '-') >>$ Hyphen;
+      attempt (char '/') >>$ Slash;
       attempt (char ':') >>$ Colon;
       attempt (char '*') >>$ Star;
       (attempt float_non_neg |>> fun x -> Float x);
@@ -575,6 +580,46 @@ module Ast_normalize = struct
     in
     aux_start_with_days [] l
 
+  let recognize_ymd (l : token list) : token list =
+    let rec aux l =
+      match l with
+      | [] -> []
+      | (pos_year, Nat year) :: (_, Month month) :: (_, Nat day) :: rest
+      | (pos_year, Nat year) :: (_, Month month) :: (_, Month_day day) :: rest
+        when year > 31 ->
+        (pos_year, Ymd (year, month, day)) :: aux rest
+      | (pos_day, Nat day) :: (_, Month month) :: (_, Nat year) :: rest
+      | (pos_day, Month_day day) :: (_, Month month) :: (_, Nat year) :: rest
+        when year > 31 ->
+        (pos_day, Ymd (year, month, day)) :: aux rest
+      | (pos_year, Nat year)
+        :: (_, Hyphen)
+        :: (pos_month, Nat month) :: (_, Hyphen) :: (_, Nat day) :: rest
+      | (pos_year, Nat year)
+        :: (_, Slash)
+        :: (pos_month, Nat month) :: (_, Slash) :: (_, Nat day) :: rest
+        when year > 31 -> (
+          match Timere.Utils.month_of_human_int month with
+          | None ->
+            invalid_data
+              (Printf.sprintf "%s: Invalid month" (string_of_pos pos_month))
+          | Some month -> (pos_year, Ymd (year, month, day)) :: aux rest)
+      | (pos_day, Nat day)
+        :: (_, Hyphen)
+        :: (pos_month, Nat month) :: (_, Hyphen) :: (_, Nat year) :: rest
+      | (pos_day, Nat day)
+        :: (_, Slash)
+        :: (pos_month, Nat month) :: (_, Slash) :: (_, Nat year) :: rest
+        when year > 31 -> (
+          match Timere.Utils.month_of_human_int month with
+          | None ->
+            invalid_data
+              (Printf.sprintf "%s: Invalid month" (string_of_pos pos_month))
+          | Some month -> (pos_day, Ymd (year, month, day)) :: aux rest)
+      | x :: xs -> x :: aux xs
+    in
+    aux l
+
   let process_tokens (e : ast) : (ast, string) CCResult.t =
     let rec aux e =
       match e with
@@ -594,6 +639,7 @@ module Ast_normalize = struct
           |> ungroup_weekdays
           |> ungroup_months
           |> ungroup_hms
+          |> recognize_ymd
         in
         Tokens l
       | Binary_op (op, e1, e2) -> Binary_op (op, aux e1, aux e2)
