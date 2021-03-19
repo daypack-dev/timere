@@ -21,7 +21,7 @@ let texts = [
 let () =
   List.iteri (fun i text ->
       Printf.printf "%d. %S\n" i text;
-      match Timere_parse.date_time text with
+      match Timere_parse.date_time ~tz:Timere.Time_zone.utc text with
       | Ok dt ->
         Printf.printf "  Ok %s\n\n" (Timere.Date_time.to_rfc3339 dt)
       | Error msg ->
