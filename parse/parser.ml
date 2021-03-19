@@ -961,47 +961,10 @@ module Rules = struct
   let rule_ymd_hms_to_ymd_hms l =
     match l with
     | [
-      (_, Nat year1);
-      (_, Month month1);
-      (pos_day1, Nat day1);
+      (_, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
       (_, Hms hms1);
       (_, To);
-      (_, Nat year2);
-      (_, Month month2);
-      (pos_day2, Nat day2);
-      (_, Hms hms2);
-    ]
-    | [
-      (_, Nat year1);
-      (_, Month month1);
-      (pos_day1, Nat day1);
-      (_, Hms hms1);
-      (_, To);
-      (_, Nat year2);
-      (_, Month month2);
-      (pos_day2, Month_day day2);
-      (_, Hms hms2);
-    ]
-    | [
-      (_, Nat year1);
-      (_, Month month1);
-      (pos_day1, Month_day day1);
-      (_, Hms hms1);
-      (_, To);
-      (_, Nat year2);
-      (_, Month month2);
-      (pos_day2, Nat day2);
-      (_, Hms hms2);
-    ]
-    | [
-      (_, Nat year1);
-      (_, Month month1);
-      (pos_day1, Month_day day1);
-      (_, Hms hms1);
-      (_, To);
-      (_, Nat year2);
-      (_, Month month2);
-      (pos_day2, Month_day day2);
+      (_, Ymd ((_, year2), (_, month2), (pos_day2, day2)));
       (_, Hms hms2);
     ] -> (
         match
@@ -1021,9 +984,7 @@ module Rules = struct
   let rule_ymd_hms_to_md_hms l =
     match l with
     | [
-      (_, Nat year1);
-      (_, Month month1);
-      (pos_day1, Nat day1);
+      (_, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
       (_, Hms hms1);
       (_, To);
       (_, Month month2);
@@ -1031,29 +992,7 @@ module Rules = struct
       (_, Hms hms2);
     ]
     | [
-      (_, Nat year1);
-      (_, Month month1);
-      (pos_day1, Nat day1);
-      (_, Hms hms1);
-      (_, To);
-      (_, Month month2);
-      (pos_day2, Month_day day2);
-      (_, Hms hms2);
-    ]
-    | [
-      (_, Nat year1);
-      (_, Month month1);
-      (pos_day1, Month_day day1);
-      (_, Hms hms1);
-      (_, To);
-      (_, Month month2);
-      (pos_day2, Nat day2);
-      (_, Hms hms2);
-    ]
-    | [
-      (_, Nat year1);
-      (_, Month month1);
-      (pos_day1, Month_day day1);
+      (_, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
       (_, Hms hms1);
       (_, To);
       (_, Month month2);
@@ -1076,36 +1015,14 @@ module Rules = struct
   let rule_ymd_hms_to_d_hms l =
     match l with
     | [
-      (_, Nat year1);
-      (_, Month month1);
-      (pos_day1, Nat day1);
+      (_, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
       (_, Hms hms1);
       (_, To);
       (pos_day2, Nat day2);
       (_, Hms hms2);
     ]
     | [
-      (_, Nat year1);
-      (_, Month month1);
-      (pos_day1, Nat day1);
-      (_, Hms hms1);
-      (_, To);
-      (pos_day2, Month_day day2);
-      (_, Hms hms2);
-    ]
-    | [
-      (_, Nat year1);
-      (_, Month month1);
-      (pos_day1, Month_day day1);
-      (_, Hms hms1);
-      (_, To);
-      (pos_day2, Nat day2);
-      (_, Hms hms2);
-    ]
-    | [
-      (_, Nat year1);
-      (_, Month month1);
-      (pos_day1, Month_day day1);
+      (_, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
       (_, Hms hms1);
       (_, To);
       (pos_day2, Month_day day2);
@@ -1127,17 +1044,7 @@ module Rules = struct
   let rule_ymd_hms_to_hms l =
     match l with
     | [
-      (_, Nat year1);
-      (_, Month month1);
-      (pos_day1, Nat day1);
-      (_, Hms hms1);
-      (_, To);
-      (_, Hms hms2);
-    ]
-    | [
-      (_, Nat year1);
-      (_, Month month1);
-      (pos_day1, Month_day day1);
+      (_, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
       (_, Hms hms1);
       (_, To);
       (_, Hms hms2);
