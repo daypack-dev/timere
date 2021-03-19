@@ -70,3 +70,9 @@
 23. "2020 jun 16th 10am to 12pm"
   Ok (bounded_intervals whole (duration 366 0 0 0) (points (pick ymdhms 2020 Jun 16 10 0 0)) (points (pick hms 12 0 0)))
 
+24. "2020 jun 16th 10am to 17th 12pm"
+  Ok (bounded_intervals whole (duration 366 0 0 0) (points (pick ymdhms 2020 Jun 16 10 0 0)) (points (pick dhms 17 12 0 0)))
+
+25. "2020 jun 16th 10am to jul 1 12pm"
+  Ok (bounded_intervals whole (duration 366 0 0 0) (points (pick ymdhms 2020 Jun 16 10 0 0)) (points (pick mdhms Jul 1 12 0 0)))
+
