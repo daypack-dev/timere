@@ -8,6 +8,9 @@ let texts = [
   "6 jun 2020 10:15";
   "6th jun 2020 10:15";
   "Australia/Sydney 2020 jun 6 10am";
+  "Australia/Sydney 2020 jun 6 10:15";
+  "2020 jun 6 10am Australia/Sydney";
+  "2020 jun 6 10:15 Australia/Sydney";
   "2020-06-01 10:10";
   "2020/06/01 10am";
   "10:10 2020-06-01";
