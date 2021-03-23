@@ -16,6 +16,8 @@
 
 - Added missing to/of sexp functions for `Date_time` and `Duration` modules
 
+- Added pretty printers for `Timere.hms`
+
 ## Timere-parse 0.0.1
 
 - Base version
