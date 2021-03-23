@@ -607,6 +607,13 @@ module Ast_normalize = struct
         when year > 31 ->
         (pos_day, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
         :: aux rest
+      | (pos_month, Month month)
+        :: (pos_day, Nat day) :: (pos_year, Nat year) :: rest
+      | (pos_month, Month month)
+        :: (pos_day, Month_day day) :: (pos_year, Nat year) :: rest
+        when year > 31 ->
+        (pos_day, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
+        :: aux rest
       | (pos_day, Nat day)
         :: (_, Of) :: (pos_month, Month month) :: (pos_year, Nat year) :: rest
       | (pos_day, Month_day day)
