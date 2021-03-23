@@ -42,6 +42,10 @@ corpus-timeres:
 corpus-date-times:
 	dune exec ./corpus/date_times.exe > corpus-outputs/date-times.txt
 
+.PHONY: corpus-hmss
+corpus-hmss:
+	dune exec ./corpus/hmss.exe > corpus-outputs/hmss.txt
+
 .PHONY: corpus-durations
 corpus-durations:
 	dune exec ./corpus/durations.exe > corpus-outputs/durations.txt
