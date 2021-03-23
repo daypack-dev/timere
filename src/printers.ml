@@ -160,16 +160,19 @@ let pp_date_time ?(format : string = default_date_time_format_string) ()
     choice
       [
         attempt (string "{{" |>> fun _ -> Fmt.pf formatter "{");
-        attempt (char '{')
-        >> (Format_string_parsers.date_time_inner date_time
-           << char '}') |>> (fun s -> Fmt.pf formatter "%s" s);
-        (many1_satisfy (function '{' -> false | _ -> true) |>> fun s -> Fmt.pf formatter "%s" s);
+        (attempt (char '{')
+         >> (Format_string_parsers.date_time_inner date_time << char '}')
+         |>> fun s -> Fmt.pf formatter "%s" s);
+        (many1_satisfy (function '{' -> false | _ -> true)
+         |>> fun s -> Fmt.pf formatter "%s" s);
       ]
   in
   let p formatter (date_time : Time.Date_time'.t) : (unit, unit) t =
     many (single formatter date_time) >> return ()
   in
-  match result_of_mparser_result @@ parse_string (p formatter x << eof) format () with
+  match
+    result_of_mparser_result @@ parse_string (p formatter x << eof) format ()
+  with
   | Error msg -> invalid_format_string msg
   | Ok () -> ()
 
@@ -181,8 +184,7 @@ let pp_timestamp ?(display_using_tz = Time_zone.utc)
     ?(format = default_date_time_format_string) () formatter time =
   match Time.Date_time'.of_timestamp ~tz_of_date_time:display_using_tz time with
   | None -> invalid_arg "Invalid unix second"
-  | Some dt ->
-    Fmt.pf formatter "%a" (pp_date_time ~format ()) dt
+  | Some dt -> Fmt.pf formatter "%a" (pp_date_time ~format ()) dt
 
 let string_of_timestamp ?(display_using_tz = Time_zone.utc)
     ?(format = default_date_time_format_string) (time : int64) : string =
@@ -194,8 +196,7 @@ let pp_timestamp ?(display_using_tz = Time_zone.utc)
     (string_of_timestamp ~display_using_tz ~format x)
 
 let pp_interval ?(display_using_tz = Time_zone.utc)
-    ?(format = default_interval_format_string) ()
-  formatter
+    ?(format = default_interval_format_string) () formatter
     ((s, e) : Time.Interval.t) : unit =
   let open MParser in
   let open Parser_components in
@@ -208,9 +209,9 @@ let pp_interval ?(display_using_tz = Time_zone.utc)
          >> (attempt (char 's' >> return start_date_time)
              <|> (char 'e' >> return end_date_time))
          >>= fun date_time ->
-         Format_string_parsers.date_time_inner date_time << char '}'
-       |>> fun s -> Fmt.pf formatter "%s" s
-        );
+         Format_string_parsers.date_time_inner date_time
+         << char '}'
+         |>> fun s -> Fmt.pf formatter "%s" s);
         (many1_satisfy (function '{' -> false | _ -> true)
          |>> fun s -> Fmt.pf formatter "%s" s);
       ]
@@ -254,17 +255,17 @@ let pp_intervals ?(display_using_tz = Time_zone.utc)
     intervals =
   Fmt.seq ~sep (pp_interval ~display_using_tz ~format ()) formatter intervals
 
-let pp_duration formatter ({ days; hours; minutes; seconds } : Duration.t) : unit =
+let pp_duration formatter ({ days; hours; minutes; seconds } : Duration.t) :
+  unit =
   if days > 0 then
-    Fmt.pf formatter "%d days %d hours %d mins %d secs" days hours minutes seconds
+    Fmt.pf formatter "%d days %d hours %d mins %d secs" days hours minutes
+      seconds
   else if hours > 0 then
     Fmt.pf formatter "%d hours %d mins %d secs" hours minutes seconds
   else if minutes > 0 then Fmt.pf formatter "%d mins %d secs" minutes seconds
   else Fmt.pf formatter "%d secs" seconds
 
-let string_of_duration (x : Duration.t) : string
-  =
-  Fmt.str "%a" pp_duration x
+let string_of_duration (x : Duration.t) : string = Fmt.str "%a" pp_duration x
 
 let pp_duration formatter x =
   Format.fprintf formatter "%s" (string_of_duration x)

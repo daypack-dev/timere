@@ -1382,31 +1382,17 @@ let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t
       with
       | Some x -> Ok x
       | None -> Error "Invalid date time")
-  | Tokens
-      [
-        (_, Ymd ((_, year), (_, month), (_, day)));
-      ]
+  | Tokens [ (_, Ymd ((_, year), (_, month), (_, day))) ] -> (
+      match
+        Timere.Date_time.make ~year ~month ~day ~hour:0 ~minute:0 ~second:0 ~tz
+      with
+      | Some x -> Ok x
+      | None -> Error "Invalid date time")
+  | Tokens [ (_, Time_zone tz); (_, Ymd ((_, year), (_, month), (_, day))) ]
+  | Tokens [ (_, Ymd ((_, year), (_, month), (_, day))); (_, Time_zone tz) ]
     -> (
         match
-          Timere.Date_time.make ~year ~month ~day ~hour:0
-            ~minute:0 ~second:0 ~tz
-        with
-        | Some x -> Ok x
-        | None -> Error "Invalid date time")
-  | Tokens
-      [
-        (_, Time_zone tz);
-        (_, Ymd ((_, year), (_, month), (_, day)));
-      ]
-  | Tokens
-      [
-        (_, Ymd ((_, year), (_, month), (_, day)));
-        (_, Time_zone tz);
-      ]
-    -> (
-        match
-          Timere.Date_time.make ~year ~month ~day ~hour:0
-            ~minute:0 ~second:0 ~tz
+          Timere.Date_time.make ~year ~month ~day ~hour:0 ~minute:0 ~second:0 ~tz
         with
         | Some x -> Ok x
         | None -> Error "Invalid date time")
