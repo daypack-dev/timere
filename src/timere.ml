@@ -63,13 +63,17 @@ let make_points_exn = Points.make_exn
 
 let resolve = Resolver.resolve
 
-let string_of_timestamp = Printers.string_of_timestamp
+let pp_hms = Printers.pp_hms
+
+let string_of_hms = Printers.string_of_hms
 
 let pp_timestamp = Printers.pp_timestamp
 
-let string_of_interval = Printers.string_of_interval
+let string_of_timestamp = Printers.string_of_timestamp
 
 let pp_interval = Printers.pp_interval
+
+let string_of_interval = Printers.string_of_interval
 
 let pp_intervals = Printers.pp_intervals
 

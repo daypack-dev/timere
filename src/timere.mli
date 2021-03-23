@@ -669,6 +669,10 @@ val hms_intervals_exc : hms -> hms -> t
 (** Same as [bounded_intervals ...] with bound fixed to [Duration.make ~days:1 ()]
 *)
 
+val pp_hms : Format.formatter -> hms -> unit
+
+val string_of_hms : hms -> string
+
 (** {1 Chunking} *)
 
 type chunked
