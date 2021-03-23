@@ -1384,6 +1384,11 @@ let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t
       | None -> Error "Invalid date time")
   | _ -> Error "Unrecognized pattern"
 
+let hms_t_of_ast (ast : ast) : (Timere.hms, string) CCResult.t =
+  match ast with
+  | Tokens [ (_, Hms hms) ] -> Ok hms
+  | _ -> Error "Unrecognized pattern"
+
 let parse_date_time ?(tz = CCOpt.get_exn @@ Timere.Time_zone.local ()) s =
   match parse_into_ast s with
   | Error msg -> Error msg
@@ -1391,6 +1396,14 @@ let parse_date_time ?(tz = CCOpt.get_exn @@ Timere.Time_zone.local ()) s =
       match Ast_normalize.normalize ast with
       | Error msg -> Error msg
       | Ok ast -> date_time_t_of_ast ~tz ast)
+
+let parse_hms s =
+  match parse_into_ast s with
+  | Error msg -> Error msg
+  | Ok ast -> (
+      match Ast_normalize.normalize ast with
+      | Error msg -> Error msg
+      | Ok ast -> hms_t_of_ast ast)
 
 let duration_t_of_ast (ast : ast) : (Timere.Duration.t, string) CCResult.t =
   match ast with
