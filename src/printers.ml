@@ -152,35 +152,41 @@ exception Invalid_format_string of string
 
 let invalid_format_string s = raise (Invalid_format_string s)
 
-let string_of_date_time ?(format : string = default_date_time_format_string)
-    (x : Time.Date_time'.t) : string =
+let pp_date_time ?(format : string = default_date_time_format_string) ()
+    (formatter : Format.formatter) (x : Time.Date_time'.t) : unit =
   let open MParser in
   let open Parser_components in
-  let single (date_time : Time.Date_time'.t) : (string, unit) t =
+  let single formatter (date_time : Time.Date_time'.t) : (unit, unit) t =
     choice
       [
-        attempt (string "{{" >> return "{");
+        attempt (string "{{" |>> fun _ -> Fmt.pf formatter "{");
         attempt (char '{')
-        >> Format_string_parsers.date_time_inner date_time
-           << char '}';
-        (many1_satisfy (function '{' -> false | _ -> true) |>> fun s -> s);
+        >> (Format_string_parsers.date_time_inner date_time
+           << char '}') |>> (fun s -> Fmt.pf formatter "%s" s);
+        (many1_satisfy (function '{' -> false | _ -> true) |>> fun s -> Fmt.pf formatter "%s" s);
       ]
   in
-  let p (date_time : Time.Date_time'.t) : (string list, unit) t =
-    many (single date_time)
+  let p formatter (date_time : Time.Date_time'.t) : (unit, unit) t =
+    many (single formatter date_time) >> return ()
   in
-  match result_of_mparser_result @@ parse_string (p x << eof) format () with
+  match result_of_mparser_result @@ parse_string (p formatter x << eof) format () with
   | Error msg -> invalid_format_string msg
-  | Ok l -> String.concat "" l
+  | Ok () -> ()
 
-let pp_date_time ?(format = default_date_time_format_string) () formatter x =
-  Format.fprintf formatter "%s" (string_of_date_time ~format x)
+let string_of_date_time ?(format : string = default_date_time_format_string)
+    (x : Time.Date_time'.t) : string =
+  Fmt.str "%a" (pp_date_time ~format ()) x
+
+let pp_timestamp ?(display_using_tz = Time_zone.utc)
+    ?(format = default_date_time_format_string) () formatter time =
+  match Time.Date_time'.of_timestamp ~tz_of_date_time:display_using_tz time with
+  | None -> invalid_arg "Invalid unix second"
+  | Some dt ->
+    Fmt.pf formatter "%a" (pp_date_time ~format ()) dt
 
 let string_of_timestamp ?(display_using_tz = Time_zone.utc)
     ?(format = default_date_time_format_string) (time : int64) : string =
-  match Time.Date_time'.of_timestamp ~tz_of_date_time:display_using_tz time with
-  | None -> invalid_arg "Invalid unix second"
-  | Some dt -> string_of_date_time ~format dt
+  Fmt.str "%a" (pp_timestamp ~display_using_tz ~format ()) time
 
 let pp_timestamp ?(display_using_tz = Time_zone.utc)
     ?(format = default_date_time_format_string) () formatter x =
