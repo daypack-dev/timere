@@ -181,7 +181,7 @@
             fmt
             bigarray
             fileutils
-            timere.tzdb.none
+            timere.tzdb.full
             timere.tzlocal.unix
    )
 )
