@@ -1811,7 +1811,7 @@ let intervals ?(skip_invalid : bool = false) (l : (int64 * int64) list) : t =
         else Intervals.Check.check_if_valid_list)
     |> CCList.filter_map (fun (x, y) ->
         match
-          (Date_time'.of_timestamp x, Date_time'.of_timestamp (Int64.pred y))
+          (Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc x, Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc (Int64.pred y))
         with
         | Some _, Some _ -> Some (x, y)
         | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
