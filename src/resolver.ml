@@ -178,7 +178,13 @@ let propagate_search_space_bottom_up default_tz (time : t) : t =
       Union_seq (space, s)
     | Bounded_intervals { search_space = _; pick; bound; start; end_exc } ->
       let search_space =
-        match Time.Date_time'.of_points start with
+        match
+          Time.Date_time'.of_points
+            ~default_tz_info:
+              (CCOpt.get_exn
+               @@ Date_time_components.make_tz_info ~tz:default_tz ())
+            start
+        with
         | None -> default_search_space
         | Some dt ->
           let space_start =
