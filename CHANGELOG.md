@@ -1,5 +1,9 @@
 # Changelog
 
+## Timere 0.1.5
+
+- Fixed `Timere.intervals` which exceptions when `tzlocal.none` backend is used
+
 ## Timere-parse 0.0.2
 
 - Added corpus
