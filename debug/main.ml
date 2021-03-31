@@ -127,22 +127,23 @@ let debug_example () =
           let size_str = Printers.string_of_duration size in
           Printf.printf "%s - %s\n" s size_str)
   in
-  let tz = Time_zone.make_exn "Australia/Sydney" in
+  (* let tz = Time_zone.make_exn "Australia/Sydney" in *)
+  let tz = Time_zone.utc in
   let timere =
     let open Time in
     with_tz tz
       (inter
          [
-           years [ 2020; 2021; 2022; 2023; 2025; 2026 ] (* in year 2020 *);
-           union
-             [
-               pattern ~months:[ `Apr ] ~day_ranges:[ `Range_inc (3, 6) ] ()
-               (* in April 3 to 6 *);
-               (* pattern ~months:[`Oct] ~month_day_ranges:[`Range_inc (2, 5)] () (\* or in Oct 2 to 5 *\); *)
-             ];
-           (* hms_interval_exc (\* 11pm to 3am *\)
-            *   (make_hms_exn ~hour:23 ~minute:0 ~second:0)
-            *   (make_hms_exn ~hour:3 ~minute:0 ~second:0); *)
+           CCResult.get_exn
+           @@ Of_sexp.of_sexp_string
+             "(bounded_intervals whole (duration 366 0 0 0) (points (pick \
+              ymdhms 2020 Jun 16 10 0 0)) (points (pick dhms 17 12 0 0)))";
+           after
+             (Date_time'.make_exn ~tz ~year:2000 ~month:`Jan ~day:1 ~hour:0
+                ~minute:0 ~second:0);
+           before
+             (Date_time'.make_exn ~tz ~year:2050 ~month:`Jan ~day:1 ~hour:0
+                ~minute:0 ~second:0);
          ])
   in
   match Resolver.resolve timere with
@@ -382,7 +383,7 @@ let debug_fuzz_pattern () =
 
 (* let () = debug_parsing () *)
 
-let () = debug_fuzz_bounded_intervals ()
+(* let () = debug_fuzz_bounded_intervals () *)
 
 (* let () = debug_resolver () *)
 
@@ -390,7 +391,7 @@ let () = debug_fuzz_bounded_intervals ()
 
 (* let () = debug_ccsexp_parse_string () *)
 
-(* let () = debug_example () *)
+let () = debug_example ()
 
 (* let () = debug_fuzz_after () *)
 
