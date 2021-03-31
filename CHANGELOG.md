@@ -2,7 +2,9 @@
 
 ## Timere 0.1.5
 
-- Fixed `Timere.intervals` which exceptions when `tzlocal.none` backend is used
+- Fixed following functions which may exception when `tzlocal.none` backend is used
+  - `Timere.intervals`
+  - `Timere.resolve`
 
 ## Timere-parse 0.0.2
 
