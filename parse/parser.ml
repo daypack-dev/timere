@@ -910,21 +910,15 @@ module Rules = struct
   let rule_md l =
     match l with
     | [ (_, Month month); (pos_days, Nat day) ]
-    | [ (_, Month month); (pos_days, Nat day); (_, St) ]
-    | [ (_, Month month); (pos_days, Nat day); (_, Nd) ]
-    | [ (_, Month month); (pos_days, Nat day); (_, Rd) ]
-    | [ (_, Month month); (pos_days, Nat day); (_, Th) ]
     | [ (pos_days, Nat day); (_, Month month) ]
-    | [ (pos_days, Nat day); (_, St); (_, Month month) ]
-    | [ (pos_days, Nat day); (_, Nd); (_, Month month) ]
-    | [ (pos_days, Nat day); (_, Rd); (_, Month month) ]
-    | [ (pos_days, Nat day); (_, Th); (_, Month month) ] ->
+      when day <= 31 ->
       pattern ~months:[ month ] ~pos_days ~days:[ day ] ()
-    | [ (pos_days, Nat day); (_, Of); (_, Month month) ]
-    | [ (pos_days, Nat day); (_, St); (_, Of); (_, Month month) ]
-    | [ (pos_days, Nat day); (_, Nd); (_, Of); (_, Month month) ]
-    | [ (pos_days, Nat day); (_, Rd); (_, Of); (_, Month month) ]
-    | [ (pos_days, Nat day); (_, Th); (_, Of); (_, Month month) ] ->
+    | [ (_, Month month); (pos_days, Month_day day) ]
+    | [ (pos_days, Month_day day); (_, Month month) ] ->
+      pattern ~months:[ month ] ~pos_days ~days:[ day ] ()
+    | [ (pos_days, Nat day); (_, Of); (_, Month month) ] when day <= 31 ->
+      pattern ~months:[ month ] ~pos_days ~days:[ day ] ()
+    | [ (pos_days, Month_day day); (_, Of); (_, Month month) ] ->
       pattern ~months:[ month ] ~pos_days ~days:[ day ] ()
     | _ -> `None
 
