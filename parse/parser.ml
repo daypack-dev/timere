@@ -884,7 +884,7 @@ module Rules = struct
     | [ (_, Month month); (pos_days, Nats day_ranges) ] -> (
         match flatten_month_days pos_days day_ranges with
         | `Some days ->
-          if CCList.for_all (fun day -> day <= 31) days then
+          if List.for_all (fun day -> day <= 31) days then
             pattern ~months:[ month ] ~pos_days ~days ()
           else `None
         | `None -> `None
