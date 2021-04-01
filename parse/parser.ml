@@ -902,7 +902,8 @@ module Rules = struct
 
   let rule_ym l =
     match l with
-    | [ (_, Nat year); (_, Month month) ] when year > 31 ->
+    | ([ (_, Nat year); (_, Month month) ] | [ (_, Month month); (_, Nat year) ])
+      when year > 31 ->
       pattern ~years:[ year ] ~months:[ month ] ()
     | _ -> `None
 
