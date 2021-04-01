@@ -876,13 +876,17 @@ module Rules = struct
 
   let rule_month_and_days l =
     match l with
-    | [ (_, Month month); (pos_days, Month_day day) ]
-    | [ (_, Month month); (pos_days, Nat day) ] ->
+    | [ (_, Month month); (pos_days, Month_day day) ] ->
+      pattern ~months:[ month ] ~pos_days ~days:[ day ] ()
+    | [ (_, Month month); (pos_days, Nat day) ] when day <= 31 ->
       pattern ~months:[ month ] ~pos_days ~days:[ day ] ()
     | [ (_, Month month); (pos_days, Month_days day_ranges) ]
     | [ (_, Month month); (pos_days, Nats day_ranges) ] -> (
         match flatten_month_days pos_days day_ranges with
-        | `Some days -> pattern ~months:[ month ] ~pos_days ~days ()
+        | `Some days ->
+          if CCList.for_all (fun day -> day <= 31) days then
+            pattern ~months:[ month ] ~pos_days ~days ()
+          else `None
         | `None -> `None
         | `Error msg -> `Error msg)
     | _ -> `None

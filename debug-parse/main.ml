@@ -1,5 +1,5 @@
 let debug_parsing () =
-  let expr = "(mar 2 1pm to 4th 14:00 || jun) && thursday" in
+  let expr = "jun 2020" in
   print_endline expr;
   print_newline ();
   print_endline "gives";
@@ -20,8 +20,8 @@ let debug_duration () =
       Timere.Duration.pp
       timere
 
-(* let () =
- *   debug_parsing () *)
-
 let () =
-  debug_duration ()
+  debug_parsing ()
+
+(* let () =
+ *   debug_duration () *)
