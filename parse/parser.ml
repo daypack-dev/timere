@@ -685,11 +685,13 @@ module Ast_normalize = struct
           match l with
           | [] -> Tokens l
           | _ -> (
-              match List.hd l with
-              | _, Time_zone tz -> Unary_op (With_time_zone tz, Tokens l)
+              match l with
+              | (_, Time_zone tz) :: rest ->
+                Unary_op (With_time_zone tz, Tokens rest)
               | _ -> (
-                  match List.hd (List.rev l) with
-                  | _, Time_zone tz -> Unary_op (With_time_zone tz, Tokens l)
+                  match List.rev l with
+                  | (_, Time_zone tz) :: rest ->
+                    Unary_op (With_time_zone tz, Tokens (List.rev rest))
                   | _ -> Tokens l)))
       | Unary_op (op, e) -> Unary_op (op, aux e)
       | Binary_op (op, e1, e2) -> Binary_op (op, aux e1, aux e2)
