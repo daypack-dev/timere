@@ -612,7 +612,7 @@ val make_points_exn :
 
 val bounded_intervals : [ `Whole | `Snd ] -> Duration.t -> points -> points -> t
 (** [bounded_intervals mode bound p1 p2] for each point [x] matched by [p1],
-    then for each earliest point [y] matched by [p2] such that [x < y && y - x <= bound]
+    then for the earliest point [y] matched by [p2] such that [x < y && y - x <= bound]
     - if [mode = `Whole], yields (x, y)
     - if [mode = `Snd], yields (y, y + 1)
 
