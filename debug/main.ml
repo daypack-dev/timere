@@ -10,7 +10,7 @@ let display_intervals ~display_using_tz s =
   | Seq.Nil -> print_endline "No time intervals"
   | Seq.Cons _ ->
     s
-    |> OSeq.take 50
+    |> OSeq.take 1
     |> OSeq.iter (fun (x, y) ->
         let s = Printers.string_of_interval ~display_using_tz (x, y) in
         let size = Duration.of_seconds (Int64.sub y x) in
@@ -20,12 +20,9 @@ let display_intervals ~display_using_tz s =
 let debug_resolver () =
   let s =
     {|
-(shift 1
-  (intervals
-    ((2002 Jun 9 20 15 29 (tz_and_tz_offset_s UTC 0))
-     (2002 Jun 9 20 18 34 (tz_and_tz_offset_s UTC 0))
-    ))
-)
+(bounded_intervals whole
+  (duration 2 0 0 0) (points (pick
+              dhms 1 2 0 0)) (points (pick hms 10 0 0)))
       |}
   in
   let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in
@@ -101,15 +98,15 @@ let debug_resolver () =
   print_endline "^^^^^";
   print_endline (To_sexp.to_sexp_string timere');
   print_endline "=====";
-  (match Resolver.resolve timere' with
+  (match Resolver.resolve ~search_using_tz:tz timere' with
    | Error msg -> print_endline msg
    | Ok s -> display_intervals ~display_using_tz:tz s);
   print_endline "=====";
-  let s =
-    Simple_resolver.resolve ~search_start ~search_end_exc
-      ~search_using_tz:Time_zone.utc timere
-  in
-  display_intervals ~display_using_tz:tz s;
+  (* let s =
+   *   Simple_resolver.resolve ~search_start ~search_end_exc
+   *     ~search_using_tz:Time_zone.utc timere
+   * in
+   * display_intervals ~display_using_tz:tz s; *)
   print_newline ()
 
 let debug_ccsexp_parse_string () = CCSexp.parse_string "\"\\256\"" |> ignore
@@ -385,13 +382,13 @@ let debug_fuzz_pattern () =
 
 (* let () = debug_fuzz_bounded_intervals () *)
 
-(* let () = debug_resolver () *)
+let () = debug_resolver ()
 
 (* let () = debug_fuzz_pattern () *)
 
 (* let () = debug_ccsexp_parse_string () *)
 
-let () = debug_example ()
+(* let () = debug_example () *)
 
 (* let () = debug_fuzz_after () *)
 
