@@ -852,7 +852,7 @@ let bounded_intervals_of_hmss (hmss : Timere.hms Timere.range list) =
              | `Some p1, `Some p2 ->
                Ok
                  Timere.(
-                   bounded_intervals `Whole (Duration.make ~days:1 ()) p1 p2)
+                   bounded_intervals `Whole (Duration.make ~days:2 ()) p1 p2)
              | _ -> Error ())
          | _ -> failwith "unexpected case")
       hmss
@@ -1188,7 +1188,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Duration.make ~days:366 ())
+               (Timere.Duration.make ~days:32 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1216,7 +1216,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Duration.make ~days:366 ())
+               (Timere.Duration.make ~days:32 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1258,7 +1258,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Duration.make ~days:366 ())
+               (Timere.Duration.make ~days:32 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1274,7 +1274,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Duration.make ~days:366 ())
+               (Timere.Duration.make ~days:2 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1286,7 +1286,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Duration.make ~days:366 ())
+               (Timere.Duration.make ~days:2 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None

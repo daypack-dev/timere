@@ -14,10 +14,10 @@
   Ok (pattern (months Jan) (month_days 6) (hours 0) (minutes 0) (seconds 0))
 
 5. "jan 6 12pm to 2pm"
-  Ok (bounded_intervals whole (duration 366 0 0 0) (points (pick mdhms Jan 6 12 0 0)) (points (pick hms 14 0 0)))
+  Ok (bounded_intervals whole (duration 32 0 0 0) (points (pick mdhms Jan 6 12 0 0)) (points (pick hms 14 0 0)))
 
 6. "12pm to 2pm"
-  Ok (bounded_intervals whole (duration 366 0 0 0) (points (pick hms 12 0 0)) (points (pick hms 14 0 0)))
+  Ok (bounded_intervals whole (duration 2 0 0 0) (points (pick hms 12 0 0)) (points (pick hms 14 0 0)))
 
 7. "jun 12, 13th"
   Ok (pattern (months Jun) (month_days 12 13))
@@ -53,16 +53,16 @@
   Ok (pattern (month_days 16) (hours 20) (minutes 30) (seconds 1))
 
 18. "16th 7:30am to 11am"
-  Ok (bounded_intervals whole (duration 366 0 0 0) (points (pick dhms 16 7 30 0)) (points (pick hms 11 0 0)))
+  Ok (bounded_intervals whole (duration 2 0 0 0) (points (pick dhms 16 7 30 0)) (points (pick hms 11 0 0)))
 
 19. "16th 11am to 6am"
-  Ok (bounded_intervals whole (duration 366 0 0 0) (points (pick dhms 16 11 0 0)) (points (pick hms 6 0 0)))
+  Ok (bounded_intervals whole (duration 2 0 0 0) (points (pick dhms 16 11 0 0)) (points (pick hms 6 0 0)))
 
 20. "16th 8am to 10am, 11am to 12pm"
-  Ok (inter (pattern (month_days 16)) (union (bounded_intervals whole (duration 1 0 0 0) (points (pick hms 8 0 0)) (points (pick hms 10 0 0))) (bounded_intervals whole (duration 1 0 0 0) (points (pick hms 11 0 0)) (points (pick hms 12 0 0)))))
+  Ok (inter (pattern (month_days 16)) (union (bounded_intervals whole (duration 2 0 0 0) (points (pick hms 8 0 0)) (points (pick hms 10 0 0))) (bounded_intervals whole (duration 2 0 0 0) (points (pick hms 11 0 0)) (points (pick hms 12 0 0)))))
 
 21. "16th 6am to 8am, 9am, 10am to 11am"
-  Ok (inter (pattern (month_days 16)) (union (bounded_intervals whole (duration 1 0 0 0) (points (pick hms 6 0 0)) (points (pick hms 8 0 0))) (bounded_intervals whole (duration 1 0 0 0) (points (pick hms 9 0 0)) (points (pick hms 9 0 0))) (bounded_intervals whole (duration 1 0 0 0) (points (pick hms 10 0 0)) (points (pick hms 11 0 0)))))
+  Ok (inter (pattern (month_days 16)) (union (bounded_intervals whole (duration 2 0 0 0) (points (pick hms 6 0 0)) (points (pick hms 8 0 0))) (bounded_intervals whole (duration 2 0 0 0) (points (pick hms 9 0 0)) (points (pick hms 9 0 0))) (bounded_intervals whole (duration 2 0 0 0) (points (pick hms 10 0 0)) (points (pick hms 11 0 0)))))
 
 22. "jan || Feb"
   Ok (union (pattern (months Jan)) (pattern (months Feb)))

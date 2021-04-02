@@ -6,6 +6,8 @@
 
 - Added time zone support
 
+- Improved bounded interval bound choosing (e.g. "10am to 2pm" would use a bound of 2 days now instead of 366 days)
+
 ## Timere 0.1.5
 
 - Fixed following functions which may exception when `tzlocal.none` backend is used
