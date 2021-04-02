@@ -69,13 +69,22 @@ let calibrate_search_space_for_set (time : t) space : search_space =
   | All | Empty | Intervals _ | Pattern _ -> space
   | Unary_op (_, op, _) -> (
       match op with
-      | Shift n -> List.map (fun (x, y) -> (Int64.sub x n, Int64.sub y n)) space
+      | Shift n ->
+        List.map
+          (fun (x, y) ->
+             if Int64.sub x Time.timestamp_min >= n then
+               (Int64.sub x n, Int64.sub y n)
+             else (x, y))
+          space
       | _ -> space)
   | Inter_seq _ | Union_seq _ -> space
   | Bounded_intervals { bound; _ } -> (
       match space with
       | [] -> []
-      | (x, y) :: rest -> (Int64.sub x bound, y) :: rest)
+      | (x, y) :: rest ->
+        (if Int64.sub x Time.timestamp_min >= bound then (Int64.sub x bound, y)
+         else (x, y))
+        :: rest)
   | Unchunk _ -> space
 
 let set_search_space space (time : t) : t =
@@ -449,35 +458,6 @@ let rec aux search_using_tz time =
        | Unchunk (_, c) -> aux_chunked search_using_tz c))
   |> normalize
 
-(* and aux_follow search_using_tz space bound s1 s2 t1 t2 =
- *   let _, search_space_end_exc =
- *     CCOpt.get_exn @@ Misc_utils.last_element_of_list space
- *   in
- *   let rec aux_follow' s1 s2 t1 t2 =
- *     match s1 () with
- *     | Seq.Nil -> Seq.empty
- *     | Seq.Cons ((start1, _end_exc1), rest1) -> (
- *         if search_space_end_exc <= start1 then Seq.empty
- *         else
- *           let s2, t2 =
- *             get_points_after_start1
- *             ~start1 ~p2 ~p2
- *               search_using_tz
- *           in
- *           match s2 () with
- *           | Seq.Nil -> Seq.empty
- *           | Seq.Cons ((start2, end_exc2), _) ->
- *             if search_space_end_exc <= start2 then Seq.empty
- *             else if Int64.sub start2 start1 <= bound then fun () ->
- *               Seq.Cons ((start2, end_exc2), aux_follow' rest1 s2 t1 t2)
- *             else
- *               let s1, t1 =
- *                 maybe_slice_start_spec_of_follow ~last_start2:start2 ~rest1
- *                   ~t1 search_using_tz bound
- *               in
- *               aux_follow' s1 s2 t1 t2)
- *   in
- *   aux_follow' s1 s2 t1 t2 *)
 and get_points_after_start1 ~start1 ~(s2 : timestamp Seq.t) ~(p2 : Points.t)
     search_using_tz space : timestamp Seq.t * search_space =
   match s2 () with
