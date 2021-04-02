@@ -54,12 +54,15 @@ type guess =
 
 type token = (int * int * int) * guess
 
+type unary_op = With_time_zone of Timere.Time_zone.t
+
 type binary_op =
   | Union
   | Inter
 
 type ast =
   | Tokens of token list
+  | Unary_op of unary_op * ast
   | Binary_op of binary_op * ast * ast
   | Round_robin_pick of ast list
 
@@ -661,25 +664,34 @@ module Ast_normalize = struct
   let process_tokens (e : ast) : (ast, string) CCResult.t =
     let rec aux e =
       match e with
-      | Tokens l ->
-        let l =
-          l
-          |> recognize_hms
-          |> recognize_duration
-          |> recognize_month_day
-          |> group_nats
-          |> group_month_days
-          |> group_weekdays
-          |> group_months
-          |> group_hms
-          |> ungroup_nats
-          |> ungroup_month_days
-          |> ungroup_weekdays
-          |> ungroup_months
-          |> ungroup_hms
-          |> recognize_ymd
-        in
-        Tokens l
+      | Tokens l -> (
+          let l =
+            l
+            |> recognize_hms
+            |> recognize_duration
+            |> recognize_month_day
+            |> group_nats
+            |> group_month_days
+            |> group_weekdays
+            |> group_months
+            |> group_hms
+            |> ungroup_nats
+            |> ungroup_month_days
+            |> ungroup_weekdays
+            |> ungroup_months
+            |> ungroup_hms
+            |> recognize_ymd
+          in
+          match l with
+          | [] -> Tokens l
+          | _ -> (
+              match List.hd l with
+              | _, Time_zone tz -> Unary_op (With_time_zone tz, Tokens l)
+              | _ -> (
+                  match List.hd (List.rev l) with
+                  | _, Time_zone tz -> Unary_op (With_time_zone tz, Tokens l)
+                  | _ -> Tokens l)))
+      | Unary_op (op, e) -> Unary_op (op, aux e)
       | Binary_op (op, e1, e2) -> Binary_op (op, aux e1, aux e2)
       | Round_robin_pick l -> Round_robin_pick (List.map aux l)
     in
@@ -689,6 +701,7 @@ module Ast_normalize = struct
     let rec aux e =
       match e with
       | Tokens _ -> e
+      | Unary_op (op, e) -> Unary_op (op, aux e)
       | Binary_op (op, e1, e2) -> Binary_op (op, aux e1, aux e2)
       | Round_robin_pick l ->
         l
@@ -1312,6 +1325,12 @@ let t_of_ast (ast : ast) : (Timere.t, string) CCResult.t =
   let rec aux ast =
     match ast with
     | Tokens tokens -> t_of_tokens tokens
+    | Unary_op (op, ast) -> (
+        match op with
+        | With_time_zone tz -> (
+            match aux ast with
+            | Error msg -> Error msg
+            | Ok ast -> Ok (Timere.with_tz tz ast)))
     | Binary_op (op, ast1, ast2) -> (
         match aux ast1 with
         | Error msg -> Error msg
