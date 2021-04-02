@@ -1,5 +1,11 @@
 # Changelog
 
+## Timere-parse 0.0.3
+
+- Ruleset update
+
+- Added time zone support
+
 ## Timere 0.1.5
 
 - Fixed following functions which may exception when `tzlocal.none` backend is used
