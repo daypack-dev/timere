@@ -59,8 +59,11 @@ See `examples/` for more examples
     
 ## Usage
 
-Include `timere` in the `libraries` stanza in your dune file, and optionally one of the following two to select
-a concrete implementation of time zone data source
+Include `timere` (and `timere-parse` if needed) in the `libraries` stanza in your dune file
+
+#### Tzdb backend
+
+You can optionally pick one of the following two concrete implementations of time zone data source
 
 - `timere.tzdb.full`
 
@@ -79,7 +82,9 @@ a concrete implementation of time zone data source
 
     - `Time_zone.of_json_string` can load files in `tzdb-json/`
 
-and optionally one of the following two to select a concrete implementation of local time zone detection
+#### Tzlocal backend
+
+You can optionally pick one of the following three concrete implementations of local time zone detection
 
 - `timere.tzlocal.unix`
 
@@ -88,6 +93,10 @@ and optionally one of the following two to select a concrete implementation of l
 - `timere.tzlocal.none`
 
   - This simply returns no time zone guesses
+
+- `timere.tzlocal.utc`
+
+  - This simply returns UTC as the only guess
 
 __Note__: While `tzdb-json/` may be useful and usable outside of Timere,
 we make no guarantees that the JSON format stays unmodified
