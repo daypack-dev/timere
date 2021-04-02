@@ -946,6 +946,20 @@ module Rules = struct
     | [ (pos_days, Month_day day) ] -> pattern ~pos_days ~days:[ day ] ()
     | _ -> `None
 
+  let rule_hms l =
+    match l with [ (_, Hms hms) ] -> pattern ~hms () | _ -> `None
+
+  let rule_hmss l =
+    match l with
+    | [ (_, Hmss hmss) ] -> (
+        match (pattern (), bounded_intervals_of_hmss hmss) with
+        | `Some t, `Some t' -> `Some Timere.(t & t')
+        | `None, _ -> `None
+        | _, `None -> `None
+        | `Error msg, _ -> `Error msg
+        | _, `Error msg -> `Error msg)
+    | _ -> `None
+
   let rule_d_hms l =
     match l with
     | [ (pos_days, Month_day day); (_, Hms hms) ] ->
@@ -1287,6 +1301,8 @@ module Rules = struct
       rule_ymd;
       rule_ym;
       rule_md;
+      rule_hms;
+      rule_hmss;
       rule_d;
       rule_d_hms;
       rule_d_hmss;
