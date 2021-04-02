@@ -1361,60 +1361,27 @@ let parse_timere s =
 
 let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t
   =
-  match ast with
-  | Tokens [ (_, Ymd ((_, year), (_, month), (_, day))); (_, Hms hms) ]
-  | Tokens [ (_, Hms hms); (_, Ymd ((_, year), (_, month), (_, day))) ] -> (
-      match
-        Timere.Date_time.make ~year ~month ~day ~hour:hms.hour
-          ~minute:hms.minute ~second:hms.second ~tz
-      with
-      | Some x -> Ok x
-      | None -> Error "Invalid date time")
-  | Tokens
-      [
-        (_, Time_zone tz);
-        (_, Ymd ((_, year), (_, month), (_, day)));
-        (_, Hms hms);
-      ]
-  | Tokens
-      [
-        (_, Ymd ((_, year), (_, month), (_, day)));
-        (_, Hms hms);
-        (_, Time_zone tz);
-      ]
-  | Tokens
-      [
-        (_, Time_zone tz);
-        (_, Hms hms);
-        (_, Ymd ((_, year), (_, month), (_, day)));
-      ]
-  | Tokens
-      [
-        (_, Hms hms);
-        (_, Ymd ((_, year), (_, month), (_, day)));
-        (_, Time_zone tz);
-      ] -> (
-      match
-        Timere.Date_time.make ~year ~month ~day ~hour:hms.hour
-          ~minute:hms.minute ~second:hms.second ~tz
-      with
-      | Some x -> Ok x
-      | None -> Error "Invalid date time")
-  | Tokens [ (_, Ymd ((_, year), (_, month), (_, day))) ] -> (
-      match
-        Timere.Date_time.make ~year ~month ~day ~hour:0 ~minute:0 ~second:0 ~tz
-      with
-      | Some x -> Ok x
-      | None -> Error "Invalid date time")
-  | Tokens [ (_, Time_zone tz); (_, Ymd ((_, year), (_, month), (_, day))) ]
-  | Tokens [ (_, Ymd ((_, year), (_, month), (_, day))); (_, Time_zone tz) ]
-    -> (
+  let rec aux tz ast =
+    match ast with
+    | Tokens [ (_, Ymd ((_, year), (_, month), (_, day))); (_, Hms hms) ]
+    | Tokens [ (_, Hms hms); (_, Ymd ((_, year), (_, month), (_, day))) ] -> (
         match
-          Timere.Date_time.make ~year ~month ~day ~hour:0 ~minute:0 ~second:0 ~tz
+          Timere.Date_time.make ~year ~month ~day ~hour:hms.hour
+            ~minute:hms.minute ~second:hms.second ~tz
         with
         | Some x -> Ok x
         | None -> Error "Invalid date time")
-  | _ -> Error "Unrecognized pattern"
+    | Tokens [ (_, Ymd ((_, year), (_, month), (_, day))) ] -> (
+        match
+          Timere.Date_time.make ~year ~month ~day ~hour:0 ~minute:0 ~second:0
+            ~tz
+        with
+        | Some x -> Ok x
+        | None -> Error "Invalid date time")
+    | Unary_op (With_time_zone tz, ast) -> aux tz ast
+    | _ -> Error "Unrecognized pattern"
+  in
+  aux tz ast
 
 let hms_t_of_ast (ast : ast) : (Timere.hms, string) CCResult.t =
   match ast with
