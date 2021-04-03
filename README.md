@@ -80,7 +80,7 @@ You can optionally pick one of the following two concrete implementations of tim
     
     - List of available time zones is available as `gen-artifacts/available-time-zones.txt`
 
-    - `Time_zone.of_json_string` can load files in `tzdb-json/`
+    - `Time_zone.JSON.of_string` can load files in `tzdb-json/`
 
 #### Tzlocal backend
 
