@@ -10,7 +10,7 @@ let display_intervals ~display_using_tz s =
   | Seq.Nil -> print_endline "No time intervals"
   | Seq.Cons _ ->
     s
-    |> OSeq.take 1
+    |> OSeq.take 10
     |> OSeq.iter (fun (x, y) ->
         let s = Printers.string_of_interval ~display_using_tz (x, y) in
         let size = Duration.of_seconds (Int64.sub y x) in
@@ -84,7 +84,7 @@ let debug_resolver () =
     |> Time.Date_time'.min_of_timestamp_local_result
   in
   let search_end_exc_dt =
-    Time.Date_time'.make ~year:2001 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+    Time.Date_time'.make ~year:2050 ~month:`Jan ~day:1 ~hour:0 ~minute:0
       ~second:0 ~tz
     |> CCOpt.get_exn
   in

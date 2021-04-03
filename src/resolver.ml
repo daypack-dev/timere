@@ -578,16 +578,19 @@ and aux_inter search_using_tz timeres =
     let batch_for_sampling = collect_batch interval_batches in
     if List.exists CCOpt.is_none batch_for_sampling then Seq.empty
     else
-      let batch_for_sampling =
-        CCList.filter_map CCFun.id batch_for_sampling
-        |> Intervals.Sort.sort_uniq_intervals_list ~skip_check:true
-      in
+      let batch_for_sampling = CCList.filter_map CCFun.id batch_for_sampling in
       match batch_for_sampling with
       | [] -> Seq.empty
       | _ ->
-        let _min_start, min_end_exc = List.hd batch_for_sampling in
-        let max_start, _max_end_exc =
-          CCOpt.get_exn @@ Misc_utils.last_element_of_list batch_for_sampling
+        let starts =
+          batch_for_sampling |> List.map fst |> List.sort_uniq Int64.compare
+        in
+        let end_excs =
+          batch_for_sampling |> List.map snd |> List.sort_uniq Int64.compare
+        in
+        let min_end_exc = List.hd end_excs in
+        let max_start =
+          CCOpt.get_exn @@ Misc_utils.last_element_of_list starts
         in
         let timeres, interval_batches =
           if
