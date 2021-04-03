@@ -1367,7 +1367,7 @@ end
 
 module Check = struct
   let timestamp_is_valid (x : int64) : bool =
-    CCOpt.is_some @@ Date_time'.of_timestamp x
+    CCOpt.is_some @@ Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc x
 
   let second_is_valid ~(second : int) : bool = 0 <= second && second < 60
 
@@ -1569,72 +1569,9 @@ let nth (n : int) (c : chunked) : chunked =
 let drop (n : int) (c : chunked) : chunked =
   if n < 0 then invalid_arg "skip_n: n < 0" else Unary_op_on_chunked (Drop n, c)
 
-(* let interval_inc (a : timestamp) (b : timestamp) : t =
- *   match Date_time'.of_timestamp a with
- *   | None -> invalid_arg "interval_inc: invalid timestamp"
- *   | Ok _ -> (
- *       match Date_time'.of_timestamp b with
- *       | None -> invalid_arg "interval_inc: invalid timestamp"
- *       | Ok _ ->
- *         if a <= b then Interval_inc (a, b)
- *         else invalid_arg "interval_inc: a > b")
- * 
- * let interval_exc (a : timestamp) (b : timestamp) : t =
- *   match Date_time'.of_timestamp a with
- *   | None -> invalid_arg "interval_exc: invalid timestamp"
- *   | Ok _ -> (
- *       match Date_time'.of_timestamp b with
- *       | None -> invalid_arg "interval_exc: invalid timestamp"
- *       | Ok _ ->
- *         if a <= b then Interval_exc (a, b)
- *         else invalid_arg "interval_exc: a > b")
- * 
- * let interval_dt_inc (a : Date_time'.t) (b : Date_time'.t) : t =
- *   let a =
- *     CCOpt.get_exn Date_time'.(min_of_timestamp_local_result @@ to_timestamp a)
- *   in
- *   let b =
- *     CCOpt.get_exn Date_time'.(max_of_timestamp_local_result @@ to_timestamp b)
- *   in
- *   if a <= b then Interval_inc (a, b) else invalid_arg "interval_dt_inc: a > b"
- * 
- * let interval_dt_exc (a : Date_time'.t) (b : Date_time'.t) : t =
- *   let a =
- *     CCOpt.get_exn Date_time'.(min_of_timestamp_local_result @@ to_timestamp a)
- *   in
- *   let b =
- *     CCOpt.get_exn Date_time'.(max_of_timestamp_local_result @@ to_timestamp b)
- *   in
- *   if a <= b then Interval_exc (a, b) else invalid_arg "interval_dt_exc: a > b" *)
-
 let not (a : t) : t = Unary_op (Not, a)
 
 let with_tz tz t = Unary_op (With_tz tz, t)
-
-(* let safe_month_day_range_inc ~years ~months =
- *   let contains_non_leap_year =
- *     years
- *     |> CCList.to_seq
- *     |> Year_ranges.Flatten.flatten
- *     |> OSeq.exists (fun year -> not (is_leap_year ~year))
- *   in
- *   let leap_year = 2020 in
- *   let non_leap_year = 2019 in
- *   let rec aux start end_inc months =
- *     match months () with
- *     | Seq.Nil -> (start, end_inc)
- *     | Seq.Cons (month, rest) ->
- *       let count =
- *         match month with
- *         | `Feb ->
- *           if contains_non_leap_year then
- *             day_count_of_month ~year:non_leap_year ~month
- *           else day_count_of_month ~year:leap_year ~month
- *         | _ -> day_count_of_month ~year:leap_year ~month
- *       in
- *       aux (max (-count) start) (min count end_inc) rest
- *   in
- *   aux (-31) 31 (Month_ranges.Flatten.flatten @@ CCList.to_seq @@ months) *)
 
 let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
     ?(month_ranges = []) ?(days = []) ?(day_ranges = []) ?(weekdays = [])
@@ -1789,7 +1726,8 @@ let sorted_interval_seq ?(skip_invalid : bool = false)
         else Intervals.Check.check_if_valid)
     |> Seq.filter_map (fun (x, y) ->
         match
-          (Date_time'.of_timestamp x, Date_time'.of_timestamp (Int64.pred y))
+          (Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc x,
+           Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc (Int64.pred y))
         with
         | Some _, Some _ -> Some (x, y)
         | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
@@ -1846,7 +1784,7 @@ let sorted_date_times date_times =
 let date_time date_time = date_times [ date_time ]
 
 let interval_of_timestamp ~skip_invalid x =
-  match Date_time'.of_timestamp x with
+  match Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc x with
   | Some _ -> Some (x, Int64.succ x)
   | None -> if skip_invalid then None else raise Invalid_timestamp
 

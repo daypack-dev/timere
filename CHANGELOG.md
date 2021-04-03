@@ -20,6 +20,10 @@
 
 - Fixed a slowdown in `inter` resolution caused by incorrect batch slicing logic
 
+- Fixed `sexp_of_timestamp` which previously did not specify time zone as UTC explicitly after the default time zone parameter change in API
+
+- Fixed use of `Date_time'.of_timestamp` at places by specifying the time zone explicitly as UTC
+
 ## Timere-parse 0.0.2
 
 - Added corpus
