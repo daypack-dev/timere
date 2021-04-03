@@ -1726,8 +1726,9 @@ let sorted_interval_seq ?(skip_invalid : bool = false)
         else Intervals.Check.check_if_valid)
     |> Seq.filter_map (fun (x, y) ->
         match
-          (Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc x,
-           Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc (Int64.pred y))
+          ( Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc x,
+            Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc
+              (Int64.pred y) )
         with
         | Some _, Some _ -> Some (x, y)
         | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
