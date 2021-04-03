@@ -18,6 +18,8 @@
 
 - Added `tzlocal.utc` backend
 
+- Fixed a slowdown in `inter` resolution caused by incorrect batch slicing logic
+
 ## Timere-parse 0.0.2
 
 - Added corpus

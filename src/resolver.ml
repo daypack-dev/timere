@@ -586,7 +586,7 @@ and aux_inter search_using_tz timeres =
       | [] -> Seq.empty
       | _ ->
         let _min_start, min_end_exc = List.hd batch_for_sampling in
-        let max_start, max_end_exc =
+        let max_start, _max_end_exc =
           CCOpt.get_exn @@ Misc_utils.last_element_of_list batch_for_sampling
         in
         let timeres, interval_batches =
@@ -600,9 +600,9 @@ and aux_inter search_using_tz timeres =
           else (timeres, interval_batches)
         in
         let end_exc =
-          if max_end_exc -^ start <= inter_minimum_slice_size then
+          if min_end_exc -^ start <= inter_minimum_slice_size then
             start +^ inter_minimum_slice_size
-          else max_end_exc
+          else min_end_exc
         in
         let intervals_up_to_end_exc =
           interval_batches

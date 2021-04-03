@@ -22,7 +22,7 @@ let debug_resolver () =
     {|
 (bounded_intervals whole
   (duration 2 0 0 0) (points (pick
-              dhms 1 2 0 0)) (points (pick hms 10 0 0)))
+              hms 2 0 0)) (points (pick hms 10 0 0)))
       |}
   in
   let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in
@@ -55,8 +55,8 @@ let debug_resolver () =
    *       @@ Time.Date_time'.make ~year:2000 ~month:`Jan ~day:1 ~hour:0 ~minute:0
    *         ~second:0 ~tz_offset_s:0 )
    * in *)
-  (* let tz = Time_zone.make_exn "Australia/Sydney" in *)
-  let tz = Time_zone.make_exn "UTC" in
+  let tz = Time_zone.make_exn "Australia/Sydney" in
+  (* let tz = Time_zone.make_exn "UTC" in *)
   (* let timere =
    *   let open Time in
    *   with_tz tz
@@ -84,7 +84,7 @@ let debug_resolver () =
     |> Time.Date_time'.min_of_timestamp_local_result
   in
   let search_end_exc_dt =
-    Time.Date_time'.make ~year:2003 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+    Time.Date_time'.make ~year:2001 ~month:`Jan ~day:1 ~hour:0 ~minute:0
       ~second:0 ~tz
     |> CCOpt.get_exn
   in
