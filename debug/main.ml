@@ -16,8 +16,7 @@ let display_intervals ~display_using_tz s =
         let size = Duration.of_seconds (Int64.sub y x) in
         let size_str = Printers.string_of_duration size in
         Printf.printf "%s - %s\n" s size_str;
-        flush stdout;
-      )
+        flush stdout)
 
 let debug_resolver () =
   let s =
@@ -96,16 +95,19 @@ let debug_resolver () =
     |> Time.Date_time'.max_of_timestamp_local_result
   in
   let timere' =
-    Time.(inter [ timere;
-                  after
-                    (Date_time'.make_exn ~tz ~year:2000 ~month:`Jan ~day:1
-                       ~hour:0 ~minute:0 ~second:0);
-                  before
-                    (Date_time'.make_exn ~tz ~year:2050 ~month:`Jan ~day:1
-                       ~hour:0 ~minute:0 ~second:0);
-                  (* intervals [ (search_start, search_end_exc)
-                   *           ] *)
-                ])
+    Time.(
+      inter
+        [
+          timere;
+          after
+            (Date_time'.make_exn ~tz ~year:2000 ~month:`Jan ~day:1 ~hour:0
+               ~minute:0 ~second:0);
+          before
+            (Date_time'.make_exn ~tz ~year:2050 ~month:`Jan ~day:1 ~hour:0
+               ~minute:0 ~second:0);
+          (* intervals [ (search_start, search_end_exc)
+           *           ] *)
+        ])
   in
   print_endline "^^^^^";
   print_endline (To_sexp.to_sexp_string timere');

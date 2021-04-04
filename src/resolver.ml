@@ -598,10 +598,8 @@ and aux_inter search_using_tz timeres =
             min_end_exc <= max_start
             && max_start -^ min_end_exc
                >= dynamic_search_space_adjustment_trigger_size
-          then
-            resolve ~start search_using_tz timeres
-          else
-            interval_batches
+          then resolve ~start search_using_tz timeres
+          else interval_batches
         in
         let end_exc =
           if min_end_exc -^ start <= inter_minimum_slice_size then
