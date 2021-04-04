@@ -1,6 +1,10 @@
 open MParser
 open Parser_components
 
+module Int_map = Map.Make (Int)
+
+type text_map = string Int_map.t
+
 exception Invalid_data of string
 
 let prefix_string_match (choices : (string * 'a) list) (s : string) :
@@ -11,6 +15,11 @@ let prefix_string_match (choices : (string * 'a) list) (s : string) :
       try Re.Str.search_forward regexp k 0 = 0 with Not_found -> false)
 
 let invalid_data s = raise (Invalid_data s)
+
+let text_map_union m_x m_y =
+  Int_map.union (fun _ x _y -> Some x) m_x m_y
+
+let text_map_empty = Int_map.empty
 
 type guess =
   | Dot
@@ -52,7 +61,7 @@ type guess =
   | Duration of Timere.Duration.t
   | Time_zone of Timere.Time_zone.t
 
-type token = (int * int * int) * guess
+type token = (int * int * int) * text_map * guess
 
 type unary_op = With_time_zone of Timere.Time_zone.t
 
@@ -171,47 +180,49 @@ let token_p : (token, unit) MParser.t =
   >>= fun pos ->
   choice
     [
-      attempt (char '.') >>$ Dot;
-      attempt (char ',') >>$ Comma;
-      attempt (char '-') >>$ Hyphen;
-      attempt (char '/') >>$ Slash;
-      attempt (char ':') >>$ Colon;
-      attempt (char '*') >>$ Star;
-      (attempt float_non_neg |>> fun x -> Float x);
-      (attempt nat_zero |>> fun x -> Nat x);
-      (attempt weekday_p |>> fun x -> Weekday x);
-      (attempt month_p |>> fun x -> Month x);
-      attempt (string "not") >>$ Not;
-      attempt (string "outside") >>$ Outside;
-      attempt (string "for") >>$ For;
-      attempt (string "of") >>$ Of;
-      attempt (string "in") >>$ In;
-      attempt (string "to") >>$ To;
-      attempt (string "from") >>$ From;
-      attempt (string "am") >>$ Am;
-      attempt (string "AM") >>$ Am;
-      attempt (string "pm") >>$ Pm;
-      attempt (string "PM") >>$ Pm;
-      attempt (string "st") >>$ St;
-      attempt (string "nd") >>$ Nd;
-      attempt (string "rd") >>$ Rd;
-      attempt (string "th") >>$ Th;
-      attempt (string "days") >>$ Days;
-      attempt (string "day") >>$ Days;
-      attempt (string "d") >>$ Days;
-      attempt (string "hours") >>$ Hours;
-      attempt (string "hour") >>$ Hours;
-      attempt (string "h") >>$ Hours;
-      attempt (string "minutes") >>$ Minutes;
-      attempt (string "minute") >>$ Minutes;
-      attempt (string "mins") >>$ Minutes;
-      attempt (string "min") >>$ Minutes;
-      attempt (string "m") >>$ Minutes;
-      attempt (string "seconds") >>$ Seconds;
-      attempt (string "second") >>$ Seconds;
-      attempt (string "secs") >>$ Seconds;
-      attempt (string "sec") >>$ Seconds;
-      attempt (string "s") >>$ Seconds;
+      attempt (char '.') >>$ (Int_map.empty, Dot);
+      attempt (char ',') >>$ (Int_map.empty, Comma);
+      attempt (char '-') >>$ (Int_map.empty, Hyphen);
+      attempt (char '/') >>$ (Int_map.empty, Slash);
+      attempt (char ':') >>$ (Int_map.empty, Colon);
+      attempt (char '*') >>$ (Int_map.empty, Star );
+      (* (attempt float_non_neg |>> fun x -> Float x); *)
+      (attempt nat_zero_w_original_str |>> fun (x, s) ->
+       let (i, _, _) = pos in
+       (Int_map.add i s Int_map.empty, Nat x));
+      (attempt weekday_p |>> fun x -> (Int_map.empty, Weekday x));
+      (attempt month_p |>> fun x -> (Int_map.empty, Month x)) ;
+      attempt (string "not") >>$ (Int_map.empty, Not);
+      attempt (string "outside") >>$ (Int_map.empty, Outside);
+      attempt (string "for") >>$ (Int_map.empty, For);
+      attempt (string "of") >>$ (Int_map.empty, Of);
+      attempt (string "in") >>$ (Int_map.empty, In);
+      attempt (string "to") >>$ (Int_map.empty, To);
+      attempt (string "from") >>$ (Int_map.empty, From);
+      attempt (string "am") >>$ (Int_map.empty, Am);
+      attempt (string "AM") >>$ (Int_map.empty, Am);
+      attempt (string "pm") >>$ (Int_map.empty, Pm);
+      attempt (string "PM") >>$ (Int_map.empty, Pm);
+      attempt (string "st") >>$ (Int_map.empty, St);
+      attempt (string "nd") >>$ (Int_map.empty, Nd);
+      attempt (string "rd") >>$ (Int_map.empty, Rd);
+      attempt (string "th") >>$ (Int_map.empty, Th);
+      attempt (string "days") >>$ (Int_map.empty, Days);
+      attempt (string "day") >>$ (Int_map.empty, Days);
+      attempt (string "d") >>$ (Int_map.empty, Days);
+      attempt (string "hours") >>$ (Int_map.empty, Hours);
+      attempt (string "hour") >>$ (Int_map.empty, Hours);
+      attempt (string "h") >>$ (Int_map.empty, Hours);
+      attempt (string "minutes") >>$ (Int_map.empty, Minutes);
+      attempt (string "minute") >>$ (Int_map.empty, Minutes);
+      attempt (string "mins") >>$ (Int_map.empty, Minutes);
+      attempt (string "min") >>$ (Int_map.empty, Minutes);
+      attempt (string "m") >>$ (Int_map.empty, Minutes);
+      attempt (string "seconds") >>$ (Int_map.empty, Seconds);
+      attempt (string "second") >>$ (Int_map.empty, Seconds);
+      attempt (string "secs") >>$ (Int_map.empty, Seconds);
+      attempt (string "sec") >>$ (Int_map.empty, Seconds);
+      attempt (string "s") >>$ (Int_map.empty, Seconds);
       attempt
         (many1_satisfy (fun c -> c <> ' ' && not (String.contains symbols c))
          >>= fun s ->
@@ -220,13 +231,13 @@ let token_p : (token, unit) MParser.t =
          | Some s -> (
              match Timere.Time_zone.make s with
              | None -> fail ""
-             | Some tz -> return (Time_zone tz)));
+             | Some tz -> return (Int_map.empty, Time_zone tz)));
       (attempt
          (many1_satisfy (fun c -> c <> ' ' && not (String.contains symbols c)))
        >>= fun s ->
        fail (Printf.sprintf "%s: Unrecognized token: %s" (string_of_pos pos) s));
     ]
-  >>= fun guess -> spaces >> return (pos, guess)
+  >>= fun (guess, original_str) -> spaces >> return (pos, guess, original_str)
 
 let tokens_p = spaces >> many1 token_p << spaces
 
@@ -259,29 +270,29 @@ module Ast_normalize = struct
     token list =
     let rec recognize_single_interval tokens : token list =
       match tokens with
-      | [ (pos_x, x) ] -> (
+      | [ (pos_x, m, x) ] -> (
           match extract_single x with
           | Some x ->
-            (pos_x, constr_grouped [ `Range_inc (x, x) ])
+            (pos_x, m, constr_grouped [ `Range_inc (x, x) ])
             :: recognize_single_interval []
           | _ -> recognize_fallback tokens)
-      | (pos_x, x) :: (pos_comma, Comma) :: rest -> (
+      | (pos_x, m, x) :: (pos_comma, _, Comma) :: rest -> (
           match extract_single x with
           | Some x ->
-            (pos_x, constr_grouped [ `Range_inc (x, x) ])
-            :: recognize_single_interval ((pos_comma, Comma) :: rest)
+            (pos_x, m, constr_grouped [ `Range_inc (x, x) ])
+            :: recognize_single_interval ((pos_comma, text_map_empty, Comma) :: rest)
           | _ -> recognize_fallback tokens)
-      | (pos_x, x) :: (_, To) :: (_, y) :: (pos_comma, Comma) :: rest -> (
+      | (pos_x, m_x, x) :: (_, _, To) :: (_, m_y, y) :: (pos_comma, _, Comma) :: rest -> (
           match (extract_single x, extract_single y) with
           | Some x, Some y ->
-            (pos_x, constr_grouped [ `Range_inc (x, y) ])
-            :: recognize_single_interval ((pos_comma, Comma) :: rest)
+            (pos_x, text_map_union m_x m_y, constr_grouped [ `Range_inc (x, y) ])
+            :: recognize_single_interval ((pos_comma, text_map_empty, Comma) :: rest)
           | _, _ -> recognize_fallback tokens)
-      | (pos_comma, Comma) :: (pos_x, x) :: (_, To) :: (_, y) :: rest -> (
+      | (pos_comma, _, Comma) :: (pos_x, m_x, x) :: (_, _, To) :: (_, m_y, y) :: rest -> (
           match (extract_single x, extract_single y) with
           | Some x, Some y ->
-            (pos_comma, Comma)
-            :: (pos_x, constr_grouped [ `Range_inc (x, y) ])
+            (pos_comma, text_map_empty, Comma)
+            :: (pos_x, text_map_union m_x m_y, constr_grouped [ `Range_inc (x, y) ])
             :: recognize_single_interval rest
           | _, _ -> recognize_fallback tokens)
       | _ -> recognize_fallback tokens
@@ -292,10 +303,10 @@ module Ast_normalize = struct
     in
     let rec merge_intervals tokens : token list =
       match tokens with
-      | (pos_x, x) :: (_, Comma) :: (_, y) :: rest -> (
+      | (pos_x, m_x, x) :: (_, _, Comma) :: (_, m_y, y) :: rest -> (
           match (extract_grouped x, extract_grouped y) with
           | Some l1, Some l2 ->
-            merge_intervals ((pos_x, constr_grouped (l1 @ l2)) :: rest)
+            merge_intervals ((pos_x, text_map_union m_x m_y, constr_grouped (l1 @ l2)) :: rest)
           | _, _ -> merge_fallback tokens)
       | _ -> merge_fallback tokens
     and merge_fallback l =
@@ -308,11 +319,11 @@ module Ast_normalize = struct
     let rec aux tokens =
       match tokens with
       | [] -> []
-      | (pos_x, x) :: rest -> (
+      | (pos_x, m_x, x) :: rest -> (
           match extract_grouped x with
           | Some [ `Range_inc (x1, x2) ] when x1 = x2 ->
-            (pos_x, constr_single x1) :: aux rest
-          | _ -> (pos_x, x) :: aux rest)
+            (pos_x, m_x, constr_single x1) :: aux rest
+          | _ -> (pos_x, m_x, x) :: aux rest)
     in
     aux l
 
@@ -358,24 +369,24 @@ module Ast_normalize = struct
   let recognize_month_day (l : token list) : token list =
     let rec recognize_single tokens =
       match tokens with
-      | (pos_x, Nat x) :: (_, St) :: rest
-      | (pos_x, Nat x) :: (_, Nd) :: rest
-      | (pos_x, Nat x) :: (_, Rd) :: rest
-      | (pos_x, Nat x) :: (_, Th) :: rest ->
-        (pos_x, Month_day x) :: recognize_single rest
+      | (pos_x, _, Nat x) :: (_, _, St) :: rest
+      | (pos_x, _, Nat x) :: (_, _, Nd) :: rest
+      | (pos_x, _, Nat x) :: (_, _, Rd) :: rest
+      | (pos_x, _, Nat x) :: (_, _, Th) :: rest ->
+        (pos_x, text_map_empty, Month_day x) :: recognize_single rest
       | [] -> []
       | x :: xs -> x :: recognize_single xs
     in
     let rec propagate_guesses tokens =
       match tokens with
-      | (pos_x, Month_day x) :: (pos_comma, Comma) :: (pos_y, Nat y) :: rest ->
-        (pos_x, Month_day x)
-        :: (pos_comma, Comma)
-        :: propagate_guesses ((pos_y, Month_day y) :: rest)
-      | (pos_x, Month_day x) :: (pos_to, To) :: (pos_y, Nat y) :: rest ->
-        (pos_x, Month_day x)
-        :: (pos_to, To)
-        :: propagate_guesses ((pos_y, Month_day y) :: rest)
+      | (pos_x, _, Month_day x) :: (pos_comma, _, Comma) :: (pos_y, _, Nat y) :: rest ->
+        (pos_x, text_map_empty, Month_day x)
+        :: (pos_comma, text_map_empty, Comma)
+        :: propagate_guesses ((pos_y, text_map_empty, Month_day y) :: rest)
+      | (pos_x, _, Month_day x) :: (pos_to, _, To) :: (pos_y, _, Nat y) :: rest ->
+        (pos_x, text_map_empty, Month_day x)
+        :: (pos_to, text_map_empty, To)
+        :: propagate_guesses ((pos_y, text_map_empty, Month_day y) :: rest)
       | [] -> []
       | x :: xs -> x :: propagate_guesses xs
     in
@@ -430,7 +441,7 @@ module Ast_normalize = struct
       in
       if 0 <= minute && minute < 60 then
         if 0 <= second && second < 60 then
-          (pos_hour, Hms (Timere.make_hms_exn ~hour ~minute ~second))
+          (pos_hour, text_map_empty, Hms (Timere.make_hms_exn ~hour ~minute ~second))
         else
           invalid_data
             (Printf.sprintf "%s: Invalid second: %d"
@@ -444,49 +455,49 @@ module Ast_normalize = struct
     in
     let rec aux acc (l : token list) : token list =
       match l with
-      | (pos_hour, Nat hour)
-        :: (_, Colon)
-        :: (pos_minute, Nat minute)
-        :: (_, Colon) :: (pos_second, Nat second) :: (_, Am) :: rest ->
+      | (pos_hour, _, Nat hour)
+        :: (_, _, Colon)
+        :: (pos_minute, _, Nat minute)
+        :: (_, _, Colon) :: (pos_second, _, Nat second) :: (_, _, Am) :: rest ->
         let token =
           make_hms Hms_am ~pos_hour ~hour ~pos_minute ~minute ~pos_second
             ~second ()
         in
         aux (token :: acc) rest
-      | (pos_hour, Nat hour)
-        :: (_, Colon)
-        :: (pos_minute, Nat minute)
-        :: (_, Colon) :: (pos_second, Nat second) :: (_, Pm) :: rest ->
+      | (pos_hour, _, Nat hour)
+        :: (_, _, Colon)
+        :: (pos_minute, _, Nat minute)
+        :: (_, _, Colon) :: (pos_second, _, Nat second) :: (_, _, Pm) :: rest ->
         let token =
           make_hms Hms_pm ~pos_hour ~hour ~pos_minute ~minute ~pos_second
             ~second ()
         in
         aux (token :: acc) rest
-      | (pos_hour, Nat hour)
-        :: (_, Colon)
-        :: (pos_minute, Nat minute)
-        :: (_, Colon) :: (pos_second, Nat second) :: rest ->
+      | (pos_hour, _, Nat hour)
+        :: (_, _, Colon)
+        :: (pos_minute, _, Nat minute)
+        :: (_, _, Colon) :: (pos_second, _, Nat second) :: rest ->
         let token =
           make_hms Hms_24 ~pos_hour ~hour ~pos_minute ~minute ~pos_second
             ~second ()
         in
         aux (token :: acc) rest
-      | (pos_hour, Nat hour)
-        :: (_, Colon) :: (pos_minute, Nat minute) :: (_, Am) :: rest ->
+      | (pos_hour, _, Nat hour)
+        :: (_, _, Colon) :: (pos_minute, _, Nat minute) :: (_, _, Am) :: rest ->
         let token = make_hms Hms_am ~pos_hour ~hour ~pos_minute ~minute () in
         aux (token :: acc) rest
-      | (pos_hour, Nat hour)
-        :: (_, Colon) :: (pos_minute, Nat minute) :: (_, Pm) :: rest ->
+      | (pos_hour, _, Nat hour)
+        :: (_, _, Colon) :: (pos_minute, _, Nat minute) :: (_, _, Pm) :: rest ->
         let token = make_hms Hms_pm ~pos_hour ~hour ~pos_minute ~minute () in
         aux (token :: acc) rest
-      | (pos_hour, Nat hour) :: (_, Colon) :: (pos_minute, Nat minute) :: rest
+      | (pos_hour, _, Nat hour) :: (_, _, Colon) :: (pos_minute, _, Nat minute) :: rest
         ->
         let token = make_hms Hms_24 ~pos_hour ~hour ~pos_minute ~minute () in
         aux (token :: acc) rest
-      | (pos_hour, Nat hour) :: (_, Am) :: rest ->
+      | (pos_hour, _, Nat hour) :: (_, _, Am) :: rest ->
         let token = make_hms Hms_am ~pos_hour ~hour () in
         aux (token :: acc) rest
-      | (pos_hour, Nat hour) :: (_, Pm) :: rest ->
+      | (pos_hour, _, Nat hour) :: (_, _, Pm) :: rest ->
         let token = make_hms Hms_pm ~pos_hour ~hour () in
         aux (token :: acc) rest
       | [] -> List.rev acc
@@ -631,6 +642,9 @@ module Ast_normalize = struct
       | (pos_year, Nat year)
         :: (_, Slash)
         :: (pos_month, Nat month) :: (_, Slash) :: (pos_day, Nat day) :: rest
+      | (pos_year, Nat year)
+        :: (_, Dot)
+        :: (pos_month, Nat month) :: (_, Dot) :: (pos_day, Nat day) :: rest
         when year > 31 -> (
           match Timere.Utils.month_of_human_int month with
           | None ->
@@ -648,6 +662,9 @@ module Ast_normalize = struct
         :: (_, Slash)
         :: (pos_month, Nat month)
         :: (_, Slash) :: (pos_year, Nat year) :: rest
+      | (pos_day, Nat day)
+        :: (_, Dot)
+        :: (pos_month, Nat month) :: (_, Dot) :: (pos_year, Nat year) :: rest
         when year > 31 -> (
           match Timere.Utils.month_of_human_int month with
           | None ->

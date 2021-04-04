@@ -28,6 +28,12 @@ let nat_zero : (int, unit) t =
   try return (int_of_string s)
   with _ -> fail (Printf.sprintf "Integer %s is out of range" s)
 
+let nat_zero_w_original_str : (int * string, unit) t =
+  many1_satisfy (function '0' .. '9' -> true | _ -> false)
+  >>= fun s ->
+  try return (int_of_string s, s)
+  with _ -> fail (Printf.sprintf "Integer %s is out of range" s)
+
 let float_non_neg : (float, unit) t =
   many1_satisfy (function '0' .. '9' -> true | _ -> false)
   >>= fun x ->
