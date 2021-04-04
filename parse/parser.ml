@@ -682,14 +682,31 @@ module Ast_normalize = struct
     in
     aux l
 
+  let recognize_float (l : token list) : token list =
+    let rec aux l =
+      match l with
+      | [] -> []
+      | (pos_x, _, Nat x) :: (_, _, Dot) :: ((i_y, _, _), m_y, Nat _) :: rest ->
+        (pos_x, text_map_empty, Float (float_of_string (Printf.sprintf "%d.%s"
+                                                          x
+                                                          (Int_map.find i_y m_y)
+                                                       )))
+        :: aux rest
+      | token :: rest ->
+        token :: aux rest
+    in
+    aux l
+
   let process_tokens (e : ast) : (ast, string) CCResult.t =
     let rec aux e =
       match e with
       | Tokens l -> (
           let l =
             l
-            |> recognize_hms
+            |> recognize_ymd
+            |> recognize_float
             |> recognize_duration
+            |> recognize_hms
             |> recognize_month_day
             |> group_nats
             |> group_month_days
@@ -701,7 +718,6 @@ module Ast_normalize = struct
             |> ungroup_weekdays
             |> ungroup_months
             |> ungroup_hms
-            |> recognize_ymd
           in
           match l with
           | [] -> Tokens l
