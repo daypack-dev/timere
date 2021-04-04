@@ -12,13 +12,13 @@ let debug_parsing () =
     timere
 
 let debug_duration () =
-  let dura = "7d" in
-  match Timere_parse.duration dura with
+  let dur = "7d" in
+  match Timere_parse.duration dur with
   | Error msg -> print_endline msg
-  | Ok timere ->
+  | Ok dur ->
     Fmt.pr "%a@."
       Timere.Duration.pp
-      timere
+      dur
 
 let () =
   debug_parsing ()
