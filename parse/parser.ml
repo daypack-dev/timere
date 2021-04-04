@@ -1,6 +1,5 @@
 open MParser
 open Parser_components
-
 module Int_map = Map.Make (Int)
 
 type text_map = string Int_map.t
@@ -16,8 +15,7 @@ let prefix_string_match (choices : (string * 'a) list) (s : string) :
 
 let invalid_data s = raise (Invalid_data s)
 
-let text_map_union m_x m_y =
-  Int_map.union (fun _ x _y -> Some x) m_x m_y
+let text_map_union m_x m_y = Int_map.union (fun _ x _y -> Some x) m_x m_y
 
 let text_map_empty : text_map = Int_map.empty
 
@@ -185,13 +183,14 @@ let token_p : (token, unit) MParser.t =
       attempt (char '-') >>$ (Int_map.empty, Hyphen);
       attempt (char '/') >>$ (Int_map.empty, Slash);
       attempt (char ':') >>$ (Int_map.empty, Colon);
-      attempt (char '*') >>$ (Int_map.empty, Star );
+      attempt (char '*') >>$ (Int_map.empty, Star);
       (* (attempt float_non_neg |>> fun x -> Float x); *)
-      (attempt nat_zero_w_original_str |>> fun (x, s) ->
-       let (i, _, _) = pos in
+      (attempt nat_zero_w_original_str
+       |>> fun (x, s) ->
+       let i, _, _ = pos in
        (Int_map.add i s Int_map.empty, Nat x));
       (attempt weekday_p |>> fun x -> (Int_map.empty, Weekday x));
-      (attempt month_p |>> fun x -> (Int_map.empty, Month x)) ;
+      (attempt month_p |>> fun x -> (Int_map.empty, Month x));
       attempt (string "not") >>$ (Int_map.empty, Not);
       attempt (string "outside") >>$ (Int_map.empty, Outside);
       attempt (string "for") >>$ (Int_map.empty, For);
@@ -280,19 +279,27 @@ module Ast_normalize = struct
           match extract_single x with
           | Some x ->
             (pos_x, m, constr_grouped [ `Range_inc (x, x) ])
-            :: recognize_single_interval ((pos_comma, text_map_empty, Comma) :: rest)
+            :: recognize_single_interval
+              ((pos_comma, text_map_empty, Comma) :: rest)
           | _ -> recognize_fallback tokens)
-      | (pos_x, m_x, x) :: (_, _, To) :: (_, m_y, y) :: (pos_comma, _, Comma) :: rest -> (
+      | (pos_x, m_x, x)
+        :: (_, _, To) :: (_, m_y, y) :: (pos_comma, _, Comma) :: rest -> (
           match (extract_single x, extract_single y) with
           | Some x, Some y ->
-            (pos_x, text_map_union m_x m_y, constr_grouped [ `Range_inc (x, y) ])
-            :: recognize_single_interval ((pos_comma, text_map_empty, Comma) :: rest)
+            ( pos_x,
+              text_map_union m_x m_y,
+              constr_grouped [ `Range_inc (x, y) ] )
+            :: recognize_single_interval
+              ((pos_comma, text_map_empty, Comma) :: rest)
           | _, _ -> recognize_fallback tokens)
-      | (pos_comma, _, Comma) :: (pos_x, m_x, x) :: (_, _, To) :: (_, m_y, y) :: rest -> (
+      | (pos_comma, _, Comma)
+        :: (pos_x, m_x, x) :: (_, _, To) :: (_, m_y, y) :: rest -> (
           match (extract_single x, extract_single y) with
           | Some x, Some y ->
             (pos_comma, text_map_empty, Comma)
-            :: (pos_x, text_map_union m_x m_y, constr_grouped [ `Range_inc (x, y) ])
+            :: ( pos_x,
+                 text_map_union m_x m_y,
+                 constr_grouped [ `Range_inc (x, y) ] )
             :: recognize_single_interval rest
           | _, _ -> recognize_fallback tokens)
       | _ -> recognize_fallback tokens
@@ -306,7 +313,9 @@ module Ast_normalize = struct
       | (pos_x, m_x, x) :: (_, _, Comma) :: (_, m_y, y) :: rest -> (
           match (extract_grouped x, extract_grouped y) with
           | Some l1, Some l2 ->
-            merge_intervals ((pos_x, text_map_union m_x m_y, constr_grouped (l1 @ l2)) :: rest)
+            merge_intervals
+              ((pos_x, text_map_union m_x m_y, constr_grouped (l1 @ l2))
+               :: rest)
           | _, _ -> merge_fallback tokens)
       | _ -> merge_fallback tokens
     and merge_fallback l =
@@ -379,11 +388,13 @@ module Ast_normalize = struct
     in
     let rec propagate_guesses tokens =
       match tokens with
-      | (pos_x, _, Month_day x) :: (pos_comma, _, Comma) :: (pos_y, _, Nat y) :: rest ->
+      | (pos_x, _, Month_day x)
+        :: (pos_comma, _, Comma) :: (pos_y, _, Nat y) :: rest ->
         (pos_x, text_map_empty, Month_day x)
         :: (pos_comma, text_map_empty, Comma)
         :: propagate_guesses ((pos_y, text_map_empty, Month_day y) :: rest)
-      | (pos_x, _, Month_day x) :: (pos_to, _, To) :: (pos_y, _, Nat y) :: rest ->
+      | (pos_x, _, Month_day x) :: (pos_to, _, To) :: (pos_y, _, Nat y) :: rest
+        ->
         (pos_x, text_map_empty, Month_day x)
         :: (pos_to, text_map_empty, To)
         :: propagate_guesses ((pos_y, text_map_empty, Month_day y) :: rest)
@@ -441,7 +452,9 @@ module Ast_normalize = struct
       in
       if 0 <= minute && minute < 60 then
         if 0 <= second && second < 60 then
-          (pos_hour, text_map_empty, Hms (Timere.make_hms_exn ~hour ~minute ~second))
+          ( pos_hour,
+            text_map_empty,
+            Hms (Timere.make_hms_exn ~hour ~minute ~second) )
         else
           invalid_data
             (Printf.sprintf "%s: Invalid second: %d"
@@ -458,7 +471,8 @@ module Ast_normalize = struct
       | (pos_hour, _, Nat hour)
         :: (_, _, Colon)
         :: (pos_minute, _, Nat minute)
-        :: (_, _, Colon) :: (pos_second, _, Nat second) :: (_, _, Am) :: rest ->
+        :: (_, _, Colon)
+        :: (pos_second, _, Nat second) :: (_, _, Am) :: rest ->
         let token =
           make_hms Hms_am ~pos_hour ~hour ~pos_minute ~minute ~pos_second
             ~second ()
@@ -467,7 +481,8 @@ module Ast_normalize = struct
       | (pos_hour, _, Nat hour)
         :: (_, _, Colon)
         :: (pos_minute, _, Nat minute)
-        :: (_, _, Colon) :: (pos_second, _, Nat second) :: (_, _, Pm) :: rest ->
+        :: (_, _, Colon)
+        :: (pos_second, _, Nat second) :: (_, _, Pm) :: rest ->
         let token =
           make_hms Hms_pm ~pos_hour ~hour ~pos_minute ~minute ~pos_second
             ~second ()
@@ -490,8 +505,8 @@ module Ast_normalize = struct
         :: (_, _, Colon) :: (pos_minute, _, Nat minute) :: (_, _, Pm) :: rest ->
         let token = make_hms Hms_pm ~pos_hour ~hour ~pos_minute ~minute () in
         aux (token :: acc) rest
-      | (pos_hour, _, Nat hour) :: (_, _, Colon) :: (pos_minute, _, Nat minute) :: rest
-        ->
+      | (pos_hour, _, Nat hour)
+        :: (_, _, Colon) :: (pos_minute, _, Nat minute) :: rest ->
         let token = make_hms Hms_24 ~pos_hour ~hour ~pos_minute ~minute () in
         aux (token :: acc) rest
       | (pos_hour, _, Nat hour) :: (_, _, Am) :: rest ->
@@ -606,36 +621,49 @@ module Ast_normalize = struct
       | (pos_year, _, Nat year)
         :: (pos_month, _, Month month) :: (pos_day, _, Month_day day) :: rest
         when year > 31 ->
-        (pos_year, text_map_empty, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
+        ( pos_year,
+          text_map_empty,
+          Ymd ((pos_year, year), (pos_month, month), (pos_day, day)) )
         :: aux rest
       | (pos_year, _, Nat year)
-        :: (pos_day, _, Nat day) :: (_, _, Of) :: (pos_month, _, Month month) :: rest
+        :: (pos_day, _, Nat day)
+        :: (_, _, Of) :: (pos_month, _, Month month) :: rest
       | (pos_year, _, Nat year)
         :: (pos_day, _, Month_day day)
         :: (_, _, Of) :: (pos_month, _, Month month) :: rest
         when year > 31 ->
-        (pos_year, text_map_empty, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
+        ( pos_year,
+          text_map_empty,
+          Ymd ((pos_year, year), (pos_month, month), (pos_day, day)) )
         :: aux rest
       | (pos_day, _, Nat day)
         :: (pos_month, _, Month month) :: (pos_year, _, Nat year) :: rest
       | (pos_day, _, Month_day day)
         :: (pos_month, _, Month month) :: (pos_year, _, Nat year) :: rest
         when year > 31 ->
-        (pos_day, text_map_empty, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
+        ( pos_day,
+          text_map_empty,
+          Ymd ((pos_year, year), (pos_month, month), (pos_day, day)) )
         :: aux rest
       | (pos_month, _, Month month)
         :: (pos_day, _, Nat day) :: (pos_year, _, Nat year) :: rest
       | (pos_month, _, Month month)
         :: (pos_day, _, Month_day day) :: (pos_year, _, Nat year) :: rest
         when year > 31 ->
-        (pos_day, text_map_empty, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
+        ( pos_day,
+          text_map_empty,
+          Ymd ((pos_year, year), (pos_month, month), (pos_day, day)) )
         :: aux rest
       | (pos_day, _, Nat day)
-        :: (_, _, Of) :: (pos_month, _, Month month) :: (pos_year, _, Nat year) :: rest
+        :: (_, _, Of)
+        :: (pos_month, _, Month month) :: (pos_year, _, Nat year) :: rest
       | (pos_day, _, Month_day day)
-        :: (_, _, Of) :: (pos_month, _, Month month) :: (pos_year, _, Nat year) :: rest
+        :: (_, _, Of)
+        :: (pos_month, _, Month month) :: (pos_year, _, Nat year) :: rest
         when year > 31 ->
-        (pos_day, text_map_empty, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
+        ( pos_day,
+          text_map_empty,
+          Ymd ((pos_year, year), (pos_month, month), (pos_day, day)) )
         :: aux rest
       | (pos_year, _, Nat year)
         :: (_, _, Hyphen)
@@ -643,10 +671,12 @@ module Ast_normalize = struct
         :: (_, _, Hyphen) :: (pos_day, _, Nat day) :: rest
       | (pos_year, _, Nat year)
         :: (_, _, Slash)
-        :: (pos_month, _, Nat month) :: (_, _, Slash) :: (pos_day, _, Nat day) :: rest
+        :: (pos_month, _, Nat month)
+        :: (_, _, Slash) :: (pos_day, _, Nat day) :: rest
       | (pos_year, _, Nat year)
         :: (_, _, Dot)
-        :: (pos_month, _, Nat month) :: (_, _, Dot) :: (pos_day, _, Nat day) :: rest
+        :: (pos_month, _, Nat month)
+        :: (_, _, Dot) :: (pos_day, _, Nat day) :: rest
         when year > 31 -> (
           match Timere.Utils.month_of_human_int month with
           | None ->
@@ -667,7 +697,8 @@ module Ast_normalize = struct
         :: (_, _, Slash) :: (pos_year, _, Nat year) :: rest
       | (pos_day, _, Nat day)
         :: (_, _, Dot)
-        :: (pos_month, _, Nat month) :: (_, _, Dot) :: (pos_year, _, Nat year) :: rest
+        :: (pos_month, _, Nat month)
+        :: (_, _, Dot) :: (pos_year, _, Nat year) :: rest
         when year > 31 -> (
           match Timere.Utils.month_of_human_int month with
           | None ->
@@ -684,36 +715,31 @@ module Ast_normalize = struct
 
   let recognize_float (l : token list) : token list =
     let make_float ~pos_x ~x ~pos_y ~m_y =
-      let (i_y, _, _) = pos_y in
-      (pos_x, text_map_empty, Float (float_of_string (Printf.sprintf "%d.%s"
-                                                        x
-                                                        (Int_map.find i_y m_y)
-                                                     )))
+      let i_y, _, _ = pos_y in
+      ( pos_x,
+        text_map_empty,
+        Float
+          (float_of_string (Printf.sprintf "%d.%s" x (Int_map.find i_y m_y))) )
     in
     let flush_buffer buffer : token list =
       match List.rev buffer with
-        | [ (pos_x, _, Nat x); (_, _, Dot); (pos_y, m_y, Nat _)] ->
-          [ make_float ~pos_x ~x ~pos_y ~m_y ]
-        | l -> l
+      | [ (pos_x, _, Nat x); (_, _, Dot); (pos_y, m_y, Nat _) ] ->
+        [ make_float ~pos_x ~x ~pos_y ~m_y ]
+      | l -> l
     in
     let rec aux buffer l =
       match l with
       | [] -> flush_buffer buffer
-      | [ (pos_dot, m_dot, Dot) ] -> (
-          flush_buffer buffer @ [ (pos_dot, m_dot, Dot) ]
-        )
+      | [ (pos_dot, m_dot, Dot) ] ->
+        flush_buffer buffer @ [ (pos_dot, m_dot, Dot) ]
       | (pos_dot, m_dot, Dot) :: x :: rest -> (
           match buffer with
-          | [] ->
-            (pos_dot, m_dot, Dot) :: aux [ ] (x :: rest)
-          | buffer ->
-            aux (x :: (pos_dot, m_dot, Dot) :: buffer) rest
-        )
+          | [] -> (pos_dot, m_dot, Dot) :: aux [] (x :: rest)
+          | buffer -> aux (x :: (pos_dot, m_dot, Dot) :: buffer) rest)
       | x :: rest -> (
           match buffer with
           | [] -> aux [ x ] rest
-          | buffer -> flush_buffer buffer @ aux [] (x :: rest)
-        )
+          | buffer -> flush_buffer buffer @ aux [] (x :: rest))
     in
     aux [] l
 
@@ -978,7 +1004,8 @@ module Rules = struct
 
   let rule_ym l =
     match l with
-    | ([ (_, _, Nat year); (_, _, Month month) ] | [ (_, _, Month month); (_, _, Nat year) ])
+    | [ (_, _, Nat year); (_, _, Month month) ]
+    | [ (_, _, Month month); (_, _, Nat year) ]
       when year > 31 ->
       pattern ~years:[ year ] ~months:[ month ] ()
     | _ -> `None
@@ -992,7 +1019,8 @@ module Rules = struct
     | [ (_, _, Month month); (pos_days, _, Month_day day) ]
     | [ (pos_days, _, Month_day day); (_, _, Month month) ] ->
       pattern ~months:[ month ] ~pos_days ~days:[ day ] ()
-    | [ (pos_days, _, Nat day); (_, _, Of); (_, _, Month month) ] when day <= 31 ->
+    | [ (pos_days, _, Nat day); (_, _, Of); (_, _, Month month) ] when day <= 31
+      ->
       pattern ~months:[ month ] ~pos_days ~days:[ day ] ()
     | [ (pos_days, _, Month_day day); (_, _, Of); (_, _, Month month) ] ->
       pattern ~months:[ month ] ~pos_days ~days:[ day ] ()
@@ -1045,7 +1073,8 @@ module Rules = struct
 
   let rule_ymd_hms l =
     match l with
-    | [ (_, _, Ymd ((_, year), (_, month), (pos_days, day))); (_, _, Hms hms) ] ->
+    | [ (_, _, Ymd ((_, year), (_, month), (pos_days, day))); (_, _, Hms hms) ]
+      ->
       pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ~hms
         ()
     | _ -> `None
@@ -1322,8 +1351,15 @@ module Rules = struct
 
   let rule_d_hms_to_hms l =
     match l with
-    | [ (pos_day1, _, Nat day1); (_, _, Hms hms1); (_, _, To); (_, _, Hms hms2) ]
-    | [ (pos_day1, _, Month_day day1); (_, _, Hms hms1); (_, _, To); (_, _, Hms hms2) ] -> (
+    | [
+      (pos_day1, _, Nat day1); (_, _, Hms hms1); (_, _, To); (_, _, Hms hms2);
+    ]
+    | [
+      (pos_day1, _, Month_day day1);
+      (_, _, Hms hms1);
+      (_, _, To);
+      (_, _, Hms hms2);
+    ] -> (
         match
           ( points ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
             points ~hms:hms2 `Back )
@@ -1439,13 +1475,14 @@ let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t
   let rec aux tz ast =
     match ast with
     | Tokens [ (_, _, Ymd ((_, year), (_, month), (_, day))); (_, _, Hms hms) ]
-    | Tokens [ (_, _, Hms hms); (_, _, Ymd ((_, year), (_, month), (_, day))) ] -> (
-        match
-          Timere.Date_time.make ~year ~month ~day ~hour:hms.hour
-            ~minute:hms.minute ~second:hms.second ~tz
-        with
-        | Some x -> Ok x
-        | None -> Error "Invalid date time")
+    | Tokens [ (_, _, Hms hms); (_, _, Ymd ((_, year), (_, month), (_, day))) ]
+      -> (
+          match
+            Timere.Date_time.make ~year ~month ~day ~hour:hms.hour
+              ~minute:hms.minute ~second:hms.second ~tz
+          with
+          | Some x -> Ok x
+          | None -> Error "Invalid date time")
     | Tokens [ (_, _, Ymd ((_, year), (_, month), (_, day))) ] -> (
         match
           Timere.Date_time.make ~year ~month ~day ~hour:0 ~minute:0 ~second:0
