@@ -592,15 +592,16 @@ and aux_inter search_using_tz timeres =
         let max_start =
           CCOpt.get_exn @@ Misc_utils.last_element_of_list starts
         in
-        let timeres, interval_batches =
+        let timeres = slice_search_space_multi ~start:max_start timeres in
+        let interval_batches =
           if
             min_end_exc <= max_start
             && max_start -^ min_end_exc
                >= dynamic_search_space_adjustment_trigger_size
           then
-            let timeres = slice_search_space_multi ~start:max_start timeres in
-            (timeres, resolve ~start search_using_tz timeres)
-          else (timeres, interval_batches)
+            resolve ~start search_using_tz timeres
+          else
+            interval_batches
         in
         let end_exc =
           if min_end_exc -^ start <= inter_minimum_slice_size then
