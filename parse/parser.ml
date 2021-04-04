@@ -75,7 +75,7 @@ type ast =
   | Binary_op of binary_op * ast * ast
   | Round_robin_pick of ast list
 
-let string_of_token (_, guess) =
+let string_of_token (_, _, guess) =
   match guess with
   | Dot -> "DOT"
   | Comma -> "COMMA"
@@ -683,19 +683,39 @@ module Ast_normalize = struct
     aux l
 
   let recognize_float (l : token list) : token list =
-    let rec aux l =
-      match l with
-      | [] -> []
-      | (pos_x, _, Nat x) :: (_, _, Dot) :: ((i_y, _, _), m_y, Nat _) :: rest ->
-        (pos_x, text_map_empty, Float (float_of_string (Printf.sprintf "%d.%s"
-                                                          x
-                                                          (Int_map.find i_y m_y)
-                                                       )))
-        :: aux rest
-      | token :: rest ->
-        token :: aux rest
+    let make_float ~pos_x ~x ~pos_y ~m_y =
+      let (i_y, _, _) = pos_y in
+      (pos_x, text_map_empty, Float (float_of_string (Printf.sprintf "%d.%s"
+                                                        x
+                                                        (Int_map.find i_y m_y)
+                                                     )))
     in
-    aux l
+    let flush_buffer buffer : token list =
+      match List.rev buffer with
+        | [ (pos_x, _, Nat x); (_, _, Dot); (pos_y, m_y, Nat _)] ->
+          [ make_float ~pos_x ~x ~pos_y ~m_y ]
+        | l -> l
+    in
+    let rec aux buffer l =
+      match l with
+      | [] -> flush_buffer buffer
+      | [ (pos_dot, m_dot, Dot) ] -> (
+          flush_buffer buffer @ [ (pos_dot, m_dot, Dot) ]
+        )
+      | (pos_dot, m_dot, Dot) :: x :: rest -> (
+          match buffer with
+          | [] ->
+            (pos_dot, m_dot, Dot) :: aux [ ] (x :: rest)
+          | buffer ->
+            aux (x :: (pos_dot, m_dot, Dot) :: buffer) rest
+        )
+      | x :: rest -> (
+          match buffer with
+          | [] -> aux [ x ] rest
+          | buffer -> flush_buffer buffer @ aux [] (x :: rest)
+        )
+    in
+    aux [] l
 
   let process_tokens (e : ast) : (ast, string) CCResult.t =
     let rec aux e =
@@ -703,10 +723,9 @@ module Ast_normalize = struct
       | Tokens l -> (
           let l =
             l
-            |> recognize_ymd
+            |> recognize_hms
             |> recognize_float
             |> recognize_duration
-            |> recognize_hms
             |> recognize_month_day
             |> group_nats
             |> group_month_days
@@ -718,6 +737,7 @@ module Ast_normalize = struct
             |> ungroup_weekdays
             |> ungroup_months
             |> ungroup_hms
+            |> recognize_ymd
           in
           match l with
           | [] -> Tokens l
