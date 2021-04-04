@@ -1,5 +1,5 @@
 let debug_parsing () =
-  let expr = "16th 6am to 8am, 9am, 10am to 11am" in
+  let expr = "16th 6am to 8am, 9am" in
   print_endline expr;
   print_newline ();
   print_endline "gives";

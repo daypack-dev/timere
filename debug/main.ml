@@ -10,22 +10,22 @@ let display_intervals ~display_using_tz s =
   | Seq.Nil -> print_endline "No time intervals"
   | Seq.Cons _ ->
     s
-    |> OSeq.take 10
+    |> OSeq.take 20
     |> OSeq.iter (fun (x, y) ->
         let s = Printers.string_of_interval ~display_using_tz (x, y) in
         let size = Duration.of_seconds (Int64.sub y x) in
         let size_str = Printers.string_of_duration size in
-        Printf.printf "%s - %s\n" s size_str)
+        Printf.printf "%s - %s\n" s size_str;
+        flush stdout;
+      )
 
 let debug_resolver () =
   let s =
     {|
 (inter (pattern (month_days 16))
- (union
   (bounded_intervals whole (duration 2 0 0 0) (points (pick hms 6 0 0))
-   (points (pick hms 8 0 0))) (pattern (hours 9) (minutes 0) (seconds 0))
-  (bounded_intervals whole (duration 2 0 0 0) (points (pick hms 10 0 0))
-   (points (pick hms 11 0 0)))))
+   (points (pick hms 8 0 0)))
+)
       |}
   in
   let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in
@@ -96,7 +96,16 @@ let debug_resolver () =
     |> Time.Date_time'.max_of_timestamp_local_result
   in
   let timere' =
-    Time.(inter [ timere; intervals [ (search_start, search_end_exc) ] ])
+    Time.(inter [ timere;
+                  after
+                    (Date_time'.make_exn ~tz ~year:2000 ~month:`Jan ~day:1
+                       ~hour:0 ~minute:0 ~second:0);
+                  before
+                    (Date_time'.make_exn ~tz ~year:2050 ~month:`Jan ~day:1
+                       ~hour:0 ~minute:0 ~second:0);
+                  (* intervals [ (search_start, search_end_exc)
+                   *           ] *)
+                ])
   in
   print_endline "^^^^^";
   print_endline (To_sexp.to_sexp_string timere');
