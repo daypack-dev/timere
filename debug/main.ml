@@ -20,9 +20,12 @@ let display_intervals ~display_using_tz s =
 let debug_resolver () =
   let s =
     {|
-(bounded_intervals whole
-  (duration 2 0 0 0) (points (pick
-              hms 2 0 0)) (points (pick hms 10 0 0)))
+(inter (pattern (month_days 16))
+ (union
+  (bounded_intervals whole (duration 2 0 0 0) (points (pick hms 6 0 0))
+   (points (pick hms 8 0 0))) (all)
+  (bounded_intervals whole (duration 2 0 0 0) (points (pick hms 10 0 0))
+   (points (pick hms 11 0 0)))))
       |}
   in
   let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in
