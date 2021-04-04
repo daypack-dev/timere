@@ -925,18 +925,22 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.hms option)
              ~minute:default_minute ~second:default_second ())
       | _ -> invalid_arg "points")
 
-let bounded_intervals_of_hmss (hmss : Timere.hms Timere.range list) =
+let t_of_hmss (hmss : Timere.hms Timere.range list) =
   match
     List.map
       (fun hms_range ->
          match hms_range with
          | `Range_inc (x, y) -> (
-             match (points ~hms:x `Front, points ~hms:y `Front) with
-             | `Some p1, `Some p2 ->
+             if x = y then
                Ok
-                 Timere.(
-                   bounded_intervals `Whole (Duration.make ~days:2 ()) p1 p2)
-             | _ -> Error ())
+                 Timere.(pattern ~hours:[ x.hour ] ~minutes:[ x.minute ] ~seconds:[ x.second ] ())
+             else
+               match (points ~hms:x `Front, points ~hms:y `Front) with
+               | `Some p1, `Some p2 ->
+                 Ok
+                   Timere.(
+                     bounded_intervals `Whole (Duration.make ~days:2 ()) p1 p2)
+               | _ -> Error ())
          | _ -> failwith "unexpected case")
       hmss
     |> Misc_utils.get_ok_error_list
@@ -1037,7 +1041,7 @@ module Rules = struct
   let rule_hmss l =
     match l with
     | [ (_, _, Hmss hmss) ] -> (
-        match (pattern (), bounded_intervals_of_hmss hmss) with
+        match (pattern (), t_of_hmss hmss) with
         | `Some t, `Some t' -> `Some Timere.(t & t')
         | `None, _ -> `None
         | _, `None -> `None
@@ -1055,7 +1059,7 @@ module Rules = struct
     match l with
     | [ (pos_days, _, Month_day day); (_, _, Hmss hmss) ] -> (
         match
-          (pattern ~pos_days ~days:[ day ] (), bounded_intervals_of_hmss hmss)
+          (pattern ~pos_days ~days:[ day ] (), t_of_hmss hmss)
         with
         | `Some t, `Some t' -> `Some Timere.(t & t')
         | `None, _ -> `None
