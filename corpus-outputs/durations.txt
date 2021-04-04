@@ -25,3 +25,9 @@
 8. "5 days 6.5 hours"
   Ok 5 days 6 hours 30 mins 0 secs
 
+9. "0.1 hours"
+  Ok 6 mins 0 secs
+
+10. "0.01 hours"
+  Ok 36 secs
+

@@ -7,7 +7,9 @@ let texts = [
   "10 seconds";
   "100 seconds";
   "2.25 minutes 1 seconds";
-  "5 days 6.5 hours"
+  "5 days 6.5 hours";
+  "0.1 hours";
+  "0.01 hours";
 ]
 
 let () =
