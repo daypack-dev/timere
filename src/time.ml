@@ -1050,7 +1050,7 @@ let hms_of_second_of_day x =
   let ({ hours; minutes; seconds; _ } : Duration.t) =
     x |> Int64.of_int |> Duration.of_seconds
   in
-  CCOpt.get_exn @@ make_hms ~hour:hours ~minute:minutes ~second:seconds
+  make_hms_exn ~hour:hours ~minute:minutes ~second:seconds
 
 module Hms_ranges = Ranges_small.Make (struct
     type t = hms

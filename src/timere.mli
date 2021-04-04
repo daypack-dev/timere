@@ -851,4 +851,8 @@ module Utils : sig
   val weekday_of_tm_int : int -> weekday option
 
   val tm_int_of_weekday : weekday -> int
+
+  val second_of_day_of_hms : hms -> int
+
+  val hms_of_second_of_day : int -> hms
 end

@@ -127,4 +127,8 @@ module Utils = struct
   let weekday_of_tm_int = weekday_of_tm_int
 
   let tm_int_of_weekday = tm_int_of_weekday
+
+  let second_of_day_of_hms = second_of_day_of_hms
+
+  let hms_of_second_of_day = hms_of_second_of_day
 end
