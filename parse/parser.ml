@@ -19,7 +19,7 @@ let invalid_data s = raise (Invalid_data s)
 let text_map_union m_x m_y =
   Int_map.union (fun _ x _y -> Some x) m_x m_y
 
-let text_map_empty = Int_map.empty
+let text_map_empty : text_map = Int_map.empty
 
 type guess =
   | Dot
@@ -521,6 +521,7 @@ module Ast_normalize = struct
   let recognize_duration (l : token list) : token list =
     let make_duration ~pos ~days ~hours ~minutes ~seconds =
       ( CCOpt.get_exn pos,
+        text_map_empty,
         Duration
           (Timere.Duration.make_frac
              ~days:(CCOpt.value ~default:0.0 days)
@@ -530,44 +531,45 @@ module Ast_normalize = struct
     in
     let rec aux_start_with_days acc l =
       match l with
-      | (pos, Nat days) :: (_, Days) :: rest ->
+      | (pos, _, Nat days) :: (_, _, Days) :: rest ->
         aux_start_with_hours ~pos:(Some pos)
           ~days:(Some (float_of_int days))
           acc rest
-      | (pos, Float days) :: (_, Days) :: rest ->
+      | (pos, _, Float days) :: (_, _, Days) :: rest ->
         aux_start_with_hours ~pos:(Some pos) ~days:(Some days) acc rest
       | _ -> aux_start_with_hours ~pos:None ~days:None acc l
     and aux_start_with_hours ~pos ~days acc l =
       match l with
-      | (pos_hours, Nat hours) :: (_, Hours) :: rest ->
+      | (pos_hours, _, Nat hours) :: (_, _, Hours) :: rest ->
         aux_start_with_minutes
           ~pos:(Some (CCOpt.value ~default:pos_hours pos))
           ~days
           ~hours:(Some (float_of_int hours))
           acc rest
-      | (pos_hours, Float hours) :: (_, Hours) :: rest ->
+      | (pos_hours, _, Float hours) :: (_, _, Hours) :: rest ->
         aux_start_with_minutes
           ~pos:(Some (CCOpt.value ~default:pos_hours pos))
           ~days ~hours:(Some hours) acc rest
       | _ -> aux_start_with_minutes ~pos ~days ~hours:None acc l
     and aux_start_with_minutes ~pos ~days ~hours acc l =
       match l with
-      | (pos_minutes, Nat minutes) :: (_, Minutes) :: rest ->
+      | (pos_minutes, _, Nat minutes) :: (_, _, Minutes) :: rest ->
         aux_start_with_seconds
           ~pos:(Some (CCOpt.value ~default:pos_minutes pos))
           ~days ~hours
           ~minutes:(Some (float_of_int minutes))
           acc rest
-      | (pos_minutes, Float minutes) :: (_, Minutes) :: rest ->
+      | (pos_minutes, _, Float minutes) :: (_, _, Minutes) :: rest ->
         aux_start_with_seconds
           ~pos:(Some (CCOpt.value ~default:pos_minutes pos))
           ~days ~hours ~minutes:(Some minutes) acc rest
       | _ -> aux_start_with_seconds ~pos ~days ~hours ~minutes:None acc l
     and aux_start_with_seconds ~pos ~days ~hours ~minutes acc l =
       match l with
-      | (pos_seconds, Nat seconds) :: (_, Seconds) :: rest ->
+      | (pos_seconds, _, Nat seconds) :: (_, _, Seconds) :: rest ->
         let token =
           ( CCOpt.value ~default:pos_seconds pos,
+            text_map_empty,
             Duration
               (Timere.Duration.make_frac
                  ~days:(CCOpt.value ~default:0.0 days)
@@ -599,52 +601,52 @@ module Ast_normalize = struct
     let rec aux l =
       match l with
       | [] -> []
-      | (pos_year, Nat year)
-        :: (pos_month, Month month) :: (pos_day, Nat day) :: rest
-      | (pos_year, Nat year)
-        :: (pos_month, Month month) :: (pos_day, Month_day day) :: rest
+      | (pos_year, _, Nat year)
+        :: (pos_month, _, Month month) :: (pos_day, _, Nat day) :: rest
+      | (pos_year, _, Nat year)
+        :: (pos_month, _, Month month) :: (pos_day, _, Month_day day) :: rest
         when year > 31 ->
-        (pos_year, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
+        (pos_year, text_map_empty, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
         :: aux rest
-      | (pos_year, Nat year)
-        :: (pos_day, Nat day) :: (_, Of) :: (pos_month, Month month) :: rest
-      | (pos_year, Nat year)
-        :: (pos_day, Month_day day)
-        :: (_, Of) :: (pos_month, Month month) :: rest
+      | (pos_year, _, Nat year)
+        :: (pos_day, _, Nat day) :: (_, _, Of) :: (pos_month, _, Month month) :: rest
+      | (pos_year, _, Nat year)
+        :: (pos_day, _, Month_day day)
+        :: (_, _, Of) :: (pos_month, _, Month month) :: rest
         when year > 31 ->
-        (pos_year, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
+        (pos_year, text_map_empty, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
         :: aux rest
-      | (pos_day, Nat day)
-        :: (pos_month, Month month) :: (pos_year, Nat year) :: rest
-      | (pos_day, Month_day day)
-        :: (pos_month, Month month) :: (pos_year, Nat year) :: rest
+      | (pos_day, _, Nat day)
+        :: (pos_month, _, Month month) :: (pos_year, _, Nat year) :: rest
+      | (pos_day, _, Month_day day)
+        :: (pos_month, _, Month month) :: (pos_year, _, Nat year) :: rest
         when year > 31 ->
-        (pos_day, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
+        (pos_day, text_map_empty, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
         :: aux rest
-      | (pos_month, Month month)
-        :: (pos_day, Nat day) :: (pos_year, Nat year) :: rest
-      | (pos_month, Month month)
-        :: (pos_day, Month_day day) :: (pos_year, Nat year) :: rest
+      | (pos_month, _, Month month)
+        :: (pos_day, _, Nat day) :: (pos_year, _, Nat year) :: rest
+      | (pos_month, _, Month month)
+        :: (pos_day, _, Month_day day) :: (pos_year, _, Nat year) :: rest
         when year > 31 ->
-        (pos_day, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
+        (pos_day, text_map_empty, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
         :: aux rest
-      | (pos_day, Nat day)
-        :: (_, Of) :: (pos_month, Month month) :: (pos_year, Nat year) :: rest
-      | (pos_day, Month_day day)
-        :: (_, Of) :: (pos_month, Month month) :: (pos_year, Nat year) :: rest
+      | (pos_day, _, Nat day)
+        :: (_, _, Of) :: (pos_month, _, Month month) :: (pos_year, _, Nat year) :: rest
+      | (pos_day, _, Month_day day)
+        :: (_, _, Of) :: (pos_month, _, Month month) :: (pos_year, _, Nat year) :: rest
         when year > 31 ->
-        (pos_day, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
+        (pos_day, text_map_empty, Ymd ((pos_year, year), (pos_month, month), (pos_day, day)))
         :: aux rest
-      | (pos_year, Nat year)
-        :: (_, Hyphen)
-        :: (pos_month, Nat month)
-        :: (_, Hyphen) :: (pos_day, Nat day) :: rest
-      | (pos_year, Nat year)
-        :: (_, Slash)
-        :: (pos_month, Nat month) :: (_, Slash) :: (pos_day, Nat day) :: rest
-      | (pos_year, Nat year)
-        :: (_, Dot)
-        :: (pos_month, Nat month) :: (_, Dot) :: (pos_day, Nat day) :: rest
+      | (pos_year, _, Nat year)
+        :: (_, _, Hyphen)
+        :: (pos_month, _, Nat month)
+        :: (_, _, Hyphen) :: (pos_day, _, Nat day) :: rest
+      | (pos_year, _, Nat year)
+        :: (_, _, Slash)
+        :: (pos_month, _, Nat month) :: (_, _, Slash) :: (pos_day, _, Nat day) :: rest
+      | (pos_year, _, Nat year)
+        :: (_, _, Dot)
+        :: (pos_month, _, Nat month) :: (_, _, Dot) :: (pos_day, _, Nat day) :: rest
         when year > 31 -> (
           match Timere.Utils.month_of_human_int month with
           | None ->
@@ -652,19 +654,20 @@ module Ast_normalize = struct
               (Printf.sprintf "%s: Invalid month" (string_of_pos pos_month))
           | Some month ->
             ( pos_year,
+              text_map_empty,
               Ymd ((pos_year, year), (pos_month, month), (pos_day, day)) )
             :: aux rest)
-      | (pos_day, Nat day)
-        :: (_, Hyphen)
-        :: (pos_month, Nat month)
-        :: (_, Hyphen) :: (pos_year, Nat year) :: rest
-      | (pos_day, Nat day)
-        :: (_, Slash)
-        :: (pos_month, Nat month)
-        :: (_, Slash) :: (pos_year, Nat year) :: rest
-      | (pos_day, Nat day)
-        :: (_, Dot)
-        :: (pos_month, Nat month) :: (_, Dot) :: (pos_year, Nat year) :: rest
+      | (pos_day, _, Nat day)
+        :: (_, _, Hyphen)
+        :: (pos_month, _, Nat month)
+        :: (_, _, Hyphen) :: (pos_year, _, Nat year) :: rest
+      | (pos_day, _, Nat day)
+        :: (_, _, Slash)
+        :: (pos_month, _, Nat month)
+        :: (_, _, Slash) :: (pos_year, _, Nat year) :: rest
+      | (pos_day, _, Nat day)
+        :: (_, _, Dot)
+        :: (pos_month, _, Nat month) :: (_, _, Dot) :: (pos_year, _, Nat year) :: rest
         when year > 31 -> (
           match Timere.Utils.month_of_human_int month with
           | None ->
@@ -672,6 +675,7 @@ module Ast_normalize = struct
               (Printf.sprintf "%s: Invalid month" (string_of_pos pos_month))
           | Some month ->
             ( pos_day,
+              text_map_empty,
               Ymd ((pos_year, year), (pos_month, month), (pos_day, day)) )
             :: aux rest)
       | x :: xs -> x :: aux xs
@@ -703,11 +707,11 @@ module Ast_normalize = struct
           | [] -> Tokens l
           | _ -> (
               match l with
-              | (_, Time_zone tz) :: rest ->
+              | (_, _, Time_zone tz) :: rest ->
                 Unary_op (With_time_zone tz, Tokens rest)
               | _ -> (
                   match List.rev l with
-                  | (_, Time_zone tz) :: rest ->
+                  | (_, _, Time_zone tz) :: rest ->
                     Unary_op (With_time_zone tz, Tokens (List.rev rest))
                   | _ -> Tokens l)))
       | Unary_op (op, e) -> Unary_op (op, aux e)
@@ -880,12 +884,12 @@ let bounded_intervals_of_hmss (hmss : Timere.hms Timere.range list) =
 
 module Rules = struct
   let rule_star l =
-    match l with [ (_, Star) ] -> `Some Timere.always | _ -> `None
+    match l with [ (_, _, Star) ] -> `Some Timere.always | _ -> `None
 
   let rule_weekdays l =
     match l with
-    | [ (_, Weekday x) ] -> `Some (Timere.weekdays [ x ])
-    | [ (pos, Weekdays l) ] ->
+    | [ (_, _, Weekday x) ] -> `Some (Timere.weekdays [ x ])
+    | [ (pos, _, Weekdays l) ] ->
       flatten_weekdays pos l |> map_rule_result (fun l -> Timere.weekdays l)
     | _ -> `None
 
@@ -898,8 +902,8 @@ module Rules = struct
 
   let rule_month_days l =
     match l with
-    | [ (pos_days, Month_day day) ] -> pattern ~pos_days ~days:[ day ] ()
-    | [ (pos_days, Month_days day_ranges) ] -> (
+    | [ (pos_days, _, Month_day day) ] -> pattern ~pos_days ~days:[ day ] ()
+    | [ (pos_days, _, Month_days day_ranges) ] -> (
         match flatten_month_days pos_days day_ranges with
         | `Some days -> pattern ~pos_days ~days ()
         | `None -> `None
@@ -908,12 +912,12 @@ module Rules = struct
 
   let rule_month_and_days l =
     match l with
-    | [ (_, Month month); (pos_days, Month_day day) ] ->
+    | [ (_, _, Month month); (pos_days, _, Month_day day) ] ->
       pattern ~months:[ month ] ~pos_days ~days:[ day ] ()
-    | [ (_, Month month); (pos_days, Nat day) ] when day <= 31 ->
+    | [ (_, _, Month month); (pos_days, _, Nat day) ] when day <= 31 ->
       pattern ~months:[ month ] ~pos_days ~days:[ day ] ()
-    | [ (_, Month month); (pos_days, Month_days day_ranges) ]
-    | [ (_, Month month); (pos_days, Nats day_ranges) ] -> (
+    | [ (_, _, Month month); (pos_days, _, Month_days day_ranges) ]
+    | [ (_, _, Month month); (pos_days, _, Nats day_ranges) ] -> (
         match flatten_month_days pos_days day_ranges with
         | `Some days ->
           if List.for_all (fun day -> day <= 31) days then
@@ -925,50 +929,50 @@ module Rules = struct
 
   let rule_month l =
     match l with
-    | [ (_, Month x) ] -> `Some (Timere.months [ x ])
-    | [ (pos, Months l) ] ->
+    | [ (_, _, Month x) ] -> `Some (Timere.months [ x ])
+    | [ (pos, _, Months l) ] ->
       flatten_months pos l |> map_rule_result (fun l -> Timere.months l)
     | _ -> `None
 
   let rule_ymd l =
     match l with
-    | [ (_, Ymd ((_, year), (_, month), (pos_days, day))) ] ->
+    | [ (_, _, Ymd ((_, year), (_, month), (pos_days, day))) ] ->
       pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ()
     | _ -> `None
 
   let rule_ym l =
     match l with
-    | ([ (_, Nat year); (_, Month month) ] | [ (_, Month month); (_, Nat year) ])
+    | ([ (_, _, Nat year); (_, _, Month month) ] | [ (_, _, Month month); (_, _, Nat year) ])
       when year > 31 ->
       pattern ~years:[ year ] ~months:[ month ] ()
     | _ -> `None
 
   let rule_md l =
     match l with
-    | [ (_, Month month); (pos_days, Nat day) ]
-    | [ (pos_days, Nat day); (_, Month month) ]
+    | [ (_, _, Month month); (pos_days, _, Nat day) ]
+    | [ (pos_days, _, Nat day); (_, _, Month month) ]
       when day <= 31 ->
       pattern ~months:[ month ] ~pos_days ~days:[ day ] ()
-    | [ (_, Month month); (pos_days, Month_day day) ]
-    | [ (pos_days, Month_day day); (_, Month month) ] ->
+    | [ (_, _, Month month); (pos_days, _, Month_day day) ]
+    | [ (pos_days, _, Month_day day); (_, _, Month month) ] ->
       pattern ~months:[ month ] ~pos_days ~days:[ day ] ()
-    | [ (pos_days, Nat day); (_, Of); (_, Month month) ] when day <= 31 ->
+    | [ (pos_days, _, Nat day); (_, _, Of); (_, _, Month month) ] when day <= 31 ->
       pattern ~months:[ month ] ~pos_days ~days:[ day ] ()
-    | [ (pos_days, Month_day day); (_, Of); (_, Month month) ] ->
+    | [ (pos_days, _, Month_day day); (_, _, Of); (_, _, Month month) ] ->
       pattern ~months:[ month ] ~pos_days ~days:[ day ] ()
     | _ -> `None
 
   let rule_d l =
     match l with
-    | [ (pos_days, Month_day day) ] -> pattern ~pos_days ~days:[ day ] ()
+    | [ (pos_days, _, Month_day day) ] -> pattern ~pos_days ~days:[ day ] ()
     | _ -> `None
 
   let rule_hms l =
-    match l with [ (_, Hms hms) ] -> pattern ~hms () | _ -> `None
+    match l with [ (_, _, Hms hms) ] -> pattern ~hms () | _ -> `None
 
   let rule_hmss l =
     match l with
-    | [ (_, Hmss hmss) ] -> (
+    | [ (_, _, Hmss hmss) ] -> (
         match (pattern (), bounded_intervals_of_hmss hmss) with
         | `Some t, `Some t' -> `Some Timere.(t & t')
         | `None, _ -> `None
@@ -979,13 +983,13 @@ module Rules = struct
 
   let rule_d_hms l =
     match l with
-    | [ (pos_days, Month_day day); (_, Hms hms) ] ->
+    | [ (pos_days, _, Month_day day); (_, _, Hms hms) ] ->
       pattern ~pos_days ~days:[ day ] ~hms ()
     | _ -> `None
 
   let rule_d_hmss l =
     match l with
-    | [ (pos_days, Month_day day); (_, Hmss hmss) ] -> (
+    | [ (pos_days, _, Month_day day); (_, _, Hmss hmss) ] -> (
         match
           (pattern ~pos_days ~days:[ day ] (), bounded_intervals_of_hmss hmss)
         with
@@ -998,14 +1002,14 @@ module Rules = struct
 
   let rule_md_hms l =
     match l with
-    | [ (_, Month month); (pos_days, Nat day); (_, Hms hms) ]
-    | [ (_, Month month); (pos_days, Month_day day); (_, Hms hms) ] ->
+    | [ (_, _, Month month); (pos_days, _, Nat day); (_, _, Hms hms) ]
+    | [ (_, _, Month month); (pos_days, _, Month_day day); (_, _, Hms hms) ] ->
       pattern ~months:[ month ] ~pos_days ~days:[ day ] ~hms ()
     | _ -> `None
 
   let rule_ymd_hms l =
     match l with
-    | [ (_, Ymd ((_, year), (_, month), (pos_days, day))); (_, Hms hms) ] ->
+    | [ (_, _, Ymd ((_, year), (_, month), (pos_days, day))); (_, _, Hms hms) ] ->
       pattern ~years:[ year ] ~months:[ month ] ~pos_days ~days:[ day ] ~hms
         ()
     | _ -> `None
@@ -1013,11 +1017,11 @@ module Rules = struct
   let rule_ymd_hms_to_ymd_hms l =
     match l with
     | [
-      (_, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
-      (_, Hms hms1);
-      (_, To);
-      (_, Ymd ((_, year2), (_, month2), (pos_day2, day2)));
-      (_, Hms hms2);
+      (_, _, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
+      (_, _, Hms hms1);
+      (_, _, To);
+      (_, _, Ymd ((_, year2), (_, month2), (pos_day2, day2)));
+      (_, _, Hms hms2);
     ] -> (
         match
           ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
@@ -1036,20 +1040,20 @@ module Rules = struct
   let rule_ymd_hms_to_md_hms l =
     match l with
     | [
-      (_, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
-      (_, Hms hms1);
-      (_, To);
-      (_, Month month2);
-      (pos_day2, Nat day2);
-      (_, Hms hms2);
+      (_, _, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
+      (_, _, Hms hms1);
+      (_, _, To);
+      (_, _, Month month2);
+      (pos_day2, _, Nat day2);
+      (_, _, Hms hms2);
     ]
     | [
-      (_, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
-      (_, Hms hms1);
-      (_, To);
-      (_, Month month2);
-      (pos_day2, Month_day day2);
-      (_, Hms hms2);
+      (_, _, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
+      (_, _, Hms hms1);
+      (_, _, To);
+      (_, _, Month month2);
+      (pos_day2, _, Month_day day2);
+      (_, _, Hms hms2);
     ] -> (
         match
           ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
@@ -1067,18 +1071,18 @@ module Rules = struct
   let rule_ymd_hms_to_d_hms l =
     match l with
     | [
-      (_, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
-      (_, Hms hms1);
-      (_, To);
-      (pos_day2, Nat day2);
-      (_, Hms hms2);
+      (_, _, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
+      (_, _, Hms hms1);
+      (_, _, To);
+      (pos_day2, _, Nat day2);
+      (_, _, Hms hms2);
     ]
     | [
-      (_, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
-      (_, Hms hms1);
-      (_, To);
-      (pos_day2, Month_day day2);
-      (_, Hms hms2);
+      (_, _, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
+      (_, _, Hms hms1);
+      (_, _, To);
+      (pos_day2, _, Month_day day2);
+      (_, _, Hms hms2);
     ] -> (
         match
           ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
@@ -1096,10 +1100,10 @@ module Rules = struct
   let rule_ymd_hms_to_hms l =
     match l with
     | [
-      (_, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
-      (_, Hms hms1);
-      (_, To);
-      (_, Hms hms2);
+      (_, _, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
+      (_, _, Hms hms1);
+      (_, _, To);
+      (_, _, Hms hms2);
     ] -> (
         match
           ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
@@ -1117,40 +1121,40 @@ module Rules = struct
   let rule_md_hms_to_md_hms l =
     match l with
     | [
-      (_, Month month1);
-      (pos_day1, Nat day1);
-      (_, Hms hms1);
-      (_, To);
-      (_, Month month2);
-      (pos_day2, Nat day2);
-      (_, Hms hms2);
+      (_, _, Month month1);
+      (pos_day1, _, Nat day1);
+      (_, _, Hms hms1);
+      (_, _, To);
+      (_, _, Month month2);
+      (pos_day2, _, Nat day2);
+      (_, _, Hms hms2);
     ]
     | [
-      (_, Month month1);
-      (pos_day1, Nat day1);
-      (_, Hms hms1);
-      (_, To);
-      (_, Month month2);
-      (pos_day2, Month_day day2);
-      (_, Hms hms2);
+      (_, _, Month month1);
+      (pos_day1, _, Nat day1);
+      (_, _, Hms hms1);
+      (_, _, To);
+      (_, _, Month month2);
+      (pos_day2, _, Month_day day2);
+      (_, _, Hms hms2);
     ]
     | [
-      (_, Month month1);
-      (pos_day1, Month_day day1);
-      (_, Hms hms1);
-      (_, To);
-      (_, Month month2);
-      (pos_day2, Nat day2);
-      (_, Hms hms2);
+      (_, _, Month month1);
+      (pos_day1, _, Month_day day1);
+      (_, _, Hms hms1);
+      (_, _, To);
+      (_, _, Month month2);
+      (pos_day2, _, Nat day2);
+      (_, _, Hms hms2);
     ]
     | [
-      (_, Month month1);
-      (pos_day1, Month_day day1);
-      (_, Hms hms1);
-      (_, To);
-      (_, Month month2);
-      (pos_day2, Month_day day2);
-      (_, Hms hms2);
+      (_, _, Month month1);
+      (pos_day1, _, Month_day day1);
+      (_, _, Hms hms1);
+      (_, _, To);
+      (_, _, Month month2);
+      (pos_day2, _, Month_day day2);
+      (_, _, Hms hms2);
     ] -> (
         match
           ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
@@ -1167,36 +1171,36 @@ module Rules = struct
   let rule_md_hms_to_d_hms l =
     match l with
     | [
-      (_, Month month1);
-      (pos_day1, Nat day1);
-      (_, Hms hms1);
-      (_, To);
-      (pos_day2, Nat day2);
-      (_, Hms hms2);
+      (_, _, Month month1);
+      (pos_day1, _, Nat day1);
+      (_, _, Hms hms1);
+      (_, _, To);
+      (pos_day2, _, Nat day2);
+      (_, _, Hms hms2);
     ]
     | [
-      (_, Month month1);
-      (pos_day1, Nat day1);
-      (_, Hms hms1);
-      (_, To);
-      (pos_day2, Month_day day2);
-      (_, Hms hms2);
+      (_, _, Month month1);
+      (pos_day1, _, Nat day1);
+      (_, _, Hms hms1);
+      (_, _, To);
+      (pos_day2, _, Month_day day2);
+      (_, _, Hms hms2);
     ]
     | [
-      (_, Month month1);
-      (pos_day1, Month_day day1);
-      (_, Hms hms1);
-      (_, To);
-      (pos_day2, Nat day2);
-      (_, Hms hms2);
+      (_, _, Month month1);
+      (pos_day1, _, Month_day day1);
+      (_, _, Hms hms1);
+      (_, _, To);
+      (pos_day2, _, Nat day2);
+      (_, _, Hms hms2);
     ]
     | [
-      (_, Month month1);
-      (pos_day1, Month_day day1);
-      (_, Hms hms1);
-      (_, To);
-      (pos_day2, Month_day day2);
-      (_, Hms hms2);
+      (_, _, Month month1);
+      (pos_day1, _, Month_day day1);
+      (_, _, Hms hms1);
+      (_, _, To);
+      (pos_day2, _, Month_day day2);
+      (_, _, Hms hms2);
     ] -> (
         match
           ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
@@ -1213,18 +1217,18 @@ module Rules = struct
   let rule_md_hms_to_hms l =
     match l with
     | [
-      (_, Month month1);
-      (pos_day1, Nat day1);
-      (_, Hms hms1);
-      (_, To);
-      (_, Hms hms2);
+      (_, _, Month month1);
+      (pos_day1, _, Nat day1);
+      (_, _, Hms hms1);
+      (_, _, To);
+      (_, _, Hms hms2);
     ]
     | [
-      (_, Month month1);
-      (pos_day1, Month_day day1);
-      (_, Hms hms1);
-      (_, To);
-      (_, Hms hms2);
+      (_, _, Month month1);
+      (pos_day1, _, Month_day day1);
+      (_, _, Hms hms1);
+      (_, _, To);
+      (_, _, Hms hms2);
     ] -> (
         match
           ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
@@ -1241,32 +1245,32 @@ module Rules = struct
   let rule_d_hms_to_d_hms l =
     match l with
     | [
-      (pos_day1, Nat day1);
-      (_, Hms hms1);
-      (_, To);
-      (pos_day2, Nat day2);
-      (_, Hms hms2);
+      (pos_day1, _, Nat day1);
+      (_, _, Hms hms1);
+      (_, _, To);
+      (pos_day2, _, Nat day2);
+      (_, _, Hms hms2);
     ]
     | [
-      (pos_day1, Nat day1);
-      (_, Hms hms1);
-      (_, To);
-      (pos_day2, Month_day day2);
-      (_, Hms hms2);
+      (pos_day1, _, Nat day1);
+      (_, _, Hms hms1);
+      (_, _, To);
+      (pos_day2, _, Month_day day2);
+      (_, _, Hms hms2);
     ]
     | [
-      (pos_day1, Month_day day1);
-      (_, Hms hms1);
-      (_, To);
-      (pos_day2, Nat day2);
-      (_, Hms hms2);
+      (pos_day1, _, Month_day day1);
+      (_, _, Hms hms1);
+      (_, _, To);
+      (pos_day2, _, Nat day2);
+      (_, _, Hms hms2);
     ]
     | [
-      (pos_day1, Month_day day1);
-      (_, Hms hms1);
-      (_, To);
-      (pos_day2, Month_day day2);
-      (_, Hms hms2);
+      (pos_day1, _, Month_day day1);
+      (_, _, Hms hms1);
+      (_, _, To);
+      (pos_day2, _, Month_day day2);
+      (_, _, Hms hms2);
     ] -> (
         match
           ( points ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
@@ -1282,8 +1286,8 @@ module Rules = struct
 
   let rule_d_hms_to_hms l =
     match l with
-    | [ (pos_day1, Nat day1); (_, Hms hms1); (_, To); (_, Hms hms2) ]
-    | [ (pos_day1, Month_day day1); (_, Hms hms1); (_, To); (_, Hms hms2) ] -> (
+    | [ (pos_day1, _, Nat day1); (_, _, Hms hms1); (_, _, To); (_, _, Hms hms2) ]
+    | [ (pos_day1, _, Month_day day1); (_, _, Hms hms1); (_, _, To); (_, _, Hms hms2) ] -> (
         match
           ( points ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
             points ~hms:hms2 `Back )
@@ -1298,7 +1302,7 @@ module Rules = struct
 
   let rule_hms_to_hms l =
     match l with
-    | [ (_, Hms hms1); (_, To); (_, Hms hms2) ] -> (
+    | [ (_, _, Hms hms1); (_, _, To); (_, _, Hms hms2) ] -> (
         match (points ~hms:hms1 `Front, points ~hms:hms2 `Back) with
         | `Some p1, `Some p2 ->
           `Some
@@ -1342,7 +1346,7 @@ let t_of_tokens (tokens : token list) : (Timere.t, string) CCResult.t =
   let rec aux tokens rules =
     match rules with
     | [] ->
-      let pos, _ = List.hd tokens in
+      let pos, _, _ = List.hd tokens in
       (* List.iter
        *   (fun token -> print_endline (string_of_token token))
        *   tokens; *)
@@ -1398,15 +1402,15 @@ let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t
   =
   let rec aux tz ast =
     match ast with
-    | Tokens [ (_, Ymd ((_, year), (_, month), (_, day))); (_, Hms hms) ]
-    | Tokens [ (_, Hms hms); (_, Ymd ((_, year), (_, month), (_, day))) ] -> (
+    | Tokens [ (_, _, Ymd ((_, year), (_, month), (_, day))); (_, _, Hms hms) ]
+    | Tokens [ (_, _, Hms hms); (_, _, Ymd ((_, year), (_, month), (_, day))) ] -> (
         match
           Timere.Date_time.make ~year ~month ~day ~hour:hms.hour
             ~minute:hms.minute ~second:hms.second ~tz
         with
         | Some x -> Ok x
         | None -> Error "Invalid date time")
-    | Tokens [ (_, Ymd ((_, year), (_, month), (_, day))) ] -> (
+    | Tokens [ (_, _, Ymd ((_, year), (_, month), (_, day))) ] -> (
         match
           Timere.Date_time.make ~year ~month ~day ~hour:0 ~minute:0 ~second:0
             ~tz
@@ -1420,7 +1424,7 @@ let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t
 
 let hms_t_of_ast (ast : ast) : (Timere.hms, string) CCResult.t =
   match ast with
-  | Tokens [ (_, Hms hms) ] -> Ok hms
+  | Tokens [ (_, _, Hms hms) ] -> Ok hms
   | _ -> Error "Unrecognized pattern"
 
 let parse_date_time ?(tz = CCOpt.get_exn @@ Timere.Time_zone.local ()) s =
@@ -1441,7 +1445,7 @@ let parse_hms s =
 
 let duration_t_of_ast (ast : ast) : (Timere.Duration.t, string) CCResult.t =
   match ast with
-  | Tokens [ (_, Duration duration) ] -> Ok duration
+  | Tokens [ (_, _, Duration duration) ] -> Ok duration
   | _ -> Error "Unrecognized pattern"
 
 let parse_duration s =
