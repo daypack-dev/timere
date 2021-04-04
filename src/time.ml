@@ -1678,10 +1678,33 @@ let minute_ranges minute_ranges = pattern ~minute_ranges ()
 
 let second_ranges second_ranges = pattern ~second_ranges ()
 
-let bounded_intervals pick (bound : Duration.t) (start : Points.t)
-    (end_exc : Points.t) : t =
+let bounded_intervals pick (bound : Duration.t) ((pick_start, tz_info_start) as start: Points.t)
+    ((pick_end_exc, tz_info_end_exc) as end_exc : Points.t) : t =
   if Points.precision start < Points.precision end_exc then
     invalid_arg "bounded_intervals: start is less precise than end_exc"
+  else
+  if CCOpt.equal equal_tz_info tz_info_start tz_info_end_exc then
+    match pick_start, pick_end_exc with
+    | Points.(
+        (S second_start ),
+        (S second_end_exc ))
+      when second_start = second_end_exc
+      ->
+      always
+    | Points.(
+        (MS { minute = minute_start; second = second_start }),
+        (MS { minute = minute_end_exc; second = second_end_exc }))
+      when minute_start = minute_end_exc && second_start = second_end_exc
+      ->
+        always
+    | Points.(
+        (HMS { hour = hour_start; minute = minute_start; second = second_start }),
+        (HMS { hour = hour_end_exc; minute = minute_end_exc; second = second_end_exc }))
+      when hour_start = hour_end_exc && minute_start = minute_end_exc && second_start = second_end_exc ->
+        always
+    | _, _ ->
+      Bounded_intervals
+        { pick; bound = Duration.to_seconds bound; start; end_exc }
   else
     Bounded_intervals
       { pick; bound = Duration.to_seconds bound; start; end_exc }

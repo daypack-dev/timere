@@ -125,7 +125,7 @@ let make_exn ?tz ?tz_offset_s ?year ?month ?day ?weekday ?hour ?minute ~second
   | None -> invalid_arg "make"
   | Some x -> x
 
-let pick_equal t1 t2 =
+let equal_pick t1 t2 =
   match (t1, t2) with
   | S x1, S x2 -> x1 = x2
   | MS { minute = m1; second = s1 }, MS { minute = m2; second = s2 } ->
@@ -167,7 +167,7 @@ let pick_equal t1 t2 =
   | _, _ -> false
 
 let equal (pick1, tz_info1) (pick2, tz_info2) =
-  pick_equal pick1 pick2 && CCOpt.equal tz_info_equal tz_info1 tz_info2
+  equal_pick pick1 pick2 && CCOpt.equal equal_tz_info tz_info1 tz_info2
 
 let to_pattern (t, _tz_info) =
   let years =

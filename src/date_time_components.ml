@@ -140,7 +140,7 @@ type tz_info =
   | `Tz_and_tz_offset_s of Time_zone.t * int
   ]
 
-let tz_info_equal (x : tz_info) (y : tz_info) =
+let equal_tz_info (x : tz_info) (y : tz_info) =
   match (x, y) with
   | `Tz_only x, `Tz_only y -> Time_zone.equal x y
   | `Tz_offset_s_only x, `Tz_offset_s_only y -> x = y

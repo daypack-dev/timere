@@ -24,6 +24,8 @@
 
 - Fixed use of `Date_time'.of_timestamp` at places by specifying the time zone explicitly as UTC
 
+- Updated `bounded_intervals` to try to avoid constructing terms that result in (almost) non-termination
+
 ## Timere-parse 0.0.2
 
 - Added corpus
