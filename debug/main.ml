@@ -23,7 +23,7 @@ let debug_resolver () =
 (inter (pattern (month_days 16))
  (union
   (bounded_intervals whole (duration 2 0 0 0) (points (pick hms 6 0 0))
-   (points (pick hms 8 0 0))) (all)
+   (points (pick hms 8 0 0))) (pattern (hours 9) (minutes 0) (seconds 0))
   (bounded_intervals whole (duration 2 0 0 0) (points (pick hms 10 0 0))
    (points (pick hms 11 0 0)))))
       |}
