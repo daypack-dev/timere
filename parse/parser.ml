@@ -933,7 +933,9 @@ let t_of_hmss (hmss : Timere.hms Timere.range list) =
          | `Range_inc (x, y) -> (
              if x = y then
                Ok
-                 Timere.(pattern ~hours:[ x.hour ] ~minutes:[ x.minute ] ~seconds:[ x.second ] ())
+                 Timere.(
+                   pattern ~hours:[ x.hour ] ~minutes:[ x.minute ]
+                     ~seconds:[ x.second ] ())
              else
                match (points ~hms:x `Front, points ~hms:y `Front) with
                | `Some p1, `Some p2 ->
@@ -1058,9 +1060,7 @@ module Rules = struct
   let rule_d_hmss l =
     match l with
     | [ (pos_days, _, Month_day day); (_, _, Hmss hmss) ] -> (
-        match
-          (pattern ~pos_days ~days:[ day ] (), t_of_hmss hmss)
-        with
+        match (pattern ~pos_days ~days:[ day ] (), t_of_hmss hmss) with
         | `Some t, `Some t' -> `Some Timere.(t & t')
         | `None, _ -> `None
         | _, `None -> `None
