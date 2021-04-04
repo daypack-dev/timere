@@ -20,7 +20,7 @@
 
 - Added `tzlocal.utc` backend
 
-- Fixed a slowdown in `inter` resolution caused by incorrect batch slicing logic
+- Fixed slowdowns in `inter` resolution caused by incorrect batch and search space slicing logic
 
 - Fixed `sexp_of_timestamp` which previously did not specify time zone explicitly as UTC after the default time zone parameter change in API
 
