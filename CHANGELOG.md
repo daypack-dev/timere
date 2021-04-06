@@ -1,5 +1,9 @@
 # Changelog
 
+## Timere 0.1.6
+
+- Updated tzdb
+
 ## Timere-parse 0.0.3
 
 - Ruleset update
