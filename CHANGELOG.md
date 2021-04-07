@@ -4,6 +4,10 @@
 
 - Updated tzdb
 
+## Timere-parse 0.0.4
+
+- Replaced `Int` module with `CCInt` for building in version 4.06.1
+
 ## Timere-parse 0.0.3
 
 - Ruleset update

@@ -1,6 +1,6 @@
 open MParser
 open Parser_components
-module Int_map = Map.Make (Int)
+module Int_map = Map.Make (CCInt)
 
 type text_map = string Int_map.t
 
