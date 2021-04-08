@@ -269,13 +269,13 @@ let time_gen : Time_ast.t QCheck.Gen.t =
   let search_start_dt =
     CCOpt.get_exn
     @@ Time.Date_time'.make ~year:2018 ~month:`Jan ~day:1 ~hour:0 ~minute:0
-      ~second:0 ~tz:Time_zone.utc
+      ~second:0 ~tz:Time_zone.utc ()
   in
   let search_start = Time.Date_time'.to_timestamp_single search_start_dt in
   let search_end_exc_dt =
     CCOpt.get_exn
     @@ Time.Date_time'.make ~year:2021 ~month:`Jan ~day:1 ~hour:0 ~minute:0
-      ~second:0 ~tz:Time_zone.utc
+      ~second:0 ~tz:Time_zone.utc ()
   in
   let search_end_exc = Time.Date_time'.to_timestamp_single search_end_exc_dt in
   map3

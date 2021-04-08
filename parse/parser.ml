@@ -1483,14 +1483,14 @@ let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t
       -> (
           match
             Timere.Date_time.make ~year ~month ~day ~hour:hms.hour
-              ~minute:hms.minute ~second:hms.second ~tz
+              ~minute:hms.minute ~second:hms.second ~tz ()
           with
           | Some x -> Ok x
           | None -> Error "Invalid date time")
     | Tokens [ (_, _, Ymd ((_, year), (_, month), (_, day))) ] -> (
         match
           Timere.Date_time.make ~year ~month ~day ~hour:0 ~minute:0 ~second:0
-            ~tz
+            ~tz ()
         with
         | Some x -> Ok x
         | None -> Error "Invalid date time")

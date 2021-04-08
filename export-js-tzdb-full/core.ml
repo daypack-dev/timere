@@ -45,7 +45,7 @@ let date_time_of_js_date (date : Js.date Js.t) =
   let second = date##getUTCSeconds in
   match
     Timere.Date_time.make ~year ~month ~day ~hour ~minute ~second
-      ~tz:Timere.Time_zone.utc
+      ~tz:Timere.Time_zone.utc ()
   with
   | None -> raise_with_msg "Invalid date"
   | Some x -> x

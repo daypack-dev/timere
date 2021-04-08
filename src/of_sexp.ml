@@ -88,7 +88,7 @@ let date_time_of_sexp (x : CCSexp.t) =
       match tz_info with
       | `Tz_only tz -> (
           match
-            Time.Date_time'.make ~year ~month ~day ~hour ~minute ~second ~tz
+            Time.Date_time'.make ~year ~month ~day ~hour ~minute ~second ~tz ()
           with
           | Some x -> x
           | None -> invalid_data ())

@@ -4,6 +4,8 @@
 
 - Updated tzdb
 
+- Fixed `Timere.Date_time.make` and `Timere.Date_time.make_exn` types
+
 ## Timere-parse 0.0.4
 
 - Replaced `Int` module with `CCInt` for building in version 4.06.1

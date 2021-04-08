@@ -23,10 +23,10 @@ let make_date_time ~rng ~min_year ~max_year_inc =
       (rng () mod available_time_zone_count)
     |> Time_zone.make_exn
   in
-  match Time.Date_time'.make ~year ~month ~day ~hour ~minute ~second ~tz with
+  match Time.Date_time'.make ~year ~month ~day ~hour ~minute ~second ~tz () with
   | None ->
     Time.Date_time'.make ~year ~month ~day ~hour ~minute ~second
-      ~tz:Time_zone.utc
+      ~tz:Time_zone.utc ()
     |> CCOpt.get_exn
   | Some x -> x
 

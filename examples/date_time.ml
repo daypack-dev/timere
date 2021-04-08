@@ -8,7 +8,7 @@ let () =
 
   let ordinary_dt =
     (* very ordinary date time with no funny business *)
-    Timere.Date_time.make_exn ~tz ~year:2021 ~month:`Mar ~day:1 ~hour:13 ~minute:0 ~second:0
+    Timere.Date_time.make_exn ~tz ~year:2021 ~month:`Mar ~day:1 ~hour:13 ~minute:0 ~second:0 ()
   in
   Fmt.pr "%a@." (Timere.Date_time.pp ()) ordinary_dt;
   let ordinary_timestamp =
@@ -21,7 +21,7 @@ let () =
 
   let ambiguous_dt =
     (* this date time is ambiguous due to DST ending *)
-    Timere.Date_time.make_exn ~tz ~year:2021 ~month:`Apr ~day:4 ~hour:2 ~minute:30 ~second:0
+    Timere.Date_time.make_exn ~tz ~year:2021 ~month:`Apr ~day:4 ~hour:2 ~minute:30 ~second:0 ()
   in
   Fmt.pr "%a@." (Timere.Date_time.pp ()) ambiguous_dt;
   (match Timere.Date_time.to_timestamp ambiguous_dt with
@@ -35,7 +35,7 @@ let () =
 
   let non_existent_dt =
     (* this date time doesn't exist due to DST starting *)
-    Timere.Date_time.make ~tz ~year:2021 ~month:`Oct ~day:3 ~hour:2 ~minute:30 ~second:0
+    Timere.Date_time.make ~tz ~year:2021 ~month:`Oct ~day:3 ~hour:2 ~minute:30 ~second:0 ()
   in
   match non_existent_dt with
   | None -> print_endline "Failed to construct date time"

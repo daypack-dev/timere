@@ -329,6 +329,7 @@ module Date_time : sig
     hour:int ->
     minute:int ->
     second:int ->
+    unit ->
     t option
   (** Constructs a date time providing only a time zone (defaults to local time zone).
 
@@ -347,6 +348,7 @@ module Date_time : sig
     hour:int ->
     minute:int ->
     second:int ->
+    unit ->
     t
   (** @raise Invalid_argument if [make] fails *)
 
