@@ -1,5 +1,9 @@
 # Changelog
 
+## Timere-parse 0.0.5
+
+- Updated use of Timere API
+
 ## Timere 0.1.6
 
 - Updated tzdb
