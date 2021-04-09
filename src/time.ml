@@ -1143,9 +1143,7 @@ module Timestamp_precise = struct
 
   let to_timestamp (x, _) = x
 
-  let check (_x, ns) =
-    if ns < 0 then
-      invalid_arg "nanosecond is less than 0"
+  let check (_x, ns) = if ns < 0 then invalid_arg "nanosecond is less than 0"
 
   let normalize (x, ns) =
     let x' = ns / ns_count_in_s in
@@ -1157,37 +1155,32 @@ module Timestamp_precise = struct
     normalize (x, ns)
 
   let add x y : t =
-    let (x, ns_x) = check_and_normalize x in
-    let (y, ns_y) = check_and_normalize y in
+    let x, ns_x = check_and_normalize x in
+    let y, ns_y = check_and_normalize y in
     let ns = ns_x + ns_y in
     normalize (Int64.add x y, ns)
 
   let sub x y : t =
-    let (x, ns_x) = check_and_normalize x in
-    let (y, ns_y) = check_and_normalize y in
+    let x, ns_x = check_and_normalize x in
+    let y, ns_y = check_and_normalize y in
     let ns = ns_x - ns_y in
-    if ns >= 0 then
-      (Int64.sub x y, ns)
+    if ns >= 0 then (Int64.sub x y, ns)
     else
       let x = Int64.pred x in
       (Int64.sub x y, ns + ns_count_in_s)
 
   let compare (x : t) (y : t) : int =
-    let (s, ns) = sub x y in
-    if s = 0L && ns = 0 then
-      0
-    else
-      if s > 0L || (s = 0L && ns > 0) then
-        1
-      else
-        -1
+    let s, ns = sub x y in
+    if s = 0L && ns = 0 then 0
+    else if s > 0L || (s = 0L && ns > 0) then 1
+    else -1
 
   let to_timestamp_float ((x, ns) : t) : float =
     Int64.to_float x +. (float_of_int ns /. ns_count_in_s_float)
 
   let of_timestamp_float (x : float) : t =
     let s = Int64.of_float x in
-    let frac = x -. (Int64.to_float s) in
+    let frac = x -. Int64.to_float s in
     (s, int_of_float (frac *. ns_count_in_s_float))
 end
 
@@ -1218,28 +1211,47 @@ module Date_time' = struct
          Ptime.date * Ptime.time) : t option =
     month_of_human_int month
     |> CCOpt.map (fun month ->
-        { year; month; day; hour; minute; second; ns = 0; tz_info = utc_tz_info })
+        {
+          year;
+          month;
+          day;
+          hour;
+          minute;
+          second;
+          ns = 0;
+          tz_info = utc_tz_info;
+        })
 
   let to_timestamp_precise_pretend_utc (x : t) : timestamp_precise option =
     to_ptime_date_time_pretend_utc x
     |> Ptime.of_date_time
     |> CCOpt.map (fun t -> (Ptime_utils.timestamp_of_ptime t, x.ns))
 
-  let to_timestamp_precise_unsafe (x : t) : timestamp_precise Time_zone.local_result =
+  let to_timestamp_precise_unsafe (x : t) :
+    timestamp_precise Time_zone.local_result =
     match to_timestamp_precise_pretend_utc x with
     | None -> `None
     | Some timestamp_local -> (
         match x.tz_info with
         | `Tz_offset_s_only offset | `Tz_and_tz_offset_s (_, offset) ->
-          `Single (Timestamp_precise.sub timestamp_local (Int64.of_int offset, 0))
+          `Single
+            (Timestamp_precise.sub timestamp_local (Int64.of_int offset, 0))
         | `Tz_only tz -> (
             match Time_zone.lookup_timestamp_local tz (fst timestamp_local) with
             | `None -> `None
             | `Single e ->
-              `Single (Timestamp_precise.sub timestamp_local (Int64.of_int e.offset, 0))
+              `Single
+                (Timestamp_precise.sub timestamp_local
+                   (Int64.of_int e.offset, 0))
             | `Ambiguous (e1, e2) ->
-              let x1 = Timestamp_precise.sub timestamp_local (Int64.of_int e1.offset, 0) in
-              let x2 = Timestamp_precise.sub timestamp_local (Int64.of_int e2.offset, 0) in
+              let x1 =
+                Timestamp_precise.sub timestamp_local
+                  (Int64.of_int e1.offset, 0)
+              in
+              let x2 =
+                Timestamp_precise.sub timestamp_local
+                  (Int64.of_int e2.offset, 0)
+              in
               `Ambiguous (min x1 x2, max x1 x2)))
 
   type 'a local_result =
@@ -1269,13 +1281,17 @@ module Date_time' = struct
     match to_timestamp_precise_unsafe x with
     | `None -> failwith "Unexpected case"
     | `Single x -> `Single (Timestamp_precise.to_timestamp_float x)
-    | `Ambiguous (x, y) -> `Ambiguous (Timestamp_precise.to_timestamp_float x, Timestamp_precise.to_timestamp_float y)
+    | `Ambiguous (x, y) ->
+      `Ambiguous
+        ( Timestamp_precise.to_timestamp_float x,
+          Timestamp_precise.to_timestamp_float y )
 
   let to_timestamp_precise_single (x : t) : timestamp_precise =
     match to_timestamp_precise x with
     | `Single x -> x
     | `Ambiguous _ ->
-      invalid_arg "to_timestamp_precise_single: date time maps to two timestamps"
+      invalid_arg
+        "to_timestamp_precise_single: date time maps to two timestamps"
 
   let to_timestamp_single (x : t) : timestamp =
     match to_timestamp x with
@@ -1287,9 +1303,11 @@ module Date_time' = struct
     match to_timestamp_precise x with
     | `Single x -> Timestamp_precise.to_timestamp_float x
     | `Ambiguous _ ->
-      invalid_arg "to_timestamp_precise_single: date time maps to two timestamps"
+      invalid_arg
+        "to_timestamp_precise_single: date time maps to two timestamps"
 
-  let of_timestamp_precise ?(tz_of_date_time = CCOpt.get_exn @@ Time_zone.local ())
+  let of_timestamp_precise
+      ?(tz_of_date_time = CCOpt.get_exn @@ Time_zone.local ())
       ((x, ns) : timestamp_precise) : t option =
     if not (timestamp_min <= x && x <= timestamp_max) then None
     else
@@ -1314,23 +1332,25 @@ module Date_time' = struct
       (x : int64) : t option =
     of_timestamp_precise ~tz_of_date_time (x, 0)
 
-  let make ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ?(ns = 0) ~year ~month ~day ~hour
-      ~minute ~second () =
+  let make ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ?(ns = 0) ~year ~month
+      ~day ~hour ~minute ~second () =
     let dt =
       { year; month; day; hour; minute; second; ns; tz_info = `Tz_only tz }
     in
     match to_timestamp_precise_unsafe dt with
     | `None -> None
-    | `Single x -> Some (of_timestamp_precise ~tz_of_date_time:tz x |> CCOpt.get_exn)
+    | `Single x ->
+      Some (of_timestamp_precise ~tz_of_date_time:tz x |> CCOpt.get_exn)
     | `Ambiguous _ -> Some dt
 
-  let make_exn ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ?(ns = 0) ~year ~month ~day
-      ~hour ~minute ~second () =
+  let make_exn ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ?(ns = 0) ~year
+      ~month ~day ~hour ~minute ~second () =
     match make ~year ~month ~day ~hour ~minute ~second ~ns ~tz () with
     | Some x -> x
     | None -> invalid_arg "make_exn"
 
-  let make_precise ?tz ?(ns = 0) ~year ~month ~day ~hour ~minute ~second ~tz_offset_s () =
+  let make_precise ?tz ?(ns = 0) ~year ~month ~day ~hour ~minute ~second
+      ~tz_offset_s () =
     let tz_info : tz_info option =
       match tz with
       | None -> Some (`Tz_offset_s_only tz_offset_s)
@@ -1368,16 +1388,16 @@ module Date_time' = struct
         let dt = { year; month; day; hour; minute; second; ns; tz_info } in
         match to_timestamp_precise_unsafe dt with `None -> None | _ -> Some dt)
 
-  let make_precise_exn ?tz ?(ns = 0) ~year ~month ~day ~hour ~minute ~second ~tz_offset_s
-      () =
+  let make_precise_exn ?tz ?(ns = 0) ~year ~month ~day ~hour ~minute ~second
+      ~tz_offset_s () =
     let x =
       match tz with
       | None ->
-        make_precise ~year ~month ~day ~hour ~minute ~second ~ns ~tz_offset_s ()
+        make_precise ~year ~month ~day ~hour ~minute ~second ~ns ~tz_offset_s
+          ()
       | Some tz ->
         make_precise ~tz ~year ~month ~day ~hour ~minute ~second ~tz_offset_s
-          ~ns
-          ()
+          ~ns ()
     in
     match x with None -> invalid_arg "make_precise_exn" | Some x -> x
 
