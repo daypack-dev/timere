@@ -18,7 +18,8 @@ type raw = {
   days : float;
   hours : float;
   minutes : float;
-  seconds : int;
+  seconds : float;
+  ns : int;
 }
 
 type t = {
@@ -26,15 +27,16 @@ type t = {
   hours : int;
   minutes : int;
   seconds : int;
+  ns : int;
 }
 
-let zero : t = { days = 0; hours = 0; minutes = 0; seconds = 0 }
+let zero : t = { days = 0; hours = 0; minutes = 0; seconds = 0; ns = 0 }
 
-let of_seconds (x : int64) : t =
-  if x < 0L then invalid_arg "of_seconds"
+let of_span ({s; ns} as x : Span.t) : t =
+  if Span.(x < zero) then invalid_arg "of_seconds"
   else
-    let seconds = Int64.rem x 60L in
-    let minutes = Int64.div x 60L in
+    let seconds = Int64.rem s 60L in
+    let minutes = Int64.div s 60L in
     let hours = Int64.div minutes 60L in
     let days = Int64.div hours 24L in
     let hours = Int64.rem hours 24L in
@@ -44,35 +46,39 @@ let of_seconds (x : int64) : t =
       hours = Int64.to_int hours;
       minutes = Int64.to_int minutes;
       seconds = Int64.to_int seconds;
+      ns = ns;
     }
 
-let to_seconds (t : t) : int64 =
+let to_span (t : t) : Span.t =
   let open Int64_utils in
   let days = Int64.of_int t.days in
   let hours = Int64.of_int t.hours in
   let minutes = Int64.of_int t.minutes in
   let seconds = Int64.of_int t.seconds in
+  let s =
   (days *^ Int64_multipliers.day_to_seconds)
   +^ (hours *^ Int64_multipliers.hour_to_seconds)
   +^ (minutes *^ Int64_multipliers.minute_to_seconds)
   +^ seconds
+  in
+  { s; ns = t.ns }
 
-let seconds_of_raw (r : raw) : int64 =
+let span_of_raw (r : raw) : Span.t =
   (r.days *. Float_multipliers.day_to_seconds)
   +. (r.hours *. Float_multipliers.hour_to_seconds)
   +. (r.minutes *. Float_multipliers.minute_to_seconds)
-  |> Int64.of_float
-  |> Int64.add (Int64.of_int r.seconds)
+  +. (r.seconds)
+  |> Span.of_float
 
-let normalize (t : t) : t = t |> to_seconds |> of_seconds
+let normalize (t : t) : t = t |> to_span |> of_span
 
-let make ?(days = 0) ?(hours = 0) ?(minutes = 0) ?(seconds = 0) () : t =
+let make ?(days = 0) ?(hours = 0) ?(minutes = 0) ?(seconds = 0) ?(ns = 0) () : t =
   if days >= 0 && hours >= 0 && minutes >= 0 && seconds >= 0 then
-    ({ days; hours; minutes; seconds } : t) |> normalize
+    ({ days; hours; minutes; seconds; ns } : t) |> normalize
   else invalid_arg "make"
 
-let make_frac ?(days = 0.0) ?(hours = 0.0) ?(minutes = 0.0) ?(seconds = 0) () :
+let make_frac ?(days = 0.0) ?(hours = 0.0) ?(minutes = 0.0) ?(seconds = 0.0) ?(ns = 0) () :
   t =
-  if days >= 0.0 && hours >= 0.0 && minutes >= 0.0 && seconds >= 0 then
-    ({ days; hours; minutes; seconds } : raw) |> seconds_of_raw |> of_seconds
+  if days >= 0.0 && hours >= 0.0 && minutes >= 0.0 && seconds >= 0.0 && ns >= 0 then
+    ({ days; hours; minutes; seconds; ns} : raw) |> span_of_raw |> of_span
   else invalid_arg "make_frac"

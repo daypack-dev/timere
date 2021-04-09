@@ -17,7 +17,7 @@ module Search_param = struct
       end_inc =
         CCOpt.get_exn
         @@ Time.Date_time'.of_timestamp ~tz_of_date_time:search_using_tz
-          (Int64.pred end_exc);
+          (Timestamp.pred end_exc);
     }
 end
 
@@ -575,17 +575,16 @@ module Matching_years = struct
            ~f_exc:failwith_unexpected_case)
 end
 
-let date_time_range_seq_of_timestamps ~search_using_tz (s : int64 Seq.t) :
-  Time.Date_time'.t Time.Range.range Seq.t =
-  let f (x, y) =
-    ( Time.Date_time'.of_timestamp ~tz_of_date_time:search_using_tz x,
-      Time.Date_time'.of_timestamp ~tz_of_date_time:search_using_tz y )
-  in
-  s
-  |> Time.Ranges.Of_seq.range_seq_of_seq ~modulo:None ~to_int64:CCFun.id
-    ~of_int64:CCFun.id
-  |> Seq.map (Time.Range.map ~f_inc:f ~f_exc:f)
-  |> Seq.filter_map Time.Range_utils.option_range_get
+(* let date_time_range_seq_of_timestamps ~search_using_tz (s : Timestamp.t Seq.t) :
+ *   Time.Date_time'.t Time.Range.range Seq.t =
+ *   let f (x, y) =
+ *     ( Time.Date_time'.of_timestamp ~tz_of_date_time:search_using_tz x,
+ *       Time.Date_time'.of_timestamp ~tz_of_date_time:search_using_tz y )
+ *   in
+ *   s
+ *   |> Seq.map (fun x -> `Range_inc (x, x))
+ *   |> Seq.map (Time.Range.map ~f_inc:f ~f_exc:f)
+ *   |> Seq.filter_map Time.Range_utils.option_range_get *)
 
 type error = Pattern.error
 
@@ -713,7 +712,7 @@ let matching_date_time_ranges (search_param : Search_param.t) (t : Pattern.t) :
          ~overall_search_end_inc)
 
 let resolve (search_param : Search_param.t) (t : Pattern.t) :
-  (int64 * int64) Seq.t =
+  (Timestamp.t * Timestamp.t) Seq.t =
   let f (x, y) =
     let x = Time.Date_time'.to_timestamp_single x in
     let y = Time.Date_time'.to_timestamp_single y in
@@ -723,7 +722,7 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
   |> Seq.map (Time.Range.map ~f_inc:f ~f_exc:f)
   |> Seq.map (fun r ->
       match r with
-      | `Range_inc (x, y) -> (x, Int64.succ y)
+      | `Range_inc (x, y) -> (x, Timestamp.succ y)
       | `Range_exc (x, y) -> (x, y))
   |> Time.Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
 

@@ -1,11 +1,11 @@
-type timestamp = int64
+type timestamp = Span.t
 
 type unary_op =
   | Not
   | Drop_points of int
   | Take_points of int
-  | Shift of int64
-  | Lengthen of int64
+  | Shift of timestamp
+  | Lengthen of timestamp
   | With_tz of Time_zone.t
 
 type chunking =
@@ -21,7 +21,7 @@ type chunked_unary_op_on_t =
   | Chunk_at_year_boundary
   | Chunk_at_month_boundary
   | Chunk_by_duration of {
-      chunk_size : int64;
+      chunk_size : timestamp;
       drop_partial : bool;
     }
 
@@ -35,14 +35,14 @@ type chunked_unary_op_on_chunked =
 type t =
   | Empty
   | All
-  | Intervals of (int64 * int64) Seq.t
+  | Intervals of (timestamp * timestamp) Seq.t
   | Pattern of Pattern.t
   | Unary_op of unary_op * t
   | Inter_seq of t Seq.t
   | Union_seq of t Seq.t
   | Bounded_intervals of {
       pick : [ `Whole | `Snd ];
-      bound : int64;
+      bound : timestamp;
       start : Points.t;
       end_exc : Points.t;
     }

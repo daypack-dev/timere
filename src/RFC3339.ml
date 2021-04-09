@@ -15,7 +15,7 @@ let of_date_time (dt : Time.Date_time'.t) : string =
 
 let pp_date_time formatter dt = Format.fprintf formatter "%s" (of_date_time dt)
 
-let of_timestamp (x : int64) : string =
+let of_timestamp (x : Timestamp.t) : string =
   match Time.Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc x with
   | None -> invalid_arg "Invalid timestamp"
   | Some dt -> of_date_time dt

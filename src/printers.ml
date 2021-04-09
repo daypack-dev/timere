@@ -190,7 +190,7 @@ let pp_timestamp ?(display_using_tz = Time_zone.utc)
   | Some dt -> Fmt.pf formatter "%a" (pp_date_time ~format ()) dt
 
 let string_of_timestamp ?(display_using_tz = Time_zone.utc)
-    ?(format = default_date_time_format_string) (time : int64) : string =
+    ?(format = default_date_time_format_string) (time : Timestamp.t) : string =
   Fmt.str "%a" (pp_timestamp ~display_using_tz ~format ()) time
 
 let pp_hms formatter (hms : Time.hms) : unit =

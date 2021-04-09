@@ -13,7 +13,7 @@ let default_search_space : search_space =
 type t =
   | Empty
   | All
-  | Intervals of search_space * (int64 * int64) Seq.t
+  | Intervals of search_space * Time.Interval.t Seq.t
   | Pattern of search_space * Pattern.t
   | Unary_op of search_space * unary_op * t
   | Inter_seq of search_space * t Seq.t
@@ -21,7 +21,7 @@ type t =
   | Bounded_intervals of {
       search_space : search_space;
       pick : [ `Whole | `Snd ];
-      bound : int64;
+      bound : timestamp;
       start : Points.t;
       end_exc : Points.t;
     }
@@ -72,8 +72,8 @@ let calibrate_search_space_for_set (time : t) space : search_space =
       | Shift n ->
         List.map
           (fun (x, y) ->
-             if Int64.sub x Time.timestamp_min >= n then
-               (Int64.sub x n, Int64.sub y n)
+             if Timestamp.(x - Time.timestamp_min >= n) then
+               Timestamp.(Int64.sub x n, Int64.sub y n)
              else (x, y))
           space
       | _ -> space)
