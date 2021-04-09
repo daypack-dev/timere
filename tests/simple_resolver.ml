@@ -78,7 +78,7 @@ let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) =
         let t' =
           Date_time'.set_to_last_day_hour_min_sec dt1
           |> Date_time'.to_timestamp
-          |> Date_time'.max_of_timestamp_local_result
+          |> Date_time'.max_of_local_result
           |> Int64.succ
         in
         fun () ->
@@ -107,7 +107,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
         let t' =
           Date_time'.set_to_last_day_hour_min_sec dt1
           |> Date_time'.to_timestamp
-          |> Date_time'.max_of_timestamp_local_result
+          |> Date_time'.max_of_local_result
           |> Int64.succ
         in
         fun () ->

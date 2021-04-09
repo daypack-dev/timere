@@ -303,6 +303,29 @@ val with_tz : Time_zone.t -> t -> t
 
 (** {1 Date time and timestamps} *)
 
+module Timestamp_precise : sig
+  (* Tuple of seconds since epoch and nanoseconds for fraction of a second *)
+  type t = int64 * int
+
+  val check_and_normalize : t -> t
+
+  val add : t -> t -> t
+
+  val sub : t -> t -> t
+
+  val compare : t -> t -> int
+
+  val of_timestamp : timestamp -> t
+
+  val to_timestamp : t -> timestamp
+
+  val of_timestamp_float : float -> t
+
+  val to_timestamp_float : t -> float
+end
+
+type timestamp_precise = Timestamp_precise.t
+
 module Date_time : sig
   type tz_info =
     [ `Tz_only of Time_zone.t
@@ -402,11 +425,21 @@ module Date_time : sig
   val to_timestamp : t -> timestamp local_result
 
   val to_timestamp_single : t -> timestamp
-  (** @raise Invalid_argument if [to_timestamp] does not yield a [`Single] result *)
+  (** @raise Invalid_argument if [to_timestamp_precise] does not yield a [`Single] result *)
 
-  val min_of_timestamp_local_result : timestamp local_result -> timestamp
+  val to_timestamp_precise : t -> timestamp_precise local_result
 
-  val max_of_timestamp_local_result : timestamp local_result -> timestamp
+  val to_timestamp_precise_single : t -> timestamp_precise
+  (** @raise Invalid_argument if [to_timestamp_precise] does not yield a [`Single] result *)
+
+  val to_timestamp_float : t -> float local_result
+
+  val to_timestamp_float_single : t -> float
+  (** @raise Invalid_argument if [to_timestamp_precise] does not yield a [`Single] result *)
+
+  val min_of_local_result : 'a local_result -> 'a
+
+  val max_of_local_result : 'a local_result -> 'a
 
   val of_timestamp : ?tz_of_date_time:Time_zone.t -> timestamp -> t option
 

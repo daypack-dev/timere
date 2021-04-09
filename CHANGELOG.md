@@ -10,6 +10,10 @@
 
 - Fixed `Timere.Date_time.make` and `Timere.Date_time.make_exn` types
 
+- Added support for precise date times and timestamps (in nanosecond resolution)
+
+- Minor `Tiemre.Date_time` API tuning
+
 ## Timere-parse 0.0.4
 
 - Replaced `Int` module with `CCInt` for building in version 4.06.1

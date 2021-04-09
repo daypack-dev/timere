@@ -37,7 +37,7 @@ let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
       let start =
         make_date_time ~rng ~min_year ~max_year_inc
         |> Time.Date_time'.to_timestamp
-        |> Time.Date_time'.min_of_timestamp_local_result
+        |> Time.Date_time'.min_of_local_result
       in
       let end_exc = Int64.add start (Int64.of_int (rng ())) in
       (start, end_exc))
