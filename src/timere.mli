@@ -481,6 +481,8 @@ module Date_time : sig
 {mon:Xxx}        abbreviated month name (e.g. Jan), casing of 'x' controls the casing
 {mon:Xx*}        full month name (e.g. January), casing of first 'x' controls casing of first letter,
                  casing of second 'x' controls casing of following letters
+{mon:cX}         month in number form (e.g. 01) character 'c' before 'X' is used for padding
+                 (leave out character for no padding)
 {mday:cX}        month day (e.g.  1) character 'c' before 'X' is used for padding
                  (leave out character for no padding)
 {wday:Xxx}       abbreviated weekday name (e.g. Sun), the casing of 'x' controls the casing

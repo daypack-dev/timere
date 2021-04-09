@@ -14,6 +14,8 @@
 
 - Minor `Tiemre.Date_time` API tuning
 
+- Extended format string to support number form for month
+
 ## Timere-parse 0.0.4
 
 - Replaced `Int` module with `CCInt` for building in version 4.06.1
