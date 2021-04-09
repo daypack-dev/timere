@@ -347,6 +347,7 @@ module Date_time : sig
   val make :
     ?tz:Time_zone.t ->
     ?ns:int ->
+    ?frac:float ->
     year:int ->
     month:month ->
     day:int ->
@@ -356,6 +357,8 @@ module Date_time : sig
     unit ->
     t option
   (** Constructs a date time providing only a time zone (defaults to local time zone).
+
+      Nanosecond used is the addition of [ns] and [frac * number of nanoseconds in one second].
 
       A precise offset is inferred if possible.
 
@@ -367,6 +370,7 @@ module Date_time : sig
   val make_exn :
     ?tz:Time_zone.t ->
     ?ns:int ->
+    ?frac:float ->
     year:int ->
     month:month ->
     day:int ->
@@ -380,6 +384,7 @@ module Date_time : sig
   val make_precise :
     ?tz:Time_zone.t ->
     ?ns:int ->
+    ?frac:float ->
     year:int ->
     month:month ->
     day:int ->
@@ -391,6 +396,8 @@ module Date_time : sig
     t option
   (** Constructs a date time providing time zone offset in seconds, and optionally a time zone.
 
+      Nanosecond used is the addition of [ns] and [frac * number of nanoseconds in one second].
+
       If a time zone is provided, then the offset is checked against the time zone record to make sure
       the time zone does use said offset for the particular date time.
   *)
@@ -398,6 +405,7 @@ module Date_time : sig
   val make_precise_exn :
     ?tz:Time_zone.t ->
     ?ns:int ->
+    ?frac:float ->
     year:int ->
     month:month ->
     day:int ->

@@ -1143,7 +1143,7 @@ module Timestamp_precise = struct
 
   let to_timestamp (x, _) = x
 
-  let check (_x, ns) = if ns < 0 then invalid_arg "nanosecond is less than 0"
+  let check (_x, ns) = if ns < 0 then invalid_arg "ns is negative"
 
   let normalize (x, ns) =
     let x' = ns / ns_count_in_s in
@@ -1225,7 +1225,9 @@ module Date_time' = struct
   let to_timestamp_precise_pretend_utc (x : t) : timestamp_precise option =
     to_ptime_date_time_pretend_utc x
     |> Ptime.of_date_time
-    |> CCOpt.map (fun t -> (Ptime_utils.timestamp_of_ptime t, x.ns))
+    |> CCOpt.map (fun t ->
+        Timestamp_precise.check_and_normalize
+          (Ptime_utils.timestamp_of_ptime t, x.ns))
 
   let to_timestamp_precise_unsafe (x : t) :
     timestamp_precise Time_zone.local_result =
@@ -1332,8 +1334,13 @@ module Date_time' = struct
       (x : int64) : t option =
     of_timestamp_precise ~tz_of_date_time (x, 0)
 
-  let make ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ?(ns = 0) ~year ~month
-      ~day ~hour ~minute ~second () =
+  let make ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ?(ns = 0) ?(frac = 0.)
+      ~year ~month ~day ~hour ~minute ~second () =
+    if frac < 0. then invalid_arg "frac is negative";
+    if ns < 0 then invalid_arg "ns is negative";
+    let ns =
+      ns + int_of_float (frac *. Timestamp_precise.ns_count_in_s_float)
+    in
     let dt =
       { year; month; day; hour; minute; second; ns; tz_info = `Tz_only tz }
     in
@@ -1343,14 +1350,19 @@ module Date_time' = struct
       Some (of_timestamp_precise ~tz_of_date_time:tz x |> CCOpt.get_exn)
     | `Ambiguous _ -> Some dt
 
-  let make_exn ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ?(ns = 0) ~year
-      ~month ~day ~hour ~minute ~second () =
-    match make ~year ~month ~day ~hour ~minute ~second ~ns ~tz () with
+  let make_exn ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ?(ns = 0)
+      ?(frac = 0.) ~year ~month ~day ~hour ~minute ~second () =
+    match make ~year ~month ~day ~hour ~minute ~second ~ns ~frac ~tz () with
     | Some x -> x
     | None -> invalid_arg "make_exn"
 
-  let make_precise ?tz ?(ns = 0) ~year ~month ~day ~hour ~minute ~second
-      ~tz_offset_s () =
+  let make_precise ?tz ?(ns = 0) ?(frac = 0.) ~year ~month ~day ~hour ~minute
+      ~second ~tz_offset_s () =
+    if frac < 0. then invalid_arg "frac is negative";
+    if ns < 0 then invalid_arg "ns is negative";
+    let ns =
+      ns + int_of_float (frac *. Timestamp_precise.ns_count_in_s_float)
+    in
     let tz_info : tz_info option =
       match tz with
       | None -> Some (`Tz_offset_s_only tz_offset_s)
@@ -1388,16 +1400,16 @@ module Date_time' = struct
         let dt = { year; month; day; hour; minute; second; ns; tz_info } in
         match to_timestamp_precise_unsafe dt with `None -> None | _ -> Some dt)
 
-  let make_precise_exn ?tz ?(ns = 0) ~year ~month ~day ~hour ~minute ~second
-      ~tz_offset_s () =
+  let make_precise_exn ?tz ?(ns = 0) ?(frac = 0.) ~year ~month ~day ~hour
+      ~minute ~second ~tz_offset_s () =
     let x =
       match tz with
       | None ->
-        make_precise ~year ~month ~day ~hour ~minute ~second ~ns ~tz_offset_s
-          ()
+        make_precise ~year ~month ~day ~hour ~minute ~second ~ns ~frac
+          ~tz_offset_s ()
       | Some tz ->
-        make_precise ~tz ~year ~month ~day ~hour ~minute ~second ~tz_offset_s
-          ~ns ()
+        make_precise ~tz ~year ~month ~day ~hour ~minute ~second ~ns ~frac
+          ~tz_offset_s ()
     in
     match x with None -> invalid_arg "make_precise_exn" | Some x -> x
 
