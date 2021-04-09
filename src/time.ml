@@ -1334,6 +1334,12 @@ module Date_time' = struct
       (x : int64) : t option =
     of_timestamp_precise ~tz_of_date_time (x, 0)
 
+  let of_timestamp_float
+      ?(tz_of_date_time = CCOpt.get_exn @@ Time_zone.local ()) (x : float) :
+    t option =
+    of_timestamp_precise ~tz_of_date_time
+    @@ Timestamp_precise.of_timestamp_float x
+
   let make ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ?(ns = 0) ?(frac = 0.)
       ~year ~month ~day ~hour ~minute ~second () =
     if frac < 0. then invalid_arg "frac is negative";

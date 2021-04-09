@@ -451,6 +451,11 @@ module Date_time : sig
 
   val of_timestamp : ?tz_of_date_time:Time_zone.t -> timestamp -> t option
 
+  val of_timestamp_precise :
+    ?tz_of_date_time:Time_zone.t -> timestamp_precise -> t option
+
+  val of_timestamp_float : ?tz_of_date_time:Time_zone.t -> float -> t option
+
   val equal : t -> t -> bool
 
   val min : t
