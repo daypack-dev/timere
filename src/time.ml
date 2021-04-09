@@ -17,12 +17,15 @@ exception Intervals_are_not_disjoint
 
 type timestamp_precise = Timestamp_precise.t
 
+module Tp = Timestamp_precise
+
 module Interval = struct
   type t = timestamp_precise * timestamp_precise
 
   let lt (x1, y1) (x2, y2) =
     (* lexicographical order *)
-    x1 < x2 || (x1 = x2 && y1 < y2)
+    Tp.(
+      x1 < x2 || (x1 = x2 && y1 < y2))
 
   let le x y = lt x y || x = y
 
@@ -33,9 +36,11 @@ module Interval = struct
   let compare x y = if lt x y then -1 else if x = y then 0 else 1
 
   module Check = struct
-    let is_valid ((start, end_exc) : t) : bool = start <= end_exc
+    let is_valid ((start, end_exc) : t) : bool =
+      Tp.le start end_exc
 
-    let is_not_empty ((start, end_exc) : t) : bool = start <> end_exc
+    let is_not_empty ((start, end_exc) : t) : bool =
+      not (Tp.equal start end_exc)
 
     let check_if_valid (x : t) : t =
       if is_valid x then x else raise Interval_is_invalid
@@ -45,8 +50,9 @@ module Interval = struct
   end
 
   let join (ts1 : t) (ts2 : t) : t option =
+    let open Tp in
     let aux (start1, end_exc1) (start2, end_exc2) =
-      if start2 <= end_exc1 then Some (start1, max end_exc1 end_exc2) else None
+      if start2 <= end_exc1 then Some (start1, Tp.max end_exc1 end_exc2) else None
     in
     let start1, end_exc1 = Check.check_if_valid ts1 in
     let start2, end_exc2 = Check.check_if_valid ts2 in
@@ -54,6 +60,7 @@ module Interval = struct
     else aux (start2, end_exc2) (start1, end_exc1)
 
   let overlap_of_a_over_b ~(a : t) ~(b : t) : t option * t option * t option =
+    let open Tp in
     let a_start, a_end_exc = Check.check_if_valid a in
     let b_start, b_end_exc = Check.check_if_valid b in
     if a_start = a_end_exc then (None, None, None)
@@ -409,22 +416,24 @@ module Intervals = struct
 
   let chunk ?(skip_check = false) ?(drop_partial = false) ~chunk_size
       (intervals : Interval.t Seq.t) : Interval.t Seq.t =
+    let open Tp in
+    let chunk_size = Tp.of_timestamp chunk_size in
     let rec aux intervals =
       match intervals () with
       | Seq.Nil -> Seq.empty
       | Seq.Cons ((start, end_exc), rest) ->
-        let size = end_exc -^ start in
+        let size = end_exc - start in
         if size < chunk_size then
           if drop_partial then aux rest
           else fun () -> Seq.Cons ((start, end_exc), aux rest)
         else if size = chunk_size then fun () ->
           Seq.Cons ((start, end_exc), aux rest)
         else
-          let chunk_end_exc = start +^ chunk_size in
+          let chunk_end_exc = start + chunk_size in
           let rest () = Seq.Cons ((chunk_end_exc, end_exc), rest) in
           fun () -> Seq.Cons ((start, chunk_end_exc), aux rest)
     in
-    if chunk_size < 1L then invalid_arg "chunk"
+    if chunk_size < Tp.of_timestamp 1L then invalid_arg "chunk"
     else
       intervals
       |> (fun s -> if skip_check then s else s |> Check.check_if_valid)

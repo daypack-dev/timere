@@ -34,11 +34,28 @@ let sub x y : t =
     let x = Int64.pred x in
     (Int64.sub x y, ns + ns_count_in_s)
 
+let succ x = add x (0L, 1)
+
+let pred x = sub x (0L, 1)
+
+let equal ((x, ns_x) : t) ((y, ns_y) : t) =
+  x = y && ns_x = ns_y
+
+let lt ((x, ns_x) : t) ((y, ns_y) : t) =
+  (* lexicographical order *)
+  x < y || (x = y && ns_x < ns_y)
+
+let le x y =
+  lt x y || equal x y
+
+let gt x y =
+  lt y x
+
+let ge x y =
+  le y x
+
 let compare (x : t) (y : t) : int =
-  let s, ns = sub x y in
-  if s = 0L && ns = 0 then 0
-  else if s > 0L || (s = 0L && ns > 0) then 1
-  else -1
+  if lt x y then -1 else if x = y then 0 else 1
 
 let to_timestamp_float ((x, ns) : t) : float =
   Int64.to_float x +. (float_of_int ns /. ns_count_in_s_float)
@@ -47,3 +64,29 @@ let of_timestamp_float (x : float) : t =
   let s = Int64.of_float x in
   let frac = x -. Int64.to_float s in
   (s, max 0 (int_of_float (frac *. ns_count_in_s_float)))
+
+let max x y =
+  if ge x y then
+    x
+  else
+    y
+
+let min x y =
+  if le x y then
+    x
+  else
+    y
+
+let (<) = lt
+
+let (<=) = le
+
+let (>) = gt
+
+let (>=) = ge
+
+let (=) = equal
+
+let (-) = sub
+
+let (+) = add
