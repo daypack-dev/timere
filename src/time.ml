@@ -1181,7 +1181,7 @@ module Timestamp_precise = struct
   let of_timestamp_float (x : float) : t =
     let s = Int64.of_float x in
     let frac = x -. Int64.to_float s in
-    (s, int_of_float (frac *. ns_count_in_s_float))
+    (s, max 0 (int_of_float (frac *. ns_count_in_s_float)))
 end
 
 type timestamp_precise = Timestamp_precise.t
