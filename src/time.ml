@@ -1132,6 +1132,46 @@ let slice_valid_interval s =
   Intervals.Slice.slice ~skip_check:true ~start:timestamp_min
     ~end_exc:timestamp_max s
 
+
+module Timestamp_precise = struct
+  type t = int64 * int
+
+  let ns_count_in_s = 1_000_000_000
+
+  let of_timestamp x = (x, 0)
+
+  let to_timestamp (x, _) = x
+
+  let check (_x, ns) =
+    if ns < 0 then
+      invalid_arg "nanosecond is less than 0"
+
+  let normalize (x, ns) =
+    let x' = ns / ns_count_in_s in
+    let ns' = ns mod ns_count_in_s in
+    (Int64.add x (Int64.of_int x'), ns')
+
+  let check_and_normalize (x, ns) : t =
+    check (x, ns);
+    normalize (x, ns)
+
+  let add x y : t =
+    let (x, ns_x) = check_and_normalize x in
+    let (y, ns_y) = check_and_normalize y in
+    let ns = ns_x + ns_y in
+    normalize (Int64.add x y, ns)
+
+  let sub x y : t =
+    let (x, ns_x) = check_and_normalize x in
+    let (y, ns_y) = check_and_normalize y in
+    let ns = ns_x - ns_y in
+    if ns >= 0 then
+      (Int64.sub x y, ns)
+    else
+      let x = Int64.pred x in
+      (Int64.sub x y, ns + ns_count_in_s)
+end
+
 module Date_time' = struct
   type t = {
     year : int;
@@ -1140,6 +1180,7 @@ module Date_time' = struct
     hour : int;
     minute : int;
     second : int;
+    ns : int;
     tz_info : tz_info;
   }
 
@@ -1156,7 +1197,7 @@ module Date_time' = struct
          Ptime.date * Ptime.time) : t option =
     month_of_human_int month
     |> CCOpt.map (fun month ->
-        { year; month; day; hour; minute; second; tz_info = utc_tz_info })
+        { year; month; day; hour; minute; second; ns = 0; tz_info = utc_tz_info })
 
   let to_timestamp_pretend_utc (x : t) : timestamp option =
     to_ptime_date_time_pretend_utc x
@@ -1223,23 +1264,23 @@ module Date_time' = struct
                     `Tz_and_tz_offset_s (tz_of_date_time, entry.offset);
                 }))
 
-  let make ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ~year ~month ~day ~hour
+  let make ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ?(ns = 0) ~year ~month ~day ~hour
       ~minute ~second () =
     let dt =
-      { year; month; day; hour; minute; second; tz_info = `Tz_only tz }
+      { year; month; day; hour; minute; second; ns; tz_info = `Tz_only tz }
     in
     match to_timestamp_unsafe dt with
     | `None -> None
     | `Single x -> Some (of_timestamp ~tz_of_date_time:tz x |> CCOpt.get_exn)
     | `Ambiguous _ -> Some dt
 
-  let make_exn ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ~year ~month ~day
+  let make_exn ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ?(ns = 0) ~year ~month ~day
       ~hour ~minute ~second () =
-    match make ~year ~month ~day ~hour ~minute ~second ~tz () with
+    match make ~year ~month ~day ~hour ~minute ~second ~ns ~tz () with
     | Some x -> x
     | None -> invalid_arg "make_exn"
 
-  let make_precise ?tz ~year ~month ~day ~hour ~minute ~second ~tz_offset_s () =
+  let make_precise ?tz ?(ns = 0) ~year ~month ~day ~hour ~minute ~second ~tz_offset_s () =
     let tz_info : tz_info option =
       match tz with
       | None -> Some (`Tz_offset_s_only tz_offset_s)
@@ -1256,6 +1297,7 @@ module Date_time' = struct
                     hour;
                     minute;
                     second;
+                    ns;
                     tz_info = dummy_tz_info;
                   }
               with
@@ -1273,17 +1315,18 @@ module Date_time' = struct
     match tz_info with
     | None -> None
     | Some tz_info -> (
-        let dt = { year; month; day; hour; minute; second; tz_info } in
+        let dt = { year; month; day; hour; minute; second; ns; tz_info } in
         match to_timestamp_unsafe dt with `None -> None | _ -> Some dt)
 
-  let make_precise_exn ?tz ~year ~month ~day ~hour ~minute ~second ~tz_offset_s
+  let make_precise_exn ?tz ?(ns = 0) ~year ~month ~day ~hour ~minute ~second ~tz_offset_s
       () =
     let x =
       match tz with
       | None ->
-        make_precise ~year ~month ~day ~hour ~minute ~second ~tz_offset_s ()
+        make_precise ~year ~month ~day ~hour ~minute ~second ~ns ~tz_offset_s ()
       | Some tz ->
         make_precise ~tz ~year ~month ~day ~hour ~minute ~second ~tz_offset_s
+          ~ns
           ()
     in
     match x with None -> invalid_arg "make_precise_exn" | Some x -> x

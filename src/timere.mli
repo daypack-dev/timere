@@ -317,11 +317,13 @@ module Date_time : sig
     hour : int;
     minute : int;
     second : int;
+    ns : int;
     tz_info : tz_info;
   }
 
   val make :
     ?tz:Time_zone.t ->
+    ?ns:int ->
     year:int ->
     month:month ->
     day:int ->
@@ -341,6 +343,7 @@ module Date_time : sig
 
   val make_exn :
     ?tz:Time_zone.t ->
+    ?ns:int ->
     year:int ->
     month:month ->
     day:int ->
@@ -353,6 +356,7 @@ module Date_time : sig
 
   val make_precise :
     ?tz:Time_zone.t ->
+    ?ns:int ->
     year:int ->
     month:month ->
     day:int ->
@@ -370,6 +374,7 @@ module Date_time : sig
 
   val make_precise_exn :
     ?tz:Time_zone.t ->
+    ?ns:int ->
     year:int ->
     month:month ->
     day:int ->
