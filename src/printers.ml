@@ -62,11 +62,13 @@ module Format_string_parsers = struct
         attempt (string "year") >> return (Printf.sprintf "%04d" date_time.year);
         (attempt (string "mon:")
          >> (
-           (attempt size_and_casing)
-            >>= fun x ->
-            return
-              (map_string_to_size_and_casing x
-                 (Time.full_string_of_month date_time.month))
+           (
+             (attempt size_and_casing)
+             >>= fun x ->
+             return
+               (map_string_to_size_and_casing x
+                  (Time.full_string_of_month date_time.month))
+           )
            <|>
            (
              padding >>= fun padding ->
