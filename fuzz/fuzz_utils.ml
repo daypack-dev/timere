@@ -23,6 +23,14 @@ let pos_span =
        Span.(abs @@ make ~s ~ns ())
     )
 
+let nz_pos_span =
+  Crowbar.map
+    [ Crowbar.int64; Crowbar.int ]
+    (fun s ns ->
+       let ns = ns + 1 in
+       Span.(abs @@ make ~s ~ns ())
+    )
+
 let pattern =
   Crowbar.map
     [ Crowbar.list (Crowbar.range 5000) ]
