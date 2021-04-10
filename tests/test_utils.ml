@@ -99,6 +99,8 @@ let small_pos_timestamp = QCheck.make ~print:Print_utils.span small_pos_timestam
 
 let small_nz_pos_timestamp = QCheck.make ~print:Print_utils.span small_nz_pos_timestamp_gen
 
+let timestamp = QCheck.make ~print:Print_utils.span timestamp_gen
+
 let nz_pos_timestamp = QCheck.make ~print:Print_utils.span nz_pos_timestamp_gen
 
 let tiny_sorted_time_slots_gen =
