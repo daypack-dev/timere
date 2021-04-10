@@ -1,4 +1,3 @@
-open Int64_utils
 open Time_ast
 
 type search_space = Time.Interval.t list
@@ -21,7 +20,7 @@ type t =
   | Bounded_intervals of {
       search_space : search_space;
       pick : [ `Whole | `Snd ];
-      bound : timestamp;
+      bound : Span.t;
       start : Points.t;
       end_exc : Points.t;
     }
@@ -72,8 +71,8 @@ let calibrate_search_space_for_set (time : t) space : search_space =
       | Shift n ->
         List.map
           (fun (x, y) ->
-             if Timestamp.(x - Time.timestamp_min >= n) then
-               Timestamp.(Int64.sub x n, Int64.sub y n)
+             if Span.(x - Time.timestamp_min >= n) then
+               Span.(x - n, y - n)
              else (x, y))
           space
       | _ -> space)
@@ -82,7 +81,7 @@ let calibrate_search_space_for_set (time : t) space : search_space =
       match space with
       | [] -> []
       | (x, y) :: rest ->
-        (if Int64.sub x Time.timestamp_min >= bound then (Int64.sub x bound, y)
+        (if Span.(x - Time.timestamp_min >= bound) then Span.(x - bound, y)
          else (x, y))
         :: rest)
   | Unchunk _ -> space
@@ -113,7 +112,7 @@ let search_space_of_year_range tz year_range =
       { Date_time'.min with year = end_exc; tz_info = `Tz_only tz }
     |> Date_time'.to_timestamp
     |> Date_time'.min_of_local_result
-    |> Int64.succ
+    |> Span.succ
   in
   let aux_end_exc end_exc =
     Date_time'.set_to_first_month_day_hour_min_sec
@@ -160,17 +159,18 @@ let propagate_search_space_bottom_up default_tz (time : t) : t =
         | Shift n ->
           let space =
             get_search_space t
-            |> List.map (fun (x, y) -> (Int64.add x n, Int64.add y n))
+            |> List.map (fun (x, y) -> Span.(x + n, y + n))
           in
           Unary_op (space, op, t)
         | Lengthen n ->
           let space =
-            get_search_space t |> List.map (fun (x, y) -> (x, Int64.add y n))
+            get_search_space t |> List.map (fun (x, y) -> Span.(x, y + n))
           in
           Unary_op (space, op, t)
-        | _ ->
-          let t = aux tz t in
-          Unary_op (get_search_space t, op, t))
+        (* | _ ->
+         *   let t = aux tz t in
+         *   Unary_op (get_search_space t, op, t) *)
+      )
     | Inter_seq (_, s) ->
       let s = Seq.map (aux tz) s in
       let space =
@@ -205,7 +205,7 @@ let propagate_search_space_bottom_up default_tz (time : t) : t =
             dt
             |> Time.Date_time'.to_timestamp
             |> Time.Date_time'.max_of_local_result
-            |> Int64.add bound
+            |> Span.add bound
           in
           [ (space_start, space_end_exc) ]
       in
@@ -252,7 +252,7 @@ let propagate_search_space_top_down (time : t) : t =
         time
     | Unary_op (cur, op, t) -> (
         match op with
-        | Take_points _ | Drop_points _ -> stop_propagation
+        (* | Take_points _ | Drop_points _ -> stop_propagation *)
         | _ ->
           let space = restrict_search_space time parent_search_space cur in
           set_search_space space (Unary_op (cur, op, aux space t)))
@@ -279,33 +279,33 @@ type inc_or_exc =
   | Inc
   | Exc
 
-let do_drop_points (n : int64) (s : Time.Interval.t Seq.t) :
-  Time.Interval.t Seq.t =
-  let rec aux n s =
-    if n = 0L then s
-    else
-      match s () with
-      | Seq.Nil -> Seq.empty
-      | Seq.Cons ((x, y), rest) ->
-        let size = Int64.sub y x in
-        if size >= n then fun () -> Seq.Cons ((Int64.add n x, y), rest)
-        else aux (Int64.sub n size) rest
-  in
-  aux n s
-
-let do_take_points (n : int64) (s : Time.Interval.t Seq.t) :
-  Time.Interval.t Seq.t =
-  let rec aux n s =
-    if n = 0L then Seq.empty
-    else
-      match s () with
-      | Seq.Nil -> Seq.empty
-      | Seq.Cons ((x, y), rest) ->
-        let size = Int64.sub y x in
-        if size >= n then Seq.return (x, Int64.add n x)
-        else fun () -> Seq.Cons ((x, y), aux (Int64.sub n size) rest)
-  in
-  aux n s
+(* let do_drop_points (n : int64) (s : Time.Interval.t Seq.t) :
+ *   Time.Interval.t Seq.t =
+ *   let rec aux n s =
+ *     if n = 0L then s
+ *     else
+ *       match s () with
+ *       | Seq.Nil -> Seq.empty
+ *       | Seq.Cons ((x, y), rest) ->
+ *         let size = Span.sub y x in
+ *         if size >= n then fun () -> Seq.Cons ((Int64.add n x, y), rest)
+ *         else aux (Int64.sub n size) rest
+ *   in
+ *   aux n s
+ * 
+ * let do_take_points (n : int64) (s : Time.Interval.t Seq.t) :
+ *   Time.Interval.t Seq.t =
+ *   let rec aux n s =
+ *     if n = 0L then Seq.empty
+ *     else
+ *       match s () with
+ *       | Seq.Nil -> Seq.empty
+ *       | Seq.Cons ((x, y), rest) ->
+ *         let size = Int64.sub y x in
+ *         if size >= n then Seq.return (x, Int64.add n x)
+ *         else fun () -> Seq.Cons ((x, y), aux (Int64.sub n size) rest)
+ *   in
+ *   aux n s *)
 
 let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) =
   let open Time in
@@ -318,7 +318,7 @@ let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) =
       in
       let dt2 =
         t2
-        |> Int64.pred
+        |> Span.pred
         |> Date_time'.of_timestamp ~tz_of_date_time:tz
         |> CCOpt.get_exn
       in
@@ -328,7 +328,7 @@ let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) =
           Date_time'.set_to_last_month_day_hour_min_sec dt1
           |> Date_time'.to_timestamp
           |> Date_time'.max_of_local_result
-          |> Int64.succ
+          |> Span.succ
         in
         fun () ->
           Seq.Cons ((t1, t'), aux (fun () -> Seq.Cons ((t', t2), rest)))
@@ -346,7 +346,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
       in
       let dt2 =
         t2
-        |> Int64.pred
+        |> Span.pred
         |> Date_time'.of_timestamp ~tz_of_date_time:tz
         |> CCOpt.get_exn
       in
@@ -357,7 +357,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
           Date_time'.set_to_last_day_hour_min_sec dt1
           |> Date_time'.to_timestamp
           |> Date_time'.max_of_local_result
-          |> Int64.succ
+          |> Span.succ
         in
         fun () ->
           Seq.Cons ((t1, t'), aux (fun () -> Seq.Cons ((t', t2), rest)))
@@ -365,9 +365,9 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
   aux s
 
 let dynamic_search_space_adjustment_trigger_size =
-  Duration.(make ~days:30 () |> to_seconds)
+  Duration.(make ~days:30 () |> to_span)
 
-let inter_minimum_slice_size = Duration.(make ~days:10 () |> to_seconds)
+let inter_minimum_slice_size = Duration.(make ~days:10 () |> to_span)
 
 let slice_search_space ~start (t : t) : t =
   get_search_space t
@@ -395,6 +395,8 @@ let aux_pattern search_using_tz space pat =
   let space = CCList.to_seq space in
   Time_zone.Raw.to_transition_seq search_using_tz
   |> Seq.flat_map (fun ((x, y), entry) ->
+      let x = Span.make ~s:x () in
+      let y = Span.make ~s:y () in
       let space = Intervals.Inter.inter (Seq.return (x, y)) space in
       let params =
         Seq.map
@@ -417,7 +419,7 @@ let aux_points search_using_tz space (p, tz_info) : timestamp Seq.t =
   in
   aux_pattern search_using_tz space (Points.to_pattern (p, tz_info))
   |> Seq.map (fun (x, y) ->
-      assert (y = Int64.succ x);
+      assert (y = Span.succ x);
       x)
 
 let rec aux search_using_tz time =
@@ -439,16 +441,16 @@ let rec aux search_using_tz time =
            | Not ->
              Intervals.relative_complement ~skip_check:false ~not_mem_of:s
                (CCList.to_seq space)
-           | Drop_points n -> do_drop_points (Int64.of_int n) s
-           | Take_points n -> do_take_points (Int64.of_int n) s
+           (* | Drop_points n -> do_drop_points (Int64.of_int n) s
+            * | Take_points n -> do_take_points (Int64.of_int n) s *)
            | Shift n ->
              Seq.map
                (fun (start, end_exc) ->
-                  (Int64.add start n, Int64.add end_exc n))
+                  Span.(start + n, end_exc + n))
                s
            | Lengthen n ->
              s
-             |> Seq.map (fun (start, end_exc) -> (start, Int64.add end_exc n))
+             |> Seq.map (fun (start, end_exc) -> Span.(start, end_exc + n))
            | With_tz _ -> s)
        | Inter_seq (_, s) -> aux_inter search_using_tz s
        | Union_seq (_, s) -> aux_union search_using_tz s
@@ -463,14 +465,15 @@ and get_points_after_start1 ~start1 ~(s2 : timestamp Seq.t) ~(p2 : Points.t)
   match s2 () with
   | Seq.Nil -> (Seq.empty, space)
   | Seq.Cons (start2, _) ->
+    let open Span in
     if
       start2 < start1
-      && start1 -^ start2 >= dynamic_search_space_adjustment_trigger_size
+      && start1 - start2 >= dynamic_search_space_adjustment_trigger_size
     then
       let space =
         space
         |> CCList.to_seq
-        |> Time.Intervals.Slice.slice ~start:(Int64.succ start1)
+        |> Time.Intervals.Slice.slice ~start:(Span.succ start1)
         |> CCList.of_seq
       in
       (aux_points search_using_tz space p2, space)
@@ -478,16 +481,17 @@ and get_points_after_start1 ~start1 ~(s2 : timestamp Seq.t) ~(p2 : Points.t)
 
 and skip_points_in_p1 ~last_start2 ~(rest1 : timestamp Seq.t) ~(p1 : Points.t)
     search_using_tz bound space : timestamp Seq.t * search_space =
+  let open Span in
   match rest1 () with
   | Seq.Nil -> (Seq.empty, space)
   | Seq.Cons (start1, _) ->
-    let distance = last_start2 -^ start1 in
+    let distance = Span.(last_start2 - start1) in
     if
       start1 <= last_start2
       && distance >= bound
       && distance >= dynamic_search_space_adjustment_trigger_size
     then
-      let search_start = last_start2 -^ bound in
+      let search_start = last_start2 - bound in
       let space =
         space
         |> CCList.to_seq
@@ -505,6 +509,7 @@ and aux_bounded_intervals search_using_tz space pick bound p1 p2 =
     match s1 () with
     | Seq.Nil -> Seq.empty
     | Seq.Cons (start1, rest1) -> (
+        let open Span in
         if search_space_end_exc <= start1 then Seq.empty
         else
           let s2, space2 =
@@ -514,11 +519,11 @@ and aux_bounded_intervals search_using_tz space pick bound p1 p2 =
           | Seq.Nil -> Seq.empty
           | Seq.Cons (start2, _rest2) ->
             if search_space_end_exc <= start2 then Seq.empty
-            else if start2 -^ start1 <= bound then
+            else if start2 - start1 <= bound then
               let interval =
                 match pick with
                 | `Whole -> (start1, start2)
-                | `Snd -> (start2, Int64.succ start2)
+                | `Snd -> (start2, succ start2)
               in
               fun () ->
                 Seq.Cons
@@ -546,7 +551,8 @@ and aux_union search_using_tz timeres =
     match intervals () with
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((start, end_exc), rest) ->
-      let size = end_exc -^ start in
+      let open Span in
+      let size = end_exc - start in
       if size >= dynamic_search_space_adjustment_trigger_size then
         let timeres = slice_search_space_multi_seq ~start:end_exc timeres in
         let next_intervals =
@@ -582,11 +588,12 @@ and aux_inter search_using_tz timeres =
       match batch_for_sampling with
       | [] -> Seq.empty
       | _ ->
+        let open Span in
         let starts =
-          batch_for_sampling |> List.map fst |> List.sort_uniq Int64.compare
+          batch_for_sampling |> List.map fst |> List.sort_uniq compare
         in
         let end_excs =
-          batch_for_sampling |> List.map snd |> List.sort_uniq Int64.compare
+          batch_for_sampling |> List.map snd |> List.sort_uniq compare
         in
         let min_end_exc = List.hd end_excs in
         let max_start =
@@ -596,14 +603,14 @@ and aux_inter search_using_tz timeres =
         let interval_batches =
           if
             min_end_exc <= max_start
-            && max_start -^ min_end_exc
+            && max_start - min_end_exc
                >= dynamic_search_space_adjustment_trigger_size
           then resolve ~start search_using_tz timeres
           else interval_batches
         in
         let end_exc =
-          if min_end_exc -^ start <= inter_minimum_slice_size then
-            start +^ inter_minimum_slice_size
+          if min_end_exc - start <= inter_minimum_slice_size then
+            start + inter_minimum_slice_size
           else min_end_exc
         in
         let intervals_up_to_end_exc =
@@ -623,7 +630,7 @@ and aux_chunked search_using_tz (chunked : chunked) =
   let chunk_based_on_op_on_t op s =
     match op with
     | Chunk_disjoint_interval -> normalize s
-    | Chunk_by_duration { chunk_size; drop_partial } ->
+    | Chunk_by_span { chunk_size; drop_partial } ->
       Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
     | Chunk_at_year_boundary -> do_chunk_at_year_boundary search_using_tz s
     | Chunk_at_month_boundary -> do_chunk_at_month_boundary search_using_tz s

@@ -12,6 +12,8 @@ let sexp_list_of_ints l = List.map sexp_of_int l
 
 let sexp_of_tz_name t = CCSexp.atom (Time_zone.name t)
 
+let sexp_of_span (x : Span.t) = CCSexp.list [sexp_of_int64 x.s; sexp_of_int x.ns]
+
 let sexp_of_tz_info info =
   let open CCSexp in
   list
@@ -170,10 +172,10 @@ let sexp_of_pattern (pat : Pattern.t) : CCSexp.t =
 let sexp_list_of_unary_op (op : Time_ast.unary_op) =
   match op with
   | Not -> [ CCSexp.atom "not" ]
-  | Drop_points n ->
-    [ CCSexp.atom "drop_points"; CCSexp.atom (string_of_int n) ]
-  | Take_points n ->
-    [ CCSexp.atom "take_points"; CCSexp.atom (string_of_int n) ]
+  (* | Drop_points n ->
+   *   [ CCSexp.atom "drop_points"; CCSexp.atom (string_of_int n) ]
+   * | Take_points n ->
+   *   [ CCSexp.atom "take_points"; CCSexp.atom (string_of_int n) ] *)
   (* | Every_nth n -> [ CCSexp.atom "every_nth"; CCSexp.atom (string_of_int n) ]
    * | Nth n -> [ CCSexp.atom "nth"; CCSexp.atom (string_of_int n) ]
    * | Chunk { chunk_size; drop_partial } ->
@@ -185,8 +187,8 @@ let sexp_list_of_unary_op (op : Time_ast.unary_op) =
    *   |> List.filter_map Fun.id
    * | Chunk_by_year -> [ CCSexp.atom "chunk_by_year"]
    * | Chunk_by_month -> [ CCSexp.atom "chunk_by_month"] *)
-  | Shift n -> [ CCSexp.atom "shift"; CCSexp.atom (Int64.to_string n) ]
-  | Lengthen n -> [ CCSexp.atom "lengthen"; CCSexp.atom (Int64.to_string n) ]
+  | Shift n -> [ CCSexp.atom "shift"; sexp_of_span n ]
+  | Lengthen n -> [ CCSexp.atom "lengthen"; sexp_of_span n ]
   | With_tz tz -> [ CCSexp.atom "with_tz"; CCSexp.atom (Time_zone.name tz) ]
 
 let to_sexp (t : Time_ast.t) : CCSexp.t =
@@ -214,7 +216,7 @@ let to_sexp (t : Time_ast.t) : CCSexp.t =
           [
             atom "bounded_intervals";
             (match pick with `Whole -> atom "whole" | `Snd -> atom "snd");
-            Duration.of_seconds bound |> sexp_of_duration;
+            sexp_of_span bound;
             sexp_of_points start;
             sexp_of_points end_exc;
           ])
@@ -226,10 +228,10 @@ let to_sexp (t : Time_ast.t) : CCSexp.t =
       | Time_ast.Chunk_disjoint_interval -> [ atom "chunk_disjoint_intervals" ]
       | Chunk_at_year_boundary -> [ atom "chunk_at_year_boundary" ]
       | Chunk_at_month_boundary -> [ atom "chunk_at_month_boundary" ]
-      | Chunk_by_duration { chunk_size; drop_partial } ->
+      | Chunk_by_span { chunk_size; drop_partial } ->
         [
-          Some (atom "chunk_by_duration");
-          Some (sexp_of_duration (Duration.of_seconds chunk_size));
+          Some (atom "chunk_by_span");
+          Some (sexp_of_span chunk_size);
           (if drop_partial then Some (atom "drop_partial") else None);
         ]
         |> CCList.filter_map CCFun.id

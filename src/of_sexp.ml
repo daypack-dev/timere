@@ -37,6 +37,19 @@ let ints_of_sexp_list (x : CCSexp.t) =
       (Printf.sprintf "Expected list for ints: %s" (CCSexp.to_string x))
   | `List l -> List.map int_of_sexp l
 
+let span_of_sexp (x : CCSexp.t) =
+  match x with
+  | `Atom _ ->
+    invalid_data
+      (Printf.sprintf "Expected list for span: %s" (CCSexp.to_string x))
+  | `List [ s; ns ] ->
+    let s = int64_of_sexp s in
+    let ns = int_of_sexp ns in
+    Span.make ~s ~ns ()
+  | `List _ ->
+    invalid_data
+      (Printf.sprintf "List too long for span: %s" (CCSexp.to_string x))
+
 let tz_make_of_sexp (x : CCSexp.t) =
   match x with
   | `Atom s -> (
@@ -281,13 +294,13 @@ let of_sexp (x : CCSexp.t) =
           |> sorted_intervals ~skip_invalid:false
         | `Atom "pattern" :: _ -> pattern_of_sexp x
         | [ `Atom "not"; x ] -> not (aux x)
-        | [ `Atom "drop_points"; n; x ] -> drop_points (int_of_sexp n) (aux x)
-        | [ `Atom "take_points"; n; x ] -> take_points (int_of_sexp n) (aux x)
+        (* | [ `Atom "drop_points"; n; x ] -> drop_points (int_of_sexp n) (aux x)
+         * | [ `Atom "take_points"; n; x ] -> take_points (int_of_sexp n) (aux x) *)
         | [ `Atom "shift"; n; x ] ->
-          let n = Duration.of_seconds (int64_of_sexp n) in
+          let n = span_of_sexp n in
           shift n (aux x)
         | [ `Atom "lengthen"; n; x ] ->
-          let n = Duration.of_seconds (int64_of_sexp n) in
+          let n = span_of_sexp n in
           lengthen n (aux x)
         | [ `Atom "with_tz"; n; x ] ->
           let tz = tz_make_of_sexp n in

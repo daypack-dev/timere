@@ -61,7 +61,7 @@ let to_span (t : t) : Span.t =
   +^ (minutes *^ Int64_multipliers.minute_to_seconds)
   +^ seconds
   in
-  { s; ns = t.ns }
+  Span.make ~s ~ns:t.ns ()
 
 let span_of_raw (r : raw) : Span.t =
   (r.days *. Float_multipliers.day_to_seconds)

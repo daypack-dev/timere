@@ -44,8 +44,8 @@ let to_date_time s : (Time.Date_time'.t, string) result =
              hm_p
              |>> fun (hour, minute) ->
              Duration.make ~hours:hour ~minutes:minute ()
-             |> Duration.to_seconds
-             |> Int64.to_int
+             |> Duration.to_span
+             |> (fun x -> Int64.to_int x.s)
              |> CCInt.mul mult)
   in
   let p =

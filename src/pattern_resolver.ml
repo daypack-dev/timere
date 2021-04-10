@@ -17,7 +17,7 @@ module Search_param = struct
       end_inc =
         CCOpt.get_exn
         @@ Time.Date_time'.of_timestamp ~tz_of_date_time:search_using_tz
-          (Timestamp.pred end_exc);
+          (Span.pred end_exc);
     }
 end
 
@@ -712,7 +712,7 @@ let matching_date_time_ranges (search_param : Search_param.t) (t : Pattern.t) :
          ~overall_search_end_inc)
 
 let resolve (search_param : Search_param.t) (t : Pattern.t) :
-  (Timestamp.t * Timestamp.t) Seq.t =
+  (Span.t * Span.t) Seq.t =
   let f (x, y) =
     let x = Time.Date_time'.to_timestamp_single x in
     let y = Time.Date_time'.to_timestamp_single y in
@@ -722,7 +722,7 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
   |> Seq.map (Time.Range.map ~f_inc:f ~f_exc:f)
   |> Seq.map (fun r ->
       match r with
-      | `Range_inc (x, y) -> (x, Timestamp.succ y)
+      | `Range_inc (x, y) -> (x, Span.succ y)
       | `Range_exc (x, y) -> (x, y))
   |> Time.Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
 

@@ -17,6 +17,8 @@ exception Intervals_are_not_disjoint
 
 type timestamp = Span.t
 
+let one_ns = Span.make ~ns:1 ()
+
 module Interval = struct
   type t = timestamp * timestamp
 
@@ -413,7 +415,6 @@ module Intervals = struct
   let chunk ?(skip_check = false) ?(drop_partial = false) ~chunk_size
       (intervals : Interval.t Seq.t) : Interval.t Seq.t =
     let open Span in
-    let chunk_size = { s = chunk_size; ns = 0 } in
     let rec aux intervals =
       match intervals () with
       | Seq.Nil -> Seq.empty
@@ -429,7 +430,7 @@ module Intervals = struct
           let rest () = Seq.Cons ((chunk_end_exc, end_exc), rest) in
           fun () -> Seq.Cons ((start, chunk_end_exc), aux rest)
     in
-    if chunk_size < { s = 1L; ns = 0 } then invalid_arg "chunk"
+    if chunk_size < one_ns then invalid_arg "chunk"
     else
       intervals
       |> (fun s -> if skip_check then s else s |> Check.check_if_valid)
@@ -486,7 +487,7 @@ module Range = struct
     | `Range_exc (x, y) -> (x, y)
 
   let timestamp_pair_of_int_pair (x, y) : timestamp * timestamp =
-    ({s = 0L; ns = x}, {s = 0L; ns = y})
+    (Span.make ~ns:x (), Span.make ~ns:y ())
 
   let int_pair_of_timestamp_pair ({s = _; ns = x}, {s = _; ns = y} : timestamp * timestamp) : int * int =
     (x, y)
@@ -1076,12 +1077,9 @@ let second_of_day_of_hms x =
   |> Duration.to_span
   |> (fun x -> Int64.to_int Span.(x.s))
 
-let hms_of_second_of_day x =
+let hms_of_second_of_day s =
   let ({ hours; minutes; seconds; _ } : Duration.t) =
-    Duration.of_span
-      (
-      )
-    x |> Int64.of_int |> Duration.of_span
+    Duration.of_span (Span.make ~s:(Int64.of_int s) ())
   in
   make_hms_exn ~hour:hours ~minute:minutes ~second:seconds
 
@@ -1156,7 +1154,7 @@ module Year_ranges = Ranges.Make (struct
   end)
 
 let timestamp_now () : timestamp =
-  Timestamp.of_timestamp_float @@
+  Span.of_float @@
   Unix.time ()
 
 let timestamp_min = Constants.timestamp_min
@@ -1207,8 +1205,11 @@ module Date_time' = struct
     to_ptime_date_time_pretend_utc x
     |> Ptime.of_date_time
     |> CCOpt.map (fun t ->
-        Timestamp.check_and_normalize
-          {s = Ptime_utils.timestamp_of_ptime t; ns = x.ns})
+        Span.make
+          ~s:(Ptime_utils.timestamp_of_ptime t)
+          ~ns:x.ns
+          ()
+          )
 
   let to_timestamp_precise_unsafe (x : t) :
     timestamp Time_zone.local_result =
@@ -1218,22 +1219,24 @@ module Date_time' = struct
         match x.tz_info with
         | `Tz_offset_s_only offset | `Tz_and_tz_offset_s (_, offset) ->
           `Single
-            (Timestamp.sub timestamp_local {s = Int64.of_int offset; ns = 0})
+            Span.(timestamp_local - (make ~s:(Int64.of_int offset) ()))
         | `Tz_only tz -> (
             match Time_zone.lookup_timestamp_local tz timestamp_local.s with
             | `None -> `None
             | `Single e ->
               `Single
-                (Timestamp.sub timestamp_local
-                   {s = Int64.of_int e.offset; ns = 0})
+                Span.(timestamp_local -
+                   (make ~s:(Int64.of_int e.offset) ()))
             | `Ambiguous (e1, e2) ->
               let x1 =
-                Timestamp.sub timestamp_local
-                  {s = Int64.of_int e1.offset; ns = 0}
+                Span.(timestamp_local -
+                      (make ~s:(Int64.of_int e1.offset) ())
+                     )
               in
               let x2 =
-                Timestamp.sub timestamp_local
-                  {s = Int64.of_int e2.offset; ns = 0}
+                Span.(timestamp_local -
+                      (make ~s:(Int64.of_int e2.offset) ())
+                     )
               in
               `Ambiguous (min x1 x2, max x1 x2)))
 
@@ -1257,11 +1260,11 @@ module Date_time' = struct
   let to_timestamp_float x : float local_result =
     match to_timestamp_precise_unsafe x with
     | `None -> failwith "Unexpected case"
-    | `Single x -> `Single (Timestamp.to_timestamp_float x)
+    | `Single x -> `Single (Span.to_float x)
     | `Ambiguous (x, y) ->
       `Ambiguous
-        ( Timestamp.to_timestamp_float x,
-          Timestamp.to_timestamp_float y )
+        ( Span.to_float x,
+          Span.to_float y )
 
   let to_timestamp_single (x : t) : timestamp =
     match to_timestamp x with
@@ -1278,7 +1281,7 @@ module Date_time' = struct
 
   let to_timestamp_float_single (x : t) : float =
     match to_timestamp x with
-    | `Single x -> Timestamp.to_timestamp_float x
+    | `Single x -> Span.to_float x
     | `Ambiguous _ ->
       invalid_arg
         "to_timestamp_precise_single: date time maps to two timestamps"
@@ -1286,7 +1289,7 @@ module Date_time' = struct
   let of_timestamp
       ?(tz_of_date_time = CCOpt.get_exn @@ Time_zone.local ())
       ({s; ns} as x : timestamp) : t option =
-    if not Timestamp.(timestamp_min <= x && x <= timestamp_max) then None
+    if not Span.(timestamp_min <= x && x <= timestamp_max) then None
     else
       match Time_zone.lookup_timestamp_utc tz_of_date_time s with
       | None -> None
@@ -1309,14 +1312,14 @@ module Date_time' = struct
       ?(tz_of_date_time = CCOpt.get_exn @@ Time_zone.local ()) (x : float) :
     t option =
     of_timestamp ~tz_of_date_time
-    @@ Timestamp.of_timestamp_float x
+    @@ Span.of_float x
 
   let make ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ?(ns = 0) ?(frac = 0.)
       ~year ~month ~day ~hour ~minute ~second () =
     if frac < 0. then invalid_arg "frac is negative";
     if ns < 0 then invalid_arg "ns is negative";
     let ns =
-      ns + int_of_float (frac *. Timestamp.ns_count_in_s_float)
+      ns + int_of_float (frac *. Span.ns_count_in_s_float)
     in
     let dt =
       { year; month; day; hour; minute; second; ns; tz_info = `Tz_only tz }
@@ -1338,7 +1341,7 @@ module Date_time' = struct
     if frac < 0. then invalid_arg "frac is negative";
     if ns < 0 then invalid_arg "ns is negative";
     let ns =
-      ns + int_of_float (frac *. Timestamp.ns_count_in_s_float)
+      ns + int_of_float (frac *. Span.ns_count_in_s_float)
     in
     let tz_info : tz_info option =
       match tz with
@@ -1488,7 +1491,7 @@ type sign_expr =
 let equal_unary_op op1 op2 =
   match (op1, op2) with
   | Not, Not -> true
-  | Drop_points n1, Drop_points n2 | Take_points n1, Take_points n2 -> n1 = n2
+  (* | Drop_points n1, Drop_points n2 | Take_points n1, Take_points n2 -> n1 = n2 *)
   | Shift n1, Shift n2 | Lengthen n1, Lengthen n2 -> n1 = n2
   | With_tz tz1, With_tz tz2 -> Time_zone.name tz1 = Time_zone.name tz2
   | _, _ -> false
@@ -1528,21 +1531,21 @@ let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
   | `Disjoint_intervals ->
     Unchunk (f (Unary_op_on_t (Chunk_disjoint_interval, t)))
   | `By_duration duration ->
-    let chunk_size = Duration.to_seconds duration in
-    if chunk_size < 1L then invalid_arg "chunk"
+    let chunk_size = Duration.to_span duration in
+    if Span.(chunk_size < one_ns) then invalid_arg "chunk"
     else
       Unchunk
         (f
            (Unary_op_on_t
-              (Chunk_by_duration { chunk_size; drop_partial = false }, t)))
+              (Chunk_by_span { chunk_size; drop_partial = false }, t)))
   | `By_duration_drop_partial duration ->
-    let chunk_size = Duration.to_seconds duration in
-    if chunk_size < 1L then invalid_arg "chunk"
+    let chunk_size = Duration.to_span duration in
+    if Span.(chunk_size < one_ns) then invalid_arg "chunk"
     else
       Unchunk
         (f
            (Unary_op_on_t
-              (Chunk_by_duration { chunk_size; drop_partial = true }, t)))
+              (Chunk_by_span { chunk_size; drop_partial = true }, t)))
   | `At_year_boundary -> Unchunk (f (Unary_op_on_t (Chunk_at_year_boundary, t)))
   | `At_month_boundary ->
     Unchunk (f (Unary_op_on_t (Chunk_at_month_boundary, t)))
@@ -1552,26 +1555,26 @@ let chunk_again (chunking : chunking) chunked : chunked =
   | `Disjoint_intervals ->
     Unary_op_on_chunked (Chunk_again Chunk_disjoint_interval, chunked)
   | `By_duration duration ->
-    let chunk_size = Duration.to_seconds duration in
-    if chunk_size < 1L then invalid_arg "chunk_again"
+    let chunk_size = Duration.to_span duration in
+    if Span.(chunk_size < one_ns) then invalid_arg "chunk_again"
     else
       Unary_op_on_chunked
         ( Chunk_again
-            (Chunk_by_duration
+            (Chunk_by_span
                {
-                 chunk_size = Duration.to_seconds duration;
+                 chunk_size = Duration.to_span duration;
                  drop_partial = false;
                }),
           chunked )
   | `By_duration_drop_partial duration ->
-    let chunk_size = Duration.to_seconds duration in
-    if chunk_size < 1L then invalid_arg "chunk_again"
+    let chunk_size = Duration.to_span duration in
+    if Span.(chunk_size < one_ns) then invalid_arg "chunk_again"
     else
       Unary_op_on_chunked
         ( Chunk_again
-            (Chunk_by_duration
+            (Chunk_by_span
                {
-                 chunk_size = Duration.to_seconds duration;
+                 chunk_size = Duration.to_span duration;
                  drop_partial = true;
                }),
           chunked )
@@ -1580,11 +1583,11 @@ let chunk_again (chunking : chunking) chunked : chunked =
   | `At_month_boundary ->
     Unary_op_on_chunked (Chunk_again Chunk_at_year_boundary, chunked)
 
-let shift (offset : Duration.t) (t : t) : t =
-  Unary_op (Shift (Duration.to_seconds offset), t)
+let shift (offset : Span.t) (t : t) : t =
+  Unary_op (Shift offset, t)
 
-let lengthen (x : Duration.t) (t : t) : t =
-  Unary_op (Lengthen (Duration.to_seconds x), t)
+let lengthen (x : Span.t) (t : t) : t =
+  Unary_op (Lengthen x, t)
 
 let empty = Empty
 
@@ -1646,15 +1649,15 @@ let union_seq (s : t Seq.t) : t =
 
 let union (l : t list) : t = union_seq (CCList.to_seq l)
 
-let first_point (a : t) : t = Unary_op (Take_points 1, a)
+(* let first_point (a : t) : t = Unary_op (Take_points 1, a) *)
 
-let take_points (n : int) (t : t) : t =
-  if n < 0 then invalid_arg "take_n_points: n < 0"
-  else Unary_op (Take_points n, t)
+(* let take_points (n : int) (t : t) : t =
+ *   if n < 0 then invalid_arg "take_n_points: n < 0"
+ *   else Unary_op (Take_points n, t) *)
 
-let drop_points (n : int) (t : t) : t =
-  if n < 0 then invalid_arg "drop_n_points: n < 0"
-  else Unary_op (Drop_points n, t)
+(* let drop_points (n : int) (t : t) : t =
+ *   if n < 0 then invalid_arg "drop_n_points: n < 0"
+ *   else Unary_op (Drop_points n, t) *)
 
 let first (c : chunked) : chunked = Unary_op_on_chunked (Take 1, c)
 
@@ -1809,10 +1812,10 @@ let bounded_intervals pick (bound : Duration.t)
       always
     | _, _ ->
       Bounded_intervals
-        { pick; bound = Duration.to_seconds bound; start; end_exc }
+        { pick; bound = Duration.to_span bound; start; end_exc }
   else
     Bounded_intervals
-      { pick; bound = Duration.to_seconds bound; start; end_exc }
+      { pick; bound = Duration.to_span bound; start; end_exc }
 
 (* let hms_interval_exc (hms_a : hms) (hms_b : hms) : t =
  *   let a = second_of_day_of_hms hms_a in
@@ -1856,7 +1859,7 @@ let sorted_interval_seq ?(skip_invalid : bool = false)
         match
           ( Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc x,
             Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc
-              (Timestamp.pred y) )
+              (Span.pred y) )
         with
         | Some _, Some _ -> Some (x, y)
         | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
@@ -1880,7 +1883,7 @@ let intervals ?(skip_invalid : bool = false) (l : Interval.t list) : t =
         match
           ( Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc x,
             Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc
-              (Timestamp.pred y) )
+              (Span.pred y) )
         with
         | Some _, Some _ -> Some (x, y)
         | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
@@ -1897,7 +1900,7 @@ let interval_seq ?(skip_invalid : bool = false) (s : Interval.t Seq.t) : t
 
 let interval_of_date_time date_time =
   let x = Date_time'.to_timestamp_single date_time in
-  (x, Timestamp.succ x)
+  (x, Span.succ x)
 
 let date_time_seq date_times =
   date_times |> Seq.map interval_of_date_time |> interval_seq
@@ -1914,7 +1917,7 @@ let date_time date_time = date_times [ date_time ]
 
 let interval_of_timestamp_precise ~skip_invalid x =
   match Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc x with
-  | Some _ -> Some (x, Timestamp.succ x)
+  | Some _ -> Some (x, Span.succ x)
   | None -> if skip_invalid then None else raise Invalid_timestamp
 
 let timestamp_seq ?(skip_invalid = false) timestamps =
@@ -1944,7 +1947,7 @@ let now () = timestamp (timestamp_now ())
 let before_timestamp timestamp = intervals [ (timestamp_min, timestamp) ]
 
 let after_timestamp timestamp =
-  intervals [ (Timestamp.succ timestamp, timestamp_max) ]
+  intervals [ (Span.succ timestamp, timestamp_max) ]
 
 let before dt =
   before_timestamp Date_time'.(to_timestamp dt |> min_of_local_result)

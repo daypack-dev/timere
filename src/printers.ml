@@ -116,8 +116,8 @@ module Format_string_parsers = struct
            match tz_offset_s with
            | None -> return "N/A"
            | Some tz_offset_s ->
-             let d = Duration.of_seconds (Int64.of_int (abs tz_offset_s)) in
-             return (pad_int padding d.hours));
+             let d = Duration.make ~seconds:(abs tz_offset_s) () in
+             return (pad_int padding Duration.(d.hours)));
         attempt
           (string "tzoff-min:"
            >> padding
@@ -125,8 +125,8 @@ module Format_string_parsers = struct
            match tz_offset_s with
            | None -> return "N/A"
            | Some tz_offset_s ->
-             let d = Duration.of_seconds (Int64.of_int (abs tz_offset_s)) in
-             return (pad_int padding d.minutes));
+             let d = Duration.make ~seconds:(abs tz_offset_s) () in
+             return (pad_int padding Duration.(d.minutes)));
         attempt
           (string "tzoff-sec:"
            >> padding
@@ -134,8 +134,8 @@ module Format_string_parsers = struct
            match tz_offset_s with
            | None -> return "N/A"
            | Some tz_offset_s ->
-             let d = Duration.of_seconds (Int64.of_int (abs tz_offset_s)) in
-             return (pad_int padding d.seconds));
+             let d = Duration.make ~seconds:(abs tz_offset_s) () in
+             return (pad_int padding Duration.(d.seconds)));
         (* string "unix"
          * >> return (Int64.to_string (Time.Date_time'.to_timestamp date_time)); *)
       ]
@@ -190,7 +190,7 @@ let pp_timestamp ?(display_using_tz = Time_zone.utc)
   | Some dt -> Fmt.pf formatter "%a" (pp_date_time ~format ()) dt
 
 let string_of_timestamp ?(display_using_tz = Time_zone.utc)
-    ?(format = default_date_time_format_string) (time : Timestamp.t) : string =
+    ?(format = default_date_time_format_string) (time : Span.t) : string =
   Fmt.str "%a" (pp_timestamp ~display_using_tz ~format ()) time
 
 let pp_hms formatter (hms : Time.hms) : unit =
