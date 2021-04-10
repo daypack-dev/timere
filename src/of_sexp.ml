@@ -90,24 +90,25 @@ let date_time_of_sexp (x : CCSexp.t) =
     invalid_data (Printf.sprintf "Invalid date: %s" (CCSexp.to_string x))
   in
   match x with
-  | `List [ year; month; day; hour; minute; second; tz_info ] -> (
+  | `List [ year; month; day; hour; minute; second; ns; tz_info ] -> (
       let year = int_of_sexp year in
       let month = month_of_sexp month in
       let day = int_of_sexp day in
       let hour = int_of_sexp hour in
       let minute = int_of_sexp minute in
       let second = int_of_sexp second in
+      let ns = int_of_sexp ns in
       let tz_info = tz_info_of_sexp tz_info in
       match tz_info with
       | `Tz_only tz -> (
           match
-            Time.Date_time'.make ~year ~month ~day ~hour ~minute ~second ~tz ()
+            Time.Date_time'.make ~year ~month ~day ~hour ~minute ~second ~ns ~tz ()
           with
           | Some x -> x
           | None -> invalid_data ())
       | `Tz_offset_s_only tz_offset_s -> (
           match
-            Time.Date_time'.make_precise ~year ~month ~day ~hour ~minute ~second
+            Time.Date_time'.make_precise ~year ~month ~day ~hour ~minute ~second ~ns
               ~tz_offset_s ()
           with
           | Some x -> x
@@ -115,7 +116,7 @@ let date_time_of_sexp (x : CCSexp.t) =
       | `Tz_and_tz_offset_s (tz, tz_offset_s) -> (
           match
             Time.Date_time'.make_precise ~tz ~year ~month ~day ~hour ~minute
-              ~second ~tz_offset_s ()
+              ~second ~ns ~tz_offset_s ()
           with
           | Some x -> x
           | None -> invalid_data ()))

@@ -95,6 +95,7 @@ let sexp_of_date_time (x : Time.Date_time'.t) =
       sexp_of_int x.hour;
       sexp_of_int x.minute;
       sexp_of_int x.second;
+      sexp_of_int x.ns;
       sexp_of_tz_info x.tz_info;
     ]
 
