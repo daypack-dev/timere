@@ -59,7 +59,7 @@ let search_space =
   Crowbar.map
     [
       Crowbar.list1
-        (Crowbar.map [ timestamp; pos_span ]
+        (Crowbar.map [ timestamp; nz_pos_span ]
            (fun search_start search_size ->
               let search_start =
                 Span.(min (max Time.timestamp_min search_start) Time.timestamp_max)
