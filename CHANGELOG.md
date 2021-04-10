@@ -4,13 +4,13 @@
 
 - Updated use of Timere API
 
-## Timere 0.1.6
+## Timere 0.2.0
 
 - Updated tzdb
 
 - Fixed `Timere.Date_time.make` and `Timere.Date_time.make_exn` types
 
-- Added support for precise date times and timestamps (in nanosecond resolution)
+- Added support for nanosecond precision for date times and timestamps
 
 - Minor `Tiemre.Date_time` API tuning
 
