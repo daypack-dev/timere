@@ -473,7 +473,7 @@ and get_points_after_start1 ~start1 ~(s2 : timestamp Seq.t) ~(p2 : Points.t)
       let space =
         space
         |> CCList.to_seq
-        |> Time.Intervals.Slice.slice ~start:(Span.succ start1)
+        |> Time.Intervals.Slice.slice ~start:(succ start1)
         |> CCList.of_seq
       in
       (aux_points search_using_tz space p2, space)

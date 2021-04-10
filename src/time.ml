@@ -197,6 +197,7 @@ module Intervals = struct
 
   module Slice_internal = struct
     let slice_start ~start (intervals : Interval.t Seq.t) : Interval.t Seq.t =
+      let open Span in
       let rec aux start intervals =
         match intervals () with
         | Seq.Nil -> Seq.empty
@@ -215,6 +216,7 @@ module Intervals = struct
 
     let slice_end_exc ~end_exc (intervals : Interval.t Seq.t) : Interval.t Seq.t
       =
+      let open Span in
       let rec aux end_exc intervals =
         match intervals () with
         | Seq.Nil -> Seq.empty
@@ -298,6 +300,7 @@ module Intervals = struct
   module Inter = struct
     let inter ?(skip_check = false) (intervals1 : Interval.t Seq.t)
         (intervals2 : Interval.t Seq.t) : Interval.t Seq.t =
+      let open Span in
       let rec aux intervals1 intervals2 : Interval.t Seq.t =
         match (intervals1 (), intervals2 ()) with
         | Seq.Nil, _ -> Seq.empty
