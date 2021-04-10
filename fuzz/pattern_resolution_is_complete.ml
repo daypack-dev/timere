@@ -13,6 +13,11 @@ let () =
             (CCOpt.get_exn
              @@ Misc_utils.last_element_of_list search_space)
         in
+        let search_space_set =
+          span_set_of_intervals
+            @@
+          CCList.to_seq search_space
+        in
         let s =
           Resolver.aux_pattern tz search_space pattern |> Resolver.normalize
         in
@@ -79,6 +84,7 @@ let () =
                 && second_is_fine)
             |> intervals_of_int64s
             |> span_set_of_intervals
+            |> Span_set.inter search_space_set
             |> intervals_of_span_set
           in
           Crowbar.check

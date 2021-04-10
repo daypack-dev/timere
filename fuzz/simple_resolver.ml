@@ -150,10 +150,16 @@ let aux_pattern_mem search_using_tz (pattern : Pattern.t) (timestamp : int64) : 
   && second_is_fine
 
 let aux_pattern search_using_tz search_space pattern : Span_set.t =
+  let search_space_set =
+    span_set_of_intervals
+    @@
+    Seq.return search_space
+  in
   Seq_utils.a_to_b_exc_int64 ~a:Span.((fst search_space).s) ~b:Span.((snd search_space).s)
   |> Seq.filter (aux_pattern_mem search_using_tz pattern)
   |> intervals_of_int64s
   |> span_set_of_intervals
+  |> Span_set.inter search_space_set
 
 let aux_points_mem search_using_tz ((p, tz_info) : Points.t) timestamp =
   let search_using_tz =
