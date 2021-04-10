@@ -50,6 +50,13 @@ module Qc = struct
          Span.(equal (abs x) (abs (neg x)))
       )
 
+  let abs_is_non_neg =
+    QCheck.Test.make ~count:10_000 ~name:"abs_is_non_neg"
+      timestamp
+      (fun x ->
+         Span.((abs x) >= zero)
+      )
+
   let add_commutative =
     QCheck.Test.make ~count:10_000 ~name:"add_commutative"
       QCheck.(pair timestamp timestamp)
@@ -121,6 +128,7 @@ module Qc = struct
                double_neg;
                neg;
                abs;
+               abs_is_non_neg;
                add_commutative;
                add_associative;
                add_identity;
