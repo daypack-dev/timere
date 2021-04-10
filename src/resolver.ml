@@ -71,8 +71,7 @@ let calibrate_search_space_for_set (time : t) space : search_space =
       | Shift n ->
         List.map
           (fun (x, y) ->
-             if Span.(x - Time.timestamp_min >= n) then
-               Span.(x - n, y - n)
+             if Span.(x - Time.timestamp_min >= n) then Span.(x - n, y - n)
              else (x, y))
           space
       | _ -> space)
@@ -158,8 +157,7 @@ let propagate_search_space_bottom_up default_tz (time : t) : t =
           Unary_op (get_search_space t, op, t)
         | Shift n ->
           let space =
-            get_search_space t
-            |> List.map (fun (x, y) -> Span.(x + n, y + n))
+            get_search_space t |> List.map (fun (x, y) -> Span.(x + n, y + n))
           in
           Unary_op (space, op, t)
         | Lengthen n ->
@@ -167,10 +165,9 @@ let propagate_search_space_bottom_up default_tz (time : t) : t =
             get_search_space t |> List.map (fun (x, y) -> Span.(x, y + n))
           in
           Unary_op (space, op, t)
-        (* | _ ->
-         *   let t = aux tz t in
-         *   Unary_op (get_search_space t, op, t) *)
-      )
+          (* | _ ->
+           *   let t = aux tz t in
+           *   Unary_op (get_search_space t, op, t) *))
     | Inter_seq (_, s) ->
       let s = Seq.map (aux tz) s in
       let space =
@@ -421,7 +418,7 @@ let aux_points search_using_tz space (p, tz_info) : timestamp Seq.t =
   in
   aux_pattern search_using_tz space (Points.to_pattern (p, tz_info))
   |> Seq.map (fun (x, y) ->
-      assert Span.(y - x <= one_s);
+      assert (Span.(y - x <= one_s));
       x)
 
 let rec aux search_using_tz time =
@@ -446,13 +443,9 @@ let rec aux search_using_tz time =
            (* | Drop_points n -> do_drop_points (Int64.of_int n) s
             * | Take_points n -> do_take_points (Int64.of_int n) s *)
            | Shift n ->
-             Seq.map
-               (fun (start, end_exc) ->
-                  Span.(start + n, end_exc + n))
-               s
+             Seq.map (fun (start, end_exc) -> Span.(start + n, end_exc + n)) s
            | Lengthen n ->
-             s
-             |> Seq.map (fun (start, end_exc) -> Span.(start, end_exc + n))
+             s |> Seq.map (fun (start, end_exc) -> Span.(start, end_exc + n))
            | With_tz _ -> s)
        | Inter_seq (_, s) -> aux_inter search_using_tz s
        | Union_seq (_, s) -> aux_union search_using_tz s

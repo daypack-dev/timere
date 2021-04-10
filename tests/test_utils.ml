@@ -74,18 +74,26 @@ let timestamp_bound_gen bound =
   let open QCheck.Gen in
   map
     (fun (pos, s, ns) ->
-       Span.({s; ns} |> max zero |> min bound |> fun x -> if pos then x else neg x))
+       Span.(
+         { s; ns } |> max zero |> min bound |> fun x -> if pos then x else neg x))
     (triple bool ui64 int)
 
 let pos_timestamp_bound_gen bound =
-  QCheck.Gen.(map (fun (s, ns) -> Span.({s; ns} |> max zero |> min bound) ) (pair ui64 int))
+  QCheck.Gen.(
+    map
+      (fun (s, ns) -> Span.({ s; ns } |> max zero |> min bound))
+      (pair ui64 int))
 
 let nz_pos_timestamp_bound_gen bound =
-  QCheck.Gen.(map (fun (s, ns) -> Span.({s; ns} |> max (make ~ns:1 ()) |> min bound) ) (pair ui64 int))
+  QCheck.Gen.(
+    map
+      (fun (s, ns) -> Span.({ s; ns } |> max (make ~ns:1 ()) |> min bound))
+      (pair ui64 int))
 
 let small_pos_timestamp_gen = pos_timestamp_bound_gen (Span.make ~s:100L ())
 
-let small_nz_pos_timestamp_gen = nz_pos_timestamp_bound_gen (Span.make ~s:100L ())
+let small_nz_pos_timestamp_gen =
+  nz_pos_timestamp_bound_gen (Span.make ~s:100L ())
 
 let timestamp_gen = timestamp_bound_gen Time.timestamp_max
 
@@ -95,9 +103,11 @@ let nz_pos_timestamp_gen = nz_pos_timestamp_bound_gen Time.timestamp_max
 
 let pos_timestamp = QCheck.make ~print:Print_utils.span pos_timestamp_gen
 
-let small_pos_timestamp = QCheck.make ~print:Print_utils.span small_pos_timestamp_gen
+let small_pos_timestamp =
+  QCheck.make ~print:Print_utils.span small_pos_timestamp_gen
 
-let small_nz_pos_timestamp = QCheck.make ~print:Print_utils.span small_nz_pos_timestamp_gen
+let small_nz_pos_timestamp =
+  QCheck.make ~print:Print_utils.span small_nz_pos_timestamp_gen
 
 let timestamp = QCheck.make ~print:Print_utils.span timestamp_gen
 
@@ -119,9 +129,12 @@ let tiny_sorted_time_slots_gen =
             (Some end_exc, (start, end_exc) :: acc))
          (None, [])
        |> fun (_, l) -> List.rev l)
-    (pair (timestamp_bound_gen (Span.make ~s:10_000L ()))
+    (pair
+       (timestamp_bound_gen (Span.make ~s:10_000L ()))
        (list_size (int_bound 5)
-          (pair (pos_timestamp_bound_gen Span.(make ~s:20L ())) (pos_timestamp_bound_gen (Span.make ~s:20L ())))))
+          (pair
+             (pos_timestamp_bound_gen Span.(make ~s:20L ()))
+             (pos_timestamp_bound_gen (Span.make ~s:20L ())))))
 
 let tiny_sorted_time_slots =
   QCheck.make ~print:Print_utils.time_slots tiny_sorted_time_slots_gen
@@ -143,7 +156,8 @@ let sorted_time_slots_maybe_gaps_gen =
          (None, [])
        |> fun (_, l) -> List.rev l)
     (pair timestamp_gen
-       (list_size (int_bound 1000) (pair small_nz_pos_timestamp_gen small_pos_timestamp_gen)))
+       (list_size (int_bound 1000)
+          (pair small_nz_pos_timestamp_gen small_pos_timestamp_gen)))
 
 let sorted_time_slots_maybe_gaps =
   QCheck.make ~print:Print_utils.time_slots sorted_time_slots_maybe_gaps_gen
@@ -165,7 +179,8 @@ let sorted_time_slots_with_gaps_gen =
          (None, [])
        |> fun (_, l) -> List.rev l)
     (pair timestamp_gen
-       (list_size (int_bound 1000) (pair small_nz_pos_timestamp_gen small_nz_pos_timestamp_gen)))
+       (list_size (int_bound 1000)
+          (pair small_nz_pos_timestamp_gen small_nz_pos_timestamp_gen)))
 
 let sorted_time_slots_with_gaps =
   QCheck.make ~print:Print_utils.time_slots sorted_time_slots_with_gaps_gen
@@ -183,8 +198,7 @@ let sorted_time_slots_with_overlaps_gen =
               | Some (last_start, last_size) ->
                 let start = Span.add last_start gap in
                 let size =
-                  if start = last_start then
-                    Span.add last_size size
+                  if start = last_start then Span.add last_size size
                   else size
                 in
                 (start, size)
@@ -194,7 +208,8 @@ let sorted_time_slots_with_overlaps_gen =
          (None, [])
        |> fun (_, l) -> List.rev l)
     (pair timestamp_gen
-       (list_size (int_bound 1000) (pair small_nz_pos_timestamp_gen small_pos_timestamp_gen)))
+       (list_size (int_bound 1000)
+          (pair small_nz_pos_timestamp_gen small_pos_timestamp_gen)))
 
 let sorted_time_slots_with_overlaps =
   QCheck.make ~print:Print_utils.time_slots sorted_time_slots_with_overlaps_gen
@@ -204,7 +219,9 @@ let tiny_time_slots_gen =
   map
     (List.map (fun (start, size) -> (start, Span.add start size)))
     (list_size (int_bound 5)
-       (pair (timestamp_bound_gen (Span.make ~s:10_000L ())) (pos_timestamp_bound_gen (Span.make ~s:20L ()))))
+       (pair
+          (timestamp_bound_gen (Span.make ~s:10_000L ()))
+          (pos_timestamp_bound_gen (Span.make ~s:20L ()))))
 
 let tiny_time_slots =
   QCheck.make ~print:Print_utils.time_slots tiny_time_slots_gen
@@ -212,9 +229,11 @@ let tiny_time_slots =
 let time_slots_gen =
   let open QCheck.Gen in
   map
-    (List.map (fun (start, size) ->
-         (start, Span.add start size)))
-    (list_size (int_bound 100) (pair (timestamp_bound_gen (Span.make ~s:100_000L ())) small_pos_timestamp_gen))
+    (List.map (fun (start, size) -> (start, Span.add start size)))
+    (list_size (int_bound 100)
+       (pair
+          (timestamp_bound_gen (Span.make ~s:100_000L ()))
+          small_pos_timestamp_gen))
 
 let time_slots = QCheck.make ~print:Print_utils.time_slots time_slots_gen
 

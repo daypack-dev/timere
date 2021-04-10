@@ -24,8 +24,7 @@ module Interval = struct
 
   let lt (x1, y1) (x2, y2) =
     (* lexicographical order *)
-    Span.(
-      x1 < x2 || (x1 = x2 && y1 < y2))
+    Span.(x1 < x2 || (x1 = x2 && y1 < y2))
 
   let le x y = lt x y || x = y
 
@@ -36,11 +35,9 @@ module Interval = struct
   let compare x y = if lt x y then -1 else if x = y then 0 else 1
 
   module Check = struct
-    let is_valid ((start, end_exc) : t) : bool =
-      Span.(start <= end_exc)
+    let is_valid ((start, end_exc) : t) : bool = Span.(start <= end_exc)
 
-    let is_not_empty ((start, end_exc) : t) : bool =
-      not Span.(start = end_exc)
+    let is_not_empty ((start, end_exc) : t) : bool = not Span.(start = end_exc)
 
     let check_if_valid (x : t) : t =
       if is_valid x then x else raise Interval_is_invalid
@@ -460,8 +457,8 @@ module Range = struct
       let x, y = f_exc (x, y) in
       `Range_exc (x, y)
 
-  let int_range_of_range (type a) ~(to_int : a -> int) (x : a range) :
-    int range =
+  let int_range_of_range (type a) ~(to_int : a -> int) (x : a range) : int range
+    =
     let f (x, y) = (to_int x, to_int y) in
     map ~f_inc:f ~f_exc:f x
 
@@ -477,14 +474,14 @@ module Range = struct
     | `Range_inc (x, y) -> (to_int x, y |> to_int |> Int.succ)
     | `Range_exc (x, y) -> (to_int x, to_int y)
 
-  let inc_range_of_range (type a) ~(to_int : a -> int)
-      ~(of_int : int -> a) (x : a range) : a * a =
+  let inc_range_of_range (type a) ~(to_int : a -> int) ~(of_int : int -> a)
+      (x : a range) : a * a =
     match x with
     | `Range_inc (x, y) -> (x, y)
     | `Range_exc (x, y) -> (x, y |> to_int |> Int.pred |> of_int)
 
-  let exc_range_of_range (type a) ~(to_int : a -> int)
-      ~(of_int : int -> a) (x : a range) : a * a =
+  let exc_range_of_range (type a) ~(to_int : a -> int) ~(of_int : int -> a)
+      (x : a range) : a * a =
     match x with
     | `Range_inc (x, y) -> (x, y |> to_int |> Int.succ |> of_int)
     | `Range_exc (x, y) -> (x, y)
@@ -492,11 +489,13 @@ module Range = struct
   let timestamp_pair_of_int_pair (x, y) : timestamp * timestamp =
     (Span.make ~ns:x (), Span.make ~ns:y ())
 
-  let int_pair_of_timestamp_pair ({s = _; ns = x}, {s = _; ns = y} : timestamp * timestamp) : int * int =
+  let int_pair_of_timestamp_pair
+      (({ s = _; ns = x }, { s = _; ns = y }) : timestamp * timestamp) :
+    int * int =
     (x, y)
 
-  let join (type a) ~(to_int : a -> int) ~(of_int : int -> a)
-      (x : a range) (y : a range) : a range option =
+  let join (type a) ~(to_int : a -> int) ~(of_int : int -> a) (x : a range)
+      (y : a range) : a range option =
     let x = int_exc_range_of_range ~to_int x |> timestamp_pair_of_int_pair in
     let y = int_exc_range_of_range ~to_int y |> timestamp_pair_of_int_pair in
     Interval.join x y
@@ -514,46 +513,36 @@ module Range = struct
     | Some _ -> true
 
   module Flatten = struct
-    let flatten_into_seq (type a) ~(modulo : int option)
-        ~(to_int : a -> int) ~(of_int : int -> a) (t : a range) :
-      a Seq.t =
+    let flatten_into_seq (type a) ~(modulo : int option) ~(to_int : a -> int)
+        ~(of_int : int -> a) (t : a range) : a Seq.t =
       match t with
       | `Range_inc (start, end_inc) -> (
           let start = to_int start in
           let end_inc = to_int end_inc in
-          if start <= end_inc then
-            OSeq.(start -- end_inc)
-             |> Seq.map of_int
+          if start <= end_inc then OSeq.(start -- end_inc) |> Seq.map of_int
           else
             match modulo with
             | None -> raise Range_is_invalid
             | Some modulo ->
               if modulo <= 0 then raise Modulo_is_invalid
               else
-                OSeq.append
-                  OSeq.(start --^ modulo)
-                  OSeq.(0 -- end_inc)
+                OSeq.append OSeq.(start --^ modulo) OSeq.(0 -- end_inc)
                 |> Seq.map of_int)
       | `Range_exc (start, end_exc) -> (
           let start = to_int start in
           let end_exc = to_int end_exc in
-          if start <= end_exc then
-            OSeq.(start --^ end_exc)
-            |> Seq.map of_int
+          if start <= end_exc then OSeq.(start --^ end_exc) |> Seq.map of_int
           else
             match modulo with
             | None -> raise Range_is_invalid
             | Some modulo ->
               if modulo <= 0 then raise Modulo_is_invalid
               else
-                OSeq.append
-                  OSeq.(start --^ modulo)
-                  OSeq.(0 --^ end_exc)
+                OSeq.append OSeq.(start --^ modulo) OSeq.(0 --^ end_exc)
                 |> Seq.map of_int)
 
-    let flatten_into_list (type a) ~(modulo : int option)
-        ~(to_int : a -> int) ~(of_int : int -> a) (t : a range) : a list
-      =
+    let flatten_into_list (type a) ~(modulo : int option) ~(to_int : a -> int)
+        ~(of_int : int -> a) (t : a range) : a list =
       flatten_into_seq ~modulo ~to_int ~of_int t |> CCList.of_seq
   end
 
@@ -764,8 +753,8 @@ end
 module Ranges = struct
   let normalize (type a) ?(skip_filter_invalid = false)
       ?(skip_filter_empty = false) ?(skip_sort = false) ~(modulo : int option)
-      ~(to_int : a -> int) ~(of_int : int -> a)
-      (s : a Range.range Seq.t) : a Range.range Seq.t =
+      ~(to_int : a -> int) ~(of_int : int -> a) (s : a Range.range Seq.t) :
+    a Range.range Seq.t =
     match modulo with
     | None ->
       s
@@ -793,9 +782,7 @@ module Ranges = struct
   module Flatten = struct
     let flatten (type a) ~(modulo : int option) ~(to_int : a -> int)
         ~(of_int : int -> a) (s : a Range.range Seq.t) : a Seq.t =
-      Seq.flat_map
-        (Range.Flatten.flatten_into_seq ~modulo ~to_int ~of_int)
-        s
+      Seq.flat_map (Range.Flatten.flatten_into_seq ~modulo ~to_int ~of_int) s
 
     let flatten_list (type a) ~(modulo : int option) ~(to_int : a -> int)
         ~(of_int : int -> a) (l : a Range.range list) : a list =
@@ -824,9 +811,9 @@ module Ranges = struct
       CCList.to_seq l
       |> Of_seq.range_seq_of_seq ~skip_sort ~modulo ~to_int ~of_int
 
-    let range_list_of_list (type a) ?(skip_sort = false)
-        ~(modulo : int option) ~(to_int : a -> int)
-        ~(of_int : int -> a) (l : a list) : a Range.range list =
+    let range_list_of_list (type a) ?(skip_sort = false) ~(modulo : int option)
+        ~(to_int : a -> int) ~(of_int : int -> a) (l : a list) :
+      a Range.range list =
       CCList.to_seq l
       |> Of_seq.range_seq_of_seq ~skip_sort ~modulo ~to_int ~of_int
       |> CCList.of_seq
@@ -1078,7 +1065,7 @@ let make_hms_exn ~hour ~minute ~second =
 let second_of_day_of_hms x =
   Duration.make ~hours:x.hour ~minutes:x.minute ~seconds:x.second ()
   |> Duration.to_span
-  |> (fun x -> Int64.to_int Span.(x.s))
+  |> fun x -> Int64.to_int Span.(x.s)
 
 let hms_of_second_of_day s =
   let ({ hours; minutes; seconds; _ } : Duration.t) =
@@ -1156,9 +1143,7 @@ module Year_ranges = Ranges.Make (struct
     let of_int x = x
   end)
 
-let timestamp_now () : timestamp =
-  Span.of_float @@
-  Unix.time ()
+let timestamp_now () : timestamp = Span.of_float @@ Unix.time ()
 
 let timestamp_min = Constants.timestamp_min
 
@@ -1208,38 +1193,27 @@ module Date_time' = struct
     to_ptime_date_time_pretend_utc x
     |> Ptime.of_date_time
     |> CCOpt.map (fun t ->
-        Span.make
-          ~s:(Ptime_utils.timestamp_of_ptime t)
-          ~ns:x.ns
-          ()
-          )
+        Span.make ~s:(Ptime_utils.timestamp_of_ptime t) ~ns:x.ns ())
 
-  let to_timestamp_precise_unsafe (x : t) :
-    timestamp Time_zone.local_result =
+  let to_timestamp_precise_unsafe (x : t) : timestamp Time_zone.local_result =
     match to_timestamp_pretend_utc x with
     | None -> `None
     | Some timestamp_local -> (
         match x.tz_info with
         | `Tz_offset_s_only offset | `Tz_and_tz_offset_s (_, offset) ->
-          `Single
-            Span.(timestamp_local - (make ~s:(Int64.of_int offset) ()))
+          `Single Span.(timestamp_local - make ~s:(Int64.of_int offset) ())
         | `Tz_only tz -> (
             match Time_zone.lookup_timestamp_local tz timestamp_local.s with
             | `None -> `None
             | `Single e ->
               `Single
-                Span.(timestamp_local -
-                   (make ~s:(Int64.of_int e.offset) ()))
+                Span.(timestamp_local - make ~s:(Int64.of_int e.offset) ())
             | `Ambiguous (e1, e2) ->
               let x1 =
-                Span.(timestamp_local -
-                      (make ~s:(Int64.of_int e1.offset) ())
-                     )
+                Span.(timestamp_local - make ~s:(Int64.of_int e1.offset) ())
               in
               let x2 =
-                Span.(timestamp_local -
-                      (make ~s:(Int64.of_int e2.offset) ())
-                     )
+                Span.(timestamp_local - make ~s:(Int64.of_int e2.offset) ())
               in
               `Ambiguous (min x1 x2, max x1 x2)))
 
@@ -1264,10 +1238,7 @@ module Date_time' = struct
     match to_timestamp_precise_unsafe x with
     | `None -> failwith "Unexpected case"
     | `Single x -> `Single (Span.to_float x)
-    | `Ambiguous (x, y) ->
-      `Ambiguous
-        ( Span.to_float x,
-          Span.to_float y )
+    | `Ambiguous (x, y) -> `Ambiguous (Span.to_float x, Span.to_float y)
 
   let to_timestamp_single (x : t) : timestamp =
     match to_timestamp x with
@@ -1289,9 +1260,8 @@ module Date_time' = struct
       invalid_arg
         "to_timestamp_precise_single: date time maps to two timestamps"
 
-  let of_timestamp
-      ?(tz_of_date_time = CCOpt.get_exn @@ Time_zone.local ())
-      ({s; ns} as x : timestamp) : t option =
+  let of_timestamp ?(tz_of_date_time = CCOpt.get_exn @@ Time_zone.local ())
+      ({ s; ns } as x : timestamp) : t option =
     if not Span.(timestamp_min <= x && x <= timestamp_max) then None
     else
       match Time_zone.lookup_timestamp_utc tz_of_date_time s with
@@ -1314,23 +1284,19 @@ module Date_time' = struct
   let of_timestamp_float
       ?(tz_of_date_time = CCOpt.get_exn @@ Time_zone.local ()) (x : float) :
     t option =
-    of_timestamp ~tz_of_date_time
-    @@ Span.of_float x
+    of_timestamp ~tz_of_date_time @@ Span.of_float x
 
   let make ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ?(ns = 0) ?(frac = 0.)
       ~year ~month ~day ~hour ~minute ~second () =
     if frac < 0. then invalid_arg "frac is negative";
     if ns < 0 then invalid_arg "ns is negative";
-    let ns =
-      ns + int_of_float (frac *. Span.ns_count_in_s_float)
-    in
+    let ns = ns + int_of_float (frac *. Span.ns_count_in_s_float) in
     let dt =
       { year; month; day; hour; minute; second; ns; tz_info = `Tz_only tz }
     in
     match to_timestamp_precise_unsafe dt with
     | `None -> None
-    | `Single x ->
-      Some (of_timestamp ~tz_of_date_time:tz x |> CCOpt.get_exn)
+    | `Single x -> Some (of_timestamp ~tz_of_date_time:tz x |> CCOpt.get_exn)
     | `Ambiguous _ -> Some dt
 
   let make_exn ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ?(ns = 0)
@@ -1343,9 +1309,7 @@ module Date_time' = struct
       ~second ~tz_offset_s () =
     if frac < 0. then invalid_arg "frac is negative";
     if ns < 0 then invalid_arg "ns is negative";
-    let ns =
-      ns + int_of_float (frac *. Span.ns_count_in_s_float)
-    in
+    let ns = ns + int_of_float (frac *. Span.ns_count_in_s_float) in
     let tz_info : tz_info option =
       match tz with
       | None -> Some (`Tz_offset_s_only tz_offset_s)
@@ -1367,7 +1331,7 @@ module Date_time' = struct
                   }
               with
               | None -> None
-              | Some {s = timestamp_local; ns = _} -> (
+              | Some { s = timestamp_local; ns = _ } -> (
                   match Time_zone.lookup_timestamp_local tz timestamp_local with
                   | `None -> None
                   | `Single e ->
@@ -1580,10 +1544,7 @@ let chunk_again (chunking : chunking) chunked : chunked =
       Unary_op_on_chunked
         ( Chunk_again
             (Chunk_by_duration
-               {
-                 chunk_size = Duration.to_span duration;
-                 drop_partial = true;
-               }),
+               { chunk_size = Duration.to_span duration; drop_partial = true }),
           chunked )
   | `At_year_boundary ->
     Unary_op_on_chunked (Chunk_again Chunk_at_year_boundary, chunked)
@@ -1821,8 +1782,7 @@ let bounded_intervals pick (bound : Duration.t)
       Bounded_intervals
         { pick; bound = Duration.to_span bound; start; end_exc }
   else
-    Bounded_intervals
-      { pick; bound = Duration.to_span bound; start; end_exc }
+    Bounded_intervals { pick; bound = Duration.to_span bound; start; end_exc }
 
 (* let hms_interval_exc (hms_a : hms) (hms_b : hms) : t =
  *   let a = second_of_day_of_hms hms_a in
@@ -1855,8 +1815,8 @@ let hms_intervals_inc (hms_a : hms) (hms_b : hms) : t =
   let hms_b = hms_b |> second_of_day_of_hms |> succ |> hms_of_second_of_day in
   hms_intervals_exc hms_a hms_b
 
-let sorted_interval_seq ?(skip_invalid : bool = false)
-    (s : Interval.t Seq.t) : t =
+let sorted_interval_seq ?(skip_invalid : bool = false) (s : Interval.t Seq.t) :
+  t =
   let s =
     s
     |> Intervals.Filter.filter_empty
@@ -1876,8 +1836,7 @@ let sorted_interval_seq ?(skip_invalid : bool = false)
   in
   match s () with Seq.Nil -> Empty | _ -> Intervals s
 
-let sorted_intervals ?(skip_invalid : bool = false) (l : Interval.t list) :
-  t =
+let sorted_intervals ?(skip_invalid : bool = false) (l : Interval.t list) : t =
   l |> CCList.to_seq |> sorted_interval_seq ~skip_invalid
 
 let intervals ?(skip_invalid : bool = false) (l : Interval.t list) : t =
@@ -1901,8 +1860,7 @@ let intervals ?(skip_invalid : bool = false) (l : Interval.t list) : t =
   in
   match s () with Seq.Nil -> Empty | _ -> Intervals s
 
-let interval_seq ?(skip_invalid : bool = false) (s : Interval.t Seq.t) : t
-  =
+let interval_seq ?(skip_invalid : bool = false) (s : Interval.t Seq.t) : t =
   s |> CCList.of_seq |> intervals ~skip_invalid
 
 let interval_of_date_time date_time =

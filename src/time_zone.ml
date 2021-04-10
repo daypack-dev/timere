@@ -190,7 +190,8 @@ module Raw = struct
           match s () with
           | Seq.Nil ->
             fun () ->
-              Seq.Cons (((k1, Constants.timestamp_max.s), entry1), aux Seq.empty)
+              Seq.Cons
+                (((k1, Constants.timestamp_max.s), entry1), aux Seq.empty)
           | Seq.Cons ((k2, entry2), rest) ->
             fun () ->
               Seq.Cons

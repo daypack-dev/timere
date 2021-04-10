@@ -155,16 +155,16 @@ val not : t -> t
 (** {1 Span} *)
 
 module Span : sig
+  type t = private {
+    s : int64;
+    ns : int;
+  }
   (** [t] is a signed span of time expressed as a tuple of [(s, ns)]
       - [s] carries the sign of the span
       - [ns] carries the unsigned offset
 
       The actual span in nanosecond represented is defined as [s * 10^9 + ns], regardless of the sign of [s]
   *)
-  type t = private {
-    s : int64;
-    ns : int;
-  }
 
   val ns_count_in_s : int
 
@@ -214,21 +214,21 @@ module Span : sig
 
   val min : t -> t -> t
 
-  val (<) : t -> t -> bool
+  val ( < ) : t -> t -> bool
 
-  val (<=) : t -> t -> bool
+  val ( <= ) : t -> t -> bool
 
-  val (>) : t -> t -> bool
+  val ( > ) : t -> t -> bool
 
-  val (>=) : t -> t -> bool
+  val ( >= ) : t -> t -> bool
 
-  val (=) : t -> t -> bool
+  val ( = ) : t -> t -> bool
 
-  val (<>) : t -> t -> bool
+  val ( <> ) : t -> t -> bool
 
-  val (-) : t -> t -> t
+  val ( - ) : t -> t -> t
 
-  val (+) : t -> t -> t
+  val ( + ) : t -> t -> t
 
   val to_string : t -> string
 
@@ -257,11 +257,23 @@ module Duration : sig
   }
 
   val make :
-    ?days:int -> ?hours:int -> ?minutes:int -> ?seconds:int -> ?ns:int -> unit -> t
+    ?days:int ->
+    ?hours:int ->
+    ?minutes:int ->
+    ?seconds:int ->
+    ?ns:int ->
+    unit ->
+    t
   (** @raise Invalid_argument if any of the arguments are negative *)
 
   val make_frac :
-    ?days:float -> ?hours:float -> ?minutes:float -> ?seconds:float -> ?ns:int -> unit -> t
+    ?days:float ->
+    ?hours:float ->
+    ?minutes:float ->
+    ?seconds:float ->
+    ?ns:int ->
+    unit ->
+    t
   (** @raise Invalid_argument if any of the arguments are negative *)
 
   val zero : t

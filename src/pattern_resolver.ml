@@ -88,7 +88,12 @@ module Matching_seconds = struct
       in
       let range_map_end_inc =
         if y = cur_branch_search_end_inc.second then cur_branch_search_end_inc
-        else { cur_branch_search_end_inc with second = y; ns = Span.ns_count_in_s - 1 }
+        else
+          {
+            cur_branch_search_end_inc with
+            second = y;
+            ns = Span.ns_count_in_s - 1;
+          }
       in
       (range_map_start, range_map_end_inc)
     in

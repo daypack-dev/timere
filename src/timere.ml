@@ -19,8 +19,7 @@ module Span = struct
 
   let of_sexp = Of_sexp.(wrap_of_sexp span_of_sexp)
 
-  let of_sexp_string =
-    Of_sexp.(wrap_of_sexp_into_of_sexp_string span_of_sexp)
+  let of_sexp_string = Of_sexp.(wrap_of_sexp_into_of_sexp_string span_of_sexp)
 
   let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_span
 end

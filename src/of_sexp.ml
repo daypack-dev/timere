@@ -102,14 +102,15 @@ let date_time_of_sexp (x : CCSexp.t) =
       match tz_info with
       | `Tz_only tz -> (
           match
-            Time.Date_time'.make ~year ~month ~day ~hour ~minute ~second ~ns ~tz ()
+            Time.Date_time'.make ~year ~month ~day ~hour ~minute ~second ~ns ~tz
+              ()
           with
           | Some x -> x
           | None -> invalid_data ())
       | `Tz_offset_s_only tz_offset_s -> (
           match
-            Time.Date_time'.make_precise ~year ~month ~day ~hour ~minute ~second ~ns
-              ~tz_offset_s ()
+            Time.Date_time'.make_precise ~year ~month ~day ~hour ~minute ~second
+              ~ns ~tz_offset_s ()
           with
           | Some x -> x
           | None -> invalid_data ())
@@ -339,10 +340,13 @@ let of_sexp (x : CCSexp.t) =
           chunk `At_month_boundary f (aux x)
         | [ `Atom "chunk_by_duration"; span; `Atom "drop_partial"; x ] ->
           chunk
-            (`By_duration_drop_partial (Duration.of_span @@ span_of_sexp span))
+            (`By_duration_drop_partial
+               (Duration.of_span @@ span_of_sexp span))
             f (aux x)
         | [ `Atom "chunk_by_duration"; span; x ] ->
-          chunk (`By_duration (Duration.of_span @@ span_of_sexp span)) f (aux x)
+          chunk
+            (`By_duration (Duration.of_span @@ span_of_sexp span))
+            f (aux x)
         | [ `Atom "drop"; n; chunked ] ->
           aux_chunked (drop (int_of_sexp n) %> f) chunked
         | [ `Atom "take"; n; chunked ] ->
@@ -367,21 +371,21 @@ let of_sexp (x : CCSexp.t) =
         | [
           `Atom "chunk_again";
           `List
-            [
-              `Atom "chunk_by_duration"; span; `Atom "drop_partial"; chunked;
-            ];
+            [ `Atom "chunk_by_duration"; span; `Atom "drop_partial"; chunked ];
         ] ->
           aux_chunked
             (chunk_again
-               (`By_duration_drop_partial (Duration.of_span @@ span_of_sexp span))
+               (`By_duration_drop_partial
+                  (Duration.of_span @@ span_of_sexp span))
              %> f)
             chunked
         | [
-          `Atom "chunk_again";
-          `List [ `Atom "chunk_by_duration"; span; chunked ];
+          `Atom "chunk_again"; `List [ `Atom "chunk_by_duration"; span; chunked ];
         ] ->
           aux_chunked
-            (chunk_again (`By_duration (Duration.of_span @@ span_of_sexp span)) %> f)
+            (chunk_again
+               (`By_duration (Duration.of_span @@ span_of_sexp span))
+             %> f)
             chunked
         | _ ->
           invalid_data

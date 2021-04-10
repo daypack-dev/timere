@@ -6,18 +6,12 @@ let () =
   Crowbar.add_test ~name:"pattern_resolution_is_complete"
     [ time_zone; search_space; pattern ] (fun tz search_space pattern ->
         Crowbar.guard (search_space <> []);
-        let search_start =
-          fst (List.hd search_space)
-        in
+        let search_start = fst (List.hd search_space) in
         let search_end_exc =
-          snd
-            (CCOpt.get_exn
-             @@ Misc_utils.last_element_of_list search_space)
+          snd (CCOpt.get_exn @@ Misc_utils.last_element_of_list search_space)
         in
         let search_space_set =
-          span_set_of_intervals
-            @@
-          CCList.to_seq search_space
+          span_set_of_intervals @@ CCList.to_seq search_space
         in
         let s =
           Resolver.aux_pattern tz search_space pattern |> Resolver.normalize
@@ -26,9 +20,7 @@ let () =
         | [] -> Crowbar.check (OSeq.is_empty s)
         | _ ->
           let s' =
-            Seq_utils.a_to_b_inc_int64
-              ~a:search_start.s
-              ~b:search_end_exc.s
+            Seq_utils.a_to_b_inc_int64 ~a:search_start.s ~b:search_end_exc.s
             |> OSeq.filter (fun timestamp ->
                 let dt =
                   CCOpt.get_exn
@@ -90,5 +82,6 @@ let () =
           in
           Crowbar.check
             (OSeq.for_all
-               (fun (x', y') -> OSeq.exists Span.(fun (x, y) -> x <= x' && y' < y) s)
+               (fun (x', y') ->
+                  OSeq.exists Span.(fun (x, y) -> x <= x' && y' < y) s)
                s'))

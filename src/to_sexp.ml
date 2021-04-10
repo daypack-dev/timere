@@ -12,7 +12,8 @@ let sexp_list_of_ints l = List.map sexp_of_int l
 
 let sexp_of_tz_name t = CCSexp.atom (Time_zone.name t)
 
-let sexp_of_span (x : Span.t) = CCSexp.list [sexp_of_int64 x.s; sexp_of_int x.ns]
+let sexp_of_span (x : Span.t) =
+  CCSexp.list [ sexp_of_int64 x.s; sexp_of_int x.ns ]
 
 let sexp_of_tz_info info =
   let open CCSexp in

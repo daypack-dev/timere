@@ -10,26 +10,16 @@ let time =
 let time' = Crowbar.map [ time ] Resolver.t_of_ast
 
 let timestamp =
-  Crowbar.map
-    [ Crowbar.int64; Crowbar.int ]
-    (fun s ns ->
-       Span.make ~s ~ns ()
-    )
+  Crowbar.map [ Crowbar.int64; Crowbar.int ] (fun s ns -> Span.make ~s ~ns ())
 
 let pos_span =
-  Crowbar.map
-    [ Crowbar.int64; Crowbar.int ]
-    (fun s ns ->
-       Span.(abs @@ make ~s ~ns ())
-    )
+  Crowbar.map [ Crowbar.int64; Crowbar.int ] (fun s ns ->
+      Span.(abs @@ make ~s ~ns ()))
 
 let nz_pos_span =
-  Crowbar.map
-    [ Crowbar.int64; Crowbar.int ]
-    (fun s ns ->
-       let ns = ns + 1 in
-       Span.(abs @@ make ~s ~ns ())
-    )
+  Crowbar.map [ Crowbar.int64; Crowbar.int ] (fun s ns ->
+      let ns = ns + 1 in
+      Span.(abs @@ make ~s ~ns ()))
 
 let pattern =
   Crowbar.map
@@ -59,18 +49,17 @@ let search_space =
   Crowbar.map
     [
       Crowbar.list
-        (Crowbar.map [ timestamp; nz_pos_span ]
-           (fun search_start search_size ->
-              let search_start =
-                Span.(min (max Time.timestamp_min search_start) Time.timestamp_max)
-              in
-              let search_end_exc =
-                Span.(min Time.timestamp_max (search_start + search_size))
-              in
-              (search_start, search_end_exc)));
+        (Crowbar.map [ timestamp; nz_pos_span ] (fun search_start search_size ->
+             let search_start =
+               Span.(
+                 min (max Time.timestamp_min search_start) Time.timestamp_max)
+             in
+             let search_end_exc =
+               Span.(min Time.timestamp_max (search_start + search_size))
+             in
+             (search_start, search_end_exc)));
     ]
-    (fun l -> CCList.to_seq l |> Time.Intervals.normalize |> CCList.of_seq
-                                                                                     )
+    (fun l -> CCList.to_seq l |> Time.Intervals.normalize |> CCList.of_seq)
 
 let permute (seed : int) (l : 'a list) : 'a list =
   match l with

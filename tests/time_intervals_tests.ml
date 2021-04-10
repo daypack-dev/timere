@@ -38,9 +38,7 @@ module Alco = struct
    *       |> CCList.of_seq) *)
 
   let suite =
-    [
-      (* Alcotest.test_case "round_robin_simple1" `Quick round_robin_simple1 *)
-    ]
+    [ (* Alcotest.test_case "round_robin_simple1" `Quick round_robin_simple1 *) ]
 end
 
 module Qc = struct
@@ -125,22 +123,19 @@ module Qc = struct
     QCheck.Test.make ~count:10_000 ~name:"normalize_is_lossless"
       sorted_time_slots_maybe_gaps (fun l ->
           let original_timestamps =
-            List.fold_left (fun acc (x, y) ->
-                Span_set.(add (Interval.make x y) acc)
-              )
+            List.fold_left
+              (fun acc (x, y) -> Span_set.(add (Interval.make x y) acc))
               Span_set.empty l
           in
           let normalized_timestamps =
             l
             |> CCList.to_seq
             |> Time.Intervals.normalize ~skip_sort:true
-            |> Seq.fold_left (fun acc (x, y) ->
-                Span_set.(add (Interval.make x y) acc)
-              )
+            |> Seq.fold_left
+              (fun acc (x, y) -> Span_set.(add (Interval.make x y) acc))
               Span_set.empty
           in
-          Span_set.equal
-          original_timestamps normalized_timestamps)
+          Span_set.equal original_timestamps normalized_timestamps)
 
   let join_time_slots_are_disjoint_with_gaps =
     QCheck.Test.make ~count:10_000

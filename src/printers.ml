@@ -258,12 +258,10 @@ let pp_intervals ?(display_using_tz = Time_zone.utc)
     intervals =
   Fmt.seq ~sep (pp_interval ~display_using_tz ~format ()) formatter intervals
 
-let pp_span formatter ({s; ns} : Span.t) : unit =
-  Fmt.pf formatter "%Ld s + %d ns"
-    s ns
+let pp_span formatter ({ s; ns } : Span.t) : unit =
+  Fmt.pf formatter "%Ld s + %d ns" s ns
 
-let string_of_span (x : Span.t) : string =
-  Fmt.str "%a" pp_span x
+let string_of_span (x : Span.t) : string = Fmt.str "%a" pp_span x
 
 let pp_duration formatter ({ days; hours; minutes; seconds } : Duration.t) :
   unit =
