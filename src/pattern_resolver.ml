@@ -55,25 +55,25 @@ module Matching_seconds = struct
          && sec <= cur_branch_search_end_inc.second)
       s
 
-  let matching_seconds ~(overall_search_start : Time.Date_time'.t)
-      ~(overall_search_end_inc : Time.Date_time'.t) (t : Pattern.t)
-      (cur_branch : Time.Date_time'.t) : Time.Date_time'.t Seq.t =
-    let cur_branch_search_start =
-      get_cur_branch_search_start ~overall_search_start cur_branch
-    in
-    let cur_branch_search_end_inc =
-      get_cur_branch_search_end_inc ~overall_search_end_inc cur_branch
-    in
-    if Int_set.is_empty t.seconds then
-      Seq.map
-        (fun second -> { cur_branch with second })
-        OSeq.(
-          cur_branch_search_start.second -- cur_branch_search_end_inc.second)
-    else
-      t.seconds
-      |> Int_set.to_seq
-      |> filter_seconds ~cur_branch_search_start ~cur_branch_search_end_inc
-      |> Seq.map (fun second -> { cur_branch with second })
+  (* let matching_seconds ~(overall_search_start : Time.Date_time'.t)
+   *     ~(overall_search_end_inc : Time.Date_time'.t) (t : Pattern.t)
+   *     (cur_branch : Time.Date_time'.t) : Time.Date_time'.t Seq.t =
+   *   let cur_branch_search_start =
+   *     get_cur_branch_search_start ~overall_search_start cur_branch
+   *   in
+   *   let cur_branch_search_end_inc =
+   *     get_cur_branch_search_end_inc ~overall_search_end_inc cur_branch
+   *   in
+   *   if Int_set.is_empty t.seconds then
+   *     Seq.map
+   *       (fun second -> { cur_branch with second })
+   *       OSeq.(
+   *         cur_branch_search_start.second -- cur_branch_search_end_inc.second)
+   *   else
+   *     t.seconds
+   *     |> Int_set.to_seq
+   *     |> filter_seconds ~cur_branch_search_start ~cur_branch_search_end_inc
+   *     |> Seq.map (fun second -> { cur_branch with second }) *)
 
   let matching_second_ranges (t : Pattern.t)
       ~(overall_search_start : Time.Date_time'.t)
@@ -84,11 +84,11 @@ module Matching_seconds = struct
         ~(cur_branch_search_end_inc : Time.Date_time'.t) (x, y) =
       let range_map_start =
         if x = cur_branch_search_start.second then cur_branch_search_start
-        else { cur_branch_search_start with second = x }
+        else { cur_branch_search_start with second = x; ns = 0 }
       in
       let range_map_end_inc =
         if y = cur_branch_search_end_inc.second then cur_branch_search_end_inc
-        else { cur_branch_search_end_inc with second = y }
+        else { cur_branch_search_end_inc with second = y; ns = Span.ns_count_in_s - 1 }
       in
       (range_map_start, range_map_end_inc)
     in
@@ -588,27 +588,27 @@ end
 
 type error = Pattern.error
 
-let matching_date_times (search_param : Search_param.t) (pat : Pattern.t) :
-  Time.Date_time'.t Seq.t =
-  let overall_search_start = search_param.start in
-  let overall_search_end_inc = search_param.end_inc in
-  Matching_years.matching_years ~overall_search_start ~overall_search_end_inc
-    pat
-  |> Seq.flat_map
-    (Matching_months.matching_months pat ~overall_search_start
-       ~overall_search_end_inc)
-  |> Seq.flat_map
-    (Matching_days.matching_days pat ~overall_search_start
-       ~overall_search_end_inc)
-  |> Seq.flat_map
-    (Matching_hours.matching_hours pat ~overall_search_start
-       ~overall_search_end_inc)
-  |> Seq.flat_map
-    (Matching_minutes.matching_minutes pat ~overall_search_start
-       ~overall_search_end_inc)
-  |> Seq.flat_map
-    (Matching_seconds.matching_seconds pat ~overall_search_start
-       ~overall_search_end_inc)
+(* let matching_date_times (search_param : Search_param.t) (pat : Pattern.t) :
+ *   Time.Date_time'.t Seq.t =
+ *   let overall_search_start = search_param.start in
+ *   let overall_search_end_inc = search_param.end_inc in
+ *   Matching_years.matching_years ~overall_search_start ~overall_search_end_inc
+ *     pat
+ *   |> Seq.flat_map
+ *     (Matching_months.matching_months pat ~overall_search_start
+ *        ~overall_search_end_inc)
+ *   |> Seq.flat_map
+ *     (Matching_days.matching_days pat ~overall_search_start
+ *        ~overall_search_end_inc)
+ *   |> Seq.flat_map
+ *     (Matching_hours.matching_hours pat ~overall_search_start
+ *        ~overall_search_end_inc)
+ *   |> Seq.flat_map
+ *     (Matching_minutes.matching_minutes pat ~overall_search_start
+ *        ~overall_search_end_inc)
+ *   |> Seq.flat_map
+ *     (Matching_seconds.matching_seconds pat ~overall_search_start
+ *        ~overall_search_end_inc) *)
 
 let matching_date_time_ranges (search_param : Search_param.t) (t : Pattern.t) :
   Time.Date_time'.t Time.Range.range Seq.t =
