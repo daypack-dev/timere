@@ -12,7 +12,7 @@
 
 - Added support for nanosecond precision for date times and timestamps
 
-- Minor `Tiemre.Date_time` API tuning
+- Minor `Timere.Date_time` API tuning
 
 - Extended format string to support number form for month
 
