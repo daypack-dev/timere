@@ -4,6 +4,14 @@ open Date_time_components
 let () =
   Crowbar.add_test ~name:"pattern_resolution_is_complete"
     [ time_zone; search_space; pattern ] (fun tz search_space pattern ->
+        let search_start =
+          fst (List.hd search_space)
+        in
+        let search_end_exc =
+          snd
+            (CCOpt.get_exn
+             @@ Misc_utils.last_element_of_list search_space)
+        in
         let s =
           Resolver.aux_pattern tz search_space pattern |> Resolver.normalize
         in
@@ -12,14 +20,21 @@ let () =
         | _ ->
           let s' =
             Seq_utils.a_to_b_exc_int64
-              ~a:(fst (List.hd search_space))
+              ~a:search_start.s
               ~b:
-                (snd
-                   (CCOpt.get_exn
-                    @@ Misc_utils.last_element_of_list search_space))
+                (
+                  Int64.succ
+                  search_end_exc.s
+                )
+            |> Seq.map (fun timestamp ->
+                Span.make ~s:timestamp ()
+              )
             |> OSeq.filter (fun timestamp ->
                 List.exists
-                  (fun (x, y) -> x <= timestamp && timestamp < y)
+                  Span.
+                  (fun (x, y) ->
+                     x <= timestamp && timestamp < y
+                  )
                   search_space)
             |> OSeq.filter (fun timestamp ->
                 let dt =
@@ -75,8 +90,18 @@ let () =
                 && hour_is_fine
                 && minute_is_fine
                 && second_is_fine)
+            |> OSeq.map (fun x ->
+                let x = Span.(x.s) in
+                if x = search_start.s then
+                  (search_start, Span.make ~s:(Int64.succ x) ())
+                else
+                  if x = search_end_exc.s then
+                    (Span.make ~s:x (), search_end_exc)
+                  else
+                    (Span.make ~s:x (), Span.make ~s:(Int64.succ x) ())
+              )
           in
           Crowbar.check
             (OSeq.for_all
-               (fun x' -> OSeq.exists (fun (x, y) -> x <= x' && x' < y) s)
+               (fun (x', y') -> OSeq.exists Span.(fun (x, y) -> x <= x' && y' < y) s)
                s'))

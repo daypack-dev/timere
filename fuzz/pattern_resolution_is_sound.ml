@@ -7,7 +7,10 @@ let () =
         let s =
           Resolver.aux_pattern tz search_space pattern
           |> Resolver.normalize
-          |> Seq.flat_map (fun (a, b) -> Seq_utils.a_to_b_exc_int64 ~a ~b)
+          |> Seq.flat_map (fun (a, b) -> Seq_utils.a_to_b_exc_int64 ~a:Span.(a.s) ~b:Span.(b.s))
+          |> Seq.map (fun s ->
+              Span.make ~s ()
+            )
         in
         Crowbar.check
           (OSeq.for_all
