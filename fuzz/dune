@@ -161,12 +161,6 @@
 )
 
 (rule
- (targets simple_resolver.ml)
- (deps    ../tests/simple_resolver.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
  (targets builder.ml)
  (deps    ../tests/builder.ml)
  (action  (copy %{deps} %{targets}))

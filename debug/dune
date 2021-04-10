@@ -162,7 +162,7 @@
 
 (rule
  (targets simple_resolver.ml)
- (deps    ../tests/simple_resolver.ml)
+ (deps    ../fuzz/simple_resolver.ml)
  (action  (copy %{deps} %{targets}))
 )
 
