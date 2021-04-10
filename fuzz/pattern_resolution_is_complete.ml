@@ -1,5 +1,6 @@
 open Fuzz_utils
 open Date_time_components
+open Span_set_utils
 
 let () =
   Crowbar.add_test ~name:"pattern_resolution_is_complete"
