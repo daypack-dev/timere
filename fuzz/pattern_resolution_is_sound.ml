@@ -1,5 +1,6 @@
 open Fuzz_utils
 open Date_time_components
+open Span_set_utils
 
 let timestamp_is_okay (tz : Time_zone.t) (pattern : Pattern.t) timestamp =
   let dt =
@@ -58,6 +59,11 @@ let timestamp_is_okay (tz : Time_zone.t) (pattern : Pattern.t) timestamp =
 let () =
   Crowbar.add_test ~name:"pattern_resolution_is_sound"
     [ time_zone; search_space; pattern ] (fun tz search_space pattern ->
+        let search_space_set =
+          span_set_of_intervals
+          @@
+          CCList.to_seq search_space
+        in
         let s =
           Resolver.aux_pattern tz search_space pattern
           |> Resolver.normalize
@@ -69,6 +75,9 @@ let () =
                   &&
                   timestamp_is_okay tz pattern (Span.pred y)
                   &&
-                  not (timestamp_is_okay tz pattern y)
+                  not (Span_set.mem y search_space_set
+                       &&
+                         timestamp_is_okay tz pattern y
+                      )
                 )
              s))
