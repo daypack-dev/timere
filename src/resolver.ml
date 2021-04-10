@@ -421,7 +421,7 @@ let aux_points search_using_tz space (p, tz_info) : timestamp Seq.t =
   in
   aux_pattern search_using_tz space (Points.to_pattern (p, tz_info))
   |> Seq.map (fun (x, y) ->
-      assert Span.(y - x < one_s);
+      assert Span.(y - x <= one_s);
       x)
 
 let rec aux search_using_tz time =
