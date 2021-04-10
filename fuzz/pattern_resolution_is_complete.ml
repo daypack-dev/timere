@@ -20,28 +20,14 @@ let () =
         | [] -> Crowbar.check (OSeq.is_empty s)
         | _ ->
           let s' =
-            Seq_utils.a_to_b_exc_int64
+            Seq_utils.a_to_b_inc_int64
               ~a:search_start.s
-              ~b:
-                (
-                  Int64.succ
-                  search_end_exc.s
-                )
-            |> Seq.map (fun timestamp ->
-                Span.make ~s:timestamp ()
-              )
-            |> OSeq.filter (fun timestamp ->
-                List.exists
-                  Span.
-                  (fun (x, y) ->
-                     x <= timestamp && timestamp < y
-                  )
-                  search_space)
+              ~b:search_end_exc.s
             |> OSeq.filter (fun timestamp ->
                 let dt =
                   CCOpt.get_exn
                   @@ Time.Date_time'.of_timestamp ~tz_of_date_time:tz
-                    timestamp
+                    (Span.make ~s:timestamp ())
                 in
                 let weekday =
                   CCOpt.get_exn
@@ -91,16 +77,9 @@ let () =
                 && hour_is_fine
                 && minute_is_fine
                 && second_is_fine)
-            |> OSeq.map (fun x ->
-                let x = Span.(x.s) in
-                if x = search_start.s then
-                  (search_start, Span.make ~s:(Int64.succ x) ())
-                else
-                  if x = search_end_exc.s then
-                    (Span.make ~s:x (), search_end_exc)
-                  else
-                    (Span.make ~s:x (), Span.make ~s:(Int64.succ x) ())
-              )
+            |> intervals_of_int64s
+            |> span_set_of_intervals
+            |> intervals_of_span_set
           in
           Crowbar.check
             (OSeq.for_all

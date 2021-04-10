@@ -35,3 +35,10 @@ let span_set_of_intervals (s : Time.Interval.t Seq.t) : Span_set.t =
     )
     Span_set.empty
     s
+
+let intervals_of_span_set (set : Span_set.t) : Time.Interval.t Seq.t =
+  Span_set.fold (fun i l ->
+      Span_set.Interval.(x i, y i) :: l
+    ) set []
+  |> List.rev
+  |> CCList.to_seq
