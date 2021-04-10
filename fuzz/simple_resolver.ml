@@ -1,36 +1,5 @@
 open Date_time_components
-
-module Span_set = Diet.Make (struct
-    type t = Span.t
-
-    let compare = Span.compare
-
-    let zero = Span.zero
-
-    let pred = Span.pred
-
-    let succ = Span.succ
-
-    let sub = Span.sub
-
-    let add = Span.add
-
-    let to_string = Printers.string_of_span
-  end)
-
-let span_set_full : Span_set.t =
-  Span_set.add (Span_set.Interval.make Time.timestamp_min (Span.pred Time.timestamp_max)) Span_set.empty
-
-let span_set_map (f : Time.Interval.t -> Time.Interval.t) (set : Span_set.t) : Span_set.t =
-  Span_set.fold (fun interval acc ->
-      let (x, y) = Span_set.Interval.(x interval, y interval) in
-      let y = Span.succ y in
-      let (x, y) = f (x, y) in
-      let y = Span.pred y in
-      Span_set.add (Span_set.Interval.make x y) acc
-    )
-    set
-    Span_set.empty
+open Span_set_utils
 
 let timestamp_safe_sub a b =
   if Span.sub a Constants.timestamp_min >= b then Span.sub a b

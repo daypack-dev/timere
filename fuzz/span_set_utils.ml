@@ -1,3 +1,17 @@
+let span_set_full : Span_set.t =
+  Span_set.add (Span_set.Interval.make Time.timestamp_min (Span.pred Time.timestamp_max)) Span_set.empty
+
+let span_set_map (f : Time.Interval.t -> Time.Interval.t) (set : Span_set.t) : Span_set.t =
+  Span_set.fold (fun interval acc ->
+      let (x, y) = Span_set.Interval.(x interval, y interval) in
+      let y = Span.succ y in
+      let (x, y) = f (x, y) in
+      let y = Span.pred y in
+      Span_set.add (Span_set.Interval.make x y) acc
+    )
+    set
+    Span_set.empty
+
 let intervals_of_int64s (s : int64 Seq.t) :
   Time.Interval.t Seq.t =
   let rec aux acc s =
@@ -21,4 +35,3 @@ let span_set_of_intervals (s : Time.Interval.t Seq.t) : Span_set.t =
     )
     Span_set.empty
     s
-
