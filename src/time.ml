@@ -1541,7 +1541,7 @@ let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
       Unchunk
         (f
            (Unary_op_on_t
-              (Chunk_by_span { chunk_size; drop_partial = false }, t)))
+              (Chunk_by_duration { chunk_size; drop_partial = false }, t)))
   | `By_duration_drop_partial duration ->
     let chunk_size = Duration.to_span duration in
     if Span.(chunk_size < one_ns) then invalid_arg "chunk"
@@ -1549,7 +1549,7 @@ let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
       Unchunk
         (f
            (Unary_op_on_t
-              (Chunk_by_span { chunk_size; drop_partial = true }, t)))
+              (Chunk_by_duration { chunk_size; drop_partial = true }, t)))
   | `At_year_boundary -> Unchunk (f (Unary_op_on_t (Chunk_at_year_boundary, t)))
   | `At_month_boundary ->
     Unchunk (f (Unary_op_on_t (Chunk_at_month_boundary, t)))
@@ -1564,7 +1564,7 @@ let chunk_again (chunking : chunking) chunked : chunked =
     else
       Unary_op_on_chunked
         ( Chunk_again
-            (Chunk_by_span
+            (Chunk_by_duration
                {
                  chunk_size = Duration.to_span duration;
                  drop_partial = false;
@@ -1576,7 +1576,7 @@ let chunk_again (chunking : chunking) chunked : chunked =
     else
       Unary_op_on_chunked
         ( Chunk_again
-            (Chunk_by_span
+            (Chunk_by_duration
                {
                  chunk_size = Duration.to_span duration;
                  drop_partial = true;

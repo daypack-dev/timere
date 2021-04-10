@@ -20,7 +20,7 @@ type chunked_unary_op_on_t =
   | Chunk_disjoint_interval
   | Chunk_at_year_boundary
   | Chunk_at_month_boundary
-  | Chunk_by_span of {
+  | Chunk_by_duration of {
       chunk_size : Span.t;
       drop_partial : bool;
     }

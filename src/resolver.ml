@@ -630,7 +630,7 @@ and aux_chunked search_using_tz (chunked : chunked) =
   let chunk_based_on_op_on_t op s =
     match op with
     | Chunk_disjoint_interval -> normalize s
-    | Chunk_by_span { chunk_size; drop_partial } ->
+    | Chunk_by_duration { chunk_size; drop_partial } ->
       Intervals.chunk ~skip_check:true ~drop_partial ~chunk_size s
     | Chunk_at_year_boundary -> do_chunk_at_year_boundary search_using_tz s
     | Chunk_at_month_boundary -> do_chunk_at_month_boundary search_using_tz s

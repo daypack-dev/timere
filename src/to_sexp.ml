@@ -228,9 +228,9 @@ let to_sexp (t : Time_ast.t) : CCSexp.t =
       | Time_ast.Chunk_disjoint_interval -> [ atom "chunk_disjoint_intervals" ]
       | Chunk_at_year_boundary -> [ atom "chunk_at_year_boundary" ]
       | Chunk_at_month_boundary -> [ atom "chunk_at_month_boundary" ]
-      | Chunk_by_span { chunk_size; drop_partial } ->
+      | Chunk_by_duration { chunk_size; drop_partial } ->
         [
-          Some (atom "chunk_by_span");
+          Some (atom "chunk_by_duration");
           Some (sexp_of_span chunk_size);
           (if drop_partial then Some (atom "drop_partial") else None);
         ]

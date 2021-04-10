@@ -318,7 +318,7 @@ let resolve ?(search_using_tz = Time_zone.utc)
     let chunk_based_on_op_on_t op s =
       match op with
       | Time_ast.Chunk_disjoint_interval -> normalize s
-      | Chunk_by_span { chunk_size; drop_partial } ->
+      | Chunk_by_duration { chunk_size; drop_partial } ->
         do_chunk ~drop_partial chunk_size s
       | Chunk_at_year_boundary -> do_chunk_at_year_boundary search_using_tz s
       | Chunk_at_month_boundary -> do_chunk_at_month_boundary search_using_tz s
