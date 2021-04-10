@@ -13,7 +13,7 @@ let display_intervals ~display_using_tz s =
     |> OSeq.take 20
     |> OSeq.iter (fun (x, y) ->
         let s = Printers.string_of_interval ~display_using_tz (x, y) in
-        let size = Duration.of_seconds (Int64.sub y x) in
+        let size = Duration.of_span (Span.sub y x) in
         let size_str = Printers.string_of_duration size in
         Printf.printf "%s - %s\n" s size_str;
         flush stdout)
@@ -134,7 +134,7 @@ let debug_example () =
       |> OSeq.take 60
       |> OSeq.iter (fun (x, y) ->
           let s = Printers.string_of_interval ~display_using_tz (x, y) in
-          let size = Duration.of_seconds (Int64.sub y x) in
+          let size = Duration.of_span (Span.sub y x) in
           let size_str = Printers.string_of_duration size in
           Printf.printf "%s - %s\n" s size_str)
   in
@@ -169,7 +169,7 @@ let debug_fuzz_bounded_intervals () =
        Time_zone.make_exn (List.nth Time_zone.available_time_zones n))
       140733971657571
   in
-  let bound = Int64.of_int 82400 in
+  let bound = Span.make ~s:82400L () in
   let p1 =
     (fun randomness ->
        let min_year = 0000 in
@@ -205,13 +205,13 @@ let debug_fuzz_bounded_intervals () =
     (OSeq.for_all
        (fun x1 ->
           match
-            Seq.filter (fun x2 -> x1 < x2 && Int64.sub x2 x1 <= bound) s2 ()
+            Seq.filter Span.(fun x2 -> x1 < x2 && x2 - x1 <= bound) s2 ()
           with
           | Seq.Nil -> true
           | Seq.Cons (xr2, _) ->
             if
               OSeq.mem ~eq:( = ) (x1, xr2) s
-              && OSeq.mem ~eq:( = ) (xr2, Int64.succ xr2) s'
+              && OSeq.mem ~eq:( = ) (xr2, Span.succ xr2) s'
             then true
             else (
               print_endline
@@ -295,12 +295,12 @@ let debug_fuzz_pattern () =
          let search_start =
            min (max Time.timestamp_min search_start) Time.timestamp_max
          in
-         let search_size = Int64.abs search_size in
+         let search_size = Span.make ~s:(Int64.abs search_size) () in
          let search_end_exc =
-           min Time.timestamp_max (Int64.add search_start search_size)
+           min Time.timestamp_max (Span.add search_start search_size)
          in
          (search_start, search_end_exc))
-      [ (-5208492133891178625L, 201999689168823L) ]
+      [ (Span.make ~s:(-5208492133891178625L) (), 201999689168823L) ]
   in
   let pattern =
     (fun randomness ->

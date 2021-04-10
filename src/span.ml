@@ -9,13 +9,15 @@ let ns_count_in_s = 1_000_000_000
 
 let ns_count_in_s_float = float_of_int ns_count_in_s
 
-let normalize {s; ns} =
-  let s' = ns / ns_count_in_s in
-  let ns' = ns mod ns_count_in_s in
-  { s = Int64.add s (Int64.of_int s'); ns = ns'}
+let rec normalize {s; ns} =
+  if ns >= 0 then
+    let s' = ns / ns_count_in_s in
+    let ns' = ns mod ns_count_in_s in
+    { s = Int64.add s (Int64.of_int s'); ns = ns'}
+  else
+    normalize { s = Int64.pred s; ns = ns + ns_count_in_s }
 
 let make ?(s = 0L) ?(ns = 0) () =
-  if ns < 0 then invalid_arg "ns is negative";
   normalize { s; ns }
 
 let add { s = s_x; ns = ns_x } { s = s_y; ns = ns_y } : t =
@@ -105,3 +107,5 @@ let (-) = sub
 
 let (+) = add
 
+let abs x =
+  if x >= zero then x else neg x

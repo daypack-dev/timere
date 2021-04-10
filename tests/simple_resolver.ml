@@ -1,24 +1,42 @@
 open Date_time_components
 
+module Span_set = Diet.Make (struct
+    type t = Span.t
+
+    let compare = Span.compare
+
+    let zero = Span.zero
+
+    let pred = Span.pred
+
+    let succ = Span.succ
+
+    let sub = Span.sub
+
+    let add = Span.add
+
+    let to_string = Printers.string_of_span
+  end)
+
 let timestamp_safe_sub a b =
-  if Int64.sub a Constants.timestamp_min >= b then Int64.sub a b
+  if Span.sub a Constants.timestamp_min >= b then Span.sub a b
   else Constants.timestamp_min
 
 let timestamp_safe_add a b =
-  if Int64.sub Constants.timestamp_max a >= b then Int64.add a b
+  if Span.sub Constants.timestamp_max a >= b then Span.add a b
   else Constants.timestamp_max
 
-let do_chunk ~drop_partial (n : int64) (s : Time.Interval.t Seq.t) :
+let do_chunk ~drop_partial (n : Span.t) (s : Time.Interval.t Seq.t) :
   Time.Interval.t Seq.t =
   let rec aux n s =
     match s () with
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((x, y), rest) ->
-      let size = Int64.sub y x in
+      let size = Span.sub y x in
       if size >= n then fun () ->
         Seq.Cons
-          ( (x, Int64.add n x),
-            aux n (fun () -> Seq.Cons ((Int64.add n x, y), rest)) )
+          ( (x, Span.add n x),
+            aux n (fun () -> Seq.Cons ((Span.add n x, y), rest)) )
       else if drop_partial then aux n rest
       else fun () -> Seq.Cons ((x, y), aux n rest)
   in
@@ -31,23 +49,25 @@ let intervals_of_timestamps (s : Time_ast.timestamp Seq.t) :
     | Seq.Nil -> ( match acc with None -> Seq.empty | Some x -> Seq.return x)
     | Seq.Cons (x, rest) -> (
         match acc with
-        | None -> aux (Some (x, Int64.succ x)) rest
+        | None -> aux (Some (x, Span.succ x)) rest
         | Some (x', y') ->
-          if y' = x then aux (Some (x', Int64.succ x)) rest
+          if y' = x then aux (Some (x', Span.succ x)) rest
           else fun () -> Seq.Cons ((x', y'), aux None s))
   in
   aux None s
 
-let timestamps_of_intervals (s : Time.Interval.t Seq.t) :
-  Time_ast.timestamp Seq.t =
-  s |> Seq.flat_map (fun (a, b) -> Seq_utils.a_to_b_exc_int64 ~a ~b)
-
 let normalize (s : Time.Interval.t Seq.t) : Time.Interval.t Seq.t =
-  s
-  |> timestamps_of_intervals
-  |> Int64_set.of_seq
-  |> Int64_set.to_seq
-  |> intervals_of_timestamps
+  let set =
+    Seq.fold_left (fun acc (x, y) ->
+        Span_set.(add (Interval.make x y) acc)
+      ) Span_set.empty
+      s
+  in
+  Span_set.fold (fun i l ->
+      Span_set.Interval.(x i, y i) :: l
+    ) set []
+  |> List.rev
+  |> CCList.to_seq
 
 let find_after bound (start : int64) (s2 : int64 Seq.t) =
   let s =
@@ -68,7 +88,7 @@ let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) =
       in
       let dt2 =
         t2
-        |> Int64.pred
+        |> Span.pred
         |> Date_time'.of_timestamp ~tz_of_date_time:tz
         |> CCOpt.get_exn
       in
@@ -79,7 +99,7 @@ let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) =
           Date_time'.set_to_last_day_hour_min_sec dt1
           |> Date_time'.to_timestamp
           |> Date_time'.max_of_local_result
-          |> Int64.succ
+          |> Span.succ
         in
         fun () ->
           Seq.Cons ((t1, t'), aux (fun () -> Seq.Cons ((t', t2), rest)))
@@ -97,7 +117,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
       in
       let dt2 =
         t2
-        |> Int64.pred
+        |> Span.pred
         |> Date_time'.of_timestamp ~tz_of_date_time:tz
         |> CCOpt.get_exn
       in
@@ -108,7 +128,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
           Date_time'.set_to_last_day_hour_min_sec dt1
           |> Date_time'.to_timestamp
           |> Date_time'.max_of_local_result
-          |> Int64.succ
+          |> Span.succ
         in
         fun () ->
           Seq.Cons ((t1, t'), aux (fun () -> Seq.Cons ((t', t2), rest)))
@@ -161,7 +181,10 @@ let aux_pattern_mem search_using_tz (pattern : Pattern.t) timestamp =
   && second_is_fine
 
 let aux_pattern search_using_tz search_space pattern =
-  Seq_utils.a_to_b_exc_int64 ~a:(fst search_space) ~b:(snd search_space)
+  Seq_utils.a_to_b_exc_int64 ~a:Span.((fst search_space).s) ~b:Span.((snd search_space).s)
+  |> OSeq.map (fun s ->
+      Span.make ~s ()
+    )
   |> Seq.filter (aux_pattern_mem search_using_tz pattern)
   |> intervals_of_timestamps
 
@@ -204,16 +227,16 @@ let rec resolve ?(search_using_tz = Time_zone.utc)
             ~b:Time.timestamp_max
           |> Seq.filter (fun x -> not (mem search_space ~search_using_tz t x))
           |> intervals_of_timestamps
-        | Drop_points n ->
-          aux default_search_space search_using_tz t
-          |> timestamps_of_intervals
-          |> OSeq.drop n
-          |> intervals_of_timestamps
-        | Take_points n ->
-          aux default_search_space search_using_tz t
-          |> timestamps_of_intervals
-          |> OSeq.take n
-          |> intervals_of_timestamps
+        (* | Drop_points n ->
+         *   aux default_search_space search_using_tz t
+         *   |> timestamps_of_intervals
+         *   |> OSeq.drop n
+         *   |> intervals_of_timestamps
+         * | Take_points n ->
+         *   aux default_search_space search_using_tz t
+         *   |> timestamps_of_intervals
+         *   |> OSeq.take n
+         *   |> intervals_of_timestamps *)
         | Shift n ->
           let x, y = search_space in
           aux

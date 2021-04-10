@@ -364,35 +364,3 @@ let permute (seed : int) (l : 'a list) : 'a list =
       l := List.remove_assoc pick l' |> List.map (fun (_, x) -> x);
       r)
   |> CCList.of_seq
-
-let flatten_interval ((x, y) : Time.Interval.t) : Span.t Seq.t =
-  if x.s = y.s then
-    OSeq.(x.ns --^ y.ns)
-    |> OSeq.map (fun ns ->
-        Span.make ~s:x.s ~ns ()
-      )
-  else
-    let s0 =
-      OSeq.(x.ns --^ Span.ns_count_in_s)
-      |> OSeq.map (fun ns ->
-          Span.make ~s:x.s ~ns ()
-        )
-    in
-    let s1 =
-      Seq_utils.a_to_b_exc_int64 ~a:(Int64.succ x.s) ~b:(y.s)
-      |> OSeq.flat_map (fun s ->
-          Seq.map (fun ns ->
-              Span.make ~s ~ns ()
-            )
-            OSeq.(0 --^ Span.ns_count_in_s)
-        )
-    in
-    let s2 =
-      OSeq.(0 --^ y.ns)
-      |> OSeq.map (fun ns ->
-          Span.make ~s:y.s ~ns ()
-        )
-    in
-    OSeq.append
-      (OSeq.append s0 s1)
-      s2

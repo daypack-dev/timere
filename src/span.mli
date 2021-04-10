@@ -21,6 +21,8 @@ val pred : t -> t
 
 val neg : t -> t
 
+val abs : t -> t
+
 val equal : t -> t -> bool
 
 val lt : t -> t -> bool

@@ -175,7 +175,11 @@ module Span : sig
   val make : ?s:int64 -> ?ns:int -> unit -> t
   (** [s] defaults to [0L], [ns] defaults to [0]
 
-      @raise Invalid_argument if [ns] is negative
+      [ns] may be negative, and is normalized during construction
+
+      Interpretation of provided input is still [s + ns], i.e. if you wish to
+      represent "negative (1 second and 500 nanosecond)", then the call could look like
+      [make ~s:(-1L) ~ns:(-500)]
   *)
 
   val add : t -> t -> t
@@ -187,6 +191,8 @@ module Span : sig
   val pred : t -> t
 
   val neg : t -> t
+
+  val abs : t -> t
 
   val equal : t -> t -> bool
 

@@ -6,6 +6,24 @@ module Int64_set = Set.Make (struct
     let compare = compare
   end)
 
+module Span_set = Diet.Make (struct
+    type t = Span.t
+
+    let compare = Span.compare
+
+    let zero = Span.zero
+
+    let pred = Span.pred
+
+    let succ = Span.succ
+
+    let sub = Span.sub
+
+    let add = Span.add
+
+    let to_string = Printers.string_of_span
+  end)
+
 module Alco = struct
   (* let round_robin_simple1 () =
    *   Alcotest.(check (list (pair int64 int64)))
@@ -107,17 +125,21 @@ module Qc = struct
     QCheck.Test.make ~count:10_000 ~name:"normalize_is_lossless"
       sorted_time_slots_maybe_gaps (fun l ->
           let original_timestamps =
-            l
-            |> CCList.to_seq
-            |> OSeq.flat_map flatten_interval
+            List.fold_left (fun acc (x, y) ->
+                Span_set.(add (Interval.make x y) acc)
+              )
+              Span_set.empty l
           in
           let normalized_timestamps =
             l
             |> CCList.to_seq
             |> Time.Intervals.normalize ~skip_sort:true
-            |> OSeq.flat_map flatten_interval
+            |> Seq.fold_left (fun acc (x, y) ->
+                Span_set.(add (Interval.make x y) acc)
+              )
+              Span_set.empty
           in
-          OSeq.equal ~eq:Span.equal
+          Span_set.equal
           original_timestamps normalized_timestamps)
 
   let join_time_slots_are_disjoint_with_gaps =

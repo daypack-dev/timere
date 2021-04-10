@@ -9,6 +9,20 @@ let time =
 
 let time' = Crowbar.map [ time ] Resolver.t_of_ast
 
+let timestamp =
+  Crowbar.map
+    [ Crowbar.int64; Crowbar.int ]
+    (fun s ns ->
+       Span.make ~s ~ns ()
+    )
+
+let pos_span =
+  Crowbar.map
+    [ Crowbar.int64; Crowbar.int ]
+    (fun s ns ->
+       Span.(abs @@ make ~s ~ns ())
+    )
+
 let pattern =
   Crowbar.map
     [ Crowbar.list (Crowbar.range 5000) ]
@@ -37,14 +51,13 @@ let search_space =
   Crowbar.map
     [
       Crowbar.list
-        (Crowbar.map [ Crowbar.int64; Crowbar.int64 ]
+        (Crowbar.map [ timestamp; pos_span ]
            (fun search_start search_size ->
               let search_start =
-                min (max Time.timestamp_min search_start) Time.timestamp_max
+                Span.(min (max Time.timestamp_min search_start) Time.timestamp_max)
               in
-              let search_size = Int64.abs search_size in
               let search_end_exc =
-                min Time.timestamp_max (Int64.add search_start search_size)
+                Span.(min Time.timestamp_max (search_start + search_size))
               in
               (search_start, search_end_exc)));
     ]
