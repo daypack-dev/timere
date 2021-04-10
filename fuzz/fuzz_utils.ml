@@ -58,7 +58,7 @@ let time_zone : Time_zone.t Crowbar.gen =
 let search_space =
   Crowbar.map
     [
-      Crowbar.list1
+      Crowbar.list
         (Crowbar.map [ timestamp; nz_pos_span ]
            (fun search_start search_size ->
               let search_start =
@@ -69,8 +69,8 @@ let search_space =
               in
               (search_start, search_end_exc)));
     ]
-    (fun l -> CCList.to_seq l |> Time.Intervals.normalize ~skip_filter_empty:true |> CCList.of_seq
-                                                                                     |> (fun l -> assert (List.length l > 0); l))
+    (fun l -> CCList.to_seq l |> Time.Intervals.normalize |> CCList.of_seq
+                                                                                     )
 
 let permute (seed : int) (l : 'a list) : 'a list =
   match l with

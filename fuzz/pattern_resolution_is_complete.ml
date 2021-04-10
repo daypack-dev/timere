@@ -5,6 +5,7 @@ open Span_set_utils
 let () =
   Crowbar.add_test ~name:"pattern_resolution_is_complete"
     [ time_zone; search_space; pattern ] (fun tz search_space pattern ->
+        Crowbar.guard (search_space <> []);
         let search_start =
           fst (List.hd search_space)
         in
