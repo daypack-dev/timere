@@ -33,7 +33,7 @@ type t = {
 let zero : t = { days = 0; hours = 0; minutes = 0; seconds = 0; ns = 0 }
 
 let of_span ({s; ns} as x : Span.t) : t =
-  if Span.(x < zero) then invalid_arg "of_seconds"
+  if Span.(x < zero) then invalid_arg "of_span"
   else
     let seconds = Int64.rem s 60L in
     let minutes = Int64.div s 60L in

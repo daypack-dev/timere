@@ -314,7 +314,7 @@ let of_sexp (x : CCSexp.t) =
             | "snd" -> `Snd
             | _ -> invalid_data (Printf.sprintf "Invalid pick: %s" pick)
           in
-          let bound = duration_of_sexp bound in
+          let bound = Duration.of_span @@ span_of_sexp bound in
           bounded_intervals pick bound (points_of_sexp start)
             (points_of_sexp end_exc)
         | [ `Atom "unchunk"; x ] -> aux_chunked CCFun.id x
@@ -338,10 +338,10 @@ let of_sexp (x : CCSexp.t) =
           chunk `At_month_boundary f (aux x)
         | [ `Atom "chunk_by_duration"; duration; `Atom "drop_partial"; x ] ->
           chunk
-            (`By_duration_drop_partial (duration_of_sexp duration))
+            (`By_duration_drop_partial (Duration.of_span @@ span_of_sexp duration))
             f (aux x)
         | [ `Atom "chunk_by_duration"; duration; x ] ->
-          chunk (`By_duration (duration_of_sexp duration)) f (aux x)
+          chunk (`By_duration (Duration.of_span @@ span_of_sexp duration)) f (aux x)
         | [ `Atom "drop"; n; chunked ] ->
           aux_chunked (drop (int_of_sexp n) %> f) chunked
         | [ `Atom "take"; n; chunked ] ->
@@ -372,7 +372,7 @@ let of_sexp (x : CCSexp.t) =
         ] ->
           aux_chunked
             (chunk_again
-               (`By_duration_drop_partial (duration_of_sexp duration))
+               (`By_duration_drop_partial (Duration.of_span @@ span_of_sexp duration))
              %> f)
             chunked
         | [
@@ -380,7 +380,7 @@ let of_sexp (x : CCSexp.t) =
           `List [ `Atom "chunk_by_duration"; duration; chunked ];
         ] ->
           aux_chunked
-            (chunk_again (`By_duration (duration_of_sexp duration)) %> f)
+            (chunk_again (`By_duration (Duration.of_span @@ span_of_sexp duration)) %> f)
             chunked
         | _ ->
           invalid_data
