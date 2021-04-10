@@ -33,7 +33,7 @@ module Matching_seconds = struct
       && cur_branch.hour = overall_search_start.hour
       && cur_branch.minute = overall_search_start.minute
     then overall_search_start
-    else Time.Date_time'.set_to_first_sec cur_branch
+    else Time.Date_time'.set_to_first_sec_ns cur_branch
 
   let get_cur_branch_search_end_inc
       ~(overall_search_end_inc : Time.Date_time'.t)
@@ -45,7 +45,7 @@ module Matching_seconds = struct
       && cur_branch.hour = overall_search_end_inc.hour
       && cur_branch.minute = overall_search_end_inc.minute
     then overall_search_end_inc
-    else Time.Date_time'.set_to_last_sec cur_branch
+    else Time.Date_time'.set_to_last_sec_ns cur_branch
 
   let filter_seconds ~(cur_branch_search_start : Time.Date_time'.t)
       ~(cur_branch_search_end_inc : Time.Date_time'.t) s =
@@ -123,7 +123,7 @@ module Matching_minutes = struct
       && cur_branch.day = overall_search_start.day
       && cur_branch.hour = overall_search_start.hour
     then overall_search_start
-    else Time.Date_time'.set_to_first_min_sec cur_branch
+    else Time.Date_time'.set_to_first_min_sec_ns cur_branch
 
   let get_cur_branch_search_end_inc
       ~(overall_search_end_inc : Time.Date_time'.t)
@@ -134,7 +134,7 @@ module Matching_minutes = struct
       && cur_branch.day = overall_search_end_inc.day
       && cur_branch.hour = overall_search_end_inc.hour
     then overall_search_end_inc
-    else Time.Date_time'.set_to_last_min_sec cur_branch
+    else Time.Date_time'.set_to_last_min_sec_ns cur_branch
 
   let filter_minutes ~(cur_branch_search_start : Time.Date_time'.t)
       ~(cur_branch_search_end_inc : Time.Date_time'.t) s =
@@ -173,13 +173,13 @@ module Matching_minutes = struct
       let range_map_start =
         if x = cur_branch_search_start.minute then cur_branch_search_start
         else
-          Time.Date_time'.set_to_first_sec
+          Time.Date_time'.set_to_first_sec_ns
             { cur_branch_search_start with minute = x }
       in
       let range_map_end_inc =
         if y = cur_branch_search_end_inc.minute then cur_branch_search_end_inc
         else
-          Time.Date_time'.set_to_last_sec
+          Time.Date_time'.set_to_last_sec_ns
             { cur_branch_search_end_inc with minute = y }
       in
       (range_map_start, range_map_end_inc)
@@ -194,7 +194,7 @@ module Matching_minutes = struct
       Seq.return
         (`Range_inc
            ( cur_branch_search_start,
-             Time.Date_time'.set_to_last_min_sec cur_branch_search_start ))
+             Time.Date_time'.set_to_last_min_sec_ns cur_branch_search_start ))
     else
       t.minutes
       |> Int_set.to_seq
@@ -216,7 +216,7 @@ module Matching_hours = struct
       && cur_branch.month = overall_search_start.month
       && cur_branch.day = overall_search_start.day
     then overall_search_start
-    else Time.Date_time'.set_to_first_hour_min_sec cur_branch
+    else Time.Date_time'.set_to_first_hour_min_sec_ns cur_branch
 
   let get_cur_branch_search_end_inc
       ~(overall_search_end_inc : Time.Date_time'.t)
@@ -226,7 +226,7 @@ module Matching_hours = struct
       && cur_branch.month = overall_search_end_inc.month
       && cur_branch.day = overall_search_end_inc.day
     then overall_search_end_inc
-    else Time.Date_time'.set_to_last_hour_min_sec cur_branch
+    else Time.Date_time'.set_to_last_hour_min_sec_ns cur_branch
 
   let filter_hours ~(cur_branch_search_start : Time.Date_time'.t)
       ~(cur_branch_search_end_inc : Time.Date_time'.t) s =
@@ -264,13 +264,13 @@ module Matching_hours = struct
       let range_map_start =
         if x = cur_branch_search_start.hour then cur_branch_search_start
         else
-          Time.Date_time'.set_to_first_min_sec
+          Time.Date_time'.set_to_first_min_sec_ns
             { cur_branch_search_start with hour = x }
       in
       let range_map_end_inc =
         if y = cur_branch_search_end_inc.hour then cur_branch_search_end_inc
         else
-          Time.Date_time'.set_to_last_min_sec
+          Time.Date_time'.set_to_last_min_sec_ns
             { cur_branch_search_end_inc with hour = y }
       in
       (range_map_start, range_map_end_inc)
@@ -285,7 +285,7 @@ module Matching_hours = struct
       Seq.return
         (`Range_inc
            ( cur_branch_search_start,
-             Time.Date_time'.set_to_last_hour_min_sec cur_branch ))
+             Time.Date_time'.set_to_last_hour_min_sec_ns cur_branch ))
     else
       t.hours
       |> Int_set.to_seq
@@ -306,7 +306,7 @@ module Matching_days = struct
       cur_branch.year = overall_search_start.year
       && cur_branch.month = overall_search_start.month
     then overall_search_start
-    else Time.Date_time'.set_to_first_day_hour_min_sec cur_branch
+    else Time.Date_time'.set_to_first_day_hour_min_sec_ns cur_branch
 
   let get_cur_branch_search_end_inc
       ~(overall_search_end_inc : Time.Date_time'.t)
@@ -315,7 +315,7 @@ module Matching_days = struct
       cur_branch.year = overall_search_end_inc.year
       && cur_branch.month = overall_search_end_inc.month
     then overall_search_end_inc
-    else Time.Date_time'.set_to_last_day_hour_min_sec cur_branch
+    else Time.Date_time'.set_to_last_day_hour_min_sec_ns cur_branch
 
   let int_month_days_of_matching_weekdays
       ~(cur_branch_search_start : Time.Date_time'.t)
@@ -394,13 +394,13 @@ module Matching_days = struct
       let range_map_start =
         if x = cur_branch_search_start.day then cur_branch_search_start
         else
-          Time.Date_time'.set_to_first_hour_min_sec
+          Time.Date_time'.set_to_first_hour_min_sec_ns
             { cur_branch_search_start with day = x }
       in
       let range_map_end_inc =
         if y = cur_branch_search_end_inc.day then cur_branch_search_end_inc
         else
-          Time.Date_time'.set_to_last_hour_min_sec
+          Time.Date_time'.set_to_last_hour_min_sec_ns
             { cur_branch_search_end_inc with day = y }
       in
       (range_map_start, range_map_end_inc)
@@ -440,13 +440,13 @@ module Matching_months = struct
   let get_cur_branch_search_start ~(overall_search_start : Time.Date_time'.t)
       (cur_branch : Time.Date_time'.t) : Time.Date_time'.t =
     if cur_branch.year = overall_search_start.year then overall_search_start
-    else Time.Date_time'.set_to_first_month_day_hour_min_sec cur_branch
+    else Time.Date_time'.set_to_first_month_day_hour_min_sec_ns cur_branch
 
   let get_cur_branch_search_end_inc
       ~(overall_search_end_inc : Time.Date_time'.t)
       (cur_branch : Time.Date_time'.t) : Time.Date_time'.t =
     if cur_branch.year = overall_search_end_inc.year then overall_search_end_inc
-    else Time.Date_time'.set_to_last_month_day_hour_min_sec cur_branch
+    else Time.Date_time'.set_to_last_month_day_hour_min_sec_ns cur_branch
 
   let matching_months (t : Pattern.t)
       ~(overall_search_start : Time.Date_time'.t)
@@ -485,13 +485,13 @@ module Matching_months = struct
       let range_map_start =
         if x = cur_branch_search_start.month then cur_branch_search_start
         else
-          Time.Date_time'.set_to_first_day_hour_min_sec
+          Time.Date_time'.set_to_first_day_hour_min_sec_ns
             { cur_branch_search_start with month = x }
       in
       let range_map_end_inc =
         if y = cur_branch_search_end_inc.month then cur_branch_search_end_inc
         else
-          Time.Date_time'.set_to_last_day_hour_min_sec
+          Time.Date_time'.set_to_last_day_hour_min_sec_ns
             { cur_branch_search_end_inc with month = y }
       in
       (range_map_start, range_map_end_inc)
@@ -548,13 +548,13 @@ module Matching_years = struct
       let range_map_start =
         if x = overall_search_start.year then overall_search_start
         else
-          Time.Date_time'.set_to_first_month_day_hour_min_sec
+          Time.Date_time'.set_to_first_month_day_hour_min_sec_ns
             { overall_search_start with year = x }
       in
       let range_map_end_inc =
         if y = overall_search_end_inc.year then overall_search_end_inc
         else
-          Time.Date_time'.set_to_last_month_day_hour_min_sec
+          Time.Date_time'.set_to_last_month_day_hour_min_sec_ns
             { overall_search_end_inc with year = y }
       in
       (range_map_start, range_map_end_inc)

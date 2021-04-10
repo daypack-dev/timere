@@ -102,20 +102,20 @@ let set_search_space space (time : t) : t =
 let search_space_of_year_range tz year_range =
   let open Time in
   let aux_start start =
-    Date_time'.set_to_first_month_day_hour_min_sec
+    Date_time'.set_to_first_month_day_hour_min_sec_ns
       { Date_time'.min with year = start; tz_info = `Tz_only tz }
     |> Date_time'.to_timestamp
     |> Date_time'.min_of_local_result
   in
   let aux_end_inc end_exc =
-    Date_time'.set_to_last_month_day_hour_min_sec
+    Date_time'.set_to_last_month_day_hour_min_sec_ns
       { Date_time'.min with year = end_exc; tz_info = `Tz_only tz }
     |> Date_time'.to_timestamp
     |> Date_time'.min_of_local_result
     |> Span.succ
   in
   let aux_end_exc end_exc =
-    Date_time'.set_to_first_month_day_hour_min_sec
+    Date_time'.set_to_first_month_day_hour_min_sec_ns
       { Date_time'.min with year = end_exc; tz_info = `Tz_only tz }
     |> Date_time'.to_timestamp
     |> Date_time'.min_of_local_result
@@ -325,7 +325,7 @@ let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) =
       if dt1.year = dt2.year then fun () -> Seq.Cons ((t1, t2), aux rest)
       else
         let t' =
-          Date_time'.set_to_last_month_day_hour_min_sec dt1
+          Date_time'.set_to_last_month_day_hour_min_sec_ns dt1
           |> Date_time'.to_timestamp
           |> Date_time'.max_of_local_result
           |> Span.succ
@@ -354,7 +354,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
         Seq.Cons ((t1, t2), aux rest)
       else
         let t' =
-          Date_time'.set_to_last_day_hour_min_sec dt1
+          Date_time'.set_to_last_day_hour_min_sec_ns dt1
           |> Date_time'.to_timestamp
           |> Date_time'.max_of_local_result
           |> Span.succ

@@ -318,18 +318,18 @@ let debug_fuzz_pattern () =
     | _ ->
       let s' =
         Seq_utils.a_to_b_exc_int64
-          ~a:(fst (List.hd search_space))
+          ~a:Span.((fst (List.hd search_space)).s)
           ~b:
-            (snd
-               (CCOpt.get_exn @@ Misc_utils.last_element_of_list search_space))
+            ((snd
+               (CCOpt.get_exn @@ Misc_utils.last_element_of_list search_space))).s
         |> OSeq.filter (fun timestamp ->
             List.exists
-              (fun (x, y) -> x <= timestamp && timestamp < y)
+              (fun (x, y) -> Span.(x.s) <= timestamp && timestamp < Span.(y.s))
               search_space)
         |> OSeq.filter (fun timestamp ->
             let dt =
               CCOpt.get_exn
-              @@ Time.Date_time'.of_timestamp ~tz_of_date_time:tz timestamp
+              @@ Time.Date_time'.of_timestamp ~tz_of_date_time:tz (Span.make ~s:timestamp ())
             in
             let weekday =
               CCOpt.get_exn
@@ -382,7 +382,7 @@ let debug_fuzz_pattern () =
       in
       OSeq.for_all
         (fun x' ->
-           if OSeq.exists (fun (x, y) -> x <= x' && x' < y) s then true
+           if OSeq.exists (fun (x, y) -> Span.(x.s) <= x' && x' < Span.(y.s)) s then true
            else (
              Printf.printf "x': %Ld\n" x';
              false))
