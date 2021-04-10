@@ -223,6 +223,20 @@ module Span : sig
   val (-) : t -> t -> t
 
   val (+) : t -> t -> t
+
+  val to_string : t -> string
+
+  val pp : Format.formatter -> t -> unit
+
+  val to_sexp : t -> CCSexp.t
+
+  val to_sexp_string : t -> string
+
+  val of_sexp : CCSexp.t -> (t, string) result
+
+  val of_sexp_string : string -> (t, string) result
+
+  val pp_sexp : Format.formatter -> t -> unit
 end
 
 (** {1 Duration} *)

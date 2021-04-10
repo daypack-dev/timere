@@ -2,12 +2,12 @@ open Test_utils
 
 module Alco = struct
   let union_empty () =
-    Alcotest.(check (list (pair int64 int64)))
+    Alcotest.(check (list (pair span_testable span_testable)))
       "same list" []
       (Time.union [] |> Resolver.resolve |> CCResult.get_exn |> CCList.of_seq)
 
   let inter_empty () =
-    Alcotest.(check (list (pair int64 int64)))
+    Alcotest.(check (list (pair span_testable span_testable)))
       "same list" []
       (Time.inter [] |> Resolver.resolve |> CCResult.get_exn |> CCList.of_seq)
 

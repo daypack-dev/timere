@@ -258,6 +258,13 @@ let pp_intervals ?(display_using_tz = Time_zone.utc)
     intervals =
   Fmt.seq ~sep (pp_interval ~display_using_tz ~format ()) formatter intervals
 
+let pp_span formatter ({s; ns} : Span.t) : unit =
+  Fmt.pf formatter "%Ld s + %d ns"
+    s ns
+
+let string_of_span (x : Span.t) : string =
+  Fmt.str "%a" pp_span x
+
 let pp_duration formatter ({ days; hours; minutes; seconds } : Duration.t) :
   unit =
   if days > 0 then
@@ -269,9 +276,6 @@ let pp_duration formatter ({ days; hours; minutes; seconds } : Duration.t) :
   else Fmt.pf formatter "%d secs" seconds
 
 let string_of_duration (x : Duration.t) : string = Fmt.str "%a" pp_duration x
-
-let pp_duration formatter x =
-  Format.fprintf formatter "%s" (string_of_duration x)
 
 let wrap_to_sexp_into_pp_sexp (f : 'a -> CCSexp.t) :
   Format.formatter -> 'a -> unit =

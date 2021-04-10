@@ -5,6 +5,12 @@
 )
 
 (rule
+ (targets span.ml)
+ (deps    ../src/span.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
  (targets constants.ml)
  (deps    ../src/constants.ml)
  (action  (copy %{deps} %{targets}))

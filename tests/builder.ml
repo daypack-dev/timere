@@ -39,7 +39,7 @@ let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
         |> Time.Date_time'.to_timestamp
         |> Time.Date_time'.min_of_local_result
       in
-      let end_exc = Int64.add start (Int64.of_int (rng ())) in
+      let end_exc = Span.add start (Span.make ~ns:(rng ()) ()) in
       (start, end_exc))
   |> CCList.of_seq
   |> List.sort_uniq Time.Interval.compare
@@ -201,21 +201,21 @@ let make_chunk_selector ~rng : Time_ast.chunked -> Time_ast.chunked =
   in
   aux CCFun.id 5
 
-let make_unary_op ~min_year ~max_year_inc ~rng t =
-  match rng () mod 6 with
+let make_unary_op ~min_year:_ ~max_year_inc:_ ~rng t =
+  match rng () mod 4 with
   | 0 -> Time.not t
-  | 1 ->
-    Time.drop_points
-      (rng () mod 5)
-      Time.(
-        inter
-          [
-            pattern ~year_ranges:[ `Range_inc (min_year, max_year_inc) ] (); t;
-          ])
-  | 2 -> Time.take_points (rng () mod 5) t
-  | 3 -> Time.shift (make_duration ~rng) t
-  | 4 -> Time.lengthen (make_duration ~rng) t
-  | 5 ->
+  (* | 1 ->
+   *   Time.drop_points
+   *     (rng () mod 5)
+   *     Time.(
+   *       inter
+   *         [
+   *           pattern ~year_ranges:[ `Range_inc (min_year, max_year_inc) ] (); t;
+   *         ])
+   * | 2 -> Time.take_points (rng () mod 5) t *)
+  | 1 -> Time.shift (make_duration ~rng) t
+  | 2 -> Time.lengthen (make_duration ~rng) t
+  | 3 ->
     let available_time_zone_count =
       List.length Time_zone.available_time_zones
     in

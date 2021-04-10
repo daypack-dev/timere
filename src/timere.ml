@@ -3,9 +3,27 @@ include Time_ast
 include Time
 include Infix
 module Time_zone = Time_zone
-module Span = Span
 
 exception Invalid_format_string = Printers.Invalid_format_string
+
+module Span = struct
+  include Span
+
+  let to_string = Printers.string_of_span
+
+  let pp = Printers.pp_span
+
+  let to_sexp = To_sexp.sexp_of_span
+
+  let to_sexp_string x = CCSexp.to_string (To_sexp.sexp_of_span x)
+
+  let of_sexp = Of_sexp.(wrap_of_sexp span_of_sexp)
+
+  let of_sexp_string =
+    Of_sexp.(wrap_of_sexp_into_of_sexp_string span_of_sexp)
+
+  let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_span
+end
 
 module Date_time = struct
   include Time.Date_time'

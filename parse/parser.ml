@@ -590,14 +590,14 @@ module Ast_normalize = struct
                  ~days:(CCOpt.value ~default:0.0 days)
                  ~hours:(CCOpt.value ~default:0.0 hours)
                  ~minutes:(CCOpt.value ~default:0.0 minutes)
-                 ~seconds ()) )
+                 ~seconds:(float_of_int seconds) ()) )
         in
         aux_start_with_days (token :: acc) rest
       | [] ->
         if CCOpt.is_some days || CCOpt.is_some hours || CCOpt.is_some minutes
         then
           let new_token =
-            make_duration ~pos ~days ~hours ~minutes ~seconds:0
+            make_duration ~pos ~days ~hours ~minutes ~seconds:0.0
           in
           List.rev (new_token :: acc)
         else List.rev acc
@@ -605,7 +605,7 @@ module Ast_normalize = struct
         if CCOpt.is_some days || CCOpt.is_some hours || CCOpt.is_some minutes
         then
           let new_token =
-            make_duration ~pos ~days ~hours ~minutes ~seconds:0
+            make_duration ~pos ~days ~hours ~minutes ~seconds:0.0
           in
           aux_start_with_days (token :: new_token :: acc) rest
         else aux_start_with_days (token :: acc) rest
