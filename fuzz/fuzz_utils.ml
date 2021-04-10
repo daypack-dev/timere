@@ -50,7 +50,7 @@ let time_zone : Time_zone.t Crowbar.gen =
 let search_space =
   Crowbar.map
     [
-      Crowbar.list
+      Crowbar.list1
         (Crowbar.map [ timestamp; pos_span ]
            (fun search_start search_size ->
               let search_start =
