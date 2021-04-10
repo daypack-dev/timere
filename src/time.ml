@@ -1583,11 +1583,11 @@ let chunk_again (chunking : chunking) chunked : chunked =
   | `At_month_boundary ->
     Unary_op_on_chunked (Chunk_again Chunk_at_year_boundary, chunked)
 
-let shift (offset : Span.t) (t : t) : t =
-  Unary_op (Shift offset, t)
+let shift (offset : Duration.t) (t : t) : t =
+  Unary_op (Shift (Duration.to_span offset), t)
 
-let lengthen (x : Span.t) (t : t) : t =
-  Unary_op (Lengthen x, t)
+let lengthen (x : Duration.t) (t : t) : t =
+  Unary_op (Lengthen (Duration.to_span x), t)
 
 let empty = Empty
 

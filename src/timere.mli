@@ -9,8 +9,6 @@ exception Invalid_format_string of string
 
 type tz_offset_s = int
 
-type timestamp = int64
-
 type 'a range =
   [ `Range_inc of 'a * 'a
   | `Range_exc of 'a * 'a
@@ -154,6 +152,79 @@ val not : t -> t
     [not t] is equivalent to all the intervals not included in [t].
 *)
 
+(** {1 Span} *)
+
+module Span : sig
+  (** [t] is a signed span of time expressed as a tuple of [(s, ns)]
+      - [s] carries the sign of the span
+      - [ns] carries the unsigned offset
+
+      The actual span in nanosecond represented is defined as [s * 10^9 + ns], regardless of the sign of [s]
+  *)
+  type t = private {
+    s : int64;
+    ns : int;
+  }
+
+  val ns_count_in_s : int
+
+  val ns_count_in_s_float : float
+
+  val zero : t
+
+  val make : ?s:int64 -> ?ns:int -> unit -> t
+  (** [s] defaults to [0L], [ns] defaults to [0]
+
+      @raise Invalid_argument if [ns] is negative
+  *)
+
+  val add : t -> t -> t
+
+  val sub : t -> t -> t
+
+  val succ : t -> t
+
+  val pred : t -> t
+
+  val neg : t -> t
+
+  val equal : t -> t -> bool
+
+  val lt : t -> t -> bool
+
+  val le : t -> t -> bool
+
+  val gt : t -> t -> bool
+
+  val ge : t -> t -> bool
+
+  val compare : t -> t -> int
+
+  val to_float : t -> float
+
+  val of_float : float -> t
+
+  val max : t -> t -> t
+
+  val min : t -> t -> t
+
+  val (<) : t -> t -> bool
+
+  val (<=) : t -> t -> bool
+
+  val (>) : t -> t -> bool
+
+  val (>=) : t -> t -> bool
+
+  val (=) : t -> t -> bool
+
+  val (<>) : t -> t -> bool
+
+  val (-) : t -> t -> t
+
+  val (+) : t -> t -> t
+end
+
 (** {1 Duration} *)
 
 module Duration : sig
@@ -162,22 +233,22 @@ module Duration : sig
     hours : int;
     minutes : int;
     seconds : int;
+    ns : int;
   }
 
   val make :
-    ?days:int -> ?hours:int -> ?minutes:int -> ?seconds:int -> unit -> t
+    ?days:int -> ?hours:int -> ?minutes:int -> ?seconds:int -> ?ns:int -> unit -> t
   (** @raise Invalid_argument if any of the arguments are negative *)
 
   val make_frac :
-    ?days:float -> ?hours:float -> ?minutes:float -> ?seconds:int -> unit -> t
+    ?days:float -> ?hours:float -> ?minutes:float -> ?seconds:float -> ?ns:int -> unit -> t
   (** @raise Invalid_argument if any of the arguments are negative *)
 
   val zero : t
 
-  val of_seconds : int64 -> t
-  (** @raise Invalid_argument if argument is negative *)
+  val of_span : Span.t -> t
 
-  val to_seconds : t -> int64
+  val to_span : t -> Span.t
 
   val to_string : t -> string
 
@@ -301,30 +372,9 @@ end
 val with_tz : Time_zone.t -> t -> t
 (** [with_tz tz t] changes the time zone to evaluate [t] in to [tz] *)
 
-(** {1 Date time and timestamps} *)
+(** {1 Date times and timestamps} *)
 
-module Timestamp_precise : sig
-  (* Tuple of seconds since epoch and nanoseconds for fraction of a second *)
-  type t = int64 * int
-
-  val check_and_normalize : t -> t
-
-  val add : t -> t -> t
-
-  val sub : t -> t -> t
-
-  val compare : t -> t -> int
-
-  val of_timestamp : timestamp -> t
-
-  val to_timestamp : t -> timestamp
-
-  val of_timestamp_float : float -> t
-
-  val to_timestamp_float : t -> float
-end
-
-type timestamp_precise = Timestamp_precise.t
+type timestamp = Span.t
 
 module Date_time : sig
   type tz_info =
@@ -433,12 +483,7 @@ module Date_time : sig
   val to_timestamp : t -> timestamp local_result
 
   val to_timestamp_single : t -> timestamp
-  (** @raise Invalid_argument if [to_timestamp_precise] does not yield a [`Single] result *)
-
-  val to_timestamp_precise : t -> timestamp_precise local_result
-
-  val to_timestamp_precise_single : t -> timestamp_precise
-  (** @raise Invalid_argument if [to_timestamp_precise] does not yield a [`Single] result *)
+  (** @raise Invalid_argument if [to_timestamp] does not yield a [`Single] result *)
 
   val to_timestamp_float : t -> float local_result
 
@@ -450,9 +495,6 @@ module Date_time : sig
   val max_of_local_result : 'a local_result -> 'a
 
   val of_timestamp : ?tz_of_date_time:Time_zone.t -> timestamp -> t option
-
-  val of_timestamp_precise :
-    ?tz_of_date_time:Time_zone.t -> timestamp_precise -> t option
 
   val of_timestamp_float : ?tz_of_date_time:Time_zone.t -> float -> t option
 
@@ -540,9 +582,9 @@ val sorted_date_time_seq : Date_time.t Seq.t -> t
 
 val timestamp_now : unit -> timestamp
 
-val timestamp_min : int64
+val timestamp_min : timestamp
 
-val timestamp_max : int64
+val timestamp_max : timestamp
 
 exception Invalid_timestamp
 
@@ -772,18 +814,6 @@ val take_nth : int -> chunked -> chunked
 
 val drop : int -> chunked -> chunked
 (** Discard n chunks *)
-
-(** {1 Lightweight chunking}*)
-
-(** These are strictly less flexible than chunking functions provided in {!section:Chunking},
-    but can be significantly more efficient than the equivalent implemented with [chunk ...]
-*)
-
-val first_point : t -> t
-
-val take_points : int -> t -> t
-
-val drop_points : int -> t -> t
 
 (** {1 Infix operators} *)
 

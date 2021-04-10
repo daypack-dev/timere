@@ -3,6 +3,7 @@ include Time_ast
 include Time
 include Infix
 module Time_zone = Time_zone
+module Span = Span
 
 exception Invalid_format_string = Printers.Invalid_format_string
 

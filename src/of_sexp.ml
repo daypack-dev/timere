@@ -297,10 +297,10 @@ let of_sexp (x : CCSexp.t) =
         (* | [ `Atom "drop_points"; n; x ] -> drop_points (int_of_sexp n) (aux x)
          * | [ `Atom "take_points"; n; x ] -> take_points (int_of_sexp n) (aux x) *)
         | [ `Atom "shift"; n; x ] ->
-          let n = span_of_sexp n in
+          let n = Duration.of_span @@ span_of_sexp n in
           shift n (aux x)
         | [ `Atom "lengthen"; n; x ] ->
-          let n = span_of_sexp n in
+          let n = Duration.of_span @@ span_of_sexp n in
           lengthen n (aux x)
         | [ `Atom "with_tz"; n; x ] ->
           let tz = tz_make_of_sexp n in
