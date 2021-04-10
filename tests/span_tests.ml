@@ -57,6 +57,63 @@ module Qc = struct
          Span.(equal (x + y) (y + x))
       )
 
+  let add_associative =
+    QCheck.Test.make ~count:10_000 ~name:"add_associative"
+      QCheck.(triple timestamp timestamp timestamp)
+      (fun (x, y, z) ->
+         Span.(equal (x + (y + z)) ((x + y) + z))
+      )
+
+  let add_identity =
+    QCheck.Test.make ~count:10_000 ~name:"add_identity"
+      timestamp
+      (fun x ->
+         Span.(equal (x + zero) (zero + x))
+      )
+
+  let neg_then_sub_is_same_as_add_then_neg =
+    QCheck.Test.make ~count:10_000 ~name:"neg_then_sub_is_same_as_add_then_neg"
+      QCheck.(pair timestamp timestamp)
+      (fun (x, y) ->
+         Span.(equal (neg x - y) (neg (x + y)))
+      )
+
+  let neg_distributive1 =
+    QCheck.Test.make ~count:10_000 ~name:"neg_distributive1"
+      QCheck.(pair timestamp timestamp)
+      (fun (x, y) ->
+         Span.(equal (neg (x + y))
+                 (neg x + neg y)
+              )
+      )
+
+  let neg_distributive2 =
+    QCheck.Test.make ~count:10_000 ~name:"neg_distributive1"
+      QCheck.(pair timestamp timestamp)
+      (fun (x, y) ->
+         Span.(equal (neg (x - y))
+                 (neg x - neg y)
+              )
+      )
+
+  let add_neg_self =
+    QCheck.Test.make ~count:10_000 ~name:"add_neg_self"
+      timestamp
+      (fun x ->
+         Span.(equal zero
+                 (x + neg x)
+              )
+      )
+
+  let neg_add_self =
+    QCheck.Test.make ~count:10_000 ~name:"neg_add_self"
+      timestamp
+      (fun x ->
+         Span.(equal zero
+                 (neg x + x)
+              )
+      )
+
   let suite = [normalize_is_idempotent;
                add_sub;
                sub_add;
@@ -65,5 +122,12 @@ module Qc = struct
                neg;
                abs;
                add_commutative;
+               add_associative;
+               add_identity;
+               neg_then_sub_is_same_as_add_then_neg;
+               neg_distributive1;
+               neg_distributive2;
+               add_neg_self;
+               neg_add_self;
               ]
 end
