@@ -69,7 +69,7 @@ let search_space =
               in
               (search_start, search_end_exc)));
     ]
-    (fun l -> CCList.to_seq l |> Time.Intervals.normalize |> CCList.of_seq
+    (fun l -> CCList.to_seq l |> Time.Intervals.normalize ~skip_filter_empty:true |> CCList.of_seq
                                                                                      |> (fun l -> assert (List.length l > 0); l))
 
 let permute (seed : int) (l : 'a list) : 'a list =
