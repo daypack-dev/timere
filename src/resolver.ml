@@ -407,6 +407,8 @@ let aux_pattern search_using_tz space pat =
       Intervals.Union.union_multi_seq ~skip_check:true
         (Seq.map (fun param -> Pattern_resolver.resolve param pat) params))
 
+let one_s = Span.make ~s:1L ()
+
 let aux_points search_using_tz space (p, tz_info) : timestamp Seq.t =
   let search_using_tz =
     match tz_info with
@@ -419,7 +421,7 @@ let aux_points search_using_tz space (p, tz_info) : timestamp Seq.t =
   in
   aux_pattern search_using_tz space (Points.to_pattern (p, tz_info))
   |> Seq.map (fun (x, y) ->
-      assert (y = Span.succ x);
+      assert Span.(y - x < one_s);
       x)
 
 let rec aux search_using_tz time =
