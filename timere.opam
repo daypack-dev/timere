@@ -39,6 +39,7 @@ depends: [
   "alcotest" {with-test}
   "qcheck-alcotest" {with-test}
   "qcheck" {with-test}
+  "diet" {with-test}
 ]
 build: [
   ["dune" "build" "-p" name "-j" jobs]
