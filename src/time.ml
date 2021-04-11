@@ -1143,7 +1143,7 @@ module Year_ranges = Ranges.Make (struct
     let of_int x = x
   end)
 
-let timestamp_now () : timestamp = Span.of_float @@ Unix.time ()
+let timestamp_now () : timestamp = Span.of_float @@ Unix.gettimeofday ()
 
 let timestamp_min = Constants.timestamp_min
 
