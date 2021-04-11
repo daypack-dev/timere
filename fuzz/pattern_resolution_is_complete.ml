@@ -83,5 +83,5 @@ let () =
           Crowbar.check
             (OSeq.for_all
                (fun (x', y') ->
-                  OSeq.exists Span.(fun (x, y) -> x <= x' && y' < y) s)
+                  OSeq.exists Span.(fun (x, y) -> x <= x' && y' <= y) s)
                s'))
