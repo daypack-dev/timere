@@ -115,3 +115,5 @@ Time zone database derived files are licensed under its original terms (public d
 - Time zone data handling code copies approach used by [chrono-tz](https://github.com/chronotope/chrono-tz)
 
   - This includes data representation and choices of some algorithms
+
+- Local time zone detection approach for `timere.tzlocal.unix` backend is copied from [tzlocal](https://github.com/regebro/tzlocal)
