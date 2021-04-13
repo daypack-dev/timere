@@ -87,73 +87,64 @@ module Format_string_parsers = struct
            return
              (map_string_to_size_and_casing x
                 (Time.full_string_of_weekday wday)));
-        attempt
-          (string "hour:"
-           >> padding
-           >>= fun padding -> return (pad_int padding date_time.hour));
-        attempt
-          (string "12hour:"
-           >> padding
-           >>= fun padding ->
-           let hour = if date_time.hour = 0 then 12 else date_time.hour mod 12 in
-           return (pad_int padding hour));
-        attempt
-          (string "min:"
-           >> padding
-           >>= fun padding -> return (pad_int padding date_time.minute));
-        attempt
-          (string "sec:"
-           >> padding
-           >>= fun padding -> return (pad_int padding date_time.second));
-        attempt (string "ns" >> return (string_of_int date_time.ns));
-        attempt
-          (string "sec-frac:"
-           >> nat_zero
-           >>= fun precision ->
-           if precision = 0 then fail "Precision cannot be 0"
-           else
-             let ns = float_of_int date_time.ns in
-             let precision = float_of_int precision in
-             let frac =
-               ns *. (precision ** 10.) /. Span.ns_count_in_s_float
-               |> Float.round
-               |> int_of_float
-             in
-             return (string_of_int frac));
-        attempt
-          (string "tzoff-sign"
-           >>
-           match tz_offset_s with
-           | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
-           | Some tz_offset_s ->
-             if tz_offset_s >= 0 then return "+" else return "-");
-        attempt
-          (string "tzoff-hour:"
-           >> padding
-           >>= fun padding ->
-           match tz_offset_s with
-           | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
-           | Some tz_offset_s ->
-             let d = Duration.make ~seconds:(abs tz_offset_s) () in
-             return (pad_int padding Duration.(d.hours)));
-        attempt
-          (string "tzoff-min:"
-           >> padding
-           >>= fun padding ->
-           match tz_offset_s with
-           | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
-           | Some tz_offset_s ->
-             let d = Duration.make ~seconds:(abs tz_offset_s) () in
-             return (pad_int padding Duration.(d.minutes)));
-        attempt
-          (string "tzoff-sec:"
-           >> padding
-           >>= fun padding ->
-           match tz_offset_s with
-           | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
-           | Some tz_offset_s ->
-             let d = Duration.make ~seconds:(abs tz_offset_s) () in
-             return (pad_int padding Duration.(d.seconds)));
+        (attempt (string "hour:")
+         >> padding
+         >>= fun padding -> return (pad_int padding date_time.hour));
+        (attempt (string "12hour:")
+         >> padding
+         >>= fun padding ->
+         let hour = if date_time.hour = 0 then 12 else date_time.hour mod 12 in
+         return (pad_int padding hour));
+        (attempt (string "min:")
+         >> padding
+         >>= fun padding -> return (pad_int padding date_time.minute));
+        (attempt (string "sec:")
+         >> padding
+         >>= fun padding -> return (pad_int padding date_time.second));
+        attempt (string "ns") >> return (string_of_int date_time.ns);
+        (attempt (string "sec-frac:")
+         >> nat_zero
+         >>= fun precision ->
+         if precision = 0 then fail "Precision cannot be 0"
+         else
+           let ns = float_of_int date_time.ns in
+           let precision = float_of_int precision in
+           let frac =
+             ns *. (precision ** 10.) /. Span.ns_count_in_s_float
+             |> Float.round
+             |> int_of_float
+           in
+           return (string_of_int frac));
+        (attempt (string "tzoff-sign")
+         >>= fun _ ->
+         match tz_offset_s with
+         | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
+         | Some tz_offset_s ->
+           if tz_offset_s >= 0 then return "+" else return "-");
+        (attempt (string "tzoff-hour:")
+         >> padding
+         >>= fun padding ->
+         match tz_offset_s with
+         | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
+         | Some tz_offset_s ->
+           let d = Duration.make ~seconds:(abs tz_offset_s) () in
+           return (pad_int padding Duration.(d.hours)));
+        (attempt (string "tzoff-min:")
+         >> padding
+         >>= fun padding ->
+         match tz_offset_s with
+         | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
+         | Some tz_offset_s ->
+           let d = Duration.make ~seconds:(abs tz_offset_s) () in
+           return (pad_int padding Duration.(d.minutes)));
+        (attempt (string "tzoff-sec:")
+         >> padding
+         >>= fun padding ->
+         match tz_offset_s with
+         | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
+         | Some tz_offset_s ->
+           let d = Duration.make ~seconds:(abs tz_offset_s) () in
+           return (pad_int padding Duration.(d.seconds)));
         (* string "unix"
          * >> return (Int64.to_string (Time.Date_time'.to_timestamp date_time)); *)
       ]
