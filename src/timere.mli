@@ -914,7 +914,7 @@ val pp_timestamp :
 val string_of_timestamp :
   ?display_using_tz:Time_zone.t -> ?format:string -> timestamp -> string
 
-val pp_rfc3339_timestamp : Format.formatter -> timestamp -> unit
+val pp_timestamp_rfc3339 : Format.formatter -> timestamp -> unit
 
 val rfc3339_of_timestamp : timestamp -> string
 

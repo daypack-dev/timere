@@ -97,7 +97,7 @@ let pp_timestamp = Printers.pp_timestamp
 
 let string_of_timestamp = Printers.string_of_timestamp
 
-let pp_rfc3339_timestamp = RFC3339.pp_timestamp
+let pp_timestamp_rfc3339 = RFC3339.pp_timestamp
 
 let rfc3339_of_timestamp = RFC3339.of_timestamp
 
