@@ -157,3 +157,8 @@ let make_tz_info ?tz ?tz_offset_s () =
     if Time_zone.offset_is_recorded tz_offset_s tz then
       Some (`Tz_and_tz_offset_s (tz, tz_offset_s))
     else None
+
+let tz_offset_s_of_tz_info (x : tz_info) =
+  match x with
+  | `Tz_only _ -> None
+  | `Tz_offset_s_only offset | `Tz_and_tz_offset_s (_, offset) -> Some offset

@@ -415,6 +415,9 @@ module Date_time : sig
     | `Tz_and_tz_offset_s of Time_zone.t * int
     ]
 
+  val tz_offset_s_of_tz_info :
+    tz_info -> int option
+
   type t = private {
     year : int;
     month : month;
@@ -529,6 +532,8 @@ module Date_time : sig
   val of_timestamp : ?tz_of_date_time:Time_zone.t -> timestamp -> t option
 
   val of_timestamp_float : ?tz_of_date_time:Time_zone.t -> float -> t option
+
+  val to_tz_offset_s : t -> int option
 
   val equal : t -> t -> bool
 
