@@ -35,6 +35,7 @@ exception Date_time_cannot_deduce_tz_offset_s of Time.Date_time'.t
 
 module Format_string_parsers = struct
   open MParser
+  open Parser_components
 
   let case : (case, unit) t =
     attempt (char 'x' >> return Lower) <|> (char 'X' >> return Upper)
@@ -104,6 +105,21 @@ module Format_string_parsers = struct
           (string "sec:"
            >> padding
            >>= fun padding -> return (pad_int padding date_time.second));
+        attempt
+          (string "ns" >>
+           return (string_of_int date_time.ns));
+        attempt
+          (string "secfrac:"
+           >> nat_zero
+           >>= fun precision ->
+           let ns = float_of_int date_time.ns in
+           let precision = float_of_int precision in
+           let frac =
+             (ns *. (precision ** 10.)) /. Span.ns_count_in_s_float
+             |> Float.round
+             |> int_of_float
+           in
+           return (string_of_int frac));
         attempt
           (string "tzoff-sign"
            >>
