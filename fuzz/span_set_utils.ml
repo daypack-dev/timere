@@ -32,10 +32,8 @@ let intervals_of_int64s (s : int64 Seq.t) : Time.Interval.t Seq.t =
 let span_set_of_intervals (s : Time.Interval.t Seq.t) : Span_set.t =
   Seq.fold_left
     (fun (count, acc) (x, y) ->
-       if count >= span_set_max_interval_count then
-         Crowbar.bad_test ()
-       else
-         (succ count, Span_set.(add (Interval.make x (Span.pred y)) acc)))
+       if count >= span_set_max_interval_count then Crowbar.bad_test ()
+       else (succ count, Span_set.(add (Interval.make x (Span.pred y)) acc)))
     (0, Span_set.empty) s
   |> snd
 
