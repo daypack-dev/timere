@@ -600,6 +600,7 @@ module Date_time : sig
   *)
 
   val pp_rfc3339 : Format.formatter -> t -> unit
+  (** Wrapper function of [pp] *)
 
   val to_rfc3339 : t -> string option
   (**
@@ -890,13 +891,6 @@ val resolve :
 
 (** {1 Pretty printers} *)
 
-val string_of_timestamp :
-  ?display_using_tz:Time_zone.t -> ?format:string -> timestamp -> string
-(** Pretty printing for timestamp.
-
-    Follows same format string rules and default format string as {!val:Date_time.to_string}.
-*)
-
 val pp_timestamp :
   ?display_using_tz:Time_zone.t ->
   ?format:string ->
@@ -904,9 +898,27 @@ val pp_timestamp :
   Format.formatter ->
   timestamp ->
   unit
+(** Pretty printing for timestamp.
 
-val string_of_interval :
-  ?display_using_tz:Time_zone.t -> ?format:string -> interval -> string
+    Follows same format string rules and default format string as {!val:Date_time.to_string}.
+*)
+
+val string_of_timestamp :
+  ?display_using_tz:Time_zone.t -> ?format:string -> timestamp -> string
+
+val pp_rfc3339_timestamp :
+  Format.formatter -> timestamp -> unit
+
+val rfc3339_of_timestamp :
+  timestamp -> string
+
+val pp_interval :
+  ?display_using_tz:Time_zone.t ->
+  ?format:string ->
+  unit ->
+  Format.formatter ->
+  interval ->
+  unit
 (** Pretty printing for interval.
 
     Default format string:
@@ -924,13 +936,8 @@ val string_of_interval :
     - [{ehour:cX}] gives hour of the [y]
 *)
 
-val pp_interval :
-  ?display_using_tz:Time_zone.t ->
-  ?format:string ->
-  unit ->
-  Format.formatter ->
-  interval ->
-  unit
+val string_of_interval :
+  ?display_using_tz:Time_zone.t -> ?format:string -> interval -> string
 
 val pp_intervals :
   ?display_using_tz:Time_zone.t ->
