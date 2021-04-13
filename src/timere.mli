@@ -605,13 +605,24 @@ module Date_time : sig
      Returns [None] instead of raising exception when time zone offset cannot be deduced but required by the format string
   *)
 
-  val pp_rfc3339 : Format.formatter -> t -> unit
-  (** Wrapper function of [pp] *)
+  val pp_rfc3339 : ?precision:int -> unit -> Format.formatter -> t -> unit
 
-  val to_rfc3339 : t -> string option
+  val pp_rfc3339_milli : Format.formatter -> t -> unit
+
+  val pp_rfc3339_micro : Format.formatter -> t -> unit
+
+  val pp_rfc3339_nano : Format.formatter -> t -> unit
+
+  val to_rfc3339 : ?precision:int -> t -> string option
   (**
      Returns [None] if time zone offset cannot be deduced
   *)
+
+  val to_rfc3339_milli : t -> string option
+
+  val to_rfc3339_micro : t -> string option
+
+  val to_rfc3339_nano : t -> string option
 
   val of_iso8601 : string -> (t, string) result
 
@@ -912,9 +923,25 @@ val pp_timestamp :
 val string_of_timestamp :
   ?display_using_tz:Time_zone.t -> ?format:string -> timestamp -> string
 
-val pp_timestamp_rfc3339 : Format.formatter -> timestamp -> unit
+val pp_timestamp_rfc3339 : ?precision:int -> unit -> Format.formatter -> timestamp -> unit
+(** [precision] determines the number of fractional digits to include
 
-val rfc3339_of_timestamp : timestamp -> string
+    @raise Invalid_argument if [precision < 0]
+*)
+
+val pp_timestamp_rfc3339_milli : Format.formatter -> timestamp -> unit
+
+val pp_timestamp_rfc3339_micro : Format.formatter -> timestamp -> unit
+
+val pp_timestamp_rfc3339_nano : Format.formatter -> timestamp -> unit
+
+val rfc3339_of_timestamp : ?precision:int -> timestamp -> string
+
+val rfc3339_milli_of_timestamp : timestamp -> string
+
+val rfc3339_micro_of_timestamp : timestamp -> string
+
+val rfc3339_nano_of_timestamp : timestamp -> string
 
 val pp_interval :
   ?display_using_tz:Time_zone.t ->

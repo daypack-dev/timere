@@ -41,7 +41,19 @@ module Date_time = struct
 
   let pp_rfc3339 = RFC3339.pp_date_time
 
+  let pp_rfc3339_milli = RFC3339.pp_date_time ~precision:3 ()
+
+  let pp_rfc3339_micro = RFC3339.pp_date_time ~precision:6 ()
+
+  let pp_rfc3339_nano = RFC3339.pp_date_time ~precision:9 ()
+
   let to_rfc3339 = RFC3339.of_date_time
+
+  let to_rfc3339_milli = RFC3339.of_date_time ~precision:3
+
+  let to_rfc3339_micro = RFC3339.of_date_time ~precision:6
+
+  let to_rfc3339_nano = RFC3339.of_date_time ~precision:9
 
   let of_iso8601 = ISO8601.to_date_time
 
@@ -99,7 +111,19 @@ let string_of_timestamp = Printers.string_of_timestamp
 
 let pp_timestamp_rfc3339 = RFC3339.pp_timestamp
 
+let pp_timestamp_rfc3339_milli = RFC3339.pp_timestamp ~precision:3 ()
+
+let pp_timestamp_rfc3339_micro = RFC3339.pp_timestamp ~precision:6 ()
+
+let pp_timestamp_rfc3339_nano = RFC3339.pp_timestamp ~precision:9 ()
+
 let rfc3339_of_timestamp = RFC3339.of_timestamp
+
+let rfc3339_milli_of_timestamp = RFC3339.of_timestamp ~precision:3
+
+let rfc3339_micro_of_timestamp = RFC3339.of_timestamp ~precision:6
+
+let rfc3339_nano_of_timestamp = RFC3339.of_timestamp ~precision:9
 
 let pp_interval = Printers.pp_interval
 
