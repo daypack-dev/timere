@@ -1,9 +1,11 @@
 let default_date_time_format_string =
-  "{year} {mon:Xxx} {mday:0X} {wday:Xxx} {hour:0X}:{min:0X}:{sec:0X}.{sec-frac:9}"
+  "{year} {mon:Xxx} {mday:0X} {wday:Xxx} \
+   {hour:0X}:{min:0X}:{sec:0X}.{sec-frac:9}"
 
 let default_interval_format_string =
-  "[{syear} {smon:Xxx} {smday:0X} {swday:Xxx} {shour:0X}:{smin:0X}:{ssec:0X}.{ssec-frac:9}, \
-   {eyear} {emon:Xxx} {emday:0X} {ewday:Xxx} {ehour:0X}:{emin:0X}:{esec:0X}.{esec-frac:9})"
+  "[{syear} {smon:Xxx} {smday:0X} {swday:Xxx} \
+   {shour:0X}:{smin:0X}:{ssec:0X}.{ssec-frac:9}, {eyear} {emon:Xxx} {emday:0X} \
+   {ewday:Xxx} {ehour:0X}:{emin:0X}:{esec:0X}.{esec-frac:9})"
 
 let display_timestamps ~display_using_tz s =
   match s () with
@@ -12,7 +14,10 @@ let display_timestamps ~display_using_tz s =
     s
     |> OSeq.take 20
     |> OSeq.iter (fun x ->
-        let s = Printers.string_of_timestamp ~display_using_tz ~format:default_date_time_format_string x in
+        let s =
+          Printers.string_of_timestamp ~display_using_tz
+            ~format:default_date_time_format_string x
+        in
         Printf.printf "%s\n" s;
         flush stdout)
 
@@ -23,7 +28,10 @@ let display_intervals ~display_using_tz s =
     s
     |> OSeq.take 20
     |> OSeq.iter (fun (x, y) ->
-        let s = Printers.string_of_interval ~display_using_tz ~format:default_interval_format_string (x, y) in
+        let s =
+          Printers.string_of_interval ~display_using_tz
+            ~format:default_interval_format_string (x, y)
+        in
         let size = Duration.of_span (Span.sub y x) in
         let size_str = Printers.string_of_duration size in
         Printf.printf "%s - %s\n" s size_str;
@@ -178,7 +186,7 @@ let debug_fuzz_bounded_intervals () =
     (fun n ->
        let n = max 0 n mod tz_count in
        Time_zone.make_exn (List.nth Time_zone.available_time_zones n))
-    (-578721249560635033)
+      (-578721249560635033)
   in
   let bound = Span.make ~s:51753L () in
   let p1 =
