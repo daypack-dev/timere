@@ -108,13 +108,13 @@ module Format_string_parsers = struct
          if precision = 0 then fail "Precision cannot be 0"
          else
            let ns = float_of_int date_time.ns in
-           let precision = float_of_int precision in
+           let precision' = float_of_int precision in
            let frac =
-             ns *. (precision ** 10.) /. Span.ns_count_in_s_float
+             ns *. (10. ** precision') /. Span.ns_count_in_s_float
              |> Float.round
              |> int_of_float
            in
-           return (string_of_int frac));
+           return (Printf.sprintf "%0*d" precision frac));
         (attempt (string "tzoff-sign")
          >>= fun _ ->
          match tz_offset_s with
