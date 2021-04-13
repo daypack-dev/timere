@@ -33,7 +33,12 @@ module Date_time = struct
 
   let to_string = Printers.string_of_date_time
 
+  exception Date_time_cannot_deduce_tz_offset_s
+      = Printers.Date_time_cannot_deduce_tz_offset_s
+
   let pp = Printers.pp_date_time
+
+  let pp_rfc3339 = RFC3339.pp_date_time
 
   let to_rfc3339 = RFC3339.of_date_time
 
@@ -90,6 +95,10 @@ let string_of_hms = Printers.string_of_hms
 let pp_timestamp = Printers.pp_timestamp
 
 let string_of_timestamp = Printers.string_of_timestamp
+
+let pp_rfc3339_timestamp = RFC3339.pp_timestamp
+
+let rfc3339_of_timestamp = RFC3339.of_timestamp
 
 let pp_interval = Printers.pp_interval
 

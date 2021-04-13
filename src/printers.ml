@@ -31,6 +31,8 @@ let pad_int (c : char option) (x : int) : string =
   | None -> string_of_int x
   | Some c -> if x < 10 then Printf.sprintf "%c%d" c x else string_of_int x
 
+exception Date_time_cannot_deduce_tz_offset_s of Time.Date_time'.t
+
 module Format_string_parsers = struct
   open MParser
 
@@ -106,7 +108,7 @@ module Format_string_parsers = struct
           (string "tzoff-sign"
            >>
            match tz_offset_s with
-           | None -> return "N/A"
+           | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
            | Some tz_offset_s ->
              if tz_offset_s >= 0 then return "+" else return "-");
         attempt
@@ -114,7 +116,7 @@ module Format_string_parsers = struct
            >> padding
            >>= fun padding ->
            match tz_offset_s with
-           | None -> return "N/A"
+           | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
            | Some tz_offset_s ->
              let d = Duration.make ~seconds:(abs tz_offset_s) () in
              return (pad_int padding Duration.(d.hours)));
@@ -123,7 +125,7 @@ module Format_string_parsers = struct
            >> padding
            >>= fun padding ->
            match tz_offset_s with
-           | None -> return "N/A"
+           | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
            | Some tz_offset_s ->
              let d = Duration.make ~seconds:(abs tz_offset_s) () in
              return (pad_int padding Duration.(d.minutes)));
@@ -132,7 +134,7 @@ module Format_string_parsers = struct
            >> padding
            >>= fun padding ->
            match tz_offset_s with
-           | None -> return "N/A"
+           | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
            | Some tz_offset_s ->
              let d = Duration.make ~seconds:(abs tz_offset_s) () in
              return (pad_int padding Duration.(d.seconds)));
@@ -180,8 +182,11 @@ let pp_date_time ?(format : string = default_date_time_format_string) ()
   | Ok () -> ()
 
 let string_of_date_time ?(format : string = default_date_time_format_string)
-    (x : Time.Date_time'.t) : string =
-  Fmt.str "%a" (pp_date_time ~format ()) x
+    (x : Time.Date_time'.t) : string option =
+  try
+    Some (Fmt.str "%a" (pp_date_time ~format ()) x)
+  with
+  | Date_time_cannot_deduce_tz_offset_s _ -> None
 
 let pp_timestamp ?(display_using_tz = Time_zone.utc)
     ?(format = default_date_time_format_string) () formatter time =

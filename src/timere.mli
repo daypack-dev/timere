@@ -543,7 +543,9 @@ module Date_time : sig
 
   val now : ?tz_of_date_time:Time_zone.t -> unit -> t
 
-  val to_string : ?format:string -> t -> string
+  exception Date_time_cannot_deduce_tz_offset_s of t
+
+  val pp : ?format:string -> unit -> Format.formatter -> t -> unit
   (**
      Pretty printing for date time.
 
@@ -576,19 +578,29 @@ module Date_time : sig
 {sec:cX}         second, character 'c' before 'X' determines padding
                  (leave out character for no padding)
 {tzoff-sign}     time zone offset sign ('+' or '-')
-                 yields "N/A" if time zone offset is not available
+                 raises Date_time_cannot_deduce_tz_offset_s if time zone offset cannot be calculated
 {tzoff-hour:cX}  time zone offset hour, follows same padding rule as "{hour:cX}"
-                 yields "N/A" if time zone offset is not available
+                 raises Date_time_cannot_deduce_tz_offset_s if time zone offset cannot be calculated
 {tzoff-min:cX}   time zone offset minute, follows same padding rule as "{min:cX}"
-                 yields "N/A" if time zone offset is not available
+                 raises Date_time_cannot_deduce_tz_offset_s if time zone offset cannot be calculated
 {tzoff-sec:cX}   time zone offset second, follows same padding rule as "{sec:cX}"
-                 yields "N/A" if time zone offset is not available
+                 raises Date_time_cannot_deduce_tz_offset_s if time zone offset cannot be calculated
      v}
   *)
 
-  val pp : ?format:string -> unit -> Format.formatter -> t -> unit
+  val to_string : ?format:string -> t -> string option
+  (**
+     String conversion using [pp].
 
-  val to_rfc3339 : t -> string
+     Returns [None] instead of raising exception when time zone offset cannot be deduced but required by the format string
+  *)
+
+  val pp_rfc3339 : Format.formatter -> t -> unit
+
+  val to_rfc3339 : t -> string option
+  (**
+     Returns [None] if time zone offset cannot be deduced
+  *)
 
   val of_iso8601 : string -> (t, string) result
 
