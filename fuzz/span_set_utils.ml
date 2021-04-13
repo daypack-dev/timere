@@ -33,8 +33,11 @@ let span_set_of_intervals (s : Time.Interval.t Seq.t) : Span_set.t =
     Span_set.empty s
 
 let intervals_of_span_set (set : Span_set.t) : Time.Interval.t Seq.t =
-  Span_set.fold
-    (fun i l -> Span_set.Interval.(x i, Span.succ (y i)) :: l)
-    set []
-  |> List.rev
-  |> CCList.to_seq
+  let rec aux set =
+    match Span_set.min_elt set with
+    | i ->
+      fun () -> Seq.Cons (Span_set.Interval.(x i, Span.succ (y i)), aux (Span_set.remove i set))
+    | exception Not_found ->
+      Seq.empty
+  in
+  aux set
