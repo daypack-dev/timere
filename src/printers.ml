@@ -110,14 +110,16 @@ module Format_string_parsers = struct
           (string "sec-frac:"
            >> nat_zero
            >>= fun precision ->
-           let ns = float_of_int date_time.ns in
-           let precision = float_of_int precision in
-           let frac =
-             ns *. (precision ** 10.) /. Span.ns_count_in_s_float
-             |> Float.round
-             |> int_of_float
-           in
-           return (string_of_int frac));
+           if precision = 0 then fail "Precision cannot be 0"
+           else
+             let ns = float_of_int date_time.ns in
+             let precision = float_of_int precision in
+             let frac =
+               ns *. (precision ** 10.) /. Span.ns_count_in_s_float
+               |> Float.round
+               |> int_of_float
+             in
+             return (string_of_int frac));
         attempt
           (string "tzoff-sign"
            >>
