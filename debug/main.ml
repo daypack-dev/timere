@@ -1,9 +1,20 @@
 let default_date_time_format_string =
-  "{year} {mon:Xxx} {mday:0X} {wday:Xxx} {hour:0X}:{min:0X}:{sec:0X}"
+  "{year} {mon:Xxx} {mday:0X} {wday:Xxx} {hour:0X}:{min:0X}:{sec:0X}.{sec-frac:9}"
 
 let default_interval_format_string =
-  "[{syear} {smon:Xxx} {smday:0X} {swday:Xxx} {shour:0X}:{smin:0X}:{ssec:0X}, \
-   {eyear} {emon:Xxx} {emday:0X} {ewday:Xxx} {ehour:0X}:{emin:0X}:{esec:0X})"
+  "[{syear} {smon:Xxx} {smday:0X} {swday:Xxx} {shour:0X}:{smin:0X}:{ssec:0X}.{ssec-frac:9}, \
+   {eyear} {emon:Xxx} {emday:0X} {ewday:Xxx} {ehour:0X}:{emin:0X}:{esec:0X}.{esec-frac:9})"
+
+let display_timestamps ~display_using_tz s =
+  match s () with
+  | Seq.Nil -> print_endline "No timestamps"
+  | Seq.Cons _ ->
+    s
+    |> OSeq.take 20
+    |> OSeq.iter (fun x ->
+        let s = Printers.string_of_timestamp ~display_using_tz ~format:default_date_time_format_string x in
+        Printf.printf "%s\n" s;
+        flush stdout)
 
 let display_intervals ~display_using_tz s =
   match s () with
@@ -12,7 +23,7 @@ let display_intervals ~display_using_tz s =
     s
     |> OSeq.take 20
     |> OSeq.iter (fun (x, y) ->
-        let s = Printers.string_of_interval ~display_using_tz (x, y) in
+        let s = Printers.string_of_interval ~display_using_tz ~format:default_interval_format_string (x, y) in
         let size = Duration.of_span (Span.sub y x) in
         let size_str = Printers.string_of_duration size in
         Printf.printf "%s - %s\n" s size_str;
@@ -167,16 +178,16 @@ let debug_fuzz_bounded_intervals () =
     (fun n ->
        let n = max 0 n mod tz_count in
        Time_zone.make_exn (List.nth Time_zone.available_time_zones n))
-      140733971657571
+    (-578721249560635033)
   in
-  let bound = Span.make ~s:82400L () in
+  let bound = Span.make ~s:51753L () in
   let p1 =
     (fun randomness ->
        let min_year = 0000 in
        let max_year_inc = 9999 in
        let rng = Builder.make_rng ~randomness in
        Builder.make_points ~rng ~min_year ~max_year_inc ~max_precision:7)
-      [ 3779; 0 ]
+      [ 4073; 0 ]
   in
   let p2 =
     (fun randomness ->
@@ -197,6 +208,13 @@ let debug_fuzz_bounded_intervals () =
     Resolver.(
       aux_bounded_intervals tz Resolver.default_search_space `Snd bound p1 p2)
   in
+  Printf.printf "p1: %s\n" (To_sexp.sexp_of_points p1 |> CCSexp.to_string);
+  Printf.printf "p2: %s\n" (To_sexp.sexp_of_points p2 |> CCSexp.to_string);
+  print_endline "=====";
+  display_timestamps ~display_using_tz:tz s1;
+  print_endline "=====";
+  display_timestamps ~display_using_tz:tz s2;
+  print_endline "=====";
   display_intervals ~display_using_tz:tz s;
   print_endline "=====";
   display_intervals ~display_using_tz:tz s';
@@ -398,9 +416,9 @@ let debug_fuzz_pattern () =
 
 (* let () = debug_parsing () *)
 
-(* let () = debug_fuzz_bounded_intervals () *)
+let () = debug_fuzz_bounded_intervals ()
 
-let () = debug_resolver ()
+(* let () = debug_resolver () *)
 
 (* let () = debug_fuzz_pattern () *)
 
