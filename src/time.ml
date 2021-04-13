@@ -1196,24 +1196,24 @@ module Date_time' = struct
         Span.make ~s:(Ptime_utils.timestamp_of_ptime t) ~ns:x.ns ())
 
   let to_timestamp_precise_unsafe (x : t) : timestamp Time_zone.local_result =
+    let open Span in
     match to_timestamp_pretend_utc x with
     | None -> `None
     | Some timestamp_local -> (
         match x.tz_info with
         | `Tz_offset_s_only offset | `Tz_and_tz_offset_s (_, offset) ->
-          `Single Span.(timestamp_local - make ~s:(Int64.of_int offset) ())
+          `Single (timestamp_local - make ~s:(Int64.of_int offset) ())
         | `Tz_only tz -> (
             match Time_zone.lookup_timestamp_local tz timestamp_local.s with
             | `None -> `None
             | `Single e ->
-              `Single
-                Span.(timestamp_local - make ~s:(Int64.of_int e.offset) ())
+              `Single (timestamp_local - make ~s:(Int64.of_int e.offset) ())
             | `Ambiguous (e1, e2) ->
               let x1 =
-                Span.(timestamp_local - make ~s:(Int64.of_int e1.offset) ())
+                timestamp_local - make ~s:(Int64.of_int e1.offset) ()
               in
               let x2 =
-                Span.(timestamp_local - make ~s:(Int64.of_int e2.offset) ())
+                timestamp_local - make ~s:(Int64.of_int e2.offset) ()
               in
               `Ambiguous (min x1 x2, max x1 x2)))
 
