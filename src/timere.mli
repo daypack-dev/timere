@@ -923,7 +923,8 @@ val pp_timestamp :
 val string_of_timestamp :
   ?display_using_tz:Time_zone.t -> ?format:string -> timestamp -> string
 
-val pp_timestamp_rfc3339 : ?precision:int -> unit -> Format.formatter -> timestamp -> unit
+val pp_timestamp_rfc3339 :
+  ?precision:int -> unit -> Format.formatter -> timestamp -> unit
 (** [precision] determines the number of fractional digits to include
 
     @raise Invalid_argument if [precision < 0]

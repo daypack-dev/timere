@@ -1,8 +1,7 @@
 open Date_time_components
 
 let pp_date_time ?(precision = 0) () formatter (dt : Time.Date_time'.t) =
-  if precision < 0 then
-    invalid_arg "pp_date_time: precision cannot be < 0"
+  if precision < 0 then invalid_arg "pp_date_time: precision cannot be < 0"
   else
     match tz_offset_s_of_tz_info dt.tz_info with
     | None -> raise (Printers.Date_time_cannot_deduce_tz_offset_s dt)
@@ -35,4 +34,5 @@ let pp_timestamp ?(precision = 0) () formatter (x : Span.t) =
   | None -> invalid_arg "Invalid timestamp"
   | Some dt -> Fmt.pf formatter "%a" (pp_date_time ~precision ()) dt
 
-let of_timestamp ?(precision = 0) (x : Span.t) : string = Fmt.str "%a" (pp_timestamp ~precision ()) x
+let of_timestamp ?(precision = 0) (x : Span.t) : string =
+  Fmt.str "%a" (pp_timestamp ~precision ()) x
