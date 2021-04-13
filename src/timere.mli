@@ -578,7 +578,7 @@ module Date_time : sig
 {sec:cX}         second, character 'c' before 'X' determines padding
                  (leave out character for no padding)
 {ns}             nanosecond
-{secfrac:N}      fraction of second (only digits)
+{sec-frac:N}     fraction of second (only digits)
                  N determines the number of digits to take after decimal point
                  result is rounded to closest fraction of said precision
 {tzoff-sign}     time zone offset sign ('+' or '-')

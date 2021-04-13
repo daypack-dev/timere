@@ -109,7 +109,7 @@ module Format_string_parsers = struct
           (string "ns" >>
            return (string_of_int date_time.ns));
         attempt
-          (string "secfrac:"
+          (string "sec-frac:"
            >> nat_zero
            >>= fun precision ->
            let ns = float_of_int date_time.ns in
