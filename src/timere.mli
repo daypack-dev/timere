@@ -164,6 +164,9 @@ module Span : sig
       - [ns] carries the unsigned offset
 
       The actual span in nanosecond represented is defined as [s * 10^9 + ns], regardless of the sign of [s]
+
+      Order is defined using lexicographical order, i.e.
+      [lt x y iff. x.s < y.s || (x.s = y.s && x.ns < y.ns)]
   *)
 
   val ns_count_in_s : int
