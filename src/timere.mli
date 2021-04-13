@@ -163,7 +163,7 @@ module Span : sig
       - [s] carries the sign of the span
       - [ns] carries the unsigned offset
 
-      The actual span in nanosecond represented is defined as [s * 10^9 + ns], regardless of the sign of [s]
+      The actual span represented is defined as [s * 10^9 + ns] in nanosecond, regardless of the sign of [s]
 
       Order is defined using lexicographical order, i.e.
       [lt x y iff. x.s < y.s || (x.s = y.s && x.ns < y.ns)]
