@@ -1391,6 +1391,10 @@ module Date_time' = struct
   let now ?(tz_of_date_time = CCOpt.get_exn @@ Time_zone.local ()) () : t =
     timestamp_now () |> of_timestamp ~tz_of_date_time |> CCOpt.get_exn
 
+  let to_weekday (x : t) : weekday =
+    CCOpt.get_exn
+    @@ weekday_of_month_day ~year:x.year ~month:x.month ~mday:x.day
+
   let equal (x : t) (y : t) : bool =
     x.year = y.year
     && x.month = y.month

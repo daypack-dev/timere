@@ -549,6 +549,8 @@ module Date_time : sig
 
   val now : ?tz_of_date_time:Time_zone.t -> unit -> t
 
+  val to_weekday : t -> weekday
+
   exception Date_time_cannot_deduce_tz_offset_s of t
 
   val pp : ?format:string -> unit -> Format.formatter -> t -> unit
