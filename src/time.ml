@@ -1398,6 +1398,7 @@ module Date_time' = struct
     && x.hour = y.hour
     && x.minute = y.minute
     && x.second = y.second
+    && x.ns = y.ns
     &&
     match (x.tz_info, y.tz_info) with
     | `Tz_only x, `Tz_only y -> Time_zone.equal x y
