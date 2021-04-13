@@ -1,3 +1,5 @@
+let span_set_max_interval_count = 100_000
+
 let span_set_full : Span_set.t =
   Span_set.add
     (Span_set.Interval.make Time.timestamp_min (Span.pred Time.timestamp_max))
@@ -29,8 +31,13 @@ let intervals_of_int64s (s : int64 Seq.t) : Time.Interval.t Seq.t =
 
 let span_set_of_intervals (s : Time.Interval.t Seq.t) : Span_set.t =
   Seq.fold_left
-    (fun acc (x, y) -> Span_set.(add (Interval.make x (Span.pred y)) acc))
-    Span_set.empty s
+    (fun (count, acc) (x, y) ->
+       if count >= span_set_max_interval_count then
+         Crowbar.bad_test ()
+       else
+         (succ count, Span_set.(add (Interval.make x (Span.pred y)) acc)))
+    (0, Span_set.empty) s
+  |> snd
 
 let intervals_of_span_set (set : Span_set.t) : Time.Interval.t Seq.t =
   let rec aux set =
