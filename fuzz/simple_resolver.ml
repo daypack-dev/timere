@@ -219,7 +219,7 @@ let resolve ?(search_using_tz = Time_zone.utc)
               (timestamp_safe_add n x, timestamp_safe_add n y))
         | Lengthen n ->
           let x, y = search_space in
-          aux (x, Span.add y n) search_using_tz t
+          aux (x, timestamp_safe_add y n) search_using_tz t
           |> span_set_map (fun (x, y) -> (x, timestamp_safe_add n y))
         | With_tz tz -> aux search_space tz t)
     | Inter_seq s ->
