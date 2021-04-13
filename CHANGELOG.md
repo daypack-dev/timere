@@ -16,6 +16,10 @@
 
 - Extended format string to support number form of month
 
+- Extended format string to support fractional seconds
+
+- Formatted date time string construction now fails explicitly when tz offset is required but cannot be deduced
+
 ## Timere-parse 0.0.4
 
 - Replaced `Int` module with `CCInt` for building in version 4.06.1
