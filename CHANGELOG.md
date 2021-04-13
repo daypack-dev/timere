@@ -6,15 +6,15 @@
 
 ## Timere 0.2.0
 
+- Added support for nanosecond precision for date times and timestamps
+
 - Updated tzdb
 
 - Fixed `Timere.Date_time.make` and `Timere.Date_time.make_exn` types
 
-- Added support for nanosecond precision for date times and timestamps
+- `Timere.Date_time` API tuning
 
-- Minor `Timere.Date_time` API tuning
-
-- Extended format string to support number form for month
+- Extended format string to support number form of month
 
 ## Timere-parse 0.0.4
 
