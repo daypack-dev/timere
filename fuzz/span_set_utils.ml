@@ -36,8 +36,10 @@ let intervals_of_span_set (set : Span_set.t) : Time.Interval.t Seq.t =
   let rec aux set =
     match Span_set.min_elt set with
     | i ->
-      fun () -> Seq.Cons (Span_set.Interval.(x i, Span.succ (y i)), aux (Span_set.remove i set))
-    | exception Not_found ->
-      Seq.empty
+      fun () ->
+        Seq.Cons
+          ( Span_set.Interval.(x i, Span.succ (y i)),
+            aux (Span_set.remove i set) )
+    | exception Not_found -> Seq.empty
   in
   aux set

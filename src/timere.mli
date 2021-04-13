@@ -159,7 +159,7 @@ module Span : sig
     s : int64;
     ns : int;
   }
-  (** [t] is a signed span of time expressed as a tuple of [(s, ns)]
+  (** Signed/directional span of time expressed as a tuple of [(s, ns)]
       - [s] carries the sign of the span
       - [ns] carries the unsigned offset
 
@@ -255,6 +255,11 @@ module Duration : sig
     seconds : int;
     ns : int;
   }
+  (** Unsigned/scalar magnitude of a period of time
+
+      Conversion to and from [Span.t] is lossless,
+      but cannot convert from negative span
+  *)
 
   val make :
     ?days:int ->
@@ -279,6 +284,7 @@ module Duration : sig
   val zero : t
 
   val of_span : Span.t -> t
+  (** @raise Invalid_argument if span is negative *)
 
   val to_span : t -> Span.t
 
@@ -415,8 +421,7 @@ module Date_time : sig
     | `Tz_and_tz_offset_s of Time_zone.t * int
     ]
 
-  val tz_offset_s_of_tz_info :
-    tz_info -> int option
+  val tz_offset_s_of_tz_info : tz_info -> int option
 
   type t = private {
     year : int;
@@ -906,11 +911,9 @@ val pp_timestamp :
 val string_of_timestamp :
   ?display_using_tz:Time_zone.t -> ?format:string -> timestamp -> string
 
-val pp_rfc3339_timestamp :
-  Format.formatter -> timestamp -> unit
+val pp_rfc3339_timestamp : Format.formatter -> timestamp -> unit
 
-val rfc3339_of_timestamp :
-  timestamp -> string
+val rfc3339_of_timestamp : timestamp -> string
 
 val pp_interval :
   ?display_using_tz:Time_zone.t ->

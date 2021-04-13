@@ -1366,8 +1366,7 @@ module Date_time' = struct
   let max =
     CCOpt.get_exn @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_max
 
-  let to_tz_offset_s (x : t) =
-    tz_offset_s_of_tz_info x.tz_info
+  let to_tz_offset_s (x : t) = tz_offset_s_of_tz_info x.tz_info
 
   let of_points
       ?(default_tz_info =

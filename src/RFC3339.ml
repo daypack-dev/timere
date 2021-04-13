@@ -11,21 +11,17 @@ let pp_date_time formatter (dt : Time.Date_time'.t) =
         let offset = Duration.make ~seconds:(abs x) () in
         Printf.sprintf "%c%02d:%02d" sign offset.hours offset.minutes
     in
-    Fmt.pf formatter
-     "%04d-%02d-%02dT%02d:%02d:%02d%s" dt.year
+    Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d%s" dt.year
       (human_int_of_month dt.month)
       dt.day dt.hour dt.minute dt.second tz_off
 
 let of_date_time (dt : Time.Date_time'.t) : string option =
-  try
-    Some (Fmt.str "%a" pp_date_time dt)
-  with
-  | Printers.Date_time_cannot_deduce_tz_offset_s _ -> None
+  try Some (Fmt.str "%a" pp_date_time dt)
+  with Printers.Date_time_cannot_deduce_tz_offset_s _ -> None
 
 let pp_timestamp formatter (x : Span.t) =
   match Time.Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc x with
   | None -> invalid_arg "Invalid timestamp"
   | Some dt -> Fmt.pf formatter "%a" pp_date_time dt
 
-let of_timestamp (x : Span.t) : string =
-  Fmt.str "%a" pp_timestamp x
+let of_timestamp (x : Span.t) : string = Fmt.str "%a" pp_timestamp x

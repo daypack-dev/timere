@@ -105,9 +105,7 @@ module Format_string_parsers = struct
           (string "sec:"
            >> padding
            >>= fun padding -> return (pad_int padding date_time.second));
-        attempt
-          (string "ns" >>
-           return (string_of_int date_time.ns));
+        attempt (string "ns" >> return (string_of_int date_time.ns));
         attempt
           (string "sec-frac:"
            >> nat_zero
@@ -115,7 +113,7 @@ module Format_string_parsers = struct
            let ns = float_of_int date_time.ns in
            let precision = float_of_int precision in
            let frac =
-             (ns *. (precision ** 10.)) /. Span.ns_count_in_s_float
+             ns *. (precision ** 10.) /. Span.ns_count_in_s_float
              |> Float.round
              |> int_of_float
            in
@@ -199,10 +197,8 @@ let pp_date_time ?(format : string = default_date_time_format_string) ()
 
 let string_of_date_time ?(format : string = default_date_time_format_string)
     (x : Time.Date_time'.t) : string option =
-  try
-    Some (Fmt.str "%a" (pp_date_time ~format ()) x)
-  with
-  | Date_time_cannot_deduce_tz_offset_s _ -> None
+  try Some (Fmt.str "%a" (pp_date_time ~format ()) x)
+  with Date_time_cannot_deduce_tz_offset_s _ -> None
 
 let pp_timestamp ?(display_using_tz = Time_zone.utc)
     ?(format = default_date_time_format_string) () formatter time =
