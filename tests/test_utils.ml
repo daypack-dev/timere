@@ -74,13 +74,12 @@ let nz_pos_int64_int64_option_gen =
 
 let duration_gen =
   let open QCheck.Gen in
-  map (fun (days, hours, (minutes, seconds, ns)) ->
-      Duration.make ~days ~hours ~minutes ~seconds ~ns ()
-    )
+  map
+    (fun (days, hours, (minutes, seconds, ns)) ->
+       Duration.make ~days ~hours ~minutes ~seconds ~ns ())
     (triple nat nat (triple nat nat nat))
 
-let duration =
-  QCheck.make ~print:Print_utils.duration duration_gen
+let duration = QCheck.make ~print:Print_utils.duration duration_gen
 
 let timestamp_bound_gen bound =
   let open QCheck.Gen in
