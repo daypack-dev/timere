@@ -38,11 +38,9 @@ let display_intervals ~display_using_tz s =
         flush stdout)
 
 let debug_resolver () =
-  let s =
-    {|
+  let s = {|
 (unchunk (take_nth 5 (chunk_at_year_boundary (all))))
-      |}
-  in
+      |} in
   let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in
   (* let timere =
    *   (fun max_height max_branching randomness ->
@@ -121,8 +119,7 @@ let debug_resolver () =
            * before
            *   (Date_time'.make_exn ~tz ~year:2010 ~month:`Jan ~day:1 ~hour:0
            *      ~minute:0 ~second:0 ()); *)
-          intervals [ (search_start, search_end_exc)
-                    ]
+          intervals [ (search_start, search_end_exc) ];
         ])
   in
   print_endline "^^^^^";
@@ -133,8 +130,8 @@ let debug_resolver () =
    | Ok s -> display_intervals ~display_using_tz:tz s);
   print_endline "=====";
   let s =
-    Simple_resolver.resolve ~search_start ~search_end_exc
-      ~search_using_tz:tz timere
+    Simple_resolver.resolve ~search_start ~search_end_exc ~search_using_tz:tz
+      timere
   in
   display_intervals ~display_using_tz:tz s;
   print_newline ()
