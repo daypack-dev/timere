@@ -64,11 +64,13 @@ let to_span (t : t) : Span.t =
   Span.make ~s ~ns:t.ns ()
 
 let span_of_raw (r : raw) : Span.t =
-  (r.days *. Float_multipliers.day_to_seconds)
-  +. (r.hours *. Float_multipliers.hour_to_seconds)
-  +. (r.minutes *. Float_multipliers.minute_to_seconds)
-  +. r.seconds
-  |> Span.of_float
+  Span.(
+    of_float
+      ((r.days *. Float_multipliers.day_to_seconds)
+       +. (r.hours *. Float_multipliers.hour_to_seconds)
+       +. (r.minutes *. Float_multipliers.minute_to_seconds)
+       +. r.seconds)
+    + make ~ns:r.ns ())
 
 let normalize (t : t) : t = t |> to_span |> of_span
 
