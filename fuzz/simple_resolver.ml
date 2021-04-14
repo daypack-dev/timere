@@ -60,11 +60,11 @@ let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) :
         |> Date_time'.of_timestamp ~tz_of_date_time:tz
         |> CCOpt.get_exn
       in
-      if dt1.year = dt2.year && dt1.month = dt2.month then fun () ->
+      if dt1.year = dt2.year then fun () ->
         Seq.Cons ((t1, t2), aux rest)
       else
         let t' =
-          Date_time'.set_to_last_day_hour_min_sec_ns dt1
+          Date_time'.set_to_last_month_day_hour_min_sec_ns dt1
           |> Date_time'.to_timestamp
           |> Date_time'.max_of_local_result
           |> Span.succ
