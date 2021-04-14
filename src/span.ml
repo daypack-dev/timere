@@ -15,7 +15,7 @@ let normalize { s; ns } =
     let ns' = ns mod ns_count_in_s in
     { s = Int64.add s (Int64.of_int s'); ns = ns' }
   else
-    let ns = - ns in
+    let ns = -ns in
     let s' = (ns + ns_count_in_s - 1) / ns_count_in_s in
     let ns' = ns mod ns_count_in_s in
     { s = Int64.sub s (Int64.of_int s'); ns = ns_count_in_s - ns' }
@@ -69,7 +69,8 @@ let of_float (x : float) : t =
   let frac = if frac < 0.0 then 1.0 -. frac else frac in
   assert (frac <= 1.0);
   let ns = max 0 (int_of_float (frac *. ns_count_in_s_float)) in
-  if x >= 0.0 then normalize { s; ns } else normalize { s = Int64.pred s; ns = ns_count_in_s - ns }
+  if x >= 0.0 then normalize { s; ns }
+  else normalize { s = Int64.pred s; ns = ns_count_in_s - ns }
 
 let max x y = if ge x y then x else y
 

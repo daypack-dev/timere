@@ -86,7 +86,10 @@ let timestamp_bound_gen bound =
   map
     (fun (pos, s, ns) ->
        Span.(
-         make ~s ~ns () |> max zero |> min bound |> fun x -> if pos then x else neg x))
+         make ~s ~ns ()
+         |> max zero
+         |> min bound
+         |> fun x -> if pos then x else neg x))
     (triple bool ui64 int)
 
 let pos_timestamp_bound_gen bound =

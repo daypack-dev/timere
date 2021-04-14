@@ -2,14 +2,14 @@ open Test_utils
 
 module Qc = struct
   let normalize_is_lossless =
-    QCheck.Test.make ~count:100_000 ~name:"normalize_is_lossless" QCheck.(pair int64 int)
+    QCheck.Test.make ~count:100_000 ~name:"normalize_is_lossless"
+      QCheck.(pair int64 int)
       (fun (s, ns) ->
-         let span =
-           Span.normalize { s; ns }
-         in
+         let span = Span.normalize { s; ns } in
          Int64.add (Int64.mul s 1_000_000_000L) (Int64.of_int ns)
-         = Int64.add (Int64.mul Span.(span.s) 1_000_000_000L) (Int64.of_int span.ns)
-      )
+         = Int64.add
+           (Int64.mul Span.(span.s) 1_000_000_000L)
+           (Int64.of_int span.ns))
 
   let normalize_is_idempotent =
     QCheck.Test.make ~count:100_000 ~name:"normalize_is_idempotent" timestamp
@@ -85,9 +85,7 @@ module Qc = struct
   let to_of_float_accurate =
     QCheck.Test.make ~count:10 ~name:"to_of_float" timestamp (fun x ->
         let x' = Span.of_float @@ Span.to_float x in
-        x'.s = x.s
-        && ((x'.ns - x.ns) < 1_000)
-      )
+        x'.s = x.s && x'.ns - x.ns < 1_000)
 
   let suite =
     [
