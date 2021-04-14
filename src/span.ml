@@ -9,12 +9,16 @@ let ns_count_in_s = 1_000_000_000
 
 let ns_count_in_s_float = float_of_int ns_count_in_s
 
-let rec normalize { s; ns } =
+let normalize { s; ns } =
   if ns >= 0 then
     let s' = ns / ns_count_in_s in
     let ns' = ns mod ns_count_in_s in
     { s = Int64.add s (Int64.of_int s'); ns = ns' }
-  else normalize { s = Int64.pred s; ns = ns + ns_count_in_s }
+  else
+    let ns = - ns in
+    let s' = (ns + ns_count_in_s - 1) / ns_count_in_s in
+    let ns' = ns mod ns_count_in_s in
+    { s = Int64.sub s (Int64.of_int s'); ns = ns_count_in_s - ns' }
 
 let make ?(s = 0L) ?(ns = 0) () = normalize { s; ns }
 
