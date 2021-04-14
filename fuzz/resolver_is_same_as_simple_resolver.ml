@@ -21,9 +21,14 @@ let search_end_exc =
 let () =
   Crowbar.add_test ~name:"resolver_is_same_as_simple_resolver" [ time ]
     (fun t ->
-       Crowbar.check_eq ~eq:(OSeq.equal ~eq:( = ))
-         (CCResult.get_exn
-          @@ Resolver.resolve
-            Time.(inter [ t; intervals [ (search_start, search_end_exc) ] ]))
-         (Simple_resolver.resolve ~search_start ~search_end_exc
-            ~search_using_tz:Time_zone.utc t))
+       let r =
+         OSeq.equal
+           ~eq:(fun (x1, y1) (x2, y2) -> Span.(x1 = x2 && y1 = y2))
+           (CCResult.get_exn
+            @@ Resolver.resolve
+              Time.(inter [ t; intervals [ (search_start, search_end_exc) ] ])
+           )
+           (Simple_resolver.resolve ~search_start ~search_end_exc
+              ~search_using_tz:Time_zone.utc t)
+       in
+       if not r then Crowbar.failf "%a\n" Printers.pp_sexp t)
