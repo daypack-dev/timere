@@ -86,19 +86,19 @@ let timestamp_bound_gen bound =
   map
     (fun (pos, s, ns) ->
        Span.(
-         { s; ns } |> max zero |> min bound |> fun x -> if pos then x else neg x))
+         make ~s ~ns () |> max zero |> min bound |> fun x -> if pos then x else neg x))
     (triple bool ui64 int)
 
 let pos_timestamp_bound_gen bound =
   QCheck.Gen.(
     map
-      (fun (s, ns) -> Span.({ s; ns } |> max zero |> min bound))
+      (fun (s, ns) -> Span.(make ~s ~ns () |> max zero |> min bound))
       (pair ui64 int))
 
 let nz_pos_timestamp_bound_gen bound =
   QCheck.Gen.(
     map
-      (fun (s, ns) -> Span.({ s; ns } |> max (make ~ns:1 ()) |> min bound))
+      (fun (s, ns) -> Span.(make ~s ~ns () |> max (make ~ns:1 ()) |> min bound))
       (pair ui64 int))
 
 let small_pos_timestamp_gen = pos_timestamp_bound_gen (Span.make ~s:100L ())
