@@ -46,6 +46,7 @@ let () =
   let qc_suites =
     [
       ("Span_tests.Qc", Span_tests.Qc.suite);
+      ("Duration_tests.Qc", Duration_tests.Qc.suite);
       ("Time_intervals_tests.Qc", Time_intervals_tests.Qc.suite);
       ("Time_tests.Qc", Time_tests.Qc.suite);
       ("Resolver_tests.Qc", Resolver_tests.Qc.suite);
