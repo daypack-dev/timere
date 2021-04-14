@@ -286,6 +286,8 @@ module Duration : sig
 
   val zero : t
 
+  val equal : t -> t -> bool
+
   val of_span : Span.t -> t
   (** @raise Invalid_argument if span is negative *)
 

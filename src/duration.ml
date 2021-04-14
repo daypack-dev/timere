@@ -30,6 +30,13 @@ type t = {
   ns : int;
 }
 
+let equal (x : t) (y : t) =
+  x.days = y.days
+  && x.hours = y.hours
+  && x.minutes = y.minutes
+  && x.seconds = y.seconds
+  && x.ns = x.ns
+
 let zero : t = { days = 0; hours = 0; minutes = 0; seconds = 0; ns = 0 }
 
 let of_span ({ s; ns } as x : Span.t) : t =
