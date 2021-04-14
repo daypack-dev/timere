@@ -40,10 +40,7 @@ let display_intervals ~display_using_tz s =
 let debug_resolver () =
   let s =
     {|
-(inter (pattern (month_days 16))
-  (bounded_intervals whole (duration 2 0 0 0) (points (pick hms 6 0 0))
-   (points (pick hms 8 0 0)))
-)
+(unchunk (take_nth 5 (chunk_at_year_boundary (all))))
       |}
   in
   let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in
@@ -105,7 +102,7 @@ let debug_resolver () =
     |> Time.Date_time'.min_of_local_result
   in
   let search_end_exc_dt =
-    Time.Date_time'.make ~year:2050 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+    Time.Date_time'.make ~year:2003 ~month:`Jan ~day:1 ~hour:0 ~minute:0
       ~second:0 ~tz ()
     |> CCOpt.get_exn
   in
@@ -118,14 +115,14 @@ let debug_resolver () =
       inter
         [
           timere;
-          after
-            (Date_time'.make_exn ~tz ~year:2000 ~month:`Jan ~day:1 ~hour:0
-               ~minute:0 ~second:0 ());
-          before
-            (Date_time'.make_exn ~tz ~year:2050 ~month:`Jan ~day:1 ~hour:0
-               ~minute:0 ~second:0 ());
-          (* intervals [ (search_start, search_end_exc)
-           *           ] *)
+          (* after
+           *   (Date_time'.make_exn ~tz ~year:1999 ~month:`Jan ~day:1 ~hour:0
+           *      ~minute:0 ~second:0 ());
+           * before
+           *   (Date_time'.make_exn ~tz ~year:2010 ~month:`Jan ~day:1 ~hour:0
+           *      ~minute:0 ~second:0 ()); *)
+          intervals [ (search_start, search_end_exc)
+                    ]
         ])
   in
   print_endline "^^^^^";
@@ -135,11 +132,11 @@ let debug_resolver () =
    | Error msg -> print_endline msg
    | Ok s -> display_intervals ~display_using_tz:tz s);
   print_endline "=====";
-  (* let s =
-   *   Simple_resolver.resolve ~search_start ~search_end_exc
-   *     ~search_using_tz:Time_zone.utc timere
-   * in
-   * display_intervals ~display_using_tz:tz s; *)
+  let s =
+    Simple_resolver.resolve ~search_start ~search_end_exc
+      ~search_using_tz:tz timere
+  in
+  display_intervals ~display_using_tz:tz s;
   print_newline ()
 
 let debug_ccsexp_parse_string () = CCSexp.parse_string "\"\\256\"" |> ignore
@@ -424,9 +421,9 @@ let debug_fuzz_pattern () =
 
 (* let () = debug_parsing () *)
 
-let () = debug_fuzz_bounded_intervals ()
+(* let () = debug_fuzz_bounded_intervals () *)
 
-(* let () = debug_resolver () *)
+let () = debug_resolver ()
 
 (* let () = debug_fuzz_pattern () *)
 

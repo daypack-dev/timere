@@ -161,6 +161,18 @@
 )
 
 (rule
+ (targets span_set.ml)
+ (deps    ../fuzz/span_set.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets span_set_utils.ml)
+ (deps    ../fuzz/span_set_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
  (targets simple_resolver.ml)
  (deps    ../fuzz/simple_resolver.ml)
  (action  (copy %{deps} %{targets}))
@@ -187,6 +199,8 @@
             fmt
             bigarray
             fileutils
+            diet
+            crowbar
             timere.tzdb.full
             timere.tzlocal.unix
    )
