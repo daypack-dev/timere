@@ -62,9 +62,10 @@ let to_float ({ s; ns } : t) : float =
 let of_float (x : float) : t =
   let s = Int64.of_float x in
   let frac = x -. Int64.to_float s in
+  let frac = if frac < 0.0 then 1.0 -. frac else frac in
   assert (frac <= 1.0);
   let ns = max 0 (int_of_float (frac *. ns_count_in_s_float)) in
-  if x >= 0.0 then { s; ns } else { s = Int64.pred s; ns = ns_count_in_s - ns }
+  if x >= 0.0 then normalize { s; ns } else normalize { s = Int64.pred s; ns = ns_count_in_s - ns }
 
 let max x y = if ge x y then x else y
 
