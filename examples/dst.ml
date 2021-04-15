@@ -5,7 +5,7 @@ let display_intervals ~display_using_tz s =
     s
     |> OSeq.take 60
     |> OSeq.iter (fun (x, y) ->
-        let s = Timere.string_of_interval ~display_using_tz (x, y) in
+        let s = Timere.Interval.to_string ~display_using_tz (x, y) in
         let size =
           Timere.Span.sub y x
         in
