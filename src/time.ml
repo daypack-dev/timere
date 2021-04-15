@@ -89,7 +89,8 @@ module Intervals = struct
         ~f_exn:(fun _ _ -> Intervals_are_not_sorted)
         intervals
 
-    let check_if_sorted_rev (intervals : Interval'.t Seq.t) : Interval'.t Seq.t =
+    let check_if_sorted_rev (intervals : Interval'.t Seq.t) : Interval'.t Seq.t
+      =
       Seq_utils.check_if_f_holds_for_immediate_neighbors ~f:Interval'.ge
         ~f_exn:(fun _ _ -> Intervals_are_not_sorted)
         intervals
@@ -103,7 +104,8 @@ module Intervals = struct
         ~f_exn:(fun _ _ -> Intervals_are_not_disjoint)
         intervals
 
-    let check_if_normalized (intervals : Interval'.t Seq.t) : Interval'.t Seq.t =
+    let check_if_normalized (intervals : Interval'.t Seq.t) : Interval'.t Seq.t
+      =
       intervals
       |> check_if_valid
       |> check_if_not_empty
@@ -142,8 +144,8 @@ module Intervals = struct
           else l |> CCList.to_seq |> Check.check_if_valid |> CCList.of_seq)
       |> List.sort_uniq Interval'.compare
 
-    let sort_uniq_intervals ?(skip_check = false) (intervals : Interval'.t Seq.t)
-      : Interval'.t Seq.t =
+    let sort_uniq_intervals ?(skip_check = false)
+        (intervals : Interval'.t Seq.t) : Interval'.t Seq.t =
       intervals
       |> (fun s -> if skip_check then s else Check.check_if_valid s)
       |> CCList.of_seq
@@ -213,8 +215,8 @@ module Intervals = struct
       in
       aux start intervals
 
-    let slice_end_exc ~end_exc (intervals : Interval'.t Seq.t) : Interval'.t Seq.t
-      =
+    let slice_end_exc ~end_exc (intervals : Interval'.t Seq.t) :
+      Interval'.t Seq.t =
       let open Span in
       let rec aux end_exc intervals =
         match intervals () with
@@ -250,8 +252,9 @@ module Intervals = struct
       | Some end_exc -> Slice_internal.slice_end_exc ~end_exc s
   end
 
-  let relative_complement ?(skip_check = false) ~(not_mem_of : Interval'.t Seq.t)
-      (mem_of : Interval'.t Seq.t) : Interval'.t Seq.t =
+  let relative_complement ?(skip_check = false)
+      ~(not_mem_of : Interval'.t Seq.t) (mem_of : Interval'.t Seq.t) :
+    Interval'.t Seq.t =
     let rec aux mem_of not_mem_of =
       match (mem_of (), not_mem_of ()) with
       | Seq.Nil, _ -> Seq.empty

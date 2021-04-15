@@ -180,12 +180,11 @@ let aux_points (search_start, search_end_exc) search_using_tz points :
   |> intervals_of_int64s
   |> Seq.map fst
 
-let resolve ?(search_using_tz = Time_zone.utc)
-    ~(search_start : Span.t) ~(search_end_exc : Span.t)
-    (t : Time_ast.t) : Time.Interval'.t Seq.t =
+let resolve ?(search_using_tz = Time_zone.utc) ~(search_start : Span.t)
+    ~(search_end_exc : Span.t) (t : Time_ast.t) : Time.Interval'.t Seq.t =
   let default_search_space = Time.(timestamp_min, timestamp_max) in
-  let rec aux (search_space : Time.Interval'.t) (search_using_tz : Time_zone.t) t
-    =
+  let rec aux (search_space : Time.Interval'.t) (search_using_tz : Time_zone.t)
+      t =
     match t with
     | Time_ast.Empty -> Span_set.empty
     | All -> span_set_full
