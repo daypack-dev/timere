@@ -70,7 +70,7 @@ module Date_time = struct
 end
 
 module Interval = struct
-  include Interval
+  include Interval'
 
   let pp = Printers.pp_interval
 

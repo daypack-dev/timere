@@ -1,5 +1,3 @@
-type timestamp = Span.t
-
 type unary_op =
   | Not
   (* | Drop_points of int
@@ -35,7 +33,7 @@ type chunked_unary_op_on_chunked =
 type t =
   | Empty
   | All
-  | Intervals of (timestamp * timestamp) Seq.t
+  | Intervals of (Span.t * Span.t) Seq.t
   | Pattern of Pattern.t
   | Unary_op of unary_op * t
   | Inter_seq of t Seq.t

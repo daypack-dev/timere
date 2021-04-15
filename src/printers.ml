@@ -111,7 +111,7 @@ module Format_string_parsers = struct
            let precision' = float_of_int precision in
            let frac =
              ns *. (10. ** precision') /. Span.ns_count_in_s_float
-             |> Float.round
+             |> CCFloat.round
              |> int_of_float
            in
            return (Printf.sprintf "%0*d" precision frac));
@@ -210,7 +210,7 @@ let string_of_hms hms = Fmt.str "%a" pp_hms hms
 
 let pp_interval ?(display_using_tz = Time_zone.utc)
     ?(format = default_interval_format_string) () formatter
-    ((s, e) : Time.Interval.t) : unit =
+    ((s, e) : Time.Interval'.t) : unit =
   let open MParser in
   let open Parser_components in
   let single (start_date_time : Time.Date_time'.t)
@@ -260,7 +260,7 @@ let pp_interval ?(display_using_tz = Time_zone.utc)
 
 let string_of_interval ?(display_using_tz = Time_zone.utc)
     ?(format : string = default_interval_format_string)
-    (interval : Time.Interval.t) : string =
+    (interval : Time.Interval'.t) : string =
   Fmt.str "%a" (pp_interval ~display_using_tz ~format ()) interval
 
 let pp_intervals ?(display_using_tz = Time_zone.utc)

@@ -19,7 +19,7 @@ type timestamp = Span.t
 
 let one_ns = Span.make ~ns:1 ()
 
-module Interval = struct
+module Interval' = struct
   type t = timestamp * timestamp
 
   let lt (x1, y1) (x2, y2) =
@@ -75,35 +75,35 @@ end
 
 module Intervals = struct
   module Check = struct
-    let check_if_valid (intervals : Interval.t Seq.t) : Interval.t Seq.t =
-      Seq.map Interval.Check.check_if_valid intervals
+    let check_if_valid (intervals : Interval'.t Seq.t) : Interval'.t Seq.t =
+      Seq.map Interval'.Check.check_if_valid intervals
 
-    let check_if_valid_list (intervals : Interval.t list) : Interval.t list =
-      List.map Interval.Check.check_if_valid intervals
+    let check_if_valid_list (intervals : Interval'.t list) : Interval'.t list =
+      List.map Interval'.Check.check_if_valid intervals
 
-    let check_if_not_empty (intervals : Interval.t Seq.t) : Interval.t Seq.t =
-      Seq.map Interval.Check.check_if_not_empty intervals
+    let check_if_not_empty (intervals : Interval'.t Seq.t) : Interval'.t Seq.t =
+      Seq.map Interval'.Check.check_if_not_empty intervals
 
-    let check_if_sorted (intervals : Interval.t Seq.t) : Interval.t Seq.t =
-      Seq_utils.check_if_f_holds_for_immediate_neighbors ~f:Interval.le
+    let check_if_sorted (intervals : Interval'.t Seq.t) : Interval'.t Seq.t =
+      Seq_utils.check_if_f_holds_for_immediate_neighbors ~f:Interval'.le
         ~f_exn:(fun _ _ -> Intervals_are_not_sorted)
         intervals
 
-    let check_if_sorted_rev (intervals : Interval.t Seq.t) : Interval.t Seq.t =
-      Seq_utils.check_if_f_holds_for_immediate_neighbors ~f:Interval.ge
+    let check_if_sorted_rev (intervals : Interval'.t Seq.t) : Interval'.t Seq.t =
+      Seq_utils.check_if_f_holds_for_immediate_neighbors ~f:Interval'.ge
         ~f_exn:(fun _ _ -> Intervals_are_not_sorted)
         intervals
 
-    let check_if_disjoint (intervals : Interval.t Seq.t) : Interval.t Seq.t =
+    let check_if_disjoint (intervals : Interval'.t Seq.t) : Interval'.t Seq.t =
       Seq_utils.check_if_f_holds_for_immediate_neighbors
         ~f:(fun x y ->
-            match Interval.overlap_of_a_over_b ~a:y ~b:x with
+            match Interval'.overlap_of_a_over_b ~a:y ~b:x with
             | None, None, None | Some _, None, None | None, None, Some _ -> true
             | _ -> false)
         ~f_exn:(fun _ _ -> Intervals_are_not_disjoint)
         intervals
 
-    let check_if_normalized (intervals : Interval.t Seq.t) : Interval.t Seq.t =
+    let check_if_normalized (intervals : Interval'.t Seq.t) : Interval'.t Seq.t =
       intervals
       |> check_if_valid
       |> check_if_not_empty
@@ -112,60 +112,60 @@ module Intervals = struct
   end
 
   module Filter = struct
-    let filter_invalid (intervals : Interval.t Seq.t) : Interval.t Seq.t =
-      Seq.filter Interval.Check.is_valid intervals
+    let filter_invalid (intervals : Interval'.t Seq.t) : Interval'.t Seq.t =
+      Seq.filter Interval'.Check.is_valid intervals
 
-    let filter_invalid_list (intervals : Interval.t list) : Interval.t list =
-      List.filter Interval.Check.is_valid intervals
+    let filter_invalid_list (intervals : Interval'.t list) : Interval'.t list =
+      List.filter Interval'.Check.is_valid intervals
 
-    let filter_empty (intervals : Interval.t Seq.t) : Interval.t Seq.t =
-      Seq.filter Interval.Check.is_not_empty intervals
+    let filter_empty (intervals : Interval'.t Seq.t) : Interval'.t Seq.t =
+      Seq.filter Interval'.Check.is_not_empty intervals
 
-    let filter_empty_list (intervals : Interval.t list) : Interval.t list =
-      List.filter Interval.Check.is_not_empty intervals
+    let filter_empty_list (intervals : Interval'.t list) : Interval'.t list =
+      List.filter Interval'.Check.is_not_empty intervals
   end
 
   module Sort = struct
-    let sort_intervals_list ?(skip_check = false) (intervals : Interval.t list)
-      : Interval.t list =
+    let sort_intervals_list ?(skip_check = false) (intervals : Interval'.t list)
+      : Interval'.t list =
       intervals
       |> (fun l ->
           if skip_check then l
           else l |> CCList.to_seq |> Check.check_if_valid |> CCList.of_seq)
-      |> List.sort Interval.compare
+      |> List.sort Interval'.compare
 
     let sort_uniq_intervals_list ?(skip_check = false)
-        (intervals : Interval.t list) : Interval.t list =
+        (intervals : Interval'.t list) : Interval'.t list =
       intervals
       |> (fun l ->
           if skip_check then l
           else l |> CCList.to_seq |> Check.check_if_valid |> CCList.of_seq)
-      |> List.sort_uniq Interval.compare
+      |> List.sort_uniq Interval'.compare
 
-    let sort_uniq_intervals ?(skip_check = false) (intervals : Interval.t Seq.t)
-      : Interval.t Seq.t =
+    let sort_uniq_intervals ?(skip_check = false) (intervals : Interval'.t Seq.t)
+      : Interval'.t Seq.t =
       intervals
       |> (fun s -> if skip_check then s else Check.check_if_valid s)
       |> CCList.of_seq
-      |> List.sort_uniq Interval.compare
+      |> List.sort_uniq Interval'.compare
       |> CCList.to_seq
 
-    let sort_intervals ?(skip_check = false) (intervals : Interval.t Seq.t) :
-      Interval.t Seq.t =
+    let sort_intervals ?(skip_check = false) (intervals : Interval'.t Seq.t) :
+      Interval'.t Seq.t =
       intervals
       |> (fun s -> if skip_check then s else Check.check_if_valid s)
       |> CCList.of_seq
-      |> List.sort Interval.compare
+      |> List.sort Interval'.compare
       |> CCList.to_seq
   end
 
   module Join_internal = struct
-    let join (intervals : Interval.t Seq.t) : Interval.t Seq.t =
+    let join (intervals : Interval'.t Seq.t) : Interval'.t Seq.t =
       let rec aux cur intervals =
         match intervals () with
         | Seq.Nil -> Seq.return cur
         | Seq.Cons ((start, end_exc), rest) -> (
-            match Interval.join cur (start, end_exc) with
+            match Interval'.join cur (start, end_exc) with
             | Some x -> aux x rest
             | None ->
               (* cannot be merged, add time slot being carried to the sequence *)
@@ -195,7 +195,7 @@ module Intervals = struct
     |> Join_internal.join
 
   module Slice_internal = struct
-    let slice_start ~start (intervals : Interval.t Seq.t) : Interval.t Seq.t =
+    let slice_start ~start (intervals : Interval'.t Seq.t) : Interval'.t Seq.t =
       let open Span in
       let rec aux start intervals =
         match intervals () with
@@ -213,7 +213,7 @@ module Intervals = struct
       in
       aux start intervals
 
-    let slice_end_exc ~end_exc (intervals : Interval.t Seq.t) : Interval.t Seq.t
+    let slice_end_exc ~end_exc (intervals : Interval'.t Seq.t) : Interval'.t Seq.t
       =
       let open Span in
       let rec aux end_exc intervals =
@@ -250,8 +250,8 @@ module Intervals = struct
       | Some end_exc -> Slice_internal.slice_end_exc ~end_exc s
   end
 
-  let relative_complement ?(skip_check = false) ~(not_mem_of : Interval.t Seq.t)
-      (mem_of : Interval.t Seq.t) : Interval.t Seq.t =
+  let relative_complement ?(skip_check = false) ~(not_mem_of : Interval'.t Seq.t)
+      (mem_of : Interval'.t Seq.t) : Interval'.t Seq.t =
     let rec aux mem_of not_mem_of =
       match (mem_of (), not_mem_of ()) with
       | Seq.Nil, _ -> Seq.empty
@@ -260,7 +260,7 @@ module Intervals = struct
           Seq.Cons (not_mem_of_ts, not_mem_of_rest) ) -> (
           let mem_of () = Seq.Cons (mem_of_ts, mem_of_rest) in
           let not_mem_of () = Seq.Cons (not_mem_of_ts, not_mem_of_rest) in
-          match Interval.overlap_of_a_over_b ~a:mem_of_ts ~b:not_mem_of_ts with
+          match Interval'.overlap_of_a_over_b ~a:mem_of_ts ~b:not_mem_of_ts with
           | None, None, None ->
             (* mem_of_ts is empty, drop mem_of_ts *)
             aux mem_of_rest not_mem_of
@@ -292,15 +292,15 @@ module Intervals = struct
     aux mem_of not_mem_of
 
   let invert ?(skip_check = false) ~start ~end_exc
-      (intervals : Interval.t Seq.t) : Interval.t Seq.t =
+      (intervals : Interval'.t Seq.t) : Interval'.t Seq.t =
     relative_complement ~skip_check ~not_mem_of:intervals
       (Seq.return (start, end_exc))
 
   module Inter = struct
-    let inter ?(skip_check = false) (intervals1 : Interval.t Seq.t)
-        (intervals2 : Interval.t Seq.t) : Interval.t Seq.t =
+    let inter ?(skip_check = false) (intervals1 : Interval'.t Seq.t)
+        (intervals2 : Interval'.t Seq.t) : Interval'.t Seq.t =
       let open Span in
-      let rec aux intervals1 intervals2 : Interval.t Seq.t =
+      let rec aux intervals1 intervals2 : Interval'.t Seq.t =
         match (intervals1 (), intervals2 ()) with
         | Seq.Nil, _ -> Seq.empty
         | _, Seq.Nil -> Seq.empty
@@ -338,7 +338,7 @@ module Intervals = struct
       aux intervals1 intervals2
 
     let inter_multi_seq ?(skip_check = false)
-        (interval_batches : Interval.t Seq.t Seq.t) : Interval.t Seq.t =
+        (interval_batches : Interval'.t Seq.t Seq.t) : Interval'.t Seq.t =
       match
         Seq.fold_left
           (fun acc intervals ->
@@ -352,13 +352,13 @@ module Intervals = struct
   end
 
   module Merge = struct
-    let merge ?(skip_check = false) (intervals1 : Interval.t Seq.t)
-        (intervals2 : Interval.t Seq.t) : Interval.t Seq.t =
+    let merge ?(skip_check = false) (intervals1 : Interval'.t Seq.t)
+        (intervals2 : Interval'.t Seq.t) : Interval'.t Seq.t =
       let rec aux intervals1 intervals2 =
         match (intervals1 (), intervals2 ()) with
         | Seq.Nil, s | s, Seq.Nil -> fun () -> s
         | Seq.Cons (x1, rest1), Seq.Cons (x2, rest2) ->
-          if Interval.le x1 x2 then fun () ->
+          if Interval'.le x1 x2 then fun () ->
             Seq.Cons (x1, aux rest1 intervals2)
           else fun () -> Seq.Cons (x2, aux rest2 intervals1)
       in
@@ -373,20 +373,20 @@ module Intervals = struct
       aux intervals1 intervals2
 
     let merge_multi_seq ?(skip_check = false)
-        (interval_batches : Interval.t Seq.t Seq.t) : Interval.t Seq.t =
+        (interval_batches : Interval'.t Seq.t Seq.t) : Interval'.t Seq.t =
       Seq.fold_left
         (fun acc intervals -> merge ~skip_check acc intervals)
         Seq.empty interval_batches
   end
 
   module Union = struct
-    let union ?(skip_check = false) (intervals1 : Interval.t Seq.t)
-        (intervals2 : Interval.t Seq.t) : Interval.t Seq.t =
+    let union ?(skip_check = false) (intervals1 : Interval'.t Seq.t)
+        (intervals2 : Interval'.t Seq.t) : Interval'.t Seq.t =
       Merge.merge ~skip_check intervals1 intervals2
       |> normalize ~skip_filter_invalid:true ~skip_sort:true
 
     let union_multi_seq ?(skip_check = false)
-        (interval_batches : Interval.t Seq.t Seq.t) : Interval.t Seq.t =
+        (interval_batches : Interval'.t Seq.t Seq.t) : Interval'.t Seq.t =
       Seq.fold_left
         (fun acc intervals -> union ~skip_check acc intervals)
         Seq.empty interval_batches
@@ -394,28 +394,28 @@ module Intervals = struct
 
   module Round_robin = struct
     let collect_round_robin_non_decreasing ?(skip_check = false)
-        (batches : Interval.t Seq.t list) : Interval.t option list Seq.t =
+        (batches : Interval'.t Seq.t list) : Interval'.t option list Seq.t =
       batches
       |> List.map (fun s ->
           if skip_check then s
           else s |> Check.check_if_valid |> Check.check_if_sorted)
-      |> Seq_utils.collect_round_robin ~f_le:Interval.le
+      |> Seq_utils.collect_round_robin ~f_le:Interval'.le
 
     let merge_multi_list_round_robin_non_decreasing ?(skip_check = false)
-        (batches : Interval.t Seq.t list) : Interval.t Seq.t =
+        (batches : Interval'.t Seq.t list) : Interval'.t Seq.t =
       collect_round_robin_non_decreasing ~skip_check batches
       |> Seq.flat_map (fun l -> CCList.to_seq l |> Seq.filter_map CCFun.id)
       |> normalize ~skip_filter_invalid:true ~skip_sort:true
 
     let merge_multi_seq_round_robin_non_decreasing ?(skip_check = false)
-        (batches : Interval.t Seq.t Seq.t) : Interval.t Seq.t =
+        (batches : Interval'.t Seq.t Seq.t) : Interval'.t Seq.t =
       batches
       |> CCList.of_seq
       |> merge_multi_list_round_robin_non_decreasing ~skip_check
   end
 
   let chunk ?(skip_check = false) ?(drop_partial = false) ~chunk_size
-      (intervals : Interval.t Seq.t) : Interval.t Seq.t =
+      (intervals : Interval'.t Seq.t) : Interval'.t Seq.t =
     let open Span in
     let rec aux intervals =
       match intervals () with
@@ -468,24 +468,24 @@ module Range = struct
     int * int =
     match x with
     | `Range_inc (x, y) -> (to_int x, to_int y)
-    | `Range_exc (x, y) -> (to_int x, y |> to_int |> Int.pred)
+    | `Range_exc (x, y) -> (to_int x, y |> to_int |> pred)
 
   let int_exc_range_of_range (type a) ~(to_int : a -> int) (x : a range) :
     int * int =
     match x with
-    | `Range_inc (x, y) -> (to_int x, y |> to_int |> Int.succ)
+    | `Range_inc (x, y) -> (to_int x, y |> to_int |> succ)
     | `Range_exc (x, y) -> (to_int x, to_int y)
 
   let inc_range_of_range (type a) ~(to_int : a -> int) ~(of_int : int -> a)
       (x : a range) : a * a =
     match x with
     | `Range_inc (x, y) -> (x, y)
-    | `Range_exc (x, y) -> (x, y |> to_int |> Int.pred |> of_int)
+    | `Range_exc (x, y) -> (x, y |> to_int |> pred |> of_int)
 
   let exc_range_of_range (type a) ~(to_int : a -> int) ~(of_int : int -> a)
       (x : a range) : a * a =
     match x with
-    | `Range_inc (x, y) -> (x, y |> to_int |> Int.succ |> of_int)
+    | `Range_inc (x, y) -> (x, y |> to_int |> succ |> of_int)
     | `Range_exc (x, y) -> (x, y)
 
   let timestamp_pair_of_int_pair (x, y) : timestamp * timestamp =
@@ -500,7 +500,7 @@ module Range = struct
       (y : a range) : a range option =
     let x = int_exc_range_of_range ~to_int x |> timestamp_pair_of_int_pair in
     let y = int_exc_range_of_range ~to_int y |> timestamp_pair_of_int_pair in
-    Interval.join x y
+    Interval'.join x y
     |> CCOpt.map (fun (x, y) ->
         let open Span in
         `Range_exc (of_int x.ns, of_int y.ns))
@@ -679,7 +679,7 @@ end
  *       (x : a Range.range) (y : a Range.range) : a Range.range option =
  *     let to_int64 = Misc_utils.convert_to_int_to_int64 to_int in
  *     let of_int64 = Misc_utils.convert_of_int_to_int64 of_int in
- *     Interval.join x y
+ *     Interval'.join x y
  * 
  *   module Flatten = struct
  *     let flatten_into_seq (type a) ~(modulo : int option) ~(to_int : a -> int)
@@ -765,7 +765,7 @@ module Ranges = struct
       |> Intervals.normalize ~skip_filter_invalid ~skip_filter_empty
         ~skip_sort
       |> Seq.map Range.int_pair_of_timestamp_pair
-      |> Seq.map (fun (x, y) -> (of_int x, y |> Int.pred |> of_int))
+      |> Seq.map (fun (x, y) -> (of_int x, y |> pred |> of_int))
       |> Seq.map (fun (x, y) -> `Range_inc (x, y))
     | Some _ ->
       (* not sure what would be a reasonable normalization procedure when domain is a field *)
@@ -1822,7 +1822,7 @@ let hms_intervals_inc (hms_a : hms) (hms_b : hms) : t =
   let hms_b = hms_b |> second_of_day_of_hms |> succ |> hms_of_second_of_day in
   hms_intervals_exc hms_a hms_b
 
-let sorted_interval_seq ?(skip_invalid : bool = false) (s : Interval.t Seq.t) :
+let sorted_interval_seq ?(skip_invalid : bool = false) (s : Interval'.t Seq.t) :
   t =
   let s =
     s
@@ -1843,10 +1843,10 @@ let sorted_interval_seq ?(skip_invalid : bool = false) (s : Interval.t Seq.t) :
   in
   match s () with Seq.Nil -> Empty | _ -> Intervals s
 
-let sorted_intervals ?(skip_invalid : bool = false) (l : Interval.t list) : t =
+let sorted_intervals ?(skip_invalid : bool = false) (l : Interval'.t list) : t =
   l |> CCList.to_seq |> sorted_interval_seq ~skip_invalid
 
-let intervals ?(skip_invalid : bool = false) (l : Interval.t list) : t =
+let intervals ?(skip_invalid : bool = false) (l : Interval'.t list) : t =
   let s =
     l
     |> Intervals.Filter.filter_empty_list
@@ -1867,7 +1867,7 @@ let intervals ?(skip_invalid : bool = false) (l : Interval.t list) : t =
   in
   match s () with Seq.Nil -> Empty | _ -> Intervals s
 
-let interval_seq ?(skip_invalid : bool = false) (s : Interval.t Seq.t) : t =
+let interval_seq ?(skip_invalid : bool = false) (s : Interval'.t Seq.t) : t =
   s |> CCList.of_seq |> intervals ~skip_invalid
 
 let interval_of_date_time date_time =

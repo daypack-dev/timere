@@ -1,6 +1,8 @@
 open Time_ast
 
-type search_space = Time.Interval.t list
+type timestamp = Span.t
+
+type search_space = Time.Interval'.t list
 
 let default_search_space_start = Time.timestamp_min
 
@@ -12,7 +14,7 @@ let default_search_space : search_space =
 type t =
   | Empty
   | All
-  | Intervals of search_space * Time.Interval.t Seq.t
+  | Intervals of search_space * Time.Interval'.t Seq.t
   | Pattern of search_space * Pattern.t
   | Unary_op of search_space * unary_op * t
   | Inter_seq of search_space * t Seq.t
@@ -51,7 +53,7 @@ and chunked_of_ast_chunked (c : Time_ast.chunked) : chunked =
   | Unary_op_on_chunked (op, chunked) ->
     Unary_op_on_chunked (op, chunked_of_ast_chunked chunked)
 
-let get_search_space (time : t) : Time.Interval.t list =
+let get_search_space (time : t) : Time.Interval'.t list =
   match time with
   | All -> default_search_space
   | Empty -> []
@@ -276,8 +278,8 @@ type inc_or_exc =
   | Inc
   | Exc
 
-(* let do_drop_points (n : int64) (s : Time.Interval.t Seq.t) :
- *   Time.Interval.t Seq.t =
+(* let do_drop_points (n : int64) (s : Time.Interval'.t Seq.t) :
+ *   Time.Interval'.t Seq.t =
  *   let rec aux n s =
  *     if n = 0L then s
  *     else
@@ -290,8 +292,8 @@ type inc_or_exc =
  *   in
  *   aux n s
  * 
- * let do_take_points (n : int64) (s : Time.Interval.t Seq.t) :
- *   Time.Interval.t Seq.t =
+ * let do_take_points (n : int64) (s : Time.Interval'.t Seq.t) :
+ *   Time.Interval'.t Seq.t =
  *   let rec aux n s =
  *     if n = 0L then Seq.empty
  *     else
@@ -304,7 +306,7 @@ type inc_or_exc =
  *   in
  *   aux n s *)
 
-let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) =
+let do_chunk_at_year_boundary tz (s : Time.Interval'.t Seq.t) =
   let open Time in
   let rec aux s =
     match s () with
@@ -332,7 +334,7 @@ let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) =
   in
   aux s
 
-let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) =
+let do_chunk_at_month_boundary tz (s : Time.Interval'.t Seq.t) =
   let open Time in
   let rec aux s =
     match s () with
@@ -538,11 +540,11 @@ and aux_bounded_intervals search_using_tz space pick bound p1 p2 =
 
 and aux_union search_using_tz timeres =
   let open Time in
-  let resolve_and_merge (s : t Seq.t) : Interval.t Seq.t =
+  let resolve_and_merge (s : t Seq.t) : Interval'.t Seq.t =
     Seq.map (aux search_using_tz) s
     |> Time.Intervals.Merge.merge_multi_seq ~skip_check:true
   in
-  let rec aux_union' (timeres : t Seq.t) (intervals : Interval.t Seq.t) =
+  let rec aux_union' (timeres : t Seq.t) (intervals : Interval'.t Seq.t) =
     match intervals () with
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((start, end_exc), rest) ->
@@ -552,7 +554,7 @@ and aux_union search_using_tz timeres =
         let timeres = slice_search_space_multi_seq ~start:end_exc timeres in
         let next_intervals =
           resolve_and_merge timeres
-          |> OSeq.drop_while (fun x -> Time.Interval.le x (start, end_exc))
+          |> OSeq.drop_while (fun x -> Time.Interval'.le x (start, end_exc))
         in
         fun () ->
           Seq.Cons ((start, end_exc), aux_union' timeres next_intervals)
@@ -569,7 +571,7 @@ and aux_inter search_using_tz timeres =
          |> Intervals.Slice.slice ~skip_check:true ~start)
       timeres
   in
-  let collect_batch (l : Interval.t Seq.t list) : Interval.t option list =
+  let collect_batch (l : Interval'.t Seq.t list) : Interval'.t option list =
     List.map
       (fun s -> match s () with Seq.Nil -> None | Seq.Cons (x, _) -> Some x)
       l
@@ -642,7 +644,7 @@ and aux_chunked search_using_tz (chunked : chunked) =
       | Chunk_again op -> chunk_based_on_op_on_t op s)
 
 let resolve' ~search_using_tz (time : t) :
-  (Time.Interval.t Seq.t, string) result =
+  (Time.Interval'.t Seq.t, string) result =
   let open Time in
   try
     Ok (time |> optimize_search_space search_using_tz |> aux search_using_tz)
@@ -651,5 +653,5 @@ let resolve' ~search_using_tz (time : t) :
   | Intervals_are_not_sorted -> Error "Intervals are not sorted"
 
 let resolve ?(search_using_tz = Time_zone.utc) (time : Time_ast.t) :
-  (Time.Interval.t Seq.t, string) result =
+  (Time.Interval'.t Seq.t, string) result =
   resolve' ~search_using_tz (t_of_ast time)

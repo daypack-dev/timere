@@ -8,7 +8,7 @@ module Search_param = struct
   }
 
   let make ~search_using_tz_offset_s ~search_using_tz
-      ((start, end_exc) : Time.Interval.t) : t =
+      ((start, end_exc) : Time.Interval'.t) : t =
     {
       search_using_tz_offset_s;
       start =
