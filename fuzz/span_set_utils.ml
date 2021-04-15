@@ -1,4 +1,4 @@
-let span_set_max_interval_count = 100_000
+let span_set_max_interval_count = 1_000_000
 
 let span_set_full : Span_set.t =
   Span_set.add
