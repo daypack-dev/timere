@@ -17,13 +17,12 @@ let () =
               p2)
         in
         let r =
-          ((not (OSeq.is_empty s1 && OSeq.is_empty s2))
-           || (OSeq.is_empty s && OSeq.is_empty s'))
+          (not (OSeq.is_empty s1 && OSeq.is_empty s2))
+          || (OSeq.is_empty s && OSeq.is_empty s')
         in
         if not r then
-          Crowbar.failf "tz: %s, bound: %a\np1: %a, p2: %a\n" (Time_zone.name tz) Printers.pp_span bound
-            CCSexp.pp
+          Crowbar.failf "tz: %s, bound: %a\np1: %a, p2: %a\n" (Time_zone.name tz)
+            Printers.pp_span bound CCSexp.pp
             (To_sexp.sexp_of_points p1)
             CCSexp.pp
-            (To_sexp.sexp_of_points p2)
-      )
+            (To_sexp.sexp_of_points p2))

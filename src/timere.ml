@@ -24,14 +24,6 @@ module Span = struct
   let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_span
 end
 
-module Interval = struct
-  include Interval
-
-  let pp = Printers.pp_interval
-
-  let to_string = Printers.string_of_interval
-end
-
 module Date_time = struct
   include Time.Date_time'
 
@@ -75,6 +67,14 @@ module Date_time = struct
     Of_sexp.(wrap_of_sexp_into_of_sexp_string date_time_of_sexp)
 
   let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_date_time
+end
+
+module Interval = struct
+  include Interval
+
+  let pp = Printers.pp_interval
+
+  let to_string = Printers.string_of_interval
 end
 
 module Duration = struct

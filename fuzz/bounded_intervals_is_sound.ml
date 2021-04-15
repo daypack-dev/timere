@@ -17,28 +17,27 @@ let () =
               p2)
         in
         let r =
-          (OSeq.for_all
-             (fun (x, y) ->
-                OSeq.mem ~eq:( = ) x s1
-                && OSeq.mem ~eq:( = ) y s2
-                && Span.(y - x <= bound)
-                && not (OSeq.exists Span.(fun x2 -> x < x2 && x2 < y) s2))
-             s
-           && OSeq.for_all
-             (fun (x, y) ->
-                let r =
-                  OSeq.filter Span.(fun x1 -> x1 < x && x - x1 <= bound) s1
-                in
-                let xr = CCOpt.get_exn @@ Seq_utils.last_element_of_seq r in
-                y = Span.succ x
-                && OSeq.mem ~eq:( = ) x s2
-                && not (OSeq.exists Span.(fun x2 -> xr < x2 && x2 < x) s2))
-             s')
+          OSeq.for_all
+            (fun (x, y) ->
+               OSeq.mem ~eq:( = ) x s1
+               && OSeq.mem ~eq:( = ) y s2
+               && Span.(y - x <= bound)
+               && not (OSeq.exists Span.(fun x2 -> x < x2 && x2 < y) s2))
+            s
+          && OSeq.for_all
+            (fun (x, y) ->
+               let r =
+                 OSeq.filter Span.(fun x1 -> x1 < x && x - x1 <= bound) s1
+               in
+               let xr = CCOpt.get_exn @@ Seq_utils.last_element_of_seq r in
+               y = Span.succ x
+               && OSeq.mem ~eq:( = ) x s2
+               && not (OSeq.exists Span.(fun x2 -> xr < x2 && x2 < x) s2))
+            s'
         in
         if not r then
-          Crowbar.failf "tz: %s, bound: %a\np1: %a, p2: %a\n" (Time_zone.name tz) Printers.pp_span bound
-            CCSexp.pp
+          Crowbar.failf "tz: %s, bound: %a\np1: %a, p2: %a\n" (Time_zone.name tz)
+            Printers.pp_span bound CCSexp.pp
             (To_sexp.sexp_of_points p1)
             CCSexp.pp
-            (To_sexp.sexp_of_points p2)
-      )
+            (To_sexp.sexp_of_points p2))

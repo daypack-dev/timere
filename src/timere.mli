@@ -719,10 +719,10 @@ module Interval : sig
     Format.formatter ->
     t ->
     unit
-    (** Pretty printing for interval.
+  (** Pretty printing for interval.
 
         Default format string:
-        {v
+      {v
 [{syear} {smon:Xxx} {smday:0X} {shour:0X}:{smin:0X}:{ssec:0X} \
 {stzoff-sign}{stzoff-hour:0X}:{stzoff-min:0X}:{stzoff-sec:0X}, {eyear} \
 {emon:Xxx} {emday:0X} {ehour:0X}:{emin:0X}:{esec:0X} \
@@ -732,12 +732,11 @@ module Interval : sig
         Follows same format string rules as {!val:Date_time.to_string}, but tags are prefixed with 's' for "start time", and 'e' for "end exc time",
         e.g. for interval [(x, y)]
 
-        - [{syear}] gives year of the [x]
-        - [{ehour:cX}] gives hour of the [y]
-    *)
+      - [{syear}] gives year of the [x]
+      - [{ehour:cX}] gives hour of the [y]
+  *)
 
-  val to_string :
-    ?display_using_tz:Time_zone.t -> ?format:string -> t -> string
+  val to_string : ?display_using_tz:Time_zone.t -> ?format:string -> t -> string
 end
 
 val intervals : ?skip_invalid:bool -> Interval.t list -> t
