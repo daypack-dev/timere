@@ -30,4 +30,4 @@ let () =
            (Simple_resolver.resolve ~search_start ~search_end_exc
               ~search_using_tz:Time_zone.utc t)
        in
-       if not r then Crowbar.failf "%a\n" Printers.pp_sexp t)
+       if not r then Crowbar.fail (Fmt.str "%a\n" Printers.pp_sexp t))

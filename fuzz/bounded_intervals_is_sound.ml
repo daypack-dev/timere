@@ -36,8 +36,8 @@ let () =
             s'
         in
         if not r then
-          Crowbar.failf "tz: %s, bound: %a\np1: %a, p2: %a\n" (Time_zone.name tz)
+          Crowbar.fail (Fmt.str "tz: %s, bound: %a\np1: %a, p2: %a\n" (Time_zone.name tz)
             Printers.pp_span bound CCSexp.pp
             (To_sexp.sexp_of_points p1)
             CCSexp.pp
-            (To_sexp.sexp_of_points p2))
+            (To_sexp.sexp_of_points p2)))

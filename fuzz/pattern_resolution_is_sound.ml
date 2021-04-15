@@ -66,8 +66,8 @@ let () =
             s
         in
         if not r then
-          Crowbar.failf "tz: %s\nsearch_space: %a\npattern: %a\n"
+          Crowbar.fail (Fmt.str "tz: %s\nsearch_space: %a\npattern: %a\n"
             (Time_zone.name tz)
             (Fmt.list (Printers.pp_interval ()))
             search_space CCSexp.pp
-            (To_sexp.sexp_of_pattern pattern))
+            (To_sexp.sexp_of_pattern pattern)))
