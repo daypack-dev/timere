@@ -4,7 +4,11 @@
 
 - Updated use of Timere API
 
-## Timere 0.2.0
+## Timere 0.2.1
+
+- Fixed OCaml 4.06.1 compatibility
+
+## Timere 0.2.0 (unreleased)
 
 - Added support for nanosecond precision for date times and timestamps
 
