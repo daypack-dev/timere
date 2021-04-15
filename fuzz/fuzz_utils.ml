@@ -7,8 +7,6 @@ let time =
        Builder.build ~enable_extra_restrictions:false ~min_year:2000
          ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
 
-let time' = Crowbar.map [ time ] Resolver.t_of_ast
-
 let timestamp =
   Crowbar.map [ Crowbar.int64; Crowbar.int ] (fun s ns -> Span.make ~s ~ns ())
 

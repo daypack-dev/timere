@@ -80,8 +80,17 @@ let () =
             |> Span_set.inter search_space_set
             |> intervals_of_span_set
           in
-          Crowbar.check
+          let r =
             (OSeq.for_all
                (fun (x', y') ->
                   OSeq.exists Span.(fun (x, y) -> x <= x' && y' <= y) s)
-               s'))
+               s')
+          in
+          if not r then
+            Crowbar.failf
+              "tz: %s\nsearch_space: %a\npattern: %a\n" (Time_zone.name tz) (Fmt.list (Printers.pp_interval ())) search_space
+              CCSexp.pp
+              (To_sexp.sexp_of_pattern
+              pattern
+              )
+      )

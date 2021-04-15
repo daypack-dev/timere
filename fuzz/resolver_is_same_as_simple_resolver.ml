@@ -23,7 +23,7 @@ let () =
     (fun t ->
        let r =
          OSeq.equal
-           ~eq:(fun (x1, y1) (x2, y2) -> Span.(x1 = x2 && y1 = y2))
+           ~eq:Time.Interval.equal
            (CCResult.get_exn
             @@ Resolver.resolve
               Time.(inter [ t; intervals [ (search_start, search_end_exc) ] ])

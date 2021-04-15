@@ -31,7 +31,7 @@ let () =
                in
                let xr = CCOpt.get_exn @@ Seq_utils.last_element_of_seq r in
                y = Span.succ x
-               && OSeq.mem ~eq:( = ) x s2
+               && OSeq.mem ~eq:Span.equal x s2
                && not (OSeq.exists Span.(fun x2 -> xr < x2 && x2 < x) s2))
             s'
         in

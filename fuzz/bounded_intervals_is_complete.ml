@@ -24,8 +24,8 @@ let () =
                with
                | Seq.Nil -> true
                | Seq.Cons (xr2, _) ->
-                 OSeq.mem ~eq:( = ) (x1, xr2) s
-                 && OSeq.mem ~eq:( = ) (xr2, Span.succ xr2) s')
+                 OSeq.mem ~eq:Time.Interval.equal (x1, xr2) s
+                 && OSeq.mem ~eq:Time.Interval.equal (xr2, Span.succ xr2) s')
             s1
         in
         if not r then
