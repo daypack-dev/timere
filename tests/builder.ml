@@ -42,7 +42,7 @@ let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
       let end_exc = Span.add start (Span.make ~ns:(rng ()) ()) in
       (start, end_exc))
   |> CCList.of_seq
-  |> List.sort_uniq Time.Interval.compare
+  |> List.sort_uniq Time.Interval'.compare
   |> CCList.to_seq
   |> Time.interval_seq
 

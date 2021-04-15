@@ -9,8 +9,8 @@ let timestamp_safe_add a b =
   let open Span in
   if Constants.timestamp_max - a >= b then a + b else Constants.timestamp_max
 
-let do_chunk ~drop_partial (n : Span.t) (s : Time.Interval.t Seq.t) :
-  Time.Interval.t Seq.t =
+let do_chunk ~drop_partial (n : Span.t) (s : Time.Interval'.t Seq.t) :
+  Time.Interval'.t Seq.t =
   let open Span in
   let rec aux n s =
     match s () with
@@ -24,7 +24,7 @@ let do_chunk ~drop_partial (n : Span.t) (s : Time.Interval.t Seq.t) :
   in
   aux n s
 
-let normalize (s : Time.Interval.t Seq.t) : Time.Interval.t Seq.t =
+let normalize (s : Time.Interval'.t Seq.t) : Time.Interval'.t Seq.t =
   let set =
     Seq.fold_left
       (fun acc (x, y) -> Span_set.(add (Interval.make x y) acc))
@@ -44,8 +44,8 @@ let find_after (bound : Span.t) (start : Span.t) (s2 : Span.t Seq.t) :
   in
   match s () with Seq.Nil -> None | Seq.Cons (x, _) -> Some x
 
-let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) :
-  Time.Interval.t Seq.t =
+let do_chunk_at_year_boundary tz (s : Time.Interval'.t Seq.t) :
+  Time.Interval'.t Seq.t =
   let open Time in
   let rec aux s =
     match s () with
@@ -73,8 +73,8 @@ let do_chunk_at_year_boundary tz (s : Time.Interval.t Seq.t) :
   in
   aux s
 
-let do_chunk_at_month_boundary tz (s : Time.Interval.t Seq.t) :
-  Time.Interval.t Seq.t =
+let do_chunk_at_month_boundary tz (s : Time.Interval'.t Seq.t) :
+  Time.Interval'.t Seq.t =
   let open Time in
   let rec aux s =
     match s () with
@@ -181,10 +181,10 @@ let aux_points (search_start, search_end_exc) search_using_tz points :
   |> Seq.map fst
 
 let resolve ?(search_using_tz = Time_zone.utc)
-    ~(search_start : Time_ast.timestamp) ~(search_end_exc : Time_ast.timestamp)
-    (t : Time_ast.t) : Time.Interval.t Seq.t =
+    ~(search_start : Span.t) ~(search_end_exc : Span.t)
+    (t : Time_ast.t) : Time.Interval'.t Seq.t =
   let default_search_space = Time.(timestamp_min, timestamp_max) in
-  let rec aux (search_space : Time.Interval.t) (search_using_tz : Time_zone.t) t
+  let rec aux (search_space : Time.Interval'.t) (search_using_tz : Time_zone.t) t
     =
     match t with
     | Time_ast.Empty -> Span_set.empty
@@ -275,7 +275,7 @@ let resolve ?(search_using_tz = Time_zone.utc)
   |> intervals_of_span_set
 
 (* and mem ?(search_using_tz = Time_zone.utc)
- *     ((search_start, search_end_exc) : Time.Interval.t) (t : Time_ast.t)
+ *     ((search_start, search_end_exc) : Time.Interval'.t) (t : Time_ast.t)
  *     (timestamp : Span.t) : bool =
  *   let open Time_ast in
  *   let rec aux t timestamp =
