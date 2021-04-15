@@ -24,6 +24,14 @@ module Span = struct
   let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_span
 end
 
+module Interval = struct
+  include Interval
+
+  let pp = Printers.pp_interval
+
+  let to_string = Printers.string_of_interval
+end
+
 module Date_time = struct
   include Time.Date_time'
 
@@ -91,8 +99,6 @@ end
 
 type 'a range = 'a Range.range
 
-type interval = Interval.t
-
 type points = Points.t
 
 let make_points = Points.make
@@ -124,10 +130,6 @@ let rfc3339_milli_of_timestamp = RFC3339.of_timestamp ~precision:3
 let rfc3339_micro_of_timestamp = RFC3339.of_timestamp ~precision:6
 
 let rfc3339_nano_of_timestamp = RFC3339.of_timestamp ~precision:9
-
-let pp_interval = Printers.pp_interval
-
-let string_of_interval = Printers.string_of_interval
 
 let pp_intervals = Printers.pp_intervals
 

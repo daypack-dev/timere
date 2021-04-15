@@ -32,6 +32,9 @@ module Interval = struct
 
   let ge x y = le y x
 
+  let equal (x1, y1) (x2, y2) =
+    Span.(x1 = x2 && y1 = y2)
+
   let compare x y = if lt x y then -1 else if x = y then 0 else 1
 
   module Check = struct
