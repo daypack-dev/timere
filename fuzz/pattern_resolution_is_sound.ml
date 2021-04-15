@@ -56,20 +56,18 @@ let () =
           Resolver.aux_pattern tz search_space pattern |> Resolver.normalize
         in
         let r =
-          (OSeq.for_all
-             (fun (x, y) ->
-                timestamp_is_okay tz pattern x
-                && timestamp_is_okay tz pattern (Span.pred y)
-                && not
-                  (Span_set.mem y search_space_set
-                   && timestamp_is_okay tz pattern y))
-             s)
+          OSeq.for_all
+            (fun (x, y) ->
+               timestamp_is_okay tz pattern x
+               && timestamp_is_okay tz pattern (Span.pred y)
+               && not
+                 (Span_set.mem y search_space_set
+                  && timestamp_is_okay tz pattern y))
+            s
         in
         if not r then
-          Crowbar.failf
-            "tz: %s\nsearch_space: %a\npattern: %a\n" (Time_zone.name tz) (Fmt.list (Printers.pp_interval ())) search_space
-            CCSexp.pp
-            (To_sexp.sexp_of_pattern
-               pattern
-            )
-      )
+          Crowbar.failf "tz: %s\nsearch_space: %a\npattern: %a\n"
+            (Time_zone.name tz)
+            (Fmt.list (Printers.pp_interval ()))
+            search_space CCSexp.pp
+            (To_sexp.sexp_of_pattern pattern))
