@@ -16,7 +16,7 @@ let () =
             aux_bounded_intervals tz Resolver.default_search_space `Snd bound p1
               p2)
         in
-        Crowbar.check
+        let r =
           (OSeq.for_all
              (fun x1 ->
                 match
@@ -26,4 +26,12 @@ let () =
                 | Seq.Cons (xr2, _) ->
                   OSeq.mem ~eq:( = ) (x1, xr2) s
                   && OSeq.mem ~eq:( = ) (xr2, Span.succ xr2) s')
-             s1))
+             s1)
+        in
+        if not r then
+          Crowbar.failf "tz: %s, bound: %a\np1: %a, p2: %a\n" (Time_zone.name tz) Printers.pp_span bound
+            CCSexp.pp
+            (To_sexp.sexp_of_points p1)
+            CCSexp.pp
+            (To_sexp.sexp_of_points p2)
+      )
