@@ -663,8 +663,7 @@ module Timestamp : sig
   val to_string :
     ?display_using_tz:Time_zone.t -> ?format:string -> timestamp -> string
 
-  val pp_rfc3339 :
-    ?frac_s:int -> unit -> Format.formatter -> timestamp -> unit
+  val pp_rfc3339 : ?frac_s:int -> unit -> Format.formatter -> timestamp -> unit
   (** [frac_s] determines the number of fractional digits to include
 
       @raise Invalid_argument if [frac_s < 0]
