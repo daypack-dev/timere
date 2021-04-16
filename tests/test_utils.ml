@@ -89,8 +89,7 @@ let timestamp_bound_gen bound =
          make ~s ~ns ()
          |> max zero
          |> min bound
-         |> fun x -> if pos then x else
-           max Time.timestamp_min (neg x)))
+         |> fun x -> if pos then x else max Time.timestamp_min (neg x)))
     (triple bool ui64 int)
 
 let pos_timestamp_bound_gen bound =
