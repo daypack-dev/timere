@@ -37,19 +37,19 @@ module Timestamp = struct
 
   let pp_rfc3339 = RFC3339.pp_timestamp
 
-  let pp_rfc3339_milli = RFC3339.pp_timestamp ~precision:3 ()
+  let pp_rfc3339_milli = RFC3339.pp_timestamp ~frac_s:3 ()
 
-  let pp_rfc3339_micro = RFC3339.pp_timestamp ~precision:6 ()
+  let pp_rfc3339_micro = RFC3339.pp_timestamp ~frac_s:6 ()
 
-  let pp_rfc3339_nano = RFC3339.pp_timestamp ~precision:9 ()
+  let pp_rfc3339_nano = RFC3339.pp_timestamp ~frac_s:9 ()
 
   let to_rfc3339 = RFC3339.of_timestamp
 
-  let to_rfc3339_milli = RFC3339.of_timestamp ~precision:3
+  let to_rfc3339_milli = RFC3339.of_timestamp ~frac_s:3
 
-  let to_rfc3339_micro = RFC3339.of_timestamp ~precision:6
+  let to_rfc3339_micro = RFC3339.of_timestamp ~frac_s:6
 
-  let to_rfc3339_nano = RFC3339.of_timestamp ~precision:9
+  let to_rfc3339_nano = RFC3339.of_timestamp ~frac_s:9
 
   let of_iso8601 = ISO8601.to_timestamp
 end
@@ -71,19 +71,19 @@ module Date_time = struct
 
   let pp_rfc3339 = RFC3339.pp_date_time
 
-  let pp_rfc3339_milli = RFC3339.pp_date_time ~precision:3 ()
+  let pp_rfc3339_milli = RFC3339.pp_date_time ~frac_s:3 ()
 
-  let pp_rfc3339_micro = RFC3339.pp_date_time ~precision:6 ()
+  let pp_rfc3339_micro = RFC3339.pp_date_time ~frac_s:6 ()
 
-  let pp_rfc3339_nano = RFC3339.pp_date_time ~precision:9 ()
+  let pp_rfc3339_nano = RFC3339.pp_date_time ~frac_s:9 ()
 
   let to_rfc3339 = RFC3339.of_date_time
 
-  let to_rfc3339_milli = RFC3339.of_date_time ~precision:3
+  let to_rfc3339_milli = RFC3339.of_date_time ~frac_s:3
 
-  let to_rfc3339_micro = RFC3339.of_date_time ~precision:6
+  let to_rfc3339_micro = RFC3339.of_date_time ~frac_s:6
 
-  let to_rfc3339_nano = RFC3339.of_date_time ~precision:9
+  let to_rfc3339_nano = RFC3339.of_date_time ~frac_s:9
 
   let of_iso8601 = ISO8601.to_date_time
 

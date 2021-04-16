@@ -7,23 +7,23 @@ module Qc = struct
           let r =
             CCResult.get_exn
             @@ ISO8601.to_timestamp
-            @@ RFC3339.of_timestamp ~precision:9 timestamp
+            @@ RFC3339.of_timestamp ~frac_s:9 timestamp
           in
           Span.equal r timestamp)
 
   let to_rfc3339_of_iso8601_is_accurate =
     QCheck.Test.make ~count:100_000 ~name:"to_rfc3339_of_iso8601_is_accurate"
       QCheck.(pair (int_bound 9) timestamp)
-      (fun (precision, timestamp) ->
+      (fun (frac_s, timestamp) ->
          let r =
            CCResult.get_exn
            @@ ISO8601.to_timestamp
-           @@ RFC3339.of_timestamp ~precision timestamp
+           @@ RFC3339.of_timestamp ~frac_s timestamp
          in
          Span.(
            abs (r - timestamp)
            < make ~s:0L
-             ~ns:(int_of_float (10. ** float_of_int (CCInt.sub 9 precision)))
+             ~ns:(int_of_float (10. ** float_of_int (CCInt.sub 9 frac_s)))
              ()))
 
   let of_to_timestamp =
