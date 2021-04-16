@@ -188,9 +188,8 @@ module Qc = struct
            |> Time.Intervals.invert ~start ~end_exc
            |> (fun inverted ->
                OSeq.append
-               (Time.Intervals.Slice.slice ~start ~end_exc (CCList.to_seq l)
-                )
-               inverted)
+                 (Time.Intervals.Slice.slice ~start ~end_exc (CCList.to_seq l))
+                 inverted)
            |> Time.Intervals.normalize
            |> CCList.of_seq
          in
@@ -256,12 +255,8 @@ module Qc = struct
          let s1 = l1 |> CCList.to_seq in
          let s2 = l2 |> CCList.to_seq in
          let s3 = l3 |> CCList.to_seq in
-         let inter1 =
-           Time.Intervals.Inter.(inter (inter s1 s2) s3)
-         in
-         let inter2 =
-           Time.Intervals.Inter.(inter s1 (inter s2 s3))
-         in
+         let inter1 = Time.Intervals.Inter.(inter (inter s1 s2) s3) in
+         let inter2 = Time.Intervals.Inter.(inter s1 (inter s2 s3)) in
          OSeq.equal ~eq:Time.Interval'.equal inter1 inter2)
 
   let union_with_self =
@@ -290,12 +285,8 @@ module Qc = struct
          let s1 = l1 |> CCList.to_seq in
          let s2 = l2 |> CCList.to_seq in
          let s3 = l3 |> CCList.to_seq in
-         let res1 =
-           Time.Intervals.(Union.union (Union.union s1 s2) s3)
-         in
-         let res2 =
-           Time.Intervals.(Union.union s1 (Union.union s2 s3))
-         in
+         let res1 = Time.Intervals.(Union.union (Union.union s1 s2) s3) in
+         let res2 = Time.Intervals.(Union.union s1 (Union.union s2 s3)) in
          OSeq.equal ~eq:Time.Interval'.equal res1 res2)
 
   let inter_union_distributive1 =
@@ -307,9 +298,7 @@ module Qc = struct
          let s1 = l1 |> CCList.to_seq in
          let s2 = l2 |> CCList.to_seq in
          let s3 = l3 |> CCList.to_seq in
-         let res1 =
-           Time.Intervals.(Union.union s1 (Inter.inter s2 s3))
-         in
+         let res1 = Time.Intervals.(Union.union s1 (Inter.inter s2 s3)) in
          let res2 =
            Time.Intervals.(Inter.inter (Union.union s1 s2) (Union.union s1 s3))
          in
@@ -324,9 +313,7 @@ module Qc = struct
          let s1 = l1 |> CCList.to_seq in
          let s2 = l2 |> CCList.to_seq in
          let s3 = l3 |> CCList.to_seq in
-         let res1 =
-           Time.Intervals.(Inter.inter s1 (Union.union s2 s3))
-         in
+         let res1 = Time.Intervals.(Inter.inter s1 (Union.union s2 s3)) in
          let res2 =
            Time.Intervals.(Union.union (Inter.inter s1 s2) (Inter.inter s1 s3))
          in

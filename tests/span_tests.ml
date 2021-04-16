@@ -83,10 +83,10 @@ module Qc = struct
         Span.(equal zero (neg x + x)))
 
   let to_of_float_is_accurate =
-    QCheck.Test.make ~count:10 ~name:"to_of_float_is_accurate" timestamp (fun x ->
-        let x' = Span.of_float @@ Span.to_float x in
-        Span.(abs (x - x') < make ~s:1L ~ns:1000 ())
-        )
+    QCheck.Test.make ~count:10 ~name:"to_of_float_is_accurate" timestamp
+      (fun x ->
+         let x' = Span.of_float @@ Span.to_float x in
+         Span.(abs (x - x') < make ~s:1L ~ns:1000 ()))
 
   let suite =
     [

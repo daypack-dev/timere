@@ -71,9 +71,9 @@ let of_float (x : float) : t =
   let frac = CCFloat.abs (x -. Int64.to_float s) in
   assert (frac <= 1.0);
   let ns = max 0 (int_of_float (frac *. ns_count_in_s_float)) in
-  normalize (
-  if x >= 0.0 then { s; ns }
-  else { s = Int64.pred s; ns = ns_count_in_s - ns })
+  normalize
+    (if x >= 0.0 then { s; ns }
+     else { s = Int64.pred s; ns = ns_count_in_s - ns })
 
 let max x y = if ge x y then x else y
 

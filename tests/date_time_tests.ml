@@ -12,15 +12,19 @@ module Qc = struct
           Span.equal r timestamp)
 
   let to_rfc3339_of_iso8601_is_accurate =
-    QCheck.Test.make ~count:100_000
-      ~name:"to_rfc3339_of_iso8601_is_accurate" QCheck.(pair (int_bound 9) timestamp) (fun (precision, timestamp) ->
-          let r =
-            CCResult.get_exn
-            @@ ISO8601.to_timestamp
-            @@ RFC3339.of_timestamp ~precision timestamp
-          in
-          Span.(abs (r - timestamp) < make ~s:0L ~ns:(int_of_float (10. ** (float_of_int (CCInt.sub 9 precision)))) () )
-        )
+    QCheck.Test.make ~count:100_000 ~name:"to_rfc3339_of_iso8601_is_accurate"
+      QCheck.(pair (int_bound 9) timestamp)
+      (fun (precision, timestamp) ->
+         let r =
+           CCResult.get_exn
+           @@ ISO8601.to_timestamp
+           @@ RFC3339.of_timestamp ~precision timestamp
+         in
+         Span.(
+           abs (r - timestamp)
+           < make ~s:0L
+             ~ns:(int_of_float (10. ** float_of_int (CCInt.sub 9 precision)))
+             ()))
 
   let of_to_timestamp =
     QCheck.Test.make ~count:100_000 ~name:"of_to_timestamp"
@@ -33,9 +37,10 @@ module Qc = struct
          in
          Span.equal r timestamp)
 
-  let suite = [
-    to_rfc3339_nano_of_iso8601_is_lossless;
-    to_rfc3339_of_iso8601_is_accurate;
-    of_to_timestamp
-  ]
+  let suite =
+    [
+      to_rfc3339_nano_of_iso8601_is_lossless;
+      to_rfc3339_of_iso8601_is_accurate;
+      of_to_timestamp;
+    ]
 end

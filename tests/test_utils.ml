@@ -86,14 +86,13 @@ let timestamp_bound_gen bound =
   map
     (fun (pos, s, ns) ->
        let t =
-       Span.(
-         make ~s ~ns ()
-         |> max zero
-         |> min bound
-         |> fun x -> if pos then x else max Time.timestamp_min (neg x))
+         Span.(
+           make ~s ~ns ()
+           |> max zero
+           |> min bound
+           |> fun x -> if pos then x else max Time.timestamp_min (neg x))
        in
-       t
-    )
+       t)
     (triple bool (int64_bound_gen Time.timestamp_max.s) big_nat)
 
 let pos_timestamp_bound_gen bound =
