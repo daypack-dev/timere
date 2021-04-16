@@ -629,6 +629,11 @@ module Date_time : sig
   val to_rfc3339_nano : t -> string option
 
   val of_iso8601 : string -> (t, string) result
+  (**
+     Parses a subset of ISO8601, up to 9 fractional digits for second (nanosecond precision)
+
+     If more than 9 fractional digits are provided, then only the first 9 digits are used, i.e. no rounding
+  *)
 
   val to_sexp : t -> CCSexp.t
 
