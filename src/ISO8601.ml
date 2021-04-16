@@ -96,3 +96,8 @@ let to_date_time s : (Time.Date_time'.t, string) result =
         | Some x -> return x)
   in
   parse_string p s () |> result_of_mparser_result
+
+let to_timestamp s =
+  match to_date_time s with
+  | Ok dt -> Ok (Time.Date_time'.to_timestamp_single dt)
+  | Error msg -> Error msg
