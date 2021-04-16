@@ -8,6 +8,8 @@
 
 - Moved timestamp functions into `Timere.Timestamp` module
 
+- Added fractional second support to ISO8601 parsing
+
 ## Timere 0.2.1
 
 - Fixed OCaml 4.06.1 compatibility
