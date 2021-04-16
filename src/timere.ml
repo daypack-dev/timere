@@ -44,6 +44,8 @@ module Timestamp = struct
   let to_rfc3339_micro = RFC3339.of_timestamp ~precision:6
 
   let to_rfc3339_nano = RFC3339.of_timestamp ~precision:9
+
+  let of_iso8601 = ISO8601.to_timestamp
 end
 
 module Date_time = struct

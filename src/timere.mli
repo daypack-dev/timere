@@ -455,6 +455,8 @@ module Timestamp : sig
   val to_rfc3339_micro : timestamp -> string
 
   val to_rfc3339_nano : timestamp -> string
+
+  val of_iso8601 : string -> (timestamp, string) result
 end
 
 module Date_time : sig
