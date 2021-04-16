@@ -1,6 +1,6 @@
 open Date_time_components
 
-let frac_s_1_divisor = Span.ns_count_in_s
+let frac_s_1_divisor = Span.ns_count_in_s / 10
 
 let frac_s_2_divisor = frac_s_1_divisor / 10
 
