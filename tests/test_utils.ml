@@ -100,7 +100,7 @@ let pos_timestamp_bound_gen bound =
   QCheck.Gen.(
     map
       (fun (s, ns) -> Span.(make ~s ~ns () |> max zero |> min bound))
-      (pair ui64 int))
+      (pair (int64_bound_gen Time.timestamp_max.s) big_nat))
 
 let nz_pos_timestamp_bound_gen bound =
   QCheck.Gen.(
