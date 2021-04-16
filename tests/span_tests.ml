@@ -82,10 +82,11 @@ module Qc = struct
     QCheck.Test.make ~count:100_000 ~name:"neg_add_self" timestamp (fun x ->
         Span.(equal zero (neg x + x)))
 
-  let to_of_float_accurate =
-    QCheck.Test.make ~count:10 ~name:"to_of_float" timestamp (fun x ->
+  let to_of_float_is_accurate =
+    QCheck.Test.make ~count:10 ~name:"to_of_float_is_accurate" timestamp (fun x ->
         let x' = Span.of_float @@ Span.to_float x in
-        x'.s = x.s && x'.ns - x.ns < 1_000)
+        Span.(abs (x - x') < make ~s:1L ~ns:1000 ())
+        )
 
   let suite =
     [
@@ -106,6 +107,6 @@ module Qc = struct
       neg_distributive2;
       add_neg_self;
       neg_add_self;
-      to_of_float_accurate;
+      to_of_float_is_accurate;
     ]
 end
