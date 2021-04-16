@@ -14,6 +14,8 @@
 
 - Renamed label argument `precision` to `frac_s` for RFC3339 related functions
 
+- Removed rounding behaviour of fractional digits for RFC3339 related functions
+
 ## Timere 0.2.1
 
 - Fixed OCaml 4.06.1 compatibility

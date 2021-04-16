@@ -1,5 +1,36 @@
 open Date_time_components
 
+let frac_s_1_divisor = Span.ns_count_in_s
+
+let frac_s_2_divisor = frac_s_1_divisor / 10
+
+let frac_s_3_divisor = frac_s_2_divisor / 10
+
+let frac_s_4_divisor = frac_s_3_divisor / 10
+
+let frac_s_5_divisor = frac_s_4_divisor / 10
+
+let frac_s_6_divisor = frac_s_5_divisor / 10
+
+let frac_s_7_divisor = frac_s_6_divisor / 10
+
+let frac_s_8_divisor = frac_s_7_divisor / 10
+
+let frac_s_9_divisor = frac_s_8_divisor / 10
+
+let get_divisor frac_s =
+  match frac_s with
+  | 1 -> frac_s_1_divisor
+  | 2 -> frac_s_2_divisor
+  | 3 -> frac_s_3_divisor
+  | 4 -> frac_s_4_divisor
+  | 5 -> frac_s_5_divisor
+  | 6 -> frac_s_6_divisor
+  | 7 -> frac_s_7_divisor
+  | 8 -> frac_s_8_divisor
+  | 9 -> frac_s_9_divisor
+  | _ -> failwith "Unexpected case"
+
 let pp_date_time ?(frac_s = 0) () formatter (dt : Time.Date_time'.t) =
   if frac_s < 0 then invalid_arg "pp_date_time: frac_s cannot be < 0"
   else if frac_s > 9 then invalid_arg "pp_date_time: frac_s cannot be > 9"
@@ -18,17 +49,11 @@ let pp_date_time ?(frac_s = 0) () formatter (dt : Time.Date_time'.t) =
         Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d%s" dt.year
           (human_int_of_month dt.month)
           dt.day dt.hour dt.minute dt.second tz_off
-      else if frac_s = 9 then
-        Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d.%09d%s" dt.year
-          (human_int_of_month dt.month)
-          dt.day dt.hour dt.minute dt.second dt.ns tz_off
       else
-        let second =
-          Span.(to_float @@ make ~s:(Int64.of_int dt.second) ~ns:dt.ns ())
-        in
-        Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%0*.*f%s" dt.year
+        let divisor = get_divisor frac_s in
+        Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d.%0*d%s" dt.year
           (human_int_of_month dt.month)
-          dt.day dt.hour dt.minute (frac_s + 3) frac_s second tz_off
+          dt.day dt.hour dt.minute dt.second frac_s (dt.ns / divisor) tz_off
 
 let of_date_time ?(frac_s = 0) (dt : Time.Date_time'.t) : string option =
   try Some (Fmt.str "%a" (pp_date_time ~frac_s ()) dt)
