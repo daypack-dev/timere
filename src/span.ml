@@ -68,8 +68,7 @@ let to_float ({ s; ns } : t) : float =
 
 let of_float (x : float) : t =
   let s = Int64.of_float x in
-  let frac = x -. Int64.to_float s in
-  let frac = if frac < 0.0 then 1.0 -. frac else frac in
+  let frac = CCFloat.abs (x -. Int64.to_float s) in
   assert (frac <= 1.0);
   let ns = max 0 (int_of_float (frac *. ns_count_in_s_float)) in
   if x >= 0.0 then normalize { s; ns }
