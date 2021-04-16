@@ -137,6 +137,18 @@
 )
 
 (rule
+ (targets RFC3339.ml)
+ (deps    ../src/RFC3339.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets ISO8601.ml)
+ (deps    ../src/ISO8601.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
  (targets parser_components.ml)
  (deps    ../src/parser_components.ml)
  (action  (copy %{deps} %{targets}))
