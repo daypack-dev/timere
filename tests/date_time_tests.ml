@@ -11,5 +11,16 @@ module Qc = struct
           in
           Span.equal r timestamp)
 
-  let suite = [ to_rfc3339_nano_of_iso8601_is_lossless ]
+  let of_to_timestamp =
+    QCheck.Test.make ~count:100_000 ~name:"of_to_timestamp"
+      QCheck.(pair time_zone timestamp)
+      (fun (tz, timestamp) ->
+         let r =
+           Time.Date_time'.to_timestamp_single
+           @@ CCOpt.get_exn
+           @@ Time.Date_time'.of_timestamp ~tz_of_date_time:tz timestamp
+         in
+         Span.equal r timestamp)
+
+  let suite = [ to_rfc3339_nano_of_iso8601_is_lossless; of_to_timestamp ]
 end
