@@ -22,14 +22,17 @@ let skip_non_num_string ~end_markers =
           | None -> true
           | Some x -> not (String.contains x c)))
 
-let nat_zero : (int, unit) t =
+let num_string : (string, unit) t =
   many1_satisfy (function '0' .. '9' -> true | _ -> false)
+
+let nat_zero : (int, unit) t =
+  num_string
   >>= fun s ->
   try return (int_of_string s)
   with _ -> fail (Printf.sprintf "Integer %s is out of range" s)
 
 let nat_zero_w_original_str : (int * string, unit) t =
-  many1_satisfy (function '0' .. '9' -> true | _ -> false)
+  num_string
   >>= fun s ->
   try return (int_of_string s, s)
   with _ -> fail (Printf.sprintf "Integer %s is out of range" s)
