@@ -419,46 +419,6 @@ val with_tz : Time_zone.t -> t -> t
 
 type timestamp = Span.t
 
-module Timestamp : sig
-  val pp :
-    ?display_using_tz:Time_zone.t ->
-    ?format:string ->
-    unit ->
-    Format.formatter ->
-    timestamp ->
-    unit
-  (** Pretty printing for timestamp.
-
-      Follows same format string rules and default format string as {!val:Date_time.to_string}.
-  *)
-
-  val to_string :
-    ?display_using_tz:Time_zone.t -> ?format:string -> timestamp -> string
-
-  val pp_rfc3339 :
-    ?precision:int -> unit -> Format.formatter -> timestamp -> unit
-  (** [precision] determines the number of fractional digits to include
-
-      @raise Invalid_argument if [precision < 0]
-  *)
-
-  val pp_rfc3339_milli : Format.formatter -> timestamp -> unit
-
-  val pp_rfc3339_micro : Format.formatter -> timestamp -> unit
-
-  val pp_rfc3339_nano : Format.formatter -> timestamp -> unit
-
-  val to_rfc3339 : ?precision:int -> timestamp -> string
-
-  val to_rfc3339_milli : timestamp -> string
-
-  val to_rfc3339_micro : timestamp -> string
-
-  val to_rfc3339_nano : timestamp -> string
-
-  val of_iso8601 : string -> (timestamp, string) result
-end
-
 module Date_time : sig
   type tz_info =
     [ `Tz_only of Time_zone.t
@@ -681,6 +641,52 @@ module Date_time : sig
   val pp_sexp : Format.formatter -> t -> unit
 end
 
+module Timestamp : sig
+  val min : timestamp
+
+  val max : timestamp
+
+  val now : unit -> timestamp
+
+  val pp :
+    ?display_using_tz:Time_zone.t ->
+    ?format:string ->
+    unit ->
+    Format.formatter ->
+    timestamp ->
+    unit
+  (** Pretty printing for timestamp.
+
+      Follows same format string rules and default format string as {!val:Date_time.to_string}.
+  *)
+
+  val to_string :
+    ?display_using_tz:Time_zone.t -> ?format:string -> timestamp -> string
+
+  val pp_rfc3339 :
+    ?precision:int -> unit -> Format.formatter -> timestamp -> unit
+  (** [precision] determines the number of fractional digits to include
+
+      @raise Invalid_argument if [precision < 0]
+  *)
+
+  val pp_rfc3339_milli : Format.formatter -> timestamp -> unit
+
+  val pp_rfc3339_micro : Format.formatter -> timestamp -> unit
+
+  val pp_rfc3339_nano : Format.formatter -> timestamp -> unit
+
+  val to_rfc3339 : ?precision:int -> timestamp -> string
+
+  val to_rfc3339_milli : timestamp -> string
+
+  val to_rfc3339_micro : timestamp -> string
+
+  val to_rfc3339_nano : timestamp -> string
+
+  val of_iso8601 : string -> (timestamp, string) result
+end
+
 val date_time : Date_time.t -> t
 
 val before : Date_time.t -> t
@@ -694,12 +700,6 @@ val date_time_seq : Date_time.t Seq.t -> t
 val sorted_date_times : Date_time.t list -> t
 
 val sorted_date_time_seq : Date_time.t Seq.t -> t
-
-val timestamp_now : unit -> timestamp
-
-val timestamp_min : timestamp
-
-val timestamp_max : timestamp
 
 exception Invalid_timestamp
 

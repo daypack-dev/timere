@@ -25,6 +25,12 @@ module Span = struct
 end
 
 module Timestamp = struct
+  let min = timestamp_min
+
+  let max = timestamp_max
+
+  let now = timestamp_now
+
   let pp = Printers.pp_timestamp
 
   let to_string = Printers.string_of_timestamp
