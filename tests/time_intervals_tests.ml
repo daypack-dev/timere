@@ -49,8 +49,7 @@ module Qc = struct
          l
          |> CCList.to_seq
          |> Time.Intervals.Slice.slice ~start
-         |> CCList.of_seq
-         |> List.for_all (fun (x, _) -> start <= x))
+         |> OSeq.for_all (fun (x, _) -> Span.(start <= x)))
 
   let slice_end_exc =
     QCheck.Test.make ~count:10_000 ~name:"slice_end_exc"
@@ -59,8 +58,7 @@ module Qc = struct
          l
          |> CCList.to_seq
          |> Time.Intervals.Slice.slice ~end_exc
-         |> CCList.of_seq
-         |> List.for_all (fun (_, y) -> Span.(y <= end_exc)))
+         |> OSeq.for_all (fun (_, y) -> Span.(y <= end_exc)))
 
   let normalize_pairs_are_fine =
     QCheck.Test.make ~count:10_000 ~name:"normalize_pairs_are_fine" time_slots
@@ -68,8 +66,7 @@ module Qc = struct
          l
          |> CCList.to_seq
          |> Time.Intervals.normalize
-         |> CCList.of_seq
-         |> List.for_all (fun (x, y) -> x <= y))
+         |> OSeq.for_all (fun (x, y) -> Span.(x <= y)))
 
   let normalize_time_slots_are_sorted =
     QCheck.Test.make ~count:10_000 ~name:"normalize_time_slots_are_sorted"
@@ -77,8 +74,7 @@ module Qc = struct
           l
           |> CCList.to_seq
           |> Time.Intervals.normalize
-          |> CCList.of_seq
-          |> List.fold_left
+          |> OSeq.fold_left
             (fun (res, last) (x, y) ->
                if res then
                  match last with
@@ -163,7 +159,7 @@ module Qc = struct
     QCheck.Test.make ~count:10_000 ~name:"invert_disjoint_from_original"
       QCheck.(triple pos_timestamp pos_timestamp sorted_time_slots_maybe_gaps)
       (fun (start, end_exc, l) ->
-         QCheck.assume (start <= end_exc);
+         QCheck.assume Span.(start <= end_exc);
          let sliced =
            l
            |> CCList.to_seq
@@ -190,12 +186,11 @@ module Qc = struct
            l
            |> CCList.to_seq
            |> Time.Intervals.invert ~start ~end_exc
-           |> CCList.of_seq
            |> (fun inverted ->
+               OSeq.append
                (Time.Intervals.Slice.slice ~start ~end_exc (CCList.to_seq l)
-                |> CCList.of_seq)
-               @ inverted)
-           |> CCList.to_seq
+                )
+               inverted)
            |> Time.Intervals.normalize
            |> CCList.of_seq
          in
@@ -222,14 +217,12 @@ module Qc = struct
       ~name:"relative_complement_result_subset_of_mem_of"
       QCheck.(pair sorted_time_slots_maybe_gaps sorted_time_slots_maybe_gaps)
       (fun (mem_of, not_mem_of) ->
-         let res_s =
+         let res =
            Time.Intervals.relative_complement
              ~not_mem_of:(CCList.to_seq not_mem_of) (CCList.to_seq mem_of)
          in
-         let res = res_s |> CCList.of_seq in
-         Time.Intervals.Inter.inter (CCList.to_seq mem_of) res_s
-         |> CCList.of_seq
-            = res)
+         Time.Intervals.Inter.inter (CCList.to_seq mem_of) res
+         |> OSeq.equal ~eq:Time.Interval'.equal res)
 
   let relative_complement_self =
     QCheck.Test.make ~count:10_000 ~name:"relative_complement_self"
@@ -241,8 +234,8 @@ module Qc = struct
     QCheck.Test.make ~count:10_000 ~name:"inter_with_self"
       sorted_time_slots_maybe_gaps (fun l ->
           let s = l |> CCList.to_seq in
-          let res = Time.Intervals.Inter.inter s s |> CCList.of_seq in
-          l = res)
+          let res = Time.Intervals.Inter.inter s s in
+          OSeq.equal ~eq:Time.Interval'.equal s res)
 
   let inter_commutative =
     QCheck.Test.make ~count:10_000 ~name:"inter_commutative"
@@ -250,9 +243,9 @@ module Qc = struct
       (fun (l1, l2) ->
          let s1 = l1 |> CCList.to_seq in
          let s2 = l2 |> CCList.to_seq in
-         let inter1 = Time.Intervals.Inter.inter s1 s2 |> CCList.of_seq in
-         let inter2 = Time.Intervals.Inter.inter s2 s1 |> CCList.of_seq in
-         inter1 = inter2)
+         let inter1 = Time.Intervals.Inter.inter s1 s2 in
+         let inter2 = Time.Intervals.Inter.inter s2 s1 in
+         OSeq.equal ~eq:Time.Interval'.equal inter1 inter2)
 
   let inter_associative =
     QCheck.Test.make ~count:10_000 ~name:"inter_associative"
@@ -264,19 +257,19 @@ module Qc = struct
          let s2 = l2 |> CCList.to_seq in
          let s3 = l3 |> CCList.to_seq in
          let inter1 =
-           Time.Intervals.Inter.(inter (inter s1 s2) s3) |> CCList.of_seq
+           Time.Intervals.Inter.(inter (inter s1 s2) s3)
          in
          let inter2 =
-           Time.Intervals.Inter.(inter s1 (inter s2 s3)) |> CCList.of_seq
+           Time.Intervals.Inter.(inter s1 (inter s2 s3))
          in
-         inter1 = inter2)
+         OSeq.equal ~eq:Time.Interval'.equal inter1 inter2)
 
   let union_with_self =
     QCheck.Test.make ~count:10_000 ~name:"union_with_self"
       sorted_time_slots_with_gaps (fun l ->
           let s = l |> CCList.to_seq in
-          let res = Time.Intervals.Union.union s s |> CCList.of_seq in
-          l = res)
+          let res = Time.Intervals.Union.union s s in
+          OSeq.equal ~eq:Time.Interval'.equal s res)
 
   let union_commutative =
     QCheck.Test.make ~count:10_000 ~name:"union_commutative"
@@ -284,9 +277,9 @@ module Qc = struct
       (fun (l1, l2) ->
          let s1 = l1 |> CCList.to_seq in
          let s2 = l2 |> CCList.to_seq in
-         let inter1 = Time.Intervals.Union.union s1 s2 |> CCList.of_seq in
-         let inter2 = Time.Intervals.Union.union s2 s1 |> CCList.of_seq in
-         inter1 = inter2)
+         let inter1 = Time.Intervals.Union.union s1 s2 in
+         let inter2 = Time.Intervals.Union.union s2 s1 in
+         OSeq.equal ~eq:Time.Interval'.equal inter1 inter2)
 
   let union_associative =
     QCheck.Test.make ~count:10_000 ~name:"union_associative"
@@ -298,12 +291,12 @@ module Qc = struct
          let s2 = l2 |> CCList.to_seq in
          let s3 = l3 |> CCList.to_seq in
          let res1 =
-           Time.Intervals.(Union.union (Union.union s1 s2) s3) |> CCList.of_seq
+           Time.Intervals.(Union.union (Union.union s1 s2) s3)
          in
          let res2 =
-           Time.Intervals.(Union.union s1 (Union.union s2 s3)) |> CCList.of_seq
+           Time.Intervals.(Union.union s1 (Union.union s2 s3))
          in
-         res1 = res2)
+         OSeq.equal ~eq:Time.Interval'.equal res1 res2)
 
   let inter_union_distributive1 =
     QCheck.Test.make ~count:10_000 ~name:"inter_union_distributive1"
@@ -315,13 +308,12 @@ module Qc = struct
          let s2 = l2 |> CCList.to_seq in
          let s3 = l3 |> CCList.to_seq in
          let res1 =
-           Time.Intervals.(Union.union s1 (Inter.inter s2 s3)) |> CCList.of_seq
+           Time.Intervals.(Union.union s1 (Inter.inter s2 s3))
          in
          let res2 =
            Time.Intervals.(Inter.inter (Union.union s1 s2) (Union.union s1 s3))
-           |> CCList.of_seq
          in
-         res1 = res2)
+         OSeq.equal ~eq:Time.Interval'.equal res1 res2)
 
   let inter_union_distributive2 =
     QCheck.Test.make ~count:10_000 ~name:"inter_union_distributive2"
@@ -333,13 +325,12 @@ module Qc = struct
          let s2 = l2 |> CCList.to_seq in
          let s3 = l3 |> CCList.to_seq in
          let res1 =
-           Time.Intervals.(Inter.inter s1 (Union.union s2 s3)) |> CCList.of_seq
+           Time.Intervals.(Inter.inter s1 (Union.union s2 s3))
          in
          let res2 =
            Time.Intervals.(Union.union (Inter.inter s1 s2) (Inter.inter s1 s3))
-           |> CCList.of_seq
          in
-         res1 = res2)
+         OSeq.equal ~eq:Time.Interval'.equal res1 res2)
 
   let suite =
     [
