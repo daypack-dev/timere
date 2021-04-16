@@ -4,6 +4,10 @@
 
 - Updated use of Timere API
 
+## Timere 0.2.2
+
+- Moved timestamp functions into `Timere.Timestamp` module
+
 ## Timere 0.2.1
 
 - Fixed OCaml 4.06.1 compatibility
