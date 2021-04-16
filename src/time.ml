@@ -1058,8 +1058,11 @@ let make_hms ~hour ~minute ~second =
     && 0 <= minute
     && minute < 60
     && 0 <= second
-    && second < 60
-  then Some { hour; minute; second }
+    && second <= 60
+  then
+    let minute = minute + second / 60 in
+    let second = second mod 60 in
+    Some { hour; minute; second }
   else None
 
 let make_hms_exn ~hour ~minute ~second =

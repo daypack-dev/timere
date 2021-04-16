@@ -16,6 +16,8 @@
 
 - Removed rounding behaviour of fractional digits for RFC3339 related functions
 
+- Changed `make_hms` to accept second field to be 60
+
 ## Timere 0.2.1
 
 - Fixed OCaml 4.06.1 compatibility
