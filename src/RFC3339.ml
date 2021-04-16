@@ -2,6 +2,7 @@ open Date_time_components
 
 let pp_date_time ?(precision = 0) () formatter (dt : Time.Date_time'.t) =
   if precision < 0 then invalid_arg "pp_date_time: precision cannot be < 0"
+  else if precision > 9 then invalid_arg "pp_date_time: precision cannot be > 9"
   else
     match tz_offset_s_of_tz_info dt.tz_info with
     | None -> raise (Printers.Date_time_cannot_deduce_tz_offset_s dt)
@@ -17,6 +18,10 @@ let pp_date_time ?(precision = 0) () formatter (dt : Time.Date_time'.t) =
         Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d%s" dt.year
           (human_int_of_month dt.month)
           dt.day dt.hour dt.minute dt.second tz_off
+      else if precision = 9 then
+        Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d.%09d%s" dt.year
+          (human_int_of_month dt.month)
+          dt.day dt.hour dt.minute dt.second dt.ns tz_off
       else
         let second =
           Span.(to_float @@ make ~s:(Int64.of_int dt.second) ~ns:dt.ns ())
