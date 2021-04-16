@@ -24,6 +24,28 @@ module Span = struct
   let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_span
 end
 
+module Timestamp = struct
+  let pp = Printers.pp_timestamp
+
+  let to_string = Printers.string_of_timestamp
+
+  let pp_rfc3339 = RFC3339.pp_timestamp
+
+  let pp_rfc3339_milli = RFC3339.pp_timestamp ~precision:3 ()
+
+  let pp_rfc3339_micro = RFC3339.pp_timestamp ~precision:6 ()
+
+  let pp_rfc3339_nano = RFC3339.pp_timestamp ~precision:9 ()
+
+  let to_rfc3339 = RFC3339.of_timestamp
+
+  let to_rfc3339_milli = RFC3339.of_timestamp ~precision:3
+
+  let to_rfc3339_micro = RFC3339.of_timestamp ~precision:6
+
+  let to_rfc3339_nano = RFC3339.of_timestamp ~precision:9
+end
+
 module Date_time = struct
   include Time.Date_time'
 
@@ -110,26 +132,6 @@ let resolve = Resolver.resolve
 let pp_hms = Printers.pp_hms
 
 let string_of_hms = Printers.string_of_hms
-
-let pp_timestamp = Printers.pp_timestamp
-
-let string_of_timestamp = Printers.string_of_timestamp
-
-let pp_timestamp_rfc3339 = RFC3339.pp_timestamp
-
-let pp_timestamp_rfc3339_milli = RFC3339.pp_timestamp ~precision:3 ()
-
-let pp_timestamp_rfc3339_micro = RFC3339.pp_timestamp ~precision:6 ()
-
-let pp_timestamp_rfc3339_nano = RFC3339.pp_timestamp ~precision:9 ()
-
-let rfc3339_of_timestamp = RFC3339.of_timestamp
-
-let rfc3339_milli_of_timestamp = RFC3339.of_timestamp ~precision:3
-
-let rfc3339_micro_of_timestamp = RFC3339.of_timestamp ~precision:6
-
-let rfc3339_nano_of_timestamp = RFC3339.of_timestamp ~precision:9
 
 let pp_intervals = Printers.pp_intervals
 

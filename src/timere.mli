@@ -419,6 +419,44 @@ val with_tz : Time_zone.t -> t -> t
 
 type timestamp = Span.t
 
+module Timestamp : sig
+  val pp :
+    ?display_using_tz:Time_zone.t ->
+    ?format:string ->
+    unit ->
+    Format.formatter ->
+    timestamp ->
+    unit
+  (** Pretty printing for timestamp.
+
+      Follows same format string rules and default format string as {!val:Date_time.to_string}.
+  *)
+
+  val to_string :
+    ?display_using_tz:Time_zone.t -> ?format:string -> timestamp -> string
+
+  val pp_rfc3339 :
+    ?precision:int -> unit -> Format.formatter -> timestamp -> unit
+  (** [precision] determines the number of fractional digits to include
+
+      @raise Invalid_argument if [precision < 0]
+  *)
+
+  val pp_rfc3339_milli : Format.formatter -> timestamp -> unit
+
+  val pp_rfc3339_micro : Format.formatter -> timestamp -> unit
+
+  val pp_rfc3339_nano : Format.formatter -> timestamp -> unit
+
+  val to_rfc3339 : ?precision:int -> timestamp -> string
+
+  val to_rfc3339_milli : timestamp -> string
+
+  val to_rfc3339_micro : timestamp -> string
+
+  val to_rfc3339_nano : timestamp -> string
+end
+
 module Date_time : sig
   type tz_info =
     [ `Tz_only of Time_zone.t
@@ -951,42 +989,6 @@ val resolve :
 (** Resolves a Timere object into a concrete interval sequence *)
 
 (** {1 Pretty printers} *)
-
-val pp_timestamp :
-  ?display_using_tz:Time_zone.t ->
-  ?format:string ->
-  unit ->
-  Format.formatter ->
-  timestamp ->
-  unit
-(** Pretty printing for timestamp.
-
-    Follows same format string rules and default format string as {!val:Date_time.to_string}.
-*)
-
-val string_of_timestamp :
-  ?display_using_tz:Time_zone.t -> ?format:string -> timestamp -> string
-
-val pp_timestamp_rfc3339 :
-  ?precision:int -> unit -> Format.formatter -> timestamp -> unit
-(** [precision] determines the number of fractional digits to include
-
-    @raise Invalid_argument if [precision < 0]
-*)
-
-val pp_timestamp_rfc3339_milli : Format.formatter -> timestamp -> unit
-
-val pp_timestamp_rfc3339_micro : Format.formatter -> timestamp -> unit
-
-val pp_timestamp_rfc3339_nano : Format.formatter -> timestamp -> unit
-
-val rfc3339_of_timestamp : ?precision:int -> timestamp -> string
-
-val rfc3339_milli_of_timestamp : timestamp -> string
-
-val rfc3339_micro_of_timestamp : timestamp -> string
-
-val rfc3339_nano_of_timestamp : timestamp -> string
 
 val pp_intervals :
   ?display_using_tz:Time_zone.t ->

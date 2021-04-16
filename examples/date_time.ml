@@ -15,7 +15,7 @@ let () =
     (* since it is ordinary, we can get a single/unique timestamp out of it *)
     Timere.Date_time.to_timestamp_single ordinary_dt
   in
-  Fmt.pr "%a@." (Timere.pp_timestamp ~display_using_tz:tz ()) ordinary_timestamp;
+  Fmt.pr "%a@." (Timere.Timestamp.pp ~display_using_tz:tz ()) ordinary_timestamp;
 
   print_endline "=====";
 
@@ -27,8 +27,8 @@ let () =
   (match Timere.Date_time.to_timestamp ambiguous_dt with
    | `Single _ -> failwith "Unexpected case"
    | `Ambiguous (x, y) ->
-     Fmt.pr "%a@." (Timere.pp_timestamp ~display_using_tz:tz ()) x;
-     Fmt.pr "%a@." (Timere.pp_timestamp ~display_using_tz:tz ()) y;
+     Fmt.pr "%a@." (Timere.Timestamp.pp ~display_using_tz:tz ()) x;
+     Fmt.pr "%a@." (Timere.Timestamp.pp ~display_using_tz:tz ()) y;
   );
 
   print_endline "=====";
