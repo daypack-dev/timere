@@ -162,3 +162,15 @@ let tz_offset_s_of_tz_info (x : tz_info) =
   match x with
   | `Tz_only _ -> None
   | `Tz_offset_s_only offset | `Tz_and_tz_offset_s (_, offset) -> Some offset
+
+let next_ymd ~year ~month ~day : (int * month * int) option =
+  let day_count = day_count_of_month ~year ~month in
+  if 1 <= day && day <= day_count then
+    if day < day_count then Some (year, month, succ day)
+    else
+      let month_int = tm_int_of_month month in
+      let next_month_int = succ month_int in
+      let year = year + (next_month_int / 12) in
+      let month = CCOpt.get_exn @@ month_of_tm_int @@ (next_month_int mod 12) in
+      Some (year, month, 1)
+  else None

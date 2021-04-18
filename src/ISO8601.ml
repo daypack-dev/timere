@@ -86,6 +86,12 @@ let to_date_time s : (Time.Date_time'.t, string) result =
         optional (char 'T')
         >> hms_p
         >>= fun (hour, minute, second, ns) ->
+        (if hour = 24 && minute = 0 && second = 0 then
+           match next_ymd ~year ~month ~day with
+           | None -> fail "Invalid date time"
+           | Some (year, month, day) -> return (year, month, day, 0)
+         else return (year, month, day, hour))
+        >>= fun (year, month, day, hour) ->
         offset_p
         >>= fun offset ->
         match

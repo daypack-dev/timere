@@ -4,6 +4,10 @@
 
 - Updated use of Timere API
 
+## Timere 0.2.3
+
+- Added support for parsing "24:00" and "24:00:00" in `Timere.Date_time.of_iso8601`
+
 ## Timere 0.2.2
 
 - Moved timestamp functions into `Timere.Timestamp` module
