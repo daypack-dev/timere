@@ -8,6 +8,8 @@
 
 - Added support for parsing "24:00" and "24:00:00" in `Timere.Date_time.of_iso8601`
 
+- Changed `make_hms` to replace second with 59 when 60 is provided
+
 ## Timere 0.2.2
 
 - Moved timestamp functions into `Timere.Timestamp` module
