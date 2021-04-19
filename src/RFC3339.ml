@@ -46,14 +46,9 @@ let pp_date_time ?(frac_s = 0) () formatter (dt : Time.Date_time'.t) =
           Printf.sprintf "%c%02d:%02d" sign offset.hours offset.minutes
       in
       let second =
-        if Time.Date_time'.is_leap_second dt then
-          60
-        else
-          dt.second
+        if Time.Date_time'.is_leap_second dt then 60 else dt.second
       in
-      let ns =
-        dt.ns mod Span.ns_count_in_s
-      in
+      let ns = dt.ns mod Span.ns_count_in_s in
       if frac_s = 0 then
         Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d%s" dt.year
           (human_int_of_month dt.month)
