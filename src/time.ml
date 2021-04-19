@@ -1381,6 +1381,9 @@ module Date_time' = struct
     in
     match x with None -> invalid_arg "make_precise_exn" | Some x -> x
 
+  let is_leap_second (dt : t) =
+    dt.ns >= Span.ns_count_in_s
+
   let min =
     CCOpt.get_exn @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_min
 

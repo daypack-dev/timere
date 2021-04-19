@@ -542,6 +542,8 @@ module Date_time : sig
     t
   (** @raise Invalid_argument if [make_umabiguous] fails *)
 
+  val is_leap_second : t -> bool
+
   type 'a local_result =
     [ `Single of 'a
     | `Ambiguous of 'a * 'a
