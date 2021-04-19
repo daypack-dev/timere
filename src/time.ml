@@ -1205,7 +1205,7 @@ module Date_time' = struct
     to_ptime_date_time_pretend_utc x
     |> Ptime.of_date_time
     |> CCOpt.map (fun t ->
-        Span.make ~s:(Ptime_utils.timestamp_of_ptime t) ~ns:x.ns ())
+        Span.make ~s:(Ptime_utils.timestamp_of_ptime t) ~ns:(x.ns mod Span.ns_count_in_s) ())
 
   let to_timestamp_precise_unsafe (x : t) : timestamp Time_zone.local_result =
     let open Span in
@@ -1298,18 +1298,29 @@ module Date_time' = struct
     t option =
     of_timestamp ~tz_of_date_time @@ Span.of_float x
 
+  let adjust_ns_for_leap_second ~is_leap_second (dt : t) : t =
+    if is_leap_second then
+      { dt with ns = dt.ns + Span.ns_count_in_s }
+    else
+      dt
+
   let make ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ?(ns = 0) ?(frac = 0.)
       ~year ~month ~day ~hour ~minute ~second () =
     if frac < 0. then invalid_arg "frac is negative";
     if ns < 0 then invalid_arg "ns is negative";
     let ns = ns + int_of_float (frac *. Span.ns_count_in_s_float) in
+    if ns >= Span.ns_count_in_s then invalid_arg "ns is >= 10^9";
+    let is_leap_second = second = 60 in
+    let second = second mod 60 in
     let dt =
       { year; month; day; hour; minute; second; ns; tz_info = `Tz_only tz }
     in
-    match to_timestamp_precise_unsafe dt with
-    | `None -> None
-    | `Single x -> Some (of_timestamp ~tz_of_date_time:tz x |> CCOpt.get_exn)
-    | `Ambiguous _ -> Some dt
+    (match to_timestamp_precise_unsafe dt with
+     | `None -> None
+     | `Single x -> Some (of_timestamp ~tz_of_date_time:tz x |> CCOpt.get_exn)
+     | `Ambiguous _ -> Some dt
+    )
+    |> CCOpt.map (adjust_ns_for_leap_second ~is_leap_second)
 
   let make_exn ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ?(ns = 0)
       ?(frac = 0.) ~year ~month ~day ~hour ~minute ~second () =
@@ -1322,6 +1333,9 @@ module Date_time' = struct
     if frac < 0. then invalid_arg "frac is negative";
     if ns < 0 then invalid_arg "ns is negative";
     let ns = ns + int_of_float (frac *. Span.ns_count_in_s_float) in
+    if ns >= Span.ns_count_in_s then invalid_arg "ns is >= 10^9";
+    let is_leap_second = second = 60 in
+    let second = second mod 60 in
     let tz_info : tz_info option =
       match tz with
       | None -> Some (`Tz_offset_s_only tz_offset_s)
@@ -1353,11 +1367,13 @@ module Date_time' = struct
                       Some tz_info
                     else None)))
     in
-    match tz_info with
+    (match tz_info with
     | None -> None
     | Some tz_info -> (
         let dt = { year; month; day; hour; minute; second; ns; tz_info } in
         match to_timestamp_precise_unsafe dt with `None -> None | _ -> Some dt)
+    )
+    |> CCOpt.map (adjust_ns_for_leap_second ~is_leap_second)
 
   let make_precise_exn ?tz ?(ns = 0) ?(frac = 0.) ~year ~month ~day ~hour
       ~minute ~second ~tz_offset_s () =
