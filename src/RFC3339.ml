@@ -43,7 +43,13 @@ let deduce_smallest_lossless_frac_s ~ns =
   else if ns mod frac_s_8_divisor = 0 then 8
   else 9
 
-let pp_date_time ?(frac_s = 0) () formatter (dt : Time.Date_time'.t) =
+let pp_date_time ?frac_s () formatter (dt : Time.Date_time'.t) =
+  let ns = dt.ns mod Span.ns_count_in_s in
+  let frac_s =
+    match frac_s with
+    | None -> deduce_smallest_lossless_frac_s ~ns
+    | Some x -> x
+  in
   if frac_s < 0 then invalid_arg "pp_date_time: frac_s cannot be < 0"
   else if frac_s > 9 then invalid_arg "pp_date_time: frac_s cannot be > 9"
   else
@@ -60,7 +66,6 @@ let pp_date_time ?(frac_s = 0) () formatter (dt : Time.Date_time'.t) =
       let second =
         if Time.Date_time'.is_leap_second dt then 60 else dt.second
       in
-      let ns = dt.ns mod Span.ns_count_in_s in
       if frac_s = 0 then
         Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d%s" dt.year
           (human_int_of_month dt.month)
