@@ -862,8 +862,8 @@ module Ranges = struct
   module Make (B : Range.B) : S with type t := B.t = struct
     open B
 
-    let normalize ?skip_filter_invalid ?skip_filter_empty
-        ?skip_sort (s : t Range.range Seq.t) =
+    let normalize ?skip_filter_invalid ?skip_filter_empty ?skip_sort
+        (s : t Range.range Seq.t) =
       normalize ?skip_filter_invalid ?skip_filter_empty ?skip_sort ~modulo
         ~to_int ~of_int s
 
@@ -892,12 +892,10 @@ module Ranges = struct
     end
 
     module Of_list = struct
-      let range_seq_of_list ?skip_sort (l : t list) :
-        t Range.range Seq.t =
+      let range_seq_of_list ?skip_sort (l : t list) : t Range.range Seq.t =
         CCList.to_seq l |> Of_seq.range_seq_of_seq ?skip_sort
 
-      let range_list_of_list ?skip_sort (l : t list) :
-        t Range.range list =
+      let range_list_of_list ?skip_sort (l : t list) : t Range.range list =
         CCList.to_seq l |> Of_seq.range_seq_of_seq ?skip_sort |> CCList.of_seq
     end
   end
@@ -1324,8 +1322,7 @@ module Date_time' = struct
      | `Ambiguous _ -> Some dt)
     |> CCOpt.map (adjust_ns_for_leap_second ~is_leap_second)
 
-  let make_exn ?tz ?ns
-      ?frac ~year ~month ~day ~hour ~minute ~second () =
+  let make_exn ?tz ?ns ?frac ~year ~month ~day ~hour ~minute ~second () =
     match make ?tz ~year ~month ~day ~hour ~minute ~second ?ns ?frac () with
     | Some x -> x
     | None -> invalid_arg "make_exn"
@@ -1373,8 +1370,8 @@ module Date_time' = struct
          match to_timestamp_precise_unsafe dt with `None -> None | _ -> Some dt))
     |> CCOpt.map (adjust_ns_for_leap_second ~is_leap_second)
 
-  let make_unambiguous_exn ?tz ?ns ?frac ~year ~month ~day ~hour
-      ~minute ~second ~tz_offset_s () =
+  let make_unambiguous_exn ?tz ?ns ?frac ~year ~month ~day ~hour ~minute ~second
+      ~tz_offset_s () =
     let x =
       make_unambiguous ?tz ~year ~month ~day ~hour ~minute ~second ?ns ?frac
         ~tz_offset_s ()

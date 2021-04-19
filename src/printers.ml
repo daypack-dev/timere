@@ -188,19 +188,16 @@ let pp_date_time ?(format : string = default_date_time_format_string) ()
   | Error msg -> invalid_format_string msg
   | Ok () -> ()
 
-let string_of_date_time ?format
-    (x : Time.Date_time'.t) : string option =
+let string_of_date_time ?format (x : Time.Date_time'.t) : string option =
   try Some (Fmt.str "%a" (pp_date_time ?format ()) x)
   with Date_time_cannot_deduce_tz_offset_s _ -> None
 
-let pp_timestamp ?(display_using_tz = Time_zone.utc)
-    ?format () formatter time =
+let pp_timestamp ?(display_using_tz = Time_zone.utc) ?format () formatter time =
   match Time.Date_time'.of_timestamp ~tz_of_date_time:display_using_tz time with
   | None -> invalid_arg "Invalid unix second"
   | Some dt -> Fmt.pf formatter "%a" (pp_date_time ?format ()) dt
 
-let string_of_timestamp ?display_using_tz
-    ?format (time : Span.t) : string =
+let string_of_timestamp ?display_using_tz ?format (time : Span.t) : string =
   Fmt.str "%a" (pp_timestamp ?display_using_tz ?format ()) time
 
 let pp_hms formatter (hms : Time.hms) : unit =
@@ -258,13 +255,11 @@ let pp_interval ?(display_using_tz = Time_zone.utc)
           | Error msg -> invalid_format_string msg
           | Ok () -> ()))
 
-let string_of_interval ?display_using_tz
-    ?format
-    (interval : Time.Interval'.t) : string =
+let string_of_interval ?display_using_tz ?format (interval : Time.Interval'.t) :
+  string =
   Fmt.str "%a" (pp_interval ?display_using_tz ?format ()) interval
 
-let pp_intervals ?display_using_tz
-    ?format ?(sep = Fmt.cut) () formatter
+let pp_intervals ?display_using_tz ?format ?(sep = Fmt.cut) () formatter
     intervals =
   Fmt.seq ~sep (pp_interval ?display_using_tz ?format ()) formatter intervals
 
