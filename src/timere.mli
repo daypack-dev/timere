@@ -461,14 +461,12 @@ module Date_time : sig
 
       See {!val:make_unambiguous} for the more precise construction.
 
-      Leap second can be specified by providing 60 for [second] xor [ns >= 10^9].
+      Leap second can be specified by providing 60 for [second].
       Note that leap second informtation is lost upon translation to timestamp(s).
-
-      @raise Invalid_argument if [second = 60 && ns >= 10^9]
 
       @raise Invalid_argument if any of [hour], [minute], [second], [ns], [frac] is negative
 
-      @raise Invalid_argument if [total ns >= 2 * 10^9]
+      @raise Invalid_argument if [total ns >= 10^9]
 
       @raise Invalid_argument if [day < 1 || 31 < day]
 
