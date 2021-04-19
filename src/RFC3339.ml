@@ -71,14 +71,14 @@ let pp_date_time ?(frac_s = 0) () formatter (dt : Time.Date_time'.t) =
           (human_int_of_month dt.month)
           dt.day dt.hour dt.minute second frac_s (ns / divisor) tz_off
 
-let of_date_time ?(frac_s = 0) (dt : Time.Date_time'.t) : string option =
-  try Some (Fmt.str "%a" (pp_date_time ~frac_s ()) dt)
+let of_date_time ?frac_s (dt : Time.Date_time'.t) : string option =
+  try Some (Fmt.str "%a" (pp_date_time ?frac_s ()) dt)
   with Printers.Date_time_cannot_deduce_tz_offset_s _ -> None
 
-let pp_timestamp ?(frac_s = 0) () formatter (x : Span.t) =
+let pp_timestamp ?frac_s () formatter (x : Span.t) =
   match Time.Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc x with
   | None -> invalid_arg "Invalid timestamp"
-  | Some dt -> Fmt.pf formatter "%a" (pp_date_time ~frac_s ()) dt
+  | Some dt -> Fmt.pf formatter "%a" (pp_date_time ?frac_s ()) dt
 
-let of_timestamp ?(frac_s = 0) (x : Span.t) : string =
-  Fmt.str "%a" (pp_timestamp ~frac_s ()) x
+let of_timestamp ?frac_s (x : Span.t) : string =
+  Fmt.str "%a" (pp_timestamp ?frac_s ()) x
