@@ -461,12 +461,14 @@ module Date_time : sig
 
       See {!val:make_unambiguous} for the more precise construction.
 
-      Leap second can be specified by providing 60 for [second].
+      Leap second can be specified by providing 60 for [second] xor [ns >= 10^9].
       Note that leap second informtation is lost upon translation to timestamp(s).
+
+      @raise Invalid_argument if [second = 60 && ns >= 10^9]
 
       @raise Invalid_argument if any of [hour], [minute], [second], [ns], [frac] is negative
 
-      @raise Invalid_argument if [ns + frac *. number of nanoseconds in one second >= number of nanoseconds in one second]
+      @raise Invalid_argument if [total ns >= 2 * 10^9]
 
       @raise Invalid_argument if [day < 1 || 31 < day]
 
@@ -511,20 +513,7 @@ module Date_time : sig
       If a time zone is provided, then the offset is checked against the time zone record to make sure
       the time zone does use said offset for the particular date time.
 
-      Leap second can be specified by providing 60 for [second].
-      Note that leap second informtation is lost upon translation to timestamp(s).
-
-      @raise Invalid_argument if any of [hour], [minute], [second], [ns], [frac] is negative
-
-      @raise Invalid_argument if [ns + frac *. number of nanoseconds in one second >= number of nanoseconds in one second]
-
-      @raise Invalid_argument if [day < 1 || 31 < day]
-
-      @raise Invalid_argument if [hour > 23]
-
-      @raise Invalid_argument if [minute > 59]
-
-      @raise Invalid_argument if [second > 60]
+      Same leap second handling and error handling as [make]
   *)
 
   val make_unambiguous_exn :

@@ -1305,7 +1305,8 @@ module Date_time' = struct
     if frac < 0. then invalid_arg "frac is negative";
     if ns < 0 then invalid_arg "ns is negative";
     let ns = ns + int_of_float (frac *. Span.ns_count_in_s_float) in
-    if ns >= Span.ns_count_in_s then invalid_arg "ns is >= 10^9";
+    if ns >= 2 * Span.ns_count_in_s then invalid_arg "ns is >= 2 * 10^9";
+    if second = 60 && ns >= Span.ns_count_in_s then invalid_arg "second is 60 and ns >= 10^9";
     ns
 
   let make ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ?(ns = 0) ?(frac = 0.)
