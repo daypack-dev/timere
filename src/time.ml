@@ -862,9 +862,9 @@ module Ranges = struct
   module Make (B : Range.B) : S with type t := B.t = struct
     open B
 
-    let normalize ?(skip_filter_invalid = false) ?(skip_filter_empty = false)
-        ?(skip_sort = false) (s : t Range.range Seq.t) =
-      normalize ~skip_filter_invalid ~skip_filter_empty ~skip_sort ~modulo
+    let normalize ?skip_filter_invalid ?skip_filter_empty
+        ?skip_sort (s : t Range.range Seq.t) =
+      normalize ?skip_filter_invalid ?skip_filter_empty ?skip_sort ~modulo
         ~to_int ~of_int s
 
     module Check = struct
@@ -892,13 +892,13 @@ module Ranges = struct
     end
 
     module Of_list = struct
-      let range_seq_of_list ?(skip_sort = false) (l : t list) :
+      let range_seq_of_list ?skip_sort (l : t list) :
         t Range.range Seq.t =
-        CCList.to_seq l |> Of_seq.range_seq_of_seq ~skip_sort
+        CCList.to_seq l |> Of_seq.range_seq_of_seq ?skip_sort
 
-      let range_list_of_list ?(skip_sort = false) (l : t list) :
+      let range_list_of_list ?skip_sort (l : t list) :
         t Range.range list =
-        CCList.to_seq l |> Of_seq.range_seq_of_seq ~skip_sort |> CCList.of_seq
+        CCList.to_seq l |> Of_seq.range_seq_of_seq ?skip_sort |> CCList.of_seq
     end
   end
 end
@@ -1324,9 +1324,9 @@ module Date_time' = struct
      | `Ambiguous _ -> Some dt)
     |> CCOpt.map (adjust_ns_for_leap_second ~is_leap_second)
 
-  let make_exn ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ?(ns = 0)
-      ?(frac = 0.) ~year ~month ~day ~hour ~minute ~second () =
-    match make ~year ~month ~day ~hour ~minute ~second ~ns ~frac ~tz () with
+  let make_exn ?tz ?ns
+      ?frac ~year ~month ~day ~hour ~minute ~second () =
+    match make ?tz ~year ~month ~day ~hour ~minute ~second ?ns ?frac () with
     | Some x -> x
     | None -> invalid_arg "make_exn"
 
@@ -1373,10 +1373,10 @@ module Date_time' = struct
          match to_timestamp_precise_unsafe dt with `None -> None | _ -> Some dt))
     |> CCOpt.map (adjust_ns_for_leap_second ~is_leap_second)
 
-  let make_unambiguous_exn ?tz ?(ns = 0) ?(frac = 0.) ~year ~month ~day ~hour
+  let make_unambiguous_exn ?tz ?ns ?frac ~year ~month ~day ~hour
       ~minute ~second ~tz_offset_s () =
     let x =
-      make_unambiguous ?tz ~year ~month ~day ~hour ~minute ~second ~ns ~frac
+      make_unambiguous ?tz ~year ~month ~day ~hour ~minute ~second ?ns ?frac
         ~tz_offset_s ()
     in
     match x with None -> invalid_arg "make_precise_exn" | Some x -> x
@@ -1411,8 +1411,8 @@ module Date_time' = struct
             ~second ~tz_offset_s ())
     | _ -> None
 
-  let now ?(tz_of_date_time = CCOpt.get_exn @@ Time_zone.local ()) () : t =
-    timestamp_now () |> of_timestamp ~tz_of_date_time |> CCOpt.get_exn
+  let now ?tz_of_date_time () : t =
+    timestamp_now () |> of_timestamp ?tz_of_date_time |> CCOpt.get_exn
 
   let to_weekday (x : t) : weekday =
     CCOpt.get_exn
@@ -1864,8 +1864,8 @@ let sorted_interval_seq ?(skip_invalid : bool = false) (s : Interval'.t Seq.t) :
   in
   match s () with Seq.Nil -> Empty | _ -> Intervals s
 
-let sorted_intervals ?(skip_invalid : bool = false) (l : Interval'.t list) : t =
-  l |> CCList.to_seq |> sorted_interval_seq ~skip_invalid
+let sorted_intervals ?skip_invalid (l : Interval'.t list) : t =
+  l |> CCList.to_seq |> sorted_interval_seq ?skip_invalid
 
 let intervals ?(skip_invalid : bool = false) (l : Interval'.t list) : t =
   let s =
@@ -1888,8 +1888,8 @@ let intervals ?(skip_invalid : bool = false) (l : Interval'.t list) : t =
   in
   match s () with Seq.Nil -> Empty | _ -> Intervals s
 
-let interval_seq ?(skip_invalid : bool = false) (s : Interval'.t Seq.t) : t =
-  s |> CCList.of_seq |> intervals ~skip_invalid
+let interval_seq ?skip_invalid (s : Interval'.t Seq.t) : t =
+  s |> CCList.of_seq |> intervals ?skip_invalid
 
 let interval_of_date_time date_time =
   let x = Date_time'.to_timestamp_single date_time in
