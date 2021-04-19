@@ -1304,12 +1304,20 @@ module Date_time' = struct
     else
       dt
 
-  let make ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ?(ns = 0) ?(frac = 0.)
-      ~year ~month ~day ~hour ~minute ~second () =
+  let check_args_and_normalize_ns ~day ~hour ~minute ~second ~ns ~frac =
+    if day < 1 || 31 < day then invalid_arg "day is out of range";
+    if hour < 0 || 23 < hour then invalid_arg "hour is out of range";
+    if minute < 0 || 59 < minute then invalid_arg "minute is negative";
+    if second < 0 || 60 < second then invalid_arg "second is negative";
     if frac < 0. then invalid_arg "frac is negative";
     if ns < 0 then invalid_arg "ns is negative";
     let ns = ns + int_of_float (frac *. Span.ns_count_in_s_float) in
     if ns >= Span.ns_count_in_s then invalid_arg "ns is >= 10^9";
+    ns
+
+  let make ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ?(ns = 0) ?(frac = 0.)
+      ~year ~month ~day ~hour ~minute ~second () =
+    let ns = check_args_and_normalize_ns ~day ~hour ~minute ~second ~ns ~frac in
     let is_leap_second = second = 60 in
     let second = second mod 60 in
     let dt =
@@ -1330,10 +1338,7 @@ module Date_time' = struct
 
   let make_precise ?tz ?(ns = 0) ?(frac = 0.) ~year ~month ~day ~hour ~minute
       ~second ~tz_offset_s () =
-    if frac < 0. then invalid_arg "frac is negative";
-    if ns < 0 then invalid_arg "ns is negative";
-    let ns = ns + int_of_float (frac *. Span.ns_count_in_s_float) in
-    if ns >= Span.ns_count_in_s then invalid_arg "ns is >= 10^9";
+    let ns = check_args_and_normalize_ns ~day ~hour ~minute ~second ~ns ~frac in
     let is_leap_second = second = 60 in
     let second = second mod 60 in
     let tz_info : tz_info option =
