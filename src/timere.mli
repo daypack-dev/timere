@@ -459,7 +459,10 @@ module Date_time : sig
 
       Note that this may yield a ambiguous date time if the time zone has varying offsets, e.g. DST.
 
-      See {!val:make_unambiguous} for the most precise construction.
+      See {!val:make_unambiguous} for the more precise construction.
+
+      Leap second can be specified by providing 60 for [second].
+      Note that leap second informtation is lost upon translation to timestamp(s).
 
       @raise Invalid_argument if any of [hour], [minute], [second], [ns], [frac] is negative
 
@@ -508,6 +511,9 @@ module Date_time : sig
       If a time zone is provided, then the offset is checked against the time zone record to make sure
       the time zone does use said offset for the particular date time.
 
+      Leap second can be specified by providing 60 for [second].
+      Note that leap second informtation is lost upon translation to timestamp(s).
+
       @raise Invalid_argument if any of [hour], [minute], [second], [ns], [frac] is negative
 
       @raise Invalid_argument if [ns + frac *. number of nanoseconds in one second >= number of nanoseconds in one second]
@@ -550,6 +556,8 @@ module Date_time : sig
   *)
 
   val to_timestamp : t -> timestamp local_result
+  (** [to_timestamp] loses information about leap second
+  *)
 
   val to_timestamp_single : t -> timestamp
   (** @raise Invalid_argument if [to_timestamp] does not yield a [`Single] result *)
