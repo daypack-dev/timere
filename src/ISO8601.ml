@@ -95,8 +95,8 @@ let to_date_time s : (Time.Date_time'.t, string) result =
         offset_p
         >>= fun offset ->
         match
-          Time.Date_time'.make_unambiguous ~year ~month ~day ~hour ~minute ~second
-            ~ns ~tz_offset_s:offset ()
+          Time.Date_time'.make_unambiguous ~year ~month ~day ~hour ~minute
+            ~second ~ns ~tz_offset_s:offset ()
         with
         | None -> fail "Invalid date time"
         | Some x -> return x)

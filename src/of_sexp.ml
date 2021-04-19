@@ -109,8 +109,8 @@ let date_time_of_sexp (x : CCSexp.t) =
           | None -> invalid_data ())
       | `Tz_offset_s_only tz_offset_s -> (
           match
-            Time.Date_time'.make_unambiguous ~year ~month ~day ~hour ~minute ~second
-              ~ns ~tz_offset_s ()
+            Time.Date_time'.make_unambiguous ~year ~month ~day ~hour ~minute
+              ~second ~ns ~tz_offset_s ()
           with
           | Some x -> x
           | None -> invalid_data ())
