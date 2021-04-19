@@ -31,6 +31,18 @@ let get_divisor frac_s =
   | 9 -> frac_s_9_divisor
   | _ -> failwith "Unexpected case"
 
+let deduce_smallest_lossless_frac_s ~ns =
+  if ns = 0 then 0
+  else if ns mod frac_s_1_divisor = 0 then 1
+  else if ns mod frac_s_2_divisor = 0 then 2
+  else if ns mod frac_s_3_divisor = 0 then 3
+  else if ns mod frac_s_4_divisor = 0 then 4
+  else if ns mod frac_s_5_divisor = 0 then 5
+  else if ns mod frac_s_6_divisor = 0 then 6
+  else if ns mod frac_s_7_divisor = 0 then 7
+  else if ns mod frac_s_8_divisor = 0 then 8
+  else 9
+
 let pp_date_time ?(frac_s = 0) () formatter (dt : Time.Date_time'.t) =
   if frac_s < 0 then invalid_arg "pp_date_time: frac_s cannot be < 0"
   else if frac_s > 9 then invalid_arg "pp_date_time: frac_s cannot be > 9"
