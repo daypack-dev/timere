@@ -1060,8 +1060,12 @@ let make_hms ~hour ~minute ~second =
     && 0 <= second
     && second <= 60
   then
-    let minute = minute + (second / 60) in
-    let second = second mod 60 in
+    let second =
+      if second = 60 then
+        59
+      else
+        second
+    in
     Some { hour; minute; second }
   else None
 
