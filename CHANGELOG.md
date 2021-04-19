@@ -12,6 +12,8 @@
 
 - Renamed `Date_time.make_precise` to `Date_time.make_unambiguous`
 
+- Added leap second handling to `Date_time`
+
 ## Timere 0.2.2
 
 - Moved timestamp functions into `Timere.Timestamp` module
