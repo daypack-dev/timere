@@ -45,15 +45,24 @@ let pp_date_time ?(frac_s = 0) () formatter (dt : Time.Date_time'.t) =
           let offset = Duration.make ~seconds:(abs x) () in
           Printf.sprintf "%c%02d:%02d" sign offset.hours offset.minutes
       in
+      let second =
+        if Time.Date_time'.is_leap_second dt then
+          60
+        else
+          dt.second
+      in
+      let ns =
+        dt.ns mod Span.ns_count_in_s
+      in
       if frac_s = 0 then
         Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d%s" dt.year
           (human_int_of_month dt.month)
-          dt.day dt.hour dt.minute dt.second tz_off
+          dt.day dt.hour dt.minute second tz_off
       else
         let divisor = get_divisor frac_s in
         Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d.%0*d%s" dt.year
           (human_int_of_month dt.month)
-          dt.day dt.hour dt.minute dt.second frac_s (dt.ns / divisor) tz_off
+          dt.day dt.hour dt.minute second frac_s (ns / divisor) tz_off
 
 let of_date_time ?(frac_s = 0) (dt : Time.Date_time'.t) : string option =
   try Some (Fmt.str "%a" (pp_date_time ~frac_s ()) dt)
