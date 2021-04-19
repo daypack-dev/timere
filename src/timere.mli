@@ -460,6 +460,12 @@ module Date_time : sig
       Note that this may yield a ambiguous date time if the time zone has varying offsets, e.g. DST.
 
       See {!val:make_precise} for the most precise construction.
+
+      @raise Invalid_argument if [frac < 0.0]
+
+      @raise Invalid_argument if [entered ns < 0]
+
+      @raise Invalid_argument if [ns + frac *. number of nanoseconds in one second >= number of nanoseconds in one second]
   *)
 
   val make_exn :
@@ -495,6 +501,12 @@ module Date_time : sig
 
       If a time zone is provided, then the offset is checked against the time zone record to make sure
       the time zone does use said offset for the particular date time.
+
+      @raise Invalid_argument if [frac < 0.0]
+
+      @raise Invalid_argument if [entered ns < 0]
+
+      @raise Invalid_argument if [ns + frac *. number of nanoseconds in one second >= number of nanoseconds in one second]
   *)
 
   val make_precise_exn :
