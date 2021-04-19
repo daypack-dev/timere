@@ -1336,7 +1336,7 @@ module Date_time' = struct
     | Some x -> x
     | None -> invalid_arg "make_exn"
 
-  let make_precise ?tz ?(ns = 0) ?(frac = 0.) ~year ~month ~day ~hour ~minute
+  let make_unambiguous ?tz ?(ns = 0) ?(frac = 0.) ~year ~month ~day ~hour ~minute
       ~second ~tz_offset_s () =
     let ns = check_args_and_normalize_ns ~day ~hour ~minute ~second ~ns ~frac in
     let is_leap_second = second = 60 in
@@ -1380,15 +1380,10 @@ module Date_time' = struct
     )
     |> CCOpt.map (adjust_ns_for_leap_second ~is_leap_second)
 
-  let make_precise_exn ?tz ?(ns = 0) ?(frac = 0.) ~year ~month ~day ~hour
+  let make_unambiguous_exn ?tz ?(ns = 0) ?(frac = 0.) ~year ~month ~day ~hour
       ~minute ~second ~tz_offset_s () =
     let x =
-      match tz with
-      | None ->
-        make_precise ~year ~month ~day ~hour ~minute ~second ~ns ~frac
-          ~tz_offset_s ()
-      | Some tz ->
-        make_precise ~tz ~year ~month ~day ~hour ~minute ~second ~ns ~frac
+        make_unambiguous ?tz ~year ~month ~day ~hour ~minute ~second ~ns ~frac
           ~tz_offset_s ()
     in
     match x with None -> invalid_arg "make_precise_exn" | Some x -> x
@@ -1414,10 +1409,10 @@ module Date_time' = struct
         | `Tz_only tz ->
           make ~year ~month ~day:month_day ~hour ~minute ~second ~tz ()
         | `Tz_offset_s_only tz_offset_s ->
-          make_precise ~year ~month ~day:month_day ~hour ~minute ~second
+          make_unambiguous ~year ~month ~day:month_day ~hour ~minute ~second
             ~tz_offset_s ()
         | `Tz_and_tz_offset_s (tz, tz_offset_s) ->
-          make_precise ~tz ~year ~month ~day:month_day ~hour ~minute ~second
+          make_unambiguous ~tz ~year ~month ~day:month_day ~hour ~minute ~second
             ~tz_offset_s ())
     | _ -> None
 

@@ -10,6 +10,8 @@
 
 - Changed `make_hms` to replace second with 59 when 60 is provided
 
+- Renamed `Date_time.make_precise` to `Date_time.make_unambiguous`
+
 ## Timere 0.2.2
 
 - Moved timestamp functions into `Timere.Timestamp` module

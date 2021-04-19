@@ -459,7 +459,7 @@ module Date_time : sig
 
       Note that this may yield a ambiguous date time if the time zone has varying offsets, e.g. DST.
 
-      See {!val:make_precise} for the most precise construction.
+      See {!val:make_unambiguous} for the most precise construction.
 
       @raise Invalid_argument if any of [hour], [minute], [second], [ns], [frac] is negative
 
@@ -488,7 +488,7 @@ module Date_time : sig
     t
   (** @raise Invalid_argument if [make] fails *)
 
-  val make_precise :
+  val make_unambiguous :
     ?tz:Time_zone.t ->
     ?ns:int ->
     ?frac:float ->
@@ -521,7 +521,7 @@ module Date_time : sig
       @raise Invalid_argument if [second > 60]
   *)
 
-  val make_precise_exn :
+  val make_unambiguous_exn :
     ?tz:Time_zone.t ->
     ?ns:int ->
     ?frac:float ->
@@ -534,7 +534,7 @@ module Date_time : sig
     tz_offset_s:tz_offset_s ->
     unit ->
     t
-  (** @raise Invalid_argument if [make_precise] fails *)
+  (** @raise Invalid_argument if [make_umabiguous] fails *)
 
   type 'a local_result =
     [ `Single of 'a
