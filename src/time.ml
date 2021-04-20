@@ -1314,7 +1314,7 @@ module Date_time' = struct
       ~year ~month ~day ~hour ~minute ~second () =
     let ns = check_args_and_normalize_ns ~day ~hour ~minute ~second ~ns ~frac in
     let is_leap_second = second = 60 in
-    let second = second mod 60 in
+    let second = if second = 60 then 59 else second in
     let dt =
       { year; month; day; hour; minute; second; ns; tz_info = `Tz_only tz }
     in
@@ -1333,7 +1333,7 @@ module Date_time' = struct
       ~minute ~second ~tz_offset_s () =
     let ns = check_args_and_normalize_ns ~day ~hour ~minute ~second ~ns ~frac in
     let is_leap_second = second = 60 in
-    let second = second mod 60 in
+    let second = if second = 60 then 59 else second in
     let tz_info : tz_info option =
       match tz with
       | None -> Some (`Tz_offset_s_only tz_offset_s)
