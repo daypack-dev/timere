@@ -86,6 +86,39 @@ module Alco = struct
          ~year:1979 ~month:`May ~day:27 ~hour:7 ~minute:32 ~second:0 ~ns:999_999_999 ()
        |> Time.Date_time'.to_timestamp_single)
 
+  let of_iso8601_case5 () =
+    Alcotest.(check span_testable)
+      "same timestamp"
+      (CCResult.get_exn @@ ISO8601.to_timestamp "1979-05-27T07:32:00.000999999-07:00")
+      (Time.Date_time'.make_exn
+         ~tz:(Time_zone.make_offset_only `Neg (Duration.make ~hours:7 ()))
+         ~year:1979 ~month:`May ~day:27 ~hour:7 ~minute:32 ~second:0 ~ns:999_999 ()
+       |> Time.Date_time'.to_timestamp_single)
+
+  let to_rfc3339_case0 () =
+    Alcotest.(check string)
+      "same string"
+      "1979-05-27T07:32:00Z"
+      (RFC3339.of_timestamp (Span.make ~s:296638320L ()))
+
+  let to_rfc3339_case1 () =
+    Alcotest.(check string)
+      "same string"
+      "1979-05-27T07:32:00.999999Z"
+      (RFC3339.of_timestamp (Span.make ~s:296638320L ~ns:999_999_000 ()))
+
+  let to_rfc3339_case2 () =
+    Alcotest.(check string)
+      "same string"
+      "1979-05-27T07:32:00.999999999Z"
+      (RFC3339.of_timestamp (Span.make ~s:296638320L ~ns:999_999_999 ()))
+
+  let to_rfc3339_case3 () =
+    Alcotest.(check string)
+      "same string"
+      "1979-05-27T07:32:00.000999999Z"
+      (RFC3339.of_timestamp (Span.make ~s:296638320L ~ns:999_999 ()))
+
   let suite =
     [
       Alcotest.test_case "leap_second0" `Quick leap_second0;
@@ -102,6 +135,11 @@ module Alco = struct
       Alcotest.test_case "of_iso8601_case2" `Quick of_iso8601_case2;
       Alcotest.test_case "of_iso8601_case3" `Quick of_iso8601_case3;
       Alcotest.test_case "of_iso8601_case4" `Quick of_iso8601_case4;
+      Alcotest.test_case "of_iso8601_case5" `Quick of_iso8601_case5;
+      Alcotest.test_case "to_rfc3339_case0" `Quick to_rfc3339_case0;
+      Alcotest.test_case "to_rfc3339_case1" `Quick to_rfc3339_case1;
+      Alcotest.test_case "to_rfc3339_case2" `Quick to_rfc3339_case2;
+      Alcotest.test_case "to_rfc3339_case3" `Quick to_rfc3339_case3;
     ]
 end
 
