@@ -68,6 +68,24 @@ module Alco = struct
          ~year:1979 ~month:`May ~day:27 ~hour:7 ~minute:32 ~second:0 ()
        |> Time.Date_time'.to_timestamp_single)
 
+  let of_iso8601_case3 () =
+    Alcotest.(check span_testable)
+      "same timestamp"
+      (CCResult.get_exn @@ ISO8601.to_timestamp "1979-05-27T07:32:00.999999-07:00")
+      (Time.Date_time'.make_exn
+         ~tz:(Time_zone.make_offset_only `Neg (Duration.make ~hours:7 ()))
+         ~year:1979 ~month:`May ~day:27 ~hour:7 ~minute:32 ~second:0 ~ns:999_999_000 ()
+       |> Time.Date_time'.to_timestamp_single)
+
+  let of_iso8601_case4 () =
+    Alcotest.(check span_testable)
+      "same timestamp"
+      (CCResult.get_exn @@ ISO8601.to_timestamp "1979-05-27T07:32:00.999999999-07:00")
+      (Time.Date_time'.make_exn
+         ~tz:(Time_zone.make_offset_only `Neg (Duration.make ~hours:7 ()))
+         ~year:1979 ~month:`May ~day:27 ~hour:7 ~minute:32 ~second:0 ~ns:999_999_999 ()
+       |> Time.Date_time'.to_timestamp_single)
+
   let suite =
     [
       Alcotest.test_case "leap_second0" `Quick leap_second0;
@@ -82,6 +100,8 @@ module Alco = struct
       Alcotest.test_case "of_iso8601_case0" `Quick of_iso8601_case0;
       Alcotest.test_case "of_iso8601_case1" `Quick of_iso8601_case1;
       Alcotest.test_case "of_iso8601_case2" `Quick of_iso8601_case2;
+      Alcotest.test_case "of_iso8601_case3" `Quick of_iso8601_case3;
+      Alcotest.test_case "of_iso8601_case4" `Quick of_iso8601_case4;
     ]
 end
 
