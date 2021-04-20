@@ -93,7 +93,7 @@ let timestamp_bound_gen bound =
            |> fun x -> if pos then x else max Time.timestamp_min (neg x))
        in
        t)
-    (triple bool (int64_bound_gen Time.timestamp_max.s) big_nat)
+    (triple bool (int64_bound_gen Time.timestamp_max.s) (int_bound 1_000_000_000))
 
 let pos_timestamp_bound_gen bound =
   QCheck.Gen.(
