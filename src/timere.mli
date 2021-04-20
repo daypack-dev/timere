@@ -438,6 +438,11 @@ module Date_time : sig
     ns : int;
     tz_info : tz_info;
   }
+  (** [ns] may be [>= 10^9] to represent leap second, but always remains [< 2 * 10^9].
+
+      [s] is always [>= 0] and [< 60], even when second 60 is used during construction.
+      In other words, second 60 is represented via [ns] field.
+  *)
 
   val make :
     ?tz:Time_zone.t ->
@@ -462,7 +467,8 @@ module Date_time : sig
       See {!val:make_unambiguous} for the more precise construction.
 
       Leap second can be specified by providing 60 for [second].
-      Note that leap second informtation is lost upon translation to timestamp(s).
+      Note that leap second informtation is lost upon translation to timestamp(s),
+      specifically second 60 is treated as second 59.
 
       @raise Invalid_argument if any of [hour], [minute], [second], [ns], [frac] is negative
 
