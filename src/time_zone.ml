@@ -237,13 +237,8 @@ let make_offset_only_span ?(name = "dummy") (offset : Span.t) =
           [| { is_dst = false; offset } |] );
   }
 
-let make_offset_only ?name (sign : [ `Pos | `Neg ]) (offset : Duration.t) =
-  let offset =
-    match sign with
-    | `Pos -> Duration.to_span offset
-    | `Neg -> Span.neg @@ Duration.to_span offset
-  in
-  make_offset_only_span ?name offset
+let make_offset_only ?name (offset : Duration.t) =
+  make_offset_only_span ?name (Duration.to_span offset)
 
 module Sexp = struct
   let of_sexp (x : CCSexp.t) : t option =

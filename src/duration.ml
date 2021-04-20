@@ -34,6 +34,10 @@ type t = {
   ns : int;
 }
 
+let is_pos (x : t) = x.sign = `Pos
+
+let is_neg (x : t) = x.sign = `Neg
+
 let equal (x : t) (y : t) =
   x.sign = y.sign
   && x.days = y.days
