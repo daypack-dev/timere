@@ -1,7 +1,7 @@
 open Test_utils
 
 module Alco = struct
-  let leap_second1 () =
+  let leap_second0 () =
     Alcotest.(check span_testable)
       "same timestamp"
       (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:2020 ~month:`Jan ~day:1 ~hour:0 ~minute:0 ~second:60 ~ns:1_000_000 ()
@@ -11,8 +11,20 @@ module Alco = struct
        |> Time.Date_time'.to_timestamp_single
       )
 
+  let of_iso8601_leap_second0 () =
+    Alcotest.(check span_testable)
+      "same timestamp"
+      (CCResult.get_exn @@ ISO8601.to_timestamp "2020-01-01T00:00:60.001Z"
+      )
+      (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:2020 ~month:`Jan ~day:1 ~hour:0 ~minute:0 ~second:60 ~ns:1_000_000 ()
+       |> Time.Date_time'.to_timestamp_single
+      )
+
   let suite =
-    [Alcotest.test_case "leap_second1" `Quick leap_second1]
+    [
+      Alcotest.test_case "leap_second0" `Quick leap_second0;
+      Alcotest.test_case "of_iso8601_leap_second0" `Quick of_iso8601_leap_second0;
+    ]
 end
 
 module Qc = struct
