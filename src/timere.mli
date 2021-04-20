@@ -329,6 +329,7 @@ end
 val shift : Duration.t -> t -> t
 
 val lengthen : Duration.t -> t -> t
+(** @raise Invalid_argument if duration is negative *)
 
 (** {1 Time zone} *)
 
@@ -950,6 +951,8 @@ val bounded_intervals : [ `Whole | `Snd ] -> Duration.t -> points -> points -> t
     ]}
     yields all the "Feb 10th 11pm to 3am" intervals (or specifically "Feb 10th 11pm to Feb 11th 3am")
 
+    @raise Invalid_argument if bound is negative
+
     @raise Invalid_argument if precision (number of date time arguments passed to [make_points] during construction)
     of [p1] < precision of [p2]
 
@@ -1007,7 +1010,7 @@ type chunking =
 *)
 
 val chunk : chunking -> (chunked -> chunked) -> t -> t
-(** [chunk chunking f t] applies [chunked] selector [f] on [t]*)
+(** [chunk chunking f t] applies [chunked] selector [f] on [t] *)
 
 (** {2 Chunked selectors} *)
 

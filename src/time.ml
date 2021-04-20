@@ -1561,6 +1561,7 @@ let shift (offset : Duration.t) (t : t) : t =
   Unary_op (Shift (Duration.to_span offset), t)
 
 let lengthen (x : Duration.t) (t : t) : t =
+  if Duration.is_neg x then invalid_arg "lengthen: duration is negative";
   Unary_op (Lengthen (Duration.to_span x), t)
 
 let empty = Empty
@@ -1760,6 +1761,8 @@ let second_ranges second_ranges = pattern ~second_ranges ()
 let bounded_intervals pick (bound : Duration.t)
     ((pick_start, tz_info_start) as start : Points.t)
     ((pick_end_exc, tz_info_end_exc) as end_exc : Points.t) : t =
+  if Duration.is_neg bound then
+    invalid_arg "bounded_intervals: bound is negative";
   if Points.precision start < Points.precision end_exc then
     invalid_arg "bounded_intervals: start is less precise than end_exc"
   else if CCOpt.equal equal_tz_info tz_info_start tz_info_end_exc then
