@@ -515,9 +515,9 @@ module Date_time : sig
       Nanosecond used is the addition of [ns] and [frac * number of nanoseconds in one second].
 
       If a time zone is provided, then the offset is checked against the time zone record to make sure
-      the time zone does use said offset for the particular date time.
+      the time zone does use said offset for the particular date time..
 
-      Same leap second handling and error handling as [make]
+      Same leap second handling and error handling as [make].
   *)
 
   val make_unambiguous_exn :
@@ -637,6 +637,13 @@ module Date_time : sig
   *)
 
   val pp_rfc3339 : ?frac_s:int -> unit -> Format.formatter -> t -> unit
+  (**
+     [frac_s] defaults to as many digits as required for a lossless representation.
+
+     @raise Invalid_argument if [frac_s < 0 || frac_s > 9]
+
+     @raise Date_time_cannot_deduce_tz_offset_s if time zone offset cannot be calculated
+  *)
 
   val pp_rfc3339_milli : Format.formatter -> t -> unit
 
@@ -645,8 +652,9 @@ module Date_time : sig
   val pp_rfc3339_nano : Format.formatter -> t -> unit
 
   val to_rfc3339 : ?frac_s:int -> t -> string option
-  (**
-     Returns [None] if time zone offset cannot be deduced
+  (** String conversion using [pp_rfc3339].
+
+      Returns [None] if time zone offset cannot be deduced instead of raising exception.
   *)
 
   val to_rfc3339_milli : t -> string option
@@ -657,9 +665,9 @@ module Date_time : sig
 
   val of_iso8601 : string -> (t, string) result
   (**
-     Parses a subset of ISO8601, up to 9 fractional digits for second (nanosecond precision)
+     Parses a subset of ISO8601, up to 9 fractional digits for second (nanosecond precision).
 
-     If more than 9 fractional digits are provided, then only the first 9 digits are used, i.e. no rounding
+     If more than 9 fractional digits are provided, then only the first 9 digits are used, i.e. no rounding.
   *)
 
   val to_sexp : t -> CCSexp.t
@@ -696,9 +704,9 @@ module Timestamp : sig
     ?display_using_tz:Time_zone.t -> ?format:string -> timestamp -> string
 
   val pp_rfc3339 : ?frac_s:int -> unit -> Format.formatter -> timestamp -> unit
-  (** [frac_s] determines the number of fractional digits to include
+  (** [frac_s] determines the number of fractional digits to include.
 
-      @raise Invalid_argument if [frac_s < 0]
+      @raise Invalid_argument if [frac_s < 0 || frac_s > 9]
   *)
 
   val pp_rfc3339_milli : Format.formatter -> timestamp -> unit
