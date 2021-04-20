@@ -109,8 +109,6 @@ let utc : t =
           [| { is_dst = false; offset = 0 } |] );
   }
 
-let dummy_entry : entry = { is_dst = false; offset = 0 }
-
 let bsearch_table timestamp ((starts, _) : table) =
   Bigarray_utils.bsearch ~cmp:Int64.compare timestamp starts
 

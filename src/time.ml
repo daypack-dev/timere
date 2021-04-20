@@ -1256,13 +1256,6 @@ module Date_time' = struct
     match to_timestamp x with
     | `Single x -> x
     | `Ambiguous _ ->
-      invalid_arg
-        "to_timestamp_precise_single: date time maps to two timestamps"
-
-  let to_timestamp_single (x : t) : timestamp =
-    match to_timestamp x with
-    | `Single x -> x
-    | `Ambiguous _ ->
       invalid_arg "to_timestamp_single: date time maps to two timestamps"
 
   let to_timestamp_float_single (x : t) : float =
