@@ -1,4 +1,5 @@
 # Timere
+
 OCaml date time handling and reasoning library
 
 [API documentation](https://daypack-dev.github.io/timere/)
@@ -101,6 +102,10 @@ You can optionally pick one of the following three concrete implementations of l
 __Note__: While `tzdb-json/` may be useful and usable outside of Timere,
 we make no guarantees that the JSON format stays unmodified
 (though changes of the format should be a rare occurrence, if ever occurring)
+
+## Changelog
+
+See [here](CHANGELOG.md)
 
 ## License
 
