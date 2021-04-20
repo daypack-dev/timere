@@ -251,20 +251,25 @@ end
 (** {1 Duration} *)
 
 module Duration : sig
+  type sign = [ `Pos | `Neg ]
+
   type t = private {
+    sign : sign;
     days : int;
     hours : int;
     minutes : int;
     seconds : int;
     ns : int;
   }
-  (** Unsigned/scalar magnitude of a period of time
+  (** Signed/directional duration.
 
-      Conversion to and from [Span.t] is lossless,
-      but cannot convert from negative span
+      Human friendly, but less efficient version of [Span.t].
+
+      Conversion between [t] and [Span.t] is lossless.
   *)
 
   val make :
+    ?sign:sign ->
     ?days:int ->
     ?hours:int ->
     ?minutes:int ->
@@ -272,9 +277,14 @@ module Duration : sig
     ?ns:int ->
     unit ->
     t
-  (** @raise Invalid_argument if any of the arguments are negative *)
+  (**
+     [sign] defaults to [`Pos].
+
+     @raise Invalid_argument if any of the arguments are negative
+  *)
 
   val make_frac :
+    ?sign:sign ->
     ?days:float ->
     ?hours:float ->
     ?minutes:float ->
@@ -282,7 +292,11 @@ module Duration : sig
     ?ns:int ->
     unit ->
     t
-  (** @raise Invalid_argument if any of the arguments are negative *)
+  (**
+     [sign] defaults to [`Pos].
+
+     @raise Invalid_argument if any of the arguments are negative
+  *)
 
   val zero : t
 
