@@ -1468,20 +1468,6 @@ module Date_time' = struct
     { x with month = `Dec } |> set_to_last_day_hour_min_sec_ns
 end
 
-module Check = struct
-  let timestamp_is_valid (x : timestamp) : bool =
-    CCOpt.is_some @@ Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc x
-
-  let second_is_valid ~(second : int) : bool = 0 <= second && second < 60
-
-  let minute_second_is_valid ~(minute : int) ~(second : int) : bool =
-    0 <= minute && minute < 60 && second_is_valid ~second
-
-  let hour_minute_second_is_valid ~(hour : int) ~(minute : int) ~(second : int)
-    : bool =
-    (0 <= hour && hour < 24) && minute_second_is_valid ~minute ~second
-end
-
 type sign_expr =
   | Pos
   | Neg
