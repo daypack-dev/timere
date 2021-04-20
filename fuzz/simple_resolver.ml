@@ -168,7 +168,8 @@ let aux_points_mem search_using_tz ((p, tz_info) : Points.t) timestamp =
     | Some tz_info -> (
         match tz_info with
         | `Tz_only tz -> tz
-        | `Tz_offset_s_only x -> Time_zone.make_offset_only_span (Span.make ~s:(CCInt64.of_int x) ())
+        | `Tz_offset_s_only x ->
+          Time_zone.make_offset_only_span (Span.make ~s:(CCInt64.of_int x) ())
         | `Tz_and_tz_offset_s (tz, _) -> tz)
   in
   aux_pattern_mem search_using_tz (Points.to_pattern (p, tz_info)) timestamp

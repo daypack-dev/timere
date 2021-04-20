@@ -122,25 +122,29 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
     Points.make_exn
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
-      ~second:(rng () mod 60) ()
+      ~second:(rng () mod 60)
+      ()
   | 3 ->
     Points.make_exn
       ~weekday:(rng () mod 7 |> weekday_of_tm_int |> CCOpt.get_exn)
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
-      ~second:(rng () mod 60) ()
+      ~second:(rng () mod 60)
+      ()
   | 4 ->
     Points.make_exn ~day
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
-      ~second:(rng () mod 60) ()
+      ~second:(rng () mod 60)
+      ()
   | 5 ->
     Points.make_exn
       ~month:(CCOpt.get_exn @@ month_of_tm_int (rng () mod 12))
       ~day
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
-      ~second:(rng () mod 60) ()
+      ~second:(rng () mod 60)
+      ()
   | 6 ->
     Points.make_exn
       ~year:(min max_year_inc (min_year + rng ()))
@@ -148,7 +152,8 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
       ~day
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
-      ~second:(rng () mod 60) ()
+      ~second:(rng () mod 60)
+      ()
   | _ -> failwith "Unexpected case"
 
 let make_hms ~rng =

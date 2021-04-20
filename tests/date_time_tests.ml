@@ -63,8 +63,9 @@ module Alco = struct
     Alcotest.(check span_testable)
       "same timestamp"
       (CCResult.get_exn @@ ISO8601.to_timestamp "1979-05-27T07:32:00-07:00")
-      (Time.Date_time'.make_exn ~tz:(Time_zone.make_offset_only `Neg (Duration.make ~hours:7 ())) ~year:1979 ~month:`May ~day:27
-         ~hour:7 ~minute:32 ~second:0 ()
+      (Time.Date_time'.make_exn
+         ~tz:(Time_zone.make_offset_only `Neg (Duration.make ~hours:7 ()))
+         ~year:1979 ~month:`May ~day:27 ~hour:7 ~minute:32 ~second:0 ()
        |> Time.Date_time'.to_timestamp_single)
 
   let suite =

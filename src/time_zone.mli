@@ -39,7 +39,7 @@ end
 
 val offset_is_recorded : int -> t -> bool
 
-val make_offset_only : ?name:string -> [`Pos | `Neg] -> Duration.t -> t
+val make_offset_only : ?name:string -> [ `Pos | `Neg ] -> Duration.t -> t
 
 val make_offset_only_span : ?name:string -> Span.t -> t
 

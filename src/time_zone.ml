@@ -227,10 +227,7 @@ let offset_is_recorded offset (t : t) =
   Array.mem offset t.record.recorded_offsets
 
 let make_offset_only_span ?(name = "dummy") (offset : Span.t) =
-  let offset =
-    CCInt64.to_int
-      offset.s
-  in
+  let offset = CCInt64.to_int offset.s in
   {
     name;
     record =
@@ -240,13 +237,11 @@ let make_offset_only_span ?(name = "dummy") (offset : Span.t) =
           [| { is_dst = false; offset } |] );
   }
 
-let make_offset_only ?name (sign : [`Pos | `Neg]) (offset : Duration.t) =
+let make_offset_only ?name (sign : [ `Pos | `Neg ]) (offset : Duration.t) =
   let offset =
     match sign with
-    | `Pos ->
-      Duration.to_span offset
-    | `Neg ->
-      Span.neg @@ Duration.to_span offset
+    | `Pos -> Duration.to_span offset
+    | `Neg -> Span.neg @@ Duration.to_span offset
   in
   make_offset_only_span ?name offset
 

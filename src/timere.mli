@@ -341,7 +341,7 @@ module Time_zone : sig
 
   val available_time_zones : string list
 
-  val make_offset_only : ?name:string -> [`Pos | `Neg] -> Duration.t -> t
+  val make_offset_only : ?name:string -> [ `Pos | `Neg ] -> Duration.t -> t
   (** This is mainly used for when you only have an offset to work with,
       and you don't need to do any accurate search over time zones.
 

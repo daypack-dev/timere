@@ -415,7 +415,8 @@ let aux_points search_using_tz space (p, tz_info) : timestamp Seq.t =
     | Some tz_info -> (
         match tz_info with
         | `Tz_only tz -> tz
-        | `Tz_offset_s_only x -> Time_zone.make_offset_only_span (Span.make ~s:(CCInt64.of_int x) ())
+        | `Tz_offset_s_only x ->
+          Time_zone.make_offset_only_span (Span.make ~s:(CCInt64.of_int x) ())
         | `Tz_and_tz_offset_s (tz, _) -> tz)
   in
   aux_pattern search_using_tz space (Points.to_pattern (p, tz_info))
