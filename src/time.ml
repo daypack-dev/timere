@@ -1293,9 +1293,7 @@ module Date_time' = struct
                     `Tz_and_tz_offset_s (tz_of_date_time, entry.offset);
                 }))
 
-  let of_timestamp_float
-      ?tz_of_date_time (x : float) :
-    t option =
+  let of_timestamp_float ?tz_of_date_time (x : float) : t option =
     of_timestamp ?tz_of_date_time @@ Span.of_float x
 
   let is_leap_second (dt : t) = dt.ns >= Span.ns_count_in_s
