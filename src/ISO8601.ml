@@ -87,16 +87,12 @@ let to_date_time s : (Time.Date_time'.t, string) result =
         >> hms_p
         >>= fun (hour, minute, second, ns) ->
         offset_p
-        >>= fun offset -> (
-          if hour = 24 then (
-            if minute = 0 && second = 0 && ns = 0 then
-              return (23, 59, 59, Span.ns_count_in_s - 1)
-            else
-              fail "Invalid date time"
-          )
-          else
-            fail "Invalid date time"
-        )
+        >>= fun offset ->
+        (if hour = 24 then
+           if minute = 0 && second = 0 && ns = 0 then
+             return (23, 59, 59, Span.ns_count_in_s - 1)
+           else fail "Invalid date time"
+         else fail "Invalid date time")
         >>= fun (hour, minute, second, ns) ->
         match
           Time.Date_time'.make_unambiguous ~year ~month ~day ~hour ~minute

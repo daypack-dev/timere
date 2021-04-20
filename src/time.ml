@@ -1057,17 +1057,13 @@ let make_hms ~hour ~minute ~second =
     && minute < 60
     && 0 <= second
     && second <= 60
-  then (
+  then
     let second = if second = 60 then 59 else second in
-    if hour = 24 then (
+    if hour = 24 then
       if minute = 0 && second = 0 then
-        Some {hour = 23; minute = 59; second = 59}
-      else
-        None
-    )
-    else
-      Some { hour; minute; second }
-  )
+        Some { hour = 23; minute = 59; second = 59 }
+      else None
+    else Some { hour; minute; second }
   else None
 
 let make_hms_exn ~hour ~minute ~second =
