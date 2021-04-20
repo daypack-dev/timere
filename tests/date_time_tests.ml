@@ -62,7 +62,7 @@ module Alco = struct
     [
       Alcotest.test_case "leap_second0" `Quick leap_second0;
       Alcotest.test_case "of_iso8601_leap_second0" `Quick of_iso8601_leap_second0;
-      Alcotest.test_case "of_iso8601_leap_second0" `Quick of_iso8601_leap_second1;
+      Alcotest.test_case "of_iso8601_leap_second1" `Quick of_iso8601_leap_second1;
       Alcotest.test_case "of_iso8601_leap_second_to_rfc3339_case0" `Quick of_iso8601_leap_second_to_rfc3339_case0;
       Alcotest.test_case "of_iso8601_leap_second_to_rfc3339_case1" `Quick of_iso8601_leap_second_to_rfc3339_case1;
       Alcotest.test_case "of_iso8601_case0" `Quick of_iso8601_case0;
