@@ -14,6 +14,8 @@
 
 - Added leap second handling to `Date_time`
 
+- Fixed crash in `Timere.Date_time.of_iso8601` due to failed date time construction
+
 ## Timere 0.2.2
 
 - Moved timestamp functions into `Timere.Timestamp` module
