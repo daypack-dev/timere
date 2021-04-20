@@ -1052,14 +1052,22 @@ type hms = {
 let make_hms ~hour ~minute ~second =
   if
     0 <= hour
-    && hour < 24
+    && hour <= 24
     && 0 <= minute
     && minute < 60
     && 0 <= second
     && second <= 60
-  then
+  then (
     let second = if second = 60 then 59 else second in
-    Some { hour; minute; second }
+    if hour = 24 then (
+      if minute = 0 && second = 0 then
+        Some {hour = 23; minute = 59; second = 59}
+      else
+        None
+    )
+    else
+      Some { hour; minute; second }
+  )
   else None
 
 let make_hms_exn ~hour ~minute ~second =
