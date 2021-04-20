@@ -1294,9 +1294,9 @@ module Date_time' = struct
                 }))
 
   let of_timestamp_float
-      ?(tz_of_date_time = CCOpt.get_exn @@ Time_zone.local ()) (x : float) :
+      ?tz_of_date_time (x : float) :
     t option =
-    of_timestamp ~tz_of_date_time @@ Span.of_float x
+    of_timestamp ?tz_of_date_time @@ Span.of_float x
 
   let is_leap_second (dt : t) = dt.ns >= Span.ns_count_in_s
 
