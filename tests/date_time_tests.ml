@@ -71,52 +71,54 @@ module Alco = struct
   let of_iso8601_case3 () =
     Alcotest.(check span_testable)
       "same timestamp"
-      (CCResult.get_exn @@ ISO8601.to_timestamp "1979-05-27T07:32:00.999999-07:00")
+      (CCResult.get_exn
+       @@ ISO8601.to_timestamp "1979-05-27T07:32:00.999999-07:00")
       (Time.Date_time'.make_exn
          ~tz:(Time_zone.make_offset_only `Neg (Duration.make ~hours:7 ()))
-         ~year:1979 ~month:`May ~day:27 ~hour:7 ~minute:32 ~second:0 ~ns:999_999_000 ()
+         ~year:1979 ~month:`May ~day:27 ~hour:7 ~minute:32 ~second:0
+         ~ns:999_999_000 ()
        |> Time.Date_time'.to_timestamp_single)
 
   let of_iso8601_case4 () =
     Alcotest.(check span_testable)
       "same timestamp"
-      (CCResult.get_exn @@ ISO8601.to_timestamp "1979-05-27T07:32:00.999999999-07:00")
+      (CCResult.get_exn
+       @@ ISO8601.to_timestamp "1979-05-27T07:32:00.999999999-07:00")
       (Time.Date_time'.make_exn
          ~tz:(Time_zone.make_offset_only `Neg (Duration.make ~hours:7 ()))
-         ~year:1979 ~month:`May ~day:27 ~hour:7 ~minute:32 ~second:0 ~ns:999_999_999 ()
+         ~year:1979 ~month:`May ~day:27 ~hour:7 ~minute:32 ~second:0
+         ~ns:999_999_999 ()
        |> Time.Date_time'.to_timestamp_single)
 
   let of_iso8601_case5 () =
     Alcotest.(check span_testable)
       "same timestamp"
-      (CCResult.get_exn @@ ISO8601.to_timestamp "1979-05-27T07:32:00.000999999-07:00")
+      (CCResult.get_exn
+       @@ ISO8601.to_timestamp "1979-05-27T07:32:00.000999999-07:00")
       (Time.Date_time'.make_exn
          ~tz:(Time_zone.make_offset_only `Neg (Duration.make ~hours:7 ()))
-         ~year:1979 ~month:`May ~day:27 ~hour:7 ~minute:32 ~second:0 ~ns:999_999 ()
+         ~year:1979 ~month:`May ~day:27 ~hour:7 ~minute:32 ~second:0 ~ns:999_999
+         ()
        |> Time.Date_time'.to_timestamp_single)
 
   let to_rfc3339_case0 () =
     Alcotest.(check string)
-      "same string"
-      "1979-05-27T07:32:00Z"
+      "same string" "1979-05-27T07:32:00Z"
       (RFC3339.of_timestamp (Span.make ~s:296638320L ()))
 
   let to_rfc3339_case1 () =
     Alcotest.(check string)
-      "same string"
-      "1979-05-27T07:32:00.999999Z"
+      "same string" "1979-05-27T07:32:00.999999Z"
       (RFC3339.of_timestamp (Span.make ~s:296638320L ~ns:999_999_000 ()))
 
   let to_rfc3339_case2 () =
     Alcotest.(check string)
-      "same string"
-      "1979-05-27T07:32:00.999999999Z"
+      "same string" "1979-05-27T07:32:00.999999999Z"
       (RFC3339.of_timestamp (Span.make ~s:296638320L ~ns:999_999_999 ()))
 
   let to_rfc3339_case3 () =
     Alcotest.(check string)
-      "same string"
-      "1979-05-27T07:32:00.000999999Z"
+      "same string" "1979-05-27T07:32:00.000999999Z"
       (RFC3339.of_timestamp (Span.make ~s:296638320L ~ns:999_999 ()))
 
   let suite =
