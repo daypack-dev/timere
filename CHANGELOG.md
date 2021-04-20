@@ -16,6 +16,8 @@
 
 - Fixed crash in `Timere.Date_time.of_iso8601` due to failed date time construction
 
+- Upgraded `Time_zone.make_offset_only` API
+
 ## Timere 0.2.2
 
 - Moved timestamp functions into `Timere.Timestamp` module
