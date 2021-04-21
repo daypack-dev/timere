@@ -1800,26 +1800,6 @@ let bounded_intervals pick (bound : Duration.t)
   else
     Bounded_intervals { pick; bound = Duration.to_span bound; start; end_exc }
 
-(* let hms_interval_exc (hms_a : hms) (hms_b : hms) : t =
- *   let a = second_of_day_of_hms hms_a in
- *   let b = second_of_day_of_hms hms_b in
- *   if a = b then empty
- *   else
- *     let gap_in_seconds =
- *       if a < b then Int64.of_int (b - a)
- *       else
- *         Int64.sub
- *           (Duration.make ~days:1 () |> CCResult.get_ok |> Duration.to_seconds)
- *           (Int64.of_int (a - b))
- *     in
- *     let gap_in_seconds_minus_one = Int64.pred gap_in_seconds in
- *     let gap_to_use =
- *       gap_in_seconds_minus_one |> Duration.of_seconds |> CCResult.get_ok
- *     in
- *     lengthen gap_to_use
- *       (pattern ~hours:[ hms_a.hour ] ~minutes:[ hms_a.minute ]
- *          ~seconds:[ hms_a.second ] ()) *)
-
 let hms_intervals_exc (hms_a : hms) (hms_b : hms) : t =
   bounded_intervals `Whole (Duration.make ~days:1 ())
     (Points.make_exn ~hour:hms_a.hour ~minute:hms_a.minute ~second:hms_a.second
