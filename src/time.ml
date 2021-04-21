@@ -1389,18 +1389,21 @@ module Date_time' = struct
     match pick with
     | Points.YMDHMS { year; month; month_day; hour; minute; second } -> (
         let day_count = day_count_of_month ~year ~month in
-        let month_day =
-          if month_day < 0 then day_count + month_day + 1 else month_day
-        in
-        match CCOpt.value ~default:default_tz_info tz_info with
-        | `Tz_only tz ->
-          make ~year ~month ~day:month_day ~hour ~minute ~second ~tz ()
-        | `Tz_offset_s_only tz_offset_s ->
-          make_unambiguous ~year ~month ~day:month_day ~hour ~minute ~second
-            ~tz_offset_s ()
-        | `Tz_and_tz_offset_s (tz, tz_offset_s) ->
-          make_unambiguous ~tz ~year ~month ~day:month_day ~hour ~minute
-            ~second ~tz_offset_s ())
+        if abs month_day > day_count then
+          None
+        else
+          let month_day =
+            if month_day < 0 then day_count + month_day + 1 else month_day
+          in
+          match CCOpt.value ~default:default_tz_info tz_info with
+          | `Tz_only tz ->
+            make ~year ~month ~day:month_day ~hour ~minute ~second ~tz ()
+          | `Tz_offset_s_only tz_offset_s ->
+            make_unambiguous ~year ~month ~day:month_day ~hour ~minute ~second
+              ~tz_offset_s ()
+          | `Tz_and_tz_offset_s (tz, tz_offset_s) ->
+            make_unambiguous ~tz ~year ~month ~day:month_day ~hour ~minute
+              ~second ~tz_offset_s ())
     | _ -> None
 
   let now ?tz_of_date_time () : t =
