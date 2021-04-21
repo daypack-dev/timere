@@ -1137,10 +1137,10 @@ module Date_time' = struct
     in
     match x with None -> invalid_arg "make_precise_exn" | Some x -> x
 
-  let min =
+  let min_val =
     CCOpt.get_exn @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_min
 
-  let max =
+  let max_val =
     CCOpt.get_exn @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_max
 
   let of_points

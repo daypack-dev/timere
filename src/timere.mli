@@ -594,9 +594,9 @@ module Date_time : sig
 
   val equal : t -> t -> bool
 
-  val min : t
+  val min_val : t
 
-  val max : t
+  val max_val : t
 
   val now : ?tz_of_date_time:Time_zone.t -> unit -> t
 
@@ -704,9 +704,9 @@ module Date_time : sig
 end
 
 module Timestamp : sig
-  val min : timestamp
+  val min_val : timestamp
 
-  val max : timestamp
+  val max_val : timestamp
 
   val now : unit -> timestamp
 

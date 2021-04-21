@@ -25,9 +25,9 @@ module Span = struct
 end
 
 module Timestamp = struct
-  let min = timestamp_min
+  let min_val = timestamp_min
 
-  let max = timestamp_max
+  let max_val = timestamp_max
 
   let now = timestamp_now
 
