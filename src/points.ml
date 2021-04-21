@@ -51,8 +51,8 @@ let precision ((pick, _) : t) : int =
   | MDHMS _ -> 5
   | YMDHMS _ -> 6
 
-let make' ~tz ~tz_offset_s ~year ~month ~month_day ~weekday ~hour ~minute
-    ~second () =
+let make ?tz ?tz_offset_s ?year ?month ?day ?weekday ?hour ?minute
+    ~second () : t option =
   let tz_info : tz_info option option =
     match (tz, tz_offset_s) with
     | None, None -> Some None
@@ -70,7 +70,7 @@ let make' ~tz ~tz_offset_s ~year ~month ~month_day ~weekday ~hour ~minute
       | Some year -> Constants.min_year <= year && year <= Constants.max_year
     in
     let month_day_is_fine =
-      match month_day with
+      match day with
       | None -> true
       | Some x -> -31 <= x && x <= 31 && x <> 0
     in
@@ -91,7 +91,7 @@ let make' ~tz ~tz_offset_s ~year ~month ~month_day ~weekday ~hour ~minute
       && second_is_fine
     then
       let pick =
-        match (year, month, month_day, weekday, hour, minute) with
+        match (year, month, day, weekday, hour, minute) with
         | None, None, None, None, None, None -> Some (S second)
         | None, None, None, None, None, Some minute ->
           Some (MS { minute; second })
@@ -111,15 +111,10 @@ let make' ~tz ~tz_offset_s ~year ~month ~month_day ~weekday ~hour ~minute
       CCOpt.map (fun pick -> (pick, tz_info)) pick
     else None
 
-let make ?tz ?tz_offset_s ?year ?month ?day ?weekday ?hour ?minute ~second () :
-  t option =
-  make' ~tz ~tz_offset_s ~year ~month ~month_day:day ~weekday ~hour ~minute
-    ~second ()
-
 let make_exn ?tz ?tz_offset_s ?year ?month ?day ?weekday ?hour ?minute ~second
     () =
   match
-    make' ~tz ~tz_offset_s ~year ~month ~month_day:day ~weekday ~hour ~minute
+    make ?tz ?tz_offset_s ?year ?month ?day ?weekday ?hour ?minute
       ~second ()
   with
   | None -> invalid_arg "make"
