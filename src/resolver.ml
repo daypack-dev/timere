@@ -72,23 +72,23 @@ let calibrate_search_space_for_set (time : t) space : search_space =
       match op with
       | Shift n ->
         let n' = Span.abs n in
-        List.map
+        CCList.filter_map
           Span.(fun (x, y) ->
               (* (min Time.timestamp_max @@ max Time.timestamp_min (x - n),
                *  min Time.timestamp_max @@ max Time.timestamp_min (y - n)
                * ) *)
               if n >= zero then
-                if x - Time.timestamp_min >= n then (x - n, y - n)
+                if x - Time.timestamp_min >= n then Some (x - n, y - n)
                 else if y - Time.timestamp_min >= n then
-                  (Time.timestamp_min, y - n)
+                  Some (Time.timestamp_min, y - n)
                 else
-                  (Time.timestamp_min, Time.timestamp_min)
+                  None
               else
-                if Time.timestamp_max - y >= n' then (x + n', y + n')
+                if Time.timestamp_max - y >= n' then Some (x + n', y + n')
                 else if Time.timestamp_max - x >= n' then
-                  (x + n', Time.timestamp_max)
+                  Some (x + n', Time.timestamp_max)
                 else
-                  (Time.timestamp_max, Time.timestamp_max)
+                  None
             )
           space
       | _ -> space)
