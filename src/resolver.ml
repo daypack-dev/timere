@@ -72,9 +72,13 @@ let calibrate_search_space_for_set (time : t) space : search_space =
       match op with
       | Shift n ->
         List.map
-          (fun (x, y) ->
-             if Span.(x - Time.timestamp_min >= n) then Span.(x - n, y - n)
-             else (x, y))
+          Span.(fun (x, y) ->
+              (min Time.timestamp_max @@ max Time.timestamp_min (x - n),
+               min Time.timestamp_max @@ max Time.timestamp_min (y - n)
+              )
+                (* if x - Time.timestamp_min >= n then (x - n, y - n)
+                 * else (x, y) *)
+            )
           space
       | _ -> space)
   | Inter_seq _ | Union_seq _ -> space
@@ -82,8 +86,11 @@ let calibrate_search_space_for_set (time : t) space : search_space =
       match space with
       | [] -> []
       | (x, y) :: rest ->
-        (if Span.(x - Time.timestamp_min >= bound) then Span.(x - bound, y)
-         else (x, y))
+        Span.(max Time.timestamp_min (x - bound),
+         y
+        )
+        (* (if Span.(x - Time.timestamp_min >= bound) then Span.(x - bound, y)
+         *  else (x, y)) *)
         :: rest)
   | Unchunk _ -> space
 
