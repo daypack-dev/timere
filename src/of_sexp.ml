@@ -122,7 +122,7 @@ let timestamp_of_sexp x =
   | _tz, None ->
     invalid_data "Expected time zone offset 0, but got None instead"
   | tz, Some tz_offset -> (
-      let tz_name = Time_zone.to_name tz in
+      let tz_name = Time_zone.name tz in
       if tz_name <> "UTC" then
         invalid_data
           (Printf.sprintf "Expected time zone UTC, but got %s instead" tz_name)

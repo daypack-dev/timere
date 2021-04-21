@@ -353,7 +353,7 @@ module Time_zone : sig
   val make_exn : string -> t
   (** @raise Invalid_argument if [make] fails *)
 
-  val to_name : t -> string
+  val name : t -> string
 
   val utc : t
 
@@ -371,6 +371,8 @@ module Time_zone : sig
   *)
 
   val make_offset_only_span : Span.t -> t
+
+  val to_fixed_offset : t -> Duration.t option
 
   (** {2 Importing and exporting}*)
 

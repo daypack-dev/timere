@@ -10,7 +10,7 @@ let sexp_of_int x = CCSexp.atom @@ string_of_int x
 
 let sexp_list_of_ints l = List.map sexp_of_int l
 
-let sexp_of_tz_name t = CCSexp.atom (Time_zone.to_name t)
+let sexp_of_tz_name t = CCSexp.atom (Time_zone.name t)
 
 let sexp_of_span (x : Span.t) =
   CCSexp.list [ sexp_of_int64 x.s; sexp_of_int x.ns ]
@@ -192,7 +192,7 @@ let sexp_list_of_unary_op (op : Time_ast.unary_op) =
    * | Chunk_by_month -> [ CCSexp.atom "chunk_by_month"] *)
   | Shift n -> [ CCSexp.atom "shift"; sexp_of_span n ]
   | Lengthen n -> [ CCSexp.atom "lengthen"; sexp_of_span n ]
-  | With_tz tz -> [ CCSexp.atom "with_tz"; CCSexp.atom (Time_zone.to_name tz) ]
+  | With_tz tz -> [ CCSexp.atom "with_tz"; CCSexp.atom (Time_zone.name tz) ]
 
 let to_sexp (t : Time_ast.t) : CCSexp.t =
   let rec aux (t : Time_ast.t) =

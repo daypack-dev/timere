@@ -13,7 +13,7 @@ type 'a local_result =
 
 val equal : t -> t -> bool
 
-val to_name : t -> string
+val name : t -> string
 
 val to_fixed_offset : t -> Duration.t option
 

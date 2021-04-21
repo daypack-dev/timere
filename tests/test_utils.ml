@@ -391,7 +391,7 @@ let time_zone_gen : Time_zone.t QCheck.Gen.t =
     (int_bound (tz_count - 1))
 
 let time_zone =
-  QCheck.make ~print:(fun (t : Time_zone.t) -> t.name) time_zone_gen
+  QCheck.make ~print:(fun (t : Time_zone.t) -> Time_zone.name t) time_zone_gen
 
 let permute (seed : int) (l : 'a list) : 'a list =
   let len = List.length l in

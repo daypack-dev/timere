@@ -84,7 +84,7 @@ let lookup_record name : record option =
       assert (check_table table);
       process_table table)
 
-let to_name t =
+let name t =
   match t.typ with
   | Backed name -> name
   | Offset_only s ->
@@ -295,7 +295,7 @@ module Sexp = struct
     CCSexp.(
       list
         (atom "tz"
-         :: atom (to_name t)
+         :: atom (name t)
          :: List.map
            (fun ((start, _), entry) ->
               list
@@ -360,7 +360,7 @@ module JSON = struct
   let to_json (t : t) : Yojson.Basic.t =
     `Assoc
       [
-        ("name", `String (to_name t));
+        ("name", `String (name t));
         ( "table",
           `List
             (Raw.to_transition_seq t
@@ -383,7 +383,7 @@ module Db = struct
 
   let empty = M.empty
 
-  let add tz db = M.add (to_name tz) tz.record.table db
+  let add tz db = M.add (name tz) tz.record.table db
 
   let find_opt name db =
     M.find_opt name db |> CCOpt.map (fun table -> Raw.of_table ~name table)
