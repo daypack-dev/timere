@@ -21,6 +21,8 @@
 - Updated `tz_info` and `Time_zone.t` definition to remove overlap of functionality for representing
   time zone with only constant offset
 
+- Renamed constants `min` and `max` to `min_val` and `max_val` for `Timere.Timestamp` and `Timere.Date_time`
+
 ## Timere 0.2.2
 
 - Moved timestamp functions into `Timere.Timestamp` module
