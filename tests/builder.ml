@@ -175,14 +175,21 @@ let new_height ~rng height =
   height - reduc
 
 let make_duration ~rng =
-  let seconds = 1 + rng () in
-  Duration.make ~seconds ()
+  let sign = if rng () mod 2 = 0 then `Pos else `Neg in
+  let seconds = rng () in
+  let ns = 1 + rng () in
+  Duration.make ~sign ~seconds ~ns ()
+
+let make_pos_duration ~rng =
+  let seconds = rng () in
+  let ns = 1 + rng () in
+  Duration.make ~seconds ~ns ()
 
 let make_chunking ~rng : Time_ast.chunking =
   match rng () mod 5 with
   | 0 -> `Disjoint_intervals
-  | 1 -> `By_duration (make_duration ~rng)
-  | 2 -> `By_duration_drop_partial (make_duration ~rng)
+  | 1 -> `By_duration (make_pos_duration ~rng)
+  | 2 -> `By_duration_drop_partial (make_pos_duration ~rng)
   | 3 -> `At_year_boundary
   | 4 -> `At_month_boundary
   | _ -> failwith "Unexpected case"
@@ -219,7 +226,7 @@ let make_unary_op ~min_year:_ ~max_year_inc:_ ~rng t =
    *         ])
    * | 2 -> Time.take_points (rng () mod 5) t *)
   | 1 -> Time.shift (make_duration ~rng) t
-  | 2 -> Time.lengthen (make_duration ~rng) t
+  | 2 -> Time.lengthen (make_pos_duration ~rng) t
   | 3 ->
     let available_time_zone_count =
       List.length Time_zone.available_time_zones
@@ -279,7 +286,7 @@ let build ~enable_extra_restrictions:_ ~min_year ~max_year_inc ~max_height
           make_points ~rng ~min_year ~max_year_inc
             ~max_precision:(Points.precision p1)
         in
-        Time.bounded_intervals pick (make_duration ~rng) p1 p2
+        Time.bounded_intervals pick (make_pos_duration ~rng) p1 p2
       | 4 ->
         Time.chunk (make_chunking ~rng) (make_chunk_selector ~rng)
           (aux (new_height ~rng height))
