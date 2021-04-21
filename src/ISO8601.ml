@@ -64,11 +64,10 @@ let to_date_time s : (Time.Date_time'.t, string) result =
              >>$ `Pos
                  <|> (char '-' >>$ `Neg)
              >>= fun sign ->
-             attempt hm_p
+             hm_p
              |>> (fun (hour, minute) ->
                  Duration.make ~sign ~hours:hour ~minutes:minute ())
-                 <|> (two_digit_nat_zero
-                      |>> fun hour -> Duration.make ~sign ~hours:hour ()))
+                 )
   in
   let p =
     nat_zero
