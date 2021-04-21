@@ -1010,7 +1010,11 @@ type chunking =
 *)
 
 val chunk : chunking -> (chunked -> chunked) -> t -> t
-(** [chunk chunking f t] applies [chunked] selector [f] on [t] *)
+(** [chunk chunking f t] applies [chunked] selector [f] on [t].
+
+    @raise Invalid_argument if duration is negative in [`By_duration]
+    or [`By_duration_drop_partial]
+*)
 
 (** {2 Chunked selectors} *)
 
