@@ -13,7 +13,9 @@ type 'a local_result =
 
 val equal : t -> t -> bool
 
-val name : t -> string
+val to_name : t -> string
+
+val to_fixed_offset : t -> Duration.t option
 
 val utc : t
 
@@ -39,9 +41,9 @@ end
 
 val offset_is_recorded : int -> t -> bool
 
-val make_offset_only : ?name:string -> Duration.t -> t
+val make_offset_only : Duration.t -> t
 
-val make_offset_only_span : ?name:string -> Span.t -> t
+val make_offset_only_span : Span.t -> t
 
 module Sexp : sig
   val to_sexp : t -> CCSexp.t

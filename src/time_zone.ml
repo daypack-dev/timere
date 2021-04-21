@@ -5,8 +5,12 @@ type record = {
   table : table;
 }
 
+type typ =
+  | Backed of string
+  | Offset_only of int
+
 type t = {
-  name : string;
+  typ : typ;
   record : record;
 }
 
@@ -80,10 +84,26 @@ let lookup_record name : record option =
       assert (check_table table);
       process_table table)
 
-let name t = t.name
+let to_name t = match t.typ with
+  | Backed name -> name
+  | Offset_only s ->
+    let dur = Duration.of_span Span.(make ~s:(Int64.of_int s) ()) in
+    Printf.sprintf
+      "UTC%c%02d:%02d"
+      (match dur.sign with | `Pos -> '+' | `Neg -> '-')
+      dur.hours
+      dur.minutes
+
+let to_fixed_offset t = match t.typ with
+  | Backed _ -> None
+  | Offset_only x -> Some (Duration.of_span (Span.make ~s:(Int64.of_int x) ()))
 
 let equal t1 t2 =
-  t1.name = t2.name
+  (match t1.typ, t2.typ with
+   | Backed name1, Backed name2 -> CCString.equal name1 name2
+   | Offset_only s1, Offset_only s2 -> CCInt.equal s1 s2
+   | _, _ -> false
+  )
   && Bigarray.Array1.dim (fst t1.record.table)
      = Bigarray.Array1.dim (fst t2.record.table)
   && Array.length (snd t1.record.table) = Array.length (snd t2.record.table)
@@ -93,7 +113,7 @@ let equal t1 t2 =
 
 let make name : t option =
   match lookup_record name with
-  | Some record -> Some { name; record }
+  | Some record -> Some { typ = Backed name; record }
   | None -> None
 
 let make_exn name : t =
@@ -101,7 +121,7 @@ let make_exn name : t =
 
 let utc : t =
   {
-    name = "UTC";
+    typ = Backed "UTC";
     record =
       process_table
         ( Bigarray.Array1.of_array Bigarray.Int64 Bigarray.C_layout
@@ -216,20 +236,20 @@ module Raw = struct
     in
     if check_table table then Some table else None
 
-  let of_table ~name table = { name; record = process_table table }
+  let of_table ~name table = { typ = Backed name; record = process_table table }
 
   let of_transitions ~name (l : (int64 * entry) list) : t option =
     table_of_transitions l
-    |> CCOpt.map (fun table -> { name; record = process_table table })
+    |> CCOpt.map (fun table -> { typ = Backed name; record = process_table table })
 end
 
 let offset_is_recorded offset (t : t) =
   Array.mem offset t.record.recorded_offsets
 
-let make_offset_only_span ?(name = "dummy") (offset : Span.t) =
+let make_offset_only_span (offset : Span.t) =
   let offset = CCInt64.to_int offset.s in
   {
-    name;
+    typ = Offset_only offset;
     record =
       process_table
         ( Bigarray.Array1.of_array Bigarray.Int64 Bigarray.C_layout
@@ -237,8 +257,8 @@ let make_offset_only_span ?(name = "dummy") (offset : Span.t) =
           [| { is_dst = false; offset } |] );
   }
 
-let make_offset_only ?name (offset : Duration.t) =
-  make_offset_only_span ?name (Duration.to_span offset)
+let make_offset_only (offset : Duration.t) =
+  make_offset_only_span (Duration.to_span offset)
 
 module Sexp = struct
   let of_sexp (x : CCSexp.t) : t option =
@@ -273,7 +293,7 @@ module Sexp = struct
     CCSexp.(
       list
         (atom "tz"
-         :: atom t.name
+         :: atom (to_name t)
          :: List.map
            (fun ((start, _), entry) ->
               list
@@ -338,7 +358,7 @@ module JSON = struct
   let to_json (t : t) : Yojson.Basic.t =
     `Assoc
       [
-        ("name", `String t.name);
+        ("name", `String (to_name t));
         ( "table",
           `List
             (Raw.to_transition_seq t
@@ -361,7 +381,7 @@ module Db = struct
 
   let empty = M.empty
 
-  let add tz db = M.add tz.name tz.record.table db
+  let add tz db = M.add (to_name tz) tz.record.table db
 
   let find_opt name db =
     M.find_opt name db |> CCOpt.map (fun table -> Raw.of_table ~name table)
