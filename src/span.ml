@@ -51,7 +51,7 @@ let equal ({ s = s_x; ns = ns_x } : t) ({ s = s_y; ns = ns_y } : t) =
 let neq x y = not (equal x y)
 
 let lt ({ s = s_x; ns = ns_x } : t) ({ s = s_y; ns = ns_y } : t) =
-  (* lexicographical order *)
+  (* lexicographic order *)
   s_x < s_y || (s_x = s_y && ns_x < ns_y)
 
 let le x y = lt x y || equal x y

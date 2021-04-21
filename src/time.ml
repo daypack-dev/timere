@@ -23,7 +23,7 @@ module Interval' = struct
   type t = timestamp * timestamp
 
   let lt (x1, y1) (x2, y2) =
-    (* lexicographical order *)
+    (* lexicographic order *)
     Span.(x1 < x2 || (x1 = x2 && y1 < y2))
 
   let le x y = lt x y || x = y
