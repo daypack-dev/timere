@@ -147,18 +147,14 @@ let make_tz_info ?tz ?tz_offset () : tz_info option =
   match (tz, tz_offset) with
   | None, None -> invalid_arg "make_tz_info"
   | Some tz, None -> Some (tz, None)
-  | None, Some tz_offset -> Some (Time_zone.make_offset_only tz_offset, Some tz_offset)
+  | None, Some tz_offset ->
+    Some (Time_zone.make_offset_only tz_offset, Some tz_offset)
   | Some tz, Some tz_offset ->
-    if Time_zone.offset_is_recorded tz_offset tz then
-      Some (tz, Some tz_offset)
-    else
-      None
+    if Time_zone.offset_is_recorded tz_offset tz then Some (tz, Some tz_offset)
+    else None
 
 let tz_offset_of_tz_info ((tz, tz_offset) : tz_info) =
-  match tz_offset with
-  | Some x -> Some x
-  | None ->
-    Time_zone.to_fixed_offset tz
+  match tz_offset with Some x -> Some x | None -> Time_zone.to_fixed_offset tz
 
 let next_ymd ~year ~month ~day : (int * month * int) option =
   let day_count = day_count_of_month ~year ~month in

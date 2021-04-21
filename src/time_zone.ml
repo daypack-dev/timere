@@ -84,26 +84,25 @@ let lookup_record name : record option =
       assert (check_table table);
       process_table table)
 
-let to_name t = match t.typ with
+let to_name t =
+  match t.typ with
   | Backed name -> name
   | Offset_only s ->
     let dur = Duration.of_span Span.(make ~s:(Int64.of_int s) ()) in
-    Printf.sprintf
-      "UTC%c%02d:%02d"
-      (match dur.sign with | `Pos -> '+' | `Neg -> '-')
-      dur.hours
-      dur.minutes
+    Printf.sprintf "UTC%c%02d:%02d"
+      (match dur.sign with `Pos -> '+' | `Neg -> '-')
+      dur.hours dur.minutes
 
-let to_fixed_offset t = match t.typ with
+let to_fixed_offset t =
+  match t.typ with
   | Backed _ -> None
   | Offset_only x -> Some (Duration.of_span (Span.make ~s:(Int64.of_int x) ()))
 
 let equal t1 t2 =
-  (match t1.typ, t2.typ with
+  (match (t1.typ, t2.typ) with
    | Backed name1, Backed name2 -> CCString.equal name1 name2
    | Offset_only s1, Offset_only s2 -> CCInt.equal s1 s2
-   | _, _ -> false
-  )
+   | _, _ -> false)
   && Bigarray.Array1.dim (fst t1.record.table)
      = Bigarray.Array1.dim (fst t2.record.table)
   && Array.length (snd t1.record.table) = Array.length (snd t2.record.table)
@@ -240,11 +239,14 @@ module Raw = struct
 
   let of_transitions ~name (l : (int64 * entry) list) : t option =
     table_of_transitions l
-    |> CCOpt.map (fun table -> { typ = Backed name; record = process_table table })
+    |> CCOpt.map (fun table ->
+        { typ = Backed name; record = process_table table })
 end
 
 let offset_is_recorded offset (t : t) =
-  Array.mem (CCInt64.to_int (Duration.to_span offset).s) t.record.recorded_offsets
+  Array.mem
+    (CCInt64.to_int (Duration.to_span offset).s)
+    t.record.recorded_offsets
 
 let make_offset_only_span (offset : Span.t) =
   let offset = CCInt64.to_int offset.s in

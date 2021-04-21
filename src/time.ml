@@ -977,9 +977,8 @@ module Date_time' = struct
     | None -> `None
     | Some timestamp_local -> (
         match x.tz_info with
-        | (_tz, Some offset) ->
-          `Single (timestamp_local - (Duration.to_span offset))
-        | (tz, None) -> (
+        | _tz, Some offset -> `Single (timestamp_local - Duration.to_span offset)
+        | tz, None -> (
             match Time_zone.lookup_timestamp_local tz timestamp_local.s with
             | `None -> `None
             | `Single e ->
@@ -1047,7 +1046,8 @@ module Date_time' = struct
                   t with
                   ns;
                   tz_info =
-                    (tz_of_date_time, Some (Duration.make ~seconds:entry.offset ()));
+                    ( tz_of_date_time,
+                      Some (Duration.make ~seconds:entry.offset ()) );
                 }))
 
   let of_timestamp_float ?tz_of_date_time (x : float) : t option =
@@ -1094,36 +1094,33 @@ module Date_time' = struct
     let is_leap_second = second = 60 in
     let second = if second = 60 then 59 else second in
     let tz_info : tz_info option =
-      (
-          match make_tz_info ?tz ~tz_offset () with
+      match make_tz_info ?tz ~tz_offset () with
+      | None -> None
+      | Some ((tz, _) as tz_info) -> (
+          match
+            to_timestamp_pretend_utc
+              {
+                year;
+                month;
+                day;
+                hour;
+                minute;
+                second;
+                ns;
+                tz_info = dummy_tz_info;
+              }
+          with
           | None -> None
-          | Some ((tz, _) as tz_info) -> (
-              match
-                to_timestamp_pretend_utc
-                  {
-                    year;
-                    month;
-                    day;
-                    hour;
-                    minute;
-                    second;
-                    ns;
-                    tz_info = dummy_tz_info;
-                  }
-              with
-              | None -> None
-              | Some { s = timestamp_local; ns = _ } -> (
-                  let tz_offset_s =
-                    Int64.to_int (Duration.to_span tz_offset).s
-                  in
-                  match Time_zone.lookup_timestamp_local tz timestamp_local with
-                  | `None -> None
-                  | `Single e ->
-                    if e.offset = tz_offset_s then Some tz_info else None
-                  | `Ambiguous (e1, e2) ->
-                    if e1.offset = tz_offset_s || e2.offset = tz_offset_s then
-                      Some tz_info
-                    else None)))
+          | Some { s = timestamp_local; ns = _ } -> (
+              let tz_offset_s = Int64.to_int (Duration.to_span tz_offset).s in
+              match Time_zone.lookup_timestamp_local tz timestamp_local with
+              | `None -> None
+              | `Single e ->
+                if e.offset = tz_offset_s then Some tz_info else None
+              | `Ambiguous (e1, e2) ->
+                if e1.offset = tz_offset_s || e2.offset = tz_offset_s then
+                  Some tz_info
+                else None))
     in
     (match tz_info with
      | None -> None
@@ -1160,12 +1157,11 @@ module Date_time' = struct
             if month_day < 0 then day_count + month_day + 1 else month_day
           in
           match CCOpt.value ~default:default_tz_info tz_info with
-          | (tz, None) ->
+          | tz, None ->
             make ~year ~month ~day:month_day ~hour ~minute ~second ~tz ()
-          | (tz, Some tz_offset) ->
+          | tz, Some tz_offset ->
             make_unambiguous ~year ~month ~day:month_day ~hour ~minute ~second
-              ~tz ~tz_offset ()
-      )
+              ~tz ~tz_offset ())
     | _ -> None
 
   let now ?tz_of_date_time () : t =
@@ -1183,8 +1179,7 @@ module Date_time' = struct
     && x.minute = y.minute
     && x.second = y.second
     && x.ns = y.ns
-    &&
-    equal_tz_info x.tz_info y.tz_info
+    && equal_tz_info x.tz_info y.tz_info
 
   let set_to_first_ns (x : t) : t = { x with ns = 0 }
 

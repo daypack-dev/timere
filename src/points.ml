@@ -54,10 +54,9 @@ let precision ((pick, _) : t) : int =
 let make ?tz ?tz_offset ?year ?month ?day ?weekday ?hour ?minute ~second () :
   t option =
   let tz_info =
-    match tz, tz_offset with
+    match (tz, tz_offset) with
     | None, None -> Some None
-    | _, _ ->
-      Some (make_tz_info ?tz ?tz_offset ())
+    | _, _ -> Some (make_tz_info ?tz ?tz_offset ())
   in
   match tz_info with
   | None -> None
@@ -107,8 +106,8 @@ let make ?tz ?tz_offset ?year ?month ?day ?weekday ?hour ?minute ~second () :
       CCOpt.map (fun pick -> (pick, tz_info)) pick
     else None
 
-let make_exn ?tz ?tz_offset ?year ?month ?day ?weekday ?hour ?minute ~second
-    () =
+let make_exn ?tz ?tz_offset ?year ?month ?day ?weekday ?hour ?minute ~second ()
+  =
   match
     make ?tz ?tz_offset ?year ?month ?day ?weekday ?hour ?minute ~second ()
   with

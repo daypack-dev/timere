@@ -410,9 +410,7 @@ let one_s = Span.make ~s:1L ()
 
 let aux_points search_using_tz space (p, tz_info) : timestamp Seq.t =
   let search_using_tz =
-    match tz_info with
-    | None -> search_using_tz
-    | Some (tz, _) -> tz
+    match tz_info with None -> search_using_tz | Some (tz, _) -> tz
   in
   aux_pattern search_using_tz space (Points.to_pattern (p, tz_info))
   |> Seq.filter_map (fun (x, y) ->

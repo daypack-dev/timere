@@ -17,16 +17,15 @@ let sexp_of_span (x : Span.t) =
 
 let sexp_of_tz_info (tz, tz_offset) =
   let open CCSexp in
-  list (
-    CCList.filter_map CCFun.id
-      [
-        Some (sexp_of_tz_name tz);
-        CCOpt.map (fun tz_offset ->
-            sexp_of_int (CCInt64.to_int (Duration.to_span tz_offset).s)
-          )
-          tz_offset;
-      ]
-  )
+  list
+    (CCList.filter_map CCFun.id
+       [
+         Some (sexp_of_tz_name tz);
+         CCOpt.map
+           (fun tz_offset ->
+              sexp_of_int (CCInt64.to_int (Duration.to_span tz_offset).s))
+           tz_offset;
+       ])
 
 let sexp_of_points (pick, tz_info) =
   let open CCSexp in
