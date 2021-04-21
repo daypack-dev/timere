@@ -61,15 +61,25 @@ let to_date_time s : (Time.Date_time'.t, string) result =
     char 'Z'
     >>$ 0
         <|> (char '+'
-             >>$ 1
-                 <|> (char '-' >>$ -1)
-             >>= fun mult ->
-             hm_p
-             |>> fun (hour, minute) ->
-             Duration.make ~hours:hour ~minutes:minute ()
-             |> Duration.to_span
-             |> (fun x -> Int64.to_int x.s)
-             |> CCInt.mul mult)
+             >>$ `Pos
+                 <|> (char '-' >>$ `Neg)
+             >>= fun sign ->
+             (
+               attempt hm_p
+               |>> fun (hour, minute) ->
+               Duration.make ~sign ~hours:hour ~minutes:minute ()
+               |> Duration.to_span
+               |> (fun x -> Int64.to_int x.s)
+             )
+             <|>
+             (
+               two_digit_nat_zero
+               |>> fun hour ->
+               Duration.make ~sign ~hours:hour ()
+               |> Duration.to_span
+               |> (fun x -> Int64.to_int x.s)
+             )
+            )
   in
   let p =
     nat_zero
