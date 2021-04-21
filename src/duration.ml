@@ -14,7 +14,10 @@ module Float_multipliers = struct
   let day_to_seconds = Int64.to_float Int64_multipliers.day_to_seconds
 end
 
-type sign = [ `Pos | `Neg ]
+type sign =
+  [ `Pos
+  | `Neg
+  ]
 
 type raw = {
   sign : sign;
@@ -46,12 +49,11 @@ let equal (x : t) (y : t) =
   && x.seconds = y.seconds
   && x.ns = x.ns
 
-let zero : t = { sign = `Pos; days = 0; hours = 0; minutes = 0; seconds = 0; ns = 0 }
+let zero : t =
+  { sign = `Pos; days = 0; hours = 0; minutes = 0; seconds = 0; ns = 0 }
 
 let of_span (x : Span.t) : t =
-  let sign =
-    if Span.(x < zero) then `Neg else `Pos
-  in
+  let sign = if Span.(x < zero) then `Neg else `Pos in
   let { Span.s; ns } = Span.abs x in
   let seconds = Int64.rem s 60L in
   let minutes = Int64.div s 60L in
@@ -81,9 +83,7 @@ let to_span (t : t) : Span.t =
     +^ seconds
   in
   let x = Span.make ~s ~ns:t.ns () in
-  match t.sign with
-  | `Pos -> x
-  | `Neg -> Span.neg x
+  match t.sign with `Pos -> x | `Neg -> Span.neg x
 
 let span_of_raw (r : raw) : Span.t =
   let span =
@@ -95,20 +95,21 @@ let span_of_raw (r : raw) : Span.t =
          +. r.seconds)
       + make ~ns:r.ns ())
   in
-  match r.sign with
-  | `Pos -> span
-  | `Neg -> Span.neg span
+  match r.sign with `Pos -> span | `Neg -> Span.neg span
 
 let normalize (t : t) : t = t |> to_span |> of_span
 
-let make ?(sign = `Pos) ?(days = 0) ?(hours = 0) ?(minutes = 0) ?(seconds = 0) ?(ns = 0) () : t
-  =
+let make ?(sign = `Pos) ?(days = 0) ?(hours = 0) ?(minutes = 0) ?(seconds = 0)
+    ?(ns = 0) () : t =
   if days >= 0 && hours >= 0 && minutes >= 0 && seconds >= 0 then
     ({ sign; days; hours; minutes; seconds; ns } : t) |> normalize
   else invalid_arg "make"
 
-let make_frac ?(sign = `Pos) ?(days = 0.0) ?(hours = 0.0) ?(minutes = 0.0) ?(seconds = 0.0)
-    ?(ns = 0) () : t =
+let make_frac ?(sign = `Pos) ?(days = 0.0) ?(hours = 0.0) ?(minutes = 0.0)
+    ?(seconds = 0.0) ?(ns = 0) () : t =
   if days >= 0.0 && hours >= 0.0 && minutes >= 0.0 && seconds >= 0.0 && ns >= 0
-  then ({ sign; days; hours; minutes; seconds; ns } : raw) |> span_of_raw |> of_span
+  then
+    ({ sign; days; hours; minutes; seconds; ns } : raw)
+    |> span_of_raw
+    |> of_span
   else invalid_arg "make_frac"

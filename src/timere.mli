@@ -251,7 +251,10 @@ end
 (** {1 Duration} *)
 
 module Duration : sig
-  type sign = [ `Pos | `Neg ]
+  type sign =
+    [ `Pos
+    | `Neg
+    ]
 
   type t = private {
     sign : sign;

@@ -1153,8 +1153,7 @@ module Date_time' = struct
     match pick with
     | Points.YMDHMS { year; month; month_day; hour; minute; second } -> (
         let day_count = day_count_of_month ~year ~month in
-        if abs month_day > day_count then
-          None
+        if abs month_day > day_count then None
         else
           let month_day =
             if month_day < 0 then day_count + month_day + 1 else month_day
@@ -1275,8 +1274,7 @@ let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
   | `Disjoint_intervals ->
     Unchunk (f (Unary_op_on_t (Chunk_disjoint_interval, t)))
   | `By_duration duration ->
-    if Duration.is_neg duration then
-      invalid_arg "chunk: duration is negative";
+    if Duration.is_neg duration then invalid_arg "chunk: duration is negative";
     let chunk_size = Duration.to_span duration in
     if Span.(chunk_size < one_ns) then invalid_arg "chunk"
     else
@@ -1285,8 +1283,7 @@ let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
            (Unary_op_on_t
               (Chunk_by_duration { chunk_size; drop_partial = false }, t)))
   | `By_duration_drop_partial duration ->
-    if Duration.is_neg duration then
-      invalid_arg "chunk: duration is negative";
+    if Duration.is_neg duration then invalid_arg "chunk: duration is negative";
     let chunk_size = Duration.to_span duration in
     if Span.(chunk_size < one_ns) then invalid_arg "chunk"
     else

@@ -51,8 +51,8 @@ let precision ((pick, _) : t) : int =
   | MDHMS _ -> 5
   | YMDHMS _ -> 6
 
-let make ?tz ?tz_offset_s ?year ?month ?day ?weekday ?hour ?minute
-    ~second () : t option =
+let make ?tz ?tz_offset_s ?year ?month ?day ?weekday ?hour ?minute ~second () :
+  t option =
   let tz_info : tz_info option option =
     match (tz, tz_offset_s) with
     | None, None -> Some None
@@ -70,9 +70,7 @@ let make ?tz ?tz_offset_s ?year ?month ?day ?weekday ?hour ?minute
       | Some year -> Constants.min_year <= year && year <= Constants.max_year
     in
     let month_day_is_fine =
-      match day with
-      | None -> true
-      | Some x -> -31 <= x && x <= 31 && x <> 0
+      match day with None -> true | Some x -> -31 <= x && x <= 31 && x <> 0
     in
     let hour_is_fine =
       match hour with None -> true | Some x -> 0 <= x && x < 24
@@ -114,8 +112,7 @@ let make ?tz ?tz_offset_s ?year ?month ?day ?weekday ?hour ?minute
 let make_exn ?tz ?tz_offset_s ?year ?month ?day ?weekday ?hour ?minute ~second
     () =
   match
-    make ?tz ?tz_offset_s ?year ?month ?day ?weekday ?hour ?minute
-      ~second ()
+    make ?tz ?tz_offset_s ?year ?month ?day ?weekday ?hour ?minute ~second ()
   with
   | None -> invalid_arg "make"
   | Some x -> x

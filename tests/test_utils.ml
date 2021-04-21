@@ -76,9 +76,7 @@ let duration_gen =
   let open QCheck.Gen in
   map
     (fun (pos, days, hours, (minutes, seconds, ns)) ->
-       let sign =
-         if pos then `Pos else `Neg
-       in
+       let sign = if pos then `Pos else `Neg in
        Duration.make ~sign ~days ~hours ~minutes ~seconds ~ns ())
     (quad bool nat nat (triple nat nat nat))
 
