@@ -55,13 +55,11 @@ let pp_date_time ?frac_s () formatter (dt : Time.Date_time'.t) =
   else
     match tz_offset_of_tz_info dt.tz_info with
     | None -> raise (Printers.Date_time_cannot_deduce_tz_offset_s dt)
-    | Some x ->
-      let x = CCInt64.to_int (Duration.to_span x).s in
+    | Some offset ->
       let tz_off =
-        if x = 0 then "Z"
+        if Duration.(equal offset zero) then "Z"
         else
-          let sign = if x < 0 then '-' else '+' in
-          let offset = Duration.make ~seconds:(abs x) () in
+          let sign = match offset.sign with | `Pos -> '+' | `Neg -> '-' in
           Printf.sprintf "%c%02d:%02d" sign offset.hours offset.minutes
       in
       let second =
