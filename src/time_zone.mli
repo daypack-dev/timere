@@ -39,7 +39,7 @@ module Raw : sig
   val to_transition_seq : t -> ((int64 * int64) * entry) Seq.t
 end
 
-val offset_is_recorded : int -> t -> bool
+val offset_is_recorded : Duration.t -> t -> bool
 
 val make_offset_only : Duration.t -> t
 

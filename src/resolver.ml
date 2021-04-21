@@ -104,20 +104,20 @@ let search_space_of_year_range tz year_range =
   let open Time in
   let aux_start start =
     Date_time'.set_to_first_month_day_hour_min_sec_ns
-      { Date_time'.min with year = start; tz_info = `Tz_only tz }
+      { Date_time'.min with year = start; tz_info = (tz, None) }
     |> Date_time'.to_timestamp
     |> Date_time'.min_of_local_result
   in
   let aux_end_inc end_exc =
     Date_time'.set_to_last_month_day_hour_min_sec_ns
-      { Date_time'.min with year = end_exc; tz_info = `Tz_only tz }
+      { Date_time'.min with year = end_exc; tz_info = (tz, None) }
     |> Date_time'.to_timestamp
     |> Date_time'.min_of_local_result
     |> Span.succ
   in
   let aux_end_exc end_exc =
     Date_time'.set_to_first_month_day_hour_min_sec_ns
-      { Date_time'.min with year = end_exc; tz_info = `Tz_only tz }
+      { Date_time'.min with year = end_exc; tz_info = (tz, None) }
     |> Date_time'.to_timestamp
     |> Date_time'.min_of_local_result
   in
@@ -412,12 +412,7 @@ let aux_points search_using_tz space (p, tz_info) : timestamp Seq.t =
   let search_using_tz =
     match tz_info with
     | None -> search_using_tz
-    | Some tz_info -> (
-        match tz_info with
-        | `Tz_only tz -> tz
-        | `Tz_offset_s_only x ->
-          Time_zone.make_offset_only_span (Span.make ~s:(CCInt64.of_int x) ())
-        | `Tz_and_tz_offset_s (tz, _) -> tz)
+    | Some (tz, _) -> tz
   in
   aux_pattern search_using_tz space (Points.to_pattern (p, tz_info))
   |> Seq.filter_map (fun (x, y) ->

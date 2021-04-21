@@ -59,7 +59,7 @@ let to_date_time s : (Time.Date_time'.t, string) result =
   in
   let offset_p =
     char 'Z'
-    >>$ 0
+    >>$ Duration.zero
         <|> (char '+'
              >>$ `Pos
                  <|> (char '-' >>$ `Neg)
@@ -68,16 +68,12 @@ let to_date_time s : (Time.Date_time'.t, string) result =
                attempt hm_p
                |>> fun (hour, minute) ->
                Duration.make ~sign ~hours:hour ~minutes:minute ()
-               |> Duration.to_span
-               |> (fun x -> Int64.to_int x.s)
              )
              <|>
              (
                two_digit_nat_zero
                |>> fun hour ->
                Duration.make ~sign ~hours:hour ()
-               |> Duration.to_span
-               |> (fun x -> Int64.to_int x.s)
              )
             )
   in
@@ -105,7 +101,7 @@ let to_date_time s : (Time.Date_time'.t, string) result =
         in
         match
           Time.Date_time'.make_unambiguous ~year ~month ~day ~hour ~minute
-            ~second ~ns ~tz_offset_s:offset ()
+            ~second ~ns ~tz_offset:offset ()
         with
         | None -> fail "Invalid date time"
         | Some x -> return x

@@ -51,15 +51,13 @@ let precision ((pick, _) : t) : int =
   | MDHMS _ -> 5
   | YMDHMS _ -> 6
 
-let make ?tz ?tz_offset_s ?year ?month ?day ?weekday ?hour ?minute ~second () :
+let make ?tz ?tz_offset ?year ?month ?day ?weekday ?hour ?minute ~second () :
   t option =
-  let tz_info : tz_info option option =
-    match (tz, tz_offset_s) with
+  let tz_info =
+    match tz, tz_offset with
     | None, None -> Some None
-    | Some tz, None -> Some (Some (`Tz_only tz))
-    | None, Some tz_offset_s -> Some (Some (`Tz_offset_s_only tz_offset_s))
-    | Some tz, Some tz_offset_s ->
-      make_tz_info ~tz ~tz_offset_s () |> CCOpt.map CCOpt.pure
+    | _, _ ->
+      Some (make_tz_info ?tz ?tz_offset ())
   in
   match tz_info with
   | None -> None
@@ -109,10 +107,10 @@ let make ?tz ?tz_offset_s ?year ?month ?day ?weekday ?hour ?minute ~second () :
       CCOpt.map (fun pick -> (pick, tz_info)) pick
     else None
 
-let make_exn ?tz ?tz_offset_s ?year ?month ?day ?weekday ?hour ?minute ~second
+let make_exn ?tz ?tz_offset ?year ?month ?day ?weekday ?hour ?minute ~second
     () =
   match
-    make ?tz ?tz_offset_s ?year ?month ?day ?weekday ?hour ?minute ~second ()
+    make ?tz ?tz_offset ?year ?month ?day ?weekday ?hour ?minute ~second ()
   with
   | None -> invalid_arg "make"
   | Some x -> x

@@ -134,35 +134,31 @@ let day_count_of_month ~year ~(month : month) =
   | `Nov -> 30
   | `Dec -> 31
 
-type tz_info =
-  [ `Tz_only of Time_zone.t
-  | `Tz_and_tz_offset_s of Time_zone.t * int
-  ]
+type tz_info = Time_zone.t * Duration.t option
 
 let equal_tz_info (x : tz_info) (y : tz_info) =
   match (x, y) with
-  | `Tz_only x, `Tz_only y -> Time_zone.equal x y
-  | `Tz_and_tz_offset_s (tz1, x1), `Tz_and_tz_offset_s (tz2, x2) ->
-    Time_zone.equal tz1 tz2 && x1 = x2
+  | (tz1, None), (tz2, None) -> Time_zone.equal tz1 tz2
+  | (tz1, Some x1), (tz2, Some x2) ->
+    Time_zone.equal tz1 tz2 && Duration.equal x1 x2
   | _, _ -> false
 
-let make_tz_info ?tz ?tz_offset_s () =
-  match (tz, tz_offset_s) with
+let make_tz_info ?tz ?tz_offset () : tz_info option =
+  match (tz, tz_offset) with
   | None, None -> invalid_arg "make_tz_info"
-  | Some tz, None -> Some (`Tz_only tz)
-  | None, Some tz_offset_s -> Some (`Tz_offset_s_only tz_offset_s)
-  | Some tz, Some tz_offset_s ->
-    if Time_zone.offset_is_recorded tz_offset_s tz then
-      Some (`Tz_and_tz_offset_s (tz, tz_offset_s))
-    else None
+  | Some tz, None -> Some (tz, None)
+  | None, Some tz_offset -> Some (Time_zone.make_offset_only tz_offset, Some tz_offset)
+  | Some tz, Some tz_offset ->
+    if Time_zone.offset_is_recorded tz_offset tz then
+      Some (tz, Some tz_offset)
+    else
+      None
 
-let tz_offset_s_of_tz_info (x : tz_info) =
-  match x with
-  | `Tz_only tz -> (
-
-    )
-  | `Tz_offset_s_only offset
-  | `Tz_and_tz_offset_s (_, offset) -> Some offset
+let tz_offset_of_tz_info ((tz, tz_offset) : tz_info) =
+  match tz_offset with
+  | Some x -> Some x
+  | None ->
+    Time_zone.to_fixed_offset tz
 
 let next_ymd ~year ~month ~day : (int * month * int) option =
   let day_count = day_count_of_month ~year ~month in

@@ -244,7 +244,7 @@ module Raw = struct
 end
 
 let offset_is_recorded offset (t : t) =
-  Array.mem offset t.record.recorded_offsets
+  Array.mem (CCInt64.to_int (Duration.to_span offset).s) t.record.recorded_offsets
 
 let make_offset_only_span (offset : Span.t) =
   let offset = CCInt64.to_int offset.s in

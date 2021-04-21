@@ -938,7 +938,7 @@ module Date_time' = struct
     tz_info : tz_info;
   }
 
-  let utc_tz_info = `Tz_and_tz_offset_s (Time_zone.utc, 0)
+  let utc_tz_info : tz_info = (Time_zone.utc, Some Duration.zero)
 
   let dummy_tz_info = utc_tz_info
 
@@ -977,9 +977,9 @@ module Date_time' = struct
     | None -> `None
     | Some timestamp_local -> (
         match x.tz_info with
-        | `Tz_offset_s_only offset | `Tz_and_tz_offset_s (_, offset) ->
-          `Single (timestamp_local - make ~s:(Int64.of_int offset) ())
-        | `Tz_only tz -> (
+        | (_tz, Some offset) ->
+          `Single (timestamp_local - (Duration.to_span offset))
+        | (tz, None) -> (
             match Time_zone.lookup_timestamp_local tz timestamp_local.s with
             | `None -> `None
             | `Single e ->
@@ -1047,7 +1047,7 @@ module Date_time' = struct
                   t with
                   ns;
                   tz_info =
-                    `Tz_and_tz_offset_s (tz_of_date_time, entry.offset);
+                    (tz_of_date_time, Some (Duration.make ~seconds:entry.offset ()));
                 }))
 
   let of_timestamp_float ?tz_of_date_time (x : float) : t option =
@@ -1075,7 +1075,7 @@ module Date_time' = struct
     let is_leap_second = second = 60 in
     let second = if second = 60 then 59 else second in
     let dt =
-      { year; month; day; hour; minute; second; ns; tz_info = `Tz_only tz }
+      { year; month; day; hour; minute; second; ns; tz_info = (tz, None) }
     in
     (match to_timestamp_precise_unsafe dt with
      | `None -> None
@@ -1089,17 +1089,15 @@ module Date_time' = struct
     | None -> invalid_arg "make_exn"
 
   let make_unambiguous ?tz ?(ns = 0) ?(frac = 0.) ~year ~month ~day ~hour
-      ~minute ~second ~tz_offset_s () =
+      ~minute ~second ~tz_offset () =
     let ns = check_args_and_normalize_ns ~day ~hour ~minute ~second ~ns ~frac in
     let is_leap_second = second = 60 in
     let second = if second = 60 then 59 else second in
     let tz_info : tz_info option =
-      match tz with
-      | None -> Some (`Tz_offset_s_only tz_offset_s)
-      | Some tz -> (
-          match make_tz_info ~tz ~tz_offset_s () with
+      (
+          match make_tz_info ?tz ~tz_offset () with
           | None -> None
-          | Some tz_info -> (
+          | Some ((tz, _) as tz_info) -> (
               match
                 to_timestamp_pretend_utc
                   {
@@ -1115,6 +1113,9 @@ module Date_time' = struct
               with
               | None -> None
               | Some { s = timestamp_local; ns = _ } -> (
+                  let tz_offset_s =
+                    Int64.to_int (Duration.to_span tz_offset).s
+                  in
                   match Time_zone.lookup_timestamp_local tz timestamp_local with
                   | `None -> None
                   | `Single e ->
@@ -1132,10 +1133,10 @@ module Date_time' = struct
     |> CCOpt.map (adjust_ns_for_leap_second ~is_leap_second)
 
   let make_unambiguous_exn ?tz ?ns ?frac ~year ~month ~day ~hour ~minute ~second
-      ~tz_offset_s () =
+      ~tz_offset () =
     let x =
       make_unambiguous ?tz ~year ~month ~day ~hour ~minute ~second ?ns ?frac
-        ~tz_offset_s ()
+        ~tz_offset ()
     in
     match x with None -> invalid_arg "make_precise_exn" | Some x -> x
 
@@ -1159,14 +1160,12 @@ module Date_time' = struct
             if month_day < 0 then day_count + month_day + 1 else month_day
           in
           match CCOpt.value ~default:default_tz_info tz_info with
-          | `Tz_only tz ->
+          | (tz, None) ->
             make ~year ~month ~day:month_day ~hour ~minute ~second ~tz ()
-          | `Tz_offset_s_only tz_offset_s ->
+          | (tz, Some tz_offset) ->
             make_unambiguous ~year ~month ~day:month_day ~hour ~minute ~second
-              ~tz_offset_s ()
-          | `Tz_and_tz_offset_s (tz, tz_offset_s) ->
-            make_unambiguous ~tz ~year ~month ~day:month_day ~hour ~minute
-              ~second ~tz_offset_s ())
+              ~tz ~tz_offset ()
+      )
     | _ -> None
 
   let now ?tz_of_date_time () : t =
@@ -1185,13 +1184,7 @@ module Date_time' = struct
     && x.second = y.second
     && x.ns = y.ns
     &&
-    match (x.tz_info, y.tz_info) with
-    | `Tz_only x, `Tz_only y -> Time_zone.equal x y
-    | `Tz_offset_s_only x, `Tz_offset_s_only y -> x = y
-    | ( `Tz_and_tz_offset_s (tz_x, tz_offset_s_x),
-        `Tz_and_tz_offset_s (tz_y, tz_offset_s_y) ) ->
-      Time_zone.equal tz_x tz_y && tz_offset_s_x = tz_offset_s_y
-    | _ -> false
+    equal_tz_info x.tz_info y.tz_info
 
   let set_to_first_ns (x : t) : t = { x with ns = 0 }
 
@@ -1236,7 +1229,7 @@ let equal_unary_op op1 op2 =
   | Not, Not -> true
   (* | Drop_points n1, Drop_points n2 | Take_points n1, Take_points n2 -> n1 = n2 *)
   | Shift n1, Shift n2 | Lengthen n1, Lengthen n2 -> n1 = n2
-  | With_tz tz1, With_tz tz2 -> Time_zone.name tz1 = Time_zone.name tz2
+  | With_tz tz1, With_tz tz2 -> Time_zone.equal tz1 tz2
   | _, _ -> false
 
 let equal t1 t2 =

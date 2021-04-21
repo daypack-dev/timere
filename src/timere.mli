@@ -353,7 +353,7 @@ module Time_zone : sig
   val make_exn : string -> t
   (** @raise Invalid_argument if [make] fails *)
 
-  val name : t -> string
+  val to_name : t -> string
 
   val utc : t
 
@@ -363,14 +363,14 @@ module Time_zone : sig
 
   val available_time_zones : string list
 
-  val make_offset_only : ?name:string -> Duration.t -> t
+  val make_offset_only : Duration.t -> t
   (** This is mainly used for when you only have an offset to work with,
       and you don't need to do any accurate search over time zones.
 
       One use of this is to create a time zone for [to_string] functions.
   *)
 
-  val make_offset_only_span : ?name:string -> Span.t -> t
+  val make_offset_only_span : Span.t -> t
 
   (** {2 Importing and exporting}*)
 
@@ -444,13 +444,9 @@ val with_tz : Time_zone.t -> t -> t
 type timestamp = Span.t
 
 module Date_time : sig
-  type tz_info =
-    [ `Tz_only of Time_zone.t
-    | `Tz_offset_s_only of int
-    | `Tz_and_tz_offset_s of Time_zone.t * int
-    ]
+  type tz_info = Time_zone.t * Duration.t option
 
-  val tz_offset_s_of_tz_info : tz_info -> int option
+  val tz_offset_of_tz_info : tz_info -> Duration.t option
 
   type t = private {
     year : int;
@@ -531,7 +527,7 @@ module Date_time : sig
     hour:int ->
     minute:int ->
     second:int ->
-    tz_offset_s:tz_offset_s ->
+    tz_offset:Duration.t ->
     unit ->
     t option
   (** Constructs a date time providing time zone offset in seconds, and optionally a time zone.
@@ -554,7 +550,7 @@ module Date_time : sig
     hour:int ->
     minute:int ->
     second:int ->
-    tz_offset_s:tz_offset_s ->
+    tz_offset:Duration.t ->
     unit ->
     t
   (** @raise Invalid_argument if [make_umabiguous] fails *)
@@ -886,7 +882,7 @@ type points
 
 val make_points :
   ?tz:Time_zone.t ->
-  ?tz_offset_s:int ->
+  ?tz_offset:Duration.t ->
   ?year:int ->
   ?month:month ->
   ?day:int ->
@@ -912,7 +908,7 @@ make_points                                               ~second:_ ()
 
 val make_points_exn :
   ?tz:Time_zone.t ->
-  ?tz_offset_s:int ->
+  ?tz_offset:Duration.t ->
   ?year:int ->
   ?month:month ->
   ?day:int ->

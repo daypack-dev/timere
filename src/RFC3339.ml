@@ -53,9 +53,10 @@ let pp_date_time ?frac_s () formatter (dt : Time.Date_time'.t) =
   if frac_s < 0 then invalid_arg "pp_date_time: frac_s cannot be < 0"
   else if frac_s > 9 then invalid_arg "pp_date_time: frac_s cannot be > 9"
   else
-    match tz_offset_s_of_tz_info dt.tz_info with
+    match tz_offset_of_tz_info dt.tz_info with
     | None -> raise (Printers.Date_time_cannot_deduce_tz_offset_s dt)
     | Some x ->
+      let x = CCInt64.to_int (Duration.to_span x).s in
       let tz_off =
         if x = 0 then "Z"
         else

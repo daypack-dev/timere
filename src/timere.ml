@@ -59,7 +59,7 @@ module Date_time = struct
 
   type tz_info = Date_time_components.tz_info
 
-  let tz_offset_s_of_tz_info = Date_time_components.tz_offset_s_of_tz_info
+  let tz_offset_of_tz_info = Date_time_components.tz_offset_of_tz_info
 
   let to_string = Printers.string_of_date_time
 
