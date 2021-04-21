@@ -80,7 +80,7 @@ let tz_info_of_sexp (x : CCSexp.t) : Date_time_components.tz_info =
       | [ x ] -> (tz_make_of_sexp x, None)
       | [ x; offset ] ->
         ( tz_make_of_sexp x,
-          Some (Duration.make ~seconds:(int_of_sexp offset) ()) )
+          Some (Duration.of_span (Span.make ~s:(CCInt64.of_int @@ int_of_sexp offset) ())) )
       | _ ->
         invalid_data
           (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x)))
