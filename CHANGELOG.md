@@ -4,7 +4,7 @@
 
 - Updated use of Timere API
 
-## Timere 0.2.3
+## Timere 0.3.0
 
 - Added support for parsing "24:00" and "24:00:00" in `Timere.Date_time.of_iso8601`
 
@@ -17,6 +17,9 @@
 - Fixed crash in `Timere.Date_time.of_iso8601` due to failed date time construction
 
 - Upgraded `Time_zone.make_offset_only` API
+
+- Updated `tz_info` and `Time_zone.t` definition to remove overlap of functionality for representing
+  time zone with only constant offset
 
 ## Timere 0.2.2
 
