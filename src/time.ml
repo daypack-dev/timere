@@ -1649,20 +1649,20 @@ let now () = timestamp (timestamp_now ())
 
 let before_timestamp timestamp = intervals [ (timestamp_min, timestamp) ]
 
-let after_timestamp timestamp =
-  intervals [ (Span.succ timestamp, timestamp_max) ]
-
 let since_timestamp timestamp =
   intervals [ (timestamp, timestamp_max) ]
+
+let after_timestamp timestamp =
+  intervals [ (Span.succ timestamp, timestamp_max) ]
 
 let before dt =
   before_timestamp Date_time'.(to_timestamp dt |> min_of_local_result)
 
-let after dt =
-  after_timestamp Date_time'.(to_timestamp dt |> max_of_local_result)
-
 let since dt =
   since_timestamp Date_time'.(to_timestamp dt |> max_of_local_result)
+
+let after dt =
+  after_timestamp Date_time'.(to_timestamp dt |> max_of_local_result)
 
 let nth_weekday_of_month (n : int) wday =
   let first_weekday_of_month wday =
