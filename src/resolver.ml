@@ -91,17 +91,23 @@ let calibrate_search_space_for_set (time : t) space : search_space =
                   (Time.timestamp_max, Time.timestamp_max)
             )
           space
+        |> CCList.to_seq
+        |> Time.Intervals.normalize
+        |> CCList.of_seq
       | _ -> space)
   | Inter_seq _ | Union_seq _ -> space
   | Bounded_intervals { bound; _ } -> (
       match space with
       | [] -> []
       | (x, y) :: rest ->
-        Span.(max Time.timestamp_min (x - bound),
-         y
-        )
+        (* Span.(max Time.timestamp_min (x - bound),
+         *  y
+         * ) *)
         (* (if Span.(x - Time.timestamp_min >= bound) then Span.(x - bound, y)
          *  else (x, y)) *)
+          Span.(if x - Time.timestamp_min >= bound then (x - bound, y)
+           else (Time.timestamp_min, y)
+          )
         :: rest)
   | Unchunk _ -> space
 
