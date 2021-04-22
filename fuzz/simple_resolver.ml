@@ -3,11 +3,19 @@ open Span_set_utils
 
 let timestamp_safe_sub a b =
   let open Span in
-  if a - Constants.timestamp_min >= b then a - b else Constants.timestamp_min
+  if b >= zero then
+    if a - Constants.timestamp_min >= b then a - b else Constants.timestamp_min
+  else
+    let b' = abs b in
+    if Constants.timestamp_max - a >= b' then a + b' else Constants.timestamp_max
 
 let timestamp_safe_add a b =
   let open Span in
-  if Constants.timestamp_max - a >= b then a + b else Constants.timestamp_max
+  if b >= zero then
+    if Constants.timestamp_max - a >= b then a + b else Constants.timestamp_max
+  else
+    let b' = abs b in
+    if a - Constants.timestamp_min >= b' then a - b' else Constants.timestamp_min
 
 let do_chunk ~drop_partial (n : Span.t) (s : Time.Interval'.t Seq.t) :
   Time.Interval'.t Seq.t =

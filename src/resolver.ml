@@ -65,49 +65,40 @@ let get_search_space (time : t) : Time.Interval'.t list =
   | Bounded_intervals { search_space; _ } -> search_space
   | Unchunk (s, _) -> s
 
+let timestamp_safe_sub a b =
+  let open Span in
+  if b >= zero then
+    if a - Constants.timestamp_min >= b then a - b else Constants.timestamp_min
+  else
+    let b' = abs b in
+    if Constants.timestamp_max - a >= b' then a + b' else Constants.timestamp_max
+
+let timestamp_safe_add a b =
+  let open Span in
+  if b >= zero then
+    if Constants.timestamp_max - a >= b then a + b else Constants.timestamp_max
+  else
+    let b' = abs b in
+    if a - Constants.timestamp_min >= b' then a - b' else Constants.timestamp_min
+
 let calibrate_search_space_for_set (time : t) space : search_space =
   match time with
   | All | Empty | Intervals _ | Pattern _ -> space
   | Unary_op (_, op, _) -> (
       match op with
       | Shift n ->
-        let n' = Span.abs n in
         List.map
           Span.(fun (x, y) ->
-              (* (min Time.timestamp_max @@ max Time.timestamp_min (x - n),
-               *  min Time.timestamp_max @@ max Time.timestamp_min (y - n)
-               * ) *)
-              if n >= zero then
-                if x - Time.timestamp_min >= n then (x - n, y - n)
-                else if y - Time.timestamp_min >= n then
-                  (Time.timestamp_min, y - n)
-                else
-                  (Time.timestamp_min, Time.timestamp_min)
-              else
-                if Time.timestamp_max - y >= n' then (x + n', y + n')
-                else if Time.timestamp_max - x >= n' then
-                  (x + n', Time.timestamp_max)
-                else
-                  (Time.timestamp_max, Time.timestamp_max)
+              (timestamp_safe_add x n, timestamp_safe_add y n)
             )
           space
-        (* |> CCList.to_seq
-         * |> Time.Intervals.normalize
-         * |> CCList.of_seq *)
       | _ -> space)
   | Inter_seq _ | Union_seq _ -> space
   | Bounded_intervals { bound; _ } -> (
       match space with
       | [] -> []
       | (x, y) :: rest ->
-        (* Span.(max Time.timestamp_min (x - bound),
-         *  y
-         * ) *)
-        (* (if Span.(x - Time.timestamp_min >= bound) then Span.(x - bound, y)
-         *  else (x, y)) *)
-          Span.(if x - Time.timestamp_min >= bound then (x - bound, y)
-           else (Time.timestamp_min, y)
-          )
+        (timestamp_safe_sub x bound, y)
         :: rest)
   | Unchunk _ -> space
 
@@ -365,12 +356,22 @@ let dynamic_search_space_adjustment_trigger_size =
 let inter_minimum_slice_size = Duration.(make ~days:10 () |> to_span)
 
 let slice_search_space ~start (t : t) : t =
-  get_search_space t
-  |> CCList.to_seq
-  |> Time.Intervals.Slice.slice ~skip_check:true ~start
-  |> CCList.of_seq
-  |> calibrate_search_space_for_set t
-  |> (fun space -> set_search_space space t)
+  let current =
+    get_search_space t
+    |> CCList.to_seq
+  in
+  let restriction =
+    Time.Intervals.Slice.slice ~skip_check:true ~start
+      (CCList.to_seq default_search_space)
+    |> CCList.of_seq
+    |> calibrate_search_space_for_set t
+    |> CCList.to_seq
+  in
+  let space =
+    Time.Intervals.Inter.inter current restriction
+    |> CCList.of_seq
+  in
+  set_search_space space t
   |> propagate_search_space_top_down
 
 let slice_search_space_multi ~start (l : t list) : t list =

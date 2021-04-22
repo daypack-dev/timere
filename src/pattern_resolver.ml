@@ -606,11 +606,11 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
     (x, y)
   in
   matching_date_time_ranges search_param t
-  |> Seq.map (Time.Range.map ~f_inc:f ~f_exc:f)
+  |> Seq.map (Time.Range.map ~f_inc:f ~f_exc:failwith_unexpected_case)
   |> Seq.map (fun r ->
       match r with
       | `Range_inc (x, y) -> (x, Span.succ y)
-      | `Range_exc (x, y) -> (x, y))
+      | `Range_exc _ -> failwith "Unexpected case")
   |> Time.Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
   |> Time.Intervals.Slice.slice ~start:(Time.Date_time'.to_timestamp_single search_param.start)
     ~end_exc:(Span.succ @@ Time.Date_time'.to_timestamp_single search_param.end_inc)
