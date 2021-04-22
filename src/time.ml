@@ -1649,8 +1649,7 @@ let now () = timestamp (timestamp_now ())
 
 let before_timestamp timestamp = intervals [ (timestamp_min, timestamp) ]
 
-let since_timestamp timestamp =
-  intervals [ (timestamp, timestamp_max) ]
+let since_timestamp timestamp = intervals [ (timestamp, timestamp_max) ]
 
 let after_timestamp timestamp =
   intervals [ (Span.succ timestamp, timestamp_max) ]
