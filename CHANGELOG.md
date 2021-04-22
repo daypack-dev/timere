@@ -23,6 +23,8 @@
 
 - Renamed constants `min` and `max` to `min_val` and `max_val` for `Timere.Timestamp` and `Timere.Date_time`
 
+- Added `since` and `since_timestamp`
+
 ## Timere 0.2.2
 
 - Moved timestamp functions into `Timere.Timestamp` module
