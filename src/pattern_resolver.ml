@@ -26,34 +26,36 @@ let failwith_unexpected_case (_ : 'a) = failwith "Unexpected case"
 module Matching_seconds = struct
   let get_cur_branch_search_start ~(overall_search_start : Time.Date_time'.t)
       (cur_branch : Time.Date_time'.t) : Time.Date_time'.t =
-    if
-      cur_branch.year = overall_search_start.year
-      && cur_branch.month = overall_search_start.month
-      && cur_branch.day = overall_search_start.day
-      && cur_branch.hour = overall_search_start.hour
-      && cur_branch.minute = overall_search_start.minute
-    then overall_search_start
-    else Time.Date_time'.set_to_first_sec_ns cur_branch
+    (* if
+     *   cur_branch.year = overall_search_start.year
+     *   && cur_branch.month = overall_search_start.month
+     *   && cur_branch.day = overall_search_start.day
+     *   && cur_branch.hour = overall_search_start.hour
+     *   && cur_branch.minute = overall_search_start.minute
+     * then overall_search_start
+     * else *)
+      Time.Date_time'.set_to_first_sec_ns cur_branch
 
   let get_cur_branch_search_end_inc
       ~(overall_search_end_inc : Time.Date_time'.t)
       (cur_branch : Time.Date_time'.t) : Time.Date_time'.t =
-    if
-      cur_branch.year = overall_search_end_inc.year
-      && cur_branch.month = overall_search_end_inc.month
-      && cur_branch.day = overall_search_end_inc.day
-      && cur_branch.hour = overall_search_end_inc.hour
-      && cur_branch.minute = overall_search_end_inc.minute
-    then overall_search_end_inc
-    else Time.Date_time'.set_to_last_sec_ns cur_branch
+    (* if
+     *   cur_branch.year = overall_search_end_inc.year
+     *   && cur_branch.month = overall_search_end_inc.month
+     *   && cur_branch.day = overall_search_end_inc.day
+     *   && cur_branch.hour = overall_search_end_inc.hour
+     *   && cur_branch.minute = overall_search_end_inc.minute
+     * then overall_search_end_inc
+     * else *)
+      Time.Date_time'.set_to_last_sec_ns cur_branch
 
-  let filter_seconds ~(cur_branch_search_start : Time.Date_time'.t)
-      ~(cur_branch_search_end_inc : Time.Date_time'.t) s =
-    Seq.filter
-      (fun sec ->
-         cur_branch_search_start.second <= sec
-         && sec <= cur_branch_search_end_inc.second)
-      s
+  (* let filter_seconds ~(cur_branch_search_start : Time.Date_time'.t)
+   *     ~(cur_branch_search_end_inc : Time.Date_time'.t) s =
+   *   Seq.filter
+   *     (fun sec ->
+   *        cur_branch_search_start.second <= sec
+   *        && sec <= cur_branch_search_end_inc.second)
+   *     s *)
 
   (* let matching_seconds ~(overall_search_start : Time.Date_time'.t)
    *     ~(overall_search_end_inc : Time.Date_time'.t) (t : Pattern.t)
@@ -80,28 +82,35 @@ module Matching_seconds = struct
       ~(overall_search_end_inc : Time.Date_time'.t)
       (cur_branch : Time.Date_time'.t) :
     Time.Date_time'.t Time.Range.range Seq.t =
-    let range_map_inc ~(cur_branch_search_start : Time.Date_time'.t)
-        ~(cur_branch_search_end_inc : Time.Date_time'.t) (x, y) =
-      let range_map_start =
-        if x = cur_branch_search_start.second then cur_branch_search_start
-        else { cur_branch_search_start with second = x; ns = 0 }
-      in
-      let range_map_end_inc =
-        if y = cur_branch_search_end_inc.second then cur_branch_search_end_inc
-        else
-          {
-            cur_branch_search_end_inc with
-            second = y;
-            ns = Span.ns_count_in_s - 1;
-          }
-      in
-      (range_map_start, range_map_end_inc)
-    in
+    (* let range_map_inc ~(cur_branch_search_start : Time.Date_time'.t)
+     *     ~(cur_branch_search_end_inc : Time.Date_time'.t) (x, y) =
+     *   let range_map_start =
+     *     if x = cur_branch_search_start.second then cur_branch_search_start
+     *     else { cur_branch_search_start with second = x; ns = 0 }
+     *   in
+     *   let range_map_end_inc =
+     *     if y = cur_branch_search_end_inc.second then cur_branch_search_end_inc
+     *     else
+     *       {
+     *         cur_branch_search_end_inc with
+     *         second = y;
+     *         ns = Span.ns_count_in_s - 1;
+     *       }
+     *   in
+     *   (range_map_start, range_map_end_inc)
+     * in *)
     let cur_branch_search_start =
-      get_cur_branch_search_start ~overall_search_start cur_branch
+      Time.Date_time'.set_to_first_ns cur_branch
+      (* get_cur_branch_search_start ~overall_search_start cur_branch *)
     in
     let cur_branch_search_end_inc =
-      get_cur_branch_search_end_inc ~overall_search_end_inc cur_branch
+      Time.Date_time'.set_to_last_ns cur_branch
+      (* get_cur_branch_search_end_inc ~overall_search_end_inc cur_branch *)
+    in
+    let range_map_inc ~(cur_branch : Time.Date_time'.t) (x, y) =
+      ( Time.Date_time'.set_to_first_ns { cur_branch with second = x },
+        Time.Date_time'.set_to_last_ns { cur_branch with second = y }
+      )
     in
     if Int_set.is_empty t.seconds then
       Seq.return
@@ -109,13 +118,13 @@ module Matching_seconds = struct
     else
       t.seconds
       |> Int_set.to_seq
-      |> filter_seconds ~cur_branch_search_start ~cur_branch_search_end_inc
+      (* |> filter_seconds ~cur_branch_search_start ~cur_branch_search_end_inc *)
       |> Time.Second_ranges.Of_seq.range_seq_of_seq
       |> Seq.map
         (Time.Range.map
            ~f_inc:
-             (range_map_inc ~cur_branch_search_start
-                ~cur_branch_search_end_inc)
+             (range_map_inc ~cur_branch
+                )
            ~f_exc:failwith_unexpected_case)
 end
 
@@ -199,7 +208,8 @@ module Matching_minutes = struct
       Seq.return
         (`Range_inc
            ( cur_branch_search_start,
-             Time.Date_time'.set_to_last_min_sec_ns cur_branch_search_start ))
+             (* Time.Date_time'.set_to_last_min_sec_ns *)
+               cur_branch_search_start ))
     else
       t.minutes
       |> Int_set.to_seq
@@ -730,6 +740,8 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
       | `Range_inc (x, y) -> (x, Span.succ y)
       | `Range_exc (x, y) -> (x, y))
   |> Time.Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
+  |> Time.Intervals.Slice.slice ~start:(Time.Date_time'.to_timestamp_single search_param.start)
+    ~end_exc:(Span.succ @@ Time.Date_time'.to_timestamp_single search_param.end_inc)
 
 (* let matching_intervals_round_robin_non_decreasing
  *     (search_param : Search_param.t) (l : Pattern.t list) :
