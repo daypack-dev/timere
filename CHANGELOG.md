@@ -29,6 +29,8 @@
 
 - Resolver search space slicing fix
 
+- Changed `{mday:...}` to `{day:...}` in format string system
+
 ## Timere 0.2.2
 
 - Moved timestamp functions into `Timere.Timestamp` module
