@@ -88,7 +88,7 @@ let calibrate_search_space_for_set (time : t) space : search_space =
       match op with
       | Shift n ->
         List.map
-          Span.(fun (x, y) ->
+          (fun (x, y) ->
               (timestamp_safe_add x n, timestamp_safe_add y n)
             )
           space
