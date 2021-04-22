@@ -91,9 +91,9 @@ let calibrate_search_space_for_set (time : t) space : search_space =
                   (Time.timestamp_max, Time.timestamp_max)
             )
           space
-        |> CCList.to_seq
-        |> Time.Intervals.normalize
-        |> CCList.of_seq
+        (* |> CCList.to_seq
+         * |> Time.Intervals.normalize
+         * |> CCList.of_seq *)
       | _ -> space)
   | Inter_seq _ | Union_seq _ -> space
   | Bounded_intervals { bound; _ } -> (
@@ -301,34 +301,6 @@ let optimize_search_space default_tz_offset_s t =
 type inc_or_exc =
   | Inc
   | Exc
-
-(* let do_drop_points (n : int64) (s : Time.Interval'.t Seq.t) :
- *   Time.Interval'.t Seq.t =
- *   let rec aux n s =
- *     if n = 0L then s
- *     else
- *       match s () with
- *       | Seq.Nil -> Seq.empty
- *       | Seq.Cons ((x, y), rest) ->
- *         let size = Span.sub y x in
- *         if size >= n then fun () -> Seq.Cons ((Int64.add n x, y), rest)
- *         else aux (Int64.sub n size) rest
- *   in
- *   aux n s
- * 
- * let do_take_points (n : int64) (s : Time.Interval'.t Seq.t) :
- *   Time.Interval'.t Seq.t =
- *   let rec aux n s =
- *     if n = 0L then Seq.empty
- *     else
- *       match s () with
- *       | Seq.Nil -> Seq.empty
- *       | Seq.Cons ((x, y), rest) ->
- *         let size = Int64.sub y x in
- *         if size >= n then Seq.return (x, Int64.add n x)
- *         else fun () -> Seq.Cons ((x, y), aux (Int64.sub n size) rest)
- *   in
- *   aux n s *)
 
 let do_chunk_at_year_boundary tz (s : Time.Interval'.t Seq.t) =
   let open Time in
