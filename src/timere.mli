@@ -610,7 +610,7 @@ module Date_time : sig
 
      Default format string:
      {v
-{year} {mon:Xxx} {mday:0X} {hour:0X}:{min:0X}:{sec:0X} \
+{year} {mon:Xxx} {day:0X} {hour:0X}:{min:0X}:{sec:0X} \
 {tzoff-sign}{tzoff-hour:0X}:{tzoff-min:0X}:{tzoff-sec:0X}
      v}
 
@@ -623,7 +623,7 @@ module Date_time : sig
                  casing of second 'x' controls casing of following letters
 {mon:cX}         month in number form (e.g. 01) character 'c' before 'X' is used for padding
                  (leave out character for no padding)
-{mday:cX}        month day (e.g.  1) character 'c' before 'X' is used for padding
+{day:cX}        month day (e.g.  1) character 'c' before 'X' is used for padding
                  (leave out character for no padding)
 {wday:Xxx}       abbreviated weekday name (e.g. Sun), the casing of 'x' controls the casing
 {wday:Xx*}       full weekday name (e.g. Sunday), casing of first 'x' controls casing of first letter,
@@ -828,9 +828,9 @@ module Interval : sig
 
         Default format string:
       {v
-[{syear} {smon:Xxx} {smday:0X} {shour:0X}:{smin:0X}:{ssec:0X} \
+[{syear} {smon:Xxx} {sday:0X} {shour:0X}:{smin:0X}:{ssec:0X} \
 {stzoff-sign}{stzoff-hour:0X}:{stzoff-min:0X}:{stzoff-sec:0X}, {eyear} \
-{emon:Xxx} {emday:0X} {ehour:0X}:{emin:0X}:{esec:0X} \
+{emon:Xxx} {eday:0X} {ehour:0X}:{emin:0X}:{esec:0X} \
 {etzoff-sign}{etzoff-hour:0X}:{etzoff-min:0X}:{etzoff-sec:0X})
     v}
 

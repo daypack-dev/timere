@@ -1,10 +1,10 @@
 let default_date_time_format_string =
-  "{year} {mon:Xxx} {mday:0X} {wday:Xxx} \
+  "{year} {mon:Xxx} {day:0X} {wday:Xxx} \
    {hour:0X}:{min:0X}:{sec:0X}.{sec-frac:9}"
 
 let default_interval_format_string =
-  "[{syear} {smon:Xxx} {smday:0X} {swday:Xxx} \
-   {shour:0X}:{smin:0X}:{ssec:0X}.{ssec-frac:9}, {eyear} {emon:Xxx} {emday:0X} \
+  "[{syear} {smon:Xxx} {sday:0X} {swday:Xxx} \
+   {shour:0X}:{smin:0X}:{ssec:0X}.{ssec-frac:9}, {eyear} {emon:Xxx} {eday:0X} \
    {ewday:Xxx} {ehour:0X}:{emin:0X}:{esec:0X}.{esec-frac:9})"
 
 let display_timestamps ~display_using_tz s =
