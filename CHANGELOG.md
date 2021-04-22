@@ -25,6 +25,10 @@
 
 - Added `since` and `since_timestamp`
 
+- Pattern resolver overhaul
+
+- Resolver search space slicing fix
+
 ## Timere 0.2.2
 
 - Moved timestamp functions into `Timere.Timestamp` module
