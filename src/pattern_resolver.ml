@@ -614,36 +614,3 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
   |> Time.Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
   |> Time.Intervals.Slice.slice ~start:(Time.Date_time'.to_timestamp_single search_param.start)
     ~end_exc:(Span.succ @@ Time.Date_time'.to_timestamp_single search_param.end_inc)
-
-(* let matching_intervals_round_robin_non_decreasing
- *     (search_param : Search_param.t) (l : Pattern.t list) :
- *   ((int64 * int64) list Seq.t, error) result =
- *   let l = List.map (matching_intervals search_param) l in
- *   l
- *   |> Time.Intervals.Round_robin.collect_round_robin_non_decreasing
- *     ~skip_check:false
- *   |> OSeq.take_while (List.for_all CCOpt.is_some)
- *   |> Seq.map (List.map CCOpt.get)
- *   |> CCResult.ok
- * 
- * let matching_intervals_round_robin_non_decreasing_flat
- *     (search_param : Search_param.t) (l : Pattern.t list) :
- *   ((int64 * int64) Seq.t, error) result =
- *   matching_intervals_round_robin_non_decreasing search_param l
- *   |> CCResult.map (Seq.flat_map CCList.to_seq)
- * 
- * let next_match_date_time (search_param : Search_param.t) (t : Pattern.t)
- *   : Time.Date_time'.t option =
- *   let s = matching_date_times search_param t in
- *   match s () with Seq.Nil -> None | Seq.Cons (x, _) -> Some x *)
-
-(* let next_match_timestamp (search_param : Search_param.t) (t : Pattern.t)
- *   : int64 option =
- *   match next_match_date_time search_param t with
- *   | None -> None
- *   | Some x -> Some (Time.Date_time'.to_timestamp x) *)
-
-(* let next_match_interval (search_param : Pattern_search_param.t) (t : Pattern.t) :
- *   (int64 * int64) option =
- *   let s = matching_intervals search_param t in
- *   match s () with Seq.Nil -> None | Seq.Cons (x, _) -> Some x *)

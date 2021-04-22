@@ -182,9 +182,7 @@ let propagate_search_space_bottom_up default_tz (time : t) : t =
             get_search_space t |> List.map (fun (x, y) -> Span.(x, y + n))
           in
           Unary_op (space, op, t)
-          (* | _ ->
-           *   let t = aux tz t in
-           *   Unary_op (get_search_space t, op, t) *))
+          )
     | Inter_seq (_, s) ->
       let s = Seq.map (aux tz) s in
       let space =
