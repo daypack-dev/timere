@@ -752,6 +752,8 @@ val date_time : Date_time.t -> t
 
 val before : Date_time.t -> t
 
+val since : Date_time.t -> t
+
 val after : Date_time.t -> t
 
 val date_times : Date_time.t list -> t
@@ -767,6 +769,8 @@ exception Invalid_timestamp
 val timestamp : timestamp -> t
 
 val before_timestamp : timestamp -> t
+
+val since_timestamp : timestamp -> t
 
 val after_timestamp : timestamp -> t
 
