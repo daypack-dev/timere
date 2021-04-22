@@ -39,7 +39,11 @@ let display_intervals ~display_using_tz s =
 
 let debug_resolver () =
   let s = {|
-(unchunk (take_nth 5 (chunk_at_year_boundary (all))))
+    (shift (-10 0)
+                         (pattern (years 2002) (months Feb)
+                          (month_days 20) (weekdays)
+                          (hours 0 1) (minutes 0 1)
+                          (seconds 0 9)))
       |} in
   let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in
   (* let timere =
@@ -71,8 +75,8 @@ let debug_resolver () =
    *       @@ Time.Date_time'.make ~year:2000 ~month:`Jan ~day:1 ~hour:0 ~minute:0
    *         ~second:0 ~tz_offset_s:0 )
    * in *)
-  let tz = Time_zone.make_exn "Australia/Sydney" in
-  (* let tz = Time_zone.make_exn "UTC" in *)
+  (* let tz = Time_zone.make_exn "Australia/Sydney" in *)
+  let tz = Time_zone.make_exn "UTC" in
   (* let timere =
    *   let open Time in
    *   with_tz tz
