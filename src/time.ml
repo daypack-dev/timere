@@ -1047,7 +1047,10 @@ module Date_time' = struct
                   ns;
                   tz_info =
                     ( tz_of_date_time,
-                      Some (Duration.of_span (Span.make ~s:(CCInt64.of_int entry.offset) ())) );
+                      Some
+                        (Duration.of_span
+                           (Span.make ~s:(CCInt64.of_int entry.offset) ()))
+                    );
                 }))
 
   let of_timestamp_float ?tz_of_date_time (x : float) : t option =

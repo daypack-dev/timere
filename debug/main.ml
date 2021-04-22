@@ -38,13 +38,15 @@ let display_intervals ~display_using_tz s =
         flush stdout)
 
 let debug_resolver () =
-  let s = {|
+  let s =
+    {|
     (shift (-10 0)
                          (pattern (years 2002) (months Feb)
                           (month_days 20) (weekdays)
                           (hours 0 1) (minutes 0 1)
                           (seconds 0 9)))
-      |} in
+      |}
+  in
   let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in
   (* let timere =
    *   (fun max_height max_branching randomness ->

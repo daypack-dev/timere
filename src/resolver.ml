@@ -71,7 +71,8 @@ let timestamp_safe_sub a b =
     if a - Constants.timestamp_min >= b then a - b else Constants.timestamp_min
   else
     let b' = abs b in
-    if Constants.timestamp_max - a >= b' then a + b' else Constants.timestamp_max
+    if Constants.timestamp_max - a >= b' then a + b'
+    else Constants.timestamp_max
 
 let timestamp_safe_add a b =
   let open Span in
@@ -79,7 +80,8 @@ let timestamp_safe_add a b =
     if Constants.timestamp_max - a >= b then a + b else Constants.timestamp_max
   else
     let b' = abs b in
-    if a - Constants.timestamp_min >= b' then a - b' else Constants.timestamp_min
+    if a - Constants.timestamp_min >= b' then a - b'
+    else Constants.timestamp_min
 
 let calibrate_search_space_for_set (time : t) space : search_space =
   match time with
@@ -88,18 +90,14 @@ let calibrate_search_space_for_set (time : t) space : search_space =
       match op with
       | Shift n ->
         List.map
-          (fun (x, y) ->
-              (timestamp_safe_add x n, timestamp_safe_add y n)
-            )
+          (fun (x, y) -> (timestamp_safe_add x n, timestamp_safe_add y n))
           space
       | _ -> space)
   | Inter_seq _ | Union_seq _ -> space
   | Bounded_intervals { bound; _ } -> (
       match space with
       | [] -> []
-      | (x, y) :: rest ->
-        (timestamp_safe_sub x bound, y)
-        :: rest)
+      | (x, y) :: rest -> (timestamp_safe_sub x bound, y) :: rest)
   | Unchunk _ -> space
 
 let set_search_space space (time : t) : t =
@@ -181,8 +179,7 @@ let propagate_search_space_bottom_up default_tz (time : t) : t =
           let space =
             get_search_space t |> List.map (fun (x, y) -> Span.(x, y + n))
           in
-          Unary_op (space, op, t)
-          )
+          Unary_op (space, op, t))
     | Inter_seq (_, s) ->
       let s = Seq.map (aux tz) s in
       let space =
@@ -354,10 +351,7 @@ let dynamic_search_space_adjustment_trigger_size =
 let inter_minimum_slice_size = Duration.(make ~days:10 () |> to_span)
 
 let slice_search_space ~start (t : t) : t =
-  let current =
-    get_search_space t
-    |> CCList.to_seq
-  in
+  let current = get_search_space t |> CCList.to_seq in
   let restriction =
     Time.Intervals.Slice.slice ~skip_check:true ~start
       (CCList.to_seq default_search_space)
@@ -365,12 +359,8 @@ let slice_search_space ~start (t : t) : t =
     |> calibrate_search_space_for_set t
     |> CCList.to_seq
   in
-  let space =
-    Time.Intervals.Inter.inter current restriction
-    |> CCList.of_seq
-  in
-  set_search_space space t
-  |> propagate_search_space_top_down
+  let space = Time.Intervals.Inter.inter current restriction |> CCList.of_seq in
+  set_search_space space t |> propagate_search_space_top_down
 
 let slice_search_space_multi ~start (l : t list) : t list =
   List.map (slice_search_space ~start) l

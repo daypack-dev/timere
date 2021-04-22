@@ -59,7 +59,7 @@ let pp_date_time ?frac_s () formatter (dt : Time.Date_time'.t) =
       let tz_off =
         if Duration.(equal offset zero) then "Z"
         else
-          let sign = match offset.sign with | `Pos -> '+' | `Neg -> '-' in
+          let sign = match offset.sign with `Pos -> '+' | `Neg -> '-' in
           Printf.sprintf "%c%02d:%02d" sign offset.hours offset.minutes
       in
       let second =
