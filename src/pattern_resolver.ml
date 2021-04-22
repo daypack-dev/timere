@@ -206,10 +206,10 @@ module Matching_days = struct
     if Weekday_set.is_empty t.weekdays then OSeq.(day_start -- day_end_inc)
     else
       OSeq.(day_start -- day_end_inc)
-      |> Seq.filter (fun mday ->
+      |> Seq.filter (fun day ->
           match
             weekday_of_month_day ~year:cur_branch.year
-              ~month:cur_branch.month ~mday
+              ~month:cur_branch.month ~day
           with
           | Some wday -> Weekday_set.mem wday t.weekdays
           | None -> false)

@@ -105,9 +105,9 @@ module Weekday_set = struct
   let to_seq x = x |> to_list |> CCList.to_seq
 end
 
-let weekday_of_month_day ~(year : int) ~(month : month) ~(mday : int) :
+let weekday_of_month_day ~(year : int) ~(month : month) ~(day : int) :
   weekday option =
-  Ptime.(of_date (year, human_int_of_month month, mday))
+  Ptime.(of_date (year, human_int_of_month month, day))
   |> CCOpt.map Ptime.weekday
 
 let is_leap_year ~year =

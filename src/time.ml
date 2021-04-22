@@ -1172,7 +1172,7 @@ module Date_time' = struct
 
   let to_weekday (x : t) : weekday =
     CCOpt.get_exn
-    @@ weekday_of_month_day ~year:x.year ~month:x.month ~mday:x.day
+    @@ weekday_of_month_day ~year:x.year ~month:x.month ~day:x.day
 
   let equal (x : t) (y : t) : bool =
     x.year = y.year

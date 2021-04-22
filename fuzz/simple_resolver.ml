@@ -122,7 +122,7 @@ let aux_pattern_mem search_using_tz (pattern : Pattern.t) (timestamp : int64) :
   in
   let weekday =
     CCOpt.get_exn
-    @@ weekday_of_month_day ~year:dt.year ~month:dt.month ~mday:dt.day
+    @@ weekday_of_month_day ~year:dt.year ~month:dt.month ~day:dt.day
   in
   let year_is_fine =
     Int_set.is_empty pattern.years || Int_set.mem dt.year pattern.years
