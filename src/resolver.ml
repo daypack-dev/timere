@@ -143,7 +143,7 @@ let search_space_of_year tz year =
 
 let empty_search_space = []
 
-let propagate_search_space_bottom_up default_tz (time : t) : t =
+let overapproximate_search_space_bottom_up default_tz (time : t) : t =
   let open Time in
   let rec aux (tz : Time_zone.t) (time : t) : t =
     match time with
@@ -172,12 +172,17 @@ let propagate_search_space_bottom_up default_tz (time : t) : t =
           Unary_op (get_search_space t, op, t)
         | Shift n ->
           let space =
-            get_search_space t |> List.map (fun (x, y) -> Span.(x + n, y + n))
+            get_search_space t
+            |> List.map (fun (x, y) -> (timestamp_safe_add x n, timestamp_safe_add y n))
           in
           Unary_op (space, op, t)
         | Lengthen n ->
           let space =
-            get_search_space t |> List.map (fun (x, y) -> Span.(x, y + n))
+            get_search_space t
+            |> CCList.to_seq
+            |> Seq.map (fun (x, y) -> Span.(x, y + n))
+            |> Time.Intervals.normalize
+            |> CCList.of_seq
           in
           Unary_op (space, op, t))
     | Inter_seq (_, s) ->
@@ -238,13 +243,14 @@ let propagate_search_space_bottom_up default_tz (time : t) : t =
   in
   aux default_tz time
 
-let propagate_search_space_top_down (time : t) : t =
+let restrict_search_space_top_down (time : t) : t =
   let open Time in
   let restrict_search_space time (parent : search_space) (cur : search_space) =
-    Intervals.Inter.inter ~skip_check:true (CCList.to_seq parent)
-      (CCList.to_seq cur)
-    |> CCList.of_seq
+    parent
     |> calibrate_search_space_for_set time
+    |> CCList.to_seq
+    |> Intervals.Inter.inter ~skip_check:true (CCList.to_seq cur)
+    |> CCList.of_seq
   in
   let rec aux parent_search_space (time : t) : t =
     let stop_propagation = time in
@@ -281,8 +287,8 @@ let propagate_search_space_top_down (time : t) : t =
 
 let optimize_search_space default_tz_offset_s t =
   t
-  |> propagate_search_space_bottom_up default_tz_offset_s
-  |> propagate_search_space_top_down
+  |> overapproximate_search_space_bottom_up default_tz_offset_s
+  |> restrict_search_space_top_down
 
 type inc_or_exc =
   | Inc
@@ -356,11 +362,19 @@ let slice_search_space ~start (t : t) : t =
     Time.Intervals.Slice.slice ~skip_check:true ~start
       (CCList.to_seq default_search_space)
     |> CCList.of_seq
+    |> CCList.map (fun x ->
+        Fmt.pr "restriction before: %a\n%!" (Printers.pp_interval ()) x;
+        x
+      )
     |> calibrate_search_space_for_set t
+    |> CCList.map (fun x ->
+        Fmt.pr "restriction after: %a\n%!" (Printers.pp_interval ()) x;
+        x
+      )
     |> CCList.to_seq
   in
   let space = Time.Intervals.Inter.inter current restriction |> CCList.of_seq in
-  set_search_space space t |> propagate_search_space_top_down
+  set_search_space space t |> restrict_search_space_top_down
 
 let slice_search_space_multi ~start (l : t list) : t list =
   List.map (slice_search_space ~start) l
@@ -376,6 +390,9 @@ let normalize s =
 
 let aux_pattern search_using_tz space pat =
   let open Time in
+  CCList.iter (fun x ->
+      Fmt.pr "pattern search space: %a\n%!" (Printers.pp_interval ()) x;
+    ) space;
   let space = CCList.to_seq space in
   Time_zone.Raw.to_transition_seq search_using_tz
   |> Seq.flat_map (fun ((x, y), entry) ->
