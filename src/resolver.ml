@@ -173,7 +173,8 @@ let overapproximate_search_space_bottom_up default_tz (time : t) : t =
         | Shift n ->
           let space =
             get_search_space t
-            |> List.map (fun (x, y) -> (timestamp_safe_add x n, timestamp_safe_add y n))
+            |> List.map (fun (x, y) ->
+                (timestamp_safe_add x n, timestamp_safe_add y n))
           in
           Unary_op (space, op, t)
         | Lengthen n ->
@@ -553,9 +554,7 @@ and aux_inter search_using_tz timeres =
     List.map (Intervals.Slice.slice ~skip_check:true ~start) batches
   in
   let resolve ~start search_using_tz timeres =
-    timeres
-    |> List.map (aux search_using_tz)
-    |> slice_batches ~start
+    timeres |> List.map (aux search_using_tz) |> slice_batches ~start
   in
   let collect_batch (l : Interval'.t Seq.t list) : Interval'.t option list =
     List.map
@@ -578,18 +577,17 @@ and aux_inter search_using_tz timeres =
           |> List.hd
         in
         let rightmost_start = fst rightmost_interval in
-        let end_exc =
-          rightmost_start + inter_slice_size
-        in
+        let end_exc = rightmost_start + inter_slice_size in
         (* we shift the start of our scope to rightmost_start *)
-        let timeres = slice_search_space_multi ~start:rightmost_start timeres in
+        let timeres =
+          slice_search_space_multi ~start:rightmost_start timeres
+        in
         (* refresh the interval batches if the gap is too large *)
         let interval_batches =
           if
             rightmost_start - start
-               >= dynamic_search_space_adjustment_trigger_size
-          then
-            resolve ~start:rightmost_start search_using_tz timeres
+            >= dynamic_search_space_adjustment_trigger_size
+          then resolve ~start:rightmost_start search_using_tz timeres
           else slice_batches ~start:rightmost_start interval_batches
         in
         let intervals_up_to_end_exc =

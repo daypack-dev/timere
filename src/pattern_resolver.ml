@@ -389,14 +389,14 @@ module Matching_years = struct
       let range_map_start =
         (* if x = overall_search_start.year then overall_search_start
          * else *)
-          Time.Date_time'.set_to_first_month_day_hour_min_sec_ns
-            { overall_search_start with year = x }
+        Time.Date_time'.set_to_first_month_day_hour_min_sec_ns
+          { overall_search_start with year = x }
       in
       let range_map_end_inc =
         (* if y = overall_search_end_inc.year then overall_search_end_inc
          * else *)
-          Time.Date_time'.set_to_last_month_day_hour_min_sec_ns
-            { overall_search_end_inc with year = y }
+        Time.Date_time'.set_to_last_month_day_hour_min_sec_ns
+          { overall_search_end_inc with year = y }
       in
       (range_map_start, range_map_end_inc)
     in
@@ -453,8 +453,12 @@ type error = Pattern.error
 
 let matching_date_time_ranges (search_param : Search_param.t) (t : Pattern.t) :
   Time.Date_time'.t Time.Range.range Seq.t =
-  let overall_search_start = Time.Date_time'.set_to_first_month_day_hour_min_sec_ns search_param.start in
-  let overall_search_end_inc = Time.Date_time'.set_to_last_month_day_hour_min_sec_ns search_param.end_inc in
+  let overall_search_start =
+    Time.Date_time'.set_to_first_month_day_hour_min_sec_ns search_param.start
+  in
+  let overall_search_end_inc =
+    Time.Date_time'.set_to_last_month_day_hour_min_sec_ns search_param.end_inc
+  in
   match
     ( Int_set.is_empty t.years,
       Month_set.is_empty t.months,
