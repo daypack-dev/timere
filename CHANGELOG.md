@@ -27,7 +27,13 @@
 
 - Pattern resolver overhaul
 
-- Resolver search space slicing fix
+- Resolver search space slicing fix in
+
+  - `slice_search_space`
+
+  - `overapproximate_search_space_bottom_up`
+  
+  - `restrict_search_space_top_down`
 
 - Changed `{mday:...}` to `{day:...}` in format string system
 
