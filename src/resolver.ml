@@ -348,7 +348,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval'.t Seq.t) =
 let dynamic_search_space_adjustment_trigger_size =
   Duration.(make ~days:30 () |> to_span)
 
-let inter_minimum_slice_size = Duration.(make ~days:10 () |> to_span)
+let inter_slice_size = Duration.(make ~days:10 () |> to_span)
 
 let slice_search_space ~start (t : t) : t =
   let current = get_search_space t |> CCList.to_seq in
@@ -543,12 +543,13 @@ and aux_union search_using_tz timeres =
 
 and aux_inter search_using_tz timeres =
   let open Time in
+  let slice_batches ~start batches =
+    List.map (Intervals.Slice.slice ~skip_check:true ~start) batches
+  in
   let resolve ~start search_using_tz timeres =
-    List.map
-      (fun timere ->
-         aux search_using_tz timere
-         |> Intervals.Slice.slice ~skip_check:true ~start)
-      timeres
+    timeres
+    |> List.map (aux search_using_tz)
+    |> slice_batches ~start
   in
   let collect_batch (l : Interval'.t Seq.t list) : Interval'.t option list =
     List.map
@@ -560,34 +561,30 @@ and aux_inter search_using_tz timeres =
     let batch_for_sampling = collect_batch interval_batches in
     if List.exists CCOpt.is_none batch_for_sampling then Seq.empty
     else
-      let batch_for_sampling = CCList.filter_map CCFun.id batch_for_sampling in
+      let batch_for_sampling = CCList.map CCOpt.get_exn batch_for_sampling in
       match batch_for_sampling with
       | [] -> Seq.empty
       | _ ->
         let open Span in
-        let starts =
-          batch_for_sampling |> List.map fst |> List.sort_uniq compare
+        let rightmost_interval =
+          batch_for_sampling
+          |> List.sort_uniq (fun x y -> Time.Interval'.compare y x)
+          |> List.hd
         in
-        let end_excs =
-          batch_for_sampling |> List.map snd |> List.sort_uniq compare
+        let rightmost_start = fst rightmost_interval in
+        let end_exc =
+          rightmost_start + inter_slice_size
         in
-        let min_end_exc = List.hd end_excs in
-        let max_start =
-          CCOpt.get_exn @@ Misc_utils.last_element_of_list starts
-        in
-        let timeres = slice_search_space_multi ~start:max_start timeres in
+        (* we shift the start of our scope to rightmost_start *)
+        let timeres = slice_search_space_multi ~start:rightmost_start timeres in
+        (* refresh the interval batches if the gap is too large *)
         let interval_batches =
           if
-            min_end_exc <= max_start
-            && max_start - min_end_exc
+            rightmost_start - start
                >= dynamic_search_space_adjustment_trigger_size
-          then resolve ~start search_using_tz timeres
-          else interval_batches
-        in
-        let end_exc =
-          if min_end_exc - start <= inter_minimum_slice_size then
-            start + inter_minimum_slice_size
-          else min_end_exc
+          then
+            resolve ~start:rightmost_start search_using_tz timeres
+          else slice_batches ~start:rightmost_start interval_batches
         in
         let intervals_up_to_end_exc =
           interval_batches
