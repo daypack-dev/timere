@@ -44,11 +44,11 @@ module Matching_seconds = struct
      *   (range_map_start, range_map_end_inc)
      * in *)
     let cur_branch_search_start =
-      Time.Date_time'.set_to_first_ns cur_branch
+      Time.Date_time'.set_to_first_sec_ns cur_branch
       (* get_cur_branch_search_start ~overall_search_start cur_branch *)
     in
     let cur_branch_search_end_inc =
-      Time.Date_time'.set_to_last_ns cur_branch
+      Time.Date_time'.set_to_last_sec_ns cur_branch
       (* get_cur_branch_search_end_inc ~overall_search_end_inc cur_branch *)
     in
     let range_map_inc ~(cur_branch : Time.Date_time'.t) (x, y) =
@@ -387,14 +387,14 @@ module Matching_years = struct
     let range_map_inc ~(overall_search_start : Time.Date_time'.t)
         ~(overall_search_end_inc : Time.Date_time'.t) (x, y) =
       let range_map_start =
-        if x = overall_search_start.year then overall_search_start
-        else
+        (* if x = overall_search_start.year then overall_search_start
+         * else *)
           Time.Date_time'.set_to_first_month_day_hour_min_sec_ns
             { overall_search_start with year = x }
       in
       let range_map_end_inc =
-        if y = overall_search_end_inc.year then overall_search_end_inc
-        else
+        (* if y = overall_search_end_inc.year then overall_search_end_inc
+         * else *)
           Time.Date_time'.set_to_last_month_day_hour_min_sec_ns
             { overall_search_end_inc with year = y }
       in
@@ -453,8 +453,8 @@ type error = Pattern.error
 
 let matching_date_time_ranges (search_param : Search_param.t) (t : Pattern.t) :
   Time.Date_time'.t Time.Range.range Seq.t =
-  let overall_search_start = search_param.start in
-  let overall_search_end_inc = search_param.end_inc in
+  let overall_search_start = Time.Date_time'.set_to_first_month_day_hour_min_sec_ns search_param.start in
+  let overall_search_end_inc = Time.Date_time'.set_to_last_month_day_hour_min_sec_ns search_param.end_inc in
   match
     ( Int_set.is_empty t.years,
       Month_set.is_empty t.months,
