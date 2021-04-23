@@ -40,11 +40,11 @@ let display_intervals ~display_using_tz s =
 let debug_resolver () =
   let s =
     {|
-    (shift (-10 0)
+    (shift (-1 0)
                          (pattern (years 2002) (months Feb)
                           (month_days 20) (weekdays)
-                          (hours 0 1) (minutes 0 1)
-                          (seconds 0 9)))
+                          (hours 0) (minutes 0)
+                          (seconds 3)))
       |}
   in
   let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in
