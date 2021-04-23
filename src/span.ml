@@ -61,7 +61,7 @@ let gt x y = lt y x
 let ge x y = le y x
 
 let compare (x : t) (y : t) : int =
-  if lt x y then -1 else if x = y then 0 else 1
+  if lt x y then -1 else if equal x y then 0 else 1
 
 let to_float ({ s; ns } : t) : float =
   Int64.to_float s +. (float_of_int ns /. ns_count_in_s_float)
