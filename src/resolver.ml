@@ -362,15 +362,7 @@ let slice_search_space ~start (t : t) : t =
     Time.Intervals.Slice.slice ~skip_check:true ~start
       (CCList.to_seq default_search_space)
     |> CCList.of_seq
-    |> CCList.map (fun x ->
-        Fmt.pr "restriction before: %a\n%!" (Printers.pp_interval ()) x;
-        x
-      )
     |> calibrate_search_space_for_set t
-    |> CCList.map (fun x ->
-        Fmt.pr "restriction after: %a\n%!" (Printers.pp_interval ()) x;
-        x
-      )
     |> CCList.to_seq
   in
   let space = Time.Intervals.Inter.inter current restriction |> CCList.of_seq in
@@ -390,9 +382,6 @@ let normalize s =
 
 let aux_pattern search_using_tz space pat =
   let open Time in
-  CCList.iter (fun x ->
-      Fmt.pr "pattern search space: %a\n%!" (Printers.pp_interval ()) x;
-    ) space;
   let space = CCList.to_seq space in
   Time_zone.Raw.to_transition_seq search_using_tz
   |> Seq.flat_map (fun ((x, y), entry) ->
