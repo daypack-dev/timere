@@ -91,13 +91,24 @@ let calibrate_search_space_for_set (time : t) space : search_space =
       match op with
       | Shift n ->
         List.map
-          (fun (x, y) -> (timestamp_safe_sub x n, timestamp_safe_sub y n))
+          (fun (x, y) ->
+             if n >= zero then
+               ( timestamp_safe_sub x n,
+                 if y >= Constants.timestamp_max then y
+                 else timestamp_safe_sub y n )
+             else
+               ( (if x <= Constants.timestamp_min then x
+                  else timestamp_safe_sub x n),
+                 timestamp_safe_sub y n ))
           space
       | Lengthen n ->
         space
         |> CCList.to_seq
         |> Seq.map (fun (x, y) ->
-            let y = timestamp_safe_sub y n in
+            let y =
+              if y >= Constants.timestamp_max then y
+              else timestamp_safe_sub y n
+            in
             (x, max x y))
         |> Time.Intervals.normalize
         |> CCList.of_seq
