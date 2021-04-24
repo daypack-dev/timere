@@ -190,7 +190,7 @@ let overapproximate_search_space_bottom_up default_tz (time : t) : t =
           let space =
             get_search_space t
             |> CCList.to_seq
-            |> Seq.map (fun (x, y) -> Span.(x, timestamp_safe_add y n))
+            |> Seq.map (fun (x, y) -> (x, timestamp_safe_add y n))
             |> Time.Intervals.normalize
             |> CCList.of_seq
           in
