@@ -1423,9 +1423,6 @@ let t_of_tokens (tokens : token list) : (Timere.t, string) CCResult.t =
     match rules with
     | [] ->
       let pos, _, _ = List.hd tokens in
-      (* List.iter
-       *   (fun token -> print_endline (string_of_token token))
-       *   tokens; *)
       Error
         (Printf.sprintf "%s: Unrecognized token pattern" (string_of_pos pos))
     | rule :: rest -> (
