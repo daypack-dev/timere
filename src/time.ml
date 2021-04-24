@@ -1072,8 +1072,8 @@ module Date_time' = struct
     if ns >= Span.ns_count_in_s then invalid_arg "ns is >= 10^9";
     ns
 
-  let make ?(tz = Time_zone_utils.get_local_tz_for_arg ()) ?(ns = 0) ?(frac = 0.)
-      ~year ~month ~day ~hour ~minute ~second () =
+  let make ?(tz = Time_zone_utils.get_local_tz_for_arg ()) ?(ns = 0)
+      ?(frac = 0.) ~year ~month ~day ~hour ~minute ~second () =
     let ns = check_args_and_normalize_ns ~day ~hour ~minute ~second ~ns ~frac in
     let is_leap_second = second = 60 in
     let second = if second = 60 then 59 else second in
