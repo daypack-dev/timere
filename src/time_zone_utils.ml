@@ -3,5 +3,5 @@ let get_local_tz_for_arg () =
   match tz with
   | Some tz -> tz
   | None -> invalid_arg
-              "Could not determine the local timezone. \
+              "get_local_tz_for_arg: Could not determine the local timezone. \
                Please specify ~tz explicitly or use an appropriate timere.tzlocal.* module"
