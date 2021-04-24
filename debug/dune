@@ -119,6 +119,12 @@
 )
 
 (rule
+ (targets time_zone_utils.ml)
+ (deps    ../src/time_zone_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
  (targets duration.ml)
  (deps    ../src/duration.ml)
  (action  (copy %{deps} %{targets}))
