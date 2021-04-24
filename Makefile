@@ -34,6 +34,9 @@ debug : lib
 debug-parse : lib
 	dune exec ./debug-parse/main.exe
 
+.PHONY: corpus
+corpus: corpus-timeres corpus-date-times corpus-hmss corpus-durations
+
 .PHONY: corpus-timeres
 corpus-timeres:
 	dune exec ./corpus/timeres.exe > corpus-outputs/timeres.txt
