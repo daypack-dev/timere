@@ -1028,7 +1028,7 @@ module Date_time' = struct
       invalid_arg
         "to_timestamp_precise_single: date time maps to two timestamps"
 
-  let of_timestamp ?(tz_of_date_time = CCOpt.get_exn @@ Time_zone.local ())
+  let of_timestamp ?(tz_of_date_time = Time_zone_utils.get_local_tz_for_arg ())
       ({ s; ns } as x : timestamp) : t option =
     if not Span.(timestamp_min <= x && x <= timestamp_max) then None
     else
@@ -1072,7 +1072,7 @@ module Date_time' = struct
     if ns >= Span.ns_count_in_s then invalid_arg "ns is >= 10^9";
     ns
 
-  let make ?(tz = CCOpt.get_exn @@ Time_zone.local ()) ?(ns = 0) ?(frac = 0.)
+  let make ?(tz = Time_zone_utils.get_local_tz_for_arg ()) ?(ns = 0) ?(frac = 0.)
       ~year ~month ~day ~hour ~minute ~second () =
     let ns = check_args_and_normalize_ns ~day ~hour ~minute ~second ~ns ~frac in
     let is_leap_second = second = 60 in
@@ -1149,7 +1149,7 @@ module Date_time' = struct
   let of_points
       ?(default_tz_info =
         CCOpt.get_exn
-        @@ make_tz_info ~tz:(CCOpt.get_exn @@ Time_zone.local ()) ())
+        @@ make_tz_info ~tz:(Time_zone_utils.get_local_tz_for_arg ()) ())
       ((pick, tz_info) : Points.t) : t option =
     match pick with
     | Points.YMDHMS { year; month; month_day; hour; minute; second } -> (
