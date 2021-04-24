@@ -197,4 +197,6 @@ module Utils = struct
   let second_of_day_of_hms = second_of_day_of_hms
 
   let hms_of_second_of_day = hms_of_second_of_day
+
+  let get_local_tz_for_arg = Time_zone_utils.get_local_tz_for_arg
 end

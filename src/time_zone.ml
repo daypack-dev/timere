@@ -445,3 +445,8 @@ let local () : t option =
     List.fold_left
       (fun tz name -> match tz with Some tz -> Some tz | None -> make name)
       None l
+
+let local_exn () : t =
+  match local () with
+  | None -> invalid_arg "local_exn: Could not determine the local timezone"
+  | Some x -> x

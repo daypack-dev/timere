@@ -21,6 +21,8 @@ val utc : t
 
 val local : unit -> t option
 
+val local_exn : unit -> t
+
 val make : string -> t option
 
 val make_exn : string -> t

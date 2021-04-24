@@ -359,6 +359,9 @@ module Time_zone : sig
 
   val local : unit -> t option
 
+  val local_exn : unit -> t
+  (** @raise Invalid_argument when [local] returns [None] *)
+
   val equal : t -> t -> bool
 
   val available_time_zones : string list
@@ -1123,4 +1126,6 @@ module Utils : sig
   val second_of_day_of_hms : hms -> int
 
   val hms_of_second_of_day : int -> hms
+
+  val get_local_tz_for_arg : unit -> Time_zone.t
 end
