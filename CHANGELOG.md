@@ -37,6 +37,8 @@
 
 - Changed `{mday:...}` to `{day:...}` in format string system
 
+- Better error messages when local time zone cannot be determined ([PR #23](https://github.com/daypack-dev/timere/pull/23))
+
 ## Timere 0.2.2
 
 - Moved timestamp functions into `Timere.Timestamp` module
