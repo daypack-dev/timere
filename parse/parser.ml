@@ -1504,7 +1504,14 @@ let hms_t_of_ast (ast : ast) : (Timere.hms, string) CCResult.t =
   | Tokens [ (_, _, Hms hms) ] -> Ok hms
   | _ -> Error "Unrecognized pattern"
 
-let parse_date_time ?(tz = CCOpt.get_exn @@ Timere.Time_zone.local ()) s =
+let get_local_tz () =
+  let tz = Timere.Time_zone.local () in
+  match tz with
+  | Some tz -> tz
+  | None -> raise (Invalid_argument "Could not determine the local timezone. \
+     Please specify ~tz explicitly or use an appropriate timere.tzlocal.* module")
+
+let parse_date_time ?(tz = get_local_tz ()) s =
   match parse_into_ast s with
   | Error msg -> Error msg
   | Ok ast -> (
