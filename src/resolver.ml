@@ -84,6 +84,7 @@ let timestamp_safe_add a b =
     else Constants.timestamp_min
 
 let calibrate_search_space_for_set (time : t) space : search_space =
+  let open Span in
   match time with
   | All | Empty | Intervals _ | Pattern _ -> space
   | Unary_op (_, op, _) -> (
@@ -92,6 +93,14 @@ let calibrate_search_space_for_set (time : t) space : search_space =
         List.map
           (fun (x, y) -> (timestamp_safe_sub x n, timestamp_safe_sub y n))
           space
+      | Lengthen n ->
+        space
+        |> CCList.to_seq
+        |> Seq.map (fun (x, y) ->
+            let y = timestamp_safe_sub y n in
+            (x, max x y))
+        |> Time.Intervals.normalize
+        |> CCList.of_seq
       | _ -> space)
   | Inter_seq _ | Union_seq _ -> space
   | Bounded_intervals { bound; _ } -> (
@@ -181,7 +190,7 @@ let overapproximate_search_space_bottom_up default_tz (time : t) : t =
           let space =
             get_search_space t
             |> CCList.to_seq
-            |> Seq.map (fun (x, y) -> Span.(x, y + n))
+            |> Seq.map (fun (x, y) -> Span.(x, timestamp_safe_add y n))
             |> Time.Intervals.normalize
             |> CCList.of_seq
           in
