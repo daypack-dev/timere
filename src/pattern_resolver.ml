@@ -303,22 +303,6 @@ module Matching_months = struct
 
   let matching_month_ranges (t : Pattern.t) (cur_branch : Time.Date_time'.t) :
     Time.Date_time'.t Time.Range.range Seq.t =
-    (* let range_map_inc ~(cur_branch_start : Time.Date_time'.t)
-     *     ~(cur_branch_search_end_inc : Time.Date_time'.t) (x, y) =
-     *   let range_map_start =
-     *     if x = cur_branch_search_start.month then cur_branch_search_start
-     *     else
-     *       Time.Date_time'.set_to_first_day_hour_min_sec_ns
-     *         { cur_branch_search_start with month = x }
-     *   in
-     *   let range_map_end_inc =
-     *     if y = cur_branch_search_end_inc.month then cur_branch_search_end_inc
-     *     else
-     *       Time.Date_time'.set_to_last_day_hour_min_sec_ns
-     *         { cur_branch_search_end_inc with month = y }
-     *   in
-     *   (range_map_start, range_map_end_inc)
-     * in *)
     let cur_branch_search_start = get_cur_branch_search_start cur_branch in
     let cur_branch_search_end_inc = get_cur_branch_search_end_inc cur_branch in
     let range_map_inc ~(cur_branch : Time.Date_time'.t) (x, y) =
@@ -398,40 +382,7 @@ module Matching_years = struct
            ~f_exc:failwith_unexpected_case)
 end
 
-(* let date_time_range_seq_of_timestamps ~search_using_tz (s : Timestamp.t Seq.t) :
- *   Time.Date_time'.t Time.Range.range Seq.t =
- *   let f (x, y) =
- *     ( Time.Date_time'.of_timestamp ~tz_of_date_time:search_using_tz x,
- *       Time.Date_time'.of_timestamp ~tz_of_date_time:search_using_tz y )
- *   in
- *   s
- *   |> Seq.map (fun x -> `Range_inc (x, x))
- *   |> Seq.map (Time.Range.map ~f_inc:f ~f_exc:f)
- *   |> Seq.filter_map Time.Range_utils.option_range_get *)
-
 type error = Pattern.error
-
-(* let matching_date_times (search_param : Search_param.t) (pat : Pattern.t) :
- *   Time.Date_time'.t Seq.t =
- *   let overall_search_start = search_param.start in
- *   let overall_search_end_inc = search_param.end_inc in
- *   Matching_years.matching_years ~overall_search_start ~overall_search_end_inc
- *     pat
- *   |> Seq.flat_map
- *     (Matching_months.matching_months pat ~overall_search_start
- *        ~overall_search_end_inc)
- *   |> Seq.flat_map
- *     (Matching_days.matching_days pat ~overall_search_start
- *        ~overall_search_end_inc)
- *   |> Seq.flat_map
- *     (Matching_hours.matching_hours pat ~overall_search_start
- *        ~overall_search_end_inc)
- *   |> Seq.flat_map
- *     (Matching_minutes.matching_minutes pat ~overall_search_start
- *        ~overall_search_end_inc)
- *   |> Seq.flat_map
- *     (Matching_seconds.matching_seconds pat ~overall_search_start
- *        ~overall_search_end_inc) *)
 
 let matching_date_time_ranges (search_param : Search_param.t) (t : Pattern.t) :
   Time.Date_time'.t Time.Range.range Seq.t =
