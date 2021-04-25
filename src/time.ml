@@ -981,15 +981,10 @@ module Date_time' = struct
         | tz, None -> (
             match Time_zone.lookup_timestamp_local tz timestamp_local.s with
             | `None -> `None
-            | `Single e ->
-              `Single (timestamp_local - make_small ~s:e.offset ())
+            | `Single e -> `Single (timestamp_local - make_small ~s:e.offset ())
             | `Ambiguous (e1, e2) ->
-              let x1 =
-                timestamp_local - make_small ~s:e1.offset ()
-              in
-              let x2 =
-                timestamp_local - make_small ~s:e2.offset ()
-              in
+              let x1 = timestamp_local - make_small ~s:e1.offset () in
+              let x2 = timestamp_local - make_small ~s:e2.offset () in
               `Ambiguous (min x1 x2, max x1 x2)))
 
   type 'a local_result =
@@ -1049,8 +1044,7 @@ module Date_time' = struct
                     ( tz_of_date_time,
                       Some
                         (Duration.of_span
-                           (Span.make_small ~s:entry.offset ()))
-                    );
+                           (Span.make_small ~s:entry.offset ())) );
                 }))
 
   let of_timestamp_float ?tz_of_date_time (x : float) : t option =
