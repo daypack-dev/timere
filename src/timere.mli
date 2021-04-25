@@ -160,8 +160,8 @@ module Span : sig
     ns : int;
   }
   (** Signed/directional span of time expressed as a tuple of [(s, ns)]
-      - [s] carries the sign of the span
-      - [ns] carries the unsigned offset
+      - [s] is the signed second of the span
+      - [ns] is the unsigned nanosecond offset
 
       The actual span represented is defined as [s * 10^9 + ns] in nanosecond, regardless of the sign of [s]
 
