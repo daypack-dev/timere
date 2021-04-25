@@ -448,8 +448,6 @@ let rec aux search_using_tz time =
            | Not ->
              Intervals.relative_complement ~skip_check:false ~not_mem_of:s
                (CCList.to_seq space)
-           (* | Drop_points n -> do_drop_points (Int64.of_int n) s
-            * | Take_points n -> do_take_points (Int64.of_int n) s *)
            | Shift n ->
              Seq.map (fun (start, end_exc) -> Span.(start + n, end_exc + n)) s
            | Lengthen n ->
