@@ -75,22 +75,6 @@ module Matching_minutes = struct
 
   let matching_minute_ranges (t : Pattern.t) (cur_branch : Time.Date_time'.t) :
     Time.Date_time'.t Time.Range.range Seq.t =
-    (* let range_map_inc ~(cur_branch_search_start : Time.Date_time'.t)
-     *     ~(cur_branch_search_end_inc : Time.Date_time'.t) (x, y) =
-     *   let range_map_start =
-     *     if x = cur_branch_search_start.minute then cur_branch_search_start
-     *     else
-     *       Time.Date_time'.set_to_first_sec_ns
-     *         { cur_branch_search_start with minute = x }
-     *   in
-     *   let range_map_end_inc =
-     *     if y = cur_branch_search_end_inc.minute then cur_branch_search_end_inc
-     *     else
-     *       Time.Date_time'.set_to_last_sec_ns
-     *         { cur_branch_search_end_inc with minute = y }
-     *   in
-     *   (range_map_start, range_map_end_inc)
-     * in *)
     let cur_branch_search_start = get_cur_branch_search_start cur_branch in
     let cur_branch_search_end_inc = get_cur_branch_search_end_inc cur_branch in
     let range_map_inc ~(cur_branch : Time.Date_time'.t) (x, y) =
@@ -134,22 +118,6 @@ module Matching_hours = struct
 
   let matching_hour_ranges (t : Pattern.t) (cur_branch : Time.Date_time'.t) :
     Time.Date_time'.t Time.Range.range Seq.t =
-    (* let range_map_inc ~(cur_branch_search_start : Time.Date_time'.t)
-     *     ~(cur_branch_search_end_inc : Time.Date_time'.t) (x, y) =
-     *   let range_map_start =
-     *     if x = cur_branch_search_start.hour then cur_branch_search_start
-     *     else
-     *       Time.Date_time'.set_to_first_min_sec_ns
-     *         { cur_branch_search_start with hour = x }
-     *   in
-     *   let range_map_end_inc =
-     *     if y = cur_branch_search_end_inc.hour then cur_branch_search_end_inc
-     *     else
-     *       Time.Date_time'.set_to_last_min_sec_ns
-     *         { cur_branch_search_end_inc with hour = y }
-     *   in
-     *   (range_map_start, range_map_end_inc)
-     * in *)
     let cur_branch_search_start = get_cur_branch_search_start cur_branch in
     let cur_branch_search_end_inc = get_cur_branch_search_end_inc cur_branch in
     let range_map_inc ~(cur_branch : Time.Date_time'.t) (x, y) =
@@ -228,22 +196,6 @@ module Matching_days = struct
 
   let matching_day_ranges (t : Pattern.t) (cur_branch : Time.Date_time'.t) :
     Time.Date_time'.t Time.Range.range Seq.t =
-    (* let range_map_inc ~(cur_branch_start : Time.Date_time'.t)
-     *     ~(cur_branch_search_end_inc : Time.Date_time'.t) (x, y) =
-     *   let range_map_start =
-     *     if x = cur_branch_search_start.day then cur_branch_search_start
-     *     else
-     *       Time.Date_time'.set_to_first_hour_min_sec_ns
-     *         { cur_branch_search_start with day = x }
-     *   in
-     *   let range_map_end_inc =
-     *     if y = cur_branch_search_end_inc.day then cur_branch_search_end_inc
-     *     else
-     *       Time.Date_time'.set_to_last_hour_min_sec_ns
-     *         { cur_branch_search_end_inc with day = y }
-     *   in
-     *   (range_map_start, range_map_end_inc)
-     * in *)
     let cur_branch_search_start = get_cur_branch_search_start cur_branch in
     let cur_branch_search_end_inc = get_cur_branch_search_end_inc cur_branch in
     let range_map_inc ~(cur_branch : Time.Date_time'.t) (x, y) =
