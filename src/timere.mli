@@ -165,7 +165,7 @@ module Span : sig
 
       The actual span represented is defined as [s * 10^9 + ns] in nanosecond, regardless of the sign of [s]
 
-      Order is defined using lexicographical order, i.e.
+      Order is defined using lexicographic order, i.e.
       [lt x y iff. x.s < y.s || (x.s = y.s && x.ns < y.ns)]
   *)
 
