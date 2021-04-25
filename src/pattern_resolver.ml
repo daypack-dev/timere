@@ -26,23 +26,6 @@ let failwith_unexpected_case (_ : 'a) = failwith "Unexpected case"
 module Matching_seconds = struct
   let matching_second_ranges (t : Pattern.t) (cur_branch : Time.Date_time'.t) :
     Time.Date_time'.t Time.Range.range Seq.t =
-    (* let range_map_inc ~(cur_branch_search_start : Time.Date_time'.t)
-     *     ~(cur_branch_search_end_inc : Time.Date_time'.t) (x, y) =
-     *   let range_map_start =
-     *     if x = cur_branch_search_start.second then cur_branch_search_start
-     *     else { cur_branch_search_start with second = x; ns = 0 }
-     *   in
-     *   let range_map_end_inc =
-     *     if y = cur_branch_search_end_inc.second then cur_branch_search_end_inc
-     *     else
-     *       {
-     *         cur_branch_search_end_inc with
-     *         second = y;
-     *         ns = Span.ns_count_in_s - 1;
-     *       }
-     *   in
-     *   (range_map_start, range_map_end_inc)
-     * in *)
     let cur_branch_search_start =
       Time.Date_time'.set_to_first_sec_ns cur_branch
       (* get_cur_branch_search_start ~overall_search_start cur_branch *)
