@@ -8,6 +8,8 @@
 
 - Minor refactoring on use of pattern resolver
 
+- Added `Timere.Span.make_small`
+
 ## Timere 0.3.0
 
 - Added support for parsing "24:00" and "24:00:00" in `Timere.Date_time.of_iso8601`

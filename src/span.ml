@@ -25,6 +25,9 @@ let normalize { s; ns } =
 
 let make ?(s = 0L) ?(ns = 0) () = normalize { s; ns }
 
+let make_small ?(s = 0) ?ns () =
+  make ~s:(Int64.of_int s) ?ns ()
+
 let add { s = s_x; ns = ns_x } { s = s_y; ns = ns_y } : t =
   let s = Int64.add s_x s_y in
   let ns = ns_x + ns_y in

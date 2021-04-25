@@ -11,6 +11,8 @@ val zero : t
 
 val make : ?s:int64 -> ?ns:int -> unit -> t
 
+val make_small : ?s:int -> ?ns:int -> unit -> t
+
 val add : t -> t -> t
 
 val sub : t -> t -> t

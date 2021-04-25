@@ -185,6 +185,9 @@ module Span : sig
       [make ~s:(-1L) ~ns:(-500)]
   *)
 
+  val make_small : ?s:int -> ?ns:int -> unit -> t
+  (** Wrapper around [make] *)
+
   val add : t -> t -> t
 
   val sub : t -> t -> t
