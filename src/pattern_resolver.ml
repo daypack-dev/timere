@@ -28,11 +28,9 @@ module Matching_seconds = struct
     Time.Date_time'.t Time.Range.range Seq.t =
     let cur_branch_search_start =
       Time.Date_time'.set_to_first_sec_ns cur_branch
-      (* get_cur_branch_search_start ~overall_search_start cur_branch *)
     in
     let cur_branch_search_end_inc =
       Time.Date_time'.set_to_last_sec_ns cur_branch
-      (* get_cur_branch_search_end_inc ~overall_search_end_inc cur_branch *)
     in
     let range_map_inc ~(cur_branch : Time.Date_time'.t) (x, y) =
       ( Time.Date_time'.set_to_first_ns { cur_branch with second = x },
