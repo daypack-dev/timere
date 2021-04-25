@@ -842,7 +842,7 @@ let second_of_day_of_hms x =
 
 let hms_of_second_of_day s =
   let ({ hours; minutes; seconds; _ } : Duration.t) =
-    Duration.of_span (Span.make ~s:(Int64.of_int s) ())
+    Duration.of_span (Span.make_small ~s ())
   in
   make_hms_exn ~hour:hours ~minute:minutes ~second:seconds
 
@@ -982,13 +982,13 @@ module Date_time' = struct
             match Time_zone.lookup_timestamp_local tz timestamp_local.s with
             | `None -> `None
             | `Single e ->
-              `Single (timestamp_local - make ~s:(Int64.of_int e.offset) ())
+              `Single (timestamp_local - make_small ~s:e.offset ())
             | `Ambiguous (e1, e2) ->
               let x1 =
-                timestamp_local - make ~s:(Int64.of_int e1.offset) ()
+                timestamp_local - make_small ~s:e1.offset ()
               in
               let x2 =
-                timestamp_local - make ~s:(Int64.of_int e2.offset) ()
+                timestamp_local - make_small ~s:e2.offset ()
               in
               `Ambiguous (min x1 x2, max x1 x2)))
 
@@ -1049,7 +1049,7 @@ module Date_time' = struct
                     ( tz_of_date_time,
                       Some
                         (Duration.of_span
-                           (Span.make ~s:(CCInt64.of_int entry.offset) ()))
+                           (Span.make_small ~s:entry.offset ()))
                     );
                 }))
 

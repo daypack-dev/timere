@@ -3,7 +3,7 @@ open Fuzz_utils
 let () =
   Crowbar.add_test ~name:"bounded_intervals_is_sound"
     [ time_zone; Crowbar.range 100_000; points; points ] (fun tz bound p1 p2 ->
-        let bound = Span.make ~s:(Int64.of_int bound) () in
+        let bound = Span.make_small ~s:bound () in
         let s1 = Resolver.aux_points tz Resolver.default_search_space p1 in
         let s2 = Resolver.aux_points tz Resolver.default_search_space p2 in
         let s =

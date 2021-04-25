@@ -88,7 +88,7 @@ let name t =
   match t.typ with
   | Backed name -> name
   | Offset_only s ->
-    let dur = Duration.of_span Span.(make ~s:(Int64.of_int s) ()) in
+    let dur = Duration.of_span Span.(make_small ~s ()) in
     Printf.sprintf "UTC%c%02d:%02d"
       (match dur.sign with `Pos -> '+' | `Neg -> '-')
       dur.hours dur.minutes
@@ -96,7 +96,7 @@ let name t =
 let to_fixed_offset t =
   match t.typ with
   | Backed _ -> None
-  | Offset_only x -> Some (Duration.of_span (Span.make ~s:(Int64.of_int x) ()))
+  | Offset_only s -> Some (Duration.of_span (Span.make_small ~s ()))
 
 let equal t1 t2 =
   (match (t1.typ, t2.typ) with
