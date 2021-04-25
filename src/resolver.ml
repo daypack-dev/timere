@@ -411,7 +411,7 @@ let aux_pattern search_using_tz space pat =
       let space = Intervals.Inter.inter (Seq.return (x, y)) space in
       let params =
         Seq.map
-          (Pattern_resolver.Search_param.make ~search_using_tz
+          (Pattern_resolver.Search_param.make
              ~search_using_tz_offset_s:Time_zone.(entry.offset))
           space
       in

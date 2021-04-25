@@ -7,17 +7,18 @@ module Search_param = struct
     end_inc : Time.Date_time'.t;
   }
 
-  let make ~search_using_tz_offset_s ~search_using_tz
-      ((start, end_exc) : Time.Interval'.t) : t =
+  let make ~search_using_tz_offset_s ((start, end_exc) : Time.Interval'.t) : t =
+    let tz_of_date_time =
+      Time_zone.make_offset_only_span
+        (Span.make ~s:(Int64.of_int search_using_tz_offset_s) ())
+    in
     {
       search_using_tz_offset_s;
       start =
-        CCOpt.get_exn
-        @@ Time.Date_time'.of_timestamp ~tz_of_date_time:search_using_tz start;
+        CCOpt.get_exn @@ Time.Date_time'.of_timestamp ~tz_of_date_time start;
       end_inc =
         CCOpt.get_exn
-        @@ Time.Date_time'.of_timestamp ~tz_of_date_time:search_using_tz
-          (Span.pred end_exc);
+        @@ Time.Date_time'.of_timestamp ~tz_of_date_time (Span.pred end_exc);
     }
 end
 
