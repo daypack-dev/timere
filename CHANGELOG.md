@@ -6,7 +6,7 @@
 
 ## Timere 0.3.1
 
-- Minor refactoring on use of pattern resolver
+- Minor refactoring on use of pattern resolver to simplify reasoning about undefined/uncertain behaviour
 
 - Added `Timere.Span.make_small`
 
