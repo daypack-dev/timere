@@ -460,8 +460,7 @@ module Ast_normalize = struct
             else
               invalid_data
                 (Printf.sprintf "%s: Invalid hms: %d:%d:%d"
-                   (string_of_pos pos_hour) hour minute second
-                )
+                   (string_of_pos pos_hour) hour minute second)
           else
             ( pos_hour,
               text_map_empty,
