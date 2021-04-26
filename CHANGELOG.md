@@ -4,6 +4,8 @@
 
 - Updated use of Timere API
 
+- Added support for parsing "24:00" and "24:00:00"
+
 ## Timere 0.3.1
 
 - Minor refactoring on use of pattern resolver to simplify reasoning about undefined/uncertain behaviour
