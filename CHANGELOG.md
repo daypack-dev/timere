@@ -10,6 +10,8 @@
 
 - Added recognition of "UTC+/-offset", e.g. "UTC+7", "UTC-07:00", to `Timere.Time_zone.make`
 
+- Updated ISO8601 parser to tolerate separator other than `T`
+
 ## Timere 0.3.1
 
 - Minor refactoring on use of pattern resolver to simplify reasoning about undefined/uncertain behaviour
