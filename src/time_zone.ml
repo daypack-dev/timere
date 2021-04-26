@@ -117,14 +117,17 @@ let fixed_offset_name_parser =
   ((char '+' >> return `Pos) <|> (char '-' >> return `Neg)) >>= fun sign ->
   (
     attempt (
-      nat_zero >>= fun hour ->
+      max_two_digit_nat_zero >>= fun hour ->
       char ':' >>
-      nat_zero >>= fun minute ->
+      max_two_digit_nat_zero >>= fun minute ->
       return (hour, minute)
     )
-    <|> (nat_zero >>= fun hour -> return (hour, 0))
+    <|> (max_two_digit_nat_zero >>= fun hour -> return (hour, 0))
   ) >>= fun (hour, minute) ->
-  return (Duration.make ~sign ~hours:hour ~minutes:minute ())
+  if hour < 24 && minute < 60 then
+    return (Duration.make ~sign ~hours:hour ~minutes:minute ())
+  else
+    fail "Invalid offset"
 
 let fixed_offset_of_name  (s : string) : Duration.t option =
   match Parser_components.result_of_mparser_result
