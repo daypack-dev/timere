@@ -42,11 +42,8 @@ let two_digit_nat_zero : (int, unit) t =
   >>= fun (c1, c2) -> return (int_of_string (Printf.sprintf "%c%c" c1 c2))
 
 let max_two_digit_nat_zero : (int, unit) t =
-  attempt (two_digit_nat_zero)
-  <|> (
-    digit
-    >>= fun c -> return (int_of_string (Printf.sprintf "%c" c))
-  )
+  attempt two_digit_nat_zero
+  <|> (digit >>= fun c -> return (int_of_string (Printf.sprintf "%c" c)))
 
 let float_non_neg : (float, unit) t =
   many1_satisfy (function '0' .. '9' -> true | _ -> false)

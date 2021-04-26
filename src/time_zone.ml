@@ -113,32 +113,28 @@ let equal t1 t2 =
 let fixed_offset_name_parser =
   let open MParser in
   let open Parser_components in
-  string "UTC" >>
-  ((char '+' >> return `Pos) <|> (char '-' >> return `Neg)) >>= fun sign ->
-  (
-    attempt (
-      max_two_digit_nat_zero >>= fun hour ->
-      char ':' >>
-      max_two_digit_nat_zero >>= fun minute ->
-      return (hour, minute)
-    )
-    <|> (max_two_digit_nat_zero >>= fun hour -> return (hour, 0))
-  ) >>= fun (hour, minute) ->
+  string "UTC"
+  >> (char '+' >> return `Pos <|> (char '-' >> return `Neg))
+  >>= fun sign ->
+  attempt
+    (max_two_digit_nat_zero
+     >>= fun hour ->
+     char ':' >> max_two_digit_nat_zero >>= fun minute -> return (hour, minute))
+  <|> (max_two_digit_nat_zero >>= fun hour -> return (hour, 0))
+  >>= fun (hour, minute) ->
   if hour < 24 && minute < 60 then
     return (Duration.make ~sign ~hours:hour ~minutes:minute ())
-  else
-    fail "Invalid offset"
+  else fail "Invalid offset"
 
-let fixed_offset_of_name  (s : string) : Duration.t option =
-  match Parser_components.result_of_mparser_result
-    @@
-  MParser.parse_string fixed_offset_name_parser s ()
+let fixed_offset_of_name (s : string) : Duration.t option =
+  match
+    Parser_components.result_of_mparser_result
+    @@ MParser.parse_string fixed_offset_name_parser s ()
   with
   | Ok dt -> Some dt
   | Error _ -> None
 
-let one_day =
-  Duration.(make ~days:1 () |> to_span)
+let one_day = Duration.(make ~days:1 () |> to_span)
 
 let make_offset_only_span (offset : Span.t) =
   if Span.abs offset >= one_day then
@@ -160,11 +156,10 @@ let make_offset_only (offset : Duration.t) =
 let make name : t option =
   match lookup_record name with
   | Some record -> Some { typ = Backed name; record }
-  | None ->
-    match fixed_offset_of_name name with
-    | Some fixed ->
-      Some (make_offset_only fixed)
-    | None -> None
+  | None -> (
+      match fixed_offset_of_name name with
+      | Some fixed -> Some (make_offset_only fixed)
+      | None -> None)
 
 let make_exn name : t =
   match make name with Some x -> x | None -> invalid_arg "make_exn"
