@@ -26,6 +26,8 @@ let texts =
     "2020 jun 16th 10am to 12pm";
     "2020 jun 16th 10am to 17th 12pm";
     "2020 jun 16th 10am to jul 1 12pm";
+    "2020.06.16";
+    "2020.06.16 10am";
   ]
 
 let () =

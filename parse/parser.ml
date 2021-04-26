@@ -432,7 +432,7 @@ module Ast_normalize = struct
       let hour =
         match mode with
         | Hms_24 ->
-          if 0 <= hour && hour < 24 then hour
+          if 0 <= hour && hour <= 24 then hour
           else
             invalid_data
               (Printf.sprintf "%s: Invalid hour: %d" (string_of_pos pos_hour)
@@ -452,9 +452,20 @@ module Ast_normalize = struct
       in
       if 0 <= minute && minute < 60 then
         if 0 <= second && second < 60 then
-          ( pos_hour,
-            text_map_empty,
-            Hms (Timere.make_hms_exn ~hour ~minute ~second) )
+          if hour = 24 then
+            if minute = 0 && second = 0 then
+              ( pos_hour,
+                text_map_empty,
+                Hms (Timere.make_hms_exn ~hour ~minute ~second) )
+            else
+              invalid_data
+                (Printf.sprintf "%s: Invalid hms: %d:%d:%d"
+                   (string_of_pos pos_hour) hour minute second
+                )
+          else
+            ( pos_hour,
+              text_map_empty,
+              Hms (Timere.make_hms_exn ~hour ~minute ~second) )
         else
           invalid_data
             (Printf.sprintf "%s: Invalid second: %d"

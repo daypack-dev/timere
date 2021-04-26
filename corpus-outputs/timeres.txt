@@ -76,3 +76,9 @@
 25. "2020 jun 16th 10am to jul 1 12pm"
   Ok (bounded_intervals whole (31622400 0) (points (pick ymdhms 2020 Jun 16 10 0 0)) (points (pick mdhms Jul 1 12 0 0)))
 
+26. "2020.06.16"
+  Ok (pattern (years 2020) (months Jun) (month_days 16))
+
+27. "2020.06.16 10am"
+  Ok (pattern (years 2020) (months Jun) (month_days 16) (hours 10) (minutes 0) (seconds 0))
+
