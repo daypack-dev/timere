@@ -110,10 +110,52 @@ let equal t1 t2 =
     (fun e1 e2 -> e1 = e2)
     (snd t1.record.table) (snd t2.record.table)
 
+let fixed_offset_name_parser =
+  let open MParser in
+  let open Parser_components in
+  string "UTC" >>
+  ((char '+' >> return `Pos) <|> (char '-' >> return `Neg)) >>= fun sign ->
+  (
+    attempt (
+      nat_zero >>= fun hour ->
+      char ':' >>
+      nat_zero >>= fun minute ->
+      return (hour, minute)
+    )
+    <|> (nat_zero >>= fun hour -> return (hour, 0))
+  ) >>= fun (hour, minute) ->
+  return (Duration.make ~sign ~hours:hour ~minutes:minute ())
+
+let fixed_offset_of_name  (s : string) : Duration.t option =
+  match Parser_components.result_of_mparser_result
+    @@
+  MParser.parse_string fixed_offset_name_parser s ()
+  with
+  | Ok dt -> Some dt
+  | Error _ -> None
+
+let make_offset_only_span (offset : Span.t) =
+  let offset = CCInt64.to_int offset.s in
+  {
+    typ = Offset_only offset;
+    record =
+      process_table
+        ( Bigarray.Array1.of_array Bigarray.Int64 Bigarray.C_layout
+            [| Constants.timestamp_min.s |],
+          [| { is_dst = false; offset } |] );
+  }
+
+let make_offset_only (offset : Duration.t) =
+  make_offset_only_span (Duration.to_span offset)
+
 let make name : t option =
   match lookup_record name with
   | Some record -> Some { typ = Backed name; record }
-  | None -> None
+  | None ->
+    match fixed_offset_of_name name with
+    | Some fixed ->
+      Some (make_offset_only fixed)
+    | None -> None
 
 let make_exn name : t =
   match make name with Some x -> x | None -> invalid_arg "make_exn"
@@ -247,20 +289,6 @@ let offset_is_recorded offset (t : t) =
   Array.mem
     (CCInt64.to_int (Duration.to_span offset).s)
     t.record.recorded_offsets
-
-let make_offset_only_span (offset : Span.t) =
-  let offset = CCInt64.to_int offset.s in
-  {
-    typ = Offset_only offset;
-    record =
-      process_table
-        ( Bigarray.Array1.of_array Bigarray.Int64 Bigarray.C_layout
-            [| Constants.timestamp_min.s |],
-          [| { is_dst = false; offset } |] );
-  }
-
-let make_offset_only (offset : Duration.t) =
-  make_offset_only_span (Duration.to_span offset)
 
 module Sexp = struct
   let of_sexp (x : CCSexp.t) : t option =
