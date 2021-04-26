@@ -37,6 +37,17 @@ let nat_zero_w_original_str : (int * string, unit) t =
   try return (int_of_string s, s)
   with _ -> fail (Printf.sprintf "Integer %s is out of range" s)
 
+let two_digit_nat_zero : (int, unit) t =
+  pair digit digit
+  >>= fun (c1, c2) -> return (int_of_string (Printf.sprintf "%c%c" c1 c2))
+
+let max_two_digit_nat_zero : (int, unit) t =
+  attempt (two_digit_nat_zero)
+  <|> (
+    digit
+    >>= fun c -> return (int_of_string (Printf.sprintf "%c" c))
+  )
+
 let float_non_neg : (float, unit) t =
   many1_satisfy (function '0' .. '9' -> true | _ -> false)
   >>= fun x ->
