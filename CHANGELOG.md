@@ -6,6 +6,10 @@
 
 - Added support for parsing "24:00" and "24:00:00"
 
+## Timere 0.3.2
+
+- Added recognition of "UTC+/-offset", e.g. "UTC+7", "UTC-07:00", to `Timere.Time_zone.make`
+
 ## Timere 0.3.1
 
 - Minor refactoring on use of pattern resolver to simplify reasoning about undefined/uncertain behaviour
