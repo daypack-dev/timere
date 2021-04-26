@@ -373,9 +373,12 @@ module Time_zone : sig
       and you don't need to do any accurate search over time zones.
 
       One use of this is to create a time zone for [to_string] functions.
+
+      @raise Invalid_argument when offset exceeds 24 hours
   *)
 
   val make_offset_only_span : Span.t -> t
+  (** @raise Invalid_argument when offset exceeds 24 hours *)
 
   val to_fixed_offset : t -> Duration.t option
 

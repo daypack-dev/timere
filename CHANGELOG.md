@@ -12,6 +12,8 @@
 
 - Updated ISO8601 parser to tolerate separator other than `T`
 
+- Added size checking to `Timere.Time_zone.make_offset_only*`
+
 ## Timere 0.3.1
 
 - Minor refactoring on use of pattern resolver to simplify reasoning about undefined/uncertain behaviour
