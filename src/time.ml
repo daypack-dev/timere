@@ -1190,8 +1190,7 @@ module Date_time' = struct
         ~tz_offset ()
     with
     | Ok x -> x
-    | Error e ->
-      raise (Error_exn e)
+    | Error e -> raise (Error_exn e)
 
   let min_val =
     CCOpt.get_exn @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_min

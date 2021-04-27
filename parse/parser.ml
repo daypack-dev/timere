@@ -951,7 +951,9 @@ let t_of_hmss (hmss : Timere.hms Timere.range list) =
                | `Some p1, `Some p2 ->
                  Ok
                    Timere.(
-                     bounded_intervals `Whole (Duration.make_exn ~days:2 ()) p1 p2)
+                     bounded_intervals `Whole
+                       (Duration.make_exn ~days:2 ())
+                       p1 p2)
                | _ -> Error ())
          | _ -> failwith "unexpected case")
       hmss
