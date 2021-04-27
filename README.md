@@ -47,6 +47,10 @@ See `examples/` for more examples
 - Timestamp and date time handling with platform independent time zone support
 
   - Subset of the IANA time zone database is built into this library
+
+  - Both types support nanosecond precision
+
+  - ISO8601 parsing and RFC3339 printing
   
 - Reasoning over time intervals via `timere` objects/expressions, examples:
 

@@ -7,6 +7,10 @@ Features:
 
   - Subset of the IANA time zone database is built into this library
 
+  - Both types support nanosecond precision
+
+  - ISO8601 parsing and RFC3339 printing
+
 - Reasoning over time intervals via `timere` objects/expressions, examples:
 
   - Pattern matching time and intervals. These work across DST boundaries.
