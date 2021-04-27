@@ -1172,14 +1172,14 @@ module Date_time' = struct
                 match
                   Time_zone.lookup_timestamp_local tz' timestamp_local
                 with
-                | `None -> make_invalid_tz_info_error ?tz ~tz_offset ()
+                | `None -> Error `Does_not_exist
                 | `Single e ->
                   if e.offset = tz_offset_s then Ok tz_info
                   else make_invalid_tz_info_error ?tz ~tz_offset ()
                 | `Ambiguous (e1, e2) ->
                   if e1.offset = tz_offset_s || e2.offset = tz_offset_s then
                     Ok tz_info
-                  else Error `Does_not_exist))
+                  else make_invalid_tz_info_error ?tz ~tz_offset ()))
       in
       (match tz_info with
        | Error e -> Error e

@@ -566,21 +566,23 @@ module Date_time : sig
       Note that leap second informtation is lost upon translation to timestamp(s),
       specifically second 60 is treated as second 59.
 
-      Returns [Error `Invalid_year] if [year < 0 || 9999 < year]
+      Returns [Error `Invalid_year] if [year < 0 || 9999 < year].
 
-      Returns [Error `Invalid_day] if [day < 1 || 31 < day]
+      Returns [Error `Invalid_day] if [day < 1 || 31 < day].
 
-      Returns [Error `Invalid_hour] if [hour > 23]
+      Returns [Error `Invalid_hour] if [hour > 23].
 
-      Returns [Error `Invalid_minute] if [minute > 59]
+      Returns [Error `Invalid_minute] if [minute > 59].
 
-      Returns [Error `Invalid_second] if [second > 60]
+      Returns [Error `Invalid_second] if [second > 60].
 
-      Returns [Error `Invalid_ns] if [frac < 0.0]
+      Returns [Error `Invalid_ns] if [frac < 0.0].
 
-      Returns [Error `Invalid_ns] if [ns < 0]
+      Returns [Error `Invalid_ns] if [ns < 0].
 
-      Returns [Error `Invalid_ns] if [total ns >= 10^9]
+      Returns [Error `Invalid_ns] if [total ns >= 10^9].
+
+      Returns [Error `Invalid_tz_info] if offset is out of range.
   *)
 
   val make_exn :
@@ -614,9 +616,9 @@ module Date_time : sig
 
       Nanosecond used is the addition of [ns] and [frac * 10^9].
 
-      If a time zone is provided, then the offset is checked against the time zone record to make sure
-      the time zone does use said offset for the particular date time.
-      Returns [Error `Invalid_tz_info] if this is not the case.
+      If a time zone is provided, then [tz_offset] is checked against the time zone record,
+      and returns [Error `Invalid_tz_info] if [tz_offset] is not a possible
+      offset for the particular date time in said time zone.
 
       Otherwise same leap second handling and error handling as [make].
   *)
