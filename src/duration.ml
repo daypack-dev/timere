@@ -37,6 +37,26 @@ type t = {
   ns : int;
 }
 
+type error = [
+  | `Invalid_days of int
+  | `Invalid_hours of int
+  | `Invalid_minutes of int
+  | `Invalid_seconds of int
+  | `Invalid_ns of int
+]
+
+type error_f = [
+  | `Invalid_days_f of float
+  | `Invalid_hours_f of float
+  | `Invalid_minutes_f of float
+  | `Invalid_seconds_f of float
+  | `Invalid_ns of int
+]
+
+exception Error_exn of error
+
+exception Error_f_exn of error_f
+
 let is_pos (x : t) = x.sign = `Pos
 
 let is_neg (x : t) = x.sign = `Neg
@@ -100,27 +120,40 @@ let span_of_raw (r : raw) : Span.t =
 let normalize (t : t) : t = t |> to_span |> of_span
 
 let make ?(sign = `Pos) ?(days = 0) ?(hours = 0) ?(minutes = 0) ?(seconds = 0)
-    ?(ns = 0) () : t option =
-  if days >= 0 && hours >= 0 && minutes >= 0 && seconds >= 0 then
-    Some (({ sign; days; hours; minutes; seconds; ns } : t) |> normalize)
-  else None
+    ?(ns = 0) () : (t, error) result =
+  if days < 0 then
+    Error (`Invalid_days days)
+  else
+  if hours < 0 then
+    Error (`Invalid_hours hours)
+  else if minutes < 0 then Error (`Invalid_minutes minutes)
+  else if seconds < 0 then Error (`Invalid_seconds seconds)
+  else if ns < 0 then Error (`Invalid_ns ns)
+  else
+    Ok (({ sign; days; hours; minutes; seconds; ns } : t) |> normalize)
 
 let make_exn ?sign ?days ?hours ?minutes ?seconds ?ns () =
   match make ?sign ?days ?hours ?minutes ?seconds ?ns () with
-  | Some x -> x
-  | None -> invalid_arg "make_exn"
+  | Ok x -> x
+  | Error e -> raise (Error_exn e)
 
 let make_frac ?(sign = `Pos) ?(days = 0.0) ?(hours = 0.0) ?(minutes = 0.0)
-    ?(seconds = 0.0) ?(ns = 0) () : t option =
-  if days >= 0.0 && hours >= 0.0 && minutes >= 0.0 && seconds >= 0.0 && ns >= 0
-  then
+    ?(seconds = 0.0) ?(ns = 0) () : (t, error_f) result =
+  if days < 0.0 then
+    Error (`Invalid_days_f days)
+  else
+  if hours < 0.0 then
+    Error (`Invalid_hours_f hours)
+  else if minutes < 0.0 then Error (`Invalid_minutes_f minutes)
+  else if seconds < 0.0 then Error (`Invalid_seconds_f seconds)
+  else if ns < 0 then Error (`Invalid_ns ns)
+  else
     ({ sign; days; hours; minutes; seconds; ns } : raw)
     |> span_of_raw
     |> of_span
-    |> CCOpt.return
-  else None
+    |> CCResult.return
 
 let make_frac_exn ?sign ?days ?hours ?minutes ?seconds ?ns () =
   match make_frac ?sign ?days ?hours ?minutes ?seconds ?ns () with
-  | Some x -> x
-  | None -> invalid_arg "make_exn"
+  | Ok x -> x
+  | Error e -> raise (Error_f_exn e)

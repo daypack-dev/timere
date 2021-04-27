@@ -274,6 +274,26 @@ module Duration : sig
       Conversion between [t] and [Span.t] is lossless.
   *)
 
+  type error = [
+    | `Invalid_days of int
+    | `Invalid_hours of int
+    | `Invalid_minutes of int
+    | `Invalid_seconds of int
+    | `Invalid_ns of int
+  ]
+
+  type error_f = [
+    | `Invalid_days_f of float
+    | `Invalid_hours_f of float
+    | `Invalid_minutes_f of float
+    | `Invalid_seconds_f of float
+    | `Invalid_ns of int
+  ]
+
+  exception Error_exn of error
+
+  exception Error_f_exn of error_f
+
   val make :
     ?sign:sign ->
     ?days:int ->
@@ -282,11 +302,11 @@ module Duration : sig
     ?seconds:int ->
     ?ns:int ->
     unit ->
-    t option
+    (t, error) result
   (**
      [sign] defaults to [`Pos].
 
-     Returns [None] if any of the arguments are negative.
+     Returns [Error] if any of the arguments are negative.
   *)
 
   val make_exn :
@@ -298,6 +318,7 @@ module Duration : sig
     ?ns:int ->
     unit ->
     t
+  (** @raise Error_exn if [make] fails *)
 
   val make_frac :
     ?sign:sign ->
@@ -307,11 +328,11 @@ module Duration : sig
     ?seconds:float ->
     ?ns:int ->
     unit ->
-    t option
+    (t, error_f) result
   (**
      [sign] defaults to [`Pos].
 
-     Returns [None] if any of the arguments are negative
+     Returns [Error] if any of the arguments are negative
   *)
 
   val make_frac_exn :
@@ -323,6 +344,7 @@ module Duration : sig
     ?ns:int ->
     unit ->
     t
+  (** @raise Error_exn if [make] fails *)
 
   val zero : t
 

@@ -68,10 +68,10 @@ let duration_of_sexp (x : CCSexp.t) =
       let minutes = int_of_sexp minutes in
       let seconds = int_of_sexp seconds in
       match Duration.make ~days ~hours ~minutes ~seconds () with
-      | None ->
+      | Error _ ->
         invalid_data
           (Printf.sprintf "Invalid duration: %s" (CCSexp.to_string x))
-      | Some d -> d)
+      | Ok d -> d)
   | _ ->
     invalid_data (Printf.sprintf "Invalid duration: %s" (CCSexp.to_string x))
 
