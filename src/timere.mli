@@ -274,21 +274,21 @@ module Duration : sig
       Conversion between [t] and [Span.t] is lossless.
   *)
 
-  type error = [
-    | `Invalid_days of int
+  type error =
+    [ `Invalid_days of int
     | `Invalid_hours of int
     | `Invalid_minutes of int
     | `Invalid_seconds of int
     | `Invalid_ns of int
-  ]
+    ]
 
-  type error_f = [
-    | `Invalid_days_f of float
+  type error_f =
+    [ `Invalid_days_f of float
     | `Invalid_hours_f of float
     | `Invalid_minutes_f of float
     | `Invalid_seconds_f of float
     | `Invalid_ns of int
-  ]
+    ]
 
   exception Error_exn of error
 

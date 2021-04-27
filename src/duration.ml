@@ -37,21 +37,21 @@ type t = {
   ns : int;
 }
 
-type error = [
-  | `Invalid_days of int
+type error =
+  [ `Invalid_days of int
   | `Invalid_hours of int
   | `Invalid_minutes of int
   | `Invalid_seconds of int
   | `Invalid_ns of int
-]
+  ]
 
-type error_f = [
-  | `Invalid_days_f of float
+type error_f =
+  [ `Invalid_days_f of float
   | `Invalid_hours_f of float
   | `Invalid_minutes_f of float
   | `Invalid_seconds_f of float
   | `Invalid_ns of int
-]
+  ]
 
 exception Error_exn of error
 
@@ -121,16 +121,12 @@ let normalize (t : t) : t = t |> to_span |> of_span
 
 let make ?(sign = `Pos) ?(days = 0) ?(hours = 0) ?(minutes = 0) ?(seconds = 0)
     ?(ns = 0) () : (t, error) result =
-  if days < 0 then
-    Error (`Invalid_days days)
-  else
-  if hours < 0 then
-    Error (`Invalid_hours hours)
+  if days < 0 then Error (`Invalid_days days)
+  else if hours < 0 then Error (`Invalid_hours hours)
   else if minutes < 0 then Error (`Invalid_minutes minutes)
   else if seconds < 0 then Error (`Invalid_seconds seconds)
   else if ns < 0 then Error (`Invalid_ns ns)
-  else
-    Ok (({ sign; days; hours; minutes; seconds; ns } : t) |> normalize)
+  else Ok (({ sign; days; hours; minutes; seconds; ns } : t) |> normalize)
 
 let make_exn ?sign ?days ?hours ?minutes ?seconds ?ns () =
   match make ?sign ?days ?hours ?minutes ?seconds ?ns () with
@@ -139,11 +135,8 @@ let make_exn ?sign ?days ?hours ?minutes ?seconds ?ns () =
 
 let make_frac ?(sign = `Pos) ?(days = 0.0) ?(hours = 0.0) ?(minutes = 0.0)
     ?(seconds = 0.0) ?(ns = 0) () : (t, error_f) result =
-  if days < 0.0 then
-    Error (`Invalid_days_f days)
-  else
-  if hours < 0.0 then
-    Error (`Invalid_hours_f hours)
+  if days < 0.0 then Error (`Invalid_days_f days)
+  else if hours < 0.0 then Error (`Invalid_hours_f hours)
   else if minutes < 0.0 then Error (`Invalid_minutes_f minutes)
   else if seconds < 0.0 then Error (`Invalid_seconds_f seconds)
   else if ns < 0 then Error (`Invalid_ns ns)
