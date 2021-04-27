@@ -129,7 +129,7 @@ let fixed_offset_name_parser =
 let fixed_offset_of_name (s : string) : Duration.t option =
   match
     Parser_components.result_of_mparser_result
-    @@ MParser.parse_string fixed_offset_name_parser s ()
+    @@ MParser.(parse_string (fixed_offset_name_parser << eof)) s ()
   with
   | Ok dt -> Some dt
   | Error _ -> None
@@ -153,17 +153,6 @@ let make_offset_only_span (offset : Span.t) =
 let make_offset_only (offset : Duration.t) =
   make_offset_only_span (Duration.to_span offset)
 
-let make name : t option =
-  match lookup_record name with
-  | Some record -> Some { typ = Backed name; record }
-  | None -> (
-      match fixed_offset_of_name name with
-      | Some fixed -> Some (make_offset_only fixed)
-      | None -> None)
-
-let make_exn name : t =
-  match make name with Some x -> x | None -> invalid_arg "make_exn"
-
 let utc : t =
   {
     typ = Backed "UTC";
@@ -173,6 +162,19 @@ let utc : t =
             [| Constants.timestamp_min.s |],
           [| { is_dst = false; offset = 0 } |] );
   }
+
+let make name : t option =
+  if name = "UTC" then Some utc
+  else
+    match fixed_offset_of_name name with
+    | Some fixed -> Some (make_offset_only fixed)
+    | None -> (
+        match lookup_record name with
+        | Some record -> Some { typ = Backed name; record }
+        | None -> None)
+
+let make_exn name : t =
+  match make name with Some x -> x | None -> invalid_arg "make_exn"
 
 let bsearch_table timestamp ((starts, _) : table) =
   Bigarray_utils.bsearch ~cmp:Int64.compare timestamp starts
