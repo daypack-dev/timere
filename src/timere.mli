@@ -514,6 +514,8 @@ module Date_time : sig
     | `Invalid_tz_info of string option * Duration.t
     ]
 
+  exception Error_exn of error
+
   val string_of_error : error -> string
 
   val make :
@@ -571,7 +573,7 @@ module Date_time : sig
     second:int ->
     unit ->
     t
-  (** @raise Invalid_argument if [make] fails *)
+  (** @raise Error_exn if [make] fails *)
 
   val make_unambiguous :
     ?tz:Time_zone.t ->
@@ -610,7 +612,7 @@ module Date_time : sig
     tz_offset:Duration.t ->
     unit ->
     t
-  (** @raise Invalid_argument if [make_umabiguous] fails *)
+  (** @raise Error_exn if [make_umabiguous] fails *)
 
   val is_leap_second : t -> bool
 

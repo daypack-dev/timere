@@ -950,6 +950,8 @@ module Date_time' = struct
     | `Invalid_tz_info of string option * Duration.t
     ]
 
+  exception Error_exn of error
+
   let string_of_error (e : error) =
     match e with
     | `Does_not_exist -> "Does not exist"
@@ -1129,7 +1131,7 @@ module Date_time' = struct
   let make_exn ?tz ?ns ?frac ~year ~month ~day ~hour ~minute ~second () =
     match make ?tz ~year ~month ~day ~hour ~minute ~second ?ns ?frac () with
     | Ok x -> x
-    | Error e -> invalid_arg (Printf.sprintf "make_exn: %s" (string_of_error e))
+    | Error e -> raise (Error_exn e)
 
   let make_unambiguous ?tz ?(ns = 0) ?(frac = 0.) ~year ~month ~day ~hour
       ~minute ~second ~tz_offset () =
@@ -1189,7 +1191,7 @@ module Date_time' = struct
     with
     | Ok x -> x
     | Error e ->
-      invalid_arg (Printf.sprintf "make_precise_exn: %s" (string_of_error e))
+      raise (Error_exn e)
 
   let min_val =
     CCOpt.get_exn @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_min
