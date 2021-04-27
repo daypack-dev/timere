@@ -18,7 +18,7 @@
 
 - Added size checking to `Timere.Time_zone.make_offset_only*`
 
-- Removed raising of `Invalid_argument` outside of Timere combinators
+- Removed raising of `Invalid_argument` outside of Timere combinators and `pp*`
 
 ## Timere 0.3.1
 
