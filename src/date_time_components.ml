@@ -148,7 +148,10 @@ let make_tz_info ?tz ?tz_offset () : tz_info option =
   | None, None -> invalid_arg "make_tz_info"
   | Some tz, None -> Some (tz, Time_zone.to_fixed_offset tz)
   | None, Some tz_offset ->
-    Some (Time_zone.make_offset_only tz_offset, Some tz_offset)
+    Time_zone.make_offset_only tz_offset
+    |> CCOpt.map (fun tz ->
+        (tz, Some tz_offset)
+      )
   | Some tz, Some tz_offset ->
     if Time_zone.offset_is_recorded tz_offset tz then Some (tz, Some tz_offset)
     else None

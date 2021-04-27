@@ -43,9 +43,13 @@ end
 
 val offset_is_recorded : Duration.t -> t -> bool
 
-val make_offset_only : Duration.t -> t
+val make_offset_only : Duration.t -> t option
 
-val make_offset_only_span : Span.t -> t
+val make_offset_only_span : Span.t -> t option
+
+val make_offset_only_exn : Duration.t -> t
+
+val make_offset_only_span_exn : Span.t -> t
 
 module Sexp : sig
   val to_sexp : t -> CCSexp.t

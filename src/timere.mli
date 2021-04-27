@@ -392,17 +392,21 @@ module Time_zone : sig
 
   val available_time_zones : string list
 
-  val make_offset_only : Duration.t -> t
+  val make_offset_only : Duration.t -> t option
   (** This is mainly used for when you only have an offset to work with,
       and you don't need to do any accurate search over time zones.
 
       One use of this is to create a time zone for [to_string] functions.
 
-      @raise Invalid_argument when offset exceeds 24 hours
+      Returns [None] when offset exceeds 24 hours
   *)
 
-  val make_offset_only_span : Span.t -> t
-  (** @raise Invalid_argument when offset exceeds 24 hours *)
+  val make_offset_only_exn : Duration.t -> t
+
+  val make_offset_only_span : Span.t -> t option
+  (** Returns [None] when offset exceeds 24 hours *)
+
+  val make_offset_only_span_exn : Span.t -> t
 
   val to_fixed_offset : t -> Duration.t option
 

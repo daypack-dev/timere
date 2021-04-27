@@ -137,11 +137,11 @@ let fixed_offset_of_name (s : string) : Duration.t option =
 let one_day = Duration.(make_exn ~days:1 () |> to_span)
 
 let make_offset_only_span (offset : Span.t) =
-  if Span.abs offset >= one_day then
-    invalid_arg "make_offset_only_span: Invalid offset"
+  if Span.abs offset > one_day then
+    None
   else
     let offset = CCInt64.to_int offset.s in
-    {
+    Some {
       typ = Offset_only offset;
       record =
         process_table
@@ -150,8 +150,18 @@ let make_offset_only_span (offset : Span.t) =
             [| { is_dst = false; offset } |] );
     }
 
+let make_offset_only_span_exn offset =
+  match make_offset_only_span offset with
+  | None -> invalid_arg "make_offset_only_span_exn"
+  | Some x -> x
+
 let make_offset_only (offset : Duration.t) =
   make_offset_only_span (Duration.to_span offset)
+
+let make_offset_only_exn offset =
+  match make_offset_only offset with
+  | None -> invalid_arg "make_offset_only_exn"
+  | Some x -> x
 
 let utc : t =
   {
@@ -167,7 +177,7 @@ let make name : t option =
   if name = "UTC" then Some utc
   else
     match fixed_offset_of_name name with
-    | Some fixed -> Some (make_offset_only fixed)
+    | Some fixed -> make_offset_only fixed
     | None -> (
         match lookup_record name with
         | Some record -> Some { typ = Backed name; record }

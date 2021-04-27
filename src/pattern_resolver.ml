@@ -9,7 +9,7 @@ module Search_param = struct
 
   let make ~search_using_tz_offset_s ((start, end_exc) : Time.Interval'.t) : t =
     let tz_of_date_time =
-      Time_zone.make_offset_only_span
+      Time_zone.make_offset_only_span_exn
         (Span.make ~s:(Int64.of_int search_using_tz_offset_s) ())
     in
     {
