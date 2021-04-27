@@ -502,6 +502,20 @@ module Date_time : sig
       In other words, second 60 is represented via [ns] field.
   *)
 
+  type error = [
+    | `Does_not_exist
+    | `Invalid_year of int
+    | `Invalid_day of int
+    | `Invalid_hour of int
+    | `Invalid_minute of int
+    | `Invalid_second of int
+    | `Invalid_frac of float
+    | `Invalid_ns of int
+    | `Invalid_tz_info of string option * Duration.t
+  ]
+
+  val string_of_error : error -> string
+
   val make :
     ?tz:Time_zone.t ->
     ?ns:int ->
@@ -513,10 +527,10 @@ module Date_time : sig
     minute:int ->
     second:int ->
     unit ->
-    t option
+    (t, error) result
   (** Constructs a date time providing only a time zone (defaults to local time zone).
 
-      Nanosecond used is the addition of [ns] and [frac * number of nanoseconds in one second].
+      Nanosecond used is the addition of [ns] and [frac * 10^9].
 
       A precise offset is inferred if possible.
 
@@ -528,17 +542,21 @@ module Date_time : sig
       Note that leap second informtation is lost upon translation to timestamp(s),
       specifically second 60 is treated as second 59.
 
-      @raise Invalid_argument if any of [hour], [minute], [second], [ns], [frac] is negative
+      Returns [Error `Invalid_year] if [year < 0 || 9999 < year]
 
-      @raise Invalid_argument if [total ns >= 10^9]
+      Returns [Error `Invalid_day] if [day < 1 || 31 < day]
 
-      @raise Invalid_argument if [day < 1 || 31 < day]
+      Returns [Error `Invalid_hour] if [hour > 23]
 
-      @raise Invalid_argument if [hour > 23]
+      Returns [Error `Invalid_minute] if [minute > 59]
 
-      @raise Invalid_argument if [minute > 59]
+      Returns [Error `Invalid_second] if [second > 60]
 
-      @raise Invalid_argument if [second > 60]
+      Returns [Error `Invalid_ns] if [frac < 0.0]
+
+      Returns [Error `Invalid_ns] if [ns < 0]
+
+      Returns [Error `Invalid_ns] if [total ns >= 10^9]
   *)
 
   val make_exn :
@@ -567,15 +585,16 @@ module Date_time : sig
     second:int ->
     tz_offset:Duration.t ->
     unit ->
-    t option
+    (t, error) result
   (** Constructs a date time providing time zone offset in seconds, and optionally a time zone.
 
-      Nanosecond used is the addition of [ns] and [frac * number of nanoseconds in one second].
+      Nanosecond used is the addition of [ns] and [frac * 10^9].
 
       If a time zone is provided, then the offset is checked against the time zone record to make sure
-      the time zone does use said offset for the particular date time..
+      the time zone does use said offset for the particular date time.
+      Returns [Error `Invalid_tz_info] if this is not the case.
 
-      Same leap second handling and error handling as [make].
+      Otherwise same leap second handling and error handling as [make].
   *)
 
   val make_unambiguous_exn :
@@ -618,7 +637,7 @@ module Date_time : sig
   val to_timestamp_float : t -> float local_result
 
   val to_timestamp_float_single : t -> float
-  (** @raise Invalid_argument if [to_timestamp_precise] does not yield a [`Single] result *)
+  (** @raise Invalid_argument if [to_timestamp_single] does not yield a [`Single] result *)
 
   val min_of_local_result : 'a local_result -> 'a
 
@@ -626,7 +645,11 @@ module Date_time : sig
 
   val of_timestamp : ?tz_of_date_time:Time_zone.t -> timestamp -> t option
 
+  val of_timestamp_exn : ?tz_of_date_time:Time_zone.t -> timestamp -> t
+
   val of_timestamp_float : ?tz_of_date_time:Time_zone.t -> float -> t option
+
+  val of_timestamp_float_exn : ?tz_of_date_time:Time_zone.t -> float -> t
 
   val equal : t -> t -> bool
 

@@ -55,12 +55,9 @@ let make ?tz ?tz_offset ?year ?month ?day ?weekday ?hour ?minute ~second () :
   t option =
   let tz_info =
     match (tz, tz_offset) with
-    | None, None -> Some None
-    | _, _ -> Some (make_tz_info ?tz ?tz_offset ())
+    | None, None -> None
+    | _, _ -> (make_tz_info ?tz ?tz_offset ())
   in
-  match tz_info with
-  | None -> None
-  | Some tz_info ->
     let year_is_fine =
       match year with
       | None -> true

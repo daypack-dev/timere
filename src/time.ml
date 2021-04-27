@@ -938,6 +938,37 @@ module Date_time' = struct
     tz_info : tz_info;
   }
 
+  type error = [
+    | `Does_not_exist
+    | `Invalid_year of int
+    | `Invalid_day of int
+    | `Invalid_hour of int
+    | `Invalid_minute of int
+    | `Invalid_second of int
+    | `Invalid_frac of float
+    | `Invalid_ns of int
+    | `Invalid_tz_info of string option * Duration.t
+  ]
+
+  let string_of_error (e : error) =
+    match e with
+    | `Does_not_exist -> "Does not exist"
+    | `Invalid_year x -> Printf.sprintf "Invalid year: %d" x
+    | `Invalid_day x -> Printf.sprintf "Invalid day: %d" x
+    | `Invalid_hour x -> Printf.sprintf "Invalid hour: %d" x
+    | `Invalid_minute x -> Printf.sprintf "Invalid minute: %d" x
+    | `Invalid_second x -> Printf.sprintf "Invalid second: %d" x
+    | `Invalid_frac x -> Printf.sprintf "Invalid frac: %f" x
+    | `Invalid_ns x -> Printf.sprintf "Invalid ns: %d" x
+    | `Invalid_tz_info (tz, offset) ->
+      Printf.sprintf "Invalid tz info: %s, %c%d:%d" (match tz with
+          | None -> "None"
+          | Some tz -> tz
+        )
+        Duration.(match offset.sign with `Pos -> '+' | `Neg -> '-')
+        Duration.(offset.hours)
+        Duration.(offset.minutes)
+
   let utc_tz_info : tz_info = (Time_zone.utc, Some Duration.zero)
 
   let dummy_tz_info = utc_tz_info
@@ -1047,47 +1078,70 @@ module Date_time' = struct
                            (Span.make_small ~s:entry.offset ())) );
                 }))
 
+  let of_timestamp_exn ?tz_of_date_time x =
+    match of_timestamp ?tz_of_date_time x with
+    | None -> invalid_arg "of_timestamp_exn"
+    | Some x -> x
+
   let of_timestamp_float ?tz_of_date_time (x : float) : t option =
     of_timestamp ?tz_of_date_time @@ Span.of_float x
+
+  let of_timestamp_float_exn ?tz_of_date_time x =
+    match of_timestamp_float ?tz_of_date_time x with
+    | None -> invalid_arg "of_timestamp_exn"
+    | Some x -> x
 
   let is_leap_second (dt : t) = dt.ns >= Span.ns_count_in_s
 
   let adjust_ns_for_leap_second ~is_leap_second (dt : t) : t =
     if is_leap_second then { dt with ns = dt.ns + Span.ns_count_in_s } else dt
 
-  let check_args_and_normalize_ns ~day ~hour ~minute ~second ~ns ~frac =
-    if day < 1 || 31 < day then invalid_arg "day is out of range";
-    if hour < 0 || 23 < hour then invalid_arg "hour is out of range";
-    if minute < 0 || 59 < minute then invalid_arg "minute is out of range";
-    if second < 0 || 60 < second then invalid_arg "second is out of range";
-    if frac < 0. then invalid_arg "frac is negative";
-    if ns < 0 then invalid_arg "ns is negative";
+  let check_args_and_normalize_ns ~year ~day ~hour ~minute ~second ~ns ~frac : (int, error) result =
+    if year < Constants.min_year || Constants.max_year < year then Error (`Invalid_year year)
+    else
+    if day < 1 || 31 < day then Error (`Invalid_day day)
+    else
+    if hour < 0 || 23 < hour then Error (`Invalid_hour hour)
+    else
+    if minute < 0 || 59 < minute then Error (`Invalid_minute minute)
+    else
+    if second < 0 || 60 < second then Error (`Invalid_second second)
+    else
+    if frac < 0. then Error (`Invalid_frac frac)
+    else
+    if ns < 0 then Error (`Invalid_ns ns)
+    else
     let ns = ns + int_of_float (frac *. Span.ns_count_in_s_float) in
-    if ns >= Span.ns_count_in_s then invalid_arg "ns is >= 10^9";
-    ns
+    if ns >= Span.ns_count_in_s then Error (`Invalid_ns ns)
+    else
+    Ok ns
 
   let make ?(tz = Time_zone_utils.get_local_tz_for_arg ()) ?(ns = 0)
       ?(frac = 0.) ~year ~month ~day ~hour ~minute ~second () =
-    let ns = check_args_and_normalize_ns ~day ~hour ~minute ~second ~ns ~frac in
-    let is_leap_second = second = 60 in
-    let second = if second = 60 then 59 else second in
-    let dt =
-      { year; month; day; hour; minute; second; ns; tz_info = (tz, None) }
-    in
-    (match to_timestamp_precise_unsafe dt with
-     | `None -> None
-     | `Single x -> Some (of_timestamp ~tz_of_date_time:tz x |> CCOpt.get_exn)
-     | `Ambiguous _ -> Some dt)
-    |> CCOpt.map (adjust_ns_for_leap_second ~is_leap_second)
+    match check_args_and_normalize_ns ~year ~day ~hour ~minute ~second ~ns ~frac with
+    | Error e -> Error e
+    | Ok ns ->
+      let is_leap_second = second = 60 in
+      let second = if second = 60 then 59 else second in
+      let dt =
+        { year; month; day; hour; minute; second; ns; tz_info = (tz, None) }
+      in
+      (match to_timestamp_precise_unsafe dt with
+       | `None -> Error `Does_not_exist
+       | `Single x -> Ok (of_timestamp ~tz_of_date_time:tz x |> CCOpt.get_exn)
+       | `Ambiguous _ -> Ok dt)
+      |> CCResult.map (adjust_ns_for_leap_second ~is_leap_second)
 
   let make_exn ?tz ?ns ?frac ~year ~month ~day ~hour ~minute ~second () =
     match make ?tz ~year ~month ~day ~hour ~minute ~second ?ns ?frac () with
-    | Some x -> x
-    | None -> invalid_arg "make_exn"
+    | Ok x -> x
+    | Error e -> invalid_arg (Printf.sprintf "make_exn: %s" (string_of_error e))
 
   let make_unambiguous ?tz ?(ns = 0) ?(frac = 0.) ~year ~month ~day ~hour
       ~minute ~second ~tz_offset () =
-    let ns = check_args_and_normalize_ns ~day ~hour ~minute ~second ~ns ~frac in
+    match check_args_and_normalize_ns ~year ~day ~hour ~minute ~second ~ns ~frac with
+    | Error e -> Error e
+    | Ok ns ->
     let is_leap_second = second = 60 in
     let second = if second = 60 then 59 else second in
     let tz_info : tz_info option =
@@ -1120,19 +1174,21 @@ module Date_time' = struct
                 else None))
     in
     (match tz_info with
-     | None -> None
+     | None -> Error (`Invalid_tz_info (CCOpt.map Time_zone.name tz, tz_offset))
      | Some tz_info -> (
          let dt = { year; month; day; hour; minute; second; ns; tz_info } in
-         match to_timestamp_precise_unsafe dt with `None -> None | _ -> Some dt))
-    |> CCOpt.map (adjust_ns_for_leap_second ~is_leap_second)
+         match to_timestamp_precise_unsafe dt with `None -> Error `Does_not_exist | _ -> Ok dt))
+    |> CCResult.map (adjust_ns_for_leap_second ~is_leap_second)
 
   let make_unambiguous_exn ?tz ?ns ?frac ~year ~month ~day ~hour ~minute ~second
       ~tz_offset () =
-    let x =
+    match
       make_unambiguous ?tz ~year ~month ~day ~hour ~minute ~second ?ns ?frac
         ~tz_offset ()
-    in
-    match x with None -> invalid_arg "make_precise_exn" | Some x -> x
+    with
+    | Ok x -> x
+    | Error e ->
+      invalid_arg (Printf.sprintf "make_precise_exn: %s" (string_of_error e))
 
   let min_val =
     CCOpt.get_exn @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_min
@@ -1155,10 +1211,10 @@ module Date_time' = struct
           in
           match CCOpt.value ~default:default_tz_info tz_info with
           | tz, None ->
-            make ~year ~month ~day:month_day ~hour ~minute ~second ~tz ()
+            Some (make_exn ~year ~month ~day:month_day ~hour ~minute ~second ~tz ())
           | tz, Some tz_offset ->
-            make_unambiguous ~year ~month ~day:month_day ~hour ~minute ~second
-              ~tz ~tz_offset ())
+            Some (make_unambiguous_exn ~year ~month ~day:month_day ~hour ~minute ~second
+              ~tz ~tz_offset ()))
     | _ -> None
 
   let now ?tz_of_date_time () : t =

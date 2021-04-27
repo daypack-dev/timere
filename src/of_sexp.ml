@@ -111,15 +111,15 @@ let date_time_of_sexp (x : CCSexp.t) =
             Time.Date_time'.make ~year ~month ~day ~hour ~minute ~second ~ns ~tz
               ()
           with
-          | Some x -> x
-          | None -> invalid_data ())
+          | Ok x -> x
+          | Error _ -> invalid_data ())
       | tz, Some tz_offset -> (
           match
             Time.Date_time'.make_unambiguous ~year ~month ~day ~hour ~minute
               ~second ~ns ~tz ~tz_offset ()
           with
-          | Some x -> x
-          | None -> invalid_data ()))
+          | Ok x -> x
+          | Error _ -> invalid_data ()))
   | _ -> invalid_data ()
 
 let timestamp_of_sexp x =
