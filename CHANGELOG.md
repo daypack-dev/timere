@@ -6,7 +6,7 @@
 
 - Added support for parsing "24:00" and "24:00:00"
 
-## Timere 0.3.2
+## Timere 0.4.0
 
 - Added recognition of "UTC+/-offset", e.g. "UTC+7", "UTC-07:00", to `Timere.Time_zone.make`
 
@@ -17,6 +17,8 @@
 - Updated ISO8601 parser to tolerate numbers expressed in only one digit
 
 - Added size checking to `Timere.Time_zone.make_offset_only*`
+
+- Removed raising of `Invalid_argument` outside of Timere combinators
 
 ## Timere 0.3.1
 
