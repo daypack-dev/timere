@@ -100,16 +100,28 @@ let span_of_raw (r : raw) : Span.t =
 let normalize (t : t) : t = t |> to_span |> of_span
 
 let make ?(sign = `Pos) ?(days = 0) ?(hours = 0) ?(minutes = 0) ?(seconds = 0)
-    ?(ns = 0) () : t =
+    ?(ns = 0) () : t option =
   if days >= 0 && hours >= 0 && minutes >= 0 && seconds >= 0 then
-    ({ sign; days; hours; minutes; seconds; ns } : t) |> normalize
-  else invalid_arg "make"
+    Some (({ sign; days; hours; minutes; seconds; ns } : t) |> normalize)
+  else None
+
+let make_exn ?sign ?days ?hours ?minutes ?seconds ?ns () =
+  match make ?sign ?days ?hours ?minutes ?seconds ?ns () with
+  | Some x -> x
+  | None -> invalid_arg "make_exn"
 
 let make_frac ?(sign = `Pos) ?(days = 0.0) ?(hours = 0.0) ?(minutes = 0.0)
-    ?(seconds = 0.0) ?(ns = 0) () : t =
+    ?(seconds = 0.0) ?(ns = 0) () : t option =
   if days >= 0.0 && hours >= 0.0 && minutes >= 0.0 && seconds >= 0.0 && ns >= 0
   then
     ({ sign; days; hours; minutes; seconds; ns } : raw)
     |> span_of_raw
     |> of_span
-  else invalid_arg "make_frac"
+    |> CCOpt.return
+  else
+    None
+
+let make_frac_exn ?sign ?days ?hours ?minutes ?seconds ?ns () =
+  match make_frac ?sign ?days ?hours ?minutes ?seconds ?ns () with
+  | Some x -> x
+  | None -> invalid_arg "make_exn"

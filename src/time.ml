@@ -836,7 +836,7 @@ let make_hms_exn ~hour ~minute ~second =
   | None -> invalid_arg "make_hms_exn"
 
 let second_of_day_of_hms x =
-  Duration.make ~hours:x.hour ~minutes:x.minute ~seconds:x.second ()
+  Duration.make_exn ~hours:x.hour ~minutes:x.minute ~seconds:x.second ()
   |> Duration.to_span
   |> fun x -> Int64.to_int Span.(x.s)
 
@@ -1536,7 +1536,7 @@ let bounded_intervals pick (bound : Duration.t)
     Bounded_intervals { pick; bound = Duration.to_span bound; start; end_exc }
 
 let hms_intervals_exc (hms_a : hms) (hms_b : hms) : t =
-  bounded_intervals `Whole (Duration.make ~days:1 ())
+  bounded_intervals `Whole (Duration.make_exn ~days:1 ())
     (Points.make_exn ~hour:hms_a.hour ~minute:hms_a.minute ~second:hms_a.second
        ())
     (Points.make_exn ~hour:hms_b.hour ~minute:hms_b.minute ~second:hms_b.second

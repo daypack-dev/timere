@@ -123,7 +123,7 @@ let fixed_offset_name_parser =
   <|> (max_two_digit_nat_zero >>= fun hour -> return (hour, 0))
   >>= fun (hour, minute) ->
   if hour < 24 && minute < 60 then
-    return (Duration.make ~sign ~hours:hour ~minutes:minute ())
+    return (Duration.make_exn ~sign ~hours:hour ~minutes:minute ())
   else fail "Invalid offset"
 
 let fixed_offset_of_name (s : string) : Duration.t option =
@@ -134,7 +134,7 @@ let fixed_offset_of_name (s : string) : Duration.t option =
   | Ok dt -> Some dt
   | Error _ -> None
 
-let one_day = Duration.(make ~days:1 () |> to_span)
+let one_day = Duration.(make_exn ~days:1 () |> to_span)
 
 let make_offset_only_span (offset : Span.t) =
   if Span.abs offset >= one_day then

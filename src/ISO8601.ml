@@ -62,7 +62,7 @@ let to_date_time s : (Time.Date_time'.t, string) result =
              >>= fun sign ->
              hm_p
              |>> fun (hour, minute) ->
-             Duration.make ~sign ~hours:hour ~minutes:minute ())
+             Duration.make_exn ~sign ~hours:hour ~minutes:minute ())
   in
   let p =
     nat_zero

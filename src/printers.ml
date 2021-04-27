@@ -126,7 +126,7 @@ module Format_string_parsers = struct
          match tz_offset_s with
          | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
          | Some tz_offset_s ->
-           let d = Duration.make ~seconds:(abs tz_offset_s) () in
+           let d = Duration.make_exn ~seconds:(abs tz_offset_s) () in
            return (pad_int padding Duration.(d.hours)));
         (attempt (string "tzoff-min:")
          >> padding
@@ -134,7 +134,7 @@ module Format_string_parsers = struct
          match tz_offset_s with
          | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
          | Some tz_offset_s ->
-           let d = Duration.make ~seconds:(abs tz_offset_s) () in
+           let d = Duration.make_exn ~seconds:(abs tz_offset_s) () in
            return (pad_int padding Duration.(d.minutes)));
         (attempt (string "tzoff-sec:")
          >> padding
@@ -142,7 +142,7 @@ module Format_string_parsers = struct
          match tz_offset_s with
          | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
          | Some tz_offset_s ->
-           let d = Duration.make ~seconds:(abs tz_offset_s) () in
+           let d = Duration.make_exn ~seconds:(abs tz_offset_s) () in
            return (pad_int padding Duration.(d.seconds)));
         (* string "unix"
          * >> return (Int64.to_string (Time.Date_time'.to_timestamp date_time)); *)

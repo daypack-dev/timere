@@ -282,12 +282,22 @@ module Duration : sig
     ?seconds:int ->
     ?ns:int ->
     unit ->
-    t
+    t option
   (**
      [sign] defaults to [`Pos].
 
-     @raise Invalid_argument if any of the arguments are negative
+     Returns [None] if any of the arguments are negative.
   *)
+
+  val make_exn :
+    ?sign:sign ->
+    ?days:int ->
+    ?hours:int ->
+    ?minutes:int ->
+    ?seconds:int ->
+    ?ns:int ->
+    unit ->
+    t
 
   val make_frac :
     ?sign:sign ->
@@ -297,12 +307,22 @@ module Duration : sig
     ?seconds:float ->
     ?ns:int ->
     unit ->
-    t
+    t option
   (**
      [sign] defaults to [`Pos].
 
-     @raise Invalid_argument if any of the arguments are negative
+     Returns [None] if any of the arguments are negative
   *)
+
+  val make_frac_exn :
+    ?sign:sign ->
+    ?days:float ->
+    ?hours:float ->
+    ?minutes:float ->
+    ?seconds:float ->
+    ?ns:int ->
+    unit ->
+    t
 
   val zero : t
 

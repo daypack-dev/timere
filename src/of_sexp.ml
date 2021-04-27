@@ -63,11 +63,15 @@ let tz_make_of_sexp (x : CCSexp.t) =
 let duration_of_sexp (x : CCSexp.t) =
   match x with
   | `List [ `Atom "duration"; days; hours; minutes; seconds ] ->
-    let days = int_of_sexp days in
-    let hours = int_of_sexp hours in
-    let minutes = int_of_sexp minutes in
-    let seconds = int_of_sexp seconds in
-    Duration.make ~days ~hours ~minutes ~seconds ()
+    (
+      let days = int_of_sexp days in
+      let hours = int_of_sexp hours in
+      let minutes = int_of_sexp minutes in
+      let seconds = int_of_sexp seconds in
+      match Duration.make ~days ~hours ~minutes ~seconds () with
+      | None -> invalid_data (Printf.sprintf "Invalid duration: %s" (CCSexp.to_string x))
+      | Some d -> d
+    )
   | _ ->
     invalid_data (Printf.sprintf "Invalid duration: %s" (CCSexp.to_string x))
 

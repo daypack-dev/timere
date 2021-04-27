@@ -373,9 +373,9 @@ let do_chunk_at_month_boundary tz (s : Time.Interval'.t Seq.t) =
   aux s
 
 let dynamic_search_space_adjustment_trigger_size =
-  Duration.(make ~days:30 () |> to_span)
+  Duration.(make_exn ~days:30 () |> to_span)
 
-let inter_slice_size = Duration.(make ~days:10 () |> to_span)
+let inter_slice_size = Duration.(make_exn ~days:10 () |> to_span)
 
 let slice_search_space ~start (t : t) : t =
   let current = get_search_space t |> CCList.to_seq in
