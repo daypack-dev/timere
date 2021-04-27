@@ -24,11 +24,10 @@ let make_date_time ~rng ~min_year ~max_year_inc =
     |> Time_zone.make_exn
   in
   match Time.Date_time'.make ~year ~month ~day ~hour ~minute ~second ~tz () with
-  | None ->
-    Time.Date_time'.make ~year ~month ~day ~hour ~minute ~second
+  | Error _ ->
+    Time.Date_time'.make_exn ~year ~month ~day ~hour ~minute ~second
       ~tz:Time_zone.utc ()
-    |> CCOpt.get_exn
-  | Some x -> x
+  | Ok x -> x
 
 let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
   let len = min 5 (rng ()) in
@@ -178,12 +177,12 @@ let make_duration ~rng =
   let sign = if rng () mod 2 = 0 then `Pos else `Neg in
   let seconds = rng () in
   let ns = 1 + rng () in
-  Duration.make ~sign ~seconds ~ns ()
+  Duration.make_exn ~sign ~seconds ~ns ()
 
 let make_pos_duration ~rng =
   let seconds = rng () in
   let ns = 1 + rng () in
-  Duration.make ~seconds ~ns ()
+  Duration.make_exn ~seconds ~ns ()
 
 let make_chunking ~rng : Time_ast.chunking =
   match rng () mod 5 with

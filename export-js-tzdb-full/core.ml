@@ -47,8 +47,8 @@ let date_time_of_js_date (date : Js.date Js.t) =
     Timere.Date_time.make ~year ~month ~day ~hour ~minute ~second
       ~tz:Timere.Time_zone.utc ()
   with
-  | None -> raise_with_msg "Invalid date"
-  | Some x -> x
+  | Error _ -> raise_with_msg "Invalid date"
+  | Ok x -> x
 
 let to_be_exported =
   object%js

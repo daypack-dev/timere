@@ -548,7 +548,7 @@ module Ast_normalize = struct
       ( CCOpt.get_exn pos,
         text_map_empty,
         Duration
-          (Timere.Duration.make_frac
+          (Timere.Duration.make_frac_exn
              ~days:(CCOpt.value ~default:0.0 days)
              ~hours:(CCOpt.value ~default:0.0 hours)
              ~minutes:(CCOpt.value ~default:0.0 minutes)
@@ -596,7 +596,7 @@ module Ast_normalize = struct
           ( CCOpt.value ~default:pos_seconds pos,
             text_map_empty,
             Duration
-              (Timere.Duration.make_frac
+              (Timere.Duration.make_frac_exn
                  ~days:(CCOpt.value ~default:0.0 days)
                  ~hours:(CCOpt.value ~default:0.0 hours)
                  ~minutes:(CCOpt.value ~default:0.0 minutes)
@@ -951,7 +951,7 @@ let t_of_hmss (hmss : Timere.hms Timere.range list) =
                | `Some p1, `Some p2 ->
                  Ok
                    Timere.(
-                     bounded_intervals `Whole (Duration.make ~days:2 ()) p1 p2)
+                     bounded_intervals `Whole (Duration.make_exn ~days:2 ()) p1 p2)
                | _ -> Error ())
          | _ -> failwith "unexpected case")
       hmss
@@ -1111,7 +1111,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Duration.make ~days:((year2 - year1 + 1) * 366) ())
+               (Timere.Duration.make_exn ~days:((year2 - year1 + 1) * 366) ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1142,7 +1142,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Duration.make ~days:366 ())
+               (Timere.Duration.make_exn ~days:366 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1171,7 +1171,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Duration.make ~days:366 ())
+               (Timere.Duration.make_exn ~days:366 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1192,7 +1192,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Duration.make ~days:366 ())
+               (Timere.Duration.make_exn ~days:366 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1242,7 +1242,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Duration.make ~days:366 ())
+               (Timere.Duration.make_exn ~days:366 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1288,7 +1288,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Duration.make ~days:32 ())
+               (Timere.Duration.make_exn ~days:32 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1316,7 +1316,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Duration.make ~days:32 ())
+               (Timere.Duration.make_exn ~days:32 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1358,7 +1358,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Duration.make ~days:32 ())
+               (Timere.Duration.make_exn ~days:32 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1381,7 +1381,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Duration.make ~days:2 ())
+               (Timere.Duration.make_exn ~days:2 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1393,7 +1393,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Duration.make ~days:2 ())
+               (Timere.Duration.make_exn ~days:2 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1492,15 +1492,15 @@ let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t
             Timere.Date_time.make ~year ~month ~day ~hour:hms.hour
               ~minute:hms.minute ~second:hms.second ~tz ()
           with
-          | Some x -> Ok x
-          | None -> Error "Invalid date time")
+          | Ok x -> Ok x
+          | Error _ -> Error "Invalid date time")
     | Tokens [ (_, _, Ymd ((_, year), (_, month), (_, day))) ] -> (
         match
           Timere.Date_time.make ~year ~month ~day ~hour:0 ~minute:0 ~second:0
             ~tz ()
         with
-        | Some x -> Ok x
-        | None -> Error "Invalid date time")
+        | Ok x -> Ok x
+        | Error _ -> Error "Invalid date time")
     | Unary_op (With_time_zone tz, ast) -> aux tz ast
     | _ -> Error "Unrecognized pattern"
   in

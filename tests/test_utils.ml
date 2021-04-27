@@ -77,7 +77,7 @@ let duration_gen =
   map
     (fun (pos, days, hours, (minutes, seconds, ns)) ->
        let sign = if pos then `Pos else `Neg in
-       Duration.make ~sign ~days ~hours ~minutes ~seconds ~ns ())
+       Duration.make_exn ~sign ~days ~hours ~minutes ~seconds ~ns ())
     (quad bool nat nat (triple nat nat nat))
 
 let duration = QCheck.make ~print:Print_utils.duration duration_gen
@@ -352,14 +352,12 @@ let tz_testable : (module Alcotest.TESTABLE with type t = Time_zone.t) =
 let time_gen : Time_ast.t QCheck.Gen.t =
   let open QCheck.Gen in
   let search_start_dt =
-    CCOpt.get_exn
-    @@ Time.Date_time'.make ~year:2018 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+    Time.Date_time'.make_exn ~year:2018 ~month:`Jan ~day:1 ~hour:0 ~minute:0
       ~second:0 ~tz:Time_zone.utc ()
   in
   let search_start = Time.Date_time'.to_timestamp_single search_start_dt in
   let search_end_exc_dt =
-    CCOpt.get_exn
-    @@ Time.Date_time'.make ~year:2021 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+    Time.Date_time'.make_exn ~year:2021 ~month:`Jan ~day:1 ~hour:0 ~minute:0
       ~second:0 ~tz:Time_zone.utc ()
   in
   let search_end_exc = Time.Date_time'.to_timestamp_single search_end_exc_dt in

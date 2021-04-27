@@ -64,7 +64,7 @@ module Alco = struct
       "same timestamp"
       (CCResult.get_exn @@ ISO8601.to_timestamp "1979-05-27T07:32:00-07:00")
       (Time.Date_time'.make_exn
-         ~tz:(Time_zone.make_offset_only (Duration.make ~sign:`Neg ~hours:7 ()))
+         ~tz:(Time_zone.make_offset_only_exn (Duration.make_exn ~sign:`Neg ~hours:7 ()))
          ~year:1979 ~month:`May ~day:27 ~hour:7 ~minute:32 ~second:0 ()
        |> Time.Date_time'.to_timestamp_single)
 
@@ -74,7 +74,7 @@ module Alco = struct
       (CCResult.get_exn
        @@ ISO8601.to_timestamp "1979-05-27T07:32:00.999999-07:00")
       (Time.Date_time'.make_exn
-         ~tz:(Time_zone.make_offset_only (Duration.make ~sign:`Neg ~hours:7 ()))
+         ~tz:(Time_zone.make_offset_only_exn (Duration.make_exn ~sign:`Neg ~hours:7 ()))
          ~year:1979 ~month:`May ~day:27 ~hour:7 ~minute:32 ~second:0
          ~ns:999_999_000 ()
        |> Time.Date_time'.to_timestamp_single)
@@ -85,7 +85,7 @@ module Alco = struct
       (CCResult.get_exn
        @@ ISO8601.to_timestamp "1979-05-27T07:32:00.999999999-07:00")
       (Time.Date_time'.make_exn
-         ~tz:(Time_zone.make_offset_only (Duration.make ~sign:`Neg ~hours:7 ()))
+         ~tz:(Time_zone.make_offset_only_exn (Duration.make_exn ~sign:`Neg ~hours:7 ()))
          ~year:1979 ~month:`May ~day:27 ~hour:7 ~minute:32 ~second:0
          ~ns:999_999_999 ()
        |> Time.Date_time'.to_timestamp_single)
@@ -96,7 +96,7 @@ module Alco = struct
       (CCResult.get_exn
        @@ ISO8601.to_timestamp "1979-05-27T07:32:00.000999999-07:00")
       (Time.Date_time'.make_exn
-         ~tz:(Time_zone.make_offset_only (Duration.make ~sign:`Neg ~hours:7 ()))
+         ~tz:(Time_zone.make_offset_only_exn (Duration.make_exn ~sign:`Neg ~hours:7 ()))
          ~year:1979 ~month:`May ~day:27 ~hour:7 ~minute:32 ~second:0 ~ns:999_999
          ()
        |> Time.Date_time'.to_timestamp_single)
