@@ -118,8 +118,7 @@ let make_frac ?(sign = `Pos) ?(days = 0.0) ?(hours = 0.0) ?(minutes = 0.0)
     |> span_of_raw
     |> of_span
     |> CCOpt.return
-  else
-    None
+  else None
 
 let make_frac_exn ?sign ?days ?hours ?minutes ?seconds ?ns () =
   match make_frac ?sign ?days ?hours ?minutes ?seconds ?ns () with

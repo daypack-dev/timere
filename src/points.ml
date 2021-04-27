@@ -56,52 +56,51 @@ let make ?tz ?tz_offset ?year ?month ?day ?weekday ?hour ?minute ~second () :
   let tz_info =
     match (tz, tz_offset) with
     | None, None -> None
-    | _, _ -> (make_tz_info ?tz ?tz_offset ())
+    | _, _ -> make_tz_info ?tz ?tz_offset ()
   in
-    let year_is_fine =
-      match year with
-      | None -> true
-      | Some year -> Constants.min_year <= year && year <= Constants.max_year
+  let year_is_fine =
+    match year with
+    | None -> true
+    | Some year -> Constants.min_year <= year && year <= Constants.max_year
+  in
+  let month_day_is_fine =
+    match day with None -> true | Some x -> -31 <= x && x <= 31 && x <> 0
+  in
+  let hour_is_fine =
+    match hour with None -> true | Some x -> 0 <= x && x < 24
+  in
+  let minute_is_fine =
+    match hour with None -> true | Some x -> 0 <= x && x < 60
+  in
+  let second_is_fine =
+    match hour with None -> true | Some x -> 0 <= x && x < 60
+  in
+  if
+    year_is_fine
+    && month_day_is_fine
+    && hour_is_fine
+    && minute_is_fine
+    && second_is_fine
+  then
+    let pick =
+      match (year, month, day, weekday, hour, minute) with
+      | None, None, None, None, None, None -> Some (S second)
+      | None, None, None, None, None, Some minute ->
+        Some (MS { minute; second })
+      | None, None, None, None, Some hour, Some minute ->
+        Some (HMS { hour; minute; second })
+      | None, None, None, Some weekday, Some hour, Some minute ->
+        Some (WHMS { weekday; hour; minute; second })
+      | None, None, Some month_day, None, Some hour, Some minute ->
+        Some (DHMS { month_day; hour; minute; second })
+      | None, Some month, Some month_day, None, Some hour, Some minute ->
+        Some (MDHMS { month; month_day; hour; minute; second })
+      | Some year, Some month, Some month_day, None, Some hour, Some minute ->
+        Some (YMDHMS { year; month; month_day; hour; minute; second })
+      | _ -> None
     in
-    let month_day_is_fine =
-      match day with None -> true | Some x -> -31 <= x && x <= 31 && x <> 0
-    in
-    let hour_is_fine =
-      match hour with None -> true | Some x -> 0 <= x && x < 24
-    in
-    let minute_is_fine =
-      match hour with None -> true | Some x -> 0 <= x && x < 60
-    in
-    let second_is_fine =
-      match hour with None -> true | Some x -> 0 <= x && x < 60
-    in
-    if
-      year_is_fine
-      && month_day_is_fine
-      && hour_is_fine
-      && minute_is_fine
-      && second_is_fine
-    then
-      let pick =
-        match (year, month, day, weekday, hour, minute) with
-        | None, None, None, None, None, None -> Some (S second)
-        | None, None, None, None, None, Some minute ->
-          Some (MS { minute; second })
-        | None, None, None, None, Some hour, Some minute ->
-          Some (HMS { hour; minute; second })
-        | None, None, None, Some weekday, Some hour, Some minute ->
-          Some (WHMS { weekday; hour; minute; second })
-        | None, None, Some month_day, None, Some hour, Some minute ->
-          Some (DHMS { month_day; hour; minute; second })
-        | None, Some month, Some month_day, None, Some hour, Some minute ->
-          Some (MDHMS { month; month_day; hour; minute; second })
-        | Some year, Some month, Some month_day, None, Some hour, Some minute
-          ->
-          Some (YMDHMS { year; month; month_day; hour; minute; second })
-        | _ -> None
-      in
-      CCOpt.map (fun pick -> (pick, tz_info)) pick
-    else None
+    CCOpt.map (fun pick -> (pick, tz_info)) pick
+  else None
 
 let make_exn ?tz ?tz_offset ?year ?month ?day ?weekday ?hour ?minute ~second ()
   =

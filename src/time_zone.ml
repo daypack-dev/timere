@@ -137,18 +137,18 @@ let fixed_offset_of_name (s : string) : Duration.t option =
 let one_day = Duration.(make_exn ~days:1 () |> to_span)
 
 let make_offset_only_span (offset : Span.t) =
-  if Span.abs offset > one_day then
-    None
+  if Span.abs offset > one_day then None
   else
     let offset = CCInt64.to_int offset.s in
-    Some {
-      typ = Offset_only offset;
-      record =
-        process_table
-          ( Bigarray.Array1.of_array Bigarray.Int64 Bigarray.C_layout
-              [| Constants.timestamp_min.s |],
-            [| { is_dst = false; offset } |] );
-    }
+    Some
+      {
+        typ = Offset_only offset;
+        record =
+          process_table
+            ( Bigarray.Array1.of_array Bigarray.Int64 Bigarray.C_layout
+                [| Constants.timestamp_min.s |],
+              [| { is_dst = false; offset } |] );
+      }
 
 let make_offset_only_span_exn offset =
   match make_offset_only_span offset with

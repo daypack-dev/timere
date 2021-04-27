@@ -502,8 +502,8 @@ module Date_time : sig
       In other words, second 60 is represented via [ns] field.
   *)
 
-  type error = [
-    | `Does_not_exist
+  type error =
+    [ `Does_not_exist
     | `Invalid_year of int
     | `Invalid_day of int
     | `Invalid_hour of int
@@ -512,7 +512,7 @@ module Date_time : sig
     | `Invalid_frac of float
     | `Invalid_ns of int
     | `Invalid_tz_info of string option * Duration.t
-  ]
+    ]
 
   val string_of_error : error -> string
 
