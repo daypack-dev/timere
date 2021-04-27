@@ -970,30 +970,30 @@ val sorted_interval_seq : ?skip_invalid:bool -> Interval.t Seq.t -> t
 module Points : sig
   type t
 
-  type error = [
-    | `Invalid_year of int
+  type error =
+    [ `Invalid_year of int
     | `Invalid_day of int
     | `Invalid_hour of int
     | `Invalid_minute of int
     | `Invalid_second of int
     | `Invalid_pattern_combination
     | `Invalid_tz_info of string option * Duration.t
-  ]
+    ]
 
   exception Error_exn of error
 
   val make :
-  ?tz:Time_zone.t ->
-  ?tz_offset:Duration.t ->
-  ?year:int ->
-  ?month:month ->
-  ?day:int ->
-  ?weekday:weekday ->
-  ?hour:int ->
-  ?minute:int ->
-  second:int ->
-  unit ->
-  (t, error) result
+    ?tz:Time_zone.t ->
+    ?tz_offset:Duration.t ->
+    ?year:int ->
+    ?month:month ->
+    ?day:int ->
+    ?weekday:weekday ->
+    ?hour:int ->
+    ?minute:int ->
+    second:int ->
+    unit ->
+    (t, error) result
   (** [make_points] call must be exactly one of the following forms (ignoring [tz] and [tz_offset_s] which are optional in all cases)
       {v
 make_points ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()

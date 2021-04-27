@@ -143,11 +143,11 @@ let equal_tz_info (x : tz_info) (y : tz_info) =
     Time_zone.equal tz1 tz2 && Duration.equal x1 x2
   | _, _ -> false
 
-type tz_info_error = [
-  | `Missing_both_tz_and_tz_offset
+type tz_info_error =
+  [ `Missing_both_tz_and_tz_offset
   | `Invalid_offset of Duration.t
   | `Unrecorded_offset of Duration.t
-]
+  ]
 
 let make_tz_info ?tz ?tz_offset () : (tz_info, tz_info_error) result =
   match (tz, tz_offset) with
@@ -156,11 +156,9 @@ let make_tz_info ?tz ?tz_offset () : (tz_info, tz_info_error) result =
   | None, Some tz_offset -> (
       match Time_zone.make_offset_only tz_offset with
       | None -> Error (`Invalid_offset tz_offset)
-      | Some tz -> Ok (tz, Some tz_offset)
-    )
+      | Some tz -> Ok (tz, Some tz_offset))
   | Some tz, Some tz_offset ->
-    if Time_zone.offset_is_recorded tz_offset tz then
-      Ok (tz, Some tz_offset)
+    if Time_zone.offset_is_recorded tz_offset tz then Ok (tz, Some tz_offset)
     else Error (`Unrecorded_offset tz_offset)
 
 let tz_offset_of_tz_info ((tz, tz_offset) : tz_info) =

@@ -1148,11 +1148,9 @@ module Date_time' = struct
       let tz_info : (tz_info, error) result =
         match make_tz_info ?tz ~tz_offset () with
         | Error `Missing_both_tz_and_tz_offset -> failwith "Unexpected case"
-        | Error (`Invalid_offset _)
-        | Error (`Unrecorded_offset _) ->
+        | Error (`Invalid_offset _) | Error (`Unrecorded_offset _) ->
           make_invalid_tz_info_error ?tz ~tz_offset ()
-        | Ok ((tz', _) as tz_info) ->
-          (
+        | Ok ((tz', _) as tz_info) -> (
             match
               to_timestamp_pretend_utc
                 {
@@ -1171,20 +1169,20 @@ module Date_time' = struct
                 let tz_offset_s =
                   Int64.to_int (Duration.to_span tz_offset).s
                 in
-                match Time_zone.lookup_timestamp_local tz' timestamp_local with
-                | `None ->
-                  make_invalid_tz_info_error ?tz ~tz_offset ()
+                match
+                  Time_zone.lookup_timestamp_local tz' timestamp_local
+                with
+                | `None -> make_invalid_tz_info_error ?tz ~tz_offset ()
                 | `Single e ->
-                  if e.offset = tz_offset_s then Ok tz_info else
-                    make_invalid_tz_info_error ?tz ~tz_offset ()
+                  if e.offset = tz_offset_s then Ok tz_info
+                  else make_invalid_tz_info_error ?tz ~tz_offset ()
                 | `Ambiguous (e1, e2) ->
                   if e1.offset = tz_offset_s || e2.offset = tz_offset_s then
                     Ok tz_info
                   else Error `Does_not_exist))
       in
       (match tz_info with
-       | Error e ->
-         Error e
+       | Error e -> Error e
        | Ok tz_info -> (
            let dt = { year; month; day; hour; minute; second; ns; tz_info } in
            match to_timestamp_precise_unsafe dt with
