@@ -1135,6 +1135,9 @@ module Date_time' = struct
 
   let make_unambiguous ?tz ?(ns = 0) ?(frac = 0.) ~year ~month ~day ~hour
       ~minute ~second ~tz_offset () =
+    let make_invalid_tz_info_error ?tz ~tz_offset () =
+      Error (`Invalid_tz_info (CCOpt.map Time_zone.name tz, tz_offset))
+    in
     match
       check_args_and_normalize_ns ~year ~day ~hour ~minute ~second ~ns ~frac
     with
@@ -1142,10 +1145,14 @@ module Date_time' = struct
     | Ok ns ->
       let is_leap_second = second = 60 in
       let second = if second = 60 then 59 else second in
-      let tz_info : tz_info option =
+      let tz_info : (tz_info, error) result =
         match make_tz_info ?tz ~tz_offset () with
-        | None -> None
-        | Some ((tz, _) as tz_info) -> (
+        | Error `Missing_both_tz_and_tz_offset -> failwith "Unexpected case"
+        | Error (`Invalid_offset _)
+        | Error (`Unrecorded_offset _) ->
+          make_invalid_tz_info_error ?tz ~tz_offset ()
+        | Ok ((tz', _) as tz_info) ->
+          (
             match
               to_timestamp_pretend_utc
                 {
@@ -1159,24 +1166,26 @@ module Date_time' = struct
                   tz_info = dummy_tz_info;
                 }
             with
-            | None -> None
+            | None -> Error `Does_not_exist
             | Some { s = timestamp_local; ns = _ } -> (
                 let tz_offset_s =
                   Int64.to_int (Duration.to_span tz_offset).s
                 in
-                match Time_zone.lookup_timestamp_local tz timestamp_local with
-                | `None -> None
+                match Time_zone.lookup_timestamp_local tz' timestamp_local with
+                | `None ->
+                  make_invalid_tz_info_error ?tz ~tz_offset ()
                 | `Single e ->
-                  if e.offset = tz_offset_s then Some tz_info else None
+                  if e.offset = tz_offset_s then Ok tz_info else
+                    make_invalid_tz_info_error ?tz ~tz_offset ()
                 | `Ambiguous (e1, e2) ->
                   if e1.offset = tz_offset_s || e2.offset = tz_offset_s then
-                    Some tz_info
-                  else None))
+                    Ok tz_info
+                  else Error `Does_not_exist))
       in
       (match tz_info with
-       | None ->
-         Error (`Invalid_tz_info (CCOpt.map Time_zone.name tz, tz_offset))
-       | Some tz_info -> (
+       | Error e ->
+         Error e
+       | Ok tz_info -> (
            let dt = { year; month; day; hour; minute; second; ns; tz_info } in
            match to_timestamp_precise_unsafe dt with
            | `None -> Error `Does_not_exist
@@ -1200,7 +1209,7 @@ module Date_time' = struct
 
   let of_points
       ?(default_tz_info =
-        CCOpt.get_exn
+        CCResult.get_exn
         @@ make_tz_info ~tz:(Time_zone_utils.get_local_tz_for_arg ()) ())
       ((pick, tz_info) : Points.t) : t option =
     match pick with

@@ -225,7 +225,7 @@ let overapproximate_search_space_bottom_up default_tz (time : t) : t =
         match
           Time.Date_time'.of_points
             ~default_tz_info:
-              (CCOpt.get_exn
+              (CCResult.get_exn
                @@ Date_time_components.make_tz_info ~tz:default_tz ())
             start
         with

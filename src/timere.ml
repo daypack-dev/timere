@@ -129,11 +129,9 @@ end
 
 type 'a range = 'a Range.range
 
+module Points = Points
+
 type points = Points.t
-
-let make_points = Points.make
-
-let make_points_exn = Points.make_exn
 
 let resolve = Resolver.resolve
 
