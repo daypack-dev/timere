@@ -898,40 +898,40 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.hms option)
       match (year, month, day, weekday, hms) with
       | None, None, None, None, Some hms ->
         `Some
-          (Timere.make_points_exn ~hour:hms.hour ~minute:hms.minute
+          (Timere.Points.make_exn ~hour:hms.hour ~minute:hms.minute
              ~second:hms.second ())
       | None, None, None, Some weekday, Some hms ->
         `Some
-          (Timere.make_points_exn ~weekday ~hour:hms.hour ~minute:hms.minute
+          (Timere.Points.make_exn ~weekday ~hour:hms.hour ~minute:hms.minute
              ~second:hms.second ())
       | None, None, Some day, None, Some hms ->
         `Some
-          (Timere.make_points_exn ~day ~hour:hms.hour ~minute:hms.minute
+          (Timere.Points.make_exn ~day ~hour:hms.hour ~minute:hms.minute
              ~second:hms.second ())
       | None, Some month, Some day, None, Some hms ->
         `Some
-          (Timere.make_points_exn ~month ~day ~hour:hms.hour
+          (Timere.Points.make_exn ~month ~day ~hour:hms.hour
              ~minute:hms.minute ~second:hms.second ())
       | Some year, Some month, Some day, None, Some hms ->
         `Some
-          (Timere.make_points_exn ~year ~month ~day ~hour:hms.hour
+          (Timere.Points.make_exn ~year ~month ~day ~hour:hms.hour
              ~minute:hms.minute ~second:hms.second ())
       | Some year, None, None, None, None ->
         `Some
-          (Timere.make_points_exn ~year ~month:default_month ~day:default_day
+          (Timere.Points.make_exn ~year ~month:default_month ~day:default_day
              ~hour:default_hour ~minute:default_minute ~second:default_second
              ())
       | None, Some month, None, None, None ->
         `Some
-          (Timere.make_points_exn ~month ~day:default_day ~hour:default_hour
+          (Timere.Points.make_exn ~month ~day:default_day ~hour:default_hour
              ~minute:default_minute ~second:default_second ())
       | None, None, Some day, None, None ->
         `Some
-          (Timere.make_points_exn ~day ~hour:default_hour
+          (Timere.Points.make_exn ~day ~hour:default_hour
              ~minute:default_minute ~second:default_second ())
       | None, None, None, Some weekday, None ->
         `Some
-          (Timere.make_points_exn ~weekday ~hour:default_hour
+          (Timere.Points.make_exn ~weekday ~hour:default_hour
              ~minute:default_minute ~second:default_second ())
       | _ -> invalid_arg "points")
 

@@ -151,22 +151,22 @@ let to_be_exported =
 
     val points =
       object%js
-        method s second = Timere.make_points ~second ()
+        method s second = Timere.Points.make ~second ()
 
-        method ms minute second = Timere.make_points ~minute ~second ()
+        method ms minute second = Timere.Points.make ~minute ~second ()
 
         method hms hour minute second =
-          Timere.make_points ~hour ~minute ~second ()
+          Timere.Points.make ~hour ~minute ~second ()
 
         method whms weekday hour minute second =
-          Timere.make_points ~weekday:(weekday_of_int weekday) ~hour ~minute
+          Timere.Points.make ~weekday:(weekday_of_int weekday) ~hour ~minute
             ~second ()
 
         method dhms day hour minute second =
-          Timere.make_points ~day ~hour ~minute ~second ()
+          Timere.Points.make ~day ~hour ~minute ~second ()
 
         method mdhms month day hour minute second =
-          Timere.make_points ~month:(month_of_int month) ~day ~hour ~minute
+          Timere.Points.make ~month:(month_of_int month) ~day ~hour ~minute
             ~second ()
       end
 
