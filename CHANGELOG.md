@@ -10,6 +10,8 @@
 
 - Added recognition of "UTC+/-offset", e.g. "UTC+7", "UTC-07:00", to `Timere.Time_zone.make`
 
+- Tuning behaviour of `Timere.Time_zone.make` for handling time zones with `UTC` prefix
+
 - Updated ISO8601 parser to tolerate separator other than `T`
 
 - Updated ISO8601 parser to tolerate numbers expressed in only one digit
