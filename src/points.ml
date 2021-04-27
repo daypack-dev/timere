@@ -41,6 +41,18 @@ type pick =
 
 type t = pick * tz_info option
 
+type error = [
+  | `Invalid_year of int
+  | `Invalid_day of int
+  | `Invalid_hour of int
+  | `Invalid_minute of int
+  | `Invalid_second of int
+  | `Invalid_pattern_combination
+  | `Invalid_tz_info of string option * Duration.t
+]
+
+exception Error_exn of error
+
 let precision ((pick, _) : t) : int =
   match pick with
   | S _ -> 0
@@ -52,12 +64,18 @@ let precision ((pick, _) : t) : int =
   | YMDHMS _ -> 6
 
 let make ?tz ?tz_offset ?year ?month ?day ?weekday ?hour ?minute ~second () :
-  t option =
+  (t, error) result =
   let tz_info =
-    match (tz, tz_offset) with
-    | None, None -> None
-    | _, _ -> make_tz_info ?tz ?tz_offset ()
+    match make_tz_info ?tz ?tz_offset () with
+    | Ok tz_info -> Ok (Some tz_info)
+    | Error `Missing_both_tz_and_tz_offset -> Ok None
+    | Error (`Invalid_offset tz_offset)
+    | Error (`Unrecorded_offset tz_offset) ->
+      Error (`Invalid_tz_info (CCOpt.map Time_zone.name tz, tz_offset))
   in
+  match tz_info with
+  | Error e -> Error e
+  | Ok tz_info ->
   let year_is_fine =
     match year with
     | None -> true
@@ -70,45 +88,52 @@ let make ?tz ?tz_offset ?year ?month ?day ?weekday ?hour ?minute ~second () :
     match hour with None -> true | Some x -> 0 <= x && x < 24
   in
   let minute_is_fine =
-    match hour with None -> true | Some x -> 0 <= x && x < 60
+    match minute with None -> true | Some x -> 0 <= x && x < 60
   in
   let second_is_fine =
-    match hour with None -> true | Some x -> 0 <= x && x < 60
+    0 <= second && second < 60
   in
-  if
-    year_is_fine
-    && month_day_is_fine
-    && hour_is_fine
-    && minute_is_fine
-    && second_is_fine
-  then
+  if not year_is_fine then
+    Error (`Invalid_year (CCOpt.get_exn year))
+  else
+  if not month_day_is_fine then
+    Error (`Invalid_day (CCOpt.get_exn day))
+  else
+  if not hour_is_fine then
+    Error (`Invalid_hour (CCOpt.get_exn hour))
+  else
+  if not minute_is_fine then
+    Error (`Invalid_minute (CCOpt.get_exn minute))
+  else
+    if not second_is_fine then
+      Error (`Invalid_second second)
+    else
     let pick =
       match (year, month, day, weekday, hour, minute) with
-      | None, None, None, None, None, None -> Some (S second)
+      | None, None, None, None, None, None -> Ok (S second)
       | None, None, None, None, None, Some minute ->
-        Some (MS { minute; second })
+        Ok (MS { minute; second })
       | None, None, None, None, Some hour, Some minute ->
-        Some (HMS { hour; minute; second })
+        Ok (HMS { hour; minute; second })
       | None, None, None, Some weekday, Some hour, Some minute ->
-        Some (WHMS { weekday; hour; minute; second })
+        Ok (WHMS { weekday; hour; minute; second })
       | None, None, Some month_day, None, Some hour, Some minute ->
-        Some (DHMS { month_day; hour; minute; second })
+        Ok (DHMS { month_day; hour; minute; second })
       | None, Some month, Some month_day, None, Some hour, Some minute ->
-        Some (MDHMS { month; month_day; hour; minute; second })
+        Ok (MDHMS { month; month_day; hour; minute; second })
       | Some year, Some month, Some month_day, None, Some hour, Some minute ->
-        Some (YMDHMS { year; month; month_day; hour; minute; second })
-      | _ -> None
+        Ok (YMDHMS { year; month; month_day; hour; minute; second })
+      | _ -> Error `Invalid_pattern_combination
     in
-    CCOpt.map (fun pick -> (pick, tz_info)) pick
-  else None
+    CCResult.map (fun pick -> (pick, tz_info)) pick
 
 let make_exn ?tz ?tz_offset ?year ?month ?day ?weekday ?hour ?minute ~second ()
   =
   match
     make ?tz ?tz_offset ?year ?month ?day ?weekday ?hour ?minute ~second ()
   with
-  | None -> invalid_arg "make"
-  | Some x -> x
+  | Error e -> raise (Error_exn e)
+  | Ok x -> x
 
 let equal_pick t1 t2 =
   match (t1, t2) with

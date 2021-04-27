@@ -143,16 +143,25 @@ let equal_tz_info (x : tz_info) (y : tz_info) =
     Time_zone.equal tz1 tz2 && Duration.equal x1 x2
   | _, _ -> false
 
-let make_tz_info ?tz ?tz_offset () : tz_info option =
+type tz_info_error = [
+  | `Missing_both_tz_and_tz_offset
+  | `Invalid_offset of Duration.t
+  | `Unrecorded_offset of Duration.t
+]
+
+let make_tz_info ?tz ?tz_offset () : (tz_info, tz_info_error) result =
   match (tz, tz_offset) with
-  | None, None -> invalid_arg "make_tz_info"
-  | Some tz, None -> Some (tz, Time_zone.to_fixed_offset tz)
-  | None, Some tz_offset ->
-    Time_zone.make_offset_only tz_offset
-    |> CCOpt.map (fun tz -> (tz, Some tz_offset))
+  | None, None -> Error `Missing_both_tz_and_tz_offset
+  | Some tz, None -> Ok (tz, Time_zone.to_fixed_offset tz)
+  | None, Some tz_offset -> (
+      match Time_zone.make_offset_only tz_offset with
+      | None -> Error (`Invalid_offset tz_offset)
+      | Some tz -> Ok (tz, Some tz_offset)
+    )
   | Some tz, Some tz_offset ->
-    if Time_zone.offset_is_recorded tz_offset tz then Some (tz, Some tz_offset)
-    else None
+    if Time_zone.offset_is_recorded tz_offset tz then
+      Ok (tz, Some tz_offset)
+    else Error (`Unrecorded_offset tz_offset)
 
 let tz_offset_of_tz_info ((tz, tz_offset) : tz_info) =
   match tz_offset with Some x -> Some x | None -> Time_zone.to_fixed_offset tz

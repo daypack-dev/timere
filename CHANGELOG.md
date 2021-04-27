@@ -20,6 +20,8 @@
 
 - Removed raising of `Invalid_argument` outside of Timere combinators and `pp*`
 
+- Fixed `Points.make` error checking
+
 ## Timere 0.3.1
 
 - Minor refactoring on use of pattern resolver to simplify reasoning about undefined/uncertain behaviour
