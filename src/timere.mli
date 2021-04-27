@@ -350,6 +350,10 @@ module Time_zone : sig
 
       Alternatively, if you are using [timere.tz.full] (the default implementation for [timere.tz.data]), then you can also see
       {{:https://github.com/daypack-dev/timere/tree/main/gen_artifacts/available-time-zones.txt} [available-time-zones.txt]} for available time zones.
+
+      [make] handles names with "UTC" prefix specially, following holds regardless of DB backend chosen
+      - "UTC" is alway interpreted as [utc]
+      - "UTC+/-offset" is always interpreted as call to [make_offset_only] with the provided signed offset
   *)
 
   val make_exn : string -> t
