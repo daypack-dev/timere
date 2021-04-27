@@ -12,6 +12,8 @@
 
 - Updated ISO8601 parser to tolerate separator other than `T`
 
+- Updated ISO8601 parser to tolerate numbers expressed in only one digit
+
 - Added size checking to `Timere.Time_zone.make_offset_only*`
 
 ## Timere 0.3.1
