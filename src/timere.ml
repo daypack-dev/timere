@@ -99,6 +99,10 @@ module Date_time = struct
   let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_date_time
 end
 
+module Week_date_time = struct
+  include Time.Week_date_time'
+end
+
 module Hms = struct
   include Hms'
 

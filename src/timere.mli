@@ -792,6 +792,19 @@ module Date_time : sig
   val pp_sexp : Format.formatter -> t -> unit
 end
 
+module Week_date_time : sig
+  type t = private {
+    year : int;
+    week : int;
+    weekday : weekday;
+    hour : int;
+    minute : int;
+    second : int;
+    ns : int;
+    tz_info : Date_time.tz_info;
+  }
+end
+
 module Timestamp : sig
   val min_val : timestamp
 

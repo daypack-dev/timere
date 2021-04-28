@@ -1292,7 +1292,7 @@ module Date_time' = struct
     { x with month = `Dec } |> set_to_last_day_hour_min_sec_ns
 end
 
-module Week_date_time = struct
+module Week_date_time' = struct
   type t = {
     year : int;
     week : int;
