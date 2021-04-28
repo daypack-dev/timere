@@ -156,7 +156,7 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
   | _ -> failwith "Unexpected case"
 
 let make_hms ~rng =
-  Time.make_hms_exn
+  Time.Hms'.make_exn
     ~hour:(rng () mod 24)
     ~minute:(rng () mod 60)
     ~second:(rng () mod 60)

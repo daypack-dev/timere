@@ -46,8 +46,8 @@ type guess =
   | Nat of int
   | Nats of int Timere.range list
   | Float of float
-  | Hms of Timere.hms
-  | Hmss of Timere.hms Timere.range list
+  | Hms of Timere.Hms.t
+  | Hmss of Timere.Hms.t Timere.range list
   | Weekday of Timere.weekday
   | Weekdays of Timere.weekday Timere.range list
   | Month_day of int
@@ -456,7 +456,7 @@ module Ast_normalize = struct
             if minute = 0 && second = 0 then
               ( pos_hour,
                 text_map_empty,
-                Hms (Timere.make_hms_exn ~hour ~minute ~second) )
+                Hms (Timere.Hms.make_exn ~hour ~minute ~second) )
             else
               invalid_data
                 (Printf.sprintf "%s: Invalid hms: %d:%d:%d"
@@ -464,7 +464,7 @@ module Ast_normalize = struct
           else
             ( pos_hour,
               text_map_empty,
-              Hms (Timere.make_hms_exn ~hour ~minute ~second) )
+              Hms (Timere.Hms.make_exn ~hour ~minute ~second) )
         else
           invalid_data
             (Printf.sprintf "%s: Invalid second: %d"
@@ -861,7 +861,7 @@ let flatten_month_days pos (l : int Timere.range list) : int list rule_result =
     `Error (Printf.sprintf "%s: Invalid month day ranges" (string_of_pos pos))
 
 let pattern ?(years = []) ?(months = []) ?pos_days ?(days = []) ?(weekdays = [])
-    ?(hms : Timere.hms option) () : Timere.t rule_result =
+    ?(hms : Timere.Hms.t option) () : Timere.t rule_result =
   if not (List.for_all (fun x -> 1 <= x && x <= 31) days) then
     `Error
       (Printf.sprintf "%s: Invalid month days"
@@ -880,7 +880,7 @@ type lean_toward =
   | `Back
   ]
 
-let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.hms option)
+let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.Hms.t option)
     (lean_toward : lean_toward) : Timere.points rule_result =
   match day with
   | Some day when not (1 <= day && day <= 31) ->
@@ -935,7 +935,7 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.hms option)
              ~minute:default_minute ~second:default_second ())
       | _ -> invalid_arg "points")
 
-let t_of_hmss (hmss : Timere.hms Timere.range list) =
+let t_of_hmss (hmss : Timere.Hms.t Timere.range list) =
   match
     List.map
       (fun hms_range ->
@@ -944,7 +944,7 @@ let t_of_hmss (hmss : Timere.hms Timere.range list) =
              if x = y then
                Ok
                  Timere.(
-                   pattern ~hours:[ x.hour ] ~minutes:[ x.minute ]
+                   pattern ~hours:[ Hms.(x.hour) ] ~minutes:[ x.minute ]
                      ~seconds:[ x.second ] ())
              else
                match (points ~hms:x `Front, points ~hms:y `Front) with
@@ -1508,7 +1508,7 @@ let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t
   in
   aux tz ast
 
-let hms_t_of_ast (ast : ast) : (Timere.hms, string) CCResult.t =
+let hms_t_of_ast (ast : ast) : (Timere.Hms.t, string) CCResult.t =
   match ast with
   | Tokens [ (_, _, Hms hms) ] -> Ok hms
   | _ -> Error "Unrecognized pattern"
