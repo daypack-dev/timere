@@ -944,8 +944,9 @@ let t_of_hmss (hmss : Timere.Hms.t Timere.range list) =
              if x = y then
                Ok
                  Timere.(
-                   pattern ~hours:[ Hms.(x.hour) ] ~minutes:[ x.minute ]
-                     ~seconds:[ x.second ] ())
+                   pattern
+                     ~hours:[ Hms.(x.hour) ]
+                     ~minutes:[ x.minute ] ~seconds:[ x.second ] ())
              else
                match (points ~hms:x `Front, points ~hms:y `Front) with
                | `Some p1, `Some p2 ->
