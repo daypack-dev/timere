@@ -26,6 +26,8 @@
 
 - Improved hms error returning
 
+- Renamed `Timere.Date_time.to_weekday` to `Timere.Date_time.weekday`
+
 ## Timere 0.3.1
 
 - Minor refactoring on use of pattern resolver to simplify reasoning about undefined/uncertain behaviour
