@@ -1286,10 +1286,6 @@ module Date_time' = struct
     { x with month = `Dec } |> set_to_last_day_hour_min_sec_ns
 end
 
-type sign_expr =
-  | Pos
-  | Neg
-
 let equal_unary_op op1 op2 =
   match (op1, op2) with
   | Not, Not -> true
