@@ -14,7 +14,7 @@ let () =
     (fun i text ->
        Printf.printf "%d. %S\n" i text;
        match Timere_parse.hms text with
-       | Ok hms -> Fmt.pr "  Ok %a\n\n%!" Timere.pp_hms hms
+       | Ok hms -> Fmt.pr "  Ok %a\n\n%!" Timere.Hms.pp hms
        | Error msg ->
          Printf.printf "  Error %s\n" msg;
          print_endline "  ^^^^^";
