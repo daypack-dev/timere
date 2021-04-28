@@ -26,6 +26,8 @@
 
 - Improved hms error returning
 
+- Added `Timere.Week_date_time` module for handling ISO week date time
+
 ## Timere 0.3.1
 
 - Minor refactoring on use of pattern resolver to simplify reasoning about undefined/uncertain behaviour
