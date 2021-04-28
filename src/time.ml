@@ -1129,10 +1129,16 @@ module Date_time' = struct
       let dt =
         { year; month; day; hour; minute; second; ns; tz_info = (tz, None) }
       in
-      (match to_timestamp_precise_unsafe dt with
-       | `None -> Error `Does_not_exist
-       | `Single x -> Ok (of_timestamp ~tz_of_date_time:tz x |> CCOpt.get_exn)
-       | `Ambiguous _ -> Ok dt)
+      (match to_timestamp_pretend_utc dt with
+       | None -> Error `Does_not_exist
+       | Some timestamp_local ->
+         match Time_zone.lookup_timestamp_local tz timestamp_local.s with
+         | `None -> Error `Does_not_exist
+         | `Single e ->
+           Ok ({dt with tz_info = (tz, Some (Duration.of_span @@ Span.make_small ~s:e.offset ()) )})
+         | `Ambiguous _ ->
+           Ok dt
+      )
       |> CCResult.map (adjust_ns_for_leap_second ~is_leap_second)
 
   let make_exn ?tz ?ns ?frac ~year ~month ~day ~hour ~minute ~second () =
