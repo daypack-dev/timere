@@ -18,9 +18,13 @@
 
 - Added size checking to `Timere.Time_zone.make_offset_only*`
 
-- Removed raising of `Invalid_argument` outside of Timere combinators and `pp*`
+- Removed raising of `Invalid_argument` outside of Timere combinators, `pp*` and some `*_exn` functions
 
 - Fixed `Points.make` error checking
+
+- Moved hms into `Hms` module
+
+- Improved hms error returning
 
 ## Timere 0.3.1
 
