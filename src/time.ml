@@ -1500,14 +1500,23 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
   | [], [], [], [], [], [], [] -> All
   | _ ->
     if
-      List.for_all
-        (fun year -> Constants.min_year <= year && year <= Constants.max_year)
-        years
-      && List.for_all (fun x -> -31 <= x && x <= 31 && x <> 0) month_days
-      && List.for_all (fun x -> 0 <= x && x < 24) hours
-      && List.for_all (fun x -> 0 <= x && x < 60) minutes
-      && List.for_all (fun x -> 0 <= x && x < 60) seconds
-    then
+      Stdlib.not
+        (List.for_all
+           (fun year ->
+              Constants.min_year <= year && year <= Constants.max_year)
+           years)
+    then invalid_arg "pattern: not all years are valid"
+    else if
+      Stdlib.not
+        (List.for_all (fun x -> -31 <= x && x <= 31 && x <> 0) month_days)
+    then invalid_arg "pattern: not all days are valid"
+    else if Stdlib.not (List.for_all (fun x -> 0 <= x && x < 24) hours) then
+      invalid_arg "pattern: not all hours are valid"
+    else if Stdlib.not (List.for_all (fun x -> 0 <= x && x < 60) minutes) then
+      invalid_arg "pattern: not all minutes are valid"
+    else if Stdlib.not (List.for_all (fun x -> 0 <= x && x < 60) seconds) then
+      invalid_arg "pattern: not all seconds are valid"
+    else
       let years = Int_set.of_list years in
       let months = Month_set.of_list months in
       let month_days = Int_set.of_list month_days in
@@ -1525,7 +1534,6 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
           minutes;
           seconds;
         }
-    else invalid_arg "pattern"
 
 let month_day_ranges_are_valid_strict ~safe_month_day_range_inc day_ranges =
   let safe_month_day_start, safe_month_day_end_inc = safe_month_day_range_inc in
