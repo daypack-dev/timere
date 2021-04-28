@@ -1194,13 +1194,10 @@ module Date_time' = struct
                     Ok tz_info
                   else make_invalid_tz_info_error ?tz ~tz_offset ()))
       in
-      (match tz_info with
-       | Error e -> Error e
-       | Ok tz_info -> (
-           let dt = { year; month; day; hour; minute; second; ns; tz_info } in
-           match to_timestamp_precise_unsafe dt with
-           | `None -> Error `Does_not_exist
-           | _ -> Ok dt))
+      tz_info
+      |> CCResult.map (fun tz_info ->
+          { year; month; day; hour; minute; second; ns; tz_info }
+        )
       |> CCResult.map (adjust_ns_for_leap_second ~is_leap_second)
 
   let make_unambiguous_exn ?tz ?ns ?frac ~year ~month ~day ~hour ~minute ~second
@@ -1393,7 +1390,7 @@ module Week_date_time' = struct
   let adjust_ns_for_leap_second ~is_leap_second (dt : t) : t =
     if is_leap_second then { dt with ns = dt.ns + Span.ns_count_in_s } else dt
 
-  let make ?(tz = Time_zone_utils.get_local_tz_for_arg ()) ?(ns = 0) ?(frac = 0.) ~year ~week ~weekday ~hour ~minute ~second =
+  let make ?(tz = Time_zone_utils.get_local_tz_for_arg ()) ?(ns = 0) ?(frac = 0.) ~year ~week ~weekday ~hour ~minute ~second () =
     match
       check_args_and_normalize_ns ~year ~week ~hour ~minute ~second ~ns ~frac
     with
@@ -1422,6 +1419,11 @@ module Week_date_time' = struct
             Ok { year; week; weekday; hour; minute; second; ns; tz_info = (tz, None)}
           )
           |> CCResult.map (adjust_ns_for_leap_second ~is_leap_second)
+
+  let make_exn ?tz ?ns ?frac ~year ~week ~weekday ~hour ~minute ~second () =
+    match make ?tz ?ns ?frac ~year ~week ~weekday ~hour ~minute ~second () with
+    | Ok x -> x
+    | Error e -> raise (Error_exn e)
 end
 
 let equal_unary_op op1 op2 =

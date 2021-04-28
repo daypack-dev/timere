@@ -803,6 +803,46 @@ module Week_date_time : sig
     ns : int;
     tz_info : Date_time.tz_info;
   }
+
+  type error =
+    [ `Does_not_exist
+    | `Invalid_year of int
+    | `Invalid_week of int
+    | `Invalid_hour of int
+    | `Invalid_minute of int
+    | `Invalid_second of int
+    | `Invalid_frac of float
+    | `Invalid_ns of int
+    | `Invalid_tz_info of string option * Duration.t
+    ]
+
+  exception Error_exn of error
+
+  val make :
+    ?tz:Time_zone.t ->
+    ?ns:int ->
+    ?frac:float ->
+    year:int ->
+    week:int ->
+    weekday:weekday ->
+    hour:int ->
+    minute:int ->
+    second:int ->
+    unit ->
+    (t, error) result
+
+  val make_exn :
+    ?tz:Time_zone.t ->
+    ?ns:int ->
+    ?frac:float ->
+    year:int ->
+    week:int ->
+    weekday:weekday ->
+    hour:int ->
+    minute:int ->
+    second:int ->
+    unit ->
+    t
 end
 
 module Timestamp : sig
