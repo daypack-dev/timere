@@ -435,7 +435,7 @@ module Intervals = struct
           let rest () = Seq.Cons ((chunk_end_exc, end_exc), rest) in
           fun () -> Seq.Cons ((start, chunk_end_exc), aux rest)
     in
-    if chunk_size < one_ns then invalid_arg "chunk"
+    if chunk_size <= zero then invalid_arg "chunk: chunk size is <= zero"
     else
       intervals
       |> (fun s -> if skip_check then s else s |> Check.check_if_valid)
@@ -807,53 +807,65 @@ module Hour_ranges = Ranges.Make (struct
     let of_int x = x
   end)
 
-type hms = {
-  hour : int;
-  minute : int;
-  second : int;
-}
+module Hms' = struct
+  type t = {
+    hour : int;
+    minute : int;
+    second : int;
+  }
 
-let make_hms ~hour ~minute ~second =
-  if
-    0 <= hour
-    && hour <= 24
-    && 0 <= minute
-    && minute < 60
-    && 0 <= second
-    && second <= 60
-  then
-    let second = if second = 60 then 59 else second in
-    if hour = 24 then
-      if minute = 0 && second = 0 then
-        Some { hour = 23; minute = 59; second = 59 }
-      else None
-    else Some { hour; minute; second }
-  else None
+  type error = [
+    | `Invalid_hour of int
+    | `Invalid_minute of int
+    | `Invalid_second of int
+  ]
 
-let make_hms_exn ~hour ~minute ~second =
-  match make_hms ~hour ~minute ~second with
-  | Some x -> x
-  | None -> invalid_arg "make_hms_exn"
+  exception Error_exn of error
 
-let second_of_day_of_hms x =
-  Duration.make_exn ~hours:x.hour ~minutes:x.minute ~seconds:x.second ()
-  |> Duration.to_span
-  |> fun x -> Int64.to_int Span.(x.s)
+  let make ~hour ~minute ~second : (t, error) result =
+    if hour < 0 || 24 < hour then
+      Error (`Invalid_hour hour)
+    else
+    if minute < 0 || 59 < minute then
+      Error (`Invalid_minute minute)
+    else
+    if second < 0 || 60 < second then
+      Error (`Invalid_second second)
+    else
+      let second = if second = 60 then 59 else second in
+      if hour = 24 then
+        if minute = 0 && second = 0 then
+          Ok { hour = 23; minute = 59; second = 59 }
+        else Error (`Invalid_hour hour)
+      else Ok { hour; minute; second }
 
-let hms_of_second_of_day s =
-  let ({ hours; minutes; seconds; _ } : Duration.t) =
-    Duration.of_span (Span.make_small ~s ())
-  in
-  make_hms_exn ~hour:hours ~minute:minutes ~second:seconds
+  let make_exn ~hour ~minute ~second =
+    match make ~hour ~minute ~second with
+    | Ok x -> x
+    | Error e -> raise (Error_exn e)
+
+  let to_second_of_day x =
+    Duration.make_exn ~hours:x.hour ~minutes:x.minute ~seconds:x.second ()
+    |> Duration.to_span
+    |> fun x -> Int64.to_int Span.(x.s)
+
+  let of_second_of_day s =
+    let ({ hours; minutes; seconds; _ } : Duration.t) =
+      Duration.of_span (Span.make_small ~s ())
+    in
+    match make ~hour:hours ~minute:minutes ~second:seconds with
+    | Ok x -> Some x
+    | Error _ -> None
+end
 
 module Hms_ranges = Ranges.Make (struct
-    type t = hms
+    type t = Hms'.t
 
     let modulo = None
 
-    let to_int = second_of_day_of_hms
+    let to_int = Hms'.to_second_of_day
 
-    let of_int = hms_of_second_of_day
+    let of_int x = CCOpt.get_exn (Hms'.of_second_of_day x)
   end)
 
 module Weekday_tm_int_ranges = Ranges.Make (struct
@@ -1611,7 +1623,7 @@ let bounded_intervals pick (bound : Duration.t)
   else
     Bounded_intervals { pick; bound = Duration.to_span bound; start; end_exc }
 
-let hms_intervals_exc (hms_a : hms) (hms_b : hms) : t =
+let hms_intervals_exc (hms_a : Hms'.t) (hms_b : Hms'.t) : t =
   bounded_intervals `Whole
     (Duration.make_exn ~days:1 ())
     (Points.make_exn ~hour:hms_a.hour ~minute:hms_a.minute ~second:hms_a.second
@@ -1619,8 +1631,8 @@ let hms_intervals_exc (hms_a : hms) (hms_b : hms) : t =
     (Points.make_exn ~hour:hms_b.hour ~minute:hms_b.minute ~second:hms_b.second
        ())
 
-let hms_intervals_inc (hms_a : hms) (hms_b : hms) : t =
-  let hms_b = hms_b |> second_of_day_of_hms |> succ |> hms_of_second_of_day in
+let hms_intervals_inc (hms_a : Hms'.t) (hms_b : Hms'.t) : t =
+  let hms_b = hms_b |> Hms'.to_second_of_day |> succ |> Hms'.of_second_of_day |> CCOpt.get_exn in
   hms_intervals_exc hms_a hms_b
 
 let sorted_interval_seq ?(skip_invalid : bool = false) (s : Interval'.t Seq.t) :

@@ -1070,27 +1070,42 @@ val bounded_intervals : [ `Whole | `Snd ] -> Duration.t -> points -> points -> t
 
 (** Convenience wrappers around [points] and [bounded_intervals] *)
 
-type hms = private {
-  hour : int;
-  minute : int;
-  second : int;
-}
+module Hms : sig
+  type t = private {
+    hour : int;
+    minute : int;
+    second : int;
+  }
 
-val make_hms : hour:int -> minute:int -> second:int -> hms option
+  type error = [
+    | `Invalid_hour of int
+    | `Invalid_minute of int
+    | `Invalid_second of int
+  ]
 
-val make_hms_exn : hour:int -> minute:int -> second:int -> hms
+  exception Error_exn of error
 
-val hms_intervals_inc : hms -> hms -> t
+  val make : hour:int -> minute:int -> second:int -> (t, error) result
+
+  val make_exn : hour:int -> minute:int -> second:int -> t
+  (** @raise Error_exn if [make] fails *)
+
+  val pp : Format.formatter -> t -> unit
+
+  val to_string : t -> string
+
+  val to_second_of_day : t -> int
+
+  val of_second_of_day : int -> t option
+end
+
+val hms_intervals_inc : Hms.t -> Hms.t -> t
 (** Same as [hms_intervals_exc ...] with end point increased by one second
 *)
 
-val hms_intervals_exc : hms -> hms -> t
+val hms_intervals_exc : Hms.t -> Hms.t -> t
 (** Same as [bounded_intervals ...] with bound fixed to [Duration.make ~days:1 ()]
 *)
-
-val pp_hms : Format.formatter -> hms -> unit
-
-val string_of_hms : hms -> string
 
 (** {1 Chunking} *)
 
@@ -1220,10 +1235,6 @@ module Utils : sig
   val weekday_of_tm_int : int -> weekday option
 
   val tm_int_of_weekday : weekday -> int
-
-  val second_of_day_of_hms : hms -> int
-
-  val hms_of_second_of_day : int -> hms
 
   val get_local_tz_for_arg : unit -> Time_zone.t
 end

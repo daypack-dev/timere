@@ -99,6 +99,14 @@ module Date_time = struct
   let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_date_time
 end
 
+module Hms = struct
+  include Hms'
+
+  let pp = Printers.pp_hms
+
+  let to_string = Printers.string_of_hms
+end
+
 module Interval = struct
   include Interval'
 
@@ -134,10 +142,6 @@ module Points = Points
 type points = Points.t
 
 let resolve = Resolver.resolve
-
-let pp_hms = Printers.pp_hms
-
-let string_of_hms = Printers.string_of_hms
 
 let pp_intervals = Printers.pp_intervals
 
@@ -191,10 +195,6 @@ module Utils = struct
   let weekday_of_tm_int = weekday_of_tm_int
 
   let tm_int_of_weekday = tm_int_of_weekday
-
-  let second_of_day_of_hms = second_of_day_of_hms
-
-  let hms_of_second_of_day = hms_of_second_of_day
 
   let get_local_tz_for_arg = Time_zone_utils.get_local_tz_for_arg
 end
