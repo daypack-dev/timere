@@ -504,7 +504,9 @@ val with_tz : Time_zone.t -> t -> t
 type timestamp = Span.t
 
 module Date_time : sig
-  (** This module follows the Gregorian calendar *)
+  (** This module uses ptime underneath, and carries similar limitation of expressible range of date times.
+      The actual range is slightly more limited in Timere due to time zones.
+  *)
 
   type tz_info = Time_zone.t * Duration.t option
 
