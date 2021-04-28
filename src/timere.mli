@@ -504,6 +504,8 @@ val with_tz : Time_zone.t -> t -> t
 type timestamp = Span.t
 
 module Date_time : sig
+  (** This module follows the Gregorian calendar *)
+
   type tz_info = Time_zone.t * Duration.t option
 
   val tz_offset_of_tz_info : tz_info -> Duration.t option
