@@ -1077,11 +1077,11 @@ module Hms : sig
     second : int;
   }
 
-  type error = [
-    | `Invalid_hour of int
+  type error =
+    [ `Invalid_hour of int
     | `Invalid_minute of int
     | `Invalid_second of int
-  ]
+    ]
 
   exception Error_exn of error
 

@@ -814,23 +814,18 @@ module Hms' = struct
     second : int;
   }
 
-  type error = [
-    | `Invalid_hour of int
+  type error =
+    [ `Invalid_hour of int
     | `Invalid_minute of int
     | `Invalid_second of int
-  ]
+    ]
 
   exception Error_exn of error
 
   let make ~hour ~minute ~second : (t, error) result =
-    if hour < 0 || 24 < hour then
-      Error (`Invalid_hour hour)
-    else
-    if minute < 0 || 59 < minute then
-      Error (`Invalid_minute minute)
-    else
-    if second < 0 || 60 < second then
-      Error (`Invalid_second second)
+    if hour < 0 || 24 < hour then Error (`Invalid_hour hour)
+    else if minute < 0 || 59 < minute then Error (`Invalid_minute minute)
+    else if second < 0 || 60 < second then Error (`Invalid_second second)
     else
       let second = if second = 60 then 59 else second in
       if hour = 24 then
@@ -1632,7 +1627,13 @@ let hms_intervals_exc (hms_a : Hms'.t) (hms_b : Hms'.t) : t =
        ())
 
 let hms_intervals_inc (hms_a : Hms'.t) (hms_b : Hms'.t) : t =
-  let hms_b = hms_b |> Hms'.to_second_of_day |> succ |> Hms'.of_second_of_day |> CCOpt.get_exn in
+  let hms_b =
+    hms_b
+    |> Hms'.to_second_of_day
+    |> succ
+    |> Hms'.of_second_of_day
+    |> CCOpt.get_exn
+  in
   hms_intervals_exc hms_a hms_b
 
 let sorted_interval_seq ?(skip_invalid : bool = false) (s : Interval'.t Seq.t) :
