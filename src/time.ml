@@ -1601,7 +1601,7 @@ let inter_seq (s : t Seq.t) : t =
     | Some' pat -> Some (fun () -> Seq.Cons (Pattern pat, rest))
   in
   let s = flatten s in
-  if OSeq.exists (fun x -> match x with Empty -> true | _ -> false) s then empty
+  if OSeq.exists (fun x -> match x with Empty -> true | _ -> false) s then always
   else match inter_patterns s with None -> empty | Some s -> Inter_seq s
 
 let inter (l : t list) : t = inter_seq (CCList.to_seq l)

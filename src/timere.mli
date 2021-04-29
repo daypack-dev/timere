@@ -872,7 +872,7 @@ val nth_weekday_of_month : int -> weekday -> t
 val inter : t list -> t
 (** Intersection of list of timeres.
 
-    [inter []] is equivalent to [empty].
+    [inter []] is equivalent to [always].
 *)
 
 val union : t list -> t

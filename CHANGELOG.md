@@ -30,6 +30,8 @@
 
 - Removed type `month`, replaced use of it with just `int`
 
+- Changed `inter []` to mean `always` instead of `empty`
+
 ## Timere 0.3.1
 
 - Minor refactoring on use of pattern resolver to simplify reasoning about undefined/uncertain behaviour
