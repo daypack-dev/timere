@@ -7,9 +7,9 @@ let display_intervals ~display_using_tz s =
     |> OSeq.iter (fun (x, y) ->
         let s = Timere.Interval.to_string ~display_using_tz (x, y) in
         let size =
-          Timere.Span.sub y x
+          Timere.Duration.of_span @@ Timere.Span.sub y x
         in
-        let size_str = Timere.Span.to_string size in
+        let size_str = Timere.Duration.to_string size in
         Printf.printf "%s - %s\n" s size_str
       )
 
