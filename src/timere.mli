@@ -785,6 +785,40 @@ val always : t
 val empty : t
 (** Empty interval *)
 
+val pattern :
+  ?years:int list ->
+  ?year_ranges:int range list ->
+  ?months:int list ->
+  ?month_ranges:int range list ->
+  ?days:int list ->
+  ?day_ranges:int range list ->
+  ?weekdays:weekday list ->
+  ?weekday_ranges:weekday range list ->
+  ?hours:int list ->
+  ?hour_ranges:int range list ->
+  ?minutes:int list ->
+  ?minute_ranges:int range list ->
+  ?seconds:int list ->
+  ?second_ranges:int range list ->
+  unit ->
+  t
+(** Pattern matches over date times.
+
+    A pattern [p] matches date time [dt] if
+    {v
+(dt.year is in p.years or p.year_ranges)
+&& (dt.month is in p.months or p.month_ranges)
+&& (dt.month_day is in p.month_days or p.month_day_ranges)
+&& (dt.weekday is in p.weekdays or p.weekday_ranges)
+&& (dt.hour is in p.hours or p.hour_ranges)
+&& (dt.minute is in p.minutes or p.minute_ranges)
+&& (dt.second is in p.seconds or p.second_ranges)
+    v}
+
+    Empty pattern levels are treated as wildcard, e.g. if [p.years] and [p.year_ranges] are both empty,
+    then [(dt.year is in p.years or p.year_ranges)] is [true].
+*)
+
 val years : int list -> t
 (** [years l] is a shorthand for [pattern ~years:l ()] *)
 
@@ -826,40 +860,6 @@ val seconds : int list -> t
 
 val second_ranges : int range list -> t
 (** [second_ranges l] is a shorthand for [pattern ~second_ranges:l ()] *)
-
-val pattern :
-  ?years:int list ->
-  ?year_ranges:int range list ->
-  ?months:int list ->
-  ?month_ranges:int range list ->
-  ?days:int list ->
-  ?day_ranges:int range list ->
-  ?weekdays:weekday list ->
-  ?weekday_ranges:weekday range list ->
-  ?hours:int list ->
-  ?hour_ranges:int range list ->
-  ?minutes:int list ->
-  ?minute_ranges:int range list ->
-  ?seconds:int list ->
-  ?second_ranges:int range list ->
-  unit ->
-  t
-(** Pattern matches over date times.
-
-    A pattern [p] matches date time [dt] if
-    {v
-(dt.year is in p.years or p.year_ranges)
-&& (dt.month is in p.months or p.month_ranges)
-&& (dt.month_day is in p.month_days or p.month_day_ranges)
-&& (dt.weekday is in p.weekdays or p.weekday_ranges)
-&& (dt.hour is in p.hours or p.hour_ranges)
-&& (dt.minute is in p.minutes or p.minute_ranges)
-&& (dt.second is in p.seconds or p.second_ranges)
-    v}
-
-    Empty pattern levels are treated as wildcard, e.g. if [p.years] and [p.year_ranges] are both empty,
-    then [(dt.year is in p.years or p.year_ranges)] is [true].
-*)
 
 val nth_weekday_of_month : int -> weekday -> t
 (** [nth_weekday_of_month n wday] picks the nth weekday of all months, where [1 <= n && n <= 5]
