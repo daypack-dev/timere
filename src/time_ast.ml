@@ -1,7 +1,5 @@
 type unary_op =
   | Not
-  (* | Drop_points of int
-   * | Take_points of int *)
   | Shift of Span.t
   | Lengthen of Span.t
   | With_tz of Time_zone.t
