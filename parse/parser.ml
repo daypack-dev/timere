@@ -54,8 +54,7 @@ type guess =
   | Month_days of int Timere.range list
   | Month of int
   | Months of int Timere.range list
-  | Ymd of
-      (MParser.pos * int) * (MParser.pos * int) * (MParser.pos * int)
+  | Ymd of (MParser.pos * int) * (MParser.pos * int) * (MParser.pos * int)
   | Duration of Timere.Duration.t
   | Time_zone of Timere.Time_zone.t
 
@@ -687,11 +686,11 @@ module Ast_normalize = struct
         :: (_, _, Dot)
         :: (pos_month, _, Nat month)
         :: (_, _, Dot) :: (pos_day, _, Nat day) :: rest
-        when year > 31 -> (
-          ( pos_year,
-              text_map_empty,
-              Ymd ((pos_year, year), (pos_month, month), (pos_day, day)) )
-            :: aux rest)
+        when year > 31 ->
+        ( pos_year,
+          text_map_empty,
+          Ymd ((pos_year, year), (pos_month, month), (pos_day, day)) )
+        :: aux rest
       | (pos_day, _, Nat day)
         :: (_, _, Hyphen)
         :: (pos_month, _, Nat month)
@@ -704,11 +703,11 @@ module Ast_normalize = struct
         :: (_, _, Dot)
         :: (pos_month, _, Nat month)
         :: (_, _, Dot) :: (pos_year, _, Nat year) :: rest
-        when year > 31 -> (
-          ( pos_day,
-              text_map_empty,
-              Ymd ((pos_year, year), (pos_month, month), (pos_day, day)) )
-            :: aux rest)
+        when year > 31 ->
+        ( pos_day,
+          text_map_empty,
+          Ymd ((pos_year, year), (pos_month, month), (pos_day, day)) )
+        :: aux rest
       | x :: xs -> x :: aux xs
     in
     aux l
@@ -830,8 +829,7 @@ let map_rule_result (f : 'a -> 'b) (x : 'a rule_result) : 'b rule_result =
   | `None -> `None
   | `Error msg -> `Error msg
 
-let flatten_months pos (l : int Timere.range list) :
-  int list rule_result =
+let flatten_months pos (l : int Timere.range list) : int list rule_result =
   match Timere.Utils.flatten_month_range_list l with
   | Some x -> `Some x
   | None ->
@@ -878,9 +876,7 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.Hms.t option)
       (Printf.sprintf "%s: Invalid month days"
          (string_of_pos @@ CCOpt.get_exn @@ pos_day))
   | _ -> (
-      let default_month =
-        match lean_toward with `Front -> 1 | `Back -> 12
-      in
+      let default_month = match lean_toward with `Front -> 1 | `Back -> 12 in
       let default_day = match lean_toward with `Front -> 1 | `Back -> -1 in
       let default_hour = match lean_toward with `Front -> 0 | `Back -> 23 in
       let default_minute = match lean_toward with `Front -> 0 | `Back -> 59 in

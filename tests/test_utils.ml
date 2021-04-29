@@ -264,8 +264,7 @@ let weekday_gen : weekday QCheck.Gen.t =
 
 let month_gen : int QCheck.Gen.t =
   let open QCheck.Gen in
-  map succ
-    (int_bound 12)
+  map succ (int_bound 12)
 
 let month_days_gen : int list QCheck.Gen.t =
   QCheck.Gen.(list_size (int_bound 10) (int_range 1 32))

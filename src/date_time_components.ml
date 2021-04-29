@@ -71,12 +71,16 @@ let day_count_of_month ~year ~month =
   | 12 -> 31
   | _ -> invalid_arg "Invalid month"
 
-type tz_info = { tz : Time_zone.t; offset : Duration.t option }
+type tz_info = {
+  tz : Time_zone.t;
+  offset : Duration.t option;
+}
 
 let equal_tz_info (x : tz_info) (y : tz_info) =
   match (x, y) with
-  | { tz = tz1; offset = None }, {tz = tz2; offset = None} -> Time_zone.equal tz1 tz2
-  | { tz = tz1; offset = Some x1}, {tz = tz2; offset = Some x2} ->
+  | { tz = tz1; offset = None }, { tz = tz2; offset = None } ->
+    Time_zone.equal tz1 tz2
+  | { tz = tz1; offset = Some x1 }, { tz = tz2; offset = Some x2 } ->
     Time_zone.equal tz1 tz2 && Duration.equal x1 x2
   | _, _ -> false
 
@@ -89,14 +93,15 @@ type tz_info_error =
 let make_tz_info ?tz ?tz_offset () : (tz_info, tz_info_error) result =
   match (tz, tz_offset) with
   | None, None -> Error `Missing_both_tz_and_tz_offset
-  | Some tz, None -> Ok {tz; offset = Time_zone.to_fixed_offset tz}
+  | Some tz, None -> Ok { tz; offset = Time_zone.to_fixed_offset tz }
   | None, Some tz_offset -> (
       match Time_zone.make_offset_only tz_offset with
       | None -> Error (`Invalid_offset tz_offset)
-      | Some tz -> Ok {tz; offset = Some tz_offset})
+      | Some tz -> Ok { tz; offset = Some tz_offset })
   | Some tz, Some tz_offset ->
-    if Time_zone.offset_is_recorded tz_offset tz then Ok {tz; offset = Some tz_offset}
+    if Time_zone.offset_is_recorded tz_offset tz then
+      Ok { tz; offset = Some tz_offset }
     else Error (`Unrecorded_offset tz_offset)
 
-let tz_offset_of_tz_info ({tz; offset} : tz_info) =
+let tz_offset_of_tz_info ({ tz; offset } : tz_info) =
   match offset with Some x -> Some x | None -> Time_zone.to_fixed_offset tz

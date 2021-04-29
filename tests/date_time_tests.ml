@@ -105,8 +105,7 @@ module Alco = struct
          ~tz:
            (Time_zone.make_offset_only_exn
               (Duration.make_exn ~sign:`Neg ~hours:7 ()))
-         ~year:1979 ~month:5 ~day:27 ~hour:7 ~minute:32 ~second:0 ~ns:999_999
-         ()
+         ~year:1979 ~month:5 ~day:27 ~hour:7 ~minute:32 ~second:0 ~ns:999_999 ()
        |> Time.Date_time'.to_timestamp_single)
 
   let to_rfc3339_case0 () =

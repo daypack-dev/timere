@@ -56,7 +56,6 @@ end
 
 module Date_time = struct
   include Date_time_components
-
   include Time.Date_time'
 
   let to_string = Printers.string_of_date_time

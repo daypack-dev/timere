@@ -53,10 +53,7 @@ let to_be_exported =
 
     method years l = wrap (fun () -> Timere.years (list_of_js_array l))
 
-    method months l =
-      wrap (fun () ->
-          list_of_js_array l
-          |> Timere.months)
+    method months l = wrap (fun () -> list_of_js_array l |> Timere.months)
 
     method days l = wrap (fun () -> Timere.days (list_of_js_array l))
 
@@ -157,8 +154,7 @@ let to_be_exported =
           Timere.Points.make ~day ~hour ~minute ~second ()
 
         method mdhms month day hour minute second =
-          Timere.Points.make ~month ~day ~hour ~minute
-            ~second ()
+          Timere.Points.make ~month ~day ~hour ~minute ~second ()
       end
 
     method resolve t =

@@ -81,12 +81,15 @@ let tz_info_of_sexp (x : CCSexp.t) : Date_time_components.tz_info =
     invalid_data (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x))
   | `List l -> (
       match l with
-      | [ x ] -> { tz = tz_make_of_sexp x; offset = None}
+      | [ x ] -> { tz = tz_make_of_sexp x; offset = None }
       | [ x; offset ] ->
-        { tz = tz_make_of_sexp x;
-          offset = Some
-            (Duration.of_span
-               (Span.make ~s:(CCInt64.of_int @@ int_of_sexp offset) ())) }
+        {
+          tz = tz_make_of_sexp x;
+          offset =
+            Some
+              (Duration.of_span
+                 (Span.make ~s:(CCInt64.of_int @@ int_of_sexp offset) ()));
+        }
       | _ ->
         invalid_data
           (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x)))
@@ -125,7 +128,7 @@ let date_time_of_sexp (x : CCSexp.t) =
 let timestamp_of_sexp x =
   let dt = date_time_of_sexp x in
   match dt.tz_info with
-  | {tz = _; offset = None } ->
+  | { tz = _; offset = None } ->
     invalid_data "Expected time zone offset 0, but got None instead"
   | { tz; offset = Some tz_offset } -> (
       let tz_name = Time_zone.name tz in

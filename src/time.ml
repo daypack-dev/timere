@@ -962,7 +962,8 @@ module Date_time' = struct
         Duration.(offset.hours)
         Duration.(offset.minutes)
 
-  let utc_tz_info : tz_info = { tz = Time_zone.utc; offset = Some Duration.zero}
+  let utc_tz_info : tz_info =
+    { tz = Time_zone.utc; offset = Some Duration.zero }
 
   let dummy_tz_info = utc_tz_info
 
@@ -989,7 +990,8 @@ module Date_time' = struct
     | None -> `None
     | Some timestamp_local -> (
         match x.tz_info with
-        | { tz = _; offset = Some offset } -> `Single (timestamp_local - Duration.to_span offset)
+        | { tz = _; offset = Some offset } ->
+          `Single (timestamp_local - Duration.to_span offset)
         | { tz; offset = None } -> (
             match Time_zone.lookup_timestamp_local tz timestamp_local.s with
             | `None -> `None
@@ -1054,9 +1056,12 @@ module Date_time' = struct
                 t with
                 ns;
                 tz_info =
-                  { tz = tz_of_date_time;
-                    offset = Some
-                      (Duration.of_span (Span.make_small ~s:entry.offset ()))
+                  {
+                    tz = tz_of_date_time;
+                    offset =
+                      Some
+                        (Duration.of_span
+                           (Span.make_small ~s:entry.offset ()));
                   };
               })
 
@@ -1104,7 +1109,16 @@ module Date_time' = struct
       let is_leap_second = second = 60 in
       let second = if second = 60 then 59 else second in
       let dt =
-        { year; month; day; hour; minute; second; ns; tz_info = {tz; offset = None} }
+        {
+          year;
+          month;
+          day;
+          hour;
+          minute;
+          second;
+          ns;
+          tz_info = { tz; offset = None };
+        }
       in
       (match to_timestamp_pretend_utc dt with
        | None -> Error `Does_not_exist
@@ -1116,8 +1130,11 @@ module Date_time' = struct
                {
                  dt with
                  tz_info =
-                   { tz;
-                     offset = Some (Duration.of_span @@ Span.make_small ~s:e.offset ())
+                   {
+                     tz;
+                     offset =
+                       Some
+                         (Duration.of_span @@ Span.make_small ~s:e.offset ());
                    };
                }
            | `Ambiguous _ -> Ok dt))
@@ -1146,7 +1163,7 @@ module Date_time' = struct
         | Error `Missing_both_tz_and_tz_offset -> failwith "Unexpected case"
         | Error (`Invalid_offset _) | Error (`Unrecorded_offset _) ->
           make_invalid_tz_info_error ?tz ~tz_offset ()
-        | Ok ({tz = tz'; offset = _} as tz_info) -> (
+        | Ok ({ tz = tz'; offset = _ } as tz_info) -> (
             match
               to_timestamp_pretend_utc
                 {
@@ -1211,7 +1228,7 @@ module Date_time' = struct
             if month_day < 0 then day_count + month_day + 1 else month_day
           in
           match CCOpt.value ~default:default_tz_info tz_info with
-          | {tz; offset = None } ->
+          | { tz; offset = None } ->
             Some
               (make_exn ~year ~month ~day:month_day ~hour ~minute ~second ~tz
                  ())
@@ -1421,7 +1438,7 @@ module Week_date_time' = struct
                    minute;
                    second;
                    ns;
-                   tz_info = {tz; offset = Some tz_offset};
+                   tz_info = { tz; offset = Some tz_offset };
                  }
              | `Ambiguous _ ->
                Ok
@@ -1433,7 +1450,7 @@ module Week_date_time' = struct
                    minute;
                    second;
                    ns;
-                   tz_info = {tz; offset = None};
+                   tz_info = { tz; offset = None };
                  })
             |> CCResult.map (adjust_ns_for_leap_second ~is_leap_second))
 

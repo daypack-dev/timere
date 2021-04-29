@@ -137,20 +137,28 @@ let search_space_of_year_range tz year_range =
   let open Time in
   let aux_start start =
     Date_time'.set_to_first_month_day_hour_min_sec_ns
-      { Date_time'.min_val with year = start; tz_info = {tz; offset = None} }
+      { Date_time'.min_val with year = start; tz_info = { tz; offset = None } }
     |> Date_time'.to_timestamp
     |> Date_time'.min_of_local_result
   in
   let aux_end_inc end_exc =
     Date_time'.set_to_last_month_day_hour_min_sec_ns
-      { Date_time'.min_val with year = end_exc; tz_info = {tz; offset = None} }
+      {
+        Date_time'.min_val with
+        year = end_exc;
+        tz_info = { tz; offset = None };
+      }
     |> Date_time'.to_timestamp
     |> Date_time'.min_of_local_result
     |> Span.succ
   in
   let aux_end_exc end_exc =
     Date_time'.set_to_first_month_day_hour_min_sec_ns
-      { Date_time'.min_val with year = end_exc; tz_info = {tz; offset = None} }
+      {
+        Date_time'.min_val with
+        year = end_exc;
+        tz_info = { tz; offset = None };
+      }
     |> Date_time'.to_timestamp
     |> Date_time'.min_of_local_result
   in
@@ -422,7 +430,9 @@ let one_s = Span.make ~s:1L ()
 
 let aux_points search_using_tz space (p, tz_info) : timestamp Seq.t =
   let search_using_tz =
-    match tz_info with None -> search_using_tz | Some Date_time_components.{tz; _} -> tz
+    match tz_info with
+    | None -> search_using_tz
+    | Some Date_time_components.{ tz; _ } -> tz
   in
   aux_pattern search_using_tz space (Points.to_pattern (p, tz_info))
   |> Seq.filter_map (fun (x, y) ->

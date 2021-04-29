@@ -359,7 +359,10 @@ module Date_time : sig
       The actual range is slightly more limited in Timere due to time zones.
   *)
 
-  type tz_info = { tz : Time_zone.t; offset : Duration.t option }
+  type tz_info = {
+    tz : Time_zone.t;
+    offset : Duration.t option;
+  }
   (** Time zone information of date time
 
       [tz] is the time zone tied.

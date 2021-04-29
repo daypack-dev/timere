@@ -16,7 +16,7 @@ let sexp_of_tz_name t = CCSexp.atom (Time_zone.name t)
 let sexp_of_span (x : Span.t) =
   CCSexp.list [ sexp_of_int64 x.s; sexp_of_int x.ns ]
 
-let sexp_of_tz_info ({tz; offset} : tz_info) =
+let sexp_of_tz_info ({ tz; offset } : tz_info) =
   let open CCSexp in
   list
     (CCList.filter_map CCFun.id
