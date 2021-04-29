@@ -8,7 +8,7 @@ module Alco = struct
 
   let inter_empty () =
     Alcotest.(check (list (pair span_testable span_testable)))
-      "same list" []
+      "same list" [(Constants.timestamp_min, Constants.timestamp_max) ]
       (Time.inter [] |> Resolver.resolve |> CCResult.get_exn |> CCList.of_seq)
 
   let suite =
