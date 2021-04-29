@@ -1,7 +1,7 @@
 open Fuzz_utils
 
 let search_start_dt =
-  Time.Date_time'.make_exn ~year:2000 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+  Time.Date_time'.make_exn ~year:2000 ~month:1 ~day:1 ~hour:0 ~minute:0
     ~second:0 ~tz:Time_zone.utc ()
 
 let search_start =
@@ -9,7 +9,7 @@ let search_start =
   |> Time.Date_time'.min_of_local_result
 
 let search_end_exc_dt =
-  Time.Date_time'.make_exn ~year:2003 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+  Time.Date_time'.make_exn ~year:2003 ~month:1 ~day:1 ~hour:0 ~minute:0
     ~second:0 ~tz:Time_zone.utc ()
 
 let search_end_exc =

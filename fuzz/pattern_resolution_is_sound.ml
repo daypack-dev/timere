@@ -14,7 +14,7 @@ let timestamp_is_okay (tz : Time_zone.t) (pattern : Pattern.t) timestamp =
     Int_set.is_empty pattern.years || Int_set.mem dt.year pattern.years
   in
   let month_is_fine =
-    Month_set.is_empty pattern.months || Month_set.mem dt.month pattern.months
+    Int_set.is_empty pattern.months || Int_set.mem dt.month pattern.months
   in
   let mday_is_fine =
     Int_set.is_empty pattern.month_days

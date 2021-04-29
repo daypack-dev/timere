@@ -97,7 +97,7 @@ let debug_resolver () =
    * in *)
   print_endline (To_sexp.to_sexp_string timere);
   let search_start_dt =
-    Time.Date_time'.make_exn ~year:2000 ~month:`Jan ~day:1 ~hour:10 ~minute:0
+    Time.Date_time'.make_exn ~year:2000 ~month:1 ~day:1 ~hour:10 ~minute:0
       ~second:0 ~tz ()
   in
   let search_start =
@@ -105,7 +105,7 @@ let debug_resolver () =
     |> Time.Date_time'.min_of_local_result
   in
   let search_end_exc_dt =
-    Time.Date_time'.make_exn ~year:2003 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+    Time.Date_time'.make_exn ~year:2003 ~month:1 ~day:1 ~hour:0 ~minute:0
       ~second:0 ~tz ()
   in
   let search_end_exc =
@@ -167,10 +167,10 @@ let debug_example () =
              "(bounded_intervals whole (duration 366 0 0 0) (points (pick \
               ymdhms 2020 Jun 16 10 0 0)) (points (pick dhms 17 12 0 0)))";
            after
-             (Date_time'.make_exn ~tz ~year:2000 ~month:`Jan ~day:1 ~hour:0
+             (Date_time'.make_exn ~tz ~year:2000 ~month:1 ~day:1 ~hour:0
                 ~minute:0 ~second:0 ());
            before
-             (Date_time'.make_exn ~tz ~year:2050 ~month:`Jan ~day:1 ~hour:0
+             (Date_time'.make_exn ~tz ~year:2050 ~month:1 ~day:1 ~hour:0
                 ~minute:0 ~second:0 ());
          ])
   in
@@ -368,8 +368,8 @@ let debug_fuzz_pattern () =
               || Int_set.mem dt.year pattern.years
             in
             let month_is_fine =
-              Month_set.is_empty pattern.months
-              || Month_set.mem dt.month pattern.months
+              Int_set.is_empty pattern.months
+              || Int_set.mem dt.month pattern.months
             in
             let mday_is_fine =
               Int_set.is_empty pattern.month_days

@@ -13,7 +13,7 @@ let js_date_of_date_time dt =
   let open Timere.Date_time in
   let date = new%js Js.date_now in
   let _ = date##setUTCFullYear dt.year in
-  let _ = date##setUTCMonth (Timere.Utils.tm_int_of_month dt.month) in
+  let _ = date##setUTCMonth (pred dt.month) in
   let _ = date##setUTCDate dt.day in
   let _ = date##setUTCHours dt.hour in
   let _ = date##setUTCMinutes dt.minute in
@@ -26,11 +26,6 @@ let js_date_of_timestamp x =
   | None -> raise_with_msg "Invalid timestamp"
   | Some dt -> js_date_of_date_time dt
 
-let month_of_int x =
-  match Timere.Utils.month_of_tm_int x with
-  | None -> raise_with_msg "Invalid month"
-  | Some x -> x
-
 let weekday_of_int x =
   match Timere.Utils.weekday_of_tm_int x with
   | None -> raise_with_msg "Invalid weekday"
@@ -38,7 +33,7 @@ let weekday_of_int x =
 
 let date_time_of_js_date (date : Js.date Js.t) =
   let year = date##getUTCFullYear in
-  let month = month_of_int date##getUTCMonth in
+  let month = succ date##getUTCMonth in
   let day = date##getUTCDate in
   let hour = date##getUTCHours in
   let minute = date##getUTCMinutes in
@@ -61,10 +56,6 @@ let to_be_exported =
     method months l =
       wrap (fun () ->
           list_of_js_array l
-          |> List.map (fun x ->
-              match Timere.Utils.month_of_human_int x with
-              | Some x -> x
-              | None -> raise_with_msg "Invalid month int")
           |> Timere.months)
 
     method days l = wrap (fun () -> Timere.days (list_of_js_array l))
@@ -166,7 +157,7 @@ let to_be_exported =
           Timere.Points.make ~day ~hour ~minute ~second ()
 
         method mdhms month day hour minute second =
-          Timere.Points.make ~month:(month_of_int month) ~day ~hour ~minute
+          Timere.Points.make ~month ~day ~hour ~minute
             ~second ()
       end
 

@@ -4,10 +4,10 @@ module Alco = struct
   let leap_second0 () =
     Alcotest.(check span_testable)
       "same timestamp"
-      (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:2020 ~month:`Jan ~day:1
+      (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:2020 ~month:1 ~day:1
          ~hour:0 ~minute:0 ~second:60 ~ns:1_000_000 ()
        |> Time.Date_time'.to_timestamp_single)
-      (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:2020 ~month:`Jan ~day:1
+      (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:2020 ~month:1 ~day:1
          ~hour:0 ~minute:0 ~second:59 ~ns:1_000_000 ()
        |> Time.Date_time'.to_timestamp_single)
 
@@ -15,7 +15,7 @@ module Alco = struct
     Alcotest.(check span_testable)
       "same timestamp"
       (CCResult.get_exn @@ ISO8601.to_timestamp "2020-01-01T00:00:60.001Z")
-      (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:2020 ~month:`Jan ~day:1
+      (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:2020 ~month:1 ~day:1
          ~hour:0 ~minute:0 ~second:60 ~ns:1_000_000 ()
        |> Time.Date_time'.to_timestamp_single)
 
@@ -23,7 +23,7 @@ module Alco = struct
     Alcotest.(check span_testable)
       "same timestamp"
       (CCResult.get_exn @@ ISO8601.to_timestamp "2020-01-01T00:00:60.1Z")
-      (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:2020 ~month:`Jan ~day:1
+      (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:2020 ~month:1 ~day:1
          ~hour:0 ~minute:0 ~second:60 ~ns:100_000_000 ()
        |> Time.Date_time'.to_timestamp_single)
 
@@ -47,7 +47,7 @@ module Alco = struct
     Alcotest.(check span_testable)
       "same timestamp"
       (CCResult.get_exn @@ ISO8601.to_timestamp "2020-01-01T24:00:00Z")
-      (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:2020 ~month:`Jan ~day:1
+      (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:2020 ~month:1 ~day:1
          ~hour:23 ~minute:59 ~second:59 ~ns:999_999_999 ()
        |> Time.Date_time'.to_timestamp_single)
 
@@ -55,7 +55,7 @@ module Alco = struct
     Alcotest.(check span_testable)
       "same timestamp"
       (CCResult.get_exn @@ ISO8601.to_timestamp "1979-05-27T07:32:00Z")
-      (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:1979 ~month:`May ~day:27
+      (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:1979 ~month:1 ~day:27
          ~hour:7 ~minute:32 ~second:0 ()
        |> Time.Date_time'.to_timestamp_single)
 
@@ -67,7 +67,7 @@ module Alco = struct
          ~tz:
            (Time_zone.make_offset_only_exn
               (Duration.make_exn ~sign:`Neg ~hours:7 ()))
-         ~year:1979 ~month:`May ~day:27 ~hour:7 ~minute:32 ~second:0 ()
+         ~year:1979 ~month:5 ~day:27 ~hour:7 ~minute:32 ~second:0 ()
        |> Time.Date_time'.to_timestamp_single)
 
   let of_iso8601_case3 () =
@@ -79,7 +79,7 @@ module Alco = struct
          ~tz:
            (Time_zone.make_offset_only_exn
               (Duration.make_exn ~sign:`Neg ~hours:7 ()))
-         ~year:1979 ~month:`May ~day:27 ~hour:7 ~minute:32 ~second:0
+         ~year:1979 ~month:5 ~day:27 ~hour:7 ~minute:32 ~second:0
          ~ns:999_999_000 ()
        |> Time.Date_time'.to_timestamp_single)
 
@@ -92,7 +92,7 @@ module Alco = struct
          ~tz:
            (Time_zone.make_offset_only_exn
               (Duration.make_exn ~sign:`Neg ~hours:7 ()))
-         ~year:1979 ~month:`May ~day:27 ~hour:7 ~minute:32 ~second:0
+         ~year:1979 ~month:5 ~day:27 ~hour:7 ~minute:32 ~second:0
          ~ns:999_999_999 ()
        |> Time.Date_time'.to_timestamp_single)
 
@@ -105,7 +105,7 @@ module Alco = struct
          ~tz:
            (Time_zone.make_offset_only_exn
               (Duration.make_exn ~sign:`Neg ~hours:7 ()))
-         ~year:1979 ~month:`May ~day:27 ~hour:7 ~minute:32 ~second:0 ~ns:999_999
+         ~year:1979 ~month:5 ~day:27 ~hour:7 ~minute:32 ~second:0 ~ns:999_999
          ()
        |> Time.Date_time'.to_timestamp_single)
 

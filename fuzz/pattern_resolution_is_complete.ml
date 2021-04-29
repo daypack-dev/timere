@@ -37,8 +37,8 @@ let () =
                   || Int_set.mem dt.year pattern.years
                 in
                 let month_is_fine =
-                  Month_set.is_empty pattern.months
-                  || Month_set.mem dt.month pattern.months
+                  Int_set.is_empty pattern.months
+                  || Int_set.mem dt.month pattern.months
                 in
                 let mday_is_fine =
                   Int_set.is_empty pattern.month_days

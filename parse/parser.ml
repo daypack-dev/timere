@@ -52,10 +52,10 @@ type guess =
   | Weekdays of Timere.weekday Timere.range list
   | Month_day of int
   | Month_days of int Timere.range list
-  | Month of Timere.month
-  | Months of Timere.month Timere.range list
+  | Month of int
+  | Months of int Timere.range list
   | Ymd of
-      (MParser.pos * int) * (MParser.pos * Timere.month) * (MParser.pos * int)
+      (MParser.pos * int) * (MParser.pos * int) * (MParser.pos * int)
   | Duration of Timere.Duration.t
   | Time_zone of Timere.Time_zone.t
 
@@ -124,26 +124,26 @@ let weekdays : (string * Timere.weekday) list =
     ("saturday", `Sat);
   ]
 
-let months : (string * Timere.month) list =
+let months : (string * int) list =
   [
-    ("january", `Jan);
-    ("february", `Feb);
-    ("march", `Mar);
-    ("april", `Apr);
-    ("may", `May);
-    ("june", `Jun);
-    ("july", `Jul);
-    ("august", `Aug);
-    ("september", `Sep);
-    ("october", `Oct);
-    ("november", `Nov);
-    ("december", `Dec);
+    ("january", 1);
+    ("february", 2);
+    ("march", 3);
+    ("april", 4);
+    ("may", 5);
+    ("june", 6);
+    ("july", 7);
+    ("august", 8);
+    ("september", 9);
+    ("october", 10);
+    ("november", 11);
+    ("december", 12);
   ]
 
 let parse_weekday (s : string) : (Timere.weekday, unit) CCResult.t =
   match prefix_string_match weekdays s with [ (_, x) ] -> Ok x | _ -> Error ()
 
-let parse_month (s : string) : (Timere.month, unit) CCResult.t =
+let parse_month (s : string) : (int, unit) CCResult.t =
   match prefix_string_match months s with [ (_, x) ] -> Ok x | _ -> Error ()
 
 let weekday_p : (Timere.weekday, unit) t =
@@ -155,7 +155,7 @@ let weekday_p : (Timere.weekday, unit) t =
     | Ok x -> return x
     | Error _ -> fail (Printf.sprintf "Failed to interpret weekday string")
 
-let month_p : (Timere.month, unit) t =
+let month_p : (int, unit) t =
   alpha_string
   >>= fun x ->
   if String.length x < 3 then fail (Printf.sprintf "String too short")
@@ -688,12 +688,7 @@ module Ast_normalize = struct
         :: (pos_month, _, Nat month)
         :: (_, _, Dot) :: (pos_day, _, Nat day) :: rest
         when year > 31 -> (
-          match Timere.Utils.month_of_human_int month with
-          | None ->
-            invalid_data
-              (Printf.sprintf "%s: Invalid month" (string_of_pos pos_month))
-          | Some month ->
-            ( pos_year,
+          ( pos_year,
               text_map_empty,
               Ymd ((pos_year, year), (pos_month, month), (pos_day, day)) )
             :: aux rest)
@@ -710,12 +705,7 @@ module Ast_normalize = struct
         :: (pos_month, _, Nat month)
         :: (_, _, Dot) :: (pos_year, _, Nat year) :: rest
         when year > 31 -> (
-          match Timere.Utils.month_of_human_int month with
-          | None ->
-            invalid_data
-              (Printf.sprintf "%s: Invalid month" (string_of_pos pos_month))
-          | Some month ->
-            ( pos_day,
+          ( pos_day,
               text_map_empty,
               Ymd ((pos_year, year), (pos_month, month), (pos_day, day)) )
             :: aux rest)
@@ -840,8 +830,8 @@ let map_rule_result (f : 'a -> 'b) (x : 'a rule_result) : 'b rule_result =
   | `None -> `None
   | `Error msg -> `Error msg
 
-let flatten_months pos (l : Timere.month Timere.range list) :
-  Timere.month list rule_result =
+let flatten_months pos (l : int Timere.range list) :
+  int list rule_result =
   match Timere.Utils.flatten_month_range_list l with
   | Some x -> `Some x
   | None ->
@@ -889,7 +879,7 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.Hms.t option)
          (string_of_pos @@ CCOpt.get_exn @@ pos_day))
   | _ -> (
       let default_month =
-        match lean_toward with `Front -> `Jan | `Back -> `Dec
+        match lean_toward with `Front -> 1 | `Back -> 12
       in
       let default_day = match lean_toward with `Front -> 1 | `Back -> -1 in
       let default_hour = match lean_toward with `Front -> 0 | `Back -> 23 in

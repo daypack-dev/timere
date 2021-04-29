@@ -262,10 +262,10 @@ let time_slots = QCheck.make ~print:Print_utils.time_slots time_slots_gen
 let weekday_gen : weekday QCheck.Gen.t =
   QCheck.Gen.(oneofl [ `Sun; `Mon; `Tue; `Wed; `Thu; `Fri; `Sat ])
 
-let month_gen : month QCheck.Gen.t =
+let month_gen : int QCheck.Gen.t =
   let open QCheck.Gen in
-  oneofl
-    [ `Jan; `Feb; `Mar; `Apr; `May; `Jun; `Jul; `Aug; `Sep; `Oct; `Nov; `Dec ]
+  map succ
+    (int_bound 12)
 
 let month_days_gen : int list QCheck.Gen.t =
   QCheck.Gen.(list_size (int_bound 10) (int_range 1 32))
@@ -352,12 +352,12 @@ let tz_testable : (module Alcotest.TESTABLE with type t = Time_zone.t) =
 let time_gen : Time_ast.t QCheck.Gen.t =
   let open QCheck.Gen in
   let search_start_dt =
-    Time.Date_time'.make_exn ~year:2018 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+    Time.Date_time'.make_exn ~year:2018 ~month:1 ~day:1 ~hour:0 ~minute:0
       ~second:0 ~tz:Time_zone.utc ()
   in
   let search_start = Time.Date_time'.to_timestamp_single search_start_dt in
   let search_end_exc_dt =
-    Time.Date_time'.make_exn ~year:2021 ~month:`Jan ~day:1 ~hour:0 ~minute:0
+    Time.Date_time'.make_exn ~year:2021 ~month:1 ~day:1 ~hour:0 ~minute:0
       ~second:0 ~tz:Time_zone.utc ()
   in
   let search_end_exc = Time.Date_time'.to_timestamp_single search_end_exc_dt in

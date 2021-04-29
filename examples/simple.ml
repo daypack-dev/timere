@@ -3,7 +3,7 @@ let () =
   match
     resolve (
       after (Date_time.now ())
-      & months [`Dec]
+      & months [12]
       & days [25]
       & weekdays [`Wed]
     )

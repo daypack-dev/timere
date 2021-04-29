@@ -12,7 +12,7 @@ let make_rng ~randomness : unit -> int =
 
 let make_date_time ~rng ~min_year ~max_year_inc =
   let year = min max_year_inc (min_year + rng ()) in
-  let month = CCOpt.get_exn @@ month_of_tm_int (rng () mod 12) in
+  let month = succ (rng () mod 12) in
   let day = 1 + (rng () mod day_count_of_month ~year ~month) in
   let hour = rng () mod 24 in
   let minute = rng () mod 60 in
@@ -59,7 +59,7 @@ let make_pattern ~rng ~min_year ~max_year_inc : Pattern.t =
     else
       let end_inc = min 5 (rng ()) in
       OSeq.(0 -- end_inc)
-      |> Seq.map (fun _ -> CCOpt.get_exn @@ month_of_tm_int (rng () mod 12))
+      |> Seq.map (fun _ -> succ (rng () mod 12))
       |> CCList.of_seq
   in
   let month_days =
@@ -101,7 +101,7 @@ let make_pattern ~rng ~min_year ~max_year_inc : Pattern.t =
   Pattern.
     {
       years = Int_set.of_list years;
-      months = Month_set.of_list months;
+      months = Int_set.of_list months;
       month_days = Int_set.of_list month_days;
       weekdays = Weekday_set.of_list weekdays;
       hours = Int_set.of_list hours;
@@ -138,7 +138,7 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
       ()
   | 5 ->
     Points.make_exn
-      ~month:(CCOpt.get_exn @@ month_of_tm_int (rng () mod 12))
+      ~month:(succ (rng () mod 12))
       ~day
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
@@ -147,7 +147,7 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
   | 6 ->
     Points.make_exn
       ~year:(min max_year_inc (min_year + rng ()))
-      ~month:(CCOpt.get_exn @@ month_of_tm_int (rng () mod 12))
+      ~month:(succ (rng () mod 12))
       ~day
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
@@ -251,7 +251,7 @@ let build ~enable_extra_restrictions:_ ~min_year ~max_year_inc ~max_height
         let pat = make_pattern ~rng ~min_year ~max_year_inc in
         Time.pattern
           ~years:(Int_set.to_list pat.years)
-          ~months:(Month_set.to_list pat.months)
+          ~months:(Int_set.to_list pat.months)
           ~days:(Int_set.to_list pat.month_days)
           ~weekdays:(Weekday_set.to_list pat.weekdays)
           ~hours:(Int_set.to_list pat.hours)
