@@ -773,11 +773,12 @@ end
 (** {1 Reasoning/scheduling} *)
 
 type t
-(** This is the core type of Timere used to encode computation over time,
-    also called a "Timere object".
+(** This is the core type of Timere that represents sets of points in time, more precisely,
+    unions of time intervals. For example, "all Mondays of year 2000 at the UTC timezone".
 
-    A Timere object is a lazily evaluated representation of computation built using
-    constructors, where [resolve] forces the result of the computation (lazy sequence
+    We call [Timere.t] values "timere object"; internally they are rich
+    expressions representing the time computations (union, intersection,
+    etc.), lazily forced into more low-level descriptions (lazy sequences
     of intervals).
 *)
 
