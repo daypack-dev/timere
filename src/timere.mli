@@ -715,7 +715,6 @@ module Timestamp : sig
 
      If more than 9 fractional digits are provided, then only the first 9 digits are used, i.e. no rounding.
   *)
-
 end
 
 module Week_date_time : sig
