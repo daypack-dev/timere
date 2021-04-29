@@ -381,7 +381,8 @@ module Date_time : sig
     ns : int;
     tz_info : tz_info;
   }
-  (** This is the main date time type.
+  (** This is the main date time type, and represents a point in the local time line
+      with respect to the residing time zone. Conceptually a pair of "date" and "time of day".
 
       A [t] always maps to at least one point on the UTC time line, and [make] fails if this is not the case.
       [t] may also map to two points on the UTC time line in the case of DST and without
@@ -430,7 +431,8 @@ module Date_time : sig
 
       A precise offset is inferred if possible.
 
-      Note that this may yield a ambiguous date time if the time zone has varying offsets, e.g. DST.
+      Note that this may yield a ambiguous date time if the time zone has varying offsets,
+      causing a local date time to appear twice, e.g. countries with DST.
 
       See {!val:make_unambiguous} for the more precise construction.
 
@@ -617,6 +619,8 @@ module Date_time : sig
 
   val pp_rfc3339 : ?frac_s:int -> unit -> Format.formatter -> t -> unit
   (**
+     Pretty prints according to RFC3339, e.g. [2020-01-20T13:00:00.0001+10].
+
      [frac_s] defaults to as many digits as required for a lossless representation.
 
      @raise Invalid_argument if [frac_s < 0 || frac_s > 9]
@@ -683,9 +687,12 @@ module Timestamp : sig
     ?display_using_tz:Time_zone.t -> ?format:string -> timestamp -> string
 
   val pp_rfc3339 : ?frac_s:int -> unit -> Format.formatter -> timestamp -> unit
-  (** [frac_s] determines the number of fractional digits to include.
+  (**
+     Pretty prints according to RFC3339, e.g. [2020-01-20T13:00:00.0001+10].
 
-      @raise Invalid_argument if [frac_s < 0 || frac_s > 9]
+     [frac_s] determines the number of fractional digits to include.
+
+     @raise Invalid_argument if [frac_s < 0 || frac_s > 9]
   *)
 
   val pp_rfc3339_milli : Format.formatter -> timestamp -> unit
@@ -703,6 +710,12 @@ module Timestamp : sig
   val to_rfc3339_nano : timestamp -> string
 
   val of_iso8601 : string -> (timestamp, string) result
+  (**
+     Parses a subset of ISO8601, up to 9 fractional digits for second (nanosecond precision).
+
+     If more than 9 fractional digits are provided, then only the first 9 digits are used, i.e. no rounding.
+  *)
+
 end
 
 module Week_date_time : sig
