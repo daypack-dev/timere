@@ -967,22 +967,12 @@ module Date_time' = struct
   let dummy_tz_info = utc_tz_info
 
   let to_ptime_date_time_pretend_utc (x : t) : Ptime.date * Ptime.time =
-    ( (x.year, x.month, x.day),
-      ((x.hour, x.minute, x.second), 0) )
+    ((x.year, x.month, x.day), ((x.hour, x.minute, x.second), 0))
 
   let of_ptime_date_time_pretend_utc
       (((year, month, day), ((hour, minute, second), _tz_offset_s)) :
          Ptime.date * Ptime.time) : t =
-    {
-      year;
-      month;
-      day;
-      hour;
-      minute;
-      second;
-      ns = 0;
-      tz_info = utc_tz_info;
-    }
+    { year; month; day; hour; minute; second; ns = 0; tz_info = utc_tz_info }
 
   let to_timestamp_pretend_utc (x : t) : timestamp option =
     to_ptime_date_time_pretend_utc x
@@ -1058,16 +1048,17 @@ module Date_time' = struct
             x
             |> Ptime.to_date_time ~tz_offset_s:entry.offset
             |> of_ptime_date_time_pretend_utc
-            |> (fun t ->
-                Some {
-                  t with
-                  ns;
-                  tz_info =
-                    ( tz_of_date_time,
-                      Some
-                        (Duration.of_span
-                           (Span.make_small ~s:entry.offset ())) );
-                }))
+            |> fun t ->
+            Some
+              {
+                t with
+                ns;
+                tz_info =
+                  ( tz_of_date_time,
+                    Some
+                      (Duration.of_span (Span.make_small ~s:entry.offset ()))
+                  );
+              })
 
   let of_timestamp_exn ?tz_of_date_time x =
     match of_timestamp ?tz_of_date_time x with
@@ -1087,8 +1078,8 @@ module Date_time' = struct
   let adjust_ns_for_leap_second ~is_leap_second (dt : t) : t =
     if is_leap_second then { dt with ns = dt.ns + Span.ns_count_in_s } else dt
 
-  let check_args_and_normalize_ns ~year ~month ~day ~hour ~minute ~second ~ns ~frac :
-    (int, error) result =
+  let check_args_and_normalize_ns ~year ~month ~day ~hour ~minute ~second ~ns
+      ~frac : (int, error) result =
     if year < Constants.min_year || Constants.max_year < year then
       Error (`Invalid_year year)
     else if month < 1 || 12 < month then Error (`Invalid_day day)
@@ -1105,7 +1096,8 @@ module Date_time' = struct
   let make ?(tz = Time_zone_utils.get_local_tz_for_arg ()) ?(ns = 0)
       ?(frac = 0.) ~year ~month ~day ~hour ~minute ~second () =
     match
-      check_args_and_normalize_ns ~year ~month ~day ~hour ~minute ~second ~ns ~frac
+      check_args_and_normalize_ns ~year ~month ~day ~hour ~minute ~second ~ns
+        ~frac
     with
     | Error e -> Error e
     | Ok ns ->
@@ -1142,7 +1134,8 @@ module Date_time' = struct
       Error (`Invalid_tz_info (CCOpt.map Time_zone.name tz, tz_offset))
     in
     match
-      check_args_and_normalize_ns ~year ~month ~day ~hour ~minute ~second ~ns ~frac
+      check_args_and_normalize_ns ~year ~month ~day ~hour ~minute ~second ~ns
+        ~frac
     with
     | Error e -> Error e
     | Ok ns ->
@@ -1332,34 +1325,34 @@ module Week_date_time' = struct
      | `Mon -> Some jan_4_of_year
      | `Tue ->
        Some
-         (Date_time'.make_exn ~tz:Time_zone.utc ~year ~month:1 ~day:3
-            ~hour:0 ~minute:0 ~second:0 ())
+         (Date_time'.make_exn ~tz:Time_zone.utc ~year ~month:1 ~day:3 ~hour:0
+            ~minute:0 ~second:0 ())
      | `Wed ->
        Some
-         (Date_time'.make_exn ~tz:Time_zone.utc ~year ~month:1 ~day:2
-            ~hour:0 ~minute:0 ~second:0 ())
+         (Date_time'.make_exn ~tz:Time_zone.utc ~year ~month:1 ~day:2 ~hour:0
+            ~minute:0 ~second:0 ())
      | `Thu ->
        Some
-         (Date_time'.make_exn ~tz:Time_zone.utc ~year ~month:1 ~day:1
-            ~hour:0 ~minute:0 ~second:0 ())
+         (Date_time'.make_exn ~tz:Time_zone.utc ~year ~month:1 ~day:1 ~hour:0
+            ~minute:0 ~second:0 ())
      | `Fri -> (
          match
-           Date_time'.make ~tz:Time_zone.utc ~year:(pred year) ~month:12
-             ~day:31 ~hour:0 ~minute:0 ~second:0 ()
+           Date_time'.make ~tz:Time_zone.utc ~year:(pred year) ~month:12 ~day:31
+             ~hour:0 ~minute:0 ~second:0 ()
          with
          | Ok x -> Some x
          | Error _ -> None)
      | `Sat -> (
          match
-           Date_time'.make ~tz:Time_zone.utc ~year:(pred year) ~month:12
-             ~day:30 ~hour:0 ~minute:0 ~second:0 ()
+           Date_time'.make ~tz:Time_zone.utc ~year:(pred year) ~month:12 ~day:30
+             ~hour:0 ~minute:0 ~second:0 ()
          with
          | Ok x -> Some x
          | Error _ -> None)
      | `Sun -> (
          match
-           Date_time'.make ~tz:Time_zone.utc ~year:(pred year) ~month:12
-             ~day:29 ~hour:0 ~minute:0 ~second:0 ()
+           Date_time'.make ~tz:Time_zone.utc ~year:(pred year) ~month:12 ~day:29
+             ~hour:0 ~minute:0 ~second:0 ()
          with
          | Ok x -> Some x
          | Error _ -> None))
@@ -1673,10 +1666,8 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
               Constants.min_year <= year && year <= Constants.max_year)
            years)
     then invalid_arg "pattern: not all years are valid"
-    else if
-      Stdlib.not
-        (List.for_all (fun x -> 1 <= x && x <= 12) months)
-    then invalid_arg "pattern: not all months are valid"
+    else if Stdlib.not (List.for_all (fun x -> 1 <= x && x <= 12) months) then
+      invalid_arg "pattern: not all months are valid"
     else if
       Stdlib.not
         (List.for_all (fun x -> -31 <= x && x <= 31 && x <> 0) month_days)
@@ -2003,10 +1994,7 @@ let month_of_full_string s : int option =
   | _ -> None
 
 let abbr_string_of_month (month : int) : string option =
-  CCOpt.map (fun s ->
-      String.sub s 0 3
-    )
-    (full_string_of_month month)
+  CCOpt.map (fun s -> String.sub s 0 3) (full_string_of_month month)
 
 let month_of_abbr_string s : int option =
   match s with

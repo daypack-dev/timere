@@ -68,30 +68,29 @@ let to_date_time s : (Time.Date_time'.t, string) result =
     char '-'
     >> max_two_digit_nat_zero
     >>= fun month ->
-    (
-        char '-'
-        >> max_two_digit_nat_zero
-        >>= fun day ->
-        any_char
-        >> hms_p
-        >>= fun (hour, minute, second, ns) ->
-        offset_p
-        >>= fun offset ->
-        let hour, minute, second, ns =
-          if hour = 24 && minute = 0 && second = 0 && ns = 0 then
-            (23, 59, 59, Span.ns_count_in_s - 1)
-          else (hour, minute, second, ns)
-        in
-        match
-          Time.Date_time'.make_unambiguous ~year ~month ~day ~hour ~minute
-            ~second ~ns ~tz_offset:offset ()
-        with
-        | Error e ->
-          fail
-            (Printf.sprintf "Invalid date time: %s"
-               (Time.Date_time'.string_of_error e))
-        | Ok x -> return x
-        | exception Invalid_argument msg -> fail msg)
+    char '-'
+    >> max_two_digit_nat_zero
+    >>= fun day ->
+    any_char
+    >> hms_p
+    >>= fun (hour, minute, second, ns) ->
+    offset_p
+    >>= fun offset ->
+    let hour, minute, second, ns =
+      if hour = 24 && minute = 0 && second = 0 && ns = 0 then
+        (23, 59, 59, Span.ns_count_in_s - 1)
+      else (hour, minute, second, ns)
+    in
+    match
+      Time.Date_time'.make_unambiguous ~year ~month ~day ~hour ~minute ~second
+        ~ns ~tz_offset:offset ()
+    with
+    | Error e ->
+      fail
+        (Printf.sprintf "Invalid date time: %s"
+           (Time.Date_time'.string_of_error e))
+    | Ok x -> return x
+    | exception Invalid_argument msg -> fail msg
   in
   parse_string p s () |> result_of_mparser_result
 

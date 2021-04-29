@@ -44,8 +44,7 @@ end
 
 let weekday_of_month_day ~(year : int) ~(month : int) ~(day : int) :
   weekday option =
-  Ptime.(of_date (year, month, day))
-  |> CCOpt.map Ptime.weekday
+  Ptime.(of_date (year, month, day)) |> CCOpt.map Ptime.weekday
 
 let is_leap_year ~year =
   assert (year >= 0);

@@ -237,9 +237,7 @@ module Matching_months = struct
     let cur_branch_search_start = get_cur_branch_search_start cur_branch in
     let cur_branch_search_end_inc = get_cur_branch_search_end_inc cur_branch in
     let month_start = cur_branch_search_start.month in
-    let month_end_inc =
-      cur_branch_search_end_inc.month
-    in
+    let month_end_inc = cur_branch_search_end_inc.month in
     if Int_set.is_empty t.months then
       OSeq.(month_start -- month_end_inc)
       |> Seq.map (fun month -> { cur_branch_search_start with month })
@@ -261,9 +259,7 @@ module Matching_months = struct
           { cur_branch with month = y } )
     in
     let month_start = cur_branch_search_start.month in
-    let month_end_inc =
-      cur_branch_search_end_inc.month
-    in
+    let month_end_inc = cur_branch_search_end_inc.month in
     if Int_set.is_empty t.months then
       Seq.return
         (`Range_inc (cur_branch_search_start, cur_branch_search_end_inc))

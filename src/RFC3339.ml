@@ -66,14 +66,13 @@ let pp_date_time ?frac_s () formatter (dt : Time.Date_time'.t) =
         if Time.Date_time'.is_leap_second dt then 60 else dt.second
       in
       if frac_s = 0 then
-        Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d%s" dt.year
-          dt.month
+        Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d%s" dt.year dt.month
           dt.day dt.hour dt.minute second tz_off
       else
         let divisor = get_divisor frac_s in
         Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d.%0*d%s" dt.year
-          dt.month
-          dt.day dt.hour dt.minute second frac_s (ns / divisor) tz_off
+          dt.month dt.day dt.hour dt.minute second frac_s (ns / divisor)
+          tz_off
 
 let of_date_time ?frac_s (dt : Time.Date_time'.t) : string option =
   try Some (Fmt.str "%a" (pp_date_time ?frac_s ()) dt)
