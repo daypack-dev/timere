@@ -233,8 +233,7 @@ let overapproximate_search_space_bottom_up default_tz (time : t) : t =
         match
           Time.Date_time'.of_points
             ~default_tz_info:
-              (CCResult.get_exn
-               @@ Date_time_components.make_tz_info ~tz:default_tz ())
+              (CCResult.get_exn @@ Date_time_components.make_tz_info ~tz ())
             start
         with
         | None -> default_search_space
@@ -314,9 +313,9 @@ let restrict_search_space_top_down (time : t) : t =
   and aux_seq parent_search_space l = Seq.map (aux parent_search_space) l in
   aux default_search_space time
 
-let optimize_search_space default_tz_offset_s t =
+let optimize_search_space default_tz t =
   t
-  |> overapproximate_search_space_bottom_up default_tz_offset_s
+  |> overapproximate_search_space_bottom_up default_tz
   |> restrict_search_space_top_down
 
 type inc_or_exc =
