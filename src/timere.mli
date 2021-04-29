@@ -494,6 +494,8 @@ module Date_time : sig
       and returns [Error `Invalid_tz_info] if [tz_offset] is not a possible
       offset for the particular date time in said time zone.
 
+      As an example, for "UTC+1", you would give a duration of positive 1 hour for `tz_offset`.
+
       Otherwise same leap second handling and error handling as [make].
   *)
 
