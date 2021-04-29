@@ -40,11 +40,10 @@ let display_intervals ~display_using_tz s =
 let debug_resolver () =
   let s =
     {|
-    (shift (-1 0)
-                         (pattern (years 2002) (months Feb)
-                          (month_days 20) (weekdays)
-                          (hours 0) (minutes 0)
-                          (seconds 3)))
+(with_tz UTC+1:00
+ (bounded_intervals whole (31622400 0)
+  (points (pick ymdhms 2001 May 10 10 0 0)) (points (pick ymdhms 2001 May 10 14 0 0)))
+)
       |}
   in
   let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in
@@ -78,6 +77,7 @@ let debug_resolver () =
    *         ~second:0 ~tz_offset_s:0 )
    * in *)
   (* let tz = Time_zone.make_exn "Australia/Sydney" in *)
+  (* let tz = Time_zone.make_exn "Europe/Paris" in *)
   let tz = Time_zone.make_exn "UTC" in
   (* let timere =
    *   let open Time in
@@ -131,7 +131,7 @@ let debug_resolver () =
   print_endline "=====";
   (match Resolver.resolve ~search_using_tz:tz timere' with
    | Error msg -> print_endline msg
-   | Ok s -> display_intervals ~display_using_tz:tz s);
+   | Ok s -> display_intervals ~display_using_tz:Time_zone.utc s);
   print_endline "=====";
   let s =
     Simple_resolver.resolve ~search_start ~search_end_exc ~search_using_tz:tz
