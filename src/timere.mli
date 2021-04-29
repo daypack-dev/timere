@@ -761,9 +761,12 @@ end
 (** {1 Reasoning/scheduling} *)
 
 type t
-(** This is the core type of Timere used to encode computation over time.
+(** This is the core type of Timere used to encode computation over time,
+    also called a "Timere object".
 
-    The following documentation may call value of type [t] "a Timere object", or "timere".
+    A Timere object is a lazily evaluated representation of computation built using
+    constructors, where [resolve] forces the result of the computation (lazy sequence
+    of intervals).
 *)
 
 type 'a range =
@@ -864,7 +867,7 @@ val nth_weekday_of_month : int -> weekday -> t
     @raise Invalid_argument if [n] is out of range
 *)
 
-(** {1 Algebraic operations} *)
+(** {2 Algebraic operations} *)
 
 val inter : t list -> t
 (** Intersection of list of timeres.
@@ -938,9 +941,9 @@ val sorted_timestamps : ?skip_invalid:bool -> timestamp list -> t
 
 val sorted_timestamp_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
 
-(** {1 Intervals} *)
+(** {2 Intervals} *)
 
-(** {2 Explicit} *)
+(** {3 Explicit} *)
 
 exception Interval_is_invalid
 
@@ -1166,7 +1169,7 @@ val hms_intervals_exc : Hms.t -> Hms.t -> t
 (** Same as [bounded_intervals ...] with bound fixed to [Duration.make ~days:1 ()]
 *)
 
-(** {1 Chunking} *)
+(** {2 Chunking} *)
 
 type chunked
 
@@ -1196,7 +1199,7 @@ val chunk : chunking -> (chunked -> chunked) -> t -> t
     or [`By_duration_drop_partial]
 *)
 
-(** {2 Chunked selectors} *)
+(** {3 Chunked selectors} *)
 
 (** You may find {!val:(%>)} useful for chaining selectors together, e.g. [drop 5 %> take 2]
 *)
@@ -1216,7 +1219,7 @@ val take_nth : int -> chunked -> chunked
 val drop : int -> chunked -> chunked
 (** Discard n chunks *)
 
-(** {1 Infix operators} *)
+(** {2 Infix operators} *)
 
 val ( & ) : t -> t -> t
 (** {!val:inter} *)
@@ -1230,13 +1233,13 @@ val ( %> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
     [f1 %> f2] is equivalent to [fun x -> x |> f1 |> f2].
 *)
 
-(** {1 Resolution} *)
+(** {2 Resolution} *)
 
 val resolve :
   ?search_using_tz:Time_zone.t -> t -> (Interval.t Seq.t, string) result
 (** Resolves a Timere object into a concrete interval sequence *)
 
-(** {1 Pretty printers} *)
+(** {2 Pretty printers} *)
 
 val pp_intervals :
   ?display_using_tz:Time_zone.t ->
@@ -1247,7 +1250,7 @@ val pp_intervals :
   Interval.t Seq.t ->
   unit
 
-(** {1 S-expressions} *)
+(** {2 S-expressions} *)
 
 (** These functions are suitable for debugging, serializing and deserializing timeres.
 
