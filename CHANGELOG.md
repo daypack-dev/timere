@@ -28,6 +28,8 @@
 
 - Added `Timere.Week_date_time` module for handling ISO week date time
 
+- Removed type `month`, replaced use of it with just `int`
+
 ## Timere 0.3.1
 
 - Minor refactoring on use of pattern resolver to simplify reasoning about undefined/uncertain behaviour

@@ -1,6 +1,6 @@
 open Date_time_components
 
-let sexp_of_month x = CCSexp.atom @@ Time.abbr_string_of_month x
+let sexp_of_month x = CCSexp.atom @@ CCOpt.get_exn @@ Time.abbr_string_of_month x
 
 let sexp_of_weekday x = CCSexp.atom @@ Time.abbr_string_of_weekday x
 
@@ -128,7 +128,7 @@ let sexp_of_pattern (pat : Pattern.t) : CCSexp.t =
     pat.years |> Int_set.to_seq |> CCList.of_seq |> sexp_list_of_ints
   in
   let months =
-    pat.months |> Month_set.to_seq |> CCList.of_seq |> List.map sexp_of_month
+    pat.months |> Int_set.to_seq |> CCList.of_seq |> List.map sexp_of_month
   in
   let month_days =
     pat.month_days |> Int_set.to_seq |> CCList.of_seq |> sexp_list_of_ints

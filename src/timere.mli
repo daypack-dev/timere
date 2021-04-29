@@ -223,21 +223,6 @@ end
 
 (** {1 Date time handling} *)
 
-type month =
-  [ `Jan
-  | `Feb
-  | `Mar
-  | `Apr
-  | `May
-  | `Jun
-  | `Jul
-  | `Aug
-  | `Sep
-  | `Oct
-  | `Nov
-  | `Dec
-  ]
-
 type weekday =
   [ `Sun
   | `Mon
@@ -427,7 +412,7 @@ module Date_time : sig
 
   type t = private {
     year : int;
-    month : month;
+    month : int;
     day : int;
     hour : int;
     minute : int;
@@ -462,7 +447,7 @@ module Date_time : sig
     ?ns:int ->
     ?frac:float ->
     year:int ->
-    month:month ->
+    month:int ->
     day:int ->
     hour:int ->
     minute:int ->
@@ -507,7 +492,7 @@ module Date_time : sig
     ?ns:int ->
     ?frac:float ->
     year:int ->
-    month:month ->
+    month:int ->
     day:int ->
     hour:int ->
     minute:int ->
@@ -521,7 +506,7 @@ module Date_time : sig
     ?ns:int ->
     ?frac:float ->
     year:int ->
-    month:month ->
+    month:int ->
     day:int ->
     hour:int ->
     minute:int ->
@@ -545,7 +530,7 @@ module Date_time : sig
     ?ns:int ->
     ?frac:float ->
     year:int ->
-    month:month ->
+    month:int ->
     day:int ->
     hour:int ->
     minute:int ->
@@ -791,10 +776,10 @@ val years : int list -> t
 val year_ranges : int range list -> t
 (** [year_ranges l] is a shorthand for [pattern ~year_ranges:l ()] *)
 
-val months : month list -> t
+val months : int list -> t
 (** [months l] is a shorthand for [pattern ~months:l ()] *)
 
-val month_ranges : month range list -> t
+val month_ranges : int range list -> t
 (** [month_ranges l] is a shorthand for [pattern ~month_ranges:l ()] *)
 
 val days : int list -> t
@@ -830,8 +815,8 @@ val second_ranges : int range list -> t
 val pattern :
   ?years:int list ->
   ?year_ranges:int range list ->
-  ?months:month list ->
-  ?month_ranges:month range list ->
+  ?months:int list ->
+  ?month_ranges:int range list ->
   ?days:int list ->
   ?day_ranges:int range list ->
   ?weekdays:weekday list ->
@@ -1050,7 +1035,7 @@ module Points : sig
     ?tz:Time_zone.t ->
     ?tz_offset:Duration.t ->
     ?year:int ->
-    ?month:month ->
+    ?month:int ->
     ?day:int ->
     ?weekday:weekday ->
     ?hour:int ->
@@ -1076,7 +1061,7 @@ make_points                                               ~second:_ ()
     ?tz:Time_zone.t ->
     ?tz_offset:Duration.t ->
     ?year:int ->
-    ?month:month ->
+    ?month:int ->
     ?day:int ->
     ?weekday:weekday ->
     ?hour:int ->
@@ -1107,8 +1092,8 @@ val bounded_intervals : [ `Whole | `Snd ] -> Duration.t -> points -> points -> t
 
     {[
       bounded_intervals `Whole (Duration.make ~days:1 ())
-        (make_points ~month:`Feb ~day:10 ~hour:13 ~minute:0 ~second:0 ()) (* p1 *)
-        (make_points                     ~hour:14 ~minute:0 ~second:0 ()) (* p2 *)
+        (make_points ~month:2 ~day:10 ~hour:13 ~minute:0 ~second:0 ()) (* p1 *)
+        (make_points                  ~hour:14 ~minute:0 ~second:0 ()) (* p2 *)
     ]}
     yields all the "Feb 10th 1pm to 2pm" intervals (or specifically "Feb 10th 1pm to Feb 10th 2pm")
 
@@ -1274,25 +1259,17 @@ val pp_sexp : Format.formatter -> t -> unit
 module Utils : sig
   (** {1 Range flattening} *)
 
-  val flatten_month_ranges : month range Seq.t -> month Seq.t option
+  val flatten_month_ranges : int range Seq.t -> int Seq.t option
 
   val flatten_month_day_ranges : int range Seq.t -> int Seq.t option
 
   val flatten_weekday_ranges : weekday range Seq.t -> weekday Seq.t option
 
-  val flatten_month_range_list : month range list -> month list option
+  val flatten_month_range_list : int range list -> int list option
 
   val flatten_month_day_range_list : int range list -> int list option
 
   val flatten_weekday_range_list : weekday range list -> weekday list option
-
-  val human_int_of_month : month -> int
-
-  val tm_int_of_month : month -> int
-
-  val month_of_human_int : int -> month option
-
-  val month_of_tm_int : int -> month option
 
   val weekday_of_tm_int : int -> weekday option
 

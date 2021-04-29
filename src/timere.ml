@@ -160,11 +160,11 @@ let of_sexp_string = Of_sexp.of_sexp_string
 let pp_sexp = Printers.pp_sexp
 
 module Utils = struct
-  let flatten_month_ranges (months : month range Seq.t) : month Seq.t option =
+  let flatten_month_ranges (months : int range Seq.t) : int Seq.t option =
     try Some (Month_ranges.Flatten.flatten months)
     with Range.Range_is_invalid -> None
 
-  let flatten_month_range_list (months : month range list) : month list option =
+  let flatten_month_range_list (months : int range list) : int list option =
     try Some (Month_ranges.Flatten.flatten_list months)
     with Range.Range_is_invalid -> None
 
@@ -187,14 +187,6 @@ module Utils = struct
     weekday list option =
     try Some (Weekday_ranges.Flatten.flatten_list weekdays)
     with Range.Range_is_invalid -> None
-
-  let human_int_of_month = human_int_of_month
-
-  let tm_int_of_month = tm_int_of_month
-
-  let month_of_human_int = month_of_human_int
-
-  let month_of_tm_int = month_of_tm_int
 
   let weekday_of_tm_int = weekday_of_tm_int
 

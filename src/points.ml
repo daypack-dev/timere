@@ -24,7 +24,7 @@ type pick =
       second : int;
     }
   | MDHMS of {
-      month : month;
+      month : int;
       month_day : int;
       hour : int;
       minute : int;
@@ -32,7 +32,7 @@ type pick =
     }
   | YMDHMS of {
       year : int;
-      month : month;
+      month : int;
       month_day : int;
       hour : int;
       minute : int;
@@ -180,8 +180,8 @@ let to_pattern (t, _tz_info) =
   let months =
     match t with
     | YMDHMS { month; _ } | MDHMS { month; _ } ->
-      Month_set.add month Month_set.empty
-    | _ -> Month_set.empty
+      Int_set.add month Int_set.empty
+    | _ -> Int_set.empty
   in
   let month_days =
     match t with

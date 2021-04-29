@@ -2,7 +2,7 @@ open Date_time_components
 
 type t = {
   years : Int_set.t;
-  months : Month_set.t;
+  months : Int_set.t;
   month_days : Int_set.t;
   weekdays : Weekday_set.t;
   hours : Int_set.t;
@@ -12,7 +12,7 @@ type t = {
 
 let equal p1 p2 =
   Int_set.equal p1.years p2.years
-  && Month_set.equal p1.months p2.months
+  && Int_set.equal p1.months p2.months
   && Int_set.equal p1.month_days p2.month_days
   && Weekday_set.equal p1.weekdays p2.weekdays
   && Int_set.equal p1.hours p2.hours
@@ -56,17 +56,13 @@ let union p1 p2 =
     union_sets ~is_empty:Int_set.is_empty ~union:Int_set.union
       ~empty:Int_set.empty a b
   in
-  let union_month_sets a b =
-    union_sets ~is_empty:Month_set.is_empty ~union:Month_set.union
-      ~empty:Month_set.empty a b
-  in
   let union_weekday_sets a b =
     union_sets ~is_empty:Weekday_set.is_empty ~union:Weekday_set.union
       ~empty:Weekday_set.empty a b
   in
   {
     years = union_int_sets p1.years p2.years;
-    months = union_month_sets p1.months p2.months;
+    months = union_int_sets p1.months p2.months;
     month_days = union_int_sets p1.month_days p2.month_days;
     weekdays = union_weekday_sets p1.weekdays p2.weekdays;
     hours = union_int_sets p1.hours p2.hours;
@@ -86,16 +82,13 @@ let inter p1 p2 =
   let inter_int_sets a b =
     inter_sets ~is_empty:Int_set.is_empty ~inter:Int_set.inter a b
   in
-  let inter_month_sets a b =
-    inter_sets ~is_empty:Month_set.is_empty ~inter:Month_set.inter a b
-  in
   let inter_weekday_sets a b =
     inter_sets ~is_empty:Weekday_set.is_empty ~inter:Weekday_set.inter a b
   in
   match inter_int_sets p1.years p2.years with
   | None -> None
   | Some years -> (
-      match inter_month_sets p1.months p2.months with
+      match inter_int_sets p1.months p2.months with
       | None -> None
       | Some months -> (
           match inter_int_sets p1.month_days p2.month_days with

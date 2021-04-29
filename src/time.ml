@@ -1,10 +1,6 @@
 open Date_time_components
 open Time_ast
 
-type tz_offset_s = int
-
-let tz_offset_s_utc = 0
-
 exception Invalid_timestamp
 
 exception Interval_is_invalid
@@ -893,7 +889,7 @@ module Month_day_ranges = Ranges.Make (struct
     let of_int x = x
   end)
 
-module Month_tm_int_ranges = Ranges.Make (struct
+module Month_ranges = Ranges.Make (struct
     type t = int
 
     let modulo = None
@@ -901,16 +897,6 @@ module Month_tm_int_ranges = Ranges.Make (struct
     let to_int x = x
 
     let of_int x = x
-  end)
-
-module Month_ranges = Ranges.Make (struct
-    type t = month
-
-    let modulo = None
-
-    let to_int = human_int_of_month
-
-    let of_int x = x |> month_of_human_int |> CCOpt.get_exn
   end)
 
 module Year_ranges = Ranges.Make (struct
@@ -936,7 +922,7 @@ let slice_valid_interval s =
 module Date_time' = struct
   type t = {
     year : int;
-    month : month;
+    month : int;
     day : int;
     hour : int;
     minute : int;
@@ -981,24 +967,22 @@ module Date_time' = struct
   let dummy_tz_info = utc_tz_info
 
   let to_ptime_date_time_pretend_utc (x : t) : Ptime.date * Ptime.time =
-    ( (x.year, human_int_of_month x.month, x.day),
+    ( (x.year, x.month, x.day),
       ((x.hour, x.minute, x.second), 0) )
 
   let of_ptime_date_time_pretend_utc
       (((year, month, day), ((hour, minute, second), _tz_offset_s)) :
-         Ptime.date * Ptime.time) : t option =
-    month_of_human_int month
-    |> CCOpt.map (fun month ->
-        {
-          year;
-          month;
-          day;
-          hour;
-          minute;
-          second;
-          ns = 0;
-          tz_info = utc_tz_info;
-        })
+         Ptime.date * Ptime.time) : t =
+    {
+      year;
+      month;
+      day;
+      hour;
+      minute;
+      second;
+      ns = 0;
+      tz_info = utc_tz_info;
+    }
 
   let to_timestamp_pretend_utc (x : t) : timestamp option =
     to_ptime_date_time_pretend_utc x
@@ -1074,8 +1058,8 @@ module Date_time' = struct
             x
             |> Ptime.to_date_time ~tz_offset_s:entry.offset
             |> of_ptime_date_time_pretend_utc
-            |> CCOpt.map (fun t ->
-                {
+            |> (fun t ->
+                Some {
                   t with
                   ns;
                   tz_info =
@@ -1103,10 +1087,11 @@ module Date_time' = struct
   let adjust_ns_for_leap_second ~is_leap_second (dt : t) : t =
     if is_leap_second then { dt with ns = dt.ns + Span.ns_count_in_s } else dt
 
-  let check_args_and_normalize_ns ~year ~day ~hour ~minute ~second ~ns ~frac :
+  let check_args_and_normalize_ns ~year ~month ~day ~hour ~minute ~second ~ns ~frac :
     (int, error) result =
     if year < Constants.min_year || Constants.max_year < year then
       Error (`Invalid_year year)
+    else if month < 1 || 12 < month then Error (`Invalid_day day)
     else if day < 1 || 31 < day then Error (`Invalid_day day)
     else if hour < 0 || 23 < hour then Error (`Invalid_hour hour)
     else if minute < 0 || 59 < minute then Error (`Invalid_minute minute)
@@ -1120,7 +1105,7 @@ module Date_time' = struct
   let make ?(tz = Time_zone_utils.get_local_tz_for_arg ()) ?(ns = 0)
       ?(frac = 0.) ~year ~month ~day ~hour ~minute ~second () =
     match
-      check_args_and_normalize_ns ~year ~day ~hour ~minute ~second ~ns ~frac
+      check_args_and_normalize_ns ~year ~month ~day ~hour ~minute ~second ~ns ~frac
     with
     | Error e -> Error e
     | Ok ns ->
@@ -1157,7 +1142,7 @@ module Date_time' = struct
       Error (`Invalid_tz_info (CCOpt.map Time_zone.name tz, tz_offset))
     in
     match
-      check_args_and_normalize_ns ~year ~day ~hour ~minute ~second ~ns ~frac
+      check_args_and_normalize_ns ~year ~month ~day ~hour ~minute ~second ~ns ~frac
     with
     | Error e -> Error e
     | Ok ns ->
@@ -1287,10 +1272,10 @@ module Date_time' = struct
     |> set_to_last_hour_min_sec_ns
 
   let set_to_first_month_day_hour_min_sec_ns (x : t) : t =
-    { x with month = `Jan } |> set_to_first_day_hour_min_sec_ns
+    { x with month = 1 } |> set_to_first_day_hour_min_sec_ns
 
   let set_to_last_month_day_hour_min_sec_ns (x : t) : t =
-    { x with month = `Dec } |> set_to_last_day_hour_min_sec_ns
+    { x with month = 12 } |> set_to_last_day_hour_min_sec_ns
 end
 
 module Week_date_time' = struct
@@ -1340,40 +1325,40 @@ module Week_date_time' = struct
          to find the start date of week 1
     *)
     let jan_4_of_year =
-      Date_time'.make_exn ~tz:Time_zone.utc ~year ~month:`Jan ~day:4 ~hour:0
+      Date_time'.make_exn ~tz:Time_zone.utc ~year ~month:1 ~day:4 ~hour:0
         ~minute:0 ~second:0 ()
     in
     (match Date_time'.to_weekday jan_4_of_year with
      | `Mon -> Some jan_4_of_year
      | `Tue ->
        Some
-         (Date_time'.make_exn ~tz:Time_zone.utc ~year ~month:`Jan ~day:3
+         (Date_time'.make_exn ~tz:Time_zone.utc ~year ~month:1 ~day:3
             ~hour:0 ~minute:0 ~second:0 ())
      | `Wed ->
        Some
-         (Date_time'.make_exn ~tz:Time_zone.utc ~year ~month:`Jan ~day:2
+         (Date_time'.make_exn ~tz:Time_zone.utc ~year ~month:1 ~day:2
             ~hour:0 ~minute:0 ~second:0 ())
      | `Thu ->
        Some
-         (Date_time'.make_exn ~tz:Time_zone.utc ~year ~month:`Jan ~day:1
+         (Date_time'.make_exn ~tz:Time_zone.utc ~year ~month:1 ~day:1
             ~hour:0 ~minute:0 ~second:0 ())
      | `Fri -> (
          match
-           Date_time'.make ~tz:Time_zone.utc ~year:(pred year) ~month:`Dec
+           Date_time'.make ~tz:Time_zone.utc ~year:(pred year) ~month:12
              ~day:31 ~hour:0 ~minute:0 ~second:0 ()
          with
          | Ok x -> Some x
          | Error _ -> None)
      | `Sat -> (
          match
-           Date_time'.make ~tz:Time_zone.utc ~year:(pred year) ~month:`Dec
+           Date_time'.make ~tz:Time_zone.utc ~year:(pred year) ~month:12
              ~day:30 ~hour:0 ~minute:0 ~second:0 ()
          with
          | Ok x -> Some x
          | Error _ -> None)
      | `Sun -> (
          match
-           Date_time'.make ~tz:Time_zone.utc ~year:(pred year) ~month:`Dec
+           Date_time'.make ~tz:Time_zone.utc ~year:(pred year) ~month:12
              ~day:29 ~hour:0 ~minute:0 ~second:0 ()
          with
          | Ok x -> Some x
@@ -1690,6 +1675,10 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
     then invalid_arg "pattern: not all years are valid"
     else if
       Stdlib.not
+        (List.for_all (fun x -> 1 <= x && x <= 12) months)
+    then invalid_arg "pattern: not all months are valid"
+    else if
+      Stdlib.not
         (List.for_all (fun x -> -31 <= x && x <= 31 && x <> 0) month_days)
     then invalid_arg "pattern: not all days are valid"
     else if Stdlib.not (List.for_all (fun x -> 0 <= x && x < 24) hours) then
@@ -1700,7 +1689,7 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
       invalid_arg "pattern: not all seconds are valid"
     else
       let years = Int_set.of_list years in
-      let months = Month_set.of_list months in
+      let months = Int_set.of_list months in
       let month_days = Int_set.of_list month_days in
       let weekdays = Weekday_set.of_list weekdays in
       let hours = Int_set.of_list hours in
@@ -1981,52 +1970,56 @@ let weekday_of_abbr_string s : weekday option =
   | "Sat" -> Some `Sat
   | _ -> None
 
-let full_string_of_month (month : month) : string =
+let full_string_of_month (month : int) : string option =
   match month with
-  | `Jan -> "January"
-  | `Feb -> "February"
-  | `Mar -> "March"
-  | `Apr -> "April"
-  | `May -> "May"
-  | `Jun -> "June"
-  | `Jul -> "July"
-  | `Aug -> "August"
-  | `Sep -> "September"
-  | `Oct -> "October"
-  | `Nov -> "November"
-  | `Dec -> "December"
-
-let month_of_full_string s : month option =
-  match s with
-  | "January" -> Some `Jan
-  | "February" -> Some `Feb
-  | "March" -> Some `Mar
-  | "April" -> Some `Apr
-  | "May" -> Some `May
-  | "June" -> Some `Jun
-  | "July" -> Some `Jul
-  | "August" -> Some `Aug
-  | "September" -> Some `Sep
-  | "October" -> Some `Oct
-  | "November" -> Some `Nov
-  | "December" -> Some `Dec
+  | 1 -> Some "January"
+  | 2 -> Some "February"
+  | 3 -> Some "March"
+  | 4 -> Some "April"
+  | 5 -> Some "May"
+  | 6 -> Some "June"
+  | 7 -> Some "July"
+  | 8 -> Some "August"
+  | 9 -> Some "September"
+  | 10 -> Some "October"
+  | 11 -> Some "November"
+  | 12 -> Some "December"
   | _ -> None
 
-let abbr_string_of_month (month : month) : string =
-  String.sub (full_string_of_month month) 0 3
-
-let month_of_abbr_string s : month option =
+let month_of_full_string s : int option =
   match s with
-  | "Jan" -> Some `Jan
-  | "Feb" -> Some `Feb
-  | "Mar" -> Some `Mar
-  | "Apr" -> Some `Apr
-  | "May" -> Some `May
-  | "Jun" -> Some `Jun
-  | "Jul" -> Some `Jul
-  | "Aug" -> Some `Aug
-  | "Sep" -> Some `Sep
-  | "Oct" -> Some `Oct
-  | "Nov" -> Some `Nov
-  | "Dec" -> Some `Dec
+  | "January" -> Some 1
+  | "February" -> Some 2
+  | "March" -> Some 3
+  | "April" -> Some 4
+  | "May" -> Some 5
+  | "June" -> Some 6
+  | "July" -> Some 7
+  | "August" -> Some 8
+  | "September" -> Some 9
+  | "October" -> Some 10
+  | "November" -> Some 11
+  | "December" -> Some 12
+  | _ -> None
+
+let abbr_string_of_month (month : int) : string option =
+  CCOpt.map (fun s ->
+      String.sub s 0 3
+    )
+    (full_string_of_month month)
+
+let month_of_abbr_string s : int option =
+  match s with
+  | "Jan" -> Some 1
+  | "Feb" -> Some 2
+  | "Mar" -> Some 3
+  | "Apr" -> Some 4
+  | "May" -> Some 5
+  | "Jun" -> Some 6
+  | "Jul" -> Some 7
+  | "Aug" -> Some 8
+  | "Sep" -> Some 9
+  | "Oct" -> Some 10
+  | "Nov" -> Some 11
+  | "Dec" -> Some 12
   | _ -> None

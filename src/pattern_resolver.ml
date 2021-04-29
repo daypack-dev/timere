@@ -236,21 +236,18 @@ module Matching_months = struct
     Time.Date_time'.t Seq.t =
     let cur_branch_search_start = get_cur_branch_search_start cur_branch in
     let cur_branch_search_end_inc = get_cur_branch_search_end_inc cur_branch in
-    let month_start_int = human_int_of_month cur_branch_search_start.month in
-    let month_end_inc_int =
-      human_int_of_month cur_branch_search_end_inc.month
+    let month_start = cur_branch_search_start.month in
+    let month_end_inc =
+      cur_branch_search_end_inc.month
     in
-    if Month_set.is_empty t.months then
-      OSeq.(month_start_int -- month_end_inc_int)
-      |> Seq.map (fun month -> month_of_human_int month |> CCOpt.get_exn)
+    if Int_set.is_empty t.months then
+      OSeq.(month_start -- month_end_inc)
       |> Seq.map (fun month -> { cur_branch_search_start with month })
     else
       t.months
-      |> Month_set.to_seq
-      |> Seq.map human_int_of_month
+      |> Int_set.to_seq
       |> Seq.filter (fun month ->
-          month_start_int <= month && month <= month_end_inc_int)
-      |> Seq.map (fun month -> month_of_human_int month |> CCOpt.get_exn)
+          month_start <= month && month <= month_end_inc)
       |> Seq.map (fun month -> { cur_branch_search_start with month })
 
   let matching_month_ranges (t : Pattern.t) (cur_branch : Time.Date_time'.t) :
@@ -263,20 +260,18 @@ module Matching_months = struct
         Time.Date_time'.set_to_last_day_hour_min_sec_ns
           { cur_branch with month = y } )
     in
-    let month_start_int = human_int_of_month cur_branch_search_start.month in
-    let month_end_inc_int =
-      human_int_of_month cur_branch_search_end_inc.month
+    let month_start = cur_branch_search_start.month in
+    let month_end_inc =
+      cur_branch_search_end_inc.month
     in
-    if Month_set.is_empty t.months then
+    if Int_set.is_empty t.months then
       Seq.return
         (`Range_inc (cur_branch_search_start, cur_branch_search_end_inc))
     else
       t.months
-      |> Month_set.to_seq
-      |> Seq.map human_int_of_month
+      |> Int_set.to_seq
       |> Seq.filter (fun month ->
-          month_start_int <= month && month <= month_end_inc_int)
-      |> Seq.map (fun month -> month_of_human_int month |> CCOpt.get_exn)
+          month_start <= month && month <= month_end_inc)
       |> Time.Month_ranges.Of_seq.range_seq_of_seq
       |> Seq.map
         (Time.Range.map
@@ -346,7 +341,7 @@ let matching_date_time_ranges (search_param : Search_param.t) (t : Pattern.t) :
   in
   match
     ( Int_set.is_empty t.years,
-      Month_set.is_empty t.months,
+      Int_set.is_empty t.months,
       Int_set.is_empty t.month_days,
       Weekday_set.is_empty t.weekdays,
       Int_set.is_empty t.hours,
