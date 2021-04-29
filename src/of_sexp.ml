@@ -81,12 +81,12 @@ let tz_info_of_sexp (x : CCSexp.t) : Date_time_components.tz_info =
     invalid_data (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x))
   | `List l -> (
       match l with
-      | [ x ] -> (tz_make_of_sexp x, None)
+      | [ x ] -> { tz = tz_make_of_sexp x; offset = None}
       | [ x; offset ] ->
-        ( tz_make_of_sexp x,
-          Some
+        { tz = tz_make_of_sexp x;
+          offset = Some
             (Duration.of_span
-               (Span.make ~s:(CCInt64.of_int @@ int_of_sexp offset) ())) )
+               (Span.make ~s:(CCInt64.of_int @@ int_of_sexp offset) ())) }
       | _ ->
         invalid_data
           (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x)))
@@ -106,14 +106,14 @@ let date_time_of_sexp (x : CCSexp.t) =
       let ns = int_of_sexp ns in
       let tz_info = tz_info_of_sexp tz_info in
       match tz_info with
-      | tz, None -> (
+      | { tz; offset = None } -> (
           match
             Time.Date_time'.make ~year ~month ~day ~hour ~minute ~second ~ns ~tz
               ()
           with
           | Ok x -> x
           | Error _ -> invalid_data ())
-      | tz, Some tz_offset -> (
+      | { tz; offset = Some tz_offset } -> (
           match
             Time.Date_time'.make_unambiguous ~year ~month ~day ~hour ~minute
               ~second ~ns ~tz ~tz_offset ()
@@ -125,9 +125,9 @@ let date_time_of_sexp (x : CCSexp.t) =
 let timestamp_of_sexp x =
   let dt = date_time_of_sexp x in
   match dt.tz_info with
-  | _tz, None ->
+  | {tz = _; offset = None } ->
     invalid_data "Expected time zone offset 0, but got None instead"
-  | tz, Some tz_offset -> (
+  | { tz; offset = Some tz_offset } -> (
       let tz_name = Time_zone.name tz in
       if tz_name <> "UTC" then
         invalid_data

@@ -173,7 +173,7 @@ let aux_pattern (search_start, search_end_exc) search_using_tz pattern :
 
 let aux_points_mem search_using_tz ((p, tz_info) : Points.t) timestamp =
   let search_using_tz =
-    match tz_info with None -> search_using_tz | Some (tz, _) -> tz
+    match tz_info with None -> search_using_tz | Some Date_time_components.{tz; _} -> tz
   in
   aux_pattern_mem search_using_tz (Points.to_pattern (p, tz_info)) timestamp
 

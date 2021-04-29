@@ -16,7 +16,7 @@ let sexp_of_tz_name t = CCSexp.atom (Time_zone.name t)
 let sexp_of_span (x : Span.t) =
   CCSexp.list [ sexp_of_int64 x.s; sexp_of_int x.ns ]
 
-let sexp_of_tz_info (tz, tz_offset) =
+let sexp_of_tz_info ({tz; offset} : tz_info) =
   let open CCSexp in
   list
     (CCList.filter_map CCFun.id
@@ -25,7 +25,7 @@ let sexp_of_tz_info (tz, tz_offset) =
          CCOpt.map
            (fun tz_offset ->
               sexp_of_int (CCInt64.to_int (Duration.to_span tz_offset).s))
-           tz_offset;
+           offset;
        ])
 
 let sexp_of_points (pick, tz_info) =

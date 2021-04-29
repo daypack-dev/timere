@@ -56,7 +56,7 @@ module Format_string_parsers = struct
 
   let date_time_inner (date_time : Time.Date_time'.t) : (string, unit) t =
     let tz_offset_s =
-      snd date_time.tz_info
+      date_time.tz_info.offset
       |> CCOpt.map (fun x -> CCInt64.to_int (Duration.to_span x).s)
     in
     choice

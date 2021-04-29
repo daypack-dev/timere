@@ -359,9 +359,14 @@ module Date_time : sig
       The actual range is slightly more limited in Timere due to time zones.
   *)
 
-  type tz_info = Time_zone.t * Duration.t option
+  type tz_info = { tz : Time_zone.t; offset : Duration.t option }
+  (** Time zone information of date time
 
-  val tz_offset_of_tz_info : tz_info -> Duration.t option
+      [tz] is the time zone tied.
+
+      [offset], if specified, provides an unambiguous specification
+      of which timestamp/point the date time maps to on the UTC time line
+  *)
 
   type t = private {
     year : int;
@@ -373,7 +378,16 @@ module Date_time : sig
     ns : int;
     tz_info : tz_info;
   }
-  (** [ns] may be [>= 10^9] to represent leap second, but always remains [< 2 * 10^9].
+  (** This is the main date time type.
+
+      A [t] always maps to at least one point on the UTC time line, and [make] fails if this is not the case.
+      [t] may also map to two points on the UTC time line in the case of DST and without
+      an unambiguous offset, however.
+
+      In the ambiguous case, functions which return [_ local_result] will yield an [`Ambiguous _]
+      value, and [`Single _] otherwise.
+
+      [ns] may be [>= 10^9] to represent leap second, but always remains [< 2 * 10^9].
 
       [s] is always [>= 0] and [< 60], even when second 60 is used during construction.
       In other words, second 60 is represented via [ns] field.
