@@ -55,7 +55,7 @@ module Alco = struct
     Alcotest.(check span_testable)
       "same timestamp"
       (CCResult.get_exn @@ ISO8601.to_timestamp "1979-05-27T07:32:00Z")
-      (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:1979 ~month:1 ~day:27
+      (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:1979 ~month:5 ~day:27
          ~hour:7 ~minute:32 ~second:0 ()
        |> Time.Date_time'.to_timestamp_single)
 
