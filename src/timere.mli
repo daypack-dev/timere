@@ -238,8 +238,6 @@ exception Invalid_format_string of string
 
 type timestamp = Span.t
 
-(** {2 Time zone} *)
-
 module Time_zone : sig
   type t
 
@@ -354,51 +352,6 @@ module Time_zone : sig
       val of_string : string -> db option
     end
   end
-end
-
-module Timestamp : sig
-  val min_val : timestamp
-
-  val max_val : timestamp
-
-  val now : unit -> timestamp
-
-  val pp :
-    ?display_using_tz:Time_zone.t ->
-    ?format:string ->
-    unit ->
-    Format.formatter ->
-    timestamp ->
-    unit
-  (** Pretty printing for timestamp.
-
-      Follows same format string rules and default format string as {!val:Date_time.to_string}.
-  *)
-
-  val to_string :
-    ?display_using_tz:Time_zone.t -> ?format:string -> timestamp -> string
-
-  val pp_rfc3339 : ?frac_s:int -> unit -> Format.formatter -> timestamp -> unit
-  (** [frac_s] determines the number of fractional digits to include.
-
-      @raise Invalid_argument if [frac_s < 0 || frac_s > 9]
-  *)
-
-  val pp_rfc3339_milli : Format.formatter -> timestamp -> unit
-
-  val pp_rfc3339_micro : Format.formatter -> timestamp -> unit
-
-  val pp_rfc3339_nano : Format.formatter -> timestamp -> unit
-
-  val to_rfc3339 : ?frac_s:int -> timestamp -> string
-
-  val to_rfc3339_milli : timestamp -> string
-
-  val to_rfc3339_micro : timestamp -> string
-
-  val to_rfc3339_nano : timestamp -> string
-
-  val of_iso8601 : string -> (timestamp, string) result
 end
 
 module Date_time : sig
@@ -688,6 +641,51 @@ module Date_time : sig
   val of_sexp_string : string -> (t, string) result
 
   val pp_sexp : Format.formatter -> t -> unit
+end
+
+module Timestamp : sig
+  val min_val : timestamp
+
+  val max_val : timestamp
+
+  val now : unit -> timestamp
+
+  val pp :
+    ?display_using_tz:Time_zone.t ->
+    ?format:string ->
+    unit ->
+    Format.formatter ->
+    timestamp ->
+    unit
+  (** Pretty printing for timestamp.
+
+      Follows same format string rules and default format string as {!val:Date_time.to_string}.
+  *)
+
+  val to_string :
+    ?display_using_tz:Time_zone.t -> ?format:string -> timestamp -> string
+
+  val pp_rfc3339 : ?frac_s:int -> unit -> Format.formatter -> timestamp -> unit
+  (** [frac_s] determines the number of fractional digits to include.
+
+      @raise Invalid_argument if [frac_s < 0 || frac_s > 9]
+  *)
+
+  val pp_rfc3339_milli : Format.formatter -> timestamp -> unit
+
+  val pp_rfc3339_micro : Format.formatter -> timestamp -> unit
+
+  val pp_rfc3339_nano : Format.formatter -> timestamp -> unit
+
+  val to_rfc3339 : ?frac_s:int -> timestamp -> string
+
+  val to_rfc3339_milli : timestamp -> string
+
+  val to_rfc3339_micro : timestamp -> string
+
+  val to_rfc3339_nano : timestamp -> string
+
+  val of_iso8601 : string -> (timestamp, string) result
 end
 
 module Week_date_time : sig
