@@ -1,158 +1,6 @@
-type t
-(** This is the core type of Timere used to encode computation over time.
+(** {1 Time vectors} *)
 
-    The following documentation may call value of type [t] "a Timere object", or "timere".
-*)
-
-exception Invalid_format_string of string
-(** Printing exception *)
-
-type tz_offset_s = int
-
-type 'a range =
-  [ `Range_inc of 'a * 'a
-  | `Range_exc of 'a * 'a
-  ]
-
-(** {1 Basic constructors} *)
-
-val now : unit -> t
-(** Time right now *)
-
-val always : t
-(** Entire interval that Timere can handle, i.e. [\[0000 Jan 01 14:00:00 +00:00:00, 9999 Dec 31 09:59:58 +00:00:00)] *)
-
-val empty : t
-(** Empty interval *)
-
-val years : int list -> t
-(** [years l] is a shorthand for [pattern ~years:l ()] *)
-
-val year_ranges : int range list -> t
-(** [year_ranges l] is a shorthand for [pattern ~year_ranges:l ()] *)
-
-type month =
-  [ `Jan
-  | `Feb
-  | `Mar
-  | `Apr
-  | `May
-  | `Jun
-  | `Jul
-  | `Aug
-  | `Sep
-  | `Oct
-  | `Nov
-  | `Dec
-  ]
-
-val months : month list -> t
-(** [months l] is a shorthand for [pattern ~months:l ()] *)
-
-val month_ranges : month range list -> t
-(** [month_ranges l] is a shorthand for [pattern ~month_ranges:l ()] *)
-
-val days : int list -> t
-(** [days l] is a shorthand for [pattern ~month_days:l ()] *)
-
-val day_ranges : int range list -> t
-(** [day_ranges l] is a shorthand for [pattern ~month_day_ranges:l ()] *)
-
-type weekday =
-  [ `Sun
-  | `Mon
-  | `Tue
-  | `Wed
-  | `Thu
-  | `Fri
-  | `Sat
-  ]
-
-val weekdays : weekday list -> t
-(** [weekdays l] is a shorthand for [pattern ~weekdays:l ()] *)
-
-val weekday_ranges : weekday range list -> t
-(** [weekday_ranges l] is a shorthand for [pattern ~weekday_ranges:l ()] *)
-
-val hours : int list -> t
-(** [hours l] is a shorthand for [pattern ~hours:l ()] *)
-
-val hour_ranges : int range list -> t
-(** [hour_ranges l] is a shorthand for [pattern ~hour_ranges:l ()] *)
-
-val minutes : int list -> t
-(** [minutes l] is a shorthand for [pattern ~minutes:l ()] *)
-
-val minute_ranges : int range list -> t
-(** [minute_ranges l] is a shorthand for [pattern ~minute_ranges:l ()] *)
-
-val seconds : int list -> t
-(** [seconds l] is a shorthand for [pattern ~seconds:l ()] *)
-
-val second_ranges : int range list -> t
-(** [second_ranges l] is a shorthand for [pattern ~second_ranges:l ()] *)
-
-val pattern :
-  ?years:int list ->
-  ?year_ranges:int range list ->
-  ?months:month list ->
-  ?month_ranges:month range list ->
-  ?days:int list ->
-  ?day_ranges:int range list ->
-  ?weekdays:weekday list ->
-  ?weekday_ranges:weekday range list ->
-  ?hours:int list ->
-  ?hour_ranges:int range list ->
-  ?minutes:int list ->
-  ?minute_ranges:int range list ->
-  ?seconds:int list ->
-  ?second_ranges:int range list ->
-  unit ->
-  t
-(** Pattern matches over date times.
-
-    A pattern [p] matches date time [dt] if
-    {v
-(dt.year is in p.years or p.year_ranges)
-&& (dt.month is in p.months or p.month_ranges)
-&& (dt.month_day is in p.month_days or p.month_day_ranges)
-&& (dt.weekday is in p.weekdays or p.weekday_ranges)
-&& (dt.hour is in p.hours or p.hour_ranges)
-&& (dt.minute is in p.minutes or p.minute_ranges)
-&& (dt.second is in p.seconds or p.second_ranges)
-    v}
-
-    Empty pattern levels are treated as wildcard, e.g. if [p.years] and [p.year_ranges] are both empty,
-    then [(dt.year is in p.years or p.year_ranges)] is [true].
-*)
-
-val nth_weekday_of_month : int -> weekday -> t
-(** [nth_weekday_of_month n wday] picks the nth weekday of all months, where [1 <= n && n <= 5]
-
-    @raise Invalid_argument if [n] is out of range
-*)
-
-(** {1 Algebraic operations} *)
-
-val inter : t list -> t
-(** Intersection of list of timeres.
-
-    [inter []] is equivalent to [empty].
-*)
-
-val union : t list -> t
-(** Union of list of timeres.
-
-    [union []] is equivalent to [empty].
-*)
-
-val not : t -> t
-(** Negation of timere.
-
-    [not t] is equivalent to all the intervals not included in [t].
-*)
-
-(** {1 Span} *)
+(** {2 Span} *)
 
 module Span : sig
   type t = private {
@@ -251,7 +99,7 @@ module Span : sig
   val pp_sexp : Format.formatter -> t -> unit
 end
 
-(** {1 Duration} *)
+(** {2 Duration} *)
 
 module Duration : sig
   type sign =
@@ -373,12 +221,39 @@ module Duration : sig
   val pp_sexp : Format.formatter -> t -> unit
 end
 
-val shift : Duration.t -> t -> t
+(** {1 Date time handling} *)
 
-val lengthen : Duration.t -> t -> t
-(** @raise Invalid_argument if duration is negative *)
+type month =
+  [ `Jan
+  | `Feb
+  | `Mar
+  | `Apr
+  | `May
+  | `Jun
+  | `Jul
+  | `Aug
+  | `Sep
+  | `Oct
+  | `Nov
+  | `Dec
+  ]
 
-(** {1 Time zone} *)
+type weekday =
+  [ `Sun
+  | `Mon
+  | `Tue
+  | `Wed
+  | `Thu
+  | `Fri
+  | `Sat
+  ]
+
+exception Invalid_format_string of string
+(** Printing exception *)
+
+type timestamp = Span.t
+
+(** {2 Time zone} *)
 
 module Time_zone : sig
   type t
@@ -496,12 +371,50 @@ module Time_zone : sig
   end
 end
 
-val with_tz : Time_zone.t -> t -> t
-(** [with_tz tz t] changes the time zone to evaluate [t] in to [tz] *)
+module Timestamp : sig
+  val min_val : timestamp
 
-(** {1 Date times and timestamps} *)
+  val max_val : timestamp
 
-type timestamp = Span.t
+  val now : unit -> timestamp
+
+  val pp :
+    ?display_using_tz:Time_zone.t ->
+    ?format:string ->
+    unit ->
+    Format.formatter ->
+    timestamp ->
+    unit
+  (** Pretty printing for timestamp.
+
+      Follows same format string rules and default format string as {!val:Date_time.to_string}.
+  *)
+
+  val to_string :
+    ?display_using_tz:Time_zone.t -> ?format:string -> timestamp -> string
+
+  val pp_rfc3339 : ?frac_s:int -> unit -> Format.formatter -> timestamp -> unit
+  (** [frac_s] determines the number of fractional digits to include.
+
+      @raise Invalid_argument if [frac_s < 0 || frac_s > 9]
+  *)
+
+  val pp_rfc3339_milli : Format.formatter -> timestamp -> unit
+
+  val pp_rfc3339_micro : Format.formatter -> timestamp -> unit
+
+  val pp_rfc3339_nano : Format.formatter -> timestamp -> unit
+
+  val to_rfc3339 : ?frac_s:int -> timestamp -> string
+
+  val to_rfc3339_milli : timestamp -> string
+
+  val to_rfc3339_micro : timestamp -> string
+
+  val to_rfc3339_nano : timestamp -> string
+
+  val of_iso8601 : string -> (timestamp, string) result
+end
 
 module Date_time : sig
   (** This module uses ptime underneath, and carries similar limitation of expressible range of date times.
@@ -845,50 +758,139 @@ module Week_date_time : sig
     t
 end
 
-module Timestamp : sig
-  val min_val : timestamp
+(** {1 Reasoning/scheduling} *)
 
-  val max_val : timestamp
+type t
+(** This is the core type of Timere used to encode computation over time.
 
-  val now : unit -> timestamp
+    The following documentation may call value of type [t] "a Timere object", or "timere".
+*)
 
-  val pp :
-    ?display_using_tz:Time_zone.t ->
-    ?format:string ->
-    unit ->
-    Format.formatter ->
-    timestamp ->
-    unit
-  (** Pretty printing for timestamp.
+type 'a range =
+  [ `Range_inc of 'a * 'a
+  | `Range_exc of 'a * 'a
+  ]
 
-      Follows same format string rules and default format string as {!val:Date_time.to_string}.
-  *)
+(** {2 Basic constructors} *)
 
-  val to_string :
-    ?display_using_tz:Time_zone.t -> ?format:string -> timestamp -> string
+val now : unit -> t
+(** Time right now *)
 
-  val pp_rfc3339 : ?frac_s:int -> unit -> Format.formatter -> timestamp -> unit
-  (** [frac_s] determines the number of fractional digits to include.
+val always : t
+(** Entire interval that Timere can handle, i.e. [\[0000 Jan 01 14:00:00 +00:00:00, 9999 Dec 31 09:59:58 +00:00:00)] *)
 
-      @raise Invalid_argument if [frac_s < 0 || frac_s > 9]
-  *)
+val empty : t
+(** Empty interval *)
 
-  val pp_rfc3339_milli : Format.formatter -> timestamp -> unit
+val years : int list -> t
+(** [years l] is a shorthand for [pattern ~years:l ()] *)
 
-  val pp_rfc3339_micro : Format.formatter -> timestamp -> unit
+val year_ranges : int range list -> t
+(** [year_ranges l] is a shorthand for [pattern ~year_ranges:l ()] *)
 
-  val pp_rfc3339_nano : Format.formatter -> timestamp -> unit
+val months : month list -> t
+(** [months l] is a shorthand for [pattern ~months:l ()] *)
 
-  val to_rfc3339 : ?frac_s:int -> timestamp -> string
+val month_ranges : month range list -> t
+(** [month_ranges l] is a shorthand for [pattern ~month_ranges:l ()] *)
 
-  val to_rfc3339_milli : timestamp -> string
+val days : int list -> t
+(** [days l] is a shorthand for [pattern ~month_days:l ()] *)
 
-  val to_rfc3339_micro : timestamp -> string
+val day_ranges : int range list -> t
+(** [day_ranges l] is a shorthand for [pattern ~month_day_ranges:l ()] *)
 
-  val to_rfc3339_nano : timestamp -> string
+val weekdays : weekday list -> t
+(** [weekdays l] is a shorthand for [pattern ~weekdays:l ()] *)
 
-  val of_iso8601 : string -> (timestamp, string) result
-end
+val weekday_ranges : weekday range list -> t
+(** [weekday_ranges l] is a shorthand for [pattern ~weekday_ranges:l ()] *)
+
+val hours : int list -> t
+(** [hours l] is a shorthand for [pattern ~hours:l ()] *)
+
+val hour_ranges : int range list -> t
+(** [hour_ranges l] is a shorthand for [pattern ~hour_ranges:l ()] *)
+
+val minutes : int list -> t
+(** [minutes l] is a shorthand for [pattern ~minutes:l ()] *)
+
+val minute_ranges : int range list -> t
+(** [minute_ranges l] is a shorthand for [pattern ~minute_ranges:l ()] *)
+
+val seconds : int list -> t
+(** [seconds l] is a shorthand for [pattern ~seconds:l ()] *)
+
+val second_ranges : int range list -> t
+(** [second_ranges l] is a shorthand for [pattern ~second_ranges:l ()] *)
+
+val pattern :
+  ?years:int list ->
+  ?year_ranges:int range list ->
+  ?months:month list ->
+  ?month_ranges:month range list ->
+  ?days:int list ->
+  ?day_ranges:int range list ->
+  ?weekdays:weekday list ->
+  ?weekday_ranges:weekday range list ->
+  ?hours:int list ->
+  ?hour_ranges:int range list ->
+  ?minutes:int list ->
+  ?minute_ranges:int range list ->
+  ?seconds:int list ->
+  ?second_ranges:int range list ->
+  unit ->
+  t
+(** Pattern matches over date times.
+
+    A pattern [p] matches date time [dt] if
+    {v
+(dt.year is in p.years or p.year_ranges)
+&& (dt.month is in p.months or p.month_ranges)
+&& (dt.month_day is in p.month_days or p.month_day_ranges)
+&& (dt.weekday is in p.weekdays or p.weekday_ranges)
+&& (dt.hour is in p.hours or p.hour_ranges)
+&& (dt.minute is in p.minutes or p.minute_ranges)
+&& (dt.second is in p.seconds or p.second_ranges)
+    v}
+
+    Empty pattern levels are treated as wildcard, e.g. if [p.years] and [p.year_ranges] are both empty,
+    then [(dt.year is in p.years or p.year_ranges)] is [true].
+*)
+
+val nth_weekday_of_month : int -> weekday -> t
+(** [nth_weekday_of_month n wday] picks the nth weekday of all months, where [1 <= n && n <= 5]
+
+    @raise Invalid_argument if [n] is out of range
+*)
+
+(** {1 Algebraic operations} *)
+
+val inter : t list -> t
+(** Intersection of list of timeres.
+
+    [inter []] is equivalent to [empty].
+*)
+
+val union : t list -> t
+(** Union of list of timeres.
+
+    [union []] is equivalent to [empty].
+*)
+
+val not : t -> t
+(** Negation of timere.
+
+    [not t] is equivalent to all the intervals not included in [t].
+*)
+
+val shift : Duration.t -> t -> t
+
+val lengthen : Duration.t -> t -> t
+(** @raise Invalid_argument if duration is negative *)
+
+val with_tz : Time_zone.t -> t -> t
+(** [with_tz tz t] changes the time zone to evaluate [t] in to [tz] *)
 
 val date_time : Date_time.t -> t
 
