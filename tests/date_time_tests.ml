@@ -66,7 +66,7 @@ module Alco = struct
       (Time.Date_time'.make_exn
          ~tz:
            (Time_zone.make_offset_only_exn
-              (Duration.make_exn ~sign:`Neg ~hours:7 ()))
+              (Span.For_human'.make_exn ~sign:`Neg ~hours:7 ()))
          ~year:1979 ~month:5 ~day:27 ~hour:7 ~minute:32 ~second:0 ()
        |> Time.Date_time'.to_timestamp_single)
 
@@ -78,7 +78,7 @@ module Alco = struct
       (Time.Date_time'.make_exn
          ~tz:
            (Time_zone.make_offset_only_exn
-              (Duration.make_exn ~sign:`Neg ~hours:7 ()))
+              (Span.For_human'.make_exn ~sign:`Neg ~hours:7 ()))
          ~year:1979 ~month:5 ~day:27 ~hour:7 ~minute:32 ~second:0
          ~ns:999_999_000 ()
        |> Time.Date_time'.to_timestamp_single)
@@ -91,7 +91,7 @@ module Alco = struct
       (Time.Date_time'.make_exn
          ~tz:
            (Time_zone.make_offset_only_exn
-              (Duration.make_exn ~sign:`Neg ~hours:7 ()))
+              (Span.For_human'.make_exn ~sign:`Neg ~hours:7 ()))
          ~year:1979 ~month:5 ~day:27 ~hour:7 ~minute:32 ~second:0
          ~ns:999_999_999 ()
        |> Time.Date_time'.to_timestamp_single)
@@ -104,7 +104,7 @@ module Alco = struct
       (Time.Date_time'.make_exn
          ~tz:
            (Time_zone.make_offset_only_exn
-              (Duration.make_exn ~sign:`Neg ~hours:7 ()))
+              (Span.For_human'.make_exn ~sign:`Neg ~hours:7 ()))
          ~year:1979 ~month:5 ~day:27 ~hour:7 ~minute:32 ~second:0 ~ns:999_999 ()
        |> Time.Date_time'.to_timestamp_single)
 

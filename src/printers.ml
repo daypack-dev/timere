@@ -269,7 +269,7 @@ let string_of_span (x : Span.t) : string = Fmt.str "%a" pp_span x
 
 let pp_span_for_human formatter (x : Span.t) :
   unit =
-  let Span.For_human'.{ days; hours; minutes; seconds } = Span.For_human'.view x in
+  let Span.For_human'.{ days; hours; minutes; seconds } : Span.For_human'.view = Span.For_human'.view x in
   if days > 0 then
     Fmt.pf formatter "%d days %d hours %d mins %d secs" days hours minutes
       seconds
