@@ -88,7 +88,7 @@ let name t =
   match t.typ with
   | Backed name -> name
   | Offset_only s ->
-    let dur = Duration.of_span Span.(make_small ~s ()) in
+    let dur = Span.(make_small ~s () |> For_human'.view) in
     Printf.sprintf "UTC%c%02d:%02d"
       (match dur.sign with `Pos -> '+' | `Neg -> '-')
       dur.hours dur.minutes
@@ -96,7 +96,7 @@ let name t =
 let to_fixed_offset t =
   match t.typ with
   | Backed _ -> None
-  | Offset_only s -> Some (Duration.of_span (Span.make_small ~s ()))
+  | Offset_only s -> Some (Span.make_small ~s ())
 
 let equal t1 t2 =
   (match (t1.typ, t2.typ) with
@@ -123,10 +123,10 @@ let fixed_offset_name_parser =
   <|> (max_two_digit_nat_zero >>= fun hour -> return (hour, 0))
   >>= fun (hour, minute) ->
   if hour < 24 && minute < 60 then
-    return (Duration.make_exn ~sign ~hours:hour ~minutes:minute ())
+    return (Span.For_human'.make_exn ~sign ~hours:hour ~minutes:minute ())
   else fail "Invalid offset"
 
-let fixed_offset_of_name (s : string) : Duration.t option =
+let fixed_offset_of_name (s : string) : Span.t option =
   match
     Parser_components.result_of_mparser_result
     @@ MParser.(parse_string (fixed_offset_name_parser << eof)) s ()
@@ -134,9 +134,9 @@ let fixed_offset_of_name (s : string) : Duration.t option =
   | Ok dt -> Some dt
   | Error _ -> None
 
-let one_day = Duration.(make_exn ~days:1 () |> to_span)
+let one_day = Span.For_human'.(make_exn ~days:1 ())
 
-let make_offset_only_span (offset : Span.t) =
+let make_offset_only (offset : Span.t) =
   if Span.abs offset > one_day then None
   else
     let offset = CCInt64.to_int offset.s in
@@ -150,17 +150,9 @@ let make_offset_only_span (offset : Span.t) =
               [| { is_dst = false; offset } |] );
       }
 
-let make_offset_only_span_exn offset =
-  match make_offset_only_span offset with
-  | None -> invalid_arg "make_offset_only_span_exn"
-  | Some x -> x
-
-let make_offset_only (offset : Duration.t) =
-  make_offset_only_span (Duration.to_span offset)
-
 let make_offset_only_exn offset =
   match make_offset_only offset with
-  | None -> invalid_arg "make_offset_only_exn"
+  | None -> invalid_arg "make_offset_only_span_exn"
   | Some x -> x
 
 let utc : t =
@@ -303,7 +295,7 @@ end
 
 let offset_is_recorded offset (t : t) =
   Array.mem
-    (CCInt64.to_int (Duration.to_span offset).s)
+    (CCInt64.to_int Span.(offset.s))
     t.record.recorded_offsets
 
 module Sexp = struct

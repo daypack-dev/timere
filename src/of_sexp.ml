@@ -60,21 +60,6 @@ let tz_make_of_sexp (x : CCSexp.t) =
     invalid_data
       (Printf.sprintf "Expected atom for time zone: %s" (CCSexp.to_string x))
 
-let duration_of_sexp (x : CCSexp.t) =
-  match x with
-  | `List [ `Atom "duration"; days; hours; minutes; seconds ] -> (
-      let days = int_of_sexp days in
-      let hours = int_of_sexp hours in
-      let minutes = int_of_sexp minutes in
-      let seconds = int_of_sexp seconds in
-      match Duration.make ~days ~hours ~minutes ~seconds () with
-      | Error _ ->
-        invalid_data
-          (Printf.sprintf "Invalid duration: %s" (CCSexp.to_string x))
-      | Ok d -> d)
-  | _ ->
-    invalid_data (Printf.sprintf "Invalid duration: %s" (CCSexp.to_string x))
-
 let tz_info_of_sexp (x : CCSexp.t) : Date_time_components.tz_info =
   match x with
   | `Atom _ ->
@@ -87,8 +72,7 @@ let tz_info_of_sexp (x : CCSexp.t) : Date_time_components.tz_info =
           tz = tz_make_of_sexp x;
           offset =
             Some
-              (Duration.of_span
-                 (Span.make ~s:(CCInt64.of_int @@ int_of_sexp offset) ()));
+              (Span.make ~s:(CCInt64.of_int @@ int_of_sexp offset) ());
         }
       | _ ->
         invalid_data
@@ -135,7 +119,7 @@ let timestamp_of_sexp x =
       if tz_name <> "UTC" then
         invalid_data
           (Printf.sprintf "Expected time zone UTC, but got %s instead" tz_name)
-      else if not (Duration.equal tz_offset Duration.zero) then
+      else if not Span.(equal tz_offset zero) then
         invalid_data "Expected time zone offset 0"
       else
         match Time.Date_time'.to_timestamp dt with
@@ -297,10 +281,10 @@ let of_sexp (x : CCSexp.t) =
         (* | [ `Atom "drop_points"; n; x ] -> drop_points (int_of_sexp n) (aux x)
          * | [ `Atom "take_points"; n; x ] -> take_points (int_of_sexp n) (aux x) *)
         | [ `Atom "shift"; n; x ] ->
-          let n = Duration.of_span @@ span_of_sexp n in
+          let n = span_of_sexp n in
           shift n (aux x)
         | [ `Atom "lengthen"; n; x ] ->
-          let n = Duration.of_span @@ span_of_sexp n in
+          let n = span_of_sexp n in
           lengthen n (aux x)
         | [ `Atom "with_tz"; n; x ] ->
           let tz = tz_make_of_sexp n in
@@ -314,7 +298,7 @@ let of_sexp (x : CCSexp.t) =
             | "snd" -> `Snd
             | _ -> invalid_data (Printf.sprintf "Invalid pick: %s" pick)
           in
-          let bound = Duration.of_span @@ span_of_sexp bound in
+          let bound = span_of_sexp bound in
           bounded_intervals pick bound (points_of_sexp start)
             (points_of_sexp end_exc)
         | [ `Atom "unchunk"; x ] -> aux_chunked CCFun.id x
@@ -339,11 +323,11 @@ let of_sexp (x : CCSexp.t) =
         | [ `Atom "chunk_by_duration"; span; `Atom "drop_partial"; x ] ->
           chunk
             (`By_duration_drop_partial
-               (Duration.of_span @@ span_of_sexp span))
+               (span_of_sexp span))
             f (aux x)
         | [ `Atom "chunk_by_duration"; span; x ] ->
           chunk
-            (`By_duration (Duration.of_span @@ span_of_sexp span))
+            (`By_duration (span_of_sexp span))
             f (aux x)
         | [ `Atom "drop"; n; chunked ] ->
           aux_chunked (drop (int_of_sexp n) %> f) chunked
@@ -374,7 +358,7 @@ let of_sexp (x : CCSexp.t) =
           aux_chunked
             (chunk_again
                (`By_duration_drop_partial
-                  (Duration.of_span @@ span_of_sexp span))
+                  (span_of_sexp span))
              %> f)
             chunked
         | [
@@ -382,7 +366,7 @@ let of_sexp (x : CCSexp.t) =
         ] ->
           aux_chunked
             (chunk_again
-               (`By_duration (Duration.of_span @@ span_of_sexp span))
+               (`By_duration (span_of_sexp span))
              %> f)
             chunked
         | _ ->

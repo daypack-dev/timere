@@ -57,7 +57,7 @@ module Format_string_parsers = struct
   let date_time_inner (date_time : Time.Date_time'.t) : (string, unit) t =
     let tz_offset_s =
       date_time.tz_info.offset
-      |> CCOpt.map (fun x -> CCInt64.to_int (Duration.to_span x).s)
+      |> CCOpt.map (fun x -> CCInt64.to_int Span.(x.s))
     in
     choice
       [
@@ -126,24 +126,24 @@ module Format_string_parsers = struct
          match tz_offset_s with
          | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
          | Some tz_offset_s ->
-           let d = Duration.make_exn ~seconds:(abs tz_offset_s) () in
-           return (pad_int padding Duration.(d.hours)));
+           let d = Span.make_small ~s:(abs tz_offset_s) () in
+           return (pad_int padding Span.For_human'.((view d).hours)));
         (attempt (string "tzoff-min:")
          >> padding
          >>= fun padding ->
          match tz_offset_s with
          | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
          | Some tz_offset_s ->
-           let d = Duration.make_exn ~seconds:(abs tz_offset_s) () in
-           return (pad_int padding Duration.(d.minutes)));
+           let d = Span.make_small ~s:(abs tz_offset_s) () in
+           return (pad_int padding Span.For_human'.((view d).minutes)));
         (attempt (string "tzoff-sec:")
          >> padding
          >>= fun padding ->
          match tz_offset_s with
          | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
          | Some tz_offset_s ->
-           let d = Duration.make_exn ~seconds:(abs tz_offset_s) () in
-           return (pad_int padding Duration.(d.seconds)));
+           let d = Span.make_small ~s:(abs tz_offset_s) () in
+           return (pad_int padding Span.For_human'.((view d).seconds)));
         (* string "unix"
          * >> return (Int64.to_string (Time.Date_time'.to_timestamp date_time)); *)
       ]
@@ -267,8 +267,9 @@ let pp_span formatter ({ s; ns } : Span.t) : unit =
 
 let string_of_span (x : Span.t) : string = Fmt.str "%a" pp_span x
 
-let pp_duration formatter ({ days; hours; minutes; seconds } : Duration.t) :
+let pp_span_for_human formatter (x : Span.t) :
   unit =
+  let Span.For_human'.{ days; hours; minutes; seconds } = Span.For_human'.view x in
   if days > 0 then
     Fmt.pf formatter "%d days %d hours %d mins %d secs" days hours minutes
       seconds
@@ -277,7 +278,7 @@ let pp_duration formatter ({ days; hours; minutes; seconds } : Duration.t) :
   else if minutes > 0 then Fmt.pf formatter "%d mins %d secs" minutes seconds
   else Fmt.pf formatter "%d secs" seconds
 
-let string_of_duration (x : Duration.t) : string = Fmt.str "%a" pp_duration x
+let string_of_span_for_human (x : Span.t) : string = Fmt.str "%a" pp_span_for_human x
 
 let wrap_to_sexp_into_pp_sexp (f : 'a -> CCSexp.t) :
   Format.formatter -> 'a -> unit =

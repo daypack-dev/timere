@@ -3,7 +3,7 @@ type t = private {
   ns : int;
 }
 
-module For_human : sig
+module For_human' : sig
   type sign =
     [ `Pos
     | `Neg

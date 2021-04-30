@@ -83,7 +83,7 @@ let max x y = if ge x y then x else y
 
 let min x y = if le x y then x else y
 
-module For_human = struct
+module For_human' = struct
   module Int64_multipliers = struct
     let minute_to_seconds = 60L
 

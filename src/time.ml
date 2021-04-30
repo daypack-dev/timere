@@ -836,12 +836,12 @@ module Hms' = struct
     | Error e -> raise (Error_exn e)
 
   let to_second_of_day x =
-    Span.For_human.make_exn ~hours:x.hour ~minutes:x.minute ~seconds:x.second ()
+    Span.For_human'.make_exn ~hours:x.hour ~minutes:x.minute ~seconds:x.second ()
     |> fun x -> Int64.to_int Span.(x.s)
 
   let of_second_of_day s =
-    let ({ hours; minutes; seconds; _ } : Span.For_human.view) =
-      Span.(make_small ~s () |> For_human.view)
+    let ({ hours; minutes; seconds; _ } : Span.For_human'.view) =
+      Span.(make_small ~s () |> For_human'.view)
     in
     match make ~hour:hours ~minute:minutes ~second:seconds with
     | Ok x -> Some x
@@ -955,12 +955,12 @@ module Date_time' = struct
     | `Invalid_frac x -> Printf.sprintf "Invalid frac: %f" x
     | `Invalid_ns x -> Printf.sprintf "Invalid ns: %d" x
     | `Invalid_tz_info (tz, offset) ->
-      let offset = Span.For_human.view offset in
+      let offset = Span.For_human'.view offset in
       Printf.sprintf "Invalid tz info: %s, %c%d:%d"
         (match tz with None -> "None" | Some tz -> tz)
-        Span.For_human.(match offset.sign with `Pos -> '+' | `Neg -> '-')
-        Span.For_human.(offset.hours)
-        Span.For_human.(offset.minutes)
+        Span.For_human'.(match offset.sign with `Pos -> '+' | `Neg -> '-')
+        Span.For_human'.(offset.hours)
+        Span.For_human'.(offset.minutes)
 
   let utc_tz_info : tz_info =
     { tz = Time_zone.utc; offset = Some Span.zero }
@@ -1382,7 +1382,7 @@ module Week_date_time' = struct
         match timetamp_local_start_of_year ~year:(succ year) with
         | None -> None
         | Some end_exc ->
-          let d = Span.(end_exc - start |> For_human.view) in
+          let d = Span.(end_exc - start |> For_human'.view) in
           let week_count = d.days / 7 in
           assert (week_count >= 1);
           Some (start, week_count))
@@ -1415,7 +1415,7 @@ module Week_date_time' = struct
           if week > week_count then Error `Does_not_exist
           else
             let offset =
-              Span.For_human.(
+              Span.For_human'.(
                 make_exn
                   ~days:(((week - 1) * 7) + day_offset_of_weekday weekday)
                   ()
@@ -1788,7 +1788,7 @@ let bounded_intervals pick (bound : Span.t)
 
 let hms_intervals_exc (hms_a : Hms'.t) (hms_b : Hms'.t) : t =
   bounded_intervals `Whole
-    (Span.For_human.make_exn ~days:1 ())
+    (Span.For_human'.make_exn ~days:1 ())
     (Points.make_exn ~hour:hms_a.hour ~minute:hms_a.minute ~second:hms_a.second
        ())
     (Points.make_exn ~hour:hms_b.hour ~minute:hms_b.minute ~second:hms_b.second

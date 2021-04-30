@@ -24,7 +24,7 @@ let sexp_of_tz_info ({ tz; offset } : tz_info) =
          Some (sexp_of_tz_name tz);
          CCOpt.map
            (fun tz_offset ->
-              sexp_of_int (CCInt64.to_int (Duration.to_span tz_offset).s))
+              sexp_of_int (CCInt64.to_int Span.(tz_offset.s)))
            offset;
        ])
 
@@ -100,17 +100,6 @@ let sexp_of_date_time (x : Time.Date_time'.t) =
       sexp_of_int x.second;
       sexp_of_int x.ns;
       sexp_of_tz_info x.tz_info;
-    ]
-
-let sexp_of_duration (x : Duration.t) =
-  let open CCSexp in
-  list
-    [
-      atom "duration";
-      sexp_of_int x.days;
-      sexp_of_int x.hours;
-      sexp_of_int x.minutes;
-      sexp_of_int x.seconds;
     ]
 
 let sexp_of_timestamp x =

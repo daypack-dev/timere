@@ -9,6 +9,14 @@ exception Invalid_format_string = Printers.Invalid_format_string
 module Span = struct
   include Span
 
+  module For_human = struct
+    include For_human'
+
+    let to_string = Printers.string_of_span_for_human
+
+    let pp = Printers.pp_span_for_human
+  end
+
   let to_string = Printers.string_of_span
 
   let pp = Printers.pp_span
@@ -114,26 +122,6 @@ module Interval = struct
   let pp = Printers.pp_interval
 
   let to_string = Printers.string_of_interval
-end
-
-module Duration = struct
-  include Duration
-
-  let to_string = Printers.string_of_duration
-
-  let pp = Printers.pp_duration
-
-  let to_sexp = To_sexp.sexp_of_duration
-
-  let to_sexp_string =
-    To_sexp.(wrap_to_sexp_into_to_sexp_string sexp_of_duration)
-
-  let of_sexp = Of_sexp.(wrap_of_sexp duration_of_sexp)
-
-  let of_sexp_string =
-    Of_sexp.(wrap_of_sexp_into_of_sexp_string duration_of_sexp)
-
-  let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_duration
 end
 
 type 'a range = 'a Range.range

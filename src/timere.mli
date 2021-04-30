@@ -244,7 +244,7 @@ module Time_zone : sig
 
   val available_time_zones : string list
 
-  val make_offset_only : Duration.t -> t option
+  val make_offset_only : Span.t -> t option
   (** This is mainly used for when you only have an offset to work with,
       and you don't need to do any accurate search over time zones.
 
@@ -253,14 +253,9 @@ module Time_zone : sig
       Returns [None] when offset exceeds 24 hours
   *)
 
-  val make_offset_only_exn : Duration.t -> t
+  val make_offset_only_exn : Span.t -> t
 
-  val make_offset_only_span : Span.t -> t option
-  (** Returns [None] when offset exceeds 24 hours *)
-
-  val make_offset_only_span_exn : Span.t -> t
-
-  val to_fixed_offset : t -> Duration.t option
+  val to_fixed_offset : t -> Span.t option
 
   (** {2 Importing and exporting}*)
 
@@ -333,7 +328,7 @@ module Date_time : sig
 
   type tz_info = {
     tz : Time_zone.t;
-    offset : Duration.t option;
+    offset : Span.t option;
   }
   (** Time zone information of date time
 
@@ -378,7 +373,7 @@ module Date_time : sig
     | `Invalid_second of int
     | `Invalid_frac of float
     | `Invalid_ns of int
-    | `Invalid_tz_info of string option * Duration.t
+    | `Invalid_tz_info of string option * Span.t
     ]
 
   exception Error_exn of error
@@ -455,7 +450,7 @@ module Date_time : sig
     hour:int ->
     minute:int ->
     second:int ->
-    tz_offset:Duration.t ->
+    tz_offset:Span.t ->
     unit ->
     (t, error) result
   (** Constructs a date time providing time zone offset in seconds, and optionally a time zone.
@@ -481,7 +476,7 @@ module Date_time : sig
     hour:int ->
     minute:int ->
     second:int ->
-    tz_offset:Duration.t ->
+    tz_offset:Span.t ->
     unit ->
     t
   (** @raise Error_exn if [make_umabiguous] fails *)
@@ -712,7 +707,7 @@ module Week_date_time : sig
     | `Invalid_second of int
     | `Invalid_frac of float
     | `Invalid_ns of int
-    | `Invalid_tz_info of string option * Duration.t
+    | `Invalid_tz_info of string option * Span.t
     ]
 
   exception Error_exn of error
@@ -874,9 +869,9 @@ val not : t -> t
     [not t] is equivalent to all the intervals not included in [t].
 *)
 
-val shift : Duration.t -> t -> t
+val shift : Span.t -> t -> t
 
-val lengthen : Duration.t -> t -> t
+val lengthen : Span.t -> t -> t
 (** @raise Invalid_argument if duration is negative *)
 
 val with_tz : Time_zone.t -> t -> t
@@ -1028,14 +1023,14 @@ module Points : sig
     | `Invalid_minute of int
     | `Invalid_second of int
     | `Invalid_pattern_combination
-    | `Invalid_tz_info of string option * Duration.t
+    | `Invalid_tz_info of string option * Span.t
     ]
 
   exception Error_exn of error
 
   val make :
     ?tz:Time_zone.t ->
-    ?tz_offset:Duration.t ->
+    ?tz_offset:Span.t ->
     ?year:int ->
     ?month:int ->
     ?day:int ->
@@ -1061,7 +1056,7 @@ make_points                                               ~second:_ ()
 
   val make_exn :
     ?tz:Time_zone.t ->
-    ?tz_offset:Duration.t ->
+    ?tz_offset:Span.t ->
     ?year:int ->
     ?month:int ->
     ?day:int ->
@@ -1076,7 +1071,7 @@ end
 
 type points = Points.t
 
-val bounded_intervals : [ `Whole | `Snd ] -> Duration.t -> points -> points -> t
+val bounded_intervals : [ `Whole | `Snd ] -> Span.t -> points -> points -> t
 (** [bounded_intervals mode bound p1 p2] for each point [x] matched by [p1],
     then for the earliest point [y] matched by [p2] such that [x < y && y - x <= bound]
     - if [mode = `Whole], yields (x, y)
@@ -1085,7 +1080,7 @@ val bounded_intervals : [ `Whole | `Snd ] -> Duration.t -> points -> points -> t
     Examples:
 
     {[
-      bounded_intervals `Whole (Duration.make ~days:1 ())
+      bounded_intervals `Whole (Span.For_human.make ~days:1 ())
         (make_points ~hour:13 ~minute:0 ~second:0 ()) (* p1 *)
         (make_points ~hour:14 ~minute:0 ~second:0 ()) (* p2 *)
     ]}
@@ -1093,14 +1088,14 @@ val bounded_intervals : [ `Whole | `Snd ] -> Duration.t -> points -> points -> t
     searching forward up to 24 hour period, we can find a "2pm" mark in [p2]
 
     {[
-      bounded_intervals `Whole (Duration.make ~days:1 ())
+      bounded_intervals `Whole (Span.For_human.make ~days:1 ())
         (make_points ~month:2 ~day:10 ~hour:13 ~minute:0 ~second:0 ()) (* p1 *)
         (make_points                  ~hour:14 ~minute:0 ~second:0 ()) (* p2 *)
     ]}
     yields all the "Feb 10th 1pm to 2pm" intervals (or specifically "Feb 10th 1pm to Feb 10th 2pm")
 
     {[
-      bounded_intervals `Whole (Duration.make ~days:1 ())
+      bounded_intervals `Whole (Span.For_human.make ~days:1 ())
         (make_points ~month:`Feb ~day:10 ~hour:23 ~minute:0 ~second:0 ()) (* p1 *)
         (make_points                     ~hour:3  ~minute:0 ~second:0 ()) (* p2 *)
     ]}
@@ -1153,7 +1148,7 @@ val hms_intervals_inc : Hms.t -> Hms.t -> t
 *)
 
 val hms_intervals_exc : Hms.t -> Hms.t -> t
-(** Same as [bounded_intervals ...] with bound fixed to [Duration.make ~days:1 ()]
+(** Same as [bounded_intervals ...] with bound fixed to [Span.For_human.make ~days:1 ()]
 *)
 
 (** {2 Chunking} *)
@@ -1162,8 +1157,8 @@ type chunked
 
 type chunking =
   [ `Disjoint_intervals
-  | `By_duration of Duration.t
-  | `By_duration_drop_partial of Duration.t
+  | `By_duration of Span.t
+  | `By_duration_drop_partial of Span.t
   | `At_year_boundary
   | `At_month_boundary
   ]

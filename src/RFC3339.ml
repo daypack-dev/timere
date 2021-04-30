@@ -56,11 +56,12 @@ let pp_date_time ?frac_s () formatter (dt : Time.Date_time'.t) =
     match tz_offset_of_tz_info dt.tz_info with
     | None -> raise (Printers.Date_time_cannot_deduce_tz_offset_s dt)
     | Some offset ->
+      let offset_view = Span.For_human'.view offset in
       let tz_off =
-        if Duration.(equal offset zero) then "Z"
+        if Span.(offset = zero) then "Z"
         else
-          let sign = match offset.sign with `Pos -> '+' | `Neg -> '-' in
-          Printf.sprintf "%c%02d:%02d" sign offset.hours offset.minutes
+          let sign = match offset_view.sign with `Pos -> '+' | `Neg -> '-' in
+          Printf.sprintf "%c%02d:%02d" sign offset_view.hours offset_view.minutes
       in
       let second =
         if Time.Date_time'.is_leap_second dt then 60 else dt.second

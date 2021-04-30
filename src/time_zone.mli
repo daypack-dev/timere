@@ -45,11 +45,7 @@ val offset_is_recorded : Span.t -> t -> bool
 
 val make_offset_only : Span.t -> t option
 
-val make_offset_only_span : Span.t -> t option
-
 val make_offset_only_exn : Span.t -> t
-
-val make_offset_only_span_exn : Span.t -> t
 
 module Sexp : sig
   val to_sexp : t -> CCSexp.t
