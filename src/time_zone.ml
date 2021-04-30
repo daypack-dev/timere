@@ -294,9 +294,7 @@ module Raw = struct
 end
 
 let offset_is_recorded offset (t : t) =
-  Array.mem
-    (CCInt64.to_int Span.(offset.s))
-    t.record.recorded_offsets
+  Array.mem (CCInt64.to_int Span.(offset.s)) t.record.recorded_offsets
 
 module Sexp = struct
   let of_sexp (x : CCSexp.t) : t option =

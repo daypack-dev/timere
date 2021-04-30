@@ -78,13 +78,15 @@ let to_be_exported =
 
     val duration =
       object%js
-        method d days = wrap (fun () -> Timere.Span.For_human.make_frac ~days ())
+        method d days =
+          wrap (fun () -> Timere.Span.For_human.make_frac ~days ())
 
         method dh days hours =
           wrap (fun () -> Timere.Span.For_human.make_frac ~days ~hours ())
 
         method dhm days hours minutes =
-          wrap (fun () -> Timere.Span.For_human.make_frac ~days ~hours ~minutes ())
+          wrap (fun () ->
+              Timere.Span.For_human.make_frac ~days ~hours ~minutes ())
 
         method dhms days hours minutes seconds =
           wrap (fun () ->

@@ -144,7 +144,7 @@ module For_human' = struct
   exception Error_f_exn of error_f
 
   let view (x : t) : view =
-    let sign = if (lt x zero) then `Neg else `Pos in
+    let sign = if lt x zero then `Neg else `Pos in
     let { s; ns } = abs x in
     let seconds = Int64.rem s 60L in
     let minutes = Int64.div s 60L in
@@ -179,12 +179,11 @@ module For_human' = struct
   let span_of_raw (r : raw) : t =
     let span =
       add
-      (
-        of_float
-          ((r.days *. Float_multipliers.day_to_seconds)
-           +. (r.hours *. Float_multipliers.hour_to_seconds)
-           +. (r.minutes *. Float_multipliers.minute_to_seconds)
-           +. r.seconds))
+        (of_float
+           ((r.days *. Float_multipliers.day_to_seconds)
+            +. (r.hours *. Float_multipliers.hour_to_seconds)
+            +. (r.minutes *. Float_multipliers.minute_to_seconds)
+            +. r.seconds))
         (make ~ns:r.ns ())
     in
     match r.sign with `Pos -> span | `Neg -> neg span
@@ -236,4 +235,3 @@ let ( <> ) = neq
 let ( - ) = sub
 
 let ( + ) = add
-

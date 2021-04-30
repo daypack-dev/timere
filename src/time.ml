@@ -836,7 +836,8 @@ module Hms' = struct
     | Error e -> raise (Error_exn e)
 
   let to_second_of_day x =
-    Span.For_human'.make_exn ~hours:x.hour ~minutes:x.minute ~seconds:x.second ()
+    Span.For_human'.make_exn ~hours:x.hour ~minutes:x.minute ~seconds:x.second
+      ()
     |> fun x -> Int64.to_int Span.(x.s)
 
   let of_second_of_day s =
@@ -962,8 +963,7 @@ module Date_time' = struct
         Span.For_human'.(offset.hours)
         Span.For_human'.(offset.minutes)
 
-  let utc_tz_info : tz_info =
-    { tz = Time_zone.utc; offset = Some Span.zero }
+  let utc_tz_info : tz_info = { tz = Time_zone.utc; offset = Some Span.zero }
 
   let dummy_tz_info = utc_tz_info
 
@@ -990,8 +990,7 @@ module Date_time' = struct
     | None -> `None
     | Some timestamp_local -> (
         match x.tz_info with
-        | { tz = _; offset = Some offset } ->
-          `Single (timestamp_local - offset)
+        | { tz = _; offset = Some offset } -> `Single (timestamp_local - offset)
         | { tz; offset = None } -> (
             match Time_zone.lookup_timestamp_local tz timestamp_local.s with
             | `None -> `None
@@ -1058,9 +1057,7 @@ module Date_time' = struct
                 tz_info =
                   {
                     tz = tz_of_date_time;
-                    offset =
-                      Some
-                        (Span.make_small ~s:entry.offset ());
+                    offset = Some (Span.make_small ~s:entry.offset ());
                   };
               })
 
@@ -1129,12 +1126,7 @@ module Date_time' = struct
                {
                  dt with
                  tz_info =
-                   {
-                     tz;
-                     offset =
-                       Some
-                         (Span.make_small ~s:e.offset ());
-                   };
+                   { tz; offset = Some (Span.make_small ~s:e.offset ()) };
                }
            | `Ambiguous _ -> Ok dt))
       |> CCResult.map (adjust_ns_for_leap_second ~is_leap_second)
@@ -1178,9 +1170,7 @@ module Date_time' = struct
             with
             | None -> Error `Does_not_exist
             | Some { s = timestamp_local; ns = _ } -> (
-                let tz_offset_s =
-                  Int64.to_int (tz_offset).s
-                in
+                let tz_offset_s = Int64.to_int tz_offset.s in
                 match
                   Time_zone.lookup_timestamp_local tz' timestamp_local
                 with
@@ -1418,16 +1408,13 @@ module Week_date_time' = struct
               Span.For_human'.(
                 make_exn
                   ~days:(((week - 1) * 7) + day_offset_of_weekday weekday)
-                  ()
-              )
+                  ())
             in
             let timestamp_local = Span.(start + offset) in
             (match Time_zone.lookup_timestamp_local tz timestamp_local.s with
              | `None -> Error `Does_not_exist
              | `Single e ->
-               let tz_offset =
-                 Span.make_small ~s:e.offset ()
-               in
+               let tz_offset = Span.make_small ~s:e.offset () in
                Ok
                  {
                    year;
@@ -1526,31 +1513,25 @@ let chunk_again (chunking : chunking) chunked : chunked =
   | `Disjoint_intervals ->
     Unary_op_on_chunked (Chunk_again Chunk_disjoint_interval, chunked)
   | `By_duration chunk_size ->
-    if Span.(chunk_size = zero) then invalid_arg "chunk_again: duration is zero"
+    if Span.(chunk_size = zero) then
+      invalid_arg "chunk_again: duration is zero"
     else
       Unary_op_on_chunked
-        ( Chunk_again
-            (Chunk_by_duration
-               {
-                 chunk_size;
-                 drop_partial = false;
-               }),
+        ( Chunk_again (Chunk_by_duration { chunk_size; drop_partial = false }),
           chunked )
   | `By_duration_drop_partial chunk_size ->
-    if Span.(chunk_size = zero) then invalid_arg "chunk_again: duration is zero"
+    if Span.(chunk_size = zero) then
+      invalid_arg "chunk_again: duration is zero"
     else
       Unary_op_on_chunked
-        ( Chunk_again
-            (Chunk_by_duration
-               { chunk_size; drop_partial = true }),
+        ( Chunk_again (Chunk_by_duration { chunk_size; drop_partial = true }),
           chunked )
   | `At_year_boundary ->
     Unary_op_on_chunked (Chunk_again Chunk_at_year_boundary, chunked)
   | `At_month_boundary ->
     Unary_op_on_chunked (Chunk_again Chunk_at_year_boundary, chunked)
 
-let shift (offset : Span.t) (t : t) : t =
-  Unary_op (Shift offset, t)
+let shift (offset : Span.t) (t : t) : t = Unary_op (Shift offset, t)
 
 let lengthen (x : Span.t) (t : t) : t =
   if Span.(x < zero) then invalid_arg "lengthen: duration is negative";
@@ -1754,8 +1735,7 @@ let second_ranges second_ranges = pattern ~second_ranges ()
 let bounded_intervals pick (bound : Span.t)
     ((pick_start, tz_info_start) as start : Points.t)
     ((pick_end_exc, tz_info_end_exc) as end_exc : Points.t) : t =
-  if Span.(bound < zero) then
-    invalid_arg "bounded_intervals: bound is negative";
+  if Span.(bound < zero) then invalid_arg "bounded_intervals: bound is negative";
   if Points.precision start < Points.precision end_exc then
     invalid_arg "bounded_intervals: start is less precise than end_exc"
   else if CCOpt.equal equal_tz_info tz_info_start tz_info_end_exc then
@@ -1780,11 +1760,8 @@ let bounded_intervals pick (bound : Span.t)
         && minute_start = minute_end_exc
         && second_start = second_end_exc ->
       always
-    | _, _ ->
-      Bounded_intervals
-        { pick; bound; start; end_exc }
-  else
-    Bounded_intervals { pick; bound; start; end_exc }
+    | _, _ -> Bounded_intervals { pick; bound; start; end_exc }
+  else Bounded_intervals { pick; bound; start; end_exc }
 
 let hms_intervals_exc (hms_a : Hms'.t) (hms_b : Hms'.t) : t =
   bounded_intervals `Whole

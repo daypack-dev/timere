@@ -32,7 +32,7 @@ let display_intervals ~display_using_tz s =
           Printers.string_of_interval ~display_using_tz
             ~format:default_interval_format_string (x, y)
         in
-        let size = (Span.sub y x) in
+        let size = Span.sub y x in
         let size_str = Printers.string_of_span_for_human size in
         Printf.printf "%s - %s\n" s size_str;
         flush stdout)
@@ -151,7 +151,7 @@ let debug_example () =
       |> OSeq.take 60
       |> OSeq.iter (fun (x, y) ->
           let s = Printers.string_of_interval ~display_using_tz (x, y) in
-          let size = (Span.sub y x) in
+          let size = Span.sub y x in
           let size_str = Printers.string_of_span_for_human size in
           Printf.printf "%s - %s\n" s size_str)
   in

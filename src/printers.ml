@@ -56,8 +56,7 @@ module Format_string_parsers = struct
 
   let date_time_inner (date_time : Time.Date_time'.t) : (string, unit) t =
     let tz_offset_s =
-      date_time.tz_info.offset
-      |> CCOpt.map (fun x -> CCInt64.to_int Span.(x.s))
+      date_time.tz_info.offset |> CCOpt.map (fun x -> CCInt64.to_int Span.(x.s))
     in
     choice
       [
@@ -267,9 +266,11 @@ let pp_span formatter ({ s; ns } : Span.t) : unit =
 
 let string_of_span (x : Span.t) : string = Fmt.str "%a" pp_span x
 
-let pp_span_for_human formatter (x : Span.t) :
-  unit =
-  let Span.For_human'.{ days; hours; minutes; seconds } : Span.For_human'.view = Span.For_human'.view x in
+let pp_span_for_human formatter (x : Span.t) : unit =
+  let (Span.For_human'.{ days; hours; minutes; seconds } : Span.For_human'.view)
+    =
+    Span.For_human'.view x
+  in
   if days > 0 then
     Fmt.pf formatter "%d days %d hours %d mins %d secs" days hours minutes
       seconds
@@ -278,7 +279,8 @@ let pp_span_for_human formatter (x : Span.t) :
   else if minutes > 0 then Fmt.pf formatter "%d mins %d secs" minutes seconds
   else Fmt.pf formatter "%d secs" seconds
 
-let string_of_span_for_human (x : Span.t) : string = Fmt.str "%a" pp_span_for_human x
+let string_of_span_for_human (x : Span.t) : string =
+  Fmt.str "%a" pp_span_for_human x
 
 let wrap_to_sexp_into_pp_sexp (f : 'a -> CCSexp.t) :
   Format.formatter -> 'a -> unit =

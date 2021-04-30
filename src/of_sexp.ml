@@ -71,8 +71,7 @@ let tz_info_of_sexp (x : CCSexp.t) : Date_time_components.tz_info =
         {
           tz = tz_make_of_sexp x;
           offset =
-            Some
-              (Span.make ~s:(CCInt64.of_int @@ int_of_sexp offset) ());
+            Some (Span.make ~s:(CCInt64.of_int @@ int_of_sexp offset) ());
         }
       | _ ->
         invalid_data
@@ -321,14 +320,9 @@ let of_sexp (x : CCSexp.t) =
         | [ `Atom "chunk_at_month_boundary"; x ] ->
           chunk `At_month_boundary f (aux x)
         | [ `Atom "chunk_by_duration"; span; `Atom "drop_partial"; x ] ->
-          chunk
-            (`By_duration_drop_partial
-               (span_of_sexp span))
-            f (aux x)
+          chunk (`By_duration_drop_partial (span_of_sexp span)) f (aux x)
         | [ `Atom "chunk_by_duration"; span; x ] ->
-          chunk
-            (`By_duration (span_of_sexp span))
-            f (aux x)
+          chunk (`By_duration (span_of_sexp span)) f (aux x)
         | [ `Atom "drop"; n; chunked ] ->
           aux_chunked (drop (int_of_sexp n) %> f) chunked
         | [ `Atom "take"; n; chunked ] ->
@@ -356,18 +350,13 @@ let of_sexp (x : CCSexp.t) =
             [ `Atom "chunk_by_duration"; span; `Atom "drop_partial"; chunked ];
         ] ->
           aux_chunked
-            (chunk_again
-               (`By_duration_drop_partial
-                  (span_of_sexp span))
-             %> f)
+            (chunk_again (`By_duration_drop_partial (span_of_sexp span)) %> f)
             chunked
         | [
           `Atom "chunk_again"; `List [ `Atom "chunk_by_duration"; span; chunked ];
         ] ->
           aux_chunked
-            (chunk_again
-               (`By_duration (span_of_sexp span))
-             %> f)
+            (chunk_again (`By_duration (span_of_sexp span)) %> f)
             chunked
         | _ ->
           invalid_data

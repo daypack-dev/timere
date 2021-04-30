@@ -60,8 +60,11 @@ let pp_date_time ?frac_s () formatter (dt : Time.Date_time'.t) =
       let tz_off =
         if Span.(offset = zero) then "Z"
         else
-          let sign = match offset_view.sign with `Pos -> '+' | `Neg -> '-' in
-          Printf.sprintf "%c%02d:%02d" sign offset_view.hours offset_view.minutes
+          let sign =
+            match offset_view.sign with `Pos -> '+' | `Neg -> '-'
+          in
+          Printf.sprintf "%c%02d:%02d" sign offset_view.hours
+            offset_view.minutes
       in
       let second =
         if Time.Date_time'.is_leap_second dt then 60 else dt.second

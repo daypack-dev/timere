@@ -1100,7 +1100,9 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Span.For_human.make_exn ~days:((year2 - year1 + 1) * 366) ())
+               (Timere.Span.For_human.make_exn
+                  ~days:((year2 - year1 + 1) * 366)
+                  ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None

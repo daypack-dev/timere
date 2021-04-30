@@ -23,8 +23,7 @@ let sexp_of_tz_info ({ tz; offset } : tz_info) =
        [
          Some (sexp_of_tz_name tz);
          CCOpt.map
-           (fun tz_offset ->
-              sexp_of_int (CCInt64.to_int Span.(tz_offset.s)))
+           (fun tz_offset -> sexp_of_int (CCInt64.to_int Span.(tz_offset.s)))
            offset;
        ])
 
