@@ -35,6 +35,11 @@
 - Fixed `overapproximate_search_space_bottom_up` handling of bounded intervals, previously the default search time zone was used
   during points to date time conversion instead of the time zone passed during execution
 
+- Unified `Duration` and `Span` module. Now there is only `Span` module with human friendly constructors
+  and `view` type in `Timere.Span.For_human`
+
+  - See [issue #27](https://github.com/daypack-dev/timere/issues/27) for discussion
+
 ## Timere 0.3.1
 
 - Minor refactoring on use of pattern resolver to simplify reasoning about undefined/uncertain behaviour
