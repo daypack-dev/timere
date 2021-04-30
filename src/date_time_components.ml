@@ -73,7 +73,7 @@ let day_count_of_month ~year ~month =
 
 type tz_info = {
   tz : Time_zone.t;
-  offset : Duration.t option;
+  offset : Span.t option;
 }
 
 let equal_tz_info (x : tz_info) (y : tz_info) =
@@ -81,13 +81,13 @@ let equal_tz_info (x : tz_info) (y : tz_info) =
   | { tz = tz1; offset = None }, { tz = tz2; offset = None } ->
     Time_zone.equal tz1 tz2
   | { tz = tz1; offset = Some x1 }, { tz = tz2; offset = Some x2 } ->
-    Time_zone.equal tz1 tz2 && Duration.equal x1 x2
+    Time_zone.equal tz1 tz2 && Span.equal x1 x2
   | _, _ -> false
 
 type tz_info_error =
   [ `Missing_both_tz_and_tz_offset
-  | `Invalid_offset of Duration.t
-  | `Unrecorded_offset of Duration.t
+  | `Invalid_offset of Span.t
+  | `Unrecorded_offset of Span.t
   ]
 
 let make_tz_info ?tz ?tz_offset () : (tz_info, tz_info_error) result =

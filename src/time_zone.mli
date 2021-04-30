@@ -15,7 +15,7 @@ val equal : t -> t -> bool
 
 val name : t -> string
 
-val to_fixed_offset : t -> Duration.t option
+val to_fixed_offset : t -> Span.t option
 
 val utc : t
 
@@ -41,13 +41,13 @@ module Raw : sig
   val to_transition_seq : t -> ((int64 * int64) * entry) Seq.t
 end
 
-val offset_is_recorded : Duration.t -> t -> bool
+val offset_is_recorded : Span.t -> t -> bool
 
-val make_offset_only : Duration.t -> t option
+val make_offset_only : Span.t -> t option
 
 val make_offset_only_span : Span.t -> t option
 
-val make_offset_only_exn : Duration.t -> t
+val make_offset_only_exn : Span.t -> t
 
 val make_offset_only_span_exn : Span.t -> t
 

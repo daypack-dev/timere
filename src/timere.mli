@@ -17,6 +17,100 @@ module Span : sig
       [lt x y iff. x.s < y.s || (x.s = y.s && x.ns < y.ns)]
   *)
 
+  module For_human : sig
+    type sign =
+      [ `Pos
+      | `Neg
+      ]
+
+    type view = private {
+      sign : sign;
+      days : int;
+      hours : int;
+      minutes : int;
+      seconds : int;
+      ns : int;
+    }
+
+    type error =
+      [ `Invalid_days of int
+      | `Invalid_hours of int
+      | `Invalid_minutes of int
+      | `Invalid_seconds of int
+      | `Invalid_ns of int
+      ]
+
+    type error_f =
+      [ `Invalid_days_f of float
+      | `Invalid_hours_f of float
+      | `Invalid_minutes_f of float
+      | `Invalid_seconds_f of float
+      | `Invalid_ns of int
+      ]
+
+    exception Error_exn of error
+
+    exception Error_f_exn of error_f
+
+    val make :
+      ?sign:sign ->
+      ?days:int ->
+      ?hours:int ->
+      ?minutes:int ->
+      ?seconds:int ->
+      ?ns:int ->
+      unit ->
+      (t, error) result
+    (**
+       [sign] defaults to [`Pos].
+
+       Returns [Error] if any of the arguments are negative.
+    *)
+
+    val make_exn :
+      ?sign:sign ->
+      ?days:int ->
+      ?hours:int ->
+      ?minutes:int ->
+      ?seconds:int ->
+      ?ns:int ->
+      unit ->
+      t
+    (** @raise Error_exn if [make] fails *)
+
+    val make_frac :
+      ?sign:sign ->
+      ?days:float ->
+      ?hours:float ->
+      ?minutes:float ->
+      ?seconds:float ->
+      ?ns:int ->
+      unit ->
+      (t, error_f) result
+    (**
+       [sign] defaults to [`Pos].
+
+       Returns [Error] if any of the arguments are negative
+    *)
+
+    val make_frac_exn :
+      ?sign:sign ->
+      ?days:float ->
+      ?hours:float ->
+      ?minutes:float ->
+      ?seconds:float ->
+      ?ns:int ->
+      unit ->
+      t
+    (** @raise Error_exn if [make] fails *)
+
+    val view : t -> view
+
+    val pp : Format.formatter -> t -> unit
+
+    val to_string : t -> string
+  end
+
   val ns_count_in_s : int
 
   val ns_count_in_s_float : float
@@ -83,128 +177,6 @@ module Span : sig
   val ( - ) : t -> t -> t
 
   val ( + ) : t -> t -> t
-
-  val to_string : t -> string
-
-  val pp : Format.formatter -> t -> unit
-
-  val to_sexp : t -> CCSexp.t
-
-  val to_sexp_string : t -> string
-
-  val of_sexp : CCSexp.t -> (t, string) result
-
-  val of_sexp_string : string -> (t, string) result
-
-  val pp_sexp : Format.formatter -> t -> unit
-end
-
-(** {2 Duration} *)
-
-module Duration : sig
-  type sign =
-    [ `Pos
-    | `Neg
-    ]
-
-  type t = private {
-    sign : sign;
-    days : int;
-    hours : int;
-    minutes : int;
-    seconds : int;
-    ns : int;
-  }
-  (** Signed/directional duration.
-
-      Human friendly, but less efficient version of [Span.t].
-
-      Conversion between [t] and [Span.t] is lossless.
-  *)
-
-  type error =
-    [ `Invalid_days of int
-    | `Invalid_hours of int
-    | `Invalid_minutes of int
-    | `Invalid_seconds of int
-    | `Invalid_ns of int
-    ]
-
-  type error_f =
-    [ `Invalid_days_f of float
-    | `Invalid_hours_f of float
-    | `Invalid_minutes_f of float
-    | `Invalid_seconds_f of float
-    | `Invalid_ns of int
-    ]
-
-  exception Error_exn of error
-
-  exception Error_f_exn of error_f
-
-  val make :
-    ?sign:sign ->
-    ?days:int ->
-    ?hours:int ->
-    ?minutes:int ->
-    ?seconds:int ->
-    ?ns:int ->
-    unit ->
-    (t, error) result
-  (**
-     [sign] defaults to [`Pos].
-
-     Returns [Error] if any of the arguments are negative.
-  *)
-
-  val make_exn :
-    ?sign:sign ->
-    ?days:int ->
-    ?hours:int ->
-    ?minutes:int ->
-    ?seconds:int ->
-    ?ns:int ->
-    unit ->
-    t
-  (** @raise Error_exn if [make] fails *)
-
-  val make_frac :
-    ?sign:sign ->
-    ?days:float ->
-    ?hours:float ->
-    ?minutes:float ->
-    ?seconds:float ->
-    ?ns:int ->
-    unit ->
-    (t, error_f) result
-  (**
-     [sign] defaults to [`Pos].
-
-     Returns [Error] if any of the arguments are negative
-  *)
-
-  val make_frac_exn :
-    ?sign:sign ->
-    ?days:float ->
-    ?hours:float ->
-    ?minutes:float ->
-    ?seconds:float ->
-    ?ns:int ->
-    unit ->
-    t
-  (** @raise Error_exn if [make] fails *)
-
-  val zero : t
-
-  val is_pos : t -> bool
-
-  val is_neg : t -> bool
-
-  val equal : t -> t -> bool
-
-  val of_span : Span.t -> t
-
-  val to_span : t -> Span.t
 
   val to_string : t -> string
 

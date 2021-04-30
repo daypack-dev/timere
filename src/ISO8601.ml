@@ -53,14 +53,14 @@ let to_date_time s : (Time.Date_time'.t, string) result =
   in
   let offset_p =
     char 'Z'
-    >>$ Duration.zero
+    >>$ Span.zero
         <|> (char '+'
              >>$ `Pos
                  <|> (char '-' >>$ `Neg)
              >>= fun sign ->
              hm_p
              |>> fun (hour, minute) ->
-             Duration.make_exn ~sign ~hours:hour ~minutes:minute ())
+             Span.For_human.make_exn ~sign ~hours:hour ~minutes:minute ())
   in
   let p =
     nat_zero

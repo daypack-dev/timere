@@ -3,6 +3,84 @@ type t = private {
   ns : int;
 }
 
+module For_human : sig
+  type sign =
+    [ `Pos
+    | `Neg
+    ]
+
+  type view = private {
+    sign : sign;
+    days : int;
+    hours : int;
+    minutes : int;
+    seconds : int;
+    ns : int;
+  }
+
+  type error =
+    [ `Invalid_days of int
+    | `Invalid_hours of int
+    | `Invalid_minutes of int
+    | `Invalid_seconds of int
+    | `Invalid_ns of int
+    ]
+
+  type error_f =
+    [ `Invalid_days_f of float
+    | `Invalid_hours_f of float
+    | `Invalid_minutes_f of float
+    | `Invalid_seconds_f of float
+    | `Invalid_ns of int
+    ]
+
+  exception Error_exn of error
+
+  exception Error_f_exn of error_f
+
+  val make :
+    ?sign:sign ->
+    ?days:int ->
+    ?hours:int ->
+    ?minutes:int ->
+    ?seconds:int ->
+    ?ns:int ->
+    unit ->
+    (t, error) result
+
+  val make_exn :
+    ?sign:sign ->
+    ?days:int ->
+    ?hours:int ->
+    ?minutes:int ->
+    ?seconds:int ->
+    ?ns:int ->
+    unit ->
+    t
+
+  val make_frac :
+    ?sign:sign ->
+    ?days:float ->
+    ?hours:float ->
+    ?minutes:float ->
+    ?seconds:float ->
+    ?ns:int ->
+    unit ->
+    (t, error_f) result
+
+  val make_frac_exn :
+    ?sign:sign ->
+    ?days:float ->
+    ?hours:float ->
+    ?minutes:float ->
+    ?seconds:float ->
+    ?ns:int ->
+    unit ->
+    t
+
+  val view : t -> view
+end
+
 val ns_count_in_s : int
 
 val ns_count_in_s_float : float

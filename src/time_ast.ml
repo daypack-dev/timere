@@ -6,8 +6,8 @@ type unary_op =
 
 type chunking =
   [ `Disjoint_intervals
-  | `By_duration of Duration.t
-  | `By_duration_drop_partial of Duration.t
+  | `By_duration of Span.t
+  | `By_duration_drop_partial of Span.t
   | `At_year_boundary
   | `At_month_boundary
   ]

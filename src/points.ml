@@ -48,7 +48,7 @@ type error =
   | `Invalid_minute of int
   | `Invalid_second of int
   | `Invalid_pattern_combination
-  | `Invalid_tz_info of string option * Duration.t
+  | `Invalid_tz_info of string option * Span.t
   ]
 
 exception Error_exn of error
