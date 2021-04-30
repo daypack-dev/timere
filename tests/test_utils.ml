@@ -7,7 +7,7 @@ module Print_utils = struct
 
   let span = Printers.string_of_span
 
-  let duration = Printers.string_of_duration
+  let duration = Printers.string_of_span_for_human
 
   let time_slot = QCheck.Print.pair span span
 
@@ -77,7 +77,7 @@ let duration_gen =
   map
     (fun (pos, days, hours, (minutes, seconds, ns)) ->
        let sign = if pos then `Pos else `Neg in
-       Duration.make_exn ~sign ~days ~hours ~minutes ~seconds ~ns ())
+       Span.For_human'.make_exn ~sign ~days ~hours ~minutes ~seconds ~ns ())
     (quad bool nat nat (triple nat nat nat))
 
 let duration = QCheck.make ~print:Print_utils.duration duration_gen

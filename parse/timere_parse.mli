@@ -5,4 +5,4 @@ val date_time :
 
 val hms : string -> (Timere.Hms.t, string) result
 
-val duration : string -> (Timere.Duration.t, string) result
+val duration : string -> (Timere.Span.t, string) result

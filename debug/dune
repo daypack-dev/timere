@@ -125,12 +125,6 @@
 )
 
 (rule
- (targets duration.ml)
- (deps    ../src/duration.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
  (targets to_sexp.ml)
  (deps    ../src/to_sexp.ml)
  (action  (copy %{deps} %{targets}))

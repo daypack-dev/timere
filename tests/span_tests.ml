@@ -88,6 +88,19 @@ module Qc = struct
          let x' = Span.of_float @@ Span.to_float x in
          Span.(abs (x - x') < make ~s:1L ~ns:1000 ()))
 
+  let of_to_view =
+    QCheck.Test.make ~count:100_000 ~name:"to_of_span" duration (fun duration ->
+        Span.equal duration (Span.For_human'.to_span @@ Span.For_human'.view duration))
+
+  let of_to_of_to_view =
+    QCheck.Test.make ~count:100_000 ~name:"of_to_span" timestamp (fun span ->
+        Span.equal span (span
+                         |> Span.For_human'.view
+                         |> Span.For_human'.to_span
+                         |> Span.For_human'.view
+                         |> Span.For_human'.to_span
+                        ))
+
   let suite =
     [
       normalize_is_lossless;
@@ -108,5 +121,7 @@ module Qc = struct
       add_neg_self;
       neg_add_self;
       to_of_float_is_accurate;
+      of_to_view;
+      of_to_of_to_view;
     ]
 end

@@ -177,12 +177,12 @@ let make_duration ~rng =
   let sign = if rng () mod 2 = 0 then `Pos else `Neg in
   let seconds = rng () in
   let ns = 1 + rng () in
-  Duration.make_exn ~sign ~seconds ~ns ()
+  Span.For_human'.make_exn ~sign ~seconds ~ns ()
 
 let make_pos_duration ~rng =
   let seconds = rng () in
   let ns = 1 + rng () in
-  Duration.make_exn ~seconds ~ns ()
+  Span.For_human'.make_exn ~seconds ~ns ()
 
 let make_chunking ~rng : Time_ast.chunking =
   match rng () mod 5 with
