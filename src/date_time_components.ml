@@ -1,3 +1,55 @@
+type month = [
+  | `Jan
+  | `Feb
+  | `Mar
+  | `Apr
+  | `May
+  | `Jun
+  | `Jul
+  | `Aug
+  | `Sep
+  | `Oct
+  | `Nov
+  | `Dec
+]
+
+let human_int_of_month (x : month) =
+  match x with
+  | `Jan -> 1
+  | `Feb -> 2
+  | `Mar -> 3
+  | `Apr -> 4
+  | `May -> 5
+  | `Jun -> 6
+  | `Jul -> 7
+  | `Aug -> 8
+  | `Sep -> 9
+  | `Oct -> 10
+  | `Nov -> 11
+  | `Dec -> 12
+
+let index_of_month (x : month) =
+  pred (human_int_of_month x)
+
+let month_of_human_int (x : int) : month option =
+  match x with
+  | 1 -> Some `Jan
+  | 2 -> Some `Feb
+  | 3 -> Some `Mar
+  | 4 -> Some `Apr
+  | 5 -> Some `May
+  | 6 -> Some `Jun
+  | 7 -> Some `Jul
+  | 8 -> Some `Aug
+  | 9 -> Some `Sep
+  | 10 -> Some `Oct
+  | 11 -> Some `Nov
+  | 12 -> Some `Dec
+  | _ -> None
+
+let month_of_index (x : int) : month option =
+  month_of_human_int (succ x)
+
 type weekday =
   [ `Sun
   | `Mon
