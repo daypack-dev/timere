@@ -934,6 +934,7 @@ module Date_time' = struct
   type error =
     [ `Does_not_exist
     | `Invalid_year of int
+    | `Invalid_month of int
     | `Invalid_day of int
     | `Invalid_hour of int
     | `Invalid_minute of int
@@ -949,6 +950,7 @@ module Date_time' = struct
     match e with
     | `Does_not_exist -> "Does not exist"
     | `Invalid_year x -> Printf.sprintf "Invalid year: %d" x
+    | `Invalid_month x -> Printf.sprintf "Invalid month: %d" x
     | `Invalid_day x -> Printf.sprintf "Invalid day: %d" x
     | `Invalid_hour x -> Printf.sprintf "Invalid hour: %d" x
     | `Invalid_minute x -> Printf.sprintf "Invalid minute: %d" x
@@ -1083,7 +1085,7 @@ module Date_time' = struct
       ~frac : (int, error) result =
     if year < Constants.min_year || Constants.max_year < year then
       Error (`Invalid_year year)
-    else if month < 1 || 12 < month then Error (`Invalid_day day)
+    else if month < 1 || 12 < month then Error (`Invalid_month month)
     else if day < 1 || 31 < day then Error (`Invalid_day day)
     else if hour < 0 || 23 < hour then Error (`Invalid_hour hour)
     else if minute < 0 || 59 < minute then Error (`Invalid_minute minute)

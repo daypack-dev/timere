@@ -367,6 +367,7 @@ module Date_time : sig
   type error =
     [ `Does_not_exist
     | `Invalid_year of int
+    | `Invalid_month of int
     | `Invalid_day of int
     | `Invalid_hour of int
     | `Invalid_minute of int
