@@ -410,6 +410,8 @@ module Date_time : sig
 
       Returns [Error `Invalid_year] if [year < 0 || 9999 < year].
 
+      Returns [Error `Invalid_month] if [month < 1 || 12 < month].
+
       Returns [Error `Invalid_day] if [day < 1 || 31 < day].
 
       Returns [Error `Invalid_hour] if [hour > 23].
@@ -1255,6 +1257,33 @@ val pp_sexp : Format.formatter -> t -> unit
 (** {1 Misc} *)
 
 module Utils : sig
+  (** {1 Month utils} *)
+
+  type month = [
+    | `Jan
+    | `Feb
+    | `Mar
+    | `Apr
+    | `May
+    | `Jun
+    | `Jul
+    | `Aug
+    | `Sep
+    | `Oct
+    | `Nov
+    | `Dec
+  ]
+
+  val human_int_of_month : month -> int
+  (** This yields the usual human readable numbering of 1 to 12 inclusive *)
+
+  val index_of_month : month -> int
+  (** This yields the index based numbering of 0 to 11 inclusive *)
+
+  val month_of_human_int : int -> month option
+
+  val month_of_index : int -> month option
+
   (** {1 Range flattening} *)
 
   val flatten_month_ranges : int range Seq.t -> int Seq.t option
