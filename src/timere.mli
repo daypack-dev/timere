@@ -1259,8 +1259,8 @@ val pp_sexp : Format.formatter -> t -> unit
 module Utils : sig
   (** {1 Month utils} *)
 
-  type month = [
-    | `Jan
+  type month =
+    [ `Jan
     | `Feb
     | `Mar
     | `Apr
@@ -1272,7 +1272,7 @@ module Utils : sig
     | `Oct
     | `Nov
     | `Dec
-  ]
+    ]
 
   val human_int_of_month : month -> int
   (** This yields the usual human readable numbering of 1 to 12 inclusive *)

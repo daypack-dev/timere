@@ -145,8 +145,8 @@ let of_sexp_string = Of_sexp.of_sexp_string
 let pp_sexp = Printers.pp_sexp
 
 module Utils = struct
-  type month = [
-    | `Jan
+  type month =
+    [ `Jan
     | `Feb
     | `Mar
     | `Apr
@@ -158,7 +158,7 @@ module Utils = struct
     | `Oct
     | `Nov
     | `Dec
-  ]
+    ]
 
   let human_int_of_month (x : month) =
     match x with
@@ -175,8 +175,7 @@ module Utils = struct
     | `Nov -> 11
     | `Dec -> 12
 
-  let index_of_month (x : month) =
-    pred (human_int_of_month x)
+  let index_of_month (x : month) = pred (human_int_of_month x)
 
   let month_of_human_int (x : int) : month option =
     match x with
@@ -194,8 +193,7 @@ module Utils = struct
     | 12 -> Some `Dec
     | _ -> None
 
-  let month_of_index (x : int) : month option =
-    month_of_human_int (succ x)
+  let month_of_index (x : int) : month option = month_of_human_int (succ x)
 
   let flatten_month_ranges (months : int range Seq.t) : int Seq.t option =
     try Some (Month_ranges.Flatten.flatten months)
