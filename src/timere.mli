@@ -8,12 +8,12 @@
     - Time zone offsets are always in hours
     - What we typically consider a time zone, e.g. "Europe/Paris", always has a constant offset
     - With a time zone and a specific date time, we can obtain a unique "unix timestamp" (time since unix epoch)
-    - We can calculate time zone offset at some date time, and apply it universally for any other date time
+    - We can calculate time zone offset at some date time, and apply it universally for any other date time in the same time zone, and this always works
     - Many more on various online resources...
 
     {2 Time zone, time zone offset, and date time}
 
-    It is tempted to think that a time zone maps cleanly to a constant offset, and
+    It is tempting to think that a time zone maps cleanly to a constant offset, and
     indeed we may define time zone as such, e.g. UTC+1, UTC-10, but this is far from what we mean
     in everyday context.
 
@@ -32,7 +32,7 @@
     usually jumping from 2am to 3am, leading 2am to 3am (exclusive) to
     become non-existent.
 
-    Indeed we can observe the lack of continuity of Europe/Paris timeline below (UTC timeline is always contiguous):
+    Indeed we can observe the lack of continuity of Europe/Paris timeline below (UTC timeline is always continuous):
 
     {v
                          Mar
