@@ -88,8 +88,8 @@ v}
     of such {!Date_time.t} in {!Date_time.make} etc, while some libraries coerce the result into 3:30am.
 
     And DST ends on 2021 Oct 31,
-    causing clocks to jump from 3am to 2am. Say we pick 2:30am again, we are actually pointing at {e two} time points
-    unless we make an explicit selection (making clear whether we meant the "first" 2:30am or the "second" 2:30am).
+    causing clocks to jump from 3am to 2am. Say we pick 2:30am again, we are actually pointing at {e two} time points (there are two 2:30am)
+    unless we make an explicit selection between the first or second occurance.
     Whenever ambiguity of this form is a possiblity for the result of a function, say {!Date_time.to_timestamp},
     Timere uses {!Date_time.local_result} variant type, of which [`Single] indicates lack of ambiguity for the particular result,
     and [`Ambiguous] indicates the result is ambiguous.
@@ -99,7 +99,9 @@ v}
     they may use {!Date_time.min_of_local_result} or {!Date_time.max_of_local_result}.
 
     For constructions, {!Date_time.make} yields a possibly ambiguous construction,
-    while {!Date_time.make_unambiguous} yields an unambiguous construction. 
+    while {!Date_time.make_unambiguous} yields an unambiguous construction.
+    In general, if you are provided with the exact offset to UTC,
+    then [make_unambiguous] is the better choice.
 *)
 (** {1 Span} *)
 
