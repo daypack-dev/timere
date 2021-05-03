@@ -1,6 +1,107 @@
-(** {1 Time vectors} *)
+(** {1 Introduction}
 
-(** {2 Span} *)
+    It is advised to read through this to understand why certain API seem needlessly complicated
+    compared to alternatives (possibly in another programming language).
+
+    {2 Misconceptions}
+
+    - Time zone offsets are always in hours
+    - What we typically consider a time zone, e.g. "Europe/Paris", always has a constant offset
+    - With a time zone and a specific date time, we can obtain a unique "unix timestamp" (time since unix epoch)
+    - We can calculate time zone offset at some date time, and apply it universally for any other date time
+    - Many more on various online resources...
+
+    {2 Time zone, time zone offset, and date time}
+
+    It is tempted to think that a time zone maps cleanly to a constant offset, and
+    indeed we may define time zone as such, e.g. UTC+1, UTC-10, but this is far from what we mean
+    in everyday context.
+
+    Very often, what we consider to be time zone actually represents a table which records what offset to use
+    in which period, which we index/refer to by geographical names like "Europe/Paris", "Australia/Sydney".
+    These tables are defined by governmental bodies, and attributes of the table, such as offset of
+    any particular period, start and end of any particular period, may not show any observable pattern.
+
+    Thus it is not uncommon to see date time errors arising from attempts of applying some formulas universally,
+    which might work well for a lot of cases in contemporary time periods, but fail for some combinations.
+
+    We make explicit of above explanation by considering "Europe/Paris" as an example, which observes
+    a common form of transition called Daylight Saving Time (DST).
+
+    When DST starts (usually in March), the clocks "jump forward" by 1 hour,
+    usually jumping from 2am to 3am, leading 2am to 3am (exclusive) to
+    become non-existent.
+
+    Indeed we can observe the lack of continuity of Europe/Paris timeline below (UTC timeline is always contiguous):
+
+    {v
+                         Mar
+UTC          -------------|-------------
+                         1am
+
+Europe/Paris -------------|-------------
+                       2am 3am
+                      (+1) (+2)
+v}
+
+    Paris time zone offset also changes from UTC+1 to UTC+2.
+
+    When DST ends (usually in Oct), clocks "jump backward" by 1 hour, usually jumping from 3am to 2am, leading to
+    2am to 3am (exclusive) becoming duplicated:
+
+    {v
+                         Oct
+UTC          -------------|-------------
+                         1am
+
+Europe/Paris -------------|-------------
+                       3am 2am
+                      (+2) (+1)
+v}
+
+    Paris time zone offset also changes from UTC+2 to UTC+1.
+
+    Another way of looking at above is when DST is in effect, Paris observes UTC+2, and UTC+1 otherwise:
+
+    {v
+                          |-------------DST on------------|
+             |---DST off--|                               |---DST off--|
+
+                         Mar                             Oct
+UTC          -------------|------------- ... -------------|-------------
+                         1am                             1am
+
+Europe/Paris -------------|------------- ... -------------|-------------
+                       2am 3am                         3am 2am
+                      (+1) (+2)                       (+2) (+1)
+v}
+
+    This start and end of the DST on and off periods, along with the corresponding offsets,
+    form the basis of the table we mentioned above.
+
+    {2 Timere date time API basics}
+
+    We highlight some critical cases in practice, and how Timere behaves and how it may differ from other libraries.
+
+    Take year 2021 for example, DST starts on 2021 Mar 28 for Paris, causing clocks to jump from 2am to 3am. Pick any
+    intermediate point, say 2:30am, we yield an undefined date time. In this case, Timere refuses the construction
+    of such {!Date_time.t} in {!Date_time.make} etc, while some libraries coerce the result into 3:30am.
+
+    And DST ends on 2021 Oct 31,
+    causing clocks to jump from 3am to 2am. Say we pick 2:30am again, we are actually pointing at {e two} time points
+    unless we make an explicit selection (making clear whether we meant the "first" 2:30am or the "second" 2:30am).
+    Whenever ambiguity of this form is a possiblity for the result of a function, say {!Date_time.to_timestamp},
+    Timere uses {!Date_time.local_result} variant type, of which [`Single] indicates lack of ambiguity for the particular result,
+    and [`Ambiguous] indicates the result is ambiguous.
+
+    Some other libraries coerce the ambiguous result
+    into one of the two possible choices (which exact one may not be guaranteed). If user wishes to do similar coercions,
+    they may use {!Date_time.min_of_local_result} or {!Date_time.max_of_local_result}.
+
+    For constructions, {!Date_time.make} yields a possibly ambiguous construction,
+    while {!Date_time.make_unambiguous} yields an unambiguous construction. 
+*)
+(** {1 Span} *)
 
 module Span : sig
   type t = private {
