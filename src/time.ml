@@ -1333,7 +1333,7 @@ module Week_date_time' = struct
       Date_time'.make_exn ~tz ~year ~month:1 ~day:4 ~hour:0
         ~minute:0 ~second:0 ()
     in
-    (match Date_time'.to_weekday jan_4_of_year with
+    (match Date_time'.weekday jan_4_of_year with
      | `Mon -> Some jan_4_of_year
      | `Tue ->
        Some
