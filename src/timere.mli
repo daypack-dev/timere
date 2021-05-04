@@ -459,7 +459,7 @@ module Date_time : sig
     tz : Time_zone.t;
     offset : Span.t option;
   }
-  (** Time zone information of date time
+  (** Time zone information of date time.
 
       [tz] is the time zone tied. This is always defined even if only an offset provided during construction -
       if say only offset of 10 hours is provided, [tz] becomes "UTC+10".
