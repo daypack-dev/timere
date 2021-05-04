@@ -66,6 +66,8 @@ module Date_time = struct
   include Date_time_components
   include Time.Date_time'
 
+  type nonrec 'a local_result = 'a local_result
+
   let to_string = Printers.string_of_date_time
 
   exception
@@ -102,6 +104,10 @@ module Date_time = struct
     Of_sexp.(wrap_of_sexp_into_of_sexp_string date_time_of_sexp)
 
   let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_date_time
+
+  let min_of_local_result = min_of_local_result
+
+  let max_of_local_result = max_of_local_result
 end
 
 module Week_date_time = struct

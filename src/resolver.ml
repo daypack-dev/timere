@@ -139,7 +139,7 @@ let search_space_of_year_range tz year_range =
     Date_time'.set_to_first_month_day_hour_min_sec_ns
       { Date_time'.min_val with year = start; tz_info = { tz; offset = None } }
     |> Date_time'.to_timestamp
-    |> Date_time'.min_of_local_result
+    |> min_of_local_result
   in
   let aux_end_inc end_exc =
     Date_time'.set_to_last_month_day_hour_min_sec_ns
@@ -149,7 +149,7 @@ let search_space_of_year_range tz year_range =
         tz_info = { tz; offset = None };
       }
     |> Date_time'.to_timestamp
-    |> Date_time'.min_of_local_result
+    |> min_of_local_result
     |> Span.succ
   in
   let aux_end_exc end_exc =
@@ -160,7 +160,7 @@ let search_space_of_year_range tz year_range =
         tz_info = { tz; offset = None };
       }
     |> Date_time'.to_timestamp
-    |> Date_time'.min_of_local_result
+    |> min_of_local_result
   in
   match year_range with
   | `Range_inc (start, end_inc) -> (aux_start start, aux_end_inc end_inc)
@@ -241,12 +241,12 @@ let overapproximate_search_space_bottom_up default_tz (time : t) : t =
           let space_start =
             dt
             |> Time.Date_time'.to_timestamp
-            |> Time.Date_time'.min_of_local_result
+            |> Time.min_of_local_result
           in
           let space_end_exc =
             dt
             |> Time.Date_time'.to_timestamp
-            |> Time.Date_time'.max_of_local_result
+            |> Time.max_of_local_result
             |> Span.add bound
           in
           [ (space_start, space_end_exc) ]
@@ -342,7 +342,7 @@ let do_chunk_at_year_boundary tz (s : Time.Interval'.t Seq.t) =
         let t' =
           Date_time'.set_to_last_month_day_hour_min_sec_ns dt1
           |> Date_time'.to_timestamp
-          |> Date_time'.max_of_local_result
+          |> max_of_local_result
           |> Span.succ
         in
         fun () ->
@@ -371,7 +371,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval'.t Seq.t) =
         let t' =
           Date_time'.set_to_last_day_hour_min_sec_ns dt1
           |> Date_time'.to_timestamp
-          |> Date_time'.max_of_local_result
+          |> max_of_local_result
           |> Span.succ
         in
         fun () ->
