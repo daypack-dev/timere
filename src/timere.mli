@@ -91,8 +91,8 @@ v}
     causing clocks to jump from 3am to 2am. Say we pick 2:30am again, we are actually pointing at {e two} time points (there are two 2:30am)
     unless we make an explicit selection between the first or second occurance.
     Whenever ambiguity of this form is a possiblity for the result of a function, say {!Date_time.to_timestamp},
-    Timere uses {!Date_time.local_result} variant type, of which [`Single] indicates lack of ambiguity for the particular result,
-    and [`Ambiguous] indicates the result is ambiguous.
+    Timere uses {!Date_time.local_result} variant type, of which [`Single _] indicates lack of ambiguity for the particular result,
+    and [`Ambiguous _] indicates the result is ambiguous.
 
     Some other libraries coerce the ambiguous result
     into one of the two possible choices (which exact one may not be guaranteed). If user wishes to do similar coercions,
@@ -429,18 +429,6 @@ module Date_time : sig
       The actual range is slightly more limited in Timere due to time zones.
   *)
 
-  type tz_info = {
-    tz : Time_zone.t;
-    offset : Span.t option;
-  }
-  (** Time zone information of date time
-
-      [tz] is the time zone tied.
-
-      [offset], if specified, provides an unambiguous specification
-      of which timestamp/point the date time maps to on the UTC time line
-  *)
-
   type t = private {
     year : int;
     month : int;
@@ -465,6 +453,24 @@ module Date_time : sig
 
       [s] is always [>= 0] and [< 60], even when second 60 is used during construction.
       In other words, second 60 is represented via [ns] field.
+  *)
+
+  and tz_info = {
+    tz : Time_zone.t;
+    offset : Span.t option;
+  }
+  (** Time zone information of date time
+
+      [tz] is the time zone tied. This is always defined even if only an offset provided during construction -
+      if say only offset of 10 hours is provided, [tz] becomes "UTC+10".
+
+      [offset] provides an unambiguous specification
+      of which timestamp/point the date time maps to on the UTC time line.
+      [offset] is defined if an offset is provided during construction via {!make_unambiguous}
+      or if an unambiguous offset can be deduced during construction via {!make}.
+
+      In other words, [offset] is [None] exactly when it is not possible to assign an offset,
+      and [Some _] otherwise.
   *)
 
   type error =
