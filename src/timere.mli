@@ -464,7 +464,7 @@ module Date_time : sig
       [tz] is the time zone tied. This is always defined even if only an offset provided during construction -
       if say only offset of 10 hours is provided, [tz] becomes "UTC+10".
 
-      [offset] provides an unambiguous specification
+      [offset] is the offset from UTC, and provides an unambiguous specification
       of which timestamp/point the date time maps to on the UTC time line.
       [offset] is defined if an offset is provided during construction via {!make_unambiguous}
       or if an unambiguous offset can be deduced during construction via {!make}.
@@ -565,7 +565,7 @@ module Date_time : sig
     tz_offset:Span.t ->
     unit ->
     (t, error) result
-  (** Constructs a date time providing time zone offset in seconds, and optionally a time zone.
+  (** Constructs a date time providing time zone offset (offset from UTC), and optionally a time zone.
 
       Nanosecond used is the addition of [ns] and [frac * 10^9].
 
