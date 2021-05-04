@@ -455,7 +455,7 @@ module Date_time : sig
       In other words, second 60 is represented via [ns] field.
   *)
 
-  and tz_info = {
+  and tz_info = private {
     tz : Time_zone.t;
     offset : Span.t option;
   }
@@ -640,7 +640,7 @@ module Date_time : sig
 
   val now : ?tz_of_date_time:Time_zone.t -> unit -> t
 
-  val to_weekday : t -> weekday
+  val weekday : t -> weekday
 
   exception Date_time_cannot_deduce_tz_offset_s of t
 

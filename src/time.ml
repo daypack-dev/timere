@@ -986,12 +986,15 @@ module Date_time' = struct
           ~ns:(x.ns mod Span.ns_count_in_s)
           ())
 
-  let to_timestamp_precise_unsafe (x : t) : timestamp Time_zone.local_result =
+  let get_tz_info (x : t) = x.tz_info
+
+  (* Parameterized over exact date time type to allow use in Week_date_time' *)
+  let to_timestamp_precise_unsafe ~(to_timestamp_pretend_utc : 'a -> timestamp option) ~(get_tz_info : 'a -> tz_info) (x : 'a) : timestamp Time_zone.local_result =
     let open Span in
     match to_timestamp_pretend_utc x with
     | None -> `None
     | Some timestamp_local -> (
-        match x.tz_info with
+        match get_tz_info x with
         | { tz = _; offset = Some offset } -> `Single (timestamp_local - offset)
         | { tz; offset = None } -> (
             match Time_zone.lookup_timestamp_local tz timestamp_local.s with
@@ -1014,13 +1017,13 @@ module Date_time' = struct
     match r with `Single x | `Ambiguous (_, x) -> x
 
   let to_timestamp x : timestamp local_result =
-    match to_timestamp_precise_unsafe x with
+    match to_timestamp_precise_unsafe ~to_timestamp_pretend_utc ~get_tz_info x with
     | `None -> failwith "Unexpected case"
     | `Single x -> `Single x
     | `Ambiguous (x, y) -> `Ambiguous (x, y)
 
   let to_timestamp_float x : float local_result =
-    match to_timestamp_precise_unsafe x with
+    match to_timestamp_precise_unsafe ~to_timestamp_pretend_utc ~get_tz_info x with
     | `None -> failwith "Unexpected case"
     | `Single x -> `Single (Span.to_float x)
     | `Ambiguous (x, y) -> `Ambiguous (Span.to_float x, Span.to_float y)
@@ -1105,7 +1108,7 @@ module Date_time' = struct
     | Error e -> Error e
     | Ok ns ->
       let is_leap_second = second = 60 in
-      let second = if second = 60 then 59 else second in
+      let second = if is_leap_second then 59 else second in
       let dt =
         {
           year;
@@ -1115,7 +1118,7 @@ module Date_time' = struct
           minute;
           second;
           ns;
-          tz_info = { tz; offset = None };
+          tz_info = dummy_tz_info;
         }
       in
       (match to_timestamp_pretend_utc dt with
@@ -1232,7 +1235,7 @@ module Date_time' = struct
   let now ?tz_of_date_time () : t =
     timestamp_now () |> of_timestamp ?tz_of_date_time |> CCOpt.get_exn
 
-  let to_weekday (x : t) : weekday =
+  let weekday (x : t) : weekday =
     CCOpt.get_exn @@ weekday_of_month_day ~year:x.year ~month:x.month ~day:x.day
 
   let equal (x : t) (y : t) : bool =
@@ -1319,47 +1322,48 @@ module Week_date_time' = struct
       let ns = ns + int_of_float (frac *. Span.ns_count_in_s_float) in
       if ns >= Span.ns_count_in_s then Error (`Invalid_ns ns) else Ok ns
 
-  let timetamp_local_start_of_year ~year : timestamp option =
+  let timestamp_local_start_of_year ~year : timestamp option =
     (* we use the fact that
        - Jan 4th is always in week 1 of the year
        - and week starts on Monday
          to find the start date of week 1
     *)
+    let tz = Time_zone.utc in
     let jan_4_of_year =
-      Date_time'.make_exn ~tz:Time_zone.utc ~year ~month:1 ~day:4 ~hour:0
+      Date_time'.make_exn ~tz ~year ~month:1 ~day:4 ~hour:0
         ~minute:0 ~second:0 ()
     in
     (match Date_time'.to_weekday jan_4_of_year with
      | `Mon -> Some jan_4_of_year
      | `Tue ->
        Some
-         (Date_time'.make_exn ~tz:Time_zone.utc ~year ~month:1 ~day:3 ~hour:0
+         (Date_time'.make_exn ~tz ~year ~month:1 ~day:3 ~hour:0
             ~minute:0 ~second:0 ())
      | `Wed ->
        Some
-         (Date_time'.make_exn ~tz:Time_zone.utc ~year ~month:1 ~day:2 ~hour:0
+         (Date_time'.make_exn ~tz ~year ~month:1 ~day:2 ~hour:0
             ~minute:0 ~second:0 ())
      | `Thu ->
        Some
-         (Date_time'.make_exn ~tz:Time_zone.utc ~year ~month:1 ~day:1 ~hour:0
+         (Date_time'.make_exn ~tz ~year ~month:1 ~day:1 ~hour:0
             ~minute:0 ~second:0 ())
      | `Fri -> (
          match
-           Date_time'.make ~tz:Time_zone.utc ~year:(pred year) ~month:12 ~day:31
+           Date_time'.make ~tz ~year:(pred year) ~month:12 ~day:31
              ~hour:0 ~minute:0 ~second:0 ()
          with
          | Ok x -> Some x
          | Error _ -> None)
      | `Sat -> (
          match
-           Date_time'.make ~tz:Time_zone.utc ~year:(pred year) ~month:12 ~day:30
+           Date_time'.make ~tz ~year:(pred year) ~month:12 ~day:30
              ~hour:0 ~minute:0 ~second:0 ()
          with
          | Ok x -> Some x
          | Error _ -> None)
      | `Sun -> (
          match
-           Date_time'.make ~tz:Time_zone.utc ~year:(pred year) ~month:12 ~day:29
+           Date_time'.make ~tz ~year:(pred year) ~month:12 ~day:29
              ~hour:0 ~minute:0 ~second:0 ()
          with
          | Ok x -> Some x
@@ -1368,10 +1372,10 @@ module Week_date_time' = struct
 
   let timestamp_local_start_and_week_count_of_year ~year :
     (timestamp * int) option =
-    match timetamp_local_start_of_year ~year with
+    match timestamp_local_start_of_year ~year with
     | None -> None
     | Some start -> (
-        match timetamp_local_start_of_year ~year:(succ year) with
+        match timestamp_local_start_of_year ~year:(succ year) with
         | None -> None
         | Some end_exc ->
           let d = Span.(end_exc - start |> For_human'.view) in
@@ -1392,6 +1396,23 @@ module Week_date_time' = struct
   let adjust_ns_for_leap_second ~is_leap_second (dt : t) : t =
     if is_leap_second then { dt with ns = dt.ns + Span.ns_count_in_s } else dt
 
+  let to_timestamp_pretend_utc (x : t) : Span.t option =
+    match timestamp_local_start_and_week_count_of_year ~year:x.year with
+    | None -> None
+    | Some (start, week_count) ->
+      if x.week > week_count then
+        None
+      else
+        let offset =
+          Span.For_human'.(
+            make_exn
+              ~days:(((x.week - 1) * 7) + day_offset_of_weekday x.weekday)
+              ())
+        in
+        Some Span.(start + offset)
+
+  let get_tz_info (x : t) = x.tz_info
+
   let make ?(tz = Time_zone_utils.get_local_tz_for_arg ()) ?(ns = 0)
       ?(frac = 0.) ~year ~week ~weekday ~hour ~minute ~second () =
     match
@@ -1400,52 +1421,113 @@ module Week_date_time' = struct
     | Error e -> Error e
     | Ok ns -> (
         let is_leap_second = second = 60 in
-        let second = if second = 60 then 59 else second in
-        match timestamp_local_start_and_week_count_of_year ~year with
+        let second = if is_leap_second then 59 else second in
+        let wdt =
+          {
+            year;
+            week;
+            weekday;
+            hour;
+            minute;
+            second;
+            ns;
+            tz_info = Date_time'.dummy_tz_info;
+          }
+        in
+        match to_timestamp_pretend_utc wdt with
         | None -> Error `Does_not_exist
-        | Some (start, week_count) ->
-          if week > week_count then Error `Does_not_exist
-          else
-            let offset =
-              Span.For_human'.(
-                make_exn
-                  ~days:(((week - 1) * 7) + day_offset_of_weekday weekday)
-                  ())
-            in
-            let timestamp_local = Span.(start + offset) in
-            (match Time_zone.lookup_timestamp_local tz timestamp_local.s with
-             | `None -> Error `Does_not_exist
-             | `Single e ->
-               let tz_offset = Span.make_small ~s:e.offset () in
-               Ok
-                 {
-                   year;
-                   week;
-                   weekday;
-                   hour;
-                   minute;
-                   second;
-                   ns;
-                   tz_info = { tz; offset = Some tz_offset };
-                 }
-             | `Ambiguous _ ->
-               Ok
-                 {
-                   year;
-                   week;
-                   weekday;
-                   hour;
-                   minute;
-                   second;
-                   ns;
-                   tz_info = { tz; offset = None };
-                 })
-            |> CCResult.map (adjust_ns_for_leap_second ~is_leap_second))
+        | Some timestamp_local ->
+          (match Time_zone.lookup_timestamp_local tz timestamp_local.s with
+           | `None -> Error `Does_not_exist
+           | `Single e ->
+             let tz_offset = Span.make_small ~s:e.offset () in
+             Ok
+               {
+                 wdt with
+                 tz_info = { tz; offset = Some tz_offset };
+               }
+           | `Ambiguous _ ->
+             Ok
+               {
+                 wdt with
+                 tz_info = { tz; offset = None };
+               })
+          |> CCResult.map (adjust_ns_for_leap_second ~is_leap_second))
 
   let make_exn ?tz ?ns ?frac ~year ~week ~weekday ~hour ~minute ~second () =
     match make ?tz ?ns ?frac ~year ~week ~weekday ~hour ~minute ~second () with
     | Ok x -> x
     | Error e -> raise (Error_exn e)
+
+  let to_timestamp x : timestamp Date_time'.local_result =
+    match Date_time'.to_timestamp_precise_unsafe ~to_timestamp_pretend_utc ~get_tz_info x with
+    | `None -> failwith "Unexpected case"
+    | `Single x -> `Single x
+    | `Ambiguous (x, y) -> `Ambiguous (x, y)
+
+  let to_timestamp_float x : float Date_time'.local_result =
+    match Date_time'.to_timestamp_precise_unsafe ~to_timestamp_pretend_utc ~get_tz_info x with
+    | `None -> failwith "Unexpected case"
+    | `Single x -> `Single (Span.to_float x)
+    | `Ambiguous (x, y) -> `Ambiguous (Span.to_float x, Span.to_float y)
+
+  let to_timestamp_single (x : t) : timestamp =
+    match to_timestamp x with
+    | `Single x -> x
+    | `Ambiguous _ ->
+      invalid_arg "to_timestamp_single: date time maps to two timestamps"
+
+  let to_timestamp_float_single (x : t) : float =
+    match to_timestamp x with
+    | `Single x -> Span.to_float x
+    | `Ambiguous _ ->
+      invalid_arg
+        "to_timestamp_float_single: date time maps to two timestamps"
+
+  let of_date_time (x : Date_time'.t)  : t =
+    let open Span in
+    let timestamp_local = CCOpt.get_exn @@ Date_time'.to_timestamp_pretend_utc x in
+    (* this could be off by one year *)
+    let year = x.year in
+    let start_of_year =
+      CCOpt.get_exn @@ timestamp_local_start_of_year ~year
+    in
+    let weekday =
+      Date_time'.weekday x
+    in
+    let day_offset_from_start_of_week =
+      day_offset_of_weekday weekday
+    in
+    let offset_from_start_of_week =
+      CCResult.get_exn @@
+      Span.For_human'.make ~days:day_offset_from_start_of_week ()
+    in
+    let year, start_of_year =
+      if start_of_year + offset_from_start_of_week <= timestamp_local then
+        (* the year was correct *)
+        (year, start_of_year)
+      else
+        (* we are off by one year *)
+        let year = Stdlib.pred year in
+        (year,
+         CCOpt.get_exn @@ timestamp_local_start_of_year ~year
+        )
+    in
+    let start_of_week = Span.(start_of_year + offset_from_start_of_week)
+    in
+    let week_count =
+      For_human'.(view (timestamp_local - start_of_week)).days / 7
+    in
+    {
+      year;
+      week = Stdlib.(week_count + 1);
+      weekday;
+      hour = x.hour;
+      minute = x.minute;
+      second = x.second;
+      ns = x.ns;
+      tz_info = x.tz_info;
+    }
 end
 
 let equal_unary_op op1 op2 =
