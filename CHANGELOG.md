@@ -40,6 +40,12 @@
 
   - See [issue #27](https://github.com/daypack-dev/timere/issues/27) for discussion
 
+- Renamed `Timere.Date_time.to_weekday` to `Timere.Date_time.weekday`
+
+- Documentation overhaul with readability improvement and introduction to date time handling added
+
+  - See [issue #25](https://github.com/daypack-dev/timere/issues/25) and [#26](https://github.com/daypack-dev/timere/issues/26)
+
 ## Timere 0.3.1
 
 - Minor refactoring on use of pattern resolver to simplify reasoning about undefined/uncertain behaviour
