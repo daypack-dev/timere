@@ -439,11 +439,11 @@ module Date_time : sig
     ns : int;
     tz_info : tz_info;
   }
-  (** This is the main date time type, and represents a point in the local time line
+  (** This is the main date time type, and represents a point in the local timeline
       with respect to the residing time zone. Conceptually a pair of "date" and "time of day".
 
-      A [t] always maps to at least one point on the UTC time line, and [make] fails if this is not the case.
-      [t] may also map to two points on the UTC time line in the case of DST and without
+      A [t] always maps to at least one point on the UTC timeline, and [make] fails if this is not the case.
+      [t] may also map to two points on the UTC timeline in the case of DST and without
       an unambiguous offset, however.
 
       In the ambiguous case, functions which return [_ local_result] will yield an [`Ambiguous _]
@@ -465,7 +465,7 @@ module Date_time : sig
       if say only offset of 10 hours is provided, [tz] becomes "UTC+10".
 
       [offset] is the offset from UTC, and provides an unambiguous specification
-      of which timestamp/point the date time maps to on the UTC time line.
+      of which timestamp/point the date time maps to on the UTC timeline.
       [offset] is defined if an offset is provided during construction via {!make_unambiguous}
       or if an unambiguous offset can be deduced during construction via {!make}.
 
