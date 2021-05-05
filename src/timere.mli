@@ -258,8 +258,16 @@ module Span : sig
   val compare : t -> t -> int
 
   val to_float : t -> float
+  (** Returns span in seconds, fraction represents subsecond span.
+
+      Representation is same as result from [Unix.gettimeofday].
+  *)
 
   val of_float : float -> t
+  (** Convert from span in seconds, fraction represents subsecond span
+
+      Representation is same as result from [Unix.gettimeofday].
+  *)
 
   val max : t -> t -> t
 
