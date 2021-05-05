@@ -102,7 +102,7 @@ let debug_resolver () =
   in
   let search_start =
     Time.Date_time'.to_timestamp search_start_dt
-    |> Time.Date_time'.min_of_local_result
+    |> Time.min_of_local_result
   in
   let search_end_exc_dt =
     Time.Date_time'.make_exn ~year:2003 ~month:1 ~day:1 ~hour:0 ~minute:0
@@ -110,7 +110,7 @@ let debug_resolver () =
   in
   let search_end_exc =
     Time.Date_time'.to_timestamp search_end_exc_dt
-    |> Time.Date_time'.max_of_local_result
+    |> Time.max_of_local_result
   in
   let timere' =
     Time.(

@@ -36,7 +36,7 @@ let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
       let start =
         make_date_time ~rng ~min_year ~max_year_inc
         |> Time.Date_time'.to_timestamp
-        |> Time.Date_time'.min_of_local_result
+        |> Time.min_of_local_result
       in
       let end_exc = Span.add start (Span.make ~ns:(rng ()) ()) in
       (start, end_exc))
