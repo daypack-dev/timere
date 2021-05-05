@@ -859,3 +859,48 @@ module Week_date_time : sig
     unit ->
     t
 end
+
+(** {1 Misc} *)
+
+module Utils : sig
+  val ptime_span_of_span : Span.t -> Ptime.span option
+
+  val ptime_of_timestamp : timestamp -> Ptime.t option
+
+  val span_of_ptime_span : Ptime.span -> Span.t
+
+  val timestamp_of_ptime : Ptime.t -> timestamp
+
+  (** {1 Month utils} *)
+
+  type month =
+    [ `Jan
+    | `Feb
+    | `Mar
+    | `Apr
+    | `May
+    | `Jun
+    | `Jul
+    | `Aug
+    | `Sep
+    | `Oct
+    | `Nov
+    | `Dec
+    ]
+
+  val human_int_of_month : month -> int
+  (** This yields the usual human readable numbering of 1 to 12 inclusive *)
+
+  val index_of_month : month -> int
+  (** This yields the index based numbering of 0 to 11 inclusive *)
+
+  val month_of_human_int : int -> month option
+
+  val month_of_index : int -> month option
+
+  val weekday_of_tm_int : int -> weekday option
+
+  val tm_int_of_weekday : weekday -> int
+
+  val get_local_tz_for_arg : unit -> Time_zone.t
+end
