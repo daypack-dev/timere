@@ -1132,11 +1132,8 @@ module Date_time' = struct
   let to_timestamp_pretend_utc (x : t) : timestamp option =
     to_ptime_date_time_pretend_utc x
     |> Ptime.of_date_time
-    |> CCOpt.map (fun t ->
-        Span.make
-          ~s:(Ptime_utils.timestamp_of_ptime t)
-          ~ns:(x.ns mod Span.ns_count_in_s)
-          ())
+    |> CCOpt.map
+         Ptime_utils.timestamp_of_ptime
 
    include Dt_derive (struct
       type nonrec t = t
@@ -1173,7 +1170,7 @@ module Date_time' = struct
       match Time_zone.lookup_timestamp_utc tz_of_date_time s with
       | None -> None
       | Some entry -> (
-          match Ptime_utils.ptime_of_timestamp s with
+          match Ptime_utils.ptime_of_timestamp x with
           | None -> None
           | Some x ->
             x
