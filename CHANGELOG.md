@@ -8,43 +8,49 @@
 
 ## Timere 0.4.0
 
-- Added recognition of "UTC+/-offset", e.g. "UTC+7", "UTC-07:00", to `Timere.Time_zone.make`
-
-- Tuning behaviour of `Timere.Time_zone.make` for handling time zones with `UTC` prefix
-
-- Updated ISO8601 parser to tolerate separator other than `T`
-
-- Updated ISO8601 parser to tolerate numbers expressed in only one digit
-
-- Added size checking to `Timere.Time_zone.make_offset_only*`
-
-- Removed raising of `Invalid_argument` outside of Timere combinators, `pp*` and some `*_exn` functions
-
-- Fixed `Points.make` error checking
-
-- Moved hms into `Hms` module
-
-- Improved hms error returning
-
-- Added `Timere.Week_date_time` module for handling ISO week date time
-
-- Removed type `month`, replaced use of it with just `int`
-
 - Changed `inter []` to mean `always` instead of `empty`
 
 - Fixed `overapproximate_search_space_bottom_up` handling of bounded intervals, previously the default search time zone was used
   during points to date time conversion instead of the time zone passed during execution
 
-- Unified `Duration` and `Span` module. Now there is only `Span` module with human friendly constructors
-  and `view` type in `Timere.Span.For_human`
+## Timedesc 0.1.0
 
-  - See [issue #27](https://github.com/daypack-dev/timere/issues/27) for discussion
+- Migration of date time components from Timere
 
-- Renamed `Timere.Date_time.to_weekday` to `Timere.Date_time.weekday`
+- Changes to date time components
 
-- Documentation overhaul with readability improvement and introduction to date time handling added
+  - Added recognition of "UTC+/-offset", e.g. "UTC+7", "UTC-07:00", to `Timere.Time_zone.make`
 
-  - See [issue #25](https://github.com/daypack-dev/timere/issues/25) and [#26](https://github.com/daypack-dev/timere/issues/26)
+  - Tuning behaviour of `Timere.Time_zone.make` for handling time zones with `UTC` prefix
+
+  - Updated ISO8601 parser to tolerate separator other than `T`
+
+  - Updated ISO8601 parser to tolerate numbers expressed in only one digit
+
+  - Added size checking to `Timere.Time_zone.make_offset_only*`
+
+  - Removed raising of `Invalid_argument` outside of Timere combinators, `pp*` and some `*_exn` functions
+
+  - Fixed `Points.make` error checking
+
+  - Moved hms into `Hms` module
+
+  - Improved hms error returning
+
+  - Added `Timere.Week_date_time` module for handling ISO week date time
+
+  - Removed type `month`, replaced use of it with just `int`
+
+  - Documentation overhaul with readability improvement and introduction to date time handling added
+
+    - See [issue #25](https://github.com/daypack-dev/timere/issues/25) and [#26](https://github.com/daypack-dev/timere/issues/26)
+
+  - Renamed `Timere.Date_time.to_weekday` to `Timere.Date_time.weekday`
+
+  - Unified `Duration` and `Span` module. Now there is only `Span` module with human friendly constructors
+    and `view` type in `Timere.Span.For_human`
+
+    - See [issue #27](https://github.com/daypack-dev/timere/issues/27) for discussion
 
 ## Timere 0.3.1
 
