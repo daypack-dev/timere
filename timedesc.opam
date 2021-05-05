@@ -1,0 +1,41 @@
+opam-version: "2.0"
+synopsis: "OCaml date time handling library"
+description: """
+Features:
+
+- Timestamp and date time handling with platform independent time zone support
+
+  - Subset of the IANA time zone database is built into this library
+
+  - Support for ISO week date time and ISO ordinal date time
+
+  - Timestamp and all date time types support nanosecond precision
+
+  - ISO8601 parsing and RFC3339 printing
+"""
+maintainer: "Darren Ldl <darrenldldev@gmail.com>"
+authors: "Daypack developers"
+license: "MIT"
+homepage: "https://github.com/daypack-dev/timere"
+bug-reports: "https://github.com/daypack-dev/timere/issues"
+dev-repo: "git+https://github.com/daypack-dev/timere"
+depends: [
+  "ocaml" {>= "4.06.1"}
+  "bisect_ppx" {dev & >= "2.5.0"}
+  "dune" {>= "2.7.0"}
+  "oseq"
+  "seq"
+  "mparser"
+  "containers" {>= "3.0"}
+  "ptime"
+  "yojson"
+  "fmt"
+  "fileutils"
+  "crowbar" {with-test}
+  "alcotest" {with-test}
+  "qcheck-alcotest" {with-test}
+  "qcheck" {with-test}
+]
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+]
