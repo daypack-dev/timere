@@ -12,6 +12,10 @@ OCPINDENT = ocp-indent \
 all :
 	dune build @all
 
+.PHONY: desc
+desc :
+	dune build desc
+
 .PHONY: lib
 lib :
 	dune build src
