@@ -258,13 +258,13 @@ module Span : sig
 
   val compare : t -> t -> int
 
-  val to_float : t -> float
+  val to_float_s : t -> float
   (** Returns span in seconds, fraction represents subsecond span.
 
-      Representation is same as result from [Unix.gettimeofday].
+      Representation is the same as result from [Unix.gettimeofday].
   *)
 
-  val of_float : float -> t
+  val of_float_s : float -> t
   (** Convert from span in seconds, fraction represents subsecond span
 
       Representation is same as result from [Unix.gettimeofday].
@@ -755,6 +755,11 @@ module Date_time : sig
 end
 
 module Timestamp : sig
+  (** Timestamp specific functions
+
+      See {!Span} for arithemtic functions
+  *)
+
   val min_val : timestamp
 
   val max_val : timestamp
@@ -903,4 +908,33 @@ module Utils : sig
   val tm_int_of_weekday : weekday -> int
 
   val get_local_tz_for_arg : unit -> Time_zone.t
+end
+
+module Hms : sig
+  type t = private {
+    hour : int;
+    minute : int;
+    second : int;
+  }
+
+  type error =
+    [ `Invalid_hour of int
+    | `Invalid_minute of int
+    | `Invalid_second of int
+    ]
+
+  exception Error_exn of error
+
+  val make : hour:int -> minute:int -> second:int -> (t, error) result
+
+  val make_exn : hour:int -> minute:int -> second:int -> t
+  (** @raise Error_exn if [make] fails *)
+
+  val pp : Format.formatter -> t -> unit
+
+  val to_string : t -> string
+
+  val to_second_of_day : t -> int
+
+  val of_second_of_day : int -> t option
 end

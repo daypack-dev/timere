@@ -115,9 +115,9 @@ val ge : t -> t -> bool
 
 val compare : t -> t -> int
 
-val to_float : t -> float
+val to_float_s : t -> float
 
-val of_float : float -> t
+val of_float_s : float -> t
 
 val max : t -> t -> t
 

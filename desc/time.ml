@@ -6,7 +6,7 @@ type interval = timestamp * timestamp
 
 let one_ns = Span.make ~ns:1 ()
 
-let timestamp_now () : timestamp = Span.of_float @@ Unix.gettimeofday ()
+let timestamp_now () : timestamp = Span.of_float_s @@ Unix.gettimeofday ()
 
 let timestamp_min = Constants.timestamp_min
 
@@ -147,8 +147,8 @@ end with type t := B.t and type error := B.error = struct
   let to_timestamp_float x : float local_result =
     match to_timestamp_precise_unsafe x with
     | `None -> failwith "Unexpected case"
-    | `Single x -> `Single (Span.to_float x)
-    | `Ambiguous (x, y) -> `Ambiguous (Span.to_float x, Span.to_float y)
+    | `Single x -> `Single (Span.to_float_s x)
+    | `Ambiguous (x, y) -> `Ambiguous (Span.to_float_s x, Span.to_float_s y)
 
   let to_timestamp_single (x : t) : timestamp =
     match to_timestamp x with
@@ -158,7 +158,7 @@ end with type t := B.t and type error := B.error = struct
 
   let to_timestamp_float_single (x : t) : float =
     match to_timestamp x with
-    | `Single x -> Span.to_float x
+    | `Single x -> Span.to_float_s x
     | `Ambiguous _ ->
       invalid_arg
         "to_timestamp_float_single: date time maps to two timestamps"
@@ -333,7 +333,7 @@ module Date_time' = struct
     | Some x -> x
 
   let of_timestamp_float ?tz_of_date_time (x : float) : t option =
-    of_timestamp ?tz_of_date_time @@ Span.of_float x
+    of_timestamp ?tz_of_date_time @@ Span.of_float_s x
 
   let of_timestamp_float_exn ?tz_of_date_time x =
     match of_timestamp_float ?tz_of_date_time x with

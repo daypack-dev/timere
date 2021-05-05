@@ -67,10 +67,10 @@ let abs x = if ge x zero then x else neg x
 let compare (x : t) (y : t) : int =
   if lt x y then -1 else if equal x y then 0 else 1
 
-let to_float ({ s; ns } : t) : float =
+let to_float_s ({ s; ns } : t) : float =
   Int64.to_float s +. (float_of_int ns /. ns_count_in_s_float)
 
-let of_float (x : float) : t =
+let of_float_s (x : float) : t =
   let s = Int64.of_float x in
   let frac = CCFloat.abs (x -. Int64.to_float s) in
   assert (frac <= 1.0);
@@ -179,7 +179,7 @@ module For_human' = struct
   let span_of_raw (r : raw) : t =
     let span =
       add
-        (of_float
+        (of_float_s
            ((r.days *. Float_multipliers.day_to_seconds)
             +. (r.hours *. Float_multipliers.hour_to_seconds)
             +. (r.minutes *. Float_multipliers.minute_to_seconds)
