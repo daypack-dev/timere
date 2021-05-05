@@ -1762,7 +1762,6 @@ end
 let equal_unary_op op1 op2 =
   match (op1, op2) with
   | Not, Not -> true
-  (* | Drop_points n1, Drop_points n2 | Take_points n1, Take_points n2 -> n1 = n2 *)
   | Shift n1, Shift n2 | Lengthen n1, Lengthen n2 -> n1 = n2
   | With_tz tz1, With_tz tz2 -> Time_zone.equal tz1 tz2
   | _, _ -> false
