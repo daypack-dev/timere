@@ -1366,6 +1366,14 @@ val pp_sexp : Format.formatter -> t -> unit
 (** {1 Misc} *)
 
 module Utils : sig
+  val ptime_span_of_span : Span.t -> Ptime.span option
+
+  val ptime_of_timestamp : timestamp -> Ptime.t option
+
+  val span_of_ptime_span : Ptime.span -> Span.t
+
+  val timestamp_of_ptime : Ptime.t -> timestamp
+
   (** {1 Month utils} *)
 
   type month =

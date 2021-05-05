@@ -151,6 +151,14 @@ let of_sexp_string = Of_sexp.of_sexp_string
 let pp_sexp = Printers.pp_sexp
 
 module Utils = struct
+  let ptime_span_of_span = Ptime_utils.ptime_span_of_span
+
+  let ptime_of_timestamp = Ptime_utils.ptime_of_timestamp
+
+  let span_of_ptime_span = Ptime_utils.span_of_ptime_span
+
+  let timestamp_of_ptime = Ptime_utils.timestamp_of_ptime
+
   type month =
     [ `Jan
     | `Feb
