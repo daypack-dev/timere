@@ -1514,14 +1514,16 @@ module Ordinal_date_time' = struct
     let (month, day) =
       to_md x
     in
-    let { tz; offset } = x.tz_info in
-    match offset with
-    | None ->
-      Date_time'.make_exn ~tz ~year:x.year ~month ~day ~hour:x.hour ~minute:x.minute ~second:x.second
-        ~ns:x.ns ()
-    | Some tz_offset ->
-      Date_time'.make_unambiguous_exn ~tz ~tz_offset ~year:x.year ~month ~day ~hour:x.hour ~minute:x.minute ~second:x.second
-        ~ns:x.ns ()
+    {
+      year = x.year;
+      month;
+      day;
+      hour = x.hour;
+      minute = x.minute;
+      second = x.second;
+      ns = x.ns;
+      tz_info = x.tz_info;
+    }
 
   let weekday (x : t) =
     let month, day = to_md x in
@@ -1568,7 +1570,7 @@ module Week_date_time' = struct
       let ns = ns + int_of_float (frac *. Span.ns_count_in_s_float) in
       if ns >= Span.ns_count_in_s then Error (`Invalid_ns ns) else Ok ns
 
-  let date_time_local_start_of_iso_week_year ~iso_week_year : Date_time'.t option =
+  let date_time_local_start_of_iso_week_year ~iso_week_year : Date_time'.t =
     (* we use the fact that
        - Jan 4th is always in week 1 of the year
        - and week starts on Monday
@@ -1582,60 +1584,47 @@ module Week_date_time' = struct
         ~minute:0 ~second:0 ()
     in
     (match Date_time'.weekday jan_4_of_year with
-     | `Mon -> Some jan_4_of_year
+     | `Mon -> jan_4_of_year
      | `Tue ->
-       Some
          (Date_time'.make_exn ~tz ~year ~month:1 ~day:3 ~hour:0
             ~minute:0 ~second:0 ())
      | `Wed ->
-       Some
          (Date_time'.make_exn ~tz ~year ~month:1 ~day:2 ~hour:0
             ~minute:0 ~second:0 ())
      | `Thu ->
-       Some
          (Date_time'.make_exn ~tz ~year ~month:1 ~day:1 ~hour:0
             ~minute:0 ~second:0 ())
      | `Fri -> (
-         match
-           Date_time'.make ~tz ~year:(pred year) ~month:12 ~day:31
+           Date_time'.make_exn ~tz ~year:(pred year) ~month:12 ~day:31
              ~hour:0 ~minute:0 ~second:0 ()
-         with
-         | Ok x -> Some x
-         | Error _ -> None)
+)
      | `Sat -> (
-         match
-           Date_time'.make ~tz ~year:(pred year) ~month:12 ~day:30
+           Date_time'.make_exn ~tz ~year:(pred year) ~month:12 ~day:30
              ~hour:0 ~minute:0 ~second:0 ()
-         with
-         | Ok x -> Some x
-         | Error _ -> None)
+         )
      | `Sun -> (
-         match
-           Date_time'.make ~tz ~year:(pred year) ~month:12 ~day:29
+           Date_time'.make_exn ~tz ~year:(pred year) ~month:12 ~day:29
              ~hour:0 ~minute:0 ~second:0 ()
-         with
-         | Ok x -> Some x
-         | Error _ -> None))
+         ))
 
   let timestamp_local_start_of_iso_week_year ~iso_week_year =
-    CCOpt.map Date_time'.to_timestamp_single
+    Date_time'.to_timestamp_single
       (date_time_local_start_of_iso_week_year ~iso_week_year)
 
   let timestamp_local_start_and_week_count_of_iso_week_year ~iso_week_year :
-    (timestamp * int) option =
-    match timestamp_local_start_of_iso_week_year ~iso_week_year with
-    | None -> None
-    | Some start -> (
-        match timestamp_local_start_of_iso_week_year ~iso_week_year:(succ iso_week_year) with
-        | None -> None
-        | Some end_exc ->
-          let d = Span.(end_exc - start |> For_human'.view) in
-          let week_count = d.days / 7 in
-          assert (week_count >= 1);
-          Some (start, week_count))
+    (timestamp * int) =
+    let start = timestamp_local_start_of_iso_week_year ~iso_week_year in
+    let end_exc = timestamp_local_start_of_iso_week_year ~iso_week_year:(succ iso_week_year) in
+    let d = Span.(end_exc - start |> For_human'.view) in
+    let week_count = d.days / 7 in
+    assert (week_count >= 1);
+    (start, week_count)
 
-  let adjust_ns_for_leap_second ~is_leap_second (dt : t) : t =
-    if is_leap_second then { dt with ns = dt.ns + Span.ns_count_in_s } else dt
+  let week_count_of_iso_week_year ~iso_week_year =
+    snd
+      (
+        timestamp_local_start_and_week_count_of_iso_week_year ~iso_week_year
+      )
 
   let day_index_of_weekday (weekday : weekday) =
     match weekday with
@@ -1647,57 +1636,75 @@ module Week_date_time' = struct
     | `Sat -> 5
     | `Sun -> 6
 
-  (* let ymd_of_week_and_weekday ~(year : int) ~(week : int) ~(weekday : weekday) : (int * int * int) option =
-   *   let rec aux greg_year month day_count =
-   *     let day_count_of_month =
-   *       day_count_of_month ~year:greg_year ~month
-   *     in
-   *     if month <= 12 then
-   *       if day_count <= day_count_of_month then
-   *         Some (greg_year, month, day_count)
-   *       else
-   *         aux greg_year (succ month) (day_count - day_count_of_month)
-   *     else
-   *       None
-   *   in
-   *   match aux (pred year) 1 (week * 7 + day_offset_of_weekday weekday) with
-   *   | Some ymd -> Some ymd
-   *   | None ->
-   *     match aux year 1 (week * 7 + day_offset_of_weekday weekday) with
-   *     | Some ymd -> Some ymd
-   *     | None ->
-   *       match aux (succ year) 1 (week * 7 + day_offset_of_weekday weekday) with
-   *       | Some ymd -> Some ymd
-   *       | None -> None *)
-
   let of_ordinal_date_time (x : Ordinal_date_time'.t) : t =
     let weekday =
       Ordinal_date_time'.weekday x
     in
     let week_of_year =
-      (10 + x.day - (day_index_of_weekday weekday + 1) / 7
+      (10 + x.day - (day_index_of_weekday weekday + 1)) / 7
     in
     assert (week_of_year >= 0);
     assert (week_of_year <= 53);
-    if week_of_year = 0 then
-    else
-      if week_of_year = 53 then
+    let year, week =
+      if week_of_year = 0 then
+        if x.year = 0 then
+          (-1, 52)
+        else
+          (pred x.year, week_count_of_iso_week_year ~iso_week_year:(pred x.year))
       else
+      if week_of_year = 53 && week_count_of_iso_week_year ~iso_week_year:x.year < 53 then
+        (succ x.year, 1)
+      else
+        (x.year, week_of_year)
+    in
+    {
+      year;
+      week;
+      weekday;
+      hour = x.hour;
+      minute = x.minute;
+      second = x.second;
+      ns = x.ns;
+      tz_info = x.tz_info;
+    }
+
+  let to_ordinal_date_time (x : t) : Ordinal_date_time'.t =
+    let weekday_int = day_index_of_weekday x.weekday + 1 in
+    let jan_4_weekday_int = day_index_of_weekday (CCOpt.get_exn @@ weekday_of_month_day ~year:x.year ~month:1 ~day:4) + 1 in
+    let day_of_year = x.week * 7 + weekday_int - (jan_4_weekday_int + 3) in
+    let day_count_of_prev_year = day_count_of_year ~year:(pred x.year) in
+    let day_count_of_cur_year = day_count_of_year ~year:x.year in
+    let year, day_of_year =
+      if day_of_year < 0 then
+        (pred x.year, day_count_of_prev_year - day_of_year)
+      else
+        if day_of_year > day_count_of_cur_year then
+          (succ x.year, day_of_year - day_count_of_cur_year)
+        else
+          (x.year, day_count_of_cur_year)
+    in
+    {
+      year;
+      day = day_of_year;
+      hour = x.hour;
+      minute = x.minute;
+      second = x.second;
+      ns = x.ns;
+      tz_info = x.tz_info;
+    }
 
   let to_timestamp_pretend_utc (x : t) : Span.t option =
-    match timestamp_local_start_and_week_count_of_iso_week_year ~iso_week_year:x.year with
-    | None -> None
-    | Some (start, week_count) ->
-      if x.week > week_count then
-        None
-      else
-        let offset =
-          Span.For_human'.(
-            make_exn
-              ~days:(((x.week - 1) * 7) + day_index_of_weekday x.weekday)
-              ())
-        in
-        Some Span.(start + offset)
+    let (start, week_count) = timestamp_local_start_and_week_count_of_iso_week_year ~iso_week_year:x.year in
+    if x.week > week_count then
+      None
+    else
+      let offset =
+        Span.For_human'.(
+          make_exn
+            ~days:(((x.week - 1) * 7) + day_index_of_weekday x.weekday)
+            ())
+      in
+      Some Span.(start + offset)
 
   include Dt_derive (struct
       type nonrec t = t
@@ -1750,53 +1757,6 @@ module Week_date_time' = struct
     match make ?tz ?ns ?frac ~year ~week ~weekday ~hour ~minute ~second () with
     | Ok x -> x
     | Error e -> raise (Error_exn e)
-
-  let of_date_time (x : Date_time'.t) : t =
-    let open Span in
-    let get_start_of_iso_week_year iso_week_year =
-      CCOpt.get_exn @@ timestamp_local_start_of_iso_week_year ~iso_week_year
-    in
-    let timestamp_local = CCOpt.get_exn @@ Date_time'.to_timestamp_pretend_utc x in
-    let weekday =
-      Date_time'.weekday x
-    in
-    let iso_week_year, start_of_iso_week_year =
-      (* the iso week year is at most off by one from Gregorian year,
-         so we check all three possibilities
-      *)
-      let (prev_year, start_of_prev_year) =
-        let year = Stdlib.pred x.year in
-        (year, get_start_of_iso_week_year year)
-      in
-      let year, start_of_year =
-        let year = x.year in
-        (year, get_start_of_iso_week_year year)
-      in
-      let (next_year, start_of_next_year) =
-        let year = Stdlib.succ x.year in
-        (year, get_start_of_iso_week_year year)
-      in
-      if start_of_prev_year <= timestamp_local && timestamp_local < start_of_year then
-        (prev_year, start_of_prev_year)
-      else
-      if start_of_year <= timestamp_local && timestamp_local < start_of_next_year then
-        (year, start_of_year)
-      else
-        (next_year, start_of_next_year)
-    in
-    let week_count =
-      For_human'.(view (timestamp_local - start_of_iso_week_year)).days / 7
-    in
-    {
-      year = iso_week_year;
-      week = Stdlib.(week_count + 1);
-      weekday;
-      hour = x.hour;
-      minute = x.minute;
-      second = x.second;
-      ns = x.ns;
-      tz_info = x.tz_info;
-    }
 end
 
 let equal_unary_op op1 op2 =
