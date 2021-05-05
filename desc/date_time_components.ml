@@ -32,6 +32,93 @@ let weekday_of_tm_int (x : int) : weekday option =
 let compare_weekday (d1 : weekday) (d2 : weekday) : int =
   compare (tm_int_of_weekday d1) (tm_int_of_weekday d2)
 
+(** Implementation copied from Ptime
+
+    Reference quoted in Ptime:
+    https://www.tondering.dk/claus/cal/julperiod.php#formula
+*)
+
+let jd_of_ymd ~year ~month ~day =
+  let a = (14 - month) / 12 in
+  let y = year + 4800 - a in
+  let m = month + 12 * a - 3 in
+  day + ((153 * m) + 2)/ 5 + 365 * y +
+  (y / 4) - (y / 100) + (y / 400) - 32045
+
+let ymd_of_jd jd =
+  let a = jd + 32044 in
+  let b = (4 * a + 3) / 146097 in
+  let c = a - ((146097 * b) / 4) in
+  let d = (4 * c + 3) / 1461 in
+  let e = c - ((1461 * d) / 4) in
+  let m = (5 * e + 2) / 153 in
+  let day = e - ((153 * m + 2) / 5) + 1 in
+  let month = m + 3 - (12 * (m / 10)) in
+  let year = 100 * b + d - 4800 + (m / 10) in
+  (year, month, day)
+
+let jd_of_epoch =
+  jd_of_ymd ~year:1970 ~month:1 ~day:1
+
+let weekday_of_ymd ~year ~month ~day =
+  (* epoch was on thursday *)
+  let d = (jd_of_ymd ~year ~month ~day - jd_of_epoch) mod 7 in
+  match if d < 0 then d + 7 else d with
+  | 0 -> `Thu
+  | 1 -> `Fri
+  | 2 -> `Sat
+  | 3 -> `Sun
+  | 4 -> `Mon
+  | 5 -> `Tue
+  | 6 -> `Wed
+  | _ -> failwith "Unexpected case"
+
+let is_leap_year ~year =
+  assert (year >= 0);
+  let divisible_by_4 = year mod 4 = 0 in
+  let divisible_by_100 = year mod 100 = 0 in
+  let divisible_by_400 = year mod 400 = 0 in
+  divisible_by_4 && ((not divisible_by_100) || divisible_by_400)
+
+let day_count_of_year ~year = if is_leap_year ~year then 366 else 365
+
+let day_offset_from_start_of_year ~year ~month =
+  let offset_from_leap_year =
+    if is_leap_year ~year:year then 1 else 0
+  in
+  match month with
+  | 1 -> 0
+  | 2 -> 31
+  | 3 -> 59 + offset_from_leap_year
+  | 4 -> 90 + offset_from_leap_year
+  | 5 -> 120 + offset_from_leap_year
+  | 6 -> 151 + offset_from_leap_year
+  | 7 -> 181 + offset_from_leap_year
+  | 8 -> 212 + offset_from_leap_year
+  | 9 -> 243 + offset_from_leap_year
+  | 10 -> 273 + offset_from_leap_year
+  | 11 -> 304 + offset_from_leap_year
+  | 12 -> 334 + offset_from_leap_year
+  | _ -> failwith "Unexpected case"
+
+let md_of_ydoy ~year ~day_of_year : (int * int) =
+  let rec aux ~month =
+    if month < 1 then
+      failwith "Unexpected case"
+    else
+      let offset = day_offset_from_start_of_year ~year ~month in
+      if offset + 1 <= day_of_year then
+        month
+      else
+        aux ~month:(pred month)
+  in
+  let month = aux ~month:12 in
+  let day = day_of_year - day_offset_from_start_of_year ~year ~month in
+  (month, day)
+
+let doy_of_ymd ~year ~month ~day : int =
+  day_offset_from_start_of_year ~year ~month + day
+
 module Weekday_set = struct
   include CCSet.Make (struct
       type t = weekday
@@ -42,18 +129,9 @@ module Weekday_set = struct
   let to_seq x = x |> to_list |> CCList.to_seq
 end
 
-let weekday_of_month_day ~(year : int) ~(month : int) ~(day : int) :
+let weekday_of_ymd ~(year : int) ~(month : int) ~(day : int) :
   weekday option =
   Ptime.(of_date (year, month, day)) |> CCOpt.map Ptime.weekday
-
-let is_leap_year ~year =
-  assert (year >= 0);
-  let divisible_by_4 = year mod 4 = 0 in
-  let divisible_by_100 = year mod 100 = 0 in
-  let divisible_by_400 = year mod 400 = 0 in
-  divisible_by_4 && ((not divisible_by_100) || divisible_by_400)
-
-let day_count_of_year ~year = if is_leap_year ~year then 366 else 365
 
 let day_count_of_month ~year ~month =
   match month with

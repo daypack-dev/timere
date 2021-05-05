@@ -12,6 +12,56 @@ let timestamp_min = Constants.timestamp_min
 
 let timestamp_max = Constants.timestamp_max
 
+module Hms' = struct
+  type t = {
+    hour : int;
+    minute : int;
+    second : int;
+  }
+
+  type error =
+    [ `Invalid_hour of int
+    | `Invalid_minute of int
+    | `Invalid_second of int
+    ]
+
+  exception Error_exn of error
+
+  let make ~hour ~minute ~second : (t, error) result =
+    if hour < 0 || 24 < hour then Error (`Invalid_hour hour)
+    else if minute < 0 || 59 < minute then Error (`Invalid_minute minute)
+    else if second < 0 || 60 < second then Error (`Invalid_second second)
+    else
+      let second = if second = 60 then 59 else second in
+      if hour = 24 then
+        if minute = 0 && second = 0 then
+          Ok { hour = 23; minute = 59; second = 59 }
+        else Error (`Invalid_hour hour)
+      else Ok { hour; minute; second }
+
+  let make_exn ~hour ~minute ~second =
+    match make ~hour ~minute ~second with
+    | Ok x -> x
+    | Error e -> raise (Error_exn e)
+
+  let to_second_of_day x =
+    Span.For_human'.make_exn ~hours:x.hour ~minutes:x.minute ~seconds:x.second
+      ()
+    |> fun x -> Int64.to_int Span.(x.s)
+
+  let of_second_of_day s =
+    let ({ hours; minutes; seconds; _ } : Span.For_human'.view) =
+      Span.(make_small ~s () |> For_human'.view)
+    in
+    match make ~hour:hours ~minute:minutes ~second:seconds with
+    | Ok x -> Some x
+    | Error _ -> None
+end
+
+let utc_tz_info : tz_info = { tz = Time_zone.utc; offset = Some Span.zero }
+
+let dummy_tz_info = utc_tz_info
+
 module type Dt_base = sig
   type t
 
@@ -164,53 +214,151 @@ end with type t := B.t and type error := B.error = struct
         "to_timestamp_float_single: date time maps to two timestamps"
 end
 
-module Hms' = struct
+module Odt' = struct
   type t = {
+    year : int;
+    day : int;
     hour : int;
     minute : int;
     second : int;
+    ns : int;
+    tz_info : tz_info;
   }
 
   type error =
-    [ `Invalid_hour of int
+    [ `Does_not_exist
+    | `Invalid_year of int
+    | `Invalid_day of int
+    | `Invalid_hour of int
     | `Invalid_minute of int
     | `Invalid_second of int
+    | `Invalid_frac of float
+    | `Invalid_ns of int
+    | `Invalid_tz_info of string option * Span.t
     ]
 
   exception Error_exn of error
 
-  let make ~hour ~minute ~second : (t, error) result =
-    if hour < 0 || 24 < hour then Error (`Invalid_hour hour)
+  let check_args_and_normalize_ns ~year ~day ~hour ~minute ~second ~ns ~frac :
+    (int, error) result =
+    if year < Constants.min_year || Constants.max_year < year then
+      Error (`Invalid_year year)
+    else if day < 1 || 366 < day then Error (`Invalid_day day)
+    else if hour < 0 || 23 < hour then Error (`Invalid_hour hour)
     else if minute < 0 || 59 < minute then Error (`Invalid_minute minute)
     else if second < 0 || 60 < second then Error (`Invalid_second second)
+    else if frac < 0. then Error (`Invalid_frac frac)
+    else if ns < 0 then Error (`Invalid_ns ns)
     else
-      let second = if second = 60 then 59 else second in
-      if hour = 24 then
-        if minute = 0 && second = 0 then
-          Ok { hour = 23; minute = 59; second = 59 }
-        else Error (`Invalid_hour hour)
-      else Ok { hour; minute; second }
+      let ns = ns + int_of_float (frac *. Span.ns_count_in_s_float) in
+      if ns >= Span.ns_count_in_s then Error (`Invalid_ns ns) else Ok ns
 
-  let make_exn ~hour ~minute ~second =
-    match make ~hour ~minute ~second with
-    | Ok x -> x
-    | Error e -> raise (Error_exn e)
+  let to_timestamp_pretend_utc (x : t) : Span.t option =
+    if not (is_leap_year ~year:x.year) && x.day > 365 then
+      None
+    else
+      Some
+        Span.(
+          let month, day = md_of_ydoy ~year:x.year ~day_of_year:x.day in
+          For_human'.make_exn ~days:(jd_of_ymd ~year:x.year ~month ~day) ()
+          + For_human'.make_exn ~days:Stdlib.(x.day - 1) ~hours:x.hour ~minutes:x.minute
+            ~seconds:x.second ~ns:x.ns ()
+        )
 
-  let to_second_of_day x =
-    Span.For_human'.make_exn ~hours:x.hour ~minutes:x.minute ~seconds:x.second
-      ()
-    |> fun x -> Int64.to_int Span.(x.s)
+  include Dt_derive (struct
+      type nonrec t = t
 
-  let of_second_of_day s =
-    let ({ hours; minutes; seconds; _ } : Span.For_human'.view) =
-      Span.(make_small ~s () |> For_human'.view)
+      type nonrec error = error
+
+      let to_timestamp_pretend_utc = to_timestamp_pretend_utc
+
+      let get_tz_info (x : t) = x.tz_info
+
+      let set_tz_info x tz_info =
+        { x with tz_info }
+
+      let get_second x = x.second
+
+      let set_second x second =
+        { x with second }
+
+      let get_ns x = x.ns
+
+      let set_ns x ns =
+        { x with ns }
+
+      let err_does_not_exist = `Does_not_exist
+
+      let err_invalid_tz_info tz_name tz_offset =
+        `Invalid_tz_info (tz_name, tz_offset)
+    end)
+
+  let make ?(tz = Time_zone_utils.get_local_tz_for_arg ()) ?(ns = 0)
+      ?(frac = 0.) ~year ~day ~hour ~minute ~second () =
+    match
+      check_args_and_normalize_ns ~year ~day ~hour ~minute ~second ~ns
+        ~frac
+    with
+    | Error e -> Error e
+    | Ok ns ->
+      of_partial_dt ~tz
+        {
+          year;
+          day;
+          hour;
+          minute;
+          second;
+          ns;
+          tz_info = dummy_tz_info;
+        }
+
+  let weekday (x : t) =
+    let month, day = md_of_ydoy ~year:x.year ~day_of_year:x.day in
+    CCOpt.get_exn @@ weekday_of_ymd ~year:x.year ~month ~day
+
+  let of_timestamp_local (x : Span.t) =
+    let x = Span.For_human'.view x in
+    let year, month, day = ymd_of_jd (jd_of_epoch + x.days) in
+    let doy = doy_of_ymd ~year ~month ~day in
+    let hour, minute, second, ns =
+      match x.sign with
+      | `Pos -> (x.hours, x.minutes, x.seconds, x.ns)
+      | `Neg -> (x.hours, x.minutes, x.seconds, x.ns)
     in
-    match make ~hour:hours ~minute:minutes ~second:seconds with
-    | Ok x -> Some x
-    | Error _ -> None
+    { year; day; hour }
+
+  let of_timestamp ?(tz_of_date_time = Time_zone_utils.get_local_tz_for_arg ())
+      (x : timestamp) : t option =
+    if not Span.(timestamp_min <= x && x <= timestamp_max) then None
+    else
+      match Time_zone.lookup_timestamp_utc tz_of_date_time x.s with
+      | None -> None
+      | Some entry -> (
+          let timestamp_local =
+            Span.(x - make_small ~s:entry.offset ())
+          in
+          match Ptime_utils.ptime_of_timestamp x with
+          | None -> None
+          | Some x ->
+            x
+            |> Ptime.to_date_time ~tz_offset_s:entry.offset
+            |> of_ptime_date_time_pretend_utc
+            |> fun t ->
+            Some
+              {
+                t with
+                ns;
+                tz_info =
+                  {
+                    tz = tz_of_date_time;
+                    offset = Some (Span.make_small ~s:entry.offset ());
+                  };
+              }
+        )
+
 end
 
-module Date_time' = struct
+module Dt' = struct
   type t = {
     year : int;
     month : int;
@@ -256,51 +404,34 @@ module Date_time' = struct
         Span.For_human'.(offset.hours)
         Span.For_human'.(offset.minutes)
 
-  let utc_tz_info : tz_info = { tz = Time_zone.utc; offset = Some Span.zero }
+  let of_odt (x : Odt'.t) : t =
+    let (month, day) =
+      to_md x
+    in
+    {
+      year = x.year;
+      month;
+      day;
+      hour = x.hour;
+      minute = x.minute;
+      second = x.second;
+      ns = x.ns;
+      tz_info = x.tz_info;
+    }
 
-  let dummy_tz_info = utc_tz_info
-
-  let to_ptime_date_time_pretend_utc (x : t) : Ptime.date * Ptime.time =
-    ((x.year, x.month, x.day), ((x.hour, x.minute, x.second), 0))
-
-  let of_ptime_date_time_pretend_utc
-      (((year, month, day), ((hour, minute, second), _tz_offset_s)) :
-         Ptime.date * Ptime.time) : t =
-    { year; month; day; hour; minute; second; ns = 0; tz_info = utc_tz_info }
-
-  let to_timestamp_pretend_utc (x : t) : timestamp option =
-    to_ptime_date_time_pretend_utc x
-    |> Ptime.of_date_time
-    |> CCOpt.map
-         Ptime_utils.timestamp_of_ptime
-
-   include Dt_derive (struct
-      type nonrec t = t
-
-      type nonrec error = error
-
-      let to_timestamp_pretend_utc = to_timestamp_pretend_utc
-
-      let get_tz_info (x : t) = x.tz_info
-
-      let set_tz_info x tz_info =
-        { x with tz_info }
-
-      let get_second x = x.second
-
-      let set_second x second =
-        { x with second }
-
-      let get_ns x = x.ns
-
-      let set_ns x ns =
-        { x with ns }
-
-      let err_does_not_exist = `Does_not_exist
-
-      let err_invalid_tz_info tz_name tz_offset =
-        `Invalid_tz_info (tz_name, tz_offset)
-    end)
+  let to_odt (x : t) : Odt'.t =
+    let offset =
+      day_offset_from_start_of_year_lookup ~year:x.year ~month:x.month
+    in
+    {
+      year = x.year;
+      day = offset + x.day;
+      hour = x.hour;
+      minute = x.minute;
+      second = x.second;
+      ns = x.ns;
+      tz_info = x.tz_info;
+    }
 
   let of_timestamp ?(tz_of_date_time = Time_zone_utils.get_local_tz_for_arg ())
       ({ s; ns } as x : timestamp) : t option =
@@ -467,179 +598,6 @@ module Date_time' = struct
 
   let set_to_last_month_day_hour_min_sec_ns (x : t) : t =
     { x with month = 12 } |> set_to_last_day_hour_min_sec_ns
-end
-
-module Ordinal_date_time' = struct
-  type t = {
-    year : int;
-    day : int;
-    hour : int;
-    minute : int;
-    second : int;
-    ns : int;
-    tz_info : tz_info;
-  }
-
-  type error =
-    [ `Does_not_exist
-    | `Invalid_year of int
-    | `Invalid_day of int
-    | `Invalid_hour of int
-    | `Invalid_minute of int
-    | `Invalid_second of int
-    | `Invalid_frac of float
-    | `Invalid_ns of int
-    | `Invalid_tz_info of string option * Span.t
-    ]
-
-  exception Error_exn of error
-
-  let check_args_and_normalize_ns ~year ~day ~hour ~minute ~second ~ns ~frac :
-    (int, error) result =
-    if year < Constants.min_year || Constants.max_year < year then
-      Error (`Invalid_year year)
-    else if day < 1 || 366 < day then Error (`Invalid_day day)
-    else if hour < 0 || 23 < hour then Error (`Invalid_hour hour)
-    else if minute < 0 || 59 < minute then Error (`Invalid_minute minute)
-    else if second < 0 || 60 < second then Error (`Invalid_second second)
-    else if frac < 0. then Error (`Invalid_frac frac)
-    else if ns < 0 then Error (`Invalid_ns ns)
-    else
-      let ns = ns + int_of_float (frac *. Span.ns_count_in_s_float) in
-      if ns >= Span.ns_count_in_s then Error (`Invalid_ns ns) else Ok ns
-
-  let date_time_local_of_start_of_year ~year =
-    CCResult.get_exn @@
-    Date_time'.make ~tz:Time_zone.utc ~year ~month:1 ~day:1 ~hour:0 ~minute:0 ~second:0 ()
-
-  let timestamp_local_of_start_of_year ~year =
-    Date_time'.to_timestamp_single
-      (date_time_local_of_start_of_year ~year)
-
-  let to_timestamp_pretend_utc (x : t) : Span.t option =
-    if not (is_leap_year ~year:x.year) && x.day > 365 then
-      None
-    else
-      Some
-        Span.(
-          timestamp_local_of_start_of_year ~year:x.year
-          + For_human'.make_exn ~days:Stdlib.(x.day - 1) ~hours:x.hour ~minutes:x.minute
-            ~seconds:x.second ~ns:x.ns ()
-        )
-
-  include Dt_derive (struct
-      type nonrec t = t
-
-      type nonrec error = error
-
-      let to_timestamp_pretend_utc = to_timestamp_pretend_utc
-
-      let get_tz_info (x : t) = x.tz_info
-
-      let set_tz_info x tz_info =
-        { x with tz_info }
-
-      let get_second x = x.second
-
-      let set_second x second =
-        { x with second }
-
-      let get_ns x = x.ns
-
-      let set_ns x ns =
-        { x with ns }
-
-      let err_does_not_exist = `Does_not_exist
-
-      let err_invalid_tz_info tz_name tz_offset =
-        `Invalid_tz_info (tz_name, tz_offset)
-    end)
-
-  let make ?(tz = Time_zone_utils.get_local_tz_for_arg ()) ?(ns = 0)
-      ?(frac = 0.) ~year ~day ~hour ~minute ~second () =
-    match
-      check_args_and_normalize_ns ~year ~day ~hour ~minute ~second ~ns
-        ~frac
-    with
-    | Error e -> Error e
-    | Ok ns ->
-      of_partial_dt ~tz
-        {
-          year;
-          day;
-          hour;
-          minute;
-          second;
-          ns;
-          tz_info = Date_time'.dummy_tz_info;
-        }
-
-  let day_offset_from_start_of_year_lookup ~year ~month =
-    let offset_from_leap_year =
-      if is_leap_year ~year:year then 1 else 0
-    in
-    match month with
-    | 1 -> 0
-    | 2 -> 31
-    | 3 -> 59 + offset_from_leap_year
-    | 4 -> 90 + offset_from_leap_year
-    | 5 -> 120 + offset_from_leap_year
-    | 6 -> 151 + offset_from_leap_year
-    | 7 -> 181 + offset_from_leap_year
-    | 8 -> 212 + offset_from_leap_year
-    | 9 -> 243 + offset_from_leap_year
-    | 10 -> 273 + offset_from_leap_year
-    | 11 -> 304 + offset_from_leap_year
-    | 12 -> 334 + offset_from_leap_year
-    | _ -> failwith "Unexpected case"
-
-  let of_date_time (x : Date_time'.t) : t =
-    let offset =
-      day_offset_from_start_of_year_lookup ~year:x.year ~month:x.month
-    in
-    {
-      year = x.year;
-      day = offset + x.day;
-      hour = x.hour;
-      minute = x.minute;
-      second = x.second;
-      ns = x.ns;
-      tz_info = x.tz_info;
-    }
-
-  let to_md (x : t) : (int * int) =
-    let rec aux ~month =
-      if month < 1 then
-        failwith "Unexpected case"
-      else
-        let offset = day_offset_from_start_of_year_lookup ~year:x.year ~month in
-        if offset + 1 <= x.day then
-          month
-        else
-          aux ~month:(pred month)
-    in
-    let month = aux ~month:12 in
-    let day = x.day - day_offset_from_start_of_year_lookup ~year:x.year ~month in
-    (month, day)
-
-  let to_date_time (x : t) : Date_time'.t =
-    let (month, day) =
-      to_md x
-    in
-    {
-      year = x.year;
-      month;
-      day;
-      hour = x.hour;
-      minute = x.minute;
-      second = x.second;
-      ns = x.ns;
-      tz_info = x.tz_info;
-    }
-
-  let weekday (x : t) =
-    let month, day = to_md x in
-    CCOpt.get_exn @@ weekday_of_month_day ~year:x.year ~month ~day
 end
 
 module Week_date_time' = struct
@@ -870,6 +828,10 @@ module Week_date_time' = struct
     | Ok x -> x
     | Error e -> raise (Error_exn e)
 end
+
+type t = {
+  iso_year : int;
+}
 
 let full_string_of_weekday (wday : weekday) : string =
   match wday with
