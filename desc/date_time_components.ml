@@ -210,3 +210,89 @@ let make_tz_info ?tz ?tz_offset () : (tz_info, tz_info_error) result =
 
 let tz_offset_of_tz_info ({ tz; offset_from_utc } : tz_info) =
   match offset_from_utc with Some x -> Some x | None -> Time_zone.to_fixed_offset tz
+
+let full_string_of_weekday (wday : weekday) : string =
+  match wday with
+  | `Sun -> "Sunday"
+  | `Mon -> "Monday"
+  | `Tue -> "Tuesday"
+  | `Wed -> "Wednesday"
+  | `Thu -> "Thursday"
+  | `Fri -> "Friday"
+  | `Sat -> "Saturday"
+
+let weekday_of_full_string s : weekday option =
+  match s with
+  | "Sunday" -> Some `Sun
+  | "Monday" -> Some `Mon
+  | "Tuesday" -> Some `Tue
+  | "Wednesday" -> Some `Wed
+  | "Thursday" -> Some `Thu
+  | "Friday" -> Some `Fri
+  | "Saturday" -> Some `Sat
+  | _ -> None
+
+let abbr_string_of_weekday (wday : weekday) : string =
+  String.sub (full_string_of_weekday wday) 0 3
+
+let weekday_of_abbr_string s : weekday option =
+  match s with
+  | "Sun" -> Some `Sun
+  | "Mon" -> Some `Mon
+  | "Tue" -> Some `Tue
+  | "Wed" -> Some `Wed
+  | "Thu" -> Some `Thu
+  | "Fri" -> Some `Fri
+  | "Sat" -> Some `Sat
+  | _ -> None
+
+let full_string_of_month (month : int) : string option =
+  match month with
+  | 1 -> Some "January"
+  | 2 -> Some "February"
+  | 3 -> Some "March"
+  | 4 -> Some "April"
+  | 5 -> Some "May"
+  | 6 -> Some "June"
+  | 7 -> Some "July"
+  | 8 -> Some "August"
+  | 9 -> Some "September"
+  | 10 -> Some "October"
+  | 11 -> Some "November"
+  | 12 -> Some "December"
+  | _ -> None
+
+let month_of_full_string s : int option =
+  match s with
+  | "January" -> Some 1
+  | "February" -> Some 2
+  | "March" -> Some 3
+  | "April" -> Some 4
+  | "May" -> Some 5
+  | "June" -> Some 6
+  | "July" -> Some 7
+  | "August" -> Some 8
+  | "September" -> Some 9
+  | "October" -> Some 10
+  | "November" -> Some 11
+  | "December" -> Some 12
+  | _ -> None
+
+let abbr_string_of_month (month : int) : string option =
+  CCOpt.map (fun s -> String.sub s 0 3) (full_string_of_month month)
+
+let month_of_abbr_string s : int option =
+  match s with
+  | "Jan" -> Some 1
+  | "Feb" -> Some 2
+  | "Mar" -> Some 3
+  | "Apr" -> Some 4
+  | "May" -> Some 5
+  | "Jun" -> Some 6
+  | "Jul" -> Some 7
+  | "Aug" -> Some 8
+  | "Sep" -> Some 9
+  | "Oct" -> Some 10
+  | "Nov" -> Some 11
+  | "Dec" -> Some 12
+  | _ -> None

@@ -1,4 +1,4 @@
-let to_date_time s : (Time.t, string) result =
+let to_date_time s : (Date_time.t, string) result =
   let open MParser in
   let open Parser_components in
   let hm_p =
@@ -82,13 +82,13 @@ let to_date_time s : (Time.t, string) result =
       else (hour, minute, second, ns)
     in
     match
-      Time.Dt'.make_unambiguous ~year ~month ~day ~hour ~minute ~second
+      Date_time.Ymd_date_time.make_unambiguous ~year ~month ~day ~hour ~minute ~second
         ~ns ~tz_offset:offset ()
     with
     | Error e ->
       fail
         (Printf.sprintf "Invalid date time: %s"
-           (Time.Dt'.string_of_error e))
+           (Date_time.Ymd_date_time.string_of_error e))
     | Ok x -> return x
     | exception Invalid_argument msg -> fail msg
   in
@@ -96,5 +96,5 @@ let to_date_time s : (Time.t, string) result =
 
 let to_timestamp s =
   match to_date_time s with
-  | Ok dt -> Ok (Time.Odt'.to_timestamp_single dt)
+  | Ok dt -> Ok (Date_time.to_timestamp_single dt)
   | Error msg -> Error msg

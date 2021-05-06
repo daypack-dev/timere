@@ -1,9 +1,10 @@
 open Of_sexp_utils
+open Date_time_components
 
 let month_of_sexp (x : CCSexp.t) =
   match x with
   | `Atom s -> (
-      match Time.month_of_abbr_string s with
+      match month_of_abbr_string s with
       | Some x -> x
       | None -> invalid_data (Printf.sprintf "Failed to parse month: %s" s))
   | `List _ ->
@@ -13,7 +14,7 @@ let month_of_sexp (x : CCSexp.t) =
 let weekday_of_sexp (x : CCSexp.t) =
   match x with
   | `Atom s -> (
-      match Time.weekday_of_abbr_string s with
+      match weekday_of_abbr_string s with
       | Some x -> x
       | None -> invalid_data (Printf.sprintf "Failed to parse weekday: %s" s))
   | `List _ ->
@@ -82,10 +83,9 @@ let date_time_of_sexp (x : CCSexp.t) =
     invalid_data (Printf.sprintf "Invalid date: %s" (CCSexp.to_string x))
   in
   match x with
-  | `List [ year; month; day; hour; minute; second; ns; tz_info ] -> (
+  | `List [ year; day_of_year; hour; minute; second; ns; tz_info ] -> (
       let year = int_of_sexp year in
-      let month = month_of_sexp month in
-      let day = int_of_sexp day in
+      let day_of_year = int_of_sexp day_of_year in
       let hour = int_of_sexp hour in
       let minute = int_of_sexp minute in
       let second = int_of_sexp second in
@@ -94,14 +94,14 @@ let date_time_of_sexp (x : CCSexp.t) =
       match tz_info with
       | { tz; offset_from_utc = None } -> (
           match
-            Time.Dt'.make ~year ~month ~day ~hour ~minute ~second ~ns ~tz
+            Date_time.ISO_ord_date_time.make ~year ~day_of_year ~hour ~minute ~second ~ns ~tz
               ()
           with
           | Ok x -> x
           | Error _ -> invalid_data ())
       | { tz; offset_from_utc = Some tz_offset } -> (
           match
-            Time.Dt'.make_unambiguous ~year ~month ~day ~hour ~minute
+            Date_time.ISO_ord_date_time.make_unambiguous ~year ~day_of_year ~hour ~minute
               ~second ~ns ~tz ~tz_offset ()
           with
           | Ok x -> x
@@ -121,6 +121,6 @@ let timestamp_of_sexp x =
       else if not Span.(equal tz_offset zero) then
         invalid_data "Expected time zone offset 0"
       else
-        match Time.Odt'.to_timestamp dt with
+        match Date_time.to_timestamp dt with
         | `Single x -> x
         | _ -> failwith "Unexpected case")

@@ -1,5 +1,5 @@
 include Date_time_components
-include Time
+include Date_time
 module Time_zone = Time_zone
 
 exception Invalid_format_string = Printers.Invalid_format_string
@@ -103,9 +103,7 @@ let min_of_local_result = min_of_local_result
 
 let max_of_local_result = max_of_local_result
 
-module ISO_week_date_time = Wdt'
-
-module ISO_ordinal_date_time = Odt'
+include Ymd_date_time
 
 module Utils = struct
   let ptime_span_of_span = Ptime_utils.ptime_span_of_span

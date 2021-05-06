@@ -1,9 +1,9 @@
 open Date_time_components
 
 let sexp_of_month x =
-  CCSexp.atom @@ CCOpt.get_exn @@ Time.abbr_string_of_month x
+  CCSexp.atom @@ CCOpt.get_exn @@ abbr_string_of_month x
 
-let sexp_of_weekday x = CCSexp.atom @@ Time.abbr_string_of_weekday x
+let sexp_of_weekday x = CCSexp.atom @@ abbr_string_of_weekday x
 
 let sexp_of_int64 x = CCSexp.atom @@ Int64.to_string x
 
@@ -27,21 +27,21 @@ let sexp_of_tz_info ({ tz; offset_from_utc } : tz_info) =
            offset_from_utc;
        ])
 
-let sexp_of_date_time (x : Time.t) =
+let sexp_of_date_time (x : Date_time.t) =
   let open CCSexp in
   list
     [
-      sexp_of_int x.year;
-      sexp_of_int x.day_of_year;
-      sexp_of_int x.hour;
-      sexp_of_int x.minute;
-      sexp_of_int x.second;
-      sexp_of_int x.ns;
+      sexp_of_int x.date.year;
+      sexp_of_int x.date.day_of_year;
+      sexp_of_int x.time.hour;
+      sexp_of_int x.time.minute;
+      sexp_of_int x.time.second;
+      sexp_of_int x.time.ns;
       sexp_of_tz_info x.tz_info;
     ]
 
 let sexp_of_timestamp x =
   x
-  |> Time.Odt'.of_timestamp ~tz_of_date_time:Time_zone.utc
+  |> Date_time.of_timestamp ~tz_of_date_time:Time_zone.utc
   |> CCOpt.get_exn
   |> sexp_of_date_time

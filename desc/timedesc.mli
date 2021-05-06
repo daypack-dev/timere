@@ -452,7 +452,7 @@ type t
 
 and tz_info = private {
   tz : Time_zone.t;
-  offset : Span.t option;
+  offset_from_utc : Span.t option;
 }
 (** Time zone information of date time.
 
@@ -476,7 +476,7 @@ type error =
   | `Invalid_hour of int
   | `Invalid_minute of int
   | `Invalid_second of int
-  | `Invalid_frac of float
+  | `Invalid_s_frac of float
   | `Invalid_ns of int
   | `Invalid_tz_info of string option * Span.t
   ]
@@ -488,7 +488,7 @@ val string_of_error : error -> string
 val make :
   ?tz:Time_zone.t ->
   ?ns:int ->
-  ?frac:float ->
+  ?s_frac:float ->
   year:int ->
   month:int ->
   day:int ->
@@ -536,7 +536,7 @@ val make :
 val make_exn :
   ?tz:Time_zone.t ->
   ?ns:int ->
-  ?frac:float ->
+  ?s_frac:float ->
   year:int ->
   month:int ->
   day:int ->
@@ -550,7 +550,7 @@ val make_exn :
 val make_unambiguous :
   ?tz:Time_zone.t ->
   ?ns:int ->
-  ?frac:float ->
+  ?s_frac:float ->
   year:int ->
   month:int ->
   day:int ->
@@ -576,7 +576,7 @@ val make_unambiguous :
 val make_unambiguous_exn :
   ?tz:Time_zone.t ->
   ?ns:int ->
-  ?frac:float ->
+  ?s_frac:float ->
   year:int ->
   month:int ->
   day:int ->
@@ -800,12 +800,12 @@ end
 module ISO_week_date_time : sig
   type error =
     [ `Does_not_exist
-    | `Invalid_year of int
+    | `Invalid_iso_week_year of int
     | `Invalid_week of int
     | `Invalid_hour of int
     | `Invalid_minute of int
     | `Invalid_second of int
-    | `Invalid_frac of float
+    | `Invalid_s_frac of float
     | `Invalid_ns of int
     | `Invalid_tz_info of string option * Span.t
     ]
@@ -815,8 +815,8 @@ module ISO_week_date_time : sig
   val make :
     ?tz:Time_zone.t ->
     ?ns:int ->
-    ?frac:float ->
-    year:int ->
+    ?s_frac:float ->
+    iso_week_year:int ->
     week:int ->
     weekday:weekday ->
     hour:int ->
@@ -828,8 +828,8 @@ module ISO_week_date_time : sig
   val make_exn :
     ?tz:Time_zone.t ->
     ?ns:int ->
-    ?frac:float ->
-    year:int ->
+    ?s_frac:float ->
+    iso_week_year:int ->
     week:int ->
     weekday:weekday ->
     hour:int ->
@@ -839,7 +839,7 @@ module ISO_week_date_time : sig
     t
 end
 
-module ISO_ordinal_date_time : sig
+module ISO_ord_date_time : sig
   type error =
     [ `Does_not_exist
     | `Invalid_year of int
@@ -847,7 +847,7 @@ module ISO_ordinal_date_time : sig
     | `Invalid_hour of int
     | `Invalid_minute of int
     | `Invalid_second of int
-    | `Invalid_frac of float
+    | `Invalid_s_frac of float
     | `Invalid_ns of int
     | `Invalid_tz_info of string option * Span.t
     ]
@@ -857,7 +857,7 @@ module ISO_ordinal_date_time : sig
   val make :
     ?tz:Time_zone.t ->
     ?ns:int ->
-    ?frac:float ->
+    ?s_frac:float ->
     year:int ->
     day_of_year:int ->
     hour:int ->
@@ -869,7 +869,7 @@ module ISO_ordinal_date_time : sig
   val make_exn :
     ?tz:Time_zone.t ->
     ?ns:int ->
-    ?frac:float ->
+    ?s_frac:float ->
     year:int ->
     day_of_year:int ->
     hour:int ->

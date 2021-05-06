@@ -31,7 +31,7 @@ let pad_int (c : char option) (x : int) : string =
   | None -> string_of_int x
   | Some c -> if x < 10 then Printf.sprintf "%c%d" c x else string_of_int x
 
-exception Date_time_cannot_deduce_tz_offset_s of Time.t
+exception Date_time_cannot_deduce_tz_offset_s of Date_time.t
 
 module Format_string_parsers = struct
   open MParser
@@ -54,12 +54,12 @@ module Format_string_parsers = struct
        >>= fun padding -> char 'X' >> return (Some padding))
     <|> (char 'X' >> return None)
 
-  let date_time_inner (date_time : Time.t) : (string, unit) t =
+  let date_time_inner (date_time : Date_time.t) : (string, unit) t =
     let tz_offset_s =
       date_time.tz_info.offset_from_utc |> CCOpt.map (fun x -> CCInt64.to_int Span.(x.s))
     in
-    let Time.{ year; month; day } = Time.Odt'.ymd_date date_time in
-    let weekday = Time.Odt'.weekday date_time in
+    let Date.Ymd_date.{ year; month; day } = Date_time.ymd_date date_time in
+    let weekday = Date_time.weekday date_time in
     choice
       [
         attempt (string "year") >> return (Printf.sprintf "%04d" year);
@@ -69,7 +69,7 @@ module Format_string_parsers = struct
                 return
                   (map_string_to_size_and_casing x
                      (CCOpt.get_exn
-                      @@ Time.full_string_of_month month)))
+                      @@ full_string_of_month month)))
                 <|> (padding
                      >>= fun padding -> return (pad_int padding month)));
         (attempt (string "day:")
@@ -80,28 +80,28 @@ module Format_string_parsers = struct
          >>= fun x ->
            return
              (map_string_to_size_and_casing x
-                (Time.full_string_of_weekday weekday)));
+                (full_string_of_weekday weekday)));
         (attempt (string "hour:")
          >> padding
-         >>= fun padding -> return (pad_int padding date_time.hour));
+         >>= fun padding -> return (pad_int padding date_time.time.hour));
         (attempt (string "12hour:")
          >> padding
          >>= fun padding ->
-         let hour = if date_time.hour = 0 then 12 else date_time.hour mod 12 in
+         let hour = if date_time.time.hour = 0 then 12 else date_time.time.hour mod 12 in
          return (pad_int padding hour));
         (attempt (string "min:")
          >> padding
-         >>= fun padding -> return (pad_int padding date_time.minute));
+         >>= fun padding -> return (pad_int padding date_time.time.minute));
         (attempt (string "sec:")
          >> padding
-         >>= fun padding -> return (pad_int padding date_time.second));
-        attempt (string "ns") >> return (string_of_int date_time.ns);
+         >>= fun padding -> return (pad_int padding date_time.time.second));
+        attempt (string "ns") >> return (string_of_int date_time.time.ns);
         (attempt (string "sec-frac:")
          >> nat_zero
          >>= fun precision ->
          if precision = 0 then fail "Precision cannot be 0"
          else
-           let ns = float_of_int date_time.ns in
+           let ns = float_of_int date_time.time.ns in
            let precision' = float_of_int precision in
            let frac =
              ns *. (10. ** precision') /. Span.ns_count_in_s_float
@@ -159,10 +159,10 @@ exception Invalid_format_string of string
 let invalid_format_string s = raise (Invalid_format_string s)
 
 let pp_date_time ?(format : string = default_date_time_format_string) ()
-    (formatter : Format.formatter) (x : Time.t) : unit =
+    (formatter : Format.formatter) (x : Date_time.t) : unit =
   let open MParser in
   let open Parser_components in
-  let single formatter (date_time : Time.t) : (unit, unit) t =
+  let single formatter (date_time : Date_time.t) : (unit, unit) t =
     choice
       [
         attempt (string "{{" |>> fun _ -> Fmt.pf formatter "{");
@@ -173,7 +173,7 @@ let pp_date_time ?(format : string = default_date_time_format_string) ()
          |>> fun s -> Fmt.pf formatter "%s" s);
       ]
   in
-  let p formatter (date_time : Time.t) : (unit, unit) t =
+  let p formatter (date_time : Date_time.t) : (unit, unit) t =
     many (single formatter date_time) >> return ()
   in
   match
@@ -182,12 +182,12 @@ let pp_date_time ?(format : string = default_date_time_format_string) ()
   | Error msg -> invalid_format_string msg
   | Ok () -> ()
 
-let string_of_date_time ?format (x : Time.t) : string option =
+let string_of_date_time ?format (x : Date_time.t) : string option =
   try Some (Fmt.str "%a" (pp_date_time ?format ()) x)
   with Date_time_cannot_deduce_tz_offset_s _ -> None
 
 let pp_timestamp ?(display_using_tz = Time_zone.utc) ?format () formatter time =
-  match Time.Odt'.of_timestamp ~tz_of_date_time:display_using_tz time with
+  match Date_time.of_timestamp ~tz_of_date_time:display_using_tz time with
   | None -> invalid_arg "Invalid unix second"
   | Some dt -> Fmt.pf formatter "%a" (pp_date_time ?format ()) dt
 
@@ -201,11 +201,11 @@ let string_of_timestamp ?display_using_tz ?format (time : Span.t) : string =
 
 let pp_interval ?(display_using_tz = Time_zone.utc)
     ?(format = default_interval_format_string) () formatter
-    ((s, e) : Time.interval) : unit =
+    ((s, e) : Date_time.interval) : unit =
   let open MParser in
   let open Parser_components in
-  let single (start_date_time : Time.t)
-      (end_date_time : Time.t) : (unit, unit) t =
+  let single (start_date_time : Date_time.t)
+      (end_date_time : Date_time.t) : (unit, unit) t =
     choice
       [
         attempt (string "{{" |>> fun _ -> Fmt.pf formatter "{");
@@ -220,15 +220,15 @@ let pp_interval ?(display_using_tz = Time_zone.utc)
          |>> fun s -> Fmt.pf formatter "%s" s);
       ]
   in
-  let p (start_date_time : Time.t)
-      (end_date_time : Time.t) : (unit, unit) t =
+  let p (start_date_time : Date_time.t)
+      (end_date_time : Date_time.t) : (unit, unit) t =
     many (single start_date_time end_date_time) >> return ()
   in
-  match Time.Odt'.of_timestamp ~tz_of_date_time:display_using_tz s with
+  match Date_time.of_timestamp ~tz_of_date_time:display_using_tz s with
   | None -> invalid_arg "Invalid start unix time"
   | Some s -> (
       match
-        Time.Odt'.of_timestamp ~tz_of_date_time:display_using_tz e
+        Date_time.of_timestamp ~tz_of_date_time:display_using_tz e
       with
       | None -> invalid_arg "Invalid end unix time"
       | Some e -> (
@@ -249,7 +249,7 @@ let pp_interval ?(display_using_tz = Time_zone.utc)
           | Error msg -> invalid_format_string msg
           | Ok () -> ()))
 
-let string_of_interval ?display_using_tz ?format (interval : Time.interval) :
+let string_of_interval ?display_using_tz ?format (interval : Date_time.interval) :
   string =
   Fmt.str "%a" (pp_interval ?display_using_tz ?format ()) interval
 

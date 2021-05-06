@@ -18,3 +18,5 @@ let timestamp_max : Span.t =
 let min_year = 0
 
 let max_year = 9999
+
+let one_day = Span.For_human'.make_exn ~days:1 ()

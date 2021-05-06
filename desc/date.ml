@@ -23,6 +23,8 @@ module ISO_week_date = struct
     | `Invalid_week of int
     ]
 
+  exception Error_exn of error
+
   let equal (x : t) (y : t) : bool =
     x.iso_week_year = y.iso_week_year
     && x.week = y.week
@@ -34,9 +36,14 @@ module ISO_week_date = struct
     else if week < 1 || 53 < week then Error (`Invalid_week week)
     else
       Ok { iso_week_year; week; weekday }
+
+  let make_exn ~iso_week_year ~week ~weekday : t =
+    match make ~iso_week_year ~week ~weekday with
+    | Error e -> raise (Error_exn e)
+    | Ok x -> x
 end
 
-module Ymd = struct
+module Ymd_date = struct
   type t = {
     year : int;
     month : int;
@@ -50,6 +57,8 @@ module Ymd = struct
     | `Invalid_day of int
     ]
 
+  exception Error_exn of error
+
   let equal (x : t) (y : t) : bool =
     x.year = y.year
     && x.month = y.month
@@ -62,6 +71,11 @@ module Ymd = struct
     else if day < 1 || 31 < day then Error (`Invalid_day day)
     else
       Ok { year; month; day }
+
+  let make_exn ~year ~month ~day : t =
+    match make ~year ~month ~day with
+    | Error e -> raise (Error_exn e)
+    | Ok x -> x
 end
 
 module ISO_ord_date = struct
@@ -76,6 +90,8 @@ module ISO_ord_date = struct
     | `Invalid_day_of_year of int
     ]
 
+  exception Error_exn of error
+
   let equal (x : t) (y : t) : bool =
     x.year = y.year
     && x.day_of_year = y.day_of_year
@@ -84,8 +100,15 @@ module ISO_ord_date = struct
     if year < Constants.min_year || Constants.max_year < year then
       Error (`Invalid_year year)
     else if day_of_year < 1 || 366 < day_of_year then Error (`Invalid_day_of_year day_of_year)
+    else if not (is_leap_year ~year) && day_of_year > 365 then
+      Error (`Invalid_day_of_year day_of_year)
     else
       Ok { year; day_of_year}
+
+  let make_exn ~year ~day_of_year : t =
+    match make ~year ~day_of_year with
+    | Error e -> raise (Error_exn e)
+    | Ok x -> x
 
   let weekday ({year; day_of_year} : t) =
     let month, day = md_of_ydoy ~year ~day_of_year in
@@ -131,11 +154,11 @@ module ISO_ord_date = struct
     in
     { year; day_of_year }
 
-  let to_ymd ({ year; day_of_year } : t) : Ymd.t =
+  let to_ymd_date ({ year; day_of_year } : t) : Ymd_date.t =
     let month, day = md_of_ydoy ~year ~day_of_year in
     { year; month; day }
 
-  let of_ymd ({year; month; day} : Ymd.t) : t =
+  let of_ymd_date ({year; month; day} : Ymd_date.t) : t =
     let day_of_year = doy_of_ymd ~year ~month ~day in
     { year; day_of_year }
 end
