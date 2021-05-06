@@ -433,174 +433,160 @@ module Time_zone : sig
   end
 end
 
-module Date_time : sig
-  (** This module uses ptime underneath, and carries similar limitation of expressible range of date times.
-      The actual range is slightly more limited in Timere due to time zones.
-  *)
+type t
+(** This is the main date time type, and represents a point in the local timeline
+    with respect to the residing time zone. Conceptually a pair of "date" and "time of day".
 
-  type t = private {
-    year : int;
-    month : int;
-    day : int;
-    hour : int;
-    minute : int;
-    second : int;
-    ns : int;
-    tz_info : tz_info;
-  }
-  (** This is the main date time type, and represents a point in the local timeline
-      with respect to the residing time zone. Conceptually a pair of "date" and "time of day".
+    A [t] always maps to at least one point on the UTC timeline, and [make] fails if this is not the case.
+    [t] may also map to two points on the UTC timeline in the case of DST and without
+    an unambiguous offset, however.
 
-      A [t] always maps to at least one point on the UTC timeline, and [make] fails if this is not the case.
-      [t] may also map to two points on the UTC timeline in the case of DST and without
-      an unambiguous offset, however.
+    In the ambiguous case, functions which return [_ local_result] will yield an [`Ambiguous _]
+    value, and [`Single _] otherwise.
 
-      In the ambiguous case, functions which return [_ local_result] will yield an [`Ambiguous _]
-      value, and [`Single _] otherwise.
+    [ns] may be [>= 10^9] to represent leap second, but always remains [< 2 * 10^9].
 
-      [ns] may be [>= 10^9] to represent leap second, but always remains [< 2 * 10^9].
+    [s] is always [>= 0] and [< 60], even when second 60 is used during construction.
+    In other words, second 60 is represented via [ns] field.
+*)
 
-      [s] is always [>= 0] and [< 60], even when second 60 is used during construction.
-      In other words, second 60 is represented via [ns] field.
-  *)
+and tz_info = private {
+  tz : Time_zone.t;
+  offset : Span.t option;
+}
+(** Time zone information of date time.
 
-  and tz_info = private {
-    tz : Time_zone.t;
-    offset : Span.t option;
-  }
-  (** Time zone information of date time.
+    [tz] is the time zone tied. This is always defined even if only an offset provided during construction -
+    if say only offset of 10 hours is provided, [tz] becomes "UTC+10".
 
-      [tz] is the time zone tied. This is always defined even if only an offset provided during construction -
-      if say only offset of 10 hours is provided, [tz] becomes "UTC+10".
+    [offset] is the offset from UTC, and provides an unambiguous specification
+    of which timestamp/point the date time maps to on the UTC timeline.
+    [offset] is defined if an offset is provided during construction via {!make_unambiguous}
+    or if an unambiguous offset can be deduced during construction via {!make}.
 
-      [offset] is the offset from UTC, and provides an unambiguous specification
-      of which timestamp/point the date time maps to on the UTC timeline.
-      [offset] is defined if an offset is provided during construction via {!make_unambiguous}
-      or if an unambiguous offset can be deduced during construction via {!make}.
+    In other words, [offset] is [None] exactly when it is not possible to assign an offset,
+    and [Some _] otherwise.
+*)
 
-      In other words, [offset] is [None] exactly when it is not possible to assign an offset,
-      and [Some _] otherwise.
-  *)
+type error =
+  [ `Does_not_exist
+  | `Invalid_year of int
+  | `Invalid_month of int
+  | `Invalid_day of int
+  | `Invalid_hour of int
+  | `Invalid_minute of int
+  | `Invalid_second of int
+  | `Invalid_frac of float
+  | `Invalid_ns of int
+  | `Invalid_tz_info of string option * Span.t
+  ]
 
-  type error =
-    [ `Does_not_exist
-    | `Invalid_year of int
-    | `Invalid_month of int
-    | `Invalid_day of int
-    | `Invalid_hour of int
-    | `Invalid_minute of int
-    | `Invalid_second of int
-    | `Invalid_frac of float
-    | `Invalid_ns of int
-    | `Invalid_tz_info of string option * Span.t
-    ]
+exception Error_exn of error
 
-  exception Error_exn of error
+val string_of_error : error -> string
 
-  val string_of_error : error -> string
+val make :
+  ?tz:Time_zone.t ->
+  ?ns:int ->
+  ?frac:float ->
+  year:int ->
+  month:int ->
+  day:int ->
+  hour:int ->
+  minute:int ->
+  second:int ->
+  unit ->
+  (t, error) result
+(** Constructs a date time providing only a time zone (defaults to local time zone).
 
-  val make :
-    ?tz:Time_zone.t ->
-    ?ns:int ->
-    ?frac:float ->
-    year:int ->
-    month:int ->
-    day:int ->
-    hour:int ->
-    minute:int ->
-    second:int ->
-    unit ->
-    (t, error) result
-  (** Constructs a date time providing only a time zone (defaults to local time zone).
+    Nanosecond used is the addition of [ns] and [frac * 10^9].
 
-      Nanosecond used is the addition of [ns] and [frac * 10^9].
+    A precise offset is inferred if possible.
 
-      A precise offset is inferred if possible.
+    Note that this may yield a ambiguous date time if the time zone has varying offsets,
+    causing a local date time to appear twice, e.g. countries with DST.
 
-      Note that this may yield a ambiguous date time if the time zone has varying offsets,
-      causing a local date time to appear twice, e.g. countries with DST.
+    See {!val:make_unambiguous} for the more precise construction.
 
-      See {!val:make_unambiguous} for the more precise construction.
+    Leap second can be specified by providing 60 for [second].
+    Note that leap second informtation is lost upon translation to timestamp(s),
+    specifically second 60 is treated as second 59.
 
-      Leap second can be specified by providing 60 for [second].
-      Note that leap second informtation is lost upon translation to timestamp(s),
-      specifically second 60 is treated as second 59.
+    Returns [Error `Invalid_year] if [year < 0 || 9999 < year].
 
-      Returns [Error `Invalid_year] if [year < 0 || 9999 < year].
+    Returns [Error `Invalid_month] if [month < 1 || 12 < month].
 
-      Returns [Error `Invalid_month] if [month < 1 || 12 < month].
+    Returns [Error `Invalid_day] if [day < 1 || 31 < day].
 
-      Returns [Error `Invalid_day] if [day < 1 || 31 < day].
+    Returns [Error `Invalid_hour] if [hour > 23].
 
-      Returns [Error `Invalid_hour] if [hour > 23].
+    Returns [Error `Invalid_minute] if [minute > 59].
 
-      Returns [Error `Invalid_minute] if [minute > 59].
+    Returns [Error `Invalid_second] if [second > 60].
 
-      Returns [Error `Invalid_second] if [second > 60].
+    Returns [Error `Invalid_ns] if [frac < 0.0].
 
-      Returns [Error `Invalid_ns] if [frac < 0.0].
+    Returns [Error `Invalid_ns] if [ns < 0].
 
-      Returns [Error `Invalid_ns] if [ns < 0].
+    Returns [Error `Invalid_ns] if [total ns >= 10^9].
 
-      Returns [Error `Invalid_ns] if [total ns >= 10^9].
+    Returns [Error `Invalid_tz_info] if offset is out of range.
+*)
 
-      Returns [Error `Invalid_tz_info] if offset is out of range.
-  *)
+val make_exn :
+  ?tz:Time_zone.t ->
+  ?ns:int ->
+  ?frac:float ->
+  year:int ->
+  month:int ->
+  day:int ->
+  hour:int ->
+  minute:int ->
+  second:int ->
+  unit ->
+  t
+(** @raise Error_exn if [make] fails *)
 
-  val make_exn :
-    ?tz:Time_zone.t ->
-    ?ns:int ->
-    ?frac:float ->
-    year:int ->
-    month:int ->
-    day:int ->
-    hour:int ->
-    minute:int ->
-    second:int ->
-    unit ->
-    t
-  (** @raise Error_exn if [make] fails *)
+val make_unambiguous :
+  ?tz:Time_zone.t ->
+  ?ns:int ->
+  ?frac:float ->
+  year:int ->
+  month:int ->
+  day:int ->
+  hour:int ->
+  minute:int ->
+  second:int ->
+  tz_offset:Span.t ->
+  unit ->
+  (t, error) result
+(** Constructs a date time providing time zone offset (offset from UTC), and optionally a time zone.
 
-  val make_unambiguous :
-    ?tz:Time_zone.t ->
-    ?ns:int ->
-    ?frac:float ->
-    year:int ->
-    month:int ->
-    day:int ->
-    hour:int ->
-    minute:int ->
-    second:int ->
-    tz_offset:Span.t ->
-    unit ->
-    (t, error) result
-  (** Constructs a date time providing time zone offset (offset from UTC), and optionally a time zone.
+    Nanosecond used is the addition of [ns] and [frac * 10^9].
 
-      Nanosecond used is the addition of [ns] and [frac * 10^9].
+    If a time zone is provided, then [tz_offset] is checked against the time zone record,
+    and returns [Error `Invalid_tz_info] if [tz_offset] is not a possible
+    offset for the particular date time in said time zone.
 
-      If a time zone is provided, then [tz_offset] is checked against the time zone record,
-      and returns [Error `Invalid_tz_info] if [tz_offset] is not a possible
-      offset for the particular date time in said time zone.
+    As an example, for "UTC+1", you would give a duration of positive 1 hour for `tz_offset`.
 
-      As an example, for "UTC+1", you would give a duration of positive 1 hour for `tz_offset`.
+    Otherwise same leap second handling and error handling as [make].
+*)
 
-      Otherwise same leap second handling and error handling as [make].
-  *)
-
-  val make_unambiguous_exn :
-    ?tz:Time_zone.t ->
-    ?ns:int ->
-    ?frac:float ->
-    year:int ->
-    month:int ->
-    day:int ->
-    hour:int ->
-    minute:int ->
-    second:int ->
-    tz_offset:Span.t ->
-    unit ->
-    t
-  (** @raise Error_exn if [make_umabiguous] fails *)
+val make_unambiguous_exn :
+  ?tz:Time_zone.t ->
+  ?ns:int ->
+  ?frac:float ->
+  year:int ->
+  month:int ->
+  day:int ->
+  hour:int ->
+  minute:int ->
+  second:int ->
+  tz_offset:Span.t ->
+  unit ->
+  t
+(** @raise Error_exn if [make_umabiguous] fails *)
 
   val is_leap_second : t -> bool
 
@@ -752,7 +738,6 @@ module Date_time : sig
   val of_sexp_string : string -> (t, string) result
 
   val pp_sexp : Format.formatter -> t -> unit
-end
 
 module Timestamp : sig
   (** Timestamp specific functions
@@ -812,18 +797,7 @@ module Timestamp : sig
   *)
 end
 
-module Week_date_time : sig
-  type t = private {
-    year : int;
-    week : int;
-    weekday : weekday;
-    hour : int;
-    minute : int;
-    second : int;
-    ns : int;
-    tz_info : Date_time.tz_info;
-  }
-
+module ISO_week_date_time : sig
   type error =
     [ `Does_not_exist
     | `Invalid_year of int
@@ -858,6 +832,46 @@ module Week_date_time : sig
     year:int ->
     week:int ->
     weekday:weekday ->
+    hour:int ->
+    minute:int ->
+    second:int ->
+    unit ->
+    t
+end
+
+module ISO_ordinal_date_time : sig
+  type error =
+    [ `Does_not_exist
+    | `Invalid_year of int
+    | `Invalid_day_of_year of int
+    | `Invalid_hour of int
+    | `Invalid_minute of int
+    | `Invalid_second of int
+    | `Invalid_frac of float
+    | `Invalid_ns of int
+    | `Invalid_tz_info of string option * Span.t
+    ]
+
+  exception Error_exn of error
+
+  val make :
+    ?tz:Time_zone.t ->
+    ?ns:int ->
+    ?frac:float ->
+    year:int ->
+    day_of_year:int ->
+    hour:int ->
+    minute:int ->
+    second:int ->
+    unit ->
+    (t, error) result
+
+  val make_exn :
+    ?tz:Time_zone.t ->
+    ?ns:int ->
+    ?frac:float ->
+    year:int ->
+    day_of_year:int ->
     hour:int ->
     minute:int ->
     second:int ->
@@ -908,33 +922,4 @@ module Utils : sig
   val tm_int_of_weekday : weekday -> int
 
   val get_local_tz_for_arg : unit -> Time_zone.t
-end
-
-module Hms : sig
-  type t = private {
-    hour : int;
-    minute : int;
-    second : int;
-  }
-
-  type error =
-    [ `Invalid_hour of int
-    | `Invalid_minute of int
-    | `Invalid_second of int
-    ]
-
-  exception Error_exn of error
-
-  val make : hour:int -> minute:int -> second:int -> (t, error) result
-
-  val make_exn : hour:int -> minute:int -> second:int -> t
-  (** @raise Error_exn if [make] fails *)
-
-  val pp : Format.formatter -> t -> unit
-
-  val to_string : t -> string
-
-  val to_second_of_day : t -> int
-
-  val of_second_of_day : int -> t option
 end

@@ -60,53 +60,52 @@ module Timestamp = struct
   let of_iso8601 = ISO8601.to_timestamp
 end
 
-module Date_time = struct
-  include Date_time_components
-  include Time.Date_time'
+type nonrec 'a local_result = 'a local_result
 
-  type nonrec 'a local_result = 'a local_result
+let to_string = Printers.string_of_date_time
 
-  let to_string = Printers.string_of_date_time
+exception
+  Date_time_cannot_deduce_tz_offset_s = Printers
+                                        .Date_time_cannot_deduce_tz_offset_s
 
-  exception
-    Date_time_cannot_deduce_tz_offset_s = Printers
-                                          .Date_time_cannot_deduce_tz_offset_s
+let pp = Printers.pp_date_time
 
-  let pp = Printers.pp_date_time
+let pp_rfc3339 = RFC3339.pp_date_time
 
-  let pp_rfc3339 = RFC3339.pp_date_time
+let pp_rfc3339_milli = RFC3339.pp_date_time ~frac_s:3 ()
 
-  let pp_rfc3339_milli = RFC3339.pp_date_time ~frac_s:3 ()
+let pp_rfc3339_micro = RFC3339.pp_date_time ~frac_s:6 ()
 
-  let pp_rfc3339_micro = RFC3339.pp_date_time ~frac_s:6 ()
+let pp_rfc3339_nano = RFC3339.pp_date_time ~frac_s:9 ()
 
-  let pp_rfc3339_nano = RFC3339.pp_date_time ~frac_s:9 ()
+let to_rfc3339 = RFC3339.of_date_time
 
-  let to_rfc3339 = RFC3339.of_date_time
+let to_rfc3339_milli = RFC3339.of_date_time ~frac_s:3
 
-  let to_rfc3339_milli = RFC3339.of_date_time ~frac_s:3
+let to_rfc3339_micro = RFC3339.of_date_time ~frac_s:6
 
-  let to_rfc3339_micro = RFC3339.of_date_time ~frac_s:6
+let to_rfc3339_nano = RFC3339.of_date_time ~frac_s:9
 
-  let to_rfc3339_nano = RFC3339.of_date_time ~frac_s:9
+let of_iso8601 = ISO8601.to_date_time
 
-  let of_iso8601 = ISO8601.to_date_time
+let to_sexp = To_sexp.sexp_of_date_time
 
-  let to_sexp = To_sexp.sexp_of_date_time
+let to_sexp_string x = CCSexp.to_string (To_sexp.sexp_of_date_time x)
 
-  let to_sexp_string x = CCSexp.to_string (To_sexp.sexp_of_date_time x)
+let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.date_time_of_sexp
 
-  let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.date_time_of_sexp
+let of_sexp_string =
+  Of_sexp_utils.wrap_of_sexp_into_of_sexp_string Of_sexp.date_time_of_sexp
 
-  let of_sexp_string =
-    Of_sexp_utils.wrap_of_sexp_into_of_sexp_string Of_sexp.date_time_of_sexp
+let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_date_time
 
-  let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_date_time
+let min_of_local_result = min_of_local_result
 
-  let min_of_local_result = min_of_local_result
+let max_of_local_result = max_of_local_result
 
-  let max_of_local_result = max_of_local_result
-end
+module ISO_week_date_time = Wdt'
+
+module ISO_ordinal_date_time = Odt'
 
 module Utils = struct
   let ptime_span_of_span = Ptime_utils.ptime_span_of_span
