@@ -31,7 +31,7 @@ let pad_int (c : char option) (x : int) : string =
   | None -> string_of_int x
   | Some c -> if x < 10 then Printf.sprintf "%c%d" c x else string_of_int x
 
-exception Date_time_cannot_deduce_tz_offset_s of Time.Date_time'.t
+exception Date_time_cannot_deduce_tz_offset_s of Time.t
 
 module Format_string_parsers = struct
   open MParser
@@ -54,37 +54,33 @@ module Format_string_parsers = struct
        >>= fun padding -> char 'X' >> return (Some padding))
     <|> (char 'X' >> return None)
 
-  let date_time_inner (date_time : Time.Date_time'.t) : (string, unit) t =
+  let date_time_inner (date_time : Time.t) : (string, unit) t =
     let tz_offset_s =
-      date_time.tz_info.offset |> CCOpt.map (fun x -> CCInt64.to_int Span.(x.s))
+      date_time.tz_info.offset_from_utc |> CCOpt.map (fun x -> CCInt64.to_int Span.(x.s))
     in
+    let Time.{ year; month; day } = Time.Odt'.ymd_date date_time in
+    let weekday = Time.Odt'.weekday date_time in
     choice
       [
-        attempt (string "year") >> return (Printf.sprintf "%04d" date_time.year);
+        attempt (string "year") >> return (Printf.sprintf "%04d" year);
         attempt (string "mon:")
         >> (attempt size_and_casing
             >>= (fun x ->
                 return
                   (map_string_to_size_and_casing x
                      (CCOpt.get_exn
-                      @@ Time.full_string_of_month date_time.month)))
+                      @@ Time.full_string_of_month month)))
                 <|> (padding
-                     >>= fun padding -> return (pad_int padding date_time.month)));
+                     >>= fun padding -> return (pad_int padding month)));
         (attempt (string "day:")
          >> padding
-         >>= fun padding -> return (pad_int padding date_time.day));
+         >>= fun padding -> return (pad_int padding day));
         (attempt (string "wday:")
          >> size_and_casing
          >>= fun x ->
-         match
-           weekday_of_month_day ~year:date_time.year ~month:date_time.month
-             ~day:date_time.day
-         with
-         | None -> fail "Invalid date time"
-         | Some wday ->
            return
              (map_string_to_size_and_casing x
-                (Time.full_string_of_weekday wday)));
+                (Time.full_string_of_weekday weekday)));
         (attempt (string "hour:")
          >> padding
          >>= fun padding -> return (pad_int padding date_time.hour));
@@ -163,10 +159,10 @@ exception Invalid_format_string of string
 let invalid_format_string s = raise (Invalid_format_string s)
 
 let pp_date_time ?(format : string = default_date_time_format_string) ()
-    (formatter : Format.formatter) (x : Time.Date_time'.t) : unit =
+    (formatter : Format.formatter) (x : Time.t) : unit =
   let open MParser in
   let open Parser_components in
-  let single formatter (date_time : Time.Date_time'.t) : (unit, unit) t =
+  let single formatter (date_time : Time.t) : (unit, unit) t =
     choice
       [
         attempt (string "{{" |>> fun _ -> Fmt.pf formatter "{");
@@ -177,7 +173,7 @@ let pp_date_time ?(format : string = default_date_time_format_string) ()
          |>> fun s -> Fmt.pf formatter "%s" s);
       ]
   in
-  let p formatter (date_time : Time.Date_time'.t) : (unit, unit) t =
+  let p formatter (date_time : Time.t) : (unit, unit) t =
     many (single formatter date_time) >> return ()
   in
   match
@@ -186,30 +182,30 @@ let pp_date_time ?(format : string = default_date_time_format_string) ()
   | Error msg -> invalid_format_string msg
   | Ok () -> ()
 
-let string_of_date_time ?format (x : Time.Date_time'.t) : string option =
+let string_of_date_time ?format (x : Time.t) : string option =
   try Some (Fmt.str "%a" (pp_date_time ?format ()) x)
   with Date_time_cannot_deduce_tz_offset_s _ -> None
 
 let pp_timestamp ?(display_using_tz = Time_zone.utc) ?format () formatter time =
-  match Time.Date_time'.of_timestamp ~tz_of_date_time:display_using_tz time with
+  match Time.Odt'.of_timestamp ~tz_of_date_time:display_using_tz time with
   | None -> invalid_arg "Invalid unix second"
   | Some dt -> Fmt.pf formatter "%a" (pp_date_time ?format ()) dt
 
 let string_of_timestamp ?display_using_tz ?format (time : Span.t) : string =
   Fmt.str "%a" (pp_timestamp ?display_using_tz ?format ()) time
 
-let pp_hms formatter (hms : Time.Hms'.t) : unit =
-  Fmt.pf formatter "%d:%d:%d" hms.hour hms.minute hms.second
+(* let pp_hms formatter (hms : Time.Hms'.t) : unit =
+ *   Fmt.pf formatter "%d:%d:%d" hms.hour hms.minute hms.second *)
 
-let string_of_hms hms = Fmt.str "%a" pp_hms hms
+(* let string_of_hms hms = Fmt.str "%a" pp_hms hms *)
 
 let pp_interval ?(display_using_tz = Time_zone.utc)
     ?(format = default_interval_format_string) () formatter
     ((s, e) : Time.interval) : unit =
   let open MParser in
   let open Parser_components in
-  let single (start_date_time : Time.Date_time'.t)
-      (end_date_time : Time.Date_time'.t) : (unit, unit) t =
+  let single (start_date_time : Time.t)
+      (end_date_time : Time.t) : (unit, unit) t =
     choice
       [
         attempt (string "{{" |>> fun _ -> Fmt.pf formatter "{");
@@ -224,15 +220,15 @@ let pp_interval ?(display_using_tz = Time_zone.utc)
          |>> fun s -> Fmt.pf formatter "%s" s);
       ]
   in
-  let p (start_date_time : Time.Date_time'.t)
-      (end_date_time : Time.Date_time'.t) : (unit, unit) t =
+  let p (start_date_time : Time.t)
+      (end_date_time : Time.t) : (unit, unit) t =
     many (single start_date_time end_date_time) >> return ()
   in
-  match Time.Date_time'.of_timestamp ~tz_of_date_time:display_using_tz s with
+  match Time.Odt'.of_timestamp ~tz_of_date_time:display_using_tz s with
   | None -> invalid_arg "Invalid start unix time"
   | Some s -> (
       match
-        Time.Date_time'.of_timestamp ~tz_of_date_time:display_using_tz e
+        Time.Odt'.of_timestamp ~tz_of_date_time:display_using_tz e
       with
       | None -> invalid_arg "Invalid end unix time"
       | Some e -> (

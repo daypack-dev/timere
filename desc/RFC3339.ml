@@ -43,7 +43,7 @@ let deduce_smallest_lossless_frac_s ~ns =
   else if ns mod frac_s_8_divisor = 0 then 8
   else 9
 
-let pp_date_time ?frac_s () formatter (dt : Time.Date_time'.t) =
+let pp_date_time ?frac_s () formatter (dt : Time.t) =
   let ns = dt.ns mod Span.ns_count_in_s in
   let frac_s =
     match frac_s with
@@ -67,23 +67,24 @@ let pp_date_time ?frac_s () formatter (dt : Time.Date_time'.t) =
             offset_view.minutes
       in
       let second =
-        if Time.Date_time'.is_leap_second dt then 60 else dt.second
+        if Time.Odt'.is_leap_second dt then 60 else dt.second
       in
+      let Time.{ year; month; day } = Time.Odt'.ymd_date dt in
       if frac_s = 0 then
-        Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d%s" dt.year dt.month
-          dt.day dt.hour dt.minute second tz_off
+        Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d%s" year month
+          day dt.hour dt.minute second tz_off
       else
         let divisor = get_divisor frac_s in
-        Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d.%0*d%s" dt.year
-          dt.month dt.day dt.hour dt.minute second frac_s (ns / divisor)
+        Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d.%0*d%s" year
+          month day dt.hour dt.minute second frac_s (ns / divisor)
           tz_off
 
-let of_date_time ?frac_s (dt : Time.Date_time'.t) : string option =
+let of_date_time ?frac_s (dt : Time.t) : string option =
   try Some (Fmt.str "%a" (pp_date_time ?frac_s ()) dt)
   with Printers.Date_time_cannot_deduce_tz_offset_s _ -> None
 
 let pp_timestamp ?frac_s () formatter (x : Span.t) =
-  match Time.Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc x with
+  match Time.Odt'.of_timestamp ~tz_of_date_time:Time_zone.utc x with
   | None -> invalid_arg "Invalid timestamp"
   | Some dt -> Fmt.pf formatter "%a" (pp_date_time ?frac_s ()) dt
 

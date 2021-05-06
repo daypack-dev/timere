@@ -66,12 +66,12 @@ let tz_info_of_sexp (x : CCSexp.t) : Date_time_components.tz_info =
     invalid_data (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x))
   | `List l -> (
       match l with
-      | [ x ] -> { tz = tz_make_of_sexp x; offset = None }
-      | [ x; offset ] ->
+      | [ x ] -> { tz = tz_make_of_sexp x; offset_from_utc = None }
+      | [ x; offset_from_utc ] ->
         {
           tz = tz_make_of_sexp x;
-          offset =
-            Some (Span.make ~s:(CCInt64.of_int @@ int_of_sexp offset) ());
+          offset_from_utc =
+            Some (Span.make ~s:(CCInt64.of_int @@ int_of_sexp offset_from_utc) ());
         }
       | _ ->
         invalid_data
@@ -92,16 +92,16 @@ let date_time_of_sexp (x : CCSexp.t) =
       let ns = int_of_sexp ns in
       let tz_info = tz_info_of_sexp tz_info in
       match tz_info with
-      | { tz; offset = None } -> (
+      | { tz; offset_from_utc = None } -> (
           match
-            Time.Date_time'.make ~year ~month ~day ~hour ~minute ~second ~ns ~tz
+            Time.Dt'.make ~year ~month ~day ~hour ~minute ~second ~ns ~tz
               ()
           with
           | Ok x -> x
           | Error _ -> invalid_data ())
-      | { tz; offset = Some tz_offset } -> (
+      | { tz; offset_from_utc = Some tz_offset } -> (
           match
-            Time.Date_time'.make_unambiguous ~year ~month ~day ~hour ~minute
+            Time.Dt'.make_unambiguous ~year ~month ~day ~hour ~minute
               ~second ~ns ~tz ~tz_offset ()
           with
           | Ok x -> x
@@ -111,9 +111,9 @@ let date_time_of_sexp (x : CCSexp.t) =
 let timestamp_of_sexp x =
   let dt = date_time_of_sexp x in
   match dt.tz_info with
-  | { tz = _; offset = None } ->
+  | { tz = _; offset_from_utc = None } ->
     invalid_data "Expected time zone offset 0, but got None instead"
-  | { tz; offset = Some tz_offset } -> (
+  | { tz; offset_from_utc = Some tz_offset } -> (
       let tz_name = Time_zone.name tz in
       if tz_name <> "UTC" then
         invalid_data
@@ -121,6 +121,6 @@ let timestamp_of_sexp x =
       else if not Span.(equal tz_offset zero) then
         invalid_data "Expected time zone offset 0"
       else
-        match Time.Date_time'.to_timestamp dt with
+        match Time.Odt'.to_timestamp dt with
         | `Single x -> x
         | _ -> failwith "Unexpected case")

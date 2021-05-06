@@ -83,23 +83,26 @@ let is_leap_year ~year =
 let day_count_of_year ~year = if is_leap_year ~year then 366 else 365
 
 let day_offset_from_start_of_year ~year ~month =
-  let offset_from_leap_year =
-    if is_leap_year ~year:year then 1 else 0
+  let aux month =
+    match month with
+    | 1 -> 0
+    | 2 -> 31
+    | 3 -> 59
+    | 4 -> 90
+    | 5 -> 120
+    | 6 -> 151
+    | 7 -> 181
+    | 8 -> 212
+    | 9 -> 243
+    | 10 -> 273
+    | 11 -> 304
+    | 12 -> 334
+    | _ -> failwith "Unexpected case"
   in
-  match month with
-  | 1 -> 0
-  | 2 -> 31
-  | 3 -> 59 + offset_from_leap_year
-  | 4 -> 90 + offset_from_leap_year
-  | 5 -> 120 + offset_from_leap_year
-  | 6 -> 151 + offset_from_leap_year
-  | 7 -> 181 + offset_from_leap_year
-  | 8 -> 212 + offset_from_leap_year
-  | 9 -> 243 + offset_from_leap_year
-  | 10 -> 273 + offset_from_leap_year
-  | 11 -> 304 + offset_from_leap_year
-  | 12 -> 334 + offset_from_leap_year
-  | _ -> failwith "Unexpected case"
+  if is_leap_year ~year:year then
+    if month > 2 then aux month + 1 else aux month
+  else
+    aux month
 
 let md_of_ydoy ~year ~day_of_year : (int * int) =
   let rec aux ~month =
@@ -119,6 +122,34 @@ let md_of_ydoy ~year ~day_of_year : (int * int) =
 let doy_of_ymd ~year ~month ~day : int =
   day_offset_from_start_of_year ~year ~month + day
 
+let jd_of_ydoy ~year ~day_of_year =
+  let month, day =
+    md_of_ydoy ~year ~day_of_year
+  in
+  jd_of_ymd ~year ~month ~day
+
+let jd_of_start_of_iso_week_year ~iso_week_year =
+  (* we use the fact that
+     - Jan 4th is always in week 1 of the year
+     - and week starts on Monday
+
+     to find the start date of week 1
+  *)
+  match weekday_of_ymd ~year:iso_week_year ~month:1 ~day:4 with
+  | `Mon -> jd_of_ymd ~year:iso_week_year ~month:1 ~day:4
+  | `Tue -> jd_of_ymd ~year:iso_week_year ~month:1 ~day:3
+  | `Wed -> jd_of_ymd ~year:iso_week_year ~month:1 ~day:2
+  | `Thu -> jd_of_ymd ~year:iso_week_year ~month:1 ~day:1
+  | `Fri -> jd_of_ymd ~year:(pred iso_week_year) ~month:12 ~day:31
+  | `Sat -> jd_of_ymd ~year:(pred iso_week_year) ~month:12 ~day:30
+  | `Sun -> jd_of_ymd ~year:(pred iso_week_year) ~month:12 ~day:29
+
+let week_count_of_iso_week_year ~iso_week_year =
+  (
+    jd_of_start_of_iso_week_year ~iso_week_year
+    - jd_of_start_of_iso_week_year ~iso_week_year:(succ iso_week_year)
+  ) / 7
+
 module Weekday_set = struct
   include CCSet.Make (struct
       type t = weekday
@@ -128,10 +159,6 @@ module Weekday_set = struct
 
   let to_seq x = x |> to_list |> CCList.to_seq
 end
-
-let weekday_of_ymd ~(year : int) ~(month : int) ~(day : int) :
-  weekday option =
-  Ptime.(of_date (year, month, day)) |> CCOpt.map Ptime.weekday
 
 let day_count_of_month ~year ~month =
   match month with
@@ -151,14 +178,14 @@ let day_count_of_month ~year ~month =
 
 type tz_info = {
   tz : Time_zone.t;
-  offset : Span.t option;
+  offset_from_utc : Span.t option;
 }
 
 let equal_tz_info (x : tz_info) (y : tz_info) =
   match (x, y) with
-  | { tz = tz1; offset = None }, { tz = tz2; offset = None } ->
+  | { tz = tz1; offset_from_utc = None }, { tz = tz2; offset_from_utc = None } ->
     Time_zone.equal tz1 tz2
-  | { tz = tz1; offset = Some x1 }, { tz = tz2; offset = Some x2 } ->
+  | { tz = tz1; offset_from_utc = Some x1 }, { tz = tz2; offset_from_utc = Some x2 } ->
     Time_zone.equal tz1 tz2 && Span.equal x1 x2
   | _, _ -> false
 
@@ -171,15 +198,15 @@ type tz_info_error =
 let make_tz_info ?tz ?tz_offset () : (tz_info, tz_info_error) result =
   match (tz, tz_offset) with
   | None, None -> Error `Missing_both_tz_and_tz_offset
-  | Some tz, None -> Ok { tz; offset = Time_zone.to_fixed_offset tz }
+  | Some tz, None -> Ok { tz; offset_from_utc = Time_zone.to_fixed_offset tz }
   | None, Some tz_offset -> (
       match Time_zone.make_offset_only tz_offset with
       | None -> Error (`Invalid_offset tz_offset)
-      | Some tz -> Ok { tz; offset = Some tz_offset })
+      | Some tz -> Ok { tz; offset_from_utc = Some tz_offset })
   | Some tz, Some tz_offset ->
     if Time_zone.offset_is_recorded tz_offset tz then
-      Ok { tz; offset = Some tz_offset }
+      Ok { tz; offset_from_utc = Some tz_offset }
     else Error (`Unrecorded_offset tz_offset)
 
-let tz_offset_of_tz_info ({ tz; offset } : tz_info) =
-  match offset with Some x -> Some x | None -> Time_zone.to_fixed_offset tz
+let tz_offset_of_tz_info ({ tz; offset_from_utc } : tz_info) =
+  match offset_from_utc with Some x -> Some x | None -> Time_zone.to_fixed_offset tz

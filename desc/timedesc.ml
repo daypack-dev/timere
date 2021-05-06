@@ -108,18 +108,6 @@ module Date_time = struct
   let max_of_local_result = max_of_local_result
 end
 
-module Week_date_time = struct
-  include Time.Week_date_time'
-end
-
-module Hms = struct
-  include Hms'
-
-  let pp = Printers.pp_hms
-
-  let to_string = Printers.string_of_hms
-end
-
 module Utils = struct
   let ptime_span_of_span = Ptime_utils.ptime_span_of_span
 
