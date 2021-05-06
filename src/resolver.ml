@@ -239,9 +239,7 @@ let overapproximate_search_space_bottom_up default_tz (time : t) : t =
         | None -> default_search_space
         | Some dt ->
           let space_start =
-            dt
-            |> Time.Date_time'.to_timestamp
-            |> Time.min_of_local_result
+            dt |> Time.Date_time'.to_timestamp |> Time.min_of_local_result
           in
           let space_end_exc =
             dt

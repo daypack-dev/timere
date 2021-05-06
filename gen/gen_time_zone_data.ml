@@ -209,9 +209,8 @@ let transitions_of_zdump_lines (l : zdump_line list) : transition list =
 
 let min_timestamp = Timere.Span.((Timere.Utils.timestamp_of_ptime Ptime.min).s)
 
-let max_timestamp = Timere.Span.((
-    Timere.Utils.timestamp_of_ptime Ptime.max
-  ).s) |> Int64.pred
+let max_timestamp =
+  Timere.Span.((Timere.Utils.timestamp_of_ptime Ptime.max).s) |> Int64.pred
 
 let timestamp_of_date_time_utc (x : date_time) : int64 =
   assert (x.tz = String "UT");
@@ -220,7 +219,7 @@ let timestamp_of_date_time_utc (x : date_time) : int64 =
     ((x.year, x.month, x.day), ((x.hour, x.minute, x.second), offset))
   |> CCOpt.get_exn
   |> Timere.Utils.timestamp_of_ptime
-  |> (fun x -> Timere.Span.(x.s))
+  |> fun x -> Timere.Span.(x.s)
 
 let timestamp_of_date_time_local (x : date_time) : int64 =
   let offset = 0 in
@@ -228,7 +227,7 @@ let timestamp_of_date_time_local (x : date_time) : int64 =
     ((x.year, x.month, x.day), ((x.hour, x.minute, x.second), offset))
   |> CCOpt.get_exn
   |> Timere.Utils.timestamp_of_ptime
-  |> (fun x -> Timere.Span.(x.s))
+  |> fun x -> Timere.Span.(x.s)
 
 let transition_record_indexed_by_utc_of_transition (x : transition) :
   transition_record =

@@ -72,7 +72,10 @@ let tz_info_of_sexp (x : CCSexp.t) : Date_time_components.tz_info =
         {
           tz = tz_make_of_sexp x;
           offset_from_utc =
-            Some (Span.make ~s:(CCInt64.of_int @@ int_of_sexp offset_from_utc) ());
+            Some
+              (Span.make
+                 ~s:(CCInt64.of_int @@ int_of_sexp offset_from_utc)
+                 ());
         }
       | _ ->
         invalid_data
@@ -94,15 +97,15 @@ let date_time_of_sexp (x : CCSexp.t) =
       match tz_info with
       | { tz; offset_from_utc = None } -> (
           match
-            Date_time.ISO_ord_date_time.make ~year ~day_of_year ~hour ~minute ~second ~ns ~tz
-              ()
+            Date_time.ISO_ord_date_time.make ~year ~day_of_year ~hour ~minute
+              ~second ~ns ~tz ()
           with
           | Ok x -> x
           | Error _ -> invalid_data ())
       | { tz; offset_from_utc = Some tz_offset } -> (
           match
-            Date_time.ISO_ord_date_time.make_unambiguous ~year ~day_of_year ~hour ~minute
-              ~second ~ns ~tz ~tz_offset ()
+            Date_time.ISO_ord_date_time.make_unambiguous ~year ~day_of_year
+              ~hour ~minute ~second ~ns ~tz ~tz_offset ()
           with
           | Ok x -> x
           | Error _ -> invalid_data ()))

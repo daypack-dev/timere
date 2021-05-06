@@ -82,8 +82,8 @@ let to_date_time s : (Date_time.t, string) result =
       else (hour, minute, second, ns)
     in
     match
-      Date_time.Ymd_date_time.make_unambiguous ~year ~month ~day ~hour ~minute ~second
-        ~ns ~tz_offset:offset ()
+      Date_time.Ymd_date_time.make_unambiguous ~year ~month ~day ~hour ~minute
+        ~second ~ns ~tz_offset:offset ()
     with
     | Error e ->
       fail

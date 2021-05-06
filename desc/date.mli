@@ -17,7 +17,8 @@ module ISO_week_date : sig
 
   val equal : t -> t -> bool
 
-  val make : iso_week_year:int -> week:int -> weekday:weekday -> (t, error) result
+  val make :
+    iso_week_year:int -> week:int -> weekday:weekday -> (t, error) result
 
   val make_exn : iso_week_year:int -> week:int -> weekday:weekday -> t
 end

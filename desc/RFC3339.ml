@@ -71,13 +71,12 @@ let pp_date_time ?frac_s () formatter (dt : Date_time.t) =
       in
       let Date.Ymd_date.{ year; month; day } = Date_time.ymd_date dt in
       if frac_s = 0 then
-        Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d%s" year month
-          day dt.time.hour dt.time.minute second tz_off
+        Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d%s" year month day
+          dt.time.hour dt.time.minute second tz_off
       else
         let divisor = get_divisor frac_s in
-        Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d.%0*d%s" year
-          month day dt.time.hour dt.time.minute second frac_s (ns / divisor)
-          tz_off
+        Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d.%0*d%s" year month day
+          dt.time.hour dt.time.minute second frac_s (ns / divisor) tz_off
 
 let of_date_time ?frac_s (dt : Date_time.t) : string option =
   try Some (Fmt.str "%a" (pp_date_time ?frac_s ()) dt)

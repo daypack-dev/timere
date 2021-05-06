@@ -41,24 +41,28 @@ let compare_weekday (d1 : weekday) (d2 : weekday) : int =
 let jd_of_ymd ~year ~month ~day =
   let a = (14 - month) / 12 in
   let y = year + 4800 - a in
-  let m = month + 12 * a - 3 in
-  day + ((153 * m) + 2)/ 5 + 365 * y +
-  (y / 4) - (y / 100) + (y / 400) - 32045
+  let m = month + (12 * a) - 3 in
+  day
+  + (((153 * m) + 2) / 5)
+  + (365 * y)
+  + (y / 4)
+  - (y / 100)
+  + (y / 400)
+  - 32045
 
 let ymd_of_jd jd =
   let a = jd + 32044 in
-  let b = (4 * a + 3) / 146097 in
-  let c = a - ((146097 * b) / 4) in
-  let d = (4 * c + 3) / 1461 in
-  let e = c - ((1461 * d) / 4) in
-  let m = (5 * e + 2) / 153 in
-  let day = e - ((153 * m + 2) / 5) + 1 in
+  let b = ((4 * a) + 3) / 146097 in
+  let c = a - (146097 * b / 4) in
+  let d = ((4 * c) + 3) / 1461 in
+  let e = c - (1461 * d / 4) in
+  let m = ((5 * e) + 2) / 153 in
+  let day = e - (((153 * m) + 2) / 5) + 1 in
   let month = m + 3 - (12 * (m / 10)) in
-  let year = 100 * b + d - 4800 + (m / 10) in
+  let year = (100 * b) + d - 4800 + (m / 10) in
   (year, month, day)
 
-let jd_of_epoch =
-  jd_of_ymd ~year:1970 ~month:1 ~day:1
+let jd_of_epoch = jd_of_ymd ~year:1970 ~month:1 ~day:1
 
 let weekday_of_ymd ~year ~month ~day =
   (* epoch was on thursday *)
@@ -99,21 +103,15 @@ let day_offset_from_start_of_year ~year ~month =
     | 12 -> 334
     | _ -> failwith "Unexpected case"
   in
-  if is_leap_year ~year:year then
-    if month > 2 then aux month + 1 else aux month
-  else
-    aux month
+  if is_leap_year ~year then if month > 2 then aux month + 1 else aux month
+  else aux month
 
-let md_of_ydoy ~year ~day_of_year : (int * int) =
+let md_of_ydoy ~year ~day_of_year : int * int =
   let rec aux ~month =
-    if month < 1 then
-      failwith "Unexpected case"
+    if month < 1 then failwith "Unexpected case"
     else
       let offset = day_offset_from_start_of_year ~year ~month in
-      if offset + 1 <= day_of_year then
-        month
-      else
-        aux ~month:(pred month)
+      if offset + 1 <= day_of_year then month else aux ~month:(pred month)
   in
   let month = aux ~month:12 in
   let day = day_of_year - day_offset_from_start_of_year ~year ~month in
@@ -123,9 +121,7 @@ let doy_of_ymd ~year ~month ~day : int =
   day_offset_from_start_of_year ~year ~month + day
 
 let jd_of_ydoy ~year ~day_of_year =
-  let month, day =
-    md_of_ydoy ~year ~day_of_year
-  in
+  let month, day = md_of_ydoy ~year ~day_of_year in
   jd_of_ymd ~year ~month ~day
 
 let jd_of_start_of_iso_week_year ~iso_week_year =
@@ -145,10 +141,9 @@ let jd_of_start_of_iso_week_year ~iso_week_year =
   | `Sun -> jd_of_ymd ~year:(pred iso_week_year) ~month:12 ~day:29
 
 let week_count_of_iso_week_year ~iso_week_year =
-  (
-    jd_of_start_of_iso_week_year ~iso_week_year
-    - jd_of_start_of_iso_week_year ~iso_week_year:(succ iso_week_year)
-  ) / 7
+  (jd_of_start_of_iso_week_year ~iso_week_year
+   - jd_of_start_of_iso_week_year ~iso_week_year:(succ iso_week_year))
+  / 7
 
 module Weekday_set = struct
   include CCSet.Make (struct
@@ -183,9 +178,11 @@ type tz_info = {
 
 let equal_tz_info (x : tz_info) (y : tz_info) =
   match (x, y) with
-  | { tz = tz1; offset_from_utc = None }, { tz = tz2; offset_from_utc = None } ->
+  | { tz = tz1; offset_from_utc = None }, { tz = tz2; offset_from_utc = None }
+    ->
     Time_zone.equal tz1 tz2
-  | { tz = tz1; offset_from_utc = Some x1 }, { tz = tz2; offset_from_utc = Some x2 } ->
+  | ( { tz = tz1; offset_from_utc = Some x1 },
+      { tz = tz2; offset_from_utc = Some x2 } ) ->
     Time_zone.equal tz1 tz2 && Span.equal x1 x2
   | _, _ -> false
 
@@ -209,7 +206,9 @@ let make_tz_info ?tz ?tz_offset () : (tz_info, tz_info_error) result =
     else Error (`Unrecorded_offset tz_offset)
 
 let tz_offset_of_tz_info ({ tz; offset_from_utc } : tz_info) =
-  match offset_from_utc with Some x -> Some x | None -> Time_zone.to_fixed_offset tz
+  match offset_from_utc with
+  | Some x -> Some x
+  | None -> Time_zone.to_fixed_offset tz
 
 let full_string_of_weekday (wday : weekday) : string =
   match wday with

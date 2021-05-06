@@ -1,7 +1,6 @@
 open Date_time_components
 
-let sexp_of_month x =
-  CCSexp.atom @@ CCOpt.get_exn @@ abbr_string_of_month x
+let sexp_of_month x = CCSexp.atom @@ CCOpt.get_exn @@ abbr_string_of_month x
 
 let sexp_of_weekday x = CCSexp.atom @@ abbr_string_of_weekday x
 

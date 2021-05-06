@@ -15,9 +15,17 @@ type error =
 
 exception Error_exn of error
 
-val make : ?ns:int -> ?s_frac:float -> hour:int -> minute:int -> second:int -> unit -> (t, error) result
+val make :
+  ?ns:int ->
+  ?s_frac:float ->
+  hour:int ->
+  minute:int ->
+  second:int ->
+  unit ->
+  (t, error) result
 
-val make_exn : ?ns:int -> ?s_frac:float -> hour:int -> minute:int -> second:int -> unit -> t
+val make_exn :
+  ?ns:int -> ?s_frac:float -> hour:int -> minute:int -> second:int -> unit -> t
 
 val to_span : t -> Span.t
 

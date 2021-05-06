@@ -588,69 +588,69 @@ val make_unambiguous_exn :
   t
 (** @raise Error_exn if [make_umabiguous] fails *)
 
-  val is_leap_second : t -> bool
+val is_leap_second : t -> bool
 
-  type 'a local_result =
-    [ `Single of 'a
-    | `Ambiguous of 'a * 'a
-    ]
-  (** Result for when a local date time may be involved, e.g. using a date time with no precise time zone offset attached.
+type 'a local_result =
+  [ `Single of 'a
+  | `Ambiguous of 'a * 'a
+  ]
+(** Result for when a local date time may be involved, e.g. using a date time with no precise time zone offset attached.
 
-      - [`Single] is yielded when the date time maps to exactly one ['a].
+    - [`Single] is yielded when the date time maps to exactly one ['a].
         This happens when date time carries an accurate offset,
         or when the date time is not affected by any offset shifts (thus an accurate offset can be inferred).
-      - [`Ambiguous] is yielded when date time maps to more than one (exactly two) ['a].
+    - [`Ambiguous] is yielded when date time maps to more than one (exactly two) ['a].
         This happens when DST ends and "goes back an hour" for instance.
-  *)
+*)
 
-  val to_timestamp : t -> timestamp local_result
-  (** [to_timestamp] loses information about leap second
-  *)
+val to_timestamp : t -> timestamp local_result
+(** [to_timestamp] loses information about leap second
+*)
 
-  val to_timestamp_single : t -> timestamp
-  (** @raise Invalid_argument if [to_timestamp] does not yield a [`Single] result *)
+val to_timestamp_single : t -> timestamp
+(** @raise Invalid_argument if [to_timestamp] does not yield a [`Single] result *)
 
-  val to_timestamp_float : t -> float local_result
+val to_timestamp_float : t -> float local_result
 
-  val to_timestamp_float_single : t -> float
-  (** @raise Invalid_argument if [to_timestamp_single] does not yield a [`Single] result *)
+val to_timestamp_float_single : t -> float
+(** @raise Invalid_argument if [to_timestamp_single] does not yield a [`Single] result *)
 
-  val min_of_local_result : 'a local_result -> 'a
+val min_of_local_result : 'a local_result -> 'a
 
-  val max_of_local_result : 'a local_result -> 'a
+val max_of_local_result : 'a local_result -> 'a
 
-  val of_timestamp : ?tz_of_date_time:Time_zone.t -> timestamp -> t option
+val of_timestamp : ?tz_of_date_time:Time_zone.t -> timestamp -> t option
 
-  val of_timestamp_exn : ?tz_of_date_time:Time_zone.t -> timestamp -> t
+val of_timestamp_exn : ?tz_of_date_time:Time_zone.t -> timestamp -> t
 
-  val of_timestamp_float : ?tz_of_date_time:Time_zone.t -> float -> t option
+val of_timestamp_float : ?tz_of_date_time:Time_zone.t -> float -> t option
 
-  val of_timestamp_float_exn : ?tz_of_date_time:Time_zone.t -> float -> t
+val of_timestamp_float_exn : ?tz_of_date_time:Time_zone.t -> float -> t
 
-  val equal : t -> t -> bool
+val equal : t -> t -> bool
 
-  val min_val : t
+val min_val : t
 
-  val max_val : t
+val max_val : t
 
-  val now : ?tz_of_date_time:Time_zone.t -> unit -> t
+val now : ?tz_of_date_time:Time_zone.t -> unit -> t
 
-  val weekday : t -> weekday
+val weekday : t -> weekday
 
-  exception Date_time_cannot_deduce_tz_offset_s of t
+exception Date_time_cannot_deduce_tz_offset_s of t
 
-  val pp : ?format:string -> unit -> Format.formatter -> t -> unit
-  (**
+val pp : ?format:string -> unit -> Format.formatter -> t -> unit
+(**
      Pretty printing for date time.
 
      Default format string:
-     {v
+   {v
 {year} {mon:Xxx} {day:0X} {hour:0X}:{min:0X}:{sec:0X} \
 {tzoff-sign}{tzoff-hour:0X}:{tzoff-min:0X}:{tzoff-sec:0X}
      v}
 
      Format string specification:
-     {v
+   {v
 {{               literal {
 {year}           year
 {mon:Xxx}        abbreviated month name (e.g. Jan), casing of 'x' controls the casing
@@ -684,17 +684,17 @@ val make_unambiguous_exn :
 {tzoff-sec:cX}   time zone offset second, follows same padding rule as "{sec:cX}"
                  raises Date_time_cannot_deduce_tz_offset_s if time zone offset cannot be calculated
      v}
-  *)
+*)
 
-  val to_string : ?format:string -> t -> string option
-  (**
+val to_string : ?format:string -> t -> string option
+(**
      String conversion using [pp].
 
      Returns [None] instead of raising exception when time zone offset cannot be deduced but required by the format string
-  *)
+*)
 
-  val pp_rfc3339 : ?frac_s:int -> unit -> Format.formatter -> t -> unit
-  (**
+val pp_rfc3339 : ?frac_s:int -> unit -> Format.formatter -> t -> unit
+(**
      Pretty prints according to RFC3339, e.g. [2020-01-20T13:00:00.0001+10].
 
      [frac_s] defaults to as many digits as required for a lossless representation.
@@ -702,42 +702,42 @@ val make_unambiguous_exn :
      @raise Invalid_argument if [frac_s < 0 || frac_s > 9]
 
      @raise Date_time_cannot_deduce_tz_offset_s if time zone offset cannot be calculated
-  *)
+*)
 
-  val pp_rfc3339_milli : Format.formatter -> t -> unit
+val pp_rfc3339_milli : Format.formatter -> t -> unit
 
-  val pp_rfc3339_micro : Format.formatter -> t -> unit
+val pp_rfc3339_micro : Format.formatter -> t -> unit
 
-  val pp_rfc3339_nano : Format.formatter -> t -> unit
+val pp_rfc3339_nano : Format.formatter -> t -> unit
 
-  val to_rfc3339 : ?frac_s:int -> t -> string option
-  (** String conversion using [pp_rfc3339].
+val to_rfc3339 : ?frac_s:int -> t -> string option
+(** String conversion using [pp_rfc3339].
 
       Returns [None] if time zone offset cannot be deduced instead of raising exception.
-  *)
+*)
 
-  val to_rfc3339_milli : t -> string option
+val to_rfc3339_milli : t -> string option
 
-  val to_rfc3339_micro : t -> string option
+val to_rfc3339_micro : t -> string option
 
-  val to_rfc3339_nano : t -> string option
+val to_rfc3339_nano : t -> string option
 
-  val of_iso8601 : string -> (t, string) result
-  (**
+val of_iso8601 : string -> (t, string) result
+(**
      Parses a subset of ISO8601, up to 9 fractional digits for second (nanosecond precision).
 
      If more than 9 fractional digits are provided, then only the first 9 digits are used, i.e. no rounding.
-  *)
+*)
 
-  val to_sexp : t -> CCSexp.t
+val to_sexp : t -> CCSexp.t
 
-  val to_sexp_string : t -> string
+val to_sexp_string : t -> string
 
-  val of_sexp : CCSexp.t -> (t, string) result
+val of_sexp : CCSexp.t -> (t, string) result
 
-  val of_sexp_string : string -> (t, string) result
+val of_sexp_string : string -> (t, string) result
 
-  val pp_sexp : Format.formatter -> t -> unit
+val pp_sexp : Format.formatter -> t -> unit
 
 module Timestamp : sig
   (** Timestamp specific functions
