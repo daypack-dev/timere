@@ -9,8 +9,8 @@
  (name timedesc)
  (public_name timedesc)
  (libraries
-            timere.tzdb
-            timere.tzlocal
+            timedesc.tzdb
+            timedesc.tzlocal
             unix
             ptime
             oseq

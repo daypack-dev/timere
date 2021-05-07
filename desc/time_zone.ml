@@ -1,4 +1,4 @@
-include Timere_tzdb
+include Timedesc_tzdb
 
 type record = {
   recorded_offsets : int array;
@@ -473,7 +473,7 @@ end
 let available_time_zones = Db.names db
 
 let local () : t option =
-  match Timere_tzlocal.local () with
+  match Timedesc_tzlocal.local () with
   | [] -> None
   | l ->
     List.fold_left

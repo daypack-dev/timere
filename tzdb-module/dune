@@ -1,6 +1,6 @@
 (library
- (name timere_tzdb)
- (public_name timere.tzdb)
- (virtual_modules timere_tzdb)
- (default_implementation timere.tzdb.full)
+ (name timedesc_tzdb)
+ (public_name timedesc.tzdb)
+ (virtual_modules timedesc_tzdb)
+ (default_implementation timedesc.tzdb.full)
 )
