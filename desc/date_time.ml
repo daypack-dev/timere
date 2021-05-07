@@ -218,6 +218,10 @@ let day_of_year dt =
 
 let time dt = dt.time
 
+let tz dt = dt.tz_info.tz
+
+let fixed_offset_from_utc dt = dt.tz_info.offset_from_utc
+
 module ISO_ord_date_time = struct
   type error =
     [ `Does_not_exist

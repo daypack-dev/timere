@@ -228,3 +228,20 @@ let to_pattern (t, _tz_info) =
       Int_set.add second Int_set.empty
   in
   Pattern.{ years; months; month_days; weekdays; hours; minutes; seconds }
+
+let to_date_time ~default_tz_info ((pick, tz_info) : t) : Timedesc.t option =
+  let tz_info =
+    match tz_info with
+    | None -> default_tz_info
+    | Some x -> x
+  in
+  match pick with
+  | YMDHMS { year; month; month_day; hour; minute; second } -> (
+      let tz = tz_info.tz in
+      match tz_info.offset_from_utc with
+      | Some tz_offset ->
+        Some (Timedesc.make_unambiguous_exn ~tz ~tz_offset ~year ~month ~day:month_day ~hour ~minute ~second ())
+      | None ->
+        Some (Timedesc.make_exn ~tz ~year ~month ~day:month_day ~hour ~minute ~second ())
+    )
+  | _ -> None

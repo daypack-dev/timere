@@ -1,12 +1,12 @@
 open Time_ast
 
-type timestamp = Span.t
+type timestamp = Timedesc.Span.t
 
 type search_space = Time.Interval'.t list
 
-let default_search_space_start = Time.timestamp_min
+let default_search_space_start = Timedesc.Timestamp.min_val
 
-let default_search_space_end_exc = Time.timestamp_max
+let default_search_space_end_exc = Timedesc.Timestamp.max_val
 
 let default_search_space : search_space =
   [ (default_search_space_start, default_search_space_end_exc) ]
@@ -22,7 +22,7 @@ type t =
   | Bounded_intervals of {
       search_space : search_space;
       pick : [ `Whole | `Snd ];
-      bound : Span.t;
+      bound : Timedesc.Span.t;
       start : Points.t;
       end_exc : Points.t;
     }
@@ -66,25 +66,25 @@ let get_search_space (time : t) : Time.Interval'.t list =
   | Unchunk (s, _) -> s
 
 let timestamp_safe_sub a b =
-  let open Span in
+  let open Timedesc.Span in
   if b >= zero then
-    if a - Constants.timestamp_min >= b then a - b else Constants.timestamp_min
+    if a - Timedesc.Timestamp.min_val >= b then a - b else Timedesc.Timestamp.max_val
   else
     let b' = abs b in
-    if Constants.timestamp_max - a >= b' then a + b'
-    else Constants.timestamp_max
+    if Timedesc.Timestamp.max_val - a >= b' then a + b'
+    else Timedesc.Timestamp.max_val
 
 let timestamp_safe_add a b =
-  let open Span in
+  let open Timedesc.Span in
   if b >= zero then
-    if Constants.timestamp_max - a >= b then a + b else Constants.timestamp_max
+    if Timedesc.Timestamp.max_val - a >= b then a + b else Timedesc.Timestamp.max_val
   else
     let b' = abs b in
-    if a - Constants.timestamp_min >= b' then a - b'
-    else Constants.timestamp_min
+    if a - Timedesc.Timestamp.min_val >= b' then a - b'
+    else Timedesc.Timestamp.min_val
 
 let calibrate_search_space_for_set (time : t) space : search_space =
-  let open Span in
+  let open Timedesc.Span in
   match time with
   | All | Empty | Intervals _ | Pattern _ -> space
   | Unary_op (_, op, _) -> (
@@ -94,10 +94,10 @@ let calibrate_search_space_for_set (time : t) space : search_space =
           (fun (x, y) ->
              if n >= zero then
                ( timestamp_safe_sub x n,
-                 if y >= Constants.timestamp_max then y
+                 if y >= Timedesc.Timestamp.max_val then y
                  else timestamp_safe_sub y n )
              else
-               ( (if x <= Constants.timestamp_min then x
+               ( (if x <= Timedesc.Timestamp.min_val then x
                   else timestamp_safe_sub x n),
                  timestamp_safe_sub y n ))
           space
@@ -106,7 +106,7 @@ let calibrate_search_space_for_set (time : t) space : search_space =
         |> CCList.to_seq
         |> Seq.map (fun (x, y) ->
             let y =
-              if y >= Constants.timestamp_max then y
+              if y >= Timedesc.Timestamp.max_val then y
               else timestamp_safe_sub y n
             in
             (x, max x y))
@@ -134,33 +134,43 @@ let set_search_space space (time : t) : t =
   | Unchunk (_, c) -> Unchunk (space, c)
 
 let search_space_of_year_range tz year_range =
-  let open Time in
   let aux_start start =
-    Date_time'.set_to_first_month_day_hour_min_sec_ns
-      { Date_time'.min_val with year = start; tz_info = { tz; offset = None } }
-    |> Date_time'.to_timestamp
-    |> min_of_local_result
+    Timedesc.make_exn ~tz
+      ~year:start
+      ~month:1
+      ~day:1
+      ~hour:0
+      ~minute:0
+      ~second:0
+      ()
+    |> Timedesc.to_timestamp
+    |> Timedesc.min_of_local_result
   in
   let aux_end_inc end_exc =
-    Date_time'.set_to_last_month_day_hour_min_sec_ns
-      {
-        Date_time'.min_val with
-        year = end_exc;
-        tz_info = { tz; offset = None };
-      }
-    |> Date_time'.to_timestamp
-    |> min_of_local_result
-    |> Span.succ
+    Timedesc.make_exn ~tz
+      ~year:end_exc
+      ~month:12
+      ~day:31
+      ~hour:23
+      ~minute:59
+      ~second:59
+      ~ns:(Timedesc.Span.ns_count_in_s - 1)
+      ()
+    |> Timedesc.to_timestamp
+    |> Timedesc.max_of_local_result
+    |> Timedesc.Span.succ
   in
   let aux_end_exc end_exc =
-    Date_time'.set_to_first_month_day_hour_min_sec_ns
-      {
-        Date_time'.min_val with
-        year = end_exc;
-        tz_info = { tz; offset = None };
-      }
-    |> Date_time'.to_timestamp
-    |> min_of_local_result
+    Timedesc.make_exn ~tz
+      ~year:end_exc
+      ~month:1
+      ~day:1
+      ~hour:0
+      ~minute:0
+      ~second:0
+      ()
+    |> Timedesc.to_timestamp
+    |> Timedesc.min_of_local_result
   in
   match year_range with
   | `Range_inc (start, end_inc) -> (aux_start start, aux_end_inc end_inc)
@@ -173,7 +183,7 @@ let empty_search_space = []
 
 let overapproximate_search_space_bottom_up default_tz (time : t) : t =
   let open Time in
-  let rec aux (tz : Time_zone.t) (time : t) : t =
+  let rec aux (tz : Timedesc.Time_zone.t) (time : t) : t =
     match time with
     | All -> All
     | Empty -> Empty
@@ -231,21 +241,21 @@ let overapproximate_search_space_bottom_up default_tz (time : t) : t =
     | Bounded_intervals { search_space = _; pick; bound; start; end_exc } ->
       let search_space =
         match
-          Time.Date_time'.of_points
+          Points.to_date_time
             ~default_tz_info:
-              (CCResult.get_exn @@ Date_time_components.make_tz_info ~tz ())
+              (CCResult.get_exn @@ Timedesc.make_tz_info ~tz ())
             start
         with
         | None -> default_search_space
         | Some dt ->
           let space_start =
-            dt |> Time.Date_time'.to_timestamp |> Time.min_of_local_result
+            dt |> Timedesc.to_timestamp |> Timedesc.min_of_local_result
           in
           let space_end_exc =
             dt
-            |> Time.Date_time'.to_timestamp
-            |> Time.max_of_local_result
-            |> Span.add bound
+            |> Timedesc.to_timestamp
+            |> Timedesc.max_of_local_result
+            |> Timedesc.Span.add bound
           in
           [ (space_start, space_end_exc) ]
       in
@@ -327,21 +337,23 @@ let do_chunk_at_year_boundary tz (s : Time.Interval'.t Seq.t) =
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((t1, t2), rest) ->
       let dt1 =
-        CCOpt.get_exn @@ Date_time'.of_timestamp ~tz_of_date_time:tz t1
+        CCOpt.get_exn @@ Timedesc.of_timestamp ~tz_of_date_time:tz t1
       in
       let dt2 =
         t2
-        |> Span.pred
-        |> Date_time'.of_timestamp ~tz_of_date_time:tz
+        |> Timedesc.Span.pred
+        |> Timedesc.of_timestamp ~tz_of_date_time:tz
         |> CCOpt.get_exn
       in
-      if dt1.year = dt2.year then fun () -> Seq.Cons ((t1, t2), aux rest)
+      let dt1_year = Timedesc.year dt1 in
+      if dt1_year = Timedesc.year dt2 then fun () -> Seq.Cons ((t1, t2), aux rest)
       else
         let t' =
-          Date_time'.set_to_last_month_day_hour_min_sec_ns dt1
-          |> Date_time'.to_timestamp
-          |> max_of_local_result
-          |> Span.succ
+          Timedesc.make_exn ~tz ~year:dt1_year
+            ~month:12 ~day:31 ~hour:23 ~minute:59 ~second:59 ~ns:(Timedesc.Span.ns_count_in_s - 1) ()
+          |> Timedesc.to_timestamp
+          |> Timedesc.max_of_local_result
+          |> Timedesc.Span.succ
         in
         fun () ->
           Seq.Cons ((t1, t'), aux (fun () -> Seq.Cons ((t', t2), rest)))

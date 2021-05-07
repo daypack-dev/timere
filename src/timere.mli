@@ -1,3 +1,5 @@
+type timestamp = Timedesc.timestamp
+
 type t
 (** This is the core type of Timere that represents sets of points in time, more precisely,
     unions of time intervals. For example, "all Mondays of year 2000 at the UTC timezone".

@@ -912,17 +912,6 @@ let slice_valid_interval s =
   Intervals.Slice.slice ~skip_check:true ~start:Timedesc.Timestamp.min_val
     ~end_exc:Timedesc.Timestamp.max_val s
 
-type 'a local_result =
-  [ `Single of 'a
-  | `Ambiguous of 'a * 'a
-  ]
-
-let min_of_local_result (r : 'a local_result) : 'a =
-  match r with `Single x | `Ambiguous (x, _) -> x
-
-let max_of_local_result (r : 'a local_result) : 'a =
-  match r with `Single x | `Ambiguous (_, x) -> x
-
 let equal_unary_op op1 op2 =
   match (op1, op2) with
   | Not, Not -> true
