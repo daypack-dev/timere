@@ -31,8 +31,8 @@ val pattern :
   ?month_ranges:int range list ->
   ?days:int list ->
   ?day_ranges:int range list ->
-  ?weekdays:weekday list ->
-  ?weekday_ranges:weekday range list ->
+  ?weekdays:Timedesc.weekday list ->
+  ?weekday_ranges:Timedesc.weekday range list ->
   ?hours:int list ->
   ?hour_ranges:int range list ->
   ?minutes:int list ->
@@ -76,10 +76,10 @@ val days : int list -> t
 val day_ranges : int range list -> t
 (** [day_ranges l] is a shorthand for [pattern ~month_day_ranges:l ()] *)
 
-val weekdays : weekday list -> t
+val weekdays : Timedesc.weekday list -> t
 (** [weekdays l] is a shorthand for [pattern ~weekdays:l ()] *)
 
-val weekday_ranges : weekday range list -> t
+val weekday_ranges : Timedesc.weekday range list -> t
 (** [weekday_ranges l] is a shorthand for [pattern ~weekday_ranges:l ()] *)
 
 val hours : int list -> t
@@ -100,7 +100,7 @@ val seconds : int list -> t
 val second_ranges : int range list -> t
 (** [second_ranges l] is a shorthand for [pattern ~second_ranges:l ()] *)
 
-val nth_weekday_of_month : int -> weekday -> t
+val nth_weekday_of_month : int -> Timedesc.weekday -> t
 (** [nth_weekday_of_month n wday] picks the nth weekday of all months, where [1 <= n && n <= 5]
 
     @raise Invalid_argument if [n] is out of range
@@ -126,41 +126,41 @@ val not : t -> t
     [not t] is equivalent to all the intervals not included in [t].
 *)
 
-val shift : Span.t -> t -> t
+val shift : Timedesc.Span.t -> t -> t
 
-val lengthen : Span.t -> t -> t
+val lengthen : Timedesc.Span.t -> t -> t
 (** @raise Invalid_argument if duration is negative *)
 
-val with_tz : Time_zone.t -> t -> t
+val with_tz : Timedesc.Time_zone.t -> t -> t
 (** [with_tz tz t] changes the time zone to evaluate [t] in to [tz] *)
 
-val date_time : Date_time.t -> t
+val date_time : Timedesc.t -> t
 
-val before : Date_time.t -> t
+val before : Timedesc.t -> t
 
-val since : Date_time.t -> t
+val since : Timedesc.t -> t
 
-val after : Date_time.t -> t
+val after : Timedesc.t -> t
 
-val date_times : Date_time.t list -> t
+val date_times : Timedesc.t list -> t
 
-val date_time_seq : Date_time.t Seq.t -> t
+val date_time_seq : Timedesc.t Seq.t -> t
 
-val sorted_date_times : Date_time.t list -> t
+val sorted_date_times : Timedesc.t list -> t
 
-val sorted_date_time_seq : Date_time.t Seq.t -> t
+val sorted_date_time_seq : Timedesc.t Seq.t -> t
 
 exception Invalid_timestamp
 
-val timestamp : timestamp -> t
+val timestamp : Timedesc.timestamp -> t
 
-val before_timestamp : timestamp -> t
+val before_timestamp : Timedesc.timestamp -> t
 
-val since_timestamp : timestamp -> t
+val since_timestamp : Timedesc.timestamp -> t
 
-val after_timestamp : timestamp -> t
+val after_timestamp : Timedesc.timestamp -> t
 
-val timestamps : ?skip_invalid:bool -> timestamp list -> t
+val timestamps : ?skip_invalid:bool -> Timedesc.timestamp list -> t
 (** [timestamps l]
 
     [skip_invalid] defaults to [false]
@@ -189,7 +189,7 @@ exception Interval_is_invalid
 exception Intervals_are_not_sorted
 
 module Interval : sig
-  type t = timestamp * timestamp
+  type t = Timedesc.timestamp * Timedesc.timestamp
 
   val equal : t -> t -> bool
 
@@ -204,7 +204,7 @@ module Interval : sig
   val compare : t -> t -> int
 
   val pp :
-    ?display_using_tz:Time_zone.t ->
+    ?display_using_tz:Timedesc.Time_zone.t ->
     ?format:string ->
     unit ->
     Format.formatter ->
@@ -280,18 +280,18 @@ module Points : sig
     | `Invalid_minute of int
     | `Invalid_second of int
     | `Invalid_pattern_combination
-    | `Invalid_tz_info of string option * Span.t
+    | `Invalid_tz_info of string option * Timedesc.Span.t
     ]
 
   exception Error_exn of error
 
   val make :
-    ?tz:Time_zone.t ->
-    ?tz_offset:Span.t ->
+    ?tz:Timedesc.Time_zone.t ->
+    ?tz_offset:Timedesc.Span.t ->
     ?year:int ->
     ?month:int ->
     ?day:int ->
-    ?weekday:weekday ->
+    ?weekday:Timedesc.weekday ->
     ?hour:int ->
     ?minute:int ->
     second:int ->
@@ -312,12 +312,12 @@ make_points                                               ~second:_ ()
   *)
 
   val make_exn :
-    ?tz:Time_zone.t ->
-    ?tz_offset:Span.t ->
+    ?tz:Timedesc.Time_zone.t ->
+    ?tz_offset:Timedesc.Span.t ->
     ?year:int ->
     ?month:int ->
     ?day:int ->
-    ?weekday:weekday ->
+    ?weekday:Timedesc.weekday ->
     ?hour:int ->
     ?minute:int ->
     second:int ->
@@ -328,7 +328,7 @@ end
 
 type points = Points.t
 
-val bounded_intervals : [ `Whole | `Snd ] -> Span.t -> points -> points -> t
+val bounded_intervals : [ `Whole | `Snd ] -> Timedesc.Span.t -> points -> points -> t
 (** [bounded_intervals mode bound p1 p2] for each point [x] matched by [p1],
     then for the earliest point [y] matched by [p2] such that [x < y && y - x <= bound]
     - if [mode = `Whole], yields (x, y)
@@ -414,8 +414,8 @@ type chunked
 
 type chunking =
   [ `Disjoint_intervals
-  | `By_duration of Span.t
-  | `By_duration_drop_partial of Span.t
+  | `By_duration of Timedesc.Span.t
+  | `By_duration_drop_partial of Timedesc.Span.t
   | `At_year_boundary
   | `At_month_boundary
   ]
@@ -475,13 +475,13 @@ val ( %> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** {2 Resolution} *)
 
 val resolve :
-  ?search_using_tz:Time_zone.t -> t -> (Interval.t Seq.t, string) result
+  ?search_using_tz:Timedesc.Time_zone.t -> t -> (Interval.t Seq.t, string) result
 (** Resolves a Timere object into a concrete interval sequence *)
 
 (** {2 Pretty printers} *)
 
 val pp_intervals :
-  ?display_using_tz:Time_zone.t ->
+  ?display_using_tz:Timedesc.Time_zone.t ->
   ?format:string ->
   ?sep:unit Fmt.t ->
   unit ->
@@ -517,11 +517,11 @@ module Utils : sig
 
   val flatten_month_day_ranges : int range Seq.t -> int Seq.t option
 
-  val flatten_weekday_ranges : weekday range Seq.t -> weekday Seq.t option
+  val flatten_weekday_ranges : Timedesc.weekday range Seq.t -> Timedesc.weekday Seq.t option
 
   val flatten_month_range_list : int range list -> int list option
 
   val flatten_month_day_range_list : int range list -> int list option
 
-  val flatten_weekday_range_list : weekday range list -> weekday list option
+  val flatten_weekday_range_list : Timedesc.weekday range list -> Timedesc.weekday list option
 end

@@ -1,5 +1,3 @@
-open Date_time_components
-
 let sexp_of_month x =
   CCSexp.atom @@ CCOpt.get_exn @@ Time.abbr_string_of_month x
 
@@ -11,20 +9,20 @@ let sexp_of_int x = CCSexp.atom @@ string_of_int x
 
 let sexp_list_of_ints l = List.map sexp_of_int l
 
-let sexp_of_tz_name t = CCSexp.atom (Time_zone.name t)
+let sexp_of_tz_name t = CCSexp.atom (Timedesc.Time_zone.name t)
 
-let sexp_of_span (x : Span.t) =
-  CCSexp.list [ sexp_of_int64 x.s; sexp_of_int x.ns ]
+let sexp_of_span =
+  Timedesc.Span.to_sexp
 
-let sexp_of_tz_info ({ tz; offset } : tz_info) =
+let sexp_of_tz_info ({ tz; offset_from_utc } : Timedesc.tz_info) =
   let open CCSexp in
   list
     (CCList.filter_map CCFun.id
        [
          Some (sexp_of_tz_name tz);
          CCOpt.map
-           (fun tz_offset -> sexp_of_int (CCInt64.to_int Span.(tz_offset.s)))
-           offset;
+           (fun tz_offset -> sexp_of_int (CCInt64.to_int Timedesc.Span.(tz_offset.s)))
+           offset_from_utc;
        ])
 
 let sexp_of_points (pick, tz_info) =
@@ -87,23 +85,11 @@ let sexp_of_points (pick, tz_info) =
          CCOpt.map sexp_of_tz_info tz_info;
        ])
 
-let sexp_of_date_time (x : Time.Date_time'.t) =
-  let open CCSexp in
-  list
-    [
-      sexp_of_int x.year;
-      sexp_of_month x.month;
-      sexp_of_int x.day;
-      sexp_of_int x.hour;
-      sexp_of_int x.minute;
-      sexp_of_int x.second;
-      sexp_of_int x.ns;
-      sexp_of_tz_info x.tz_info;
-    ]
+let sexp_of_date_time = Timedesc.to_sexp
 
 let sexp_of_timestamp x =
   x
-  |> Time.Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc
+  |> Timedesc.of_timestamp ~tz_of_date_time:Timedesc.Time_zone.utc
   |> CCOpt.get_exn
   |> sexp_of_date_time
 
@@ -181,7 +167,7 @@ let sexp_list_of_unary_op (op : Time_ast.unary_op) =
    * | Chunk_by_month -> [ CCSexp.atom "chunk_by_month"] *)
   | Shift n -> [ CCSexp.atom "shift"; sexp_of_span n ]
   | Lengthen n -> [ CCSexp.atom "lengthen"; sexp_of_span n ]
-  | With_tz tz -> [ CCSexp.atom "with_tz"; CCSexp.atom (Time_zone.name tz) ]
+  | With_tz tz -> [ CCSexp.atom "with_tz"; CCSexp.atom (Timedesc.Time_zone.name tz) ]
 
 let to_sexp (t : Time_ast.t) : CCSexp.t =
   let rec aux (t : Time_ast.t) =

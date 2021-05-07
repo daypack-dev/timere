@@ -213,6 +213,9 @@ let iso_week_year dt =
 let iso_week dt =
   (iso_week_date dt).week
 
+let day_of_year dt =
+  dt.date.day_of_year
+
 let time dt = dt.time
 
 module ISO_ord_date_time = struct

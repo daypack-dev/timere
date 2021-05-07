@@ -79,7 +79,7 @@ let make ?tz ?tz_offset ?year ?month ?day ?weekday ?hour ?minute ~second () :
     let year_is_fine =
       match year with
       | None -> true
-      | Some year ->  <= year && year <= Constants.max_year
+      | Some year -> Timedesc.year min_val <= year && year <= Timedesc.year max_val
     in
     let month_day_is_fine =
       match day with None -> true | Some x -> -31 <= x && x <= 31 && x <> 0

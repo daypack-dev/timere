@@ -1,5 +1,4 @@
 open Time_ast
-open Timedesc
 
 exception Invalid_timestamp
 
@@ -14,6 +13,8 @@ exception Intervals_are_not_disjoint
 let one_ns = Timedesc.Span.make ~ns:1 ()
 
 module Interval' = struct
+  open Timedesc
+
   type t = timestamp * timestamp
 
   let lt (x1, y1) (x2, y2) =
@@ -485,11 +486,11 @@ module Range = struct
     | `Range_inc (x, y) -> (x, y |> to_int |> succ |> of_int)
     | `Range_exc (x, y) -> (x, y)
 
-  let timestamp_pair_of_int_pair (x, y) : timestamp * timestamp =
-    (Span.make ~ns:x (), Span.make ~ns:y ())
+  let timestamp_pair_of_int_pair (x, y) : Timedesc.timestamp * Timedesc.timestamp =
+    (Timedesc.Span.make ~ns:x (), Timedesc.Span.make ~ns:y ())
 
   let int_pair_of_timestamp_pair
-      (({ s = _; ns = x }, { s = _; ns = y }) : timestamp * timestamp) :
+      (({ s = _; ns = x }, { s = _; ns = y }) : Timedesc.timestamp * Timedesc.timestamp) :
     int * int =
     (x, y)
 
@@ -834,13 +835,13 @@ module Hms' = struct
     | Error e -> raise (Error_exn e)
 
   let to_second_of_day x =
-    Span.For_human.make_exn ~hours:x.hour ~minutes:x.minute ~seconds:x.second
+    Timedesc.Span.For_human.make_exn ~hours:x.hour ~minutes:x.minute ~seconds:x.second
       ()
-    |> fun x -> Int64.to_int Span.(x.s)
+    |> fun x -> Int64.to_int Timedesc.Span.(x.s)
 
   let of_second_of_day s =
-    let ({ hours; minutes; seconds; _ } : Span.For_human'.view) =
-      Span.(make_small ~s () |> For_human'.view)
+    let ({ hours; minutes; seconds; _ } : Timedesc.Span.For_human.view) =
+      Timedesc.Span.(make_small ~s () |> For_human.view)
     in
     match make ~hour:hours ~minute:minutes ~second:seconds with
     | Ok x -> Some x
@@ -868,13 +869,13 @@ module Weekday_tm_int_ranges = Ranges.Make (struct
   end)
 
 module Weekday_ranges = Ranges.Make (struct
-    type t = weekday
+    type t = Timedesc.weekday
 
     let modulo = Some 7
 
-    let to_int = Utils.tm_int_of_weekday
+    let to_int = Timedesc.Utils.tm_int_of_weekday
 
-    let of_int x = x |> Utils.weekday_of_tm_int |> CCOpt.get_exn
+    let of_int x = x |> Timedesc.Utils.weekday_of_tm_int |> CCOpt.get_exn
   end)
 
 module Month_day_ranges = Ranges.Make (struct
@@ -908,32 +909,8 @@ module Year_ranges = Ranges.Make (struct
   end)
 
 let slice_valid_interval s =
-  Intervals.Slice.slice ~skip_check:true ~start:Timestamp.min_val
-    ~end_exc:Timestamp.max_val s
-
-module type Dt_base = sig
-  type t
-
-  type error
-
-  val to_timestamp_pretend_utc : t -> timestamp option
-
-  val get_tz_info : t -> tz_info
-
-  val set_tz_info : t -> tz_info -> t
-
-  val get_second : t -> int
-
-  val set_second : t -> int -> t
-
-  val get_ns : t -> int
-
-  val set_ns : t -> int -> t
-
-  val err_does_not_exist : error
-
-  val err_invalid_tz_info : string option -> Span.t -> error
-end
+  Intervals.Slice.slice ~skip_check:true ~start:Timedesc.Timestamp.min_val
+    ~end_exc:Timedesc.Timestamp.max_val s
 
 type 'a local_result =
   [ `Single of 'a
@@ -950,7 +927,7 @@ let equal_unary_op op1 op2 =
   match (op1, op2) with
   | Not, Not -> true
   | Shift n1, Shift n2 | Lengthen n1, Lengthen n2 -> n1 = n2
-  | With_tz tz1, With_tz tz2 -> Time_zone.equal tz1 tz2
+  | With_tz tz1, With_tz tz2 -> Timedesc.Time_zone.equal tz1 tz2
   | _, _ -> false
 
 let equal t1 t2 =
@@ -988,16 +965,16 @@ let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
   | `Disjoint_intervals ->
     Unchunk (f (Unary_op_on_t (Chunk_disjoint_interval, t)))
   | `By_duration chunk_size ->
-    if Span.(chunk_size < zero) then invalid_arg "chunk: duration is negative";
-    if Span.(chunk_size = zero) then invalid_arg "chunk: duration is zero"
+    if Timedesc.Span.(chunk_size < zero) then invalid_arg "chunk: duration is negative";
+    if Timedesc.Span.(chunk_size = zero) then invalid_arg "chunk: duration is zero"
     else
       Unchunk
         (f
            (Unary_op_on_t
               (Chunk_by_duration { chunk_size; drop_partial = false }, t)))
   | `By_duration_drop_partial chunk_size ->
-    if Span.(chunk_size < zero) then invalid_arg "chunk: duration is negative";
-    if Span.(chunk_size = zero) then invalid_arg "chunk: duration is zero"
+    if Timedesc.Span.(chunk_size < zero) then invalid_arg "chunk: duration is negative";
+    if Timedesc.Span.(chunk_size = zero) then invalid_arg "chunk: duration is zero"
     else
       Unchunk
         (f
@@ -1012,14 +989,14 @@ let chunk_again (chunking : chunking) chunked : chunked =
   | `Disjoint_intervals ->
     Unary_op_on_chunked (Chunk_again Chunk_disjoint_interval, chunked)
   | `By_duration chunk_size ->
-    if Span.(chunk_size = zero) then
+    if Timedesc.Span.(chunk_size = zero) then
       invalid_arg "chunk_again: duration is zero"
     else
       Unary_op_on_chunked
         ( Chunk_again (Chunk_by_duration { chunk_size; drop_partial = false }),
           chunked )
   | `By_duration_drop_partial chunk_size ->
-    if Span.(chunk_size = zero) then
+    if Timedesc.Span.(chunk_size = zero) then
       invalid_arg "chunk_again: duration is zero"
     else
       Unary_op_on_chunked
@@ -1030,10 +1007,10 @@ let chunk_again (chunking : chunking) chunked : chunked =
   | `At_month_boundary ->
     Unary_op_on_chunked (Chunk_again Chunk_at_year_boundary, chunked)
 
-let shift (offset : Span.t) (t : t) : t = Unary_op (Shift offset, t)
+let shift (offset : Timedesc.Span.t) (t : t) : t = Unary_op (Shift offset, t)
 
-let lengthen (x : Span.t) (t : t) : t =
-  if Span.(x < zero) then invalid_arg "lengthen: duration is negative";
+let lengthen (x : Timedesc.Span.t) (t : t) : t =
+  if Timedesc.Span.(x < zero) then invalid_arg "lengthen: duration is negative";
   Unary_op (Lengthen x, t)
 
 let empty = Empty
@@ -1156,7 +1133,7 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
       Stdlib.not
         (List.for_all
            (fun year ->
-              Constants.min_year <= year && year <= Constants.max_year)
+              Timedesc.(year min_val) <= year && year <= Timedesc.(year max_val))
            years)
     then invalid_arg "pattern: not all years are valid"
     else if Stdlib.not (List.for_all (fun x -> 1 <= x && x <= 12) months) then
@@ -1231,13 +1208,13 @@ let minute_ranges minute_ranges = pattern ~minute_ranges ()
 
 let second_ranges second_ranges = pattern ~second_ranges ()
 
-let bounded_intervals pick (bound : Span.t)
+let bounded_intervals pick (bound : Timedesc.Span.t)
     ((pick_start, tz_info_start) as start : Points.t)
     ((pick_end_exc, tz_info_end_exc) as end_exc : Points.t) : t =
-  if Span.(bound < zero) then invalid_arg "bounded_intervals: bound is negative";
+  if Timedesc.Span.(bound < zero) then invalid_arg "bounded_intervals: bound is negative";
   if Points.precision start < Points.precision end_exc then
     invalid_arg "bounded_intervals: start is less precise than end_exc"
-  else if CCOpt.equal equal_tz_info tz_info_start tz_info_end_exc then
+  else if CCOpt.equal Timedesc.equal_tz_info tz_info_start tz_info_end_exc then
     match (pick_start, pick_end_exc) with
     | Points.(S second_start, S second_end_exc)
       when second_start = second_end_exc ->
@@ -1264,7 +1241,7 @@ let bounded_intervals pick (bound : Span.t)
 
 let hms_intervals_exc (hms_a : Hms'.t) (hms_b : Hms'.t) : t =
   bounded_intervals `Whole
-    (Span.For_human'.make_exn ~days:1 ())
+    (Timedesc.Span.For_human.make_exn ~days:1 ())
     (Points.make_exn ~hour:hms_a.hour ~minute:hms_a.minute ~second:hms_a.second
        ())
     (Points.make_exn ~hour:hms_b.hour ~minute:hms_b.minute ~second:hms_b.second
@@ -1289,9 +1266,9 @@ let sorted_interval_seq ?(skip_invalid : bool = false) (s : Interval'.t Seq.t) :
         else Intervals.Check.check_if_valid)
     |> Seq.filter_map (fun (x, y) ->
         match
-          ( Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc x,
-            Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc
-              (Span.pred y) )
+          ( Timedesc.of_timestamp ~tz_of_date_time:Timedesc.Time_zone.utc x,
+            Timedesc.of_timestamp ~tz_of_date_time:Timedesc.Time_zone.utc
+              (Timedesc.Span.pred y) )
         with
         | Some _, Some _ -> Some (x, y)
         | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
@@ -1312,9 +1289,9 @@ let intervals ?(skip_invalid : bool = false) (l : Interval'.t list) : t =
         else Intervals.Check.check_if_valid_list)
     |> CCList.filter_map (fun (x, y) ->
         match
-          ( Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc x,
-            Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc
-              (Span.pred y) )
+          ( Timedesc.of_timestamp ~tz_of_date_time:Timedesc.Time_zone.utc x,
+            Timedesc.of_timestamp ~tz_of_date_time:Timedesc.Time_zone.utc
+              (Timedesc.Span.pred y) )
         with
         | Some _, Some _ -> Some (x, y)
         | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
@@ -1329,8 +1306,8 @@ let interval_seq ?skip_invalid (s : Interval'.t Seq.t) : t =
   s |> CCList.of_seq |> intervals ?skip_invalid
 
 let interval_of_date_time date_time =
-  let x = Date_time'.to_timestamp_single date_time in
-  (x, Span.succ x)
+  let x = Timedesc.to_timestamp_single date_time in
+  (x, Timedesc.Span.succ x)
 
 let date_time_seq date_times =
   date_times |> Seq.map interval_of_date_time |> interval_seq
@@ -1346,8 +1323,8 @@ let sorted_date_times date_times =
 let date_time date_time = date_times [ date_time ]
 
 let interval_of_timestamp_precise ~skip_invalid x =
-  match Date_time'.of_timestamp ~tz_of_date_time:Time_zone.utc x with
-  | Some _ -> Some (x, Span.succ x)
+  match Timedesc.of_timestamp ~tz_of_date_time:Timedesc.Time_zone.utc x with
+  | Some _ -> Some (x, Timedesc.Span.succ x)
   | None -> if skip_invalid then None else raise Invalid_timestamp
 
 let timestamp_seq ?(skip_invalid = false) timestamps =
@@ -1372,23 +1349,23 @@ let sorted_timestamps ?(skip_invalid = false) timestamps =
 
 let timestamp x = timestamps [ x ]
 
-let now () = timestamp (timestamp_now ())
+let now () = timestamp (Timedesc.Timestamp.now ())
 
-let before_timestamp timestamp = intervals [ (timestamp_min, timestamp) ]
+let before_timestamp timestamp = intervals [ (Timedesc.Timestamp.min_val, timestamp) ]
 
-let since_timestamp timestamp = intervals [ (timestamp, timestamp_max) ]
+let since_timestamp timestamp = intervals [ (timestamp, Timedesc.Timestamp.max_val) ]
 
 let after_timestamp timestamp =
-  intervals [ (Span.succ timestamp, timestamp_max) ]
+  intervals [ (Timedesc.Span.succ timestamp, Timedesc.Timestamp.max_val) ]
 
 let before dt =
-  before_timestamp Date_time'.(to_timestamp dt |> min_of_local_result)
+  before_timestamp Timedesc.(to_timestamp dt |> min_of_local_result)
 
 let since dt =
-  since_timestamp Date_time'.(to_timestamp dt |> max_of_local_result)
+  since_timestamp Timedesc.(to_timestamp dt |> max_of_local_result)
 
 let after dt =
-  after_timestamp Date_time'.(to_timestamp dt |> max_of_local_result)
+  after_timestamp Timedesc.(to_timestamp dt |> max_of_local_result)
 
 let nth_weekday_of_month (n : int) wday =
   let first_weekday_of_month wday =
@@ -1415,7 +1392,7 @@ let nth_weekday_of_month (n : int) wday =
   | 5 -> fifth_weekday_of_month wday
   | _ -> invalid_arg "nth_weekday_of_month: n > 5"
 
-let full_string_of_weekday (wday : weekday) : string =
+let full_string_of_weekday (wday : Timedesc.weekday) : string =
   match wday with
   | `Sun -> "Sunday"
   | `Mon -> "Monday"
@@ -1425,7 +1402,7 @@ let full_string_of_weekday (wday : weekday) : string =
   | `Fri -> "Friday"
   | `Sat -> "Saturday"
 
-let weekday_of_full_string s : weekday option =
+let weekday_of_full_string s : Timedesc.weekday option =
   match s with
   | "Sunday" -> Some `Sun
   | "Monday" -> Some `Mon
@@ -1436,10 +1413,10 @@ let weekday_of_full_string s : weekday option =
   | "Saturday" -> Some `Sat
   | _ -> None
 
-let abbr_string_of_weekday (wday : weekday) : string =
+let abbr_string_of_weekday (wday : Timedesc.weekday) : string =
   String.sub (full_string_of_weekday wday) 0 3
 
-let weekday_of_abbr_string s : weekday option =
+let weekday_of_abbr_string s : Timedesc.weekday option =
   match s with
   | "Sun" -> Some `Sun
   | "Mon" -> Some `Mon

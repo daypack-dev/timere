@@ -1,13 +1,13 @@
 type unary_op =
   | Not
-  | Shift of Span.t
-  | Lengthen of Span.t
-  | With_tz of Time_zone.t
+  | Shift of Timedesc.Span.t
+  | Lengthen of Timedesc.Span.t
+  | With_tz of Timedesc.Time_zone.t
 
 type chunking =
   [ `Disjoint_intervals
-  | `By_duration of Span.t
-  | `By_duration_drop_partial of Span.t
+  | `By_duration of Timedesc.Span.t
+  | `By_duration_drop_partial of Timedesc.Span.t
   | `At_year_boundary
   | `At_month_boundary
   ]
@@ -17,7 +17,7 @@ type chunked_unary_op_on_t =
   | Chunk_at_year_boundary
   | Chunk_at_month_boundary
   | Chunk_by_duration of {
-      chunk_size : Span.t;
+      chunk_size : Timedesc.Span.t;
       drop_partial : bool;
     }
 
@@ -31,14 +31,14 @@ type chunked_unary_op_on_chunked =
 type t =
   | Empty
   | All
-  | Intervals of (Span.t * Span.t) Seq.t
+  | Intervals of (Timedesc.Span.t * Timedesc.Span.t) Seq.t
   | Pattern of Pattern.t
   | Unary_op of unary_op * t
   | Inter_seq of t Seq.t
   | Union_seq of t Seq.t
   | Bounded_intervals of {
       pick : [ `Whole | `Snd ];
-      bound : Span.t;
+      bound : Timedesc.Span.t;
       start : Points.t;
       end_exc : Points.t;
     }

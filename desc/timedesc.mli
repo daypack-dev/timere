@@ -745,6 +745,8 @@ val iso_week_year : t -> int
 
 val iso_week : t -> int
 
+val day_of_year : t -> int
+
 val time : t -> Time.t
 
 val is_leap_second : t -> bool

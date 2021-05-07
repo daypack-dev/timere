@@ -4,6 +4,12 @@
  (action  (copy %{deps} %{targets}))
 )
 
+(rule
+ (targets int64_utils.ml)
+ (deps    ../desc/int64_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
 (library
  (flags     (-w "+a-4-9-29-37-40-42-44-48-50@8"))
  (name timere)
