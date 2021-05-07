@@ -1,4 +1,4 @@
-open Date_time_components
+open Timedesc
 
 type pick =
   | S of int
@@ -79,7 +79,7 @@ let make ?tz ?tz_offset ?year ?month ?day ?weekday ?hour ?minute ~second () :
     let year_is_fine =
       match year with
       | None -> true
-      | Some year -> Constants.min_year <= year && year <= Constants.max_year
+      | Some year ->  <= year && year <= Constants.max_year
     in
     let month_day_is_fine =
       match day with None -> true | Some x -> -31 <= x && x <= 31 && x <> 0

@@ -1,6 +1,6 @@
 (rule
- (targets time_zone_constants.ml)
- (deps    ../gen-artifacts/time_zone_constants.ml)
+ (targets int_set.ml)
+ (deps    ../desc/int_set.ml)
  (action  (copy %{deps} %{targets}))
 )
 
@@ -9,8 +9,7 @@
  (name timere)
  (public_name timere)
  (libraries
-            timere.tzdb
-            timere.tzlocal
+            timedesc
             unix
             ptime
             oseq

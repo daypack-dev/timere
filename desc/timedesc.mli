@@ -85,21 +85,21 @@ v}
 
     Take year 2021 for example, DST starts on 2021 Mar 28 for Paris, causing clocks to jump from 2am to 3am. Pick any
     intermediate point, say 2:30am, we yield an undefined date time. In this case, Timere refuses the construction
-    of such {!Date_time.t} in {!Date_time.make} etc, while some libraries coerce the result into 3:30am.
+    of such {!t} in {!make} etc, while some libraries coerce the result into 3:30am.
 
     And DST ends on 2021 Oct 31,
     causing clocks to jump from 3am to 2am. Say we pick 2:30am again, we are actually pointing at {e two} time points (there are two 2:30am)
     unless we make an explicit selection between the first or second occurance.
-    Whenever ambiguity of this form is a possiblity for the result of a function, say {!Date_time.to_timestamp},
-    Timere uses {!Date_time.local_result} variant type, of which [`Single _] indicates lack of ambiguity for the particular result,
+    Whenever ambiguity of this form is a possiblity for the result of a function, say {!to_timestamp},
+    Timere uses {!local_result} variant type, of which [`Single _] indicates lack of ambiguity for the particular result,
     and [`Ambiguous _] indicates the result is ambiguous.
 
     Some other libraries coerce the ambiguous result
     into one of the two possible choices (which exact one may not be guaranteed). If user wishes to do similar coercions,
-    they may use {!Date_time.min_of_local_result} or {!Date_time.max_of_local_result}.
+    they may use {!min_of_local_result} or {!max_of_local_result}.
 
-    For constructions, {!Date_time.make} yields a possibly ambiguous construction,
-    while {!Date_time.make_unambiguous} yields an unambiguous construction.
+    For constructions, {!make} yields a possibly ambiguous construction,
+    while {!make_unambiguous} yields an unambiguous construction.
     In general, if you are provided with the exact offset to UTC,
     then [make_unambiguous] is the better choice.
 *)
@@ -433,8 +433,132 @@ module Time_zone : sig
   end
 end
 
+(** {1 Date} *)
+
+module Date : sig
+module ISO_week_date : sig
+  type t = private {
+    iso_week_year : int;
+    week : int;
+    weekday : weekday;
+  }
+
+  type error =
+    [ `Does_not_exist
+    | `Invalid_iso_week_year of int
+    | `Invalid_week of int
+    ]
+
+  exception Error_exn of error
+
+  val equal : t -> t -> bool
+
+  val make :
+    iso_week_year:int -> week:int -> weekday:weekday -> (t, error) result
+
+  val make_exn : iso_week_year:int -> week:int -> weekday:weekday -> t
+end
+
+module Ymd_date : sig
+  type t = private {
+    year : int;
+    month : int;
+    day : int;
+  }
+
+  type error =
+    [ `Does_not_exist
+    | `Invalid_year of int
+    | `Invalid_month of int
+    | `Invalid_day of int
+    ]
+
+  exception Error_exn of error
+
+  val equal : t -> t -> bool
+
+  val make : year:int -> month:int -> day:int -> (t, error) result
+
+  val make_exn : year:int -> month:int -> day:int -> t
+end
+
+module ISO_ord_date : sig
+  type t = private {
+    year : int;
+    day_of_year : int;
+  }
+
+  type error =
+    [ `Does_not_exist
+    | `Invalid_year of int
+    | `Invalid_day_of_year of int
+    ]
+
+  exception Error_exn of error
+
+  val equal : t -> t -> bool
+
+  val make : year:int -> day_of_year:int -> (t, error) result
+
+  val make_exn : year:int -> day_of_year:int -> t
+
+  val weekday : t -> weekday
+
+  val to_iso_week_date : t -> ISO_week_date.t
+
+  val of_iso_week_date : ISO_week_date.t -> t
+
+  val to_ymd_date : t -> Ymd_date.t
+
+  val of_ymd_date : Ymd_date.t -> t
+end
+end
+
+(** {1 Time} *)
+
+module Time : sig
+  type t = private {
+    hour : int;
+    minute : int;
+    second : int;
+    ns : int;
+  }
+
+  type error =
+    [ `Invalid_hour of int
+    | `Invalid_minute of int
+    | `Invalid_second of int
+    | `Invalid_s_frac of float
+    | `Invalid_ns of int
+    ]
+
+  exception Error_exn of error
+
+  val make :
+    ?ns:int ->
+    ?s_frac:float ->
+    hour:int ->
+    minute:int ->
+    second:int ->
+    unit ->
+    (t, error) result
+
+  val make_exn :
+    ?ns:int -> ?s_frac:float -> hour:int -> minute:int -> second:int -> unit -> t
+
+  val to_span : t -> Span.t
+
+  val of_span : Span.t -> t option
+
+  val is_leap_second : t -> bool
+
+  val equal : t -> t -> bool
+end
+
+(** {1 Date time} *)
+
 type t
-(** This is the main date time type, and represents a point in the local timeline
+(** This is the main type, and represents a point in the local timeline
     with respect to the residing time zone. Conceptually a pair of "date" and "time of day".
 
     A [t] always maps to at least one point on the UTC timeline, and [make] fails if this is not the case.
@@ -471,6 +595,15 @@ and tz_info = private {
 val equal_tz_info : tz_info -> tz_info -> bool
 
 val tz_offset_of_tz_info : tz_info -> Span.t option
+
+type tz_info_error =
+  [ `Missing_both_tz_and_tz_offset
+  | `Invalid_offset of Span.t
+  | `Unrecorded_offset of Span.t
+  ]
+
+val make_tz_info : ?tz:Time_zone.t -> ?tz_offset:Span.t -> unit ->
+  (tz_info, tz_info_error) result
 
 type error =
   [ `Does_not_exist
@@ -592,6 +725,28 @@ val make_unambiguous_exn :
   t
 (** @raise Error_exn if [make_umabiguous] fails *)
 
+(** {1 Accessors} *)
+
+val ymd_date : t -> Date.Ymd_date.t
+
+val iso_week_date : t -> Date.ISO_week_date.t
+
+val iso_ord_date : t -> Date.ISO_ord_date.t
+
+val year : t -> int
+
+val month : t -> int
+
+val day : t -> int
+
+val weekday : t -> weekday
+
+val iso_week_year : t -> int
+
+val iso_week : t -> int
+
+val time : t -> Time.t
+
 val is_leap_second : t -> bool
 
 type 'a local_result =
@@ -638,8 +793,6 @@ val min_val : t
 val max_val : t
 
 val now : ?tz_of_date_time:Time_zone.t -> unit -> t
-
-val weekday : t -> weekday
 
 exception Date_time_cannot_deduce_tz_offset_s of t
 

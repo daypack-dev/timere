@@ -198,6 +198,21 @@ let iso_week_date dt = Date.ISO_ord_date.to_iso_week_date dt.date
 
 let iso_ord_date dt = dt.date
 
+let year dt =
+  (ymd_date dt).year
+
+let month dt =
+  (ymd_date dt).month
+
+let day dt =
+  (ymd_date dt).month
+
+let iso_week_year dt =
+  (iso_week_date dt).iso_week_year
+
+let iso_week dt =
+  (iso_week_date dt).week
+
 let time dt = dt.time
 
 module ISO_ord_date_time = struct

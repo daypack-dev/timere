@@ -1,10 +1,53 @@
-open Date_time_components
+module Branch = struct
+  type t = {
+    year : int;
+    month : int;
+    day : int;
+    hour : int;
+    minute : int;
+    second : int;
+    ns : int;
+  }
+
+  let set_to_first_ns (x : t) : t = { x with ns = 0 }
+
+  let set_to_last_ns (x : t) : t = { x with ns = Timedesc.Span.ns_count_in_s - 1 }
+
+  let set_to_first_sec_ns (x : t) : t = { x with second = 0 } |> set_to_first_ns
+
+  let set_to_last_sec_ns (x : t) : t = { x with second = 59 } |> set_to_last_ns
+
+  let set_to_first_min_sec_ns (x : t) : t =
+    { x with minute = 0 } |> set_to_first_sec_ns
+
+  let set_to_last_min_sec_ns (x : t) : t =
+    { x with minute = 59 } |> set_to_last_sec_ns
+
+  let set_to_first_hour_min_sec_ns (x : t) : t =
+    { x with hour = 0 } |> set_to_first_min_sec_ns
+
+  let set_to_last_hour_min_sec_ns (x : t) : t =
+    { x with hour = 23 } |> set_to_last_min_sec_ns
+
+  let set_to_first_day_hour_min_sec_ns (x : t) : t =
+    { x with day = 1 } |> set_to_first_hour_min_sec_ns
+
+  let set_to_last_day_hour_min_sec_ns (x : t) : t =
+    { x with day = Timedesc.Utils.day_count_of_month ~year:x.year ~month:x.month }
+    |> set_to_last_hour_min_sec_ns
+
+  let set_to_first_month_day_hour_min_sec_ns (x : t) : t =
+    { x with month = 1 } |> set_to_first_day_hour_min_sec_ns
+
+  let set_to_last_month_day_hour_min_sec_ns (x : t) : t =
+    { x with month = 12 } |> set_to_last_day_hour_min_sec_ns
+end
 
 module Search_param = struct
   type t = {
     search_using_tz_offset_s : int;
-    start : Time.Date_time'.t;
-    end_inc : Time.Date_time'.t;
+    start : Timedesc.t;
+    end_inc : Timedesc.t;
   }
 
   let make ~search_using_tz_offset_s ((start, end_exc) : Time.Interval'.t) : t =
@@ -15,10 +58,10 @@ module Search_param = struct
     {
       search_using_tz_offset_s;
       start =
-        CCOpt.get_exn @@ Time.Date_time'.of_timestamp ~tz_of_date_time start;
+        CCOpt.get_exn @@ Timedesc.of_timestamp ~tz_of_date_time start;
       end_inc =
         CCOpt.get_exn
-        @@ Time.Date_time'.of_timestamp ~tz_of_date_time (Span.pred end_exc);
+        @@ Timedesc.of_timestamp ~tz_of_date_time (Span.pred end_exc);
     }
 end
 

@@ -1,6 +1,8 @@
 include Date_time_components
 include Date_time
 module Time_zone = Time_zone
+module Date = Date
+module Time = Time
 
 exception Invalid_format_string = Printers.Invalid_format_string
 
