@@ -468,6 +468,10 @@ and tz_info = private {
     and [Some _] otherwise.
 *)
 
+val equal_tz_info : tz_info -> tz_info -> bool
+
+val tz_offset_of_tz_info : tz_info -> Span.t option
+
 type error =
   [ `Does_not_exist
   | `Invalid_year of int
@@ -889,6 +893,12 @@ module Utils : sig
   val span_of_ptime_span : Ptime.span -> Span.t
 
   val timestamp_of_ptime : Ptime.t -> timestamp
+
+  val day_count_of_year : year:int -> int
+
+  val day_count_of_month : year:int -> month:int -> int
+
+  val week_count_of_iso_week_year : iso_week_year:int -> int
 
   (** {1 Month utils} *)
 

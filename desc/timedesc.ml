@@ -61,8 +61,6 @@ module Timestamp = struct
   let of_iso8601 = ISO8601.to_timestamp
 end
 
-type nonrec 'a local_result = 'a local_result
-
 let to_string = Printers.string_of_date_time
 
 exception
@@ -114,6 +112,12 @@ module Utils = struct
   let span_of_ptime_span = Ptime_utils.span_of_ptime_span
 
   let timestamp_of_ptime = Ptime_utils.timestamp_of_ptime
+
+  let day_count_of_year = day_count_of_year
+
+  let day_count_of_month = day_count_of_month
+
+  let week_count_of_iso_week_year = week_count_of_iso_week_year
 
   type month =
     [ `Jan
