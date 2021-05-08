@@ -78,7 +78,6 @@ let weekday_of_ymd ~year ~month ~day =
   | _ -> failwith "Unexpected case"
 
 let is_leap_year ~year =
-  assert (year >= 0);
   let divisible_by_4 = year mod 4 = 0 in
   let divisible_by_100 = year mod 100 = 0 in
   let divisible_by_400 = year mod 400 = 0 in
