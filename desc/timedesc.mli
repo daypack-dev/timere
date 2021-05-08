@@ -488,6 +488,11 @@ end
 (** {1 Date} *)
 
 module Date : sig
+  (** {!ISO_ord_date.t} is the main date type, all conversion functions reside in
+      {!ISO_ord_date} module
+
+  *)
+
   module ISO_week_date : sig
     type t = private {
       iso_week_year : int;
