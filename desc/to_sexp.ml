@@ -15,16 +15,16 @@ let sexp_of_tz_name t = CCSexp.atom (Time_zone.name t)
 let sexp_of_span (x : Span.t) =
   CCSexp.list [ sexp_of_int64 x.s; sexp_of_int x.ns ]
 
-(* let sexp_of_tz_info ({ tz; offset_from_utc } : tz_info) =
- *   let open CCSexp in
- *   list
- *     (CCList.filter_map CCFun.id
- *        [
- *          Some (sexp_of_tz_name tz);
- *          CCOpt.map
- *            (fun tz_offset -> sexp_of_int (CCInt64.to_int Span.(tz_offset.s)))
- *            offset_from_utc;
- *        ]) *)
+let sexp_of_tz_info ({ tz; fixed_offset_from_utc } : Time_zone_info.t) =
+  let open CCSexp in
+  list
+    (CCList.filter_map CCFun.id
+       [
+         Some (sexp_of_tz_name tz);
+         CCOpt.map
+           (fun tz_offset -> sexp_of_int (CCInt64.to_int Span.(tz_offset.s)))
+           fixed_offset_from_utc;
+       ])
 
 let sexp_of_date_time (x : Date_time.t) =
   let open CCSexp in

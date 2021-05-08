@@ -106,9 +106,15 @@ let max_of_local_result = max_of_local_result
 
 include Ymd_date_time
 
-module Utils = struct
-  include Date_time_components
+module Time_zone_info = struct
+  include Time_zone_info
 
+  let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.tz_info_of_sexp
+
+  let to_sexp = To_sexp.sexp_of_tz_info
+end
+
+module Utils = struct
   let ptime_span_of_span = Ptime_utils.ptime_span_of_span
 
   let ptime_of_timestamp = Ptime_utils.ptime_of_timestamp

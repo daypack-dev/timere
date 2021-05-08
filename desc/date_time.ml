@@ -159,7 +159,7 @@ let of_dt_with_missing_tz_info_unambiguous ~tz ~offset_from_utc (dt : t) =
   let make_invalid_tz_info_error ?tz ~offset_from_utc () =
     Error (`Invalid_tz_info (CCOpt.map Time_zone.name tz, offset_from_utc))
   in
-  (match make_tz_info ?tz ~fixed_offset_from_utc:offset_from_utc () with
+  (match Time_zone_info.make ?tz ~fixed_offset_from_utc:offset_from_utc () with
    | Error `Missing_both_tz_and_fixed_offset_from_utc -> failwith "Unexpected case"
    | Error (`Invalid_offset _) | Error (`Unrecorded_offset _) ->
      make_invalid_tz_info_error ?tz ~offset_from_utc ()
@@ -174,7 +174,7 @@ let of_dt_with_missing_tz_info_unambiguous ~tz ~offset_from_utc (dt : t) =
        | `Ambiguous (e1, e2) ->
          if e1.offset = offset_from_utc_s || e2.offset = offset_from_utc_s then Ok tz_info
          else make_invalid_tz_info_error ?tz ~offset_from_utc ()))
-  |> CCResult.map (fun ({ tz; fixed_offset_from_utc } : tz_info) ->
+  |> CCResult.map (fun ({ tz; fixed_offset_from_utc } : Time_zone_info.t) ->
       { dt with tz = tz;
                 offset_from_utc = `Single (CCOpt.get_exn fixed_offset_from_utc);
       })

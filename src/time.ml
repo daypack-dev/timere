@@ -1198,13 +1198,13 @@ let minute_ranges minute_ranges = pattern ~minute_ranges ()
 let second_ranges second_ranges = pattern ~second_ranges ()
 
 let bounded_intervals pick (bound : Timedesc.Span.t)
-    ((pick_start, tz_info_start) as start : Points.t)
-    ((pick_end_exc, tz_info_end_exc) as end_exc : Points.t) : t =
+    (start : Points.t)
+    (end_exc : Points.t) : t =
   if Timedesc.Span.(bound < zero) then invalid_arg "bounded_intervals: bound is negative";
   if Points.precision start < Points.precision end_exc then
     invalid_arg "bounded_intervals: start is less precise than end_exc"
-  else if CCOpt.equal Timedesc.equal_tz_info tz_info_start tz_info_end_exc then
-    match (pick_start, pick_end_exc) with
+  else if CCOpt.equal Timedesc.Utils.equal_tz_info start.tz_info end_exc.tz_info then
+    match (start.pick, end_exc.pick) with
     | Points.(S second_start, S second_end_exc)
       when second_start = second_end_exc ->
       always

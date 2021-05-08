@@ -45,7 +45,7 @@ let span_of_sexp (x : CCSexp.t) =
   | `List [ s; ns ] ->
     let s = int64_of_sexp s in
     let ns = int_of_sexp ns in
-    Span.make ~s ~ns ()
+    Timedesc.Span.make ~s ~ns ()
   | `List _ ->
     invalid_data
       (Printf.sprintf "List too long for span: %s" (CCSexp.to_string x))
@@ -53,14 +53,14 @@ let span_of_sexp (x : CCSexp.t) =
 let tz_make_of_sexp (x : CCSexp.t) =
   match x with
   | `Atom s -> (
-      match Time_zone.make s with
+      match Timedesc.Time_zone.make s with
       | Some x -> x
       | None -> invalid_data (Printf.sprintf "Unrecognized time zone: %s" s))
   | `List _ ->
     invalid_data
       (Printf.sprintf "Expected atom for time zone: %s" (CCSexp.to_string x))
 
-let tz_info_of_sexp (x : CCSexp.t) : Date_time_components.tz_info =
+let tz_info_of_sexp (x : CCSexp.t) : Timedesc.Utils.tz_info =
   match x with
   | `Atom _ ->
     invalid_data (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x))

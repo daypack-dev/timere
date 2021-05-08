@@ -1013,6 +1013,34 @@ end
 
 (** {1 Misc} *)
 
+module Time_zone_info : sig
+  type t = {
+    tz : Time_zone.t;
+    fixed_offset_from_utc : Span.t option;
+  }
+  (** Time zone information of date time.
+
+      [tz] is the time zone tied. This is always defined even if only an offset provided during construction -
+      if say only offset of 10 hours is provided, [tz] becomes "UTC+10".
+
+      [fixed_offset_from_utc] is the fixed offset from UTC, if it can be defined.
+  *)
+
+  type error =
+    [ `Missing_both_tz_and_fixed_offset_from_utc
+    | `Invalid_offset of Span.t
+    | `Unrecorded_offset of Span.t
+    ]
+
+  val make : ?tz:Time_zone.t -> ?fixed_offset_from_utc:Span.t -> unit -> (t, error) result
+
+  val equal : t -> t -> bool
+
+  val of_sexp : CCSexp.t -> (t, string) result
+
+  val to_sexp : t -> CCSexp.t
+end
+
 module Utils : sig
   val ptime_span_of_span : Span.t -> Ptime.span option
 
@@ -1060,26 +1088,4 @@ module Utils : sig
   val tm_int_of_weekday : weekday -> int
 
   val get_local_tz_for_arg : unit -> Time_zone.t
-
-  type tz_info = {
-    tz : Time_zone.t;
-    fixed_offset_from_utc : Span.t option;
-  }
-  (** Time zone information of date time.
-
-      [tz] is the time zone tied. This is always defined even if only an offset provided during construction -
-      if say only offset of 10 hours is provided, [tz] becomes "UTC+10".
-
-      [fixed_offset_from_utc] is the fixed offset from UTC, if it can be defined.
-  *)
-
-  type tz_info_error =
-    [ `Missing_both_tz_and_fixed_offset_from_utc
-    | `Invalid_offset of Span.t
-    | `Unrecorded_offset of Span.t
-    ]
-
-  val make_tz_info : ?tz:Time_zone.t -> ?fixed_offset_from_utc:Span.t -> unit -> (tz_info, tz_info_error) result
-
-  val equal_tz_info : tz_info -> tz_info -> bool
 end

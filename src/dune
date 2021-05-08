@@ -10,6 +10,12 @@
  (action  (copy %{deps} %{targets}))
 )
 
+(rule
+ (targets of_sexp_utils.ml)
+ (deps    ../desc/of_sexp_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
 (library
  (flags     (-w "+a-4-9-29-37-40-42-44-48-50@8"))
  (name timere)

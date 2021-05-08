@@ -61,25 +61,25 @@ let tz_make_of_sexp (x : CCSexp.t) =
     invalid_data
       (Printf.sprintf "Expected atom for time zone: %s" (CCSexp.to_string x))
 
-(* let tz_info_of_sexp (x : CCSexp.t) : Date_time_components.tz_info =
- *   match x with
- *   | `Atom _ ->
- *     invalid_data (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x))
- *   | `List l -> (
- *       match l with
- *       | [ x ] -> { tz = tz_make_of_sexp x; offset_from_utc = None }
- *       | [ x; offset_from_utc ] ->
- *         {
- *           tz = tz_make_of_sexp x;
- *           offset_from_utc =
- *             Some
- *               (Span.make
- *                  ~s:(CCInt64.of_int @@ int_of_sexp offset_from_utc)
- *                  ());
- *         }
- *       | _ ->
- *         invalid_data
- *           (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x))) *)
+let tz_info_of_sexp (x : CCSexp.t) : Time_zone_info.t =
+  match x with
+  | `Atom _ ->
+    invalid_data (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x))
+  | `List l -> (
+      match l with
+      | [ x ] -> { tz = tz_make_of_sexp x; fixed_offset_from_utc = None }
+      | [ x; offset_from_utc ] ->
+        {
+          tz = tz_make_of_sexp x;
+          fixed_offset_from_utc =
+            Some
+              (Span.make
+                 ~s:(CCInt64.of_int @@ int_of_sexp offset_from_utc)
+                 ());
+        }
+      | _ ->
+        invalid_data
+          (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x)))
 
 let date_time_of_sexp (x : CCSexp.t) =
   let invalid_data () =

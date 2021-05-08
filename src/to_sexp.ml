@@ -14,18 +14,7 @@ let sexp_of_tz_name t = CCSexp.atom (Timedesc.Time_zone.name t)
 let sexp_of_span =
   Timedesc.Span.to_sexp
 
-let sexp_of_tz_info ({ tz; offset_from_utc } : Timedesc.tz_info) =
-  let open CCSexp in
-  list
-    (CCList.filter_map CCFun.id
-       [
-         Some (sexp_of_tz_name tz);
-         CCOpt.map
-           (fun tz_offset -> sexp_of_int (CCInt64.to_int Timedesc.Span.(tz_offset.s)))
-           offset_from_utc;
-       ])
-
-let sexp_of_points (pick, tz_info) =
+let sexp_of_points ({pick; tz_info} : Points.t) =
   let open CCSexp in
   let open Points in
   list
