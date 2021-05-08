@@ -20,6 +20,10 @@ desc :
 lib :
 	dune build src
 
+.PHONY: desc-test
+desc-test : desc
+	OCAMLRUNPARAM=b dune exec ./desc-tests/main.exe
+
 .PHONY: test
 test : lib
 	OCAMLRUNPARAM=b dune exec ./tests/main.exe

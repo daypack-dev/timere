@@ -1,0 +1,190 @@
+(rule
+ (targets time_zone_constants.ml)
+ (deps    ../gen-artifacts/time_zone_constants.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets span.ml)
+ (deps    ../desc/span.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets constants.ml)
+ (deps    ../desc/constants.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets infix.ml)
+ (deps    ../desc/infix.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets date_time_components.ml)
+ (deps    ../desc/date_time_components.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets of_sexp_utils.ml)
+ (deps    ../desc/of_sexp_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets to_sexp_utils.ml)
+ (deps    ../desc/to_sexp_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets bigarray_utils.ml)
+ (deps    ../desc/bigarray_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets ptime_utils.ml)
+ (deps    ../desc/ptime_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets pattern.ml)
+ (deps    ../desc/pattern.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets pattern_resolver.ml)
+ (deps    ../desc/pattern_resolver.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets points.ml)
+ (deps    ../desc/points.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets time.ml)
+ (deps    ../desc/time.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets date.ml)
+ (deps    ../desc/date.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets date_time.ml)
+ (deps    ../desc/date_time.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets string_map.ml)
+ (deps    ../desc/string_map.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets time_zone.ml)
+ (deps    ../desc/time_zone.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets int64_utils.ml)
+ (deps    ../desc/int64_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets seq_utils.ml)
+ (deps    ../desc/seq_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets misc_utils.ml)
+ (deps    ../desc/misc_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets time_zone_utils.ml)
+ (deps    ../desc/time_zone_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets to_sexp.ml)
+ (deps    ../desc/to_sexp.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets of_sexp.ml)
+ (deps    ../desc/of_sexp.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets printers.ml)
+ (deps    ../desc/printers.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets RFC3339.ml)
+ (deps    ../desc/RFC3339.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets ISO8601.ml)
+ (deps    ../desc/ISO8601.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets parser_components.ml)
+ (deps    ../desc/parser_components.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets int_set.ml)
+ (deps    ../desc/int_set.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(test
+ (flags     (-w "+a-4-9-29-37-40-42-44-48-50-32" -g))
+ (name main)
+ (instrumentation (backend bisect_ppx))
+ (libraries qcheck
+            qcheck-alcotest
+            alcotest
+            ptime
+            ptime.clock.os
+            oseq
+            seq
+            mparser
+            containers
+            yojson
+            fmt
+            bigarray
+            fileutils
+            diet
+            timedesc.tzdb.full
+            timedesc.tzlocal.unix
+            )
+ )
