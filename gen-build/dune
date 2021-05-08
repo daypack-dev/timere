@@ -4,7 +4,7 @@
  )
  (libraries containers
             bigarray
-            timere
-            timere.tzdb.none
+            timedesc
+            timedesc.tzdb.none
  )
 )
