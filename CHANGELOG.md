@@ -52,6 +52,8 @@
 
     - See [issue #27](https://github.com/daypack-dev/timere/issues/27) for discussion
 
+  - Many changes and restructuring for better usability...
+
 ## Timere 0.3.1
 
 - Minor refactoring on use of pattern resolver to simplify reasoning about undefined/uncertain behaviour

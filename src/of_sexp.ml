@@ -60,70 +60,20 @@ let tz_make_of_sexp (x : CCSexp.t) =
     invalid_data
       (Printf.sprintf "Expected atom for time zone: %s" (CCSexp.to_string x))
 
-let tz_info_of_sexp (x : CCSexp.t) : Timedesc.Utils.tz_info =
-  match x with
-  | `Atom _ ->
-    invalid_data (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x))
-  | `List l -> (
-      match l with
-      | [ x ] -> { tz = tz_make_of_sexp x; offset = None }
-      | [ x; offset ] ->
-        {
-          tz = tz_make_of_sexp x;
-          offset =
-            Some (Span.make ~s:(CCInt64.of_int @@ int_of_sexp offset) ());
-        }
-      | _ ->
-        invalid_data
-          (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x)))
+let tz_info_of_sexp x =
+  match Timedesc.Time_zone_info.of_sexp x with
+  | Ok x -> x
+  | Error msg -> invalid_data msg
 
-let date_time_of_sexp (x : CCSexp.t) =
-  let invalid_data () =
-    invalid_data (Printf.sprintf "Invalid date: %s" (CCSexp.to_string x))
-  in
-  match x with
-  | `List [ year; month; day; hour; minute; second; ns; tz_info ] -> (
-      let year = int_of_sexp year in
-      let month = month_of_sexp month in
-      let day = int_of_sexp day in
-      let hour = int_of_sexp hour in
-      let minute = int_of_sexp minute in
-      let second = int_of_sexp second in
-      let ns = int_of_sexp ns in
-      let tz_info = tz_info_of_sexp tz_info in
-      match tz_info with
-      | { tz; offset = None } -> (
-          match
-            Time.Date_time'.make ~year ~month ~day ~hour ~minute ~second ~ns ~tz
-              ()
-          with
-          | Ok x -> x
-          | Error _ -> invalid_data ())
-      | { tz; offset = Some tz_offset } -> (
-          match
-            Time.Date_time'.make_unambiguous ~year ~month ~day ~hour ~minute
-              ~second ~ns ~tz ~tz_offset ()
-          with
-          | Ok x -> x
-          | Error _ -> invalid_data ()))
-  | _ -> invalid_data ()
+let date_time_of_sexp x =
+  match Timedesc.of_sexp x with
+  | Ok x -> x
+  | Error msg -> invalid_data msg
 
 let timestamp_of_sexp x =
-  let dt = date_time_of_sexp x in
-  match dt.tz_info with
-  | { tz = _; offset = None } ->
-    invalid_data "Expected time zone offset 0, but got None instead"
-  | { tz; offset = Some tz_offset } -> (
-      let tz_name = Time_zone.name tz in
-      if tz_name <> "UTC" then
-        invalid_data
-          (Printf.sprintf "Expected time zone UTC, but got %s instead" tz_name)
-      else if not Span.(equal tz_offset zero) then
-        invalid_data "Expected time zone offset 0"
-      else
-        match Time.Date_time'.to_timestamp dt with
-        | `Single x -> x
-        | _ -> failwith "Unexpected case")
+  match Timedesc.Timestamp.of_sexp x with
+  | Ok x -> x
+  | Error msg -> invalid_data msg
 
 let range_of_sexp ~(f : CCSexp.t -> 'a) (x : CCSexp.t) =
   match x with
@@ -192,7 +142,7 @@ let pattern_of_sexp (x : CCSexp.t) =
         invalid_data
           (Printf.sprintf "Invalid pattern: %s" (CCSexp.to_string x)))
 
-let points_of_sexp (x : CCSexp.t) =
+let points_of_sexp (x : CCSexp.t) : Points.t =
   let open Points in
   let pick_of_sexp_list (l : CCSexp.t list) : pick =
     match l with
@@ -250,9 +200,9 @@ let points_of_sexp (x : CCSexp.t) =
   | `List l -> (
       match l with
       | [ `Atom "points"; `List (`Atom "pick" :: pick) ] ->
-        (pick_of_sexp_list pick, None)
+        {pick = pick_of_sexp_list pick; tz_info = None}
       | [ `Atom "points"; `List (`Atom "pick" :: pick); tz_info ] ->
-        (pick_of_sexp_list pick, Some (tz_info_of_sexp tz_info))
+        {pick = pick_of_sexp_list pick; tz_info = Some (tz_info_of_sexp tz_info) }
       | _ ->
         invalid_data
           (Printf.sprintf "Invalid points: %s" (CCSexp.to_string x)))

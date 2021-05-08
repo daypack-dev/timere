@@ -13,28 +13,12 @@ exception Intervals_are_not_disjoint
 let one_ns = Timedesc.Span.make ~ns:1 ()
 
 module Interval' = struct
-  open Timedesc
-
-  type t = timestamp * timestamp
-
-  let lt (x1, y1) (x2, y2) =
-    (* lexicographic order *)
-    Span.(x1 < x2 || (x1 = x2 && y1 < y2))
-
-  let le x y = lt x y || x = y
-
-  let gt x y = lt y x
-
-  let ge x y = le y x
-
-  let equal (x1, y1) (x2, y2) = Span.(x1 = x2 && y1 = y2)
-
-  let compare x y = if lt x y then -1 else if x = y then 0 else 1
+  include Timedesc.Interval
 
   module Check = struct
-    let is_valid ((start, end_exc) : t) : bool = Span.(start <= end_exc)
+    let is_valid ((start, end_exc) : t) : bool = Timedesc.Span.(start <= end_exc)
 
-    let is_not_empty ((start, end_exc) : t) : bool = not Span.(start = end_exc)
+    let is_not_empty ((start, end_exc) : t) : bool = not Timedesc.Span.(start = end_exc)
 
     let check_if_valid (x : t) : t =
       if is_valid x then x else raise Interval_is_invalid
@@ -80,17 +64,17 @@ module Intervals = struct
       Seq.map Interval'.Check.check_if_not_empty intervals
 
     let check_if_sorted (intervals : Interval'.t Seq.t) : Interval'.t Seq.t =
-      Seq_utils.check_if_f_holds_for_immediate_neighbors ~f:Interval'.le
+      Seq_utils.check_if_f_holds_for_immediate_neighbors ~f:Timedesc.Interval.le
         ~f_exn:(fun _ _ -> Intervals_are_not_sorted)
         intervals
 
     let check_if_sorted_rev (intervals : Interval'.t Seq.t) : Interval'.t Seq.t
       =
-      Seq_utils.check_if_f_holds_for_immediate_neighbors ~f:Interval'.ge
+      Seq_utils.check_if_f_holds_for_immediate_neighbors ~f:Timedesc.Interval.ge
         ~f_exn:(fun _ _ -> Intervals_are_not_sorted)
         intervals
 
-    let check_if_disjoint (intervals : Interval'.t Seq.t) : Interval'.t Seq.t =
+    let check_if_disjoint (intervals : Interval'.t Seq.t) : Timedesc.Interval.t Seq.t =
       Seq_utils.check_if_f_holds_for_immediate_neighbors
         ~f:(fun x y ->
             match Interval'.overlap_of_a_over_b ~a:y ~b:x with
@@ -129,7 +113,7 @@ module Intervals = struct
       |> (fun l ->
           if skip_check then l
           else l |> CCList.to_seq |> Check.check_if_valid |> CCList.of_seq)
-      |> List.sort Interval'.compare
+      |> List.sort Timedesc.Interval.compare
 
     let sort_uniq_intervals_list ?(skip_check = false)
         (intervals : Interval'.t list) : Interval'.t list =
@@ -137,14 +121,14 @@ module Intervals = struct
       |> (fun l ->
           if skip_check then l
           else l |> CCList.to_seq |> Check.check_if_valid |> CCList.of_seq)
-      |> List.sort_uniq Interval'.compare
+      |> List.sort_uniq Timedesc.Interval.compare
 
     let sort_uniq_intervals ?(skip_check = false)
         (intervals : Interval'.t Seq.t) : Interval'.t Seq.t =
       intervals
       |> (fun s -> if skip_check then s else Check.check_if_valid s)
       |> CCList.of_seq
-      |> List.sort_uniq Interval'.compare
+      |> List.sort_uniq Timedesc.Interval.compare
       |> CCList.to_seq
 
     let sort_intervals ?(skip_check = false) (intervals : Interval'.t Seq.t) :
@@ -152,7 +136,7 @@ module Intervals = struct
       intervals
       |> (fun s -> if skip_check then s else Check.check_if_valid s)
       |> CCList.of_seq
-      |> List.sort Interval'.compare
+      |> List.sort Timedesc.Interval.compare
       |> CCList.to_seq
   end
 
@@ -1203,7 +1187,7 @@ let bounded_intervals pick (bound : Timedesc.Span.t)
   if Timedesc.Span.(bound < zero) then invalid_arg "bounded_intervals: bound is negative";
   if Points.precision start < Points.precision end_exc then
     invalid_arg "bounded_intervals: start is less precise than end_exc"
-  else if CCOpt.equal Timedesc.Utils.equal_tz_info start.tz_info end_exc.tz_info then
+  else if CCOpt.equal Timedesc.Time_zone_info.equal start.tz_info end_exc.tz_info then
     match (start.pick, end_exc.pick) with
     | Points.(S second_start, S second_end_exc)
       when second_start = second_end_exc ->

@@ -61,6 +61,10 @@ module Timestamp = struct
   let to_rfc3339_nano = RFC3339.of_timestamp ~frac_s:9
 
   let of_iso8601 = ISO8601.to_timestamp
+
+  let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.timestamp_of_sexp
+
+  let to_sexp = To_sexp.sexp_of_timestamp
 end
 
 let to_string = Printers.string_of_date_time
@@ -105,6 +109,30 @@ let min_of_local_result = min_of_local_result
 let max_of_local_result = max_of_local_result
 
 include Ymd_date_time
+
+module Interval = struct
+  type t = timestamp * timestamp
+
+  let lt (x1, y1) (x2, y2) =
+    (* lexicographic order *)
+    Span.(x1 < x2 || (x1 = x2 && y1 < y2))
+
+  let le x y = lt x y || x = y
+
+  let gt x y = lt y x
+
+  let ge x y = le y x
+
+  let equal (x1, y1) (x2, y2) = Span.(x1 = x2 && y1 = y2)
+
+  let compare x y = if lt x y then -1 else if x = y then 0 else 1
+
+  let pp = Printers.pp_interval
+
+  let to_string = Printers.string_of_interval
+
+  let pp_seq = Printers.pp_intervals
+end
 
 module Time_zone_info = struct
   include Time_zone_info

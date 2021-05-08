@@ -190,49 +190,7 @@ exception Interval_is_invalid
 
 exception Intervals_are_not_sorted
 
-module Interval : sig
-  type t = Timedesc.timestamp * Timedesc.timestamp
-
-  val equal : t -> t -> bool
-
-  val lt : t -> t -> bool
-
-  val le : t -> t -> bool
-
-  val gt : t -> t -> bool
-
-  val ge : t -> t -> bool
-
-  val compare : t -> t -> int
-
-  val pp :
-    ?display_using_tz:Timedesc.Time_zone.t ->
-    ?format:string ->
-    unit ->
-    Format.formatter ->
-    t ->
-    unit
-  (** Pretty printing for interval.
-
-        Default format string:
-      {v
-[{syear} {smon:Xxx} {sday:0X} {shour:0X}:{smin:0X}:{ssec:0X} \
-{stzoff-sign}{stzoff-hour:0X}:{stzoff-min:0X}:{stzoff-sec:0X}, {eyear} \
-{emon:Xxx} {eday:0X} {ehour:0X}:{emin:0X}:{esec:0X} \
-{etzoff-sign}{etzoff-hour:0X}:{etzoff-min:0X}:{etzoff-sec:0X})
-    v}
-
-        Follows same format string rules as {!val:Date_time.to_string}, but tags are prefixed with 's' for "start time", and 'e' for "end exc time",
-        e.g. for interval [(x, y)]
-
-      - [{syear}] gives year of the [x]
-      - [{ehour:cX}] gives hour of the [y]
-  *)
-
-  val to_string : ?display_using_tz:Time_zone.t -> ?format:string -> t -> string
-end
-
-val intervals : ?skip_invalid:bool -> Interval.t list -> t
+val intervals : ?skip_invalid:bool -> Timedesc.Interval.t list -> t
 (** [intervals l]
 
     [skip_invalid] defaults to [false]
@@ -240,7 +198,7 @@ val intervals : ?skip_invalid:bool -> Interval.t list -> t
     @raise Interval_is_invalid if [not skip_invalid] and [l] contains an invalid interval
 *)
 
-val interval_seq : ?skip_invalid:bool -> Interval.t Seq.t -> t
+val interval_seq : ?skip_invalid:bool -> Timedesc.Interval.t Seq.t -> t
 (** [interval_seq s]
 
     [skip_invalid] defaults to [false]
@@ -248,7 +206,7 @@ val interval_seq : ?skip_invalid:bool -> Interval.t Seq.t -> t
     @raise Interval_is_invalid if [not skip_invalid] and [s] contains an invalid interval
 *)
 
-val sorted_intervals : ?skip_invalid:bool -> Interval.t list -> t
+val sorted_intervals : ?skip_invalid:bool -> Timedesc.Interval.t list -> t
 (** [sorted_intervals l]
 
     [skip_invalid] defaults to [false]
@@ -257,7 +215,7 @@ val sorted_intervals : ?skip_invalid:bool -> Interval.t list -> t
     @raise Intervals_are_not_sorted if [l] is not sorted
 *)
 
-val sorted_interval_seq : ?skip_invalid:bool -> Interval.t Seq.t -> t
+val sorted_interval_seq : ?skip_invalid:bool -> Timedesc.Interval.t Seq.t -> t
 (** [sorted_interval_seq s]
 
     [skip_invalid] defaults to [false]
@@ -289,7 +247,7 @@ module Points : sig
 
   val make :
     ?tz:Timedesc.Time_zone.t ->
-    ?tz_offset:Timedesc.Span.t ->
+    ?offset_from_utc:Timedesc.Span.t ->
     ?year:int ->
     ?month:int ->
     ?day:int ->
@@ -315,7 +273,7 @@ make_points                                               ~second:_ ()
 
   val make_exn :
     ?tz:Timedesc.Time_zone.t ->
-    ?tz_offset:Timedesc.Span.t ->
+    ?offset_from_utc:Timedesc.Span.t ->
     ?year:int ->
     ?month:int ->
     ?day:int ->
@@ -477,19 +435,8 @@ val ( %> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** {2 Resolution} *)
 
 val resolve :
-  ?search_using_tz:Timedesc.Time_zone.t -> t -> (Interval.t Seq.t, string) result
+  ?search_using_tz:Timedesc.Time_zone.t -> t -> (Timedesc.Interval.t Seq.t, string) result
 (** Resolves a Timere object into a concrete interval sequence *)
-
-(** {2 Pretty printers} *)
-
-val pp_intervals :
-  ?display_using_tz:Timedesc.Time_zone.t ->
-  ?format:string ->
-  ?sep:unit Fmt.t ->
-  unit ->
-  Format.formatter ->
-  Interval.t Seq.t ->
-  unit
 
 (** {2 S-expressions} *)
 

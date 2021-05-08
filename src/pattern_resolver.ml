@@ -9,8 +9,8 @@ module Branch = struct
     ns : int;
   }
 
-  let to_date_time ~tz_offset (x : t) : Timedesc.t =
-    Timedesc.make_unambiguous_exn ~tz_offset ~year:x.year ~month:x.month
+  let to_date_time ~offset_from_utc (x : t) : Timedesc.t =
+    Timedesc.make_unambiguous_exn ~offset_from_utc ~year:x.year ~month:x.month
       ~day:x.day ~hour:x.hour ~minute:x.minute ~second:x.second
       ()
 
@@ -57,19 +57,19 @@ end
 
 module Search_param = struct
   type t = {
-    search_using_tz_offset : Timedesc.Span.t;
+    search_using_offset_from_utc : Timedesc.Span.t;
     start : Branch.t;
     end_inc : Branch.t;
     start_dt : Timedesc.t;
     end_inc_dt : Timedesc.t;
   }
 
-  let make ~search_using_tz_offset_s ((start, end_exc) : Time.Interval'.t) : t =
-    let search_using_tz_offset =
-      (Timedesc.Span.make_small ~s:search_using_tz_offset_s ())
+  let make ~search_using_offset_from_utc_s ((start, end_exc) : Time.Interval'.t) : t =
+    let search_using_offset_from_utc =
+      (Timedesc.Span.make_small ~s:search_using_offset_from_utc_s ())
     in
     let tz_of_date_time =
-      Timedesc.Time_zone.make_offset_only_exn search_using_tz_offset
+      Timedesc.Time_zone.make_offset_only_exn search_using_offset_from_utc
     in
     let start_dt =
       CCOpt.get_exn @@ Timedesc.of_timestamp ~tz_of_date_time start
@@ -79,7 +79,7 @@ module Search_param = struct
       @@ Timedesc.of_timestamp ~tz_of_date_time (Timedesc.Span.pred end_exc)
     in
     {
-      search_using_tz_offset;
+      search_using_offset_from_utc;
       start = Branch.of_date_time start_dt;
       end_inc = Branch.of_date_time end_inc_dt;
       start_dt;
@@ -470,11 +470,11 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
   (Timedesc.Span.t * Timedesc.Span.t) Seq.t =
   let f (x, y) =
     let x = x
-            |> Branch.to_date_time ~tz_offset:search_param.search_using_tz_offset
+            |> Branch.to_date_time ~offset_from_utc:search_param.search_using_offset_from_utc
             |> Timedesc.to_timestamp_single
     in
     let y = y
-            |> Branch.to_date_time ~tz_offset:search_param.search_using_tz_offset
+            |> Branch.to_date_time ~offset_from_utc:search_param.search_using_offset_from_utc
             |> Timedesc.to_timestamp_single
     in
     (x, y)

@@ -71,7 +71,7 @@ let sexp_of_points ({pick; tz_info} : Points.t) =
                     sexp_of_int minute;
                     sexp_of_int second;
                   ])));
-         CCOpt.map sexp_of_tz_info tz_info;
+         CCOpt.map Timedesc.Time_zone_info.to_sexp tz_info;
        ])
 
 let sexp_of_date_time = Timedesc.to_sexp
@@ -139,21 +139,6 @@ let sexp_of_pattern (pat : Pattern.t) : CCSexp.t =
 let sexp_list_of_unary_op (op : Time_ast.unary_op) =
   match op with
   | Not -> [ CCSexp.atom "not" ]
-  (* | Drop_points n ->
-   *   [ CCSexp.atom "drop_points"; CCSexp.atom (string_of_int n) ]
-   * | Take_points n ->
-   *   [ CCSexp.atom "take_points"; CCSexp.atom (string_of_int n) ] *)
-  (* | Every_nth n -> [ CCSexp.atom "every_nth"; CCSexp.atom (string_of_int n) ]
-   * | Nth n -> [ CCSexp.atom "nth"; CCSexp.atom (string_of_int n) ]
-   * | Chunk { chunk_size; drop_partial } ->
-   *   [
-   *     Some (CCSexp.atom "chunk");
-   *     (if drop_partial then Some (CCSexp.atom "drop_partial") else None);
-   *     Some (CCSexp.atom (Int64.to_string chunk_size));
-   *   ]
-   *   |> List.filter_map Fun.id
-   * | Chunk_by_year -> [ CCSexp.atom "chunk_by_year"]
-   * | Chunk_by_month -> [ CCSexp.atom "chunk_by_month"] *)
   | Shift n -> [ CCSexp.atom "shift"; sexp_of_span n ]
   | Lengthen n -> [ CCSexp.atom "lengthen"; sexp_of_span n ]
   | With_tz tz -> [ CCSexp.atom "with_tz"; CCSexp.atom (Timedesc.Time_zone.name tz) ]

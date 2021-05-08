@@ -196,11 +196,6 @@ let pp_timestamp ?(display_using_tz = Time_zone.utc) ?format () formatter time =
 let string_of_timestamp ?display_using_tz ?format (time : Span.t) : string =
   Fmt.str "%a" (pp_timestamp ?display_using_tz ?format ()) time
 
-(* let pp_hms formatter (hms : Time.Hms'.t) : unit =
- *   Fmt.pf formatter "%d:%d:%d" hms.hour hms.minute hms.second *)
-
-(* let string_of_hms hms = Fmt.str "%a" pp_hms hms *)
-
 let pp_interval ?(display_using_tz = Time_zone.utc)
     ?(format = default_interval_format_string) () formatter
     ((s, e) : Date_time.interval) : unit =

@@ -433,6 +433,45 @@ module Time_zone : sig
   end
 end
 
+(** {1 Interval} *)
+module Interval : sig
+  type t = timestamp * timestamp
+
+  val equal : t -> t -> bool
+
+  val lt : t -> t -> bool
+
+  val le : t -> t -> bool
+
+  val gt : t -> t -> bool
+
+  val ge : t -> t -> bool
+
+  val compare : t -> t -> int
+
+  val pp : ?display_using_tz:Time_zone.t -> ?format:string -> unit -> Format.formatter -> t -> unit
+  (** Pretty printing for interval.
+
+        Default format string:
+      {v
+[{syear} {smon:Xxx} {sday:0X} {shour:0X}:{smin:0X}:{ssec:0X} \
+{stzoff-sign}{stzoff-hour:0X}:{stzoff-min:0X}:{stzoff-sec:0X}, {eyear} \
+{emon:Xxx} {eday:0X} {ehour:0X}:{emin:0X}:{esec:0X} \
+{etzoff-sign}{etzoff-hour:0X}:{etzoff-min:0X}:{etzoff-sec:0X})
+    v}
+
+        Follows same format string rules as {!val:Date_time.to_string}, but tags are prefixed with 's' for "start time", and 'e' for "end exc time",
+        e.g. for interval [(x, y)]
+
+      - [{syear}] gives year of the [x]
+      - [{ehour:cX}] gives hour of the [y]
+  *)
+
+  val to_string : ?display_using_tz:Time_zone.t -> ?format:string -> t -> string
+
+  val pp_seq : ?display_using_tz:Time_zone.t -> ?format:string -> ?sep:(Format.formatter -> unit -> unit) -> unit -> Format.formatter -> t Seq.t -> unit
+end
+
 (** {1 Date} *)
 
 module Date : sig
@@ -927,6 +966,10 @@ module Timestamp : sig
 
      If more than 9 fractional digits are provided, then only the first 9 digits are used, i.e. no rounding.
   *)
+
+  val of_sexp : CCSexp.t -> (timestamp, string) result
+
+  val to_sexp : timestamp -> CCSexp.t
 end
 
 module ISO_week_date_time : sig
@@ -1014,7 +1057,9 @@ end
 (** {1 Misc} *)
 
 module Time_zone_info : sig
-  type t = {
+  (** {1 Time zone information that can be attached to date time like data}*)
+
+  type t = private {
     tz : Time_zone.t;
     fixed_offset_from_utc : Span.t option;
   }
@@ -1023,7 +1068,9 @@ module Time_zone_info : sig
       [tz] is the time zone tied. This is always defined even if only an offset provided during construction -
       if say only offset of 10 hours is provided, [tz] becomes "UTC+10".
 
-      [fixed_offset_from_utc] is the fixed offset from UTC, if it can be defined.
+      [fixed_offset_from_utc] is the fixed offset from UTC. This is defined if it is provided by
+      user or if the time zone can be represented by a fixed offset, e.g. "UTC+1" can be represented by
+      fixed offset of 1 hour.
   *)
 
   type error =

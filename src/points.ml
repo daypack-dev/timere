@@ -39,7 +39,7 @@ type pick =
 
 type t = {
   pick : pick;
-  tz_info : Timedesc.Utils.tz_info option;
+  tz_info : Timedesc.Time_zone_info.t option;
 }
 
 type error =
@@ -67,7 +67,7 @@ let precision ({pick; _} : t) : int =
 let make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ~second () :
   (t, error) result =
   let tz_info =
-    match Timedesc.Utils.make_tz_info ?tz ?fixed_offset_from_utc:offset_from_utc () with
+    match Timedesc.Time_zone_info.make ?tz ?fixed_offset_from_utc:offset_from_utc () with
     | Ok tz_info -> Ok (Some tz_info)
     | Error `Missing_both_tz_and_fixed_offset_from_utc -> Ok None
     | Error (`Invalid_offset tz_offset) | Error (`Unrecorded_offset tz_offset)
@@ -170,34 +170,34 @@ let equal_pick t1 t2 =
   | _, _ -> false
 
 let equal x y =
-  equal_pick x.pick y.pick && CCOpt.equal Timedesc.Utils.equal_tz_info x.tz_info y.tz_info
+  equal_pick x.pick y.pick && CCOpt.equal Timedesc.Time_zone_info.equal x.tz_info y.tz_info
 
-let to_pattern (t, _tz_info) =
+let to_pattern ({pick; tz_info = _} : t) =
   let years =
-    match t with
+    match pick with
     | YMDHMS { year; _ } -> Int_set.add year Int_set.empty
     | _ -> Int_set.empty
   in
   let months =
-    match t with
+    match pick with
     | YMDHMS { month; _ } | MDHMS { month; _ } ->
       Int_set.add month Int_set.empty
     | _ -> Int_set.empty
   in
   let month_days =
-    match t with
+    match pick with
     | YMDHMS { month_day; _ } | MDHMS { month_day; _ } | DHMS { month_day; _ }
       ->
       Int_set.add month_day Int_set.empty
     | _ -> Int_set.empty
   in
   let weekdays =
-    match t with
+    match pick with
     | WHMS { weekday; _ } -> Weekday_set.add weekday Weekday_set.empty
     | _ -> Weekday_set.empty
   in
   let hours =
-    match t with
+    match pick with
     | YMDHMS { hour; _ }
     | MDHMS { hour; _ }
     | WHMS { hour; _ }
@@ -207,7 +207,7 @@ let to_pattern (t, _tz_info) =
     | _ -> Int_set.empty
   in
   let minutes =
-    match t with
+    match pick with
     | YMDHMS { minute; _ }
     | MDHMS { minute; _ }
     | WHMS { minute; _ }
@@ -218,7 +218,7 @@ let to_pattern (t, _tz_info) =
     | _ -> Int_set.empty
   in
   let seconds =
-    match t with
+    match pick with
     | YMDHMS { second; _ }
     | MDHMS { second; _ }
     | WHMS { second; _ }

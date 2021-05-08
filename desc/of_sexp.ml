@@ -156,5 +156,5 @@ let timestamp_of_sexp x =
       else if not Span.(equal offset zero) then
         invalid_data "Expected time zone offset 0"
       else
-        x
+        Date_time.to_timestamp_single dt
     )

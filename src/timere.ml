@@ -1,17 +1,15 @@
-include Date_time_components
 include Time_ast
 include Time
 include Infix
-module Time_zone = Time_zone
 
-exception Invalid_format_string = Printers.Invalid_format_string
+type timestamp = Timedesc.timestamp
 
-module Interval = struct
-  include Interval'
+module Hms = struct
+  include Hms'
 
-  let pp = Printers.pp_interval
+  let pp = Printers.pp_hms
 
-  let to_string = Printers.string_of_interval
+  let to_string = Printers.string_of_hms
 end
 
 type 'a range = 'a Range.range
@@ -21,8 +19,6 @@ module Points = Points
 type points = Points.t
 
 let resolve = Resolver.resolve
-
-let pp_intervals = Printers.pp_intervals
 
 let to_sexp = To_sexp.to_sexp
 
@@ -53,13 +49,13 @@ module Utils = struct
     try Some (Month_day_ranges.Flatten.flatten_list month_days)
     with Range.Range_is_invalid -> None
 
-  let flatten_weekday_ranges (weekdays : weekday range Seq.t) :
-    weekday Seq.t option =
+  let flatten_weekday_ranges (weekdays : Timedesc.weekday range Seq.t) :
+    Timedesc.weekday Seq.t option =
     try Some (Weekday_ranges.Flatten.flatten weekdays)
     with Range.Range_is_invalid -> None
 
-  let flatten_weekday_range_list (weekdays : weekday range list) :
-    weekday list option =
+  let flatten_weekday_range_list (weekdays : Timedesc.weekday range list) :
+    Timedesc.weekday list option =
     try Some (Weekday_ranges.Flatten.flatten_list weekdays)
     with Range.Range_is_invalid -> None
 end
