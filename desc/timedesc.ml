@@ -66,8 +66,8 @@ end
 let to_string = Printers.string_of_date_time
 
 exception
-  Date_time_cannot_deduce_tz_offset_s = Printers
-                                        .Date_time_cannot_deduce_tz_offset_s
+  Date_time_cannot_deduce_offset_from_utc = Printers
+                                        .Date_time_cannot_deduce_offset_from_utc
 
 let pp = Printers.pp_date_time
 

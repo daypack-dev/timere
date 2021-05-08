@@ -36,7 +36,20 @@ let sexp_of_date_time (x : Date_time.t) =
       sexp_of_int x.time.minute;
       sexp_of_int x.time.second;
       sexp_of_int x.time.ns;
-      sexp_of_tz_info x.tz_info;
+      sexp_of_tz_name x.tz;
+      (match x.offset_from_utc with
+       | `Single offset ->
+         list [
+           `Atom "single";
+           sexp_of_int (CCInt64.to_int Span.(offset.s));
+         ]
+       | `Ambiguous (offset1, offset2) ->
+         list [
+           `Atom "ambiguous";
+           sexp_of_int (CCInt64.to_int Span.(offset1.s));
+           sexp_of_int (CCInt64.to_int Span.(offset2.s));
+         ]
+      )
     ]
 
 let sexp_of_timestamp x =

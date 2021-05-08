@@ -31,7 +31,7 @@ let pad_int (c : char option) (x : int) : string =
   | None -> string_of_int x
   | Some c -> if x < 10 then Printf.sprintf "%c%d" c x else string_of_int x
 
-exception Date_time_cannot_deduce_tz_offset_s of Date_time.t
+exception Date_time_cannot_deduce_offset_from_utc of Date_time.t
 
 module Format_string_parsers = struct
   open MParser
@@ -55,9 +55,10 @@ module Format_string_parsers = struct
     <|> (char 'X' >> return None)
 
   let date_time_inner (date_time : Date_time.t) : (string, unit) t =
-    let tz_offset_s =
-      date_time.tz_info.offset_from_utc
-      |> CCOpt.map (fun x -> CCInt64.to_int Span.(x.s))
+    let single_offset =
+      match date_time.offset_from_utc with
+      | `Single offset -> Some (Span.For_human'.view offset)
+      | `Ambiguous _ -> None
     in
     let Date.Ymd_date.{ year; month; day } = Date_time.ymd_date date_time in
     let weekday = Date_time.weekday date_time in
@@ -111,34 +112,35 @@ module Format_string_parsers = struct
            return (Printf.sprintf "%0*d" precision frac));
         (attempt (string "tzoff-sign")
          >>= fun _ ->
-         match tz_offset_s with
-         | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
-         | Some tz_offset_s ->
-           if tz_offset_s >= 0 then return "+" else return "-");
+         match single_offset with
+         | None -> raise (Date_time_cannot_deduce_offset_from_utc date_time)
+         | Some offset -> (
+             match offset.sign with
+             | `Pos -> return "+"
+             | `Neg -> return "-"
+           )
+        );
         (attempt (string "tzoff-hour:")
          >> padding
          >>= fun padding ->
-         match tz_offset_s with
-         | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
-         | Some tz_offset_s ->
-           let d = Span.make_small ~s:(abs tz_offset_s) () in
-           return (pad_int padding Span.For_human'.((view d).hours)));
+         match single_offset with
+         | None -> raise (Date_time_cannot_deduce_offset_from_utc date_time)
+         | Some offset ->
+           return (pad_int padding Span.For_human'.(offset.hours)));
         (attempt (string "tzoff-min:")
          >> padding
          >>= fun padding ->
-         match tz_offset_s with
-         | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
-         | Some tz_offset_s ->
-           let d = Span.make_small ~s:(abs tz_offset_s) () in
-           return (pad_int padding Span.For_human'.((view d).minutes)));
+         match single_offset with
+         | None -> raise (Date_time_cannot_deduce_offset_from_utc date_time)
+         | Some offset ->
+           return (pad_int padding Span.For_human'.(offset.minutes)));
         (attempt (string "tzoff-sec:")
          >> padding
          >>= fun padding ->
-         match tz_offset_s with
-         | None -> raise (Date_time_cannot_deduce_tz_offset_s date_time)
-         | Some tz_offset_s ->
-           let d = Span.make_small ~s:(abs tz_offset_s) () in
-           return (pad_int padding Span.For_human'.((view d).seconds)));
+         match single_offset with
+         | None -> raise (Date_time_cannot_deduce_offset_from_utc date_time)
+         | Some offset ->
+           return (pad_int padding Span.For_human'.(offset.seconds)));
         (* string "unix"
          * >> return (Int64.to_string (Time.Date_time'.to_timestamp date_time)); *)
       ]
@@ -184,7 +186,7 @@ let pp_date_time ?(format : string = default_date_time_format_string) ()
 
 let string_of_date_time ?format (x : Date_time.t) : string option =
   try Some (Fmt.str "%a" (pp_date_time ?format ()) x)
-  with Date_time_cannot_deduce_tz_offset_s _ -> None
+  with Date_time_cannot_deduce_offset_from_utc _ -> None
 
 let pp_timestamp ?(display_using_tz = Time_zone.utc) ?format () formatter time =
   match Date_time.of_timestamp ~tz_of_date_time:display_using_tz time with

@@ -53,9 +53,9 @@ let pp_date_time ?frac_s () formatter (dt : Date_time.t) =
   if frac_s < 0 then invalid_arg "pp_date_time: frac_s cannot be < 0"
   else if frac_s > 9 then invalid_arg "pp_date_time: frac_s cannot be > 9"
   else
-    match tz_offset_of_tz_info dt.tz_info with
-    | None -> raise (Printers.Date_time_cannot_deduce_tz_offset_s dt)
-    | Some offset ->
+    match Date_time.offset_from_utc dt with
+    | `Ambiguous _ -> raise (Printers.Date_time_cannot_deduce_offset_from_utc dt)
+    | `Single offset ->
       let offset_view = Span.For_human'.view offset in
       let tz_off =
         if Span.(offset = zero) then "Z"
@@ -80,7 +80,7 @@ let pp_date_time ?frac_s () formatter (dt : Date_time.t) =
 
 let of_date_time ?frac_s (dt : Date_time.t) : string option =
   try Some (Fmt.str "%a" (pp_date_time ?frac_s ()) dt)
-  with Printers.Date_time_cannot_deduce_tz_offset_s _ -> None
+  with Printers.Date_time_cannot_deduce_offset_from_utc _ -> None
 
 let pp_timestamp ?frac_s () formatter (x : Span.t) =
   match Date_time.of_timestamp ~tz_of_date_time:Time_zone.utc x with

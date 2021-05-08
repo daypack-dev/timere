@@ -753,6 +753,8 @@ type 'a local_result =
         This happens when DST ends and "goes back an hour" for instance.
 *)
 
+val equal_local_result : eq:('a -> 'a -> bool) -> 'a local_result -> 'a local_result -> bool
+
 val to_timestamp : t -> timestamp local_result
 (** [to_timestamp] loses information about leap second
 *)
@@ -785,7 +787,7 @@ val max_val : t
 
 val now : ?tz_of_date_time:Time_zone.t -> unit -> t
 
-exception Date_time_cannot_deduce_tz_offset_s of t
+exception Date_time_cannot_deduce_offset_from_utc of t
 
 val pp : ?format:string -> unit -> Format.formatter -> t -> unit
 (**
