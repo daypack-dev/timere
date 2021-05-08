@@ -402,8 +402,8 @@ let ymd_date_gen : Timedesc.Date.Ymd_date.t QCheck.Gen.t =
       Timedesc.Date.Ymd_date.make_exn ~year ~month ~day
     )
     (pos_int64_bound_gen 9999L)
-    (pos_int64_bound_gen 12L)
-    (pos_int64_bound_gen 31L)
+    (pos_int64_bound_gen 11L)
+    (pos_int64_bound_gen 30L)
 
 let ymd_date =
   QCheck.make
