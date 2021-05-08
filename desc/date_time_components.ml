@@ -187,25 +187,25 @@ let equal_tz_info (x : tz_info) (y : tz_info) =
   | _, _ -> false
 
 type tz_info_error =
-  [ `Missing_both_tz_and_tz_offset
+  [ `Missing_both_tz_and_offset_from_utc
   | `Invalid_offset of Span.t
   | `Unrecorded_offset of Span.t
   ]
 
-let make_tz_info ?tz ?tz_offset () : (tz_info, tz_info_error) result =
-  match (tz, tz_offset) with
-  | None, None -> Error `Missing_both_tz_and_tz_offset
+let make_tz_info ?tz ?offset_from_utc () : (tz_info, tz_info_error) result =
+  match (tz, offset_from_utc) with
+  | None, None -> Error `Missing_both_tz_and_offset_from_utc
   | Some tz, None -> Ok { tz; offset_from_utc = Time_zone.to_fixed_offset_from_utc tz }
-  | None, Some tz_offset -> (
-      match Time_zone.make_offset_only tz_offset with
-      | None -> Error (`Invalid_offset tz_offset)
-      | Some tz -> Ok { tz; offset_from_utc = Some tz_offset })
-  | Some tz, Some tz_offset ->
-    if Time_zone.offset_is_recorded tz_offset tz then
-      Ok { tz; offset_from_utc = Some tz_offset }
-    else Error (`Unrecorded_offset tz_offset)
+  | None, Some offset_from_utc -> (
+      match Time_zone.make_offset_only offset_from_utc with
+      | None -> Error (`Invalid_offset offset_from_utc)
+      | Some tz -> Ok { tz; offset_from_utc = Some offset_from_utc })
+  | Some tz, Some offset_from_utc ->
+    if Time_zone.offset_is_recorded offset_from_utc tz then
+      Ok { tz; offset_from_utc = Some offset_from_utc }
+    else Error (`Unrecorded_offset offset_from_utc)
 
-let tz_offset_of_tz_info ({ tz; offset_from_utc } : tz_info) =
+let offset_from_utc_of_tz_info ({ tz; offset_from_utc } : tz_info) =
   match offset_from_utc with
   | Some x -> Some x
   | None -> Time_zone.to_fixed_offset_from_utc tz

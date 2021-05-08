@@ -663,18 +663,18 @@ val make_unambiguous :
   hour:int ->
   minute:int ->
   second:int ->
-  tz_offset:Span.t ->
+  offset_from_utc:Span.t ->
   unit ->
   (t, error) result
 (** Constructs a date time providing time zone offset (offset from UTC), and optionally a time zone.
 
     Nanosecond used is the addition of [ns] and [frac * 10^9].
 
-    If a time zone is provided, then [tz_offset] is checked against the time zone record,
-    and returns [Error `Invalid_tz_info] if [tz_offset] is not a possible
+    If a time zone is provided, then [offset_from_utc] is checked against the time zone record,
+    and returns [Error `Invalid_tz_info] if [offset_from_utc] is not a possible
     offset for the particular date time in said time zone.
 
-    As an example, for "UTC+1", you would give a duration of positive 1 hour for `tz_offset`.
+    As an example, for "UTC+1", you would give a duration of positive 1 hour for [offset_from_utc].
 
     Otherwise same leap second handling and error handling as [make].
 *)
@@ -689,7 +689,7 @@ val make_unambiguous_exn :
   hour:int ->
   minute:int ->
   second:int ->
-  tz_offset:Span.t ->
+  offset_from_utc:Span.t ->
   unit ->
   t
 (** @raise Error_exn if [make_umabiguous] fails *)
@@ -826,13 +826,13 @@ val pp : ?format:string -> unit -> Format.formatter -> t -> unit
                  N determines the number of digits to take after decimal point
                  result is rounded to closest fraction of said precision
 {tzoff-sign}     time zone offset sign ('+' or '-')
-                 raises Date_time_cannot_deduce_tz_offset_s if time zone offset cannot be calculated
+                 raises Date_time_cannot_deduce_offset_from_utc if time zone offset cannot be calculated
 {tzoff-hour:cX}  time zone offset hour, follows same padding rule as "{hour:cX}"
-                 raises Date_time_cannot_deduce_tz_offset_s if time zone offset cannot be calculated
+                 raises Date_time_cannot_deduce_offset_from_utc if time zone offset cannot be calculated
 {tzoff-min:cX}   time zone offset minute, follows same padding rule as "{min:cX}"
-                 raises Date_time_cannot_deduce_tz_offset_s if time zone offset cannot be calculated
+                 raises Date_time_cannot_deduce_offset_from_utc if time zone offset cannot be calculated
 {tzoff-sec:cX}   time zone offset second, follows same padding rule as "{sec:cX}"
-                 raises Date_time_cannot_deduce_tz_offset_s if time zone offset cannot be calculated
+                 raises Date_time_cannot_deduce_offset_from_utc if time zone offset cannot be calculated
      v}
 *)
 
@@ -851,7 +851,7 @@ val pp_rfc3339 : ?frac_s:int -> unit -> Format.formatter -> t -> unit
 
      @raise Invalid_argument if [frac_s < 0 || frac_s > 9]
 
-     @raise Date_time_cannot_deduce_tz_offset_s if time zone offset cannot be calculated
+     @raise Date_time_cannot_deduce_offset_from_utc if time zone offset cannot be calculated
 *)
 
 val pp_rfc3339_milli : Format.formatter -> t -> unit

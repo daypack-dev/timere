@@ -86,29 +86,60 @@ let date_time_of_sexp (x : CCSexp.t) =
     invalid_data (Printf.sprintf "Invalid date: %s" (CCSexp.to_string x))
   in
   match x with
-  | `List [ year; day_of_year; hour; minute; second; ns; tz_info ] -> (
+  | `List [ year; day_of_year; hour; minute; second; ns; tz; offset_from_utc ] -> (
       let year = int_of_sexp year in
       let day_of_year = int_of_sexp day_of_year in
       let hour = int_of_sexp hour in
       let minute = int_of_sexp minute in
       let second = int_of_sexp second in
       let ns = int_of_sexp ns in
-      let tz_info = tz_info_of_sexp tz_info in
-      match tz_info with
-      | { tz; offset_from_utc = None } -> (
+      let tz = tz_make_of_sexp tz in
+      let offset_from_utc =
+        match offset_from_utc with
+        | `List [`Atom "single"; offset ] ->
+          `Single
+            (Span.make_small
+               ~s:(int_of_sexp offset)
+               ())
+        | `List [`Atom "ambiguous"; offset1; offset2] ->
+          let offset1 =
+            (Span.make_small
+               ~s:(int_of_sexp offset1)
+               ())
+          in
+          let offset2 =
+            (Span.make_small
+               ~s:(int_of_sexp offset2)
+               ())
+          in
+          `Ambiguous (offset1, offset2)
+        | _ ->
+          invalid_data ()
+      in
+      let dt =
+        match offset_from_utc with
+        | `Single offset_from_utc -> (
+            match
+            Date_time.ISO_ord_date_time.make_unambiguous ~year ~day_of_year
+              ~hour ~minute ~second ~ns ~tz ~offset_from_utc ()
+            with
+            | Ok x -> x
+            | Error _ -> invalid_data ()
+          )
+        | `Ambiguous _ ->
           match
             Date_time.ISO_ord_date_time.make ~year ~day_of_year ~hour ~minute
               ~second ~ns ~tz ()
           with
-          | Ok x -> x
-          | Error _ -> invalid_data ())
-      | { tz; offset_from_utc = Some tz_offset } -> (
-          match
-            Date_time.ISO_ord_date_time.make_unambiguous ~year ~day_of_year
-              ~hour ~minute ~second ~ns ~tz ~tz_offset ()
-          with
-          | Ok x -> x
-          | Error _ -> invalid_data ()))
+          | Ok x ->
+            if Date_time.equal_local_result ~eq:Span.equal offset_from_utc Date_time.(offset_from_utc x) then
+              x
+            else
+              invalid_data ()
+          | Error _ -> invalid_data ()
+      in
+      dt
+    )
   | _ -> invalid_data ()
 
 let timestamp_of_sexp x =

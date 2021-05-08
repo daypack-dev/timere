@@ -83,7 +83,7 @@ let to_date_time s : (Date_time.t, string) result =
     in
     match
       Date_time.Ymd_date_time.make_unambiguous ~year ~month ~day ~hour ~minute
-        ~second ~ns ~tz_offset:offset ()
+        ~second ~ns ~offset_from_utc:offset ()
     with
     | Error e ->
       fail
