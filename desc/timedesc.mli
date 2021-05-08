@@ -1166,4 +1166,6 @@ module Utils : sig
   val get_local_tz_for_arg : unit -> Time_zone.t
 
   val abbr_string_of_weekday : weekday -> string
+
+  val is_leap_year : year:int -> bool
 end

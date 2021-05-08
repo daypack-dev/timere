@@ -214,4 +214,6 @@ module Utils = struct
   let get_local_tz_for_arg = Time_zone_utils.get_local_tz_for_arg
 
   let abbr_string_of_weekday = abbr_string_of_weekday
+
+  let is_leap_year = is_leap_year
 end
