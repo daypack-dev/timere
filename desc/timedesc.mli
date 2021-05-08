@@ -722,24 +722,6 @@ val is_leap_second : t -> bool
 
 (** {2 Time zone info} *)
 
-(* type tz_info = private {
- *   tz : Time_zone.t;
- *   offset_from_utc : Span.t option;
- * } *)
-(** Time zone information of date time.
-
-    [tz] is the time zone tied. This is always defined even if only an offset provided during construction -
-    if say only offset of 10 hours is provided, [tz] becomes "UTC+10".
-
-    [offset] is the offset from UTC, and provides an unambiguous specification
-    of which timestamp/point the date time maps to on the UTC timeline.
-    [offset] is defined if an offset is provided during construction via {!make_unambiguous}
-    or if an unambiguous offset can be deduced during construction via {!make}.
-
-    In other words, [offset] is [None] exactly when it is not possible to assign an offset,
-    and [Some _] otherwise.
-*)
-
 type 'a local_result =
   [ `Single of 'a
   | `Ambiguous of 'a * 'a
@@ -1078,4 +1060,26 @@ module Utils : sig
   val tm_int_of_weekday : weekday -> int
 
   val get_local_tz_for_arg : unit -> Time_zone.t
+
+  type tz_info = {
+    tz : Time_zone.t;
+    fixed_offset_from_utc : Span.t option;
+  }
+  (** Time zone information of date time.
+
+      [tz] is the time zone tied. This is always defined even if only an offset provided during construction -
+      if say only offset of 10 hours is provided, [tz] becomes "UTC+10".
+
+      [fixed_offset_from_utc] is the fixed offset from UTC, if it can be defined.
+  *)
+
+  type tz_info_error =
+    [ `Missing_both_tz_and_fixed_offset_from_utc
+    | `Invalid_offset of Span.t
+    | `Unrecorded_offset of Span.t
+    ]
+
+  val make_tz_info : ?tz:Time_zone.t -> ?fixed_offset_from_utc:Span.t -> unit -> (tz_info, tz_info_error) result
+
+  val equal_tz_info : tz_info -> tz_info -> bool
 end

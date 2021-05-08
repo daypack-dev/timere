@@ -1,5 +1,3 @@
-open Timedesc
-
 type pick =
   | S of int
   | MS of {
@@ -12,7 +10,7 @@ type pick =
       second : int;
     }
   | WHMS of {
-      weekday : weekday;
+      weekday : Timedesc.weekday;
       hour : int;
       minute : int;
       second : int;
@@ -39,7 +37,11 @@ type pick =
       second : int;
     }
 
-type t = pick * tz_info option
+type t = {
+  pick : pick;
+  tz : Timedesc.Time_zone.t;
+  single_offset_from_utc : Timedesc.Span.t option;
+}
 
 type error =
   [ `Invalid_year of int
@@ -48,12 +50,12 @@ type error =
   | `Invalid_minute of int
   | `Invalid_second of int
   | `Invalid_pattern_combination
-  | `Invalid_tz_info of string option * Span.t
+  | `Invalid_tz_info of string option * Timedesc.Span.t
   ]
 
 exception Error_exn of error
 
-let precision ((pick, _) : t) : int =
+let precision ({pick; _} : t) : int =
   match pick with
   | S _ -> 0
   | MS _ -> 1

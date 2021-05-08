@@ -12,11 +12,6 @@ let timestamp_min = Constants.timestamp_min
 
 let timestamp_max = Constants.timestamp_max
 
-let utc_tz_info : tz_info =
-  { tz = Time_zone.utc; offset_from_utc = Some Span.zero }
-
-let dummy_tz_info = utc_tz_info
-
 let dummy_tz = Time_zone.utc
 
 let dummy_offset_from_utc = `Single Span.zero
@@ -164,11 +159,11 @@ let of_dt_with_missing_tz_info_unambiguous ~tz ~offset_from_utc (dt : t) =
   let make_invalid_tz_info_error ?tz ~offset_from_utc () =
     Error (`Invalid_tz_info (CCOpt.map Time_zone.name tz, offset_from_utc))
   in
-  (match make_tz_info ?tz ~offset_from_utc () with
-   | Error `Missing_both_tz_and_offset_from_utc -> failwith "Unexpected case"
+  (match make_tz_info ?tz ~fixed_offset_from_utc:offset_from_utc () with
+   | Error `Missing_both_tz_and_fixed_offset_from_utc -> failwith "Unexpected case"
    | Error (`Invalid_offset _) | Error (`Unrecorded_offset _) ->
      make_invalid_tz_info_error ?tz ~offset_from_utc ()
-   | Ok ({ tz = tz'; offset_from_utc = _ } as tz_info) -> (
+   | Ok ({ tz = tz'; fixed_offset_from_utc = _ } as tz_info) -> (
        let Span.{ s = timestamp_local; ns = _ } = to_timestamp_local dt in
        let offset_from_utc_s = Int64.to_int offset_from_utc.s in
        match Time_zone.lookup_timestamp_local tz' timestamp_local with
@@ -179,9 +174,9 @@ let of_dt_with_missing_tz_info_unambiguous ~tz ~offset_from_utc (dt : t) =
        | `Ambiguous (e1, e2) ->
          if e1.offset = offset_from_utc_s || e2.offset = offset_from_utc_s then Ok tz_info
          else make_invalid_tz_info_error ?tz ~offset_from_utc ()))
-  |> CCResult.map (fun ({ tz; offset_from_utc } : tz_info) ->
+  |> CCResult.map (fun ({ tz; fixed_offset_from_utc } : tz_info) ->
       { dt with tz = tz;
-                offset_from_utc = `Single (CCOpt.get_exn offset_from_utc);
+                offset_from_utc = `Single (CCOpt.get_exn fixed_offset_from_utc);
       })
 
 let equal (x : t) (y : t) =

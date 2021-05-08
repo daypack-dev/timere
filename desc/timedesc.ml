@@ -107,6 +107,8 @@ let max_of_local_result = max_of_local_result
 include Ymd_date_time
 
 module Utils = struct
+  include Date_time_components
+
   let ptime_span_of_span = Ptime_utils.ptime_span_of_span
 
   let ptime_of_timestamp = Ptime_utils.ptime_of_timestamp

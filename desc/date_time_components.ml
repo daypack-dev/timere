@@ -173,42 +173,37 @@ let day_count_of_month ~year ~month =
 
 type tz_info = {
   tz : Time_zone.t;
-  offset_from_utc : Span.t option;
+  fixed_offset_from_utc : Span.t option;
 }
 
 let equal_tz_info (x : tz_info) (y : tz_info) =
   match (x, y) with
-  | { tz = tz1; offset_from_utc = None }, { tz = tz2; offset_from_utc = None }
+  | { tz = tz1; fixed_offset_from_utc = None }, { tz = tz2; fixed_offset_from_utc = None }
     ->
     Time_zone.equal tz1 tz2
-  | ( { tz = tz1; offset_from_utc = Some x1 },
-      { tz = tz2; offset_from_utc = Some x2 } ) ->
+  | ( { tz = tz1; fixed_offset_from_utc = Some x1 },
+      { tz = tz2; fixed_offset_from_utc = Some x2 } ) ->
     Time_zone.equal tz1 tz2 && Span.equal x1 x2
   | _, _ -> false
 
 type tz_info_error =
-  [ `Missing_both_tz_and_offset_from_utc
+  [ `Missing_both_tz_and_fixed_offset_from_utc
   | `Invalid_offset of Span.t
   | `Unrecorded_offset of Span.t
   ]
 
-let make_tz_info ?tz ?offset_from_utc () : (tz_info, tz_info_error) result =
-  match (tz, offset_from_utc) with
-  | None, None -> Error `Missing_both_tz_and_offset_from_utc
-  | Some tz, None -> Ok { tz; offset_from_utc = Time_zone.to_fixed_offset_from_utc tz }
+let make_tz_info ?tz ?fixed_offset_from_utc () : (tz_info, tz_info_error) result =
+  match (tz, fixed_offset_from_utc) with
+  | None, None -> Error `Missing_both_tz_and_fixed_offset_from_utc
+  | Some tz, None -> Ok { tz; fixed_offset_from_utc = Time_zone.to_fixed_offset_from_utc tz }
   | None, Some offset_from_utc -> (
       match Time_zone.make_offset_only offset_from_utc with
       | None -> Error (`Invalid_offset offset_from_utc)
-      | Some tz -> Ok { tz; offset_from_utc = Some offset_from_utc })
+      | Some tz -> Ok { tz; fixed_offset_from_utc = Some offset_from_utc })
   | Some tz, Some offset_from_utc ->
     if Time_zone.offset_is_recorded offset_from_utc tz then
-      Ok { tz; offset_from_utc = Some offset_from_utc }
+      Ok { tz; fixed_offset_from_utc = Some offset_from_utc }
     else Error (`Unrecorded_offset offset_from_utc)
-
-let offset_from_utc_of_tz_info ({ tz; offset_from_utc } : tz_info) =
-  match offset_from_utc with
-  | Some x -> Some x
-  | None -> Time_zone.to_fixed_offset_from_utc tz
 
 let full_string_of_weekday (wday : weekday) : string =
   match wday with
