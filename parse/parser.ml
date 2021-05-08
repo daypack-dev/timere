@@ -48,19 +48,19 @@ type guess =
   | Float of float
   | Hms of Timere.Hms.t
   | Hmss of Timere.Hms.t Timere.range list
-  | Weekday of Timere.weekday
-  | Weekdays of Timere.weekday Timere.range list
+  | Weekday of Timedesc.weekday
+  | Weekdays of Timedesc.weekday Timere.range list
   | Month_day of int
   | Month_days of int Timere.range list
   | Month of int
   | Months of int Timere.range list
   | Ymd of (MParser.pos * int) * (MParser.pos * int) * (MParser.pos * int)
-  | Duration of Timere.Span.t
-  | Time_zone of Timere.Time_zone.t
+  | Duration of Timedesc.Span.t
+  | Time_zone of Timedesc.Time_zone.t
 
 type token = (int * int * int) * text_map * guess
 
-type unary_op = With_time_zone of Timere.Time_zone.t
+type unary_op = With_time_zone of Timedesc.Time_zone.t
 
 type binary_op =
   | Union
@@ -110,9 +110,9 @@ let string_of_token (_, _, guess) =
   | Months _ -> "months"
   | Ymd _ -> "ymd"
   | Duration _ -> "duration"
-  | Time_zone tz -> Timere.Time_zone.name tz
+  | Time_zone tz -> Timedesc.Time_zone.name tz
 
-let weekdays : (string * Timere.weekday) list =
+let weekdays : (string * Timedesc.weekday) list =
   [
     ("sunday", `Sun);
     ("monday", `Mon);
@@ -139,13 +139,13 @@ let months : (string * int) list =
     ("december", 12);
   ]
 
-let parse_weekday (s : string) : (Timere.weekday, unit) CCResult.t =
+let parse_weekday (s : string) : (Timedesc.weekday, unit) CCResult.t =
   match prefix_string_match weekdays s with [ (_, x) ] -> Ok x | _ -> Error ()
 
 let parse_month (s : string) : (int, unit) CCResult.t =
   match prefix_string_match months s with [ (_, x) ] -> Ok x | _ -> Error ()
 
-let weekday_p : (Timere.weekday, unit) t =
+let weekday_p : (Timedesc.weekday, unit) t =
   alpha_string
   >>= fun x ->
   if String.length x < 3 then fail (Printf.sprintf "String too short")
@@ -168,7 +168,7 @@ let symbols = "()[]&|>"
 module String_map = CCMap.Make (String)
 
 let time_zones =
-  Timere.Time_zone.available_time_zones
+  Timedesc.Time_zone.available_time_zones
   |> List.map (fun x -> (String.lowercase_ascii x, x))
   |> String_map.of_list
 
@@ -227,7 +227,7 @@ let token_p : (token, unit) MParser.t =
          match String_map.find_opt (String.lowercase_ascii s) time_zones with
          | None -> fail ""
          | Some s -> (
-             match Timere.Time_zone.make s with
+             match Timedesc.Time_zone.make s with
              | None -> fail ""
              | Some tz -> return (Int_map.empty, Time_zone tz)));
       (attempt
@@ -547,7 +547,7 @@ module Ast_normalize = struct
       ( CCOpt.get_exn pos,
         text_map_empty,
         Duration
-          (Timere.Span.For_human.make_frac_exn
+          (Timedesc.Span.For_human.make_frac_exn
              ~days:(CCOpt.value ~default:0.0 days)
              ~hours:(CCOpt.value ~default:0.0 hours)
              ~minutes:(CCOpt.value ~default:0.0 minutes)
@@ -595,7 +595,7 @@ module Ast_normalize = struct
           ( CCOpt.value ~default:pos_seconds pos,
             text_map_empty,
             Duration
-              (Timere.Span.For_human.make_frac_exn
+              (Timedesc.Span.For_human.make_frac_exn
                  ~days:(CCOpt.value ~default:0.0 days)
                  ~hours:(CCOpt.value ~default:0.0 hours)
                  ~minutes:(CCOpt.value ~default:0.0 minutes)
@@ -835,8 +835,8 @@ let flatten_months pos (l : int Timere.range list) : int list rule_result =
   | None ->
     `Error (Printf.sprintf "%s: Invalid month ranges" (string_of_pos pos))
 
-let flatten_weekdays pos (l : Timere.weekday Timere.range list) :
-  Timere.weekday list rule_result =
+let flatten_weekdays pos (l : Timedesc.weekday Timere.range list) :
+  Timedesc.weekday list rule_result =
   match Timere.Utils.flatten_weekday_range_list l with
   | Some x -> `Some x
   | None ->
@@ -939,7 +939,7 @@ let t_of_hmss (hmss : Timere.Hms.t Timere.range list) =
                  Ok
                    Timere.(
                      bounded_intervals `Whole
-                       (Span.For_human.make_exn ~days:2 ())
+                       (Timedesc.Span.For_human.make_exn ~days:2 ())
                        p1 p2)
                | _ -> Error ())
          | _ -> failwith "unexpected case")
@@ -1100,7 +1100,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Span.For_human.make_exn
+               (Timedesc.Span.For_human.make_exn
                   ~days:((year2 - year1 + 1) * 366)
                   ())
                p1 p2)
@@ -1133,7 +1133,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Span.For_human.make_exn ~days:366 ())
+               (Timedesc.Span.For_human.make_exn ~days:366 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1162,7 +1162,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Span.For_human.make_exn ~days:366 ())
+               (Timedesc.Span.For_human.make_exn ~days:366 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1183,7 +1183,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Span.For_human.make_exn ~days:366 ())
+               (Timedesc.Span.For_human.make_exn ~days:366 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1233,7 +1233,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Span.For_human.make_exn ~days:366 ())
+               (Timedesc.Span.For_human.make_exn ~days:366 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1279,7 +1279,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Span.For_human.make_exn ~days:32 ())
+               (Timedesc.Span.For_human.make_exn ~days:32 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1307,7 +1307,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Span.For_human.make_exn ~days:32 ())
+               (Timedesc.Span.For_human.make_exn ~days:32 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1349,7 +1349,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Span.For_human.make_exn ~days:32 ())
+               (Timedesc.Span.For_human.make_exn ~days:32 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1372,7 +1372,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Span.For_human.make_exn ~days:2 ())
+               (Timedesc.Span.For_human.make_exn ~days:2 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1384,7 +1384,7 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timere.Span.For_human.make_exn ~days:2 ())
+               (Timedesc.Span.For_human.make_exn ~days:2 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1472,7 +1472,7 @@ let parse_timere s =
       | Error msg -> Error msg
       | Ok ast -> t_of_ast ast)
 
-let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t
+let date_time_t_of_ast ~tz (ast : ast) : (Timedesc.t, string) CCResult.t
   =
   let rec aux tz ast =
     match ast with
@@ -1480,14 +1480,14 @@ let date_time_t_of_ast ~tz (ast : ast) : (Timere.Date_time.t, string) CCResult.t
     | Tokens [ (_, _, Hms hms); (_, _, Ymd ((_, year), (_, month), (_, day))) ]
       -> (
           match
-            Timere.Date_time.make ~year ~month ~day ~hour:hms.hour
+            Timedesc.make ~year ~month ~day ~hour:hms.hour
               ~minute:hms.minute ~second:hms.second ~tz ()
           with
           | Ok x -> Ok x
           | Error _ -> Error "Invalid date time")
     | Tokens [ (_, _, Ymd ((_, year), (_, month), (_, day))) ] -> (
         match
-          Timere.Date_time.make ~year ~month ~day ~hour:0 ~minute:0 ~second:0
+          Timedesc.make ~year ~month ~day ~hour:0 ~minute:0 ~second:0
             ~tz ()
         with
         | Ok x -> Ok x
@@ -1502,7 +1502,7 @@ let hms_t_of_ast (ast : ast) : (Timere.Hms.t, string) CCResult.t =
   | Tokens [ (_, _, Hms hms) ] -> Ok hms
   | _ -> Error "Unrecognized pattern"
 
-let parse_date_time ?(tz = Timere.Utils.get_local_tz_for_arg ()) s =
+let parse_date_time ?(tz = Timedesc.Utils.get_local_tz_for_arg ()) s =
   match parse_into_ast s with
   | Error msg -> Error msg
   | Ok ast -> (
@@ -1518,7 +1518,7 @@ let parse_hms s =
       | Error msg -> Error msg
       | Ok ast -> hms_t_of_ast ast)
 
-let duration_t_of_ast (ast : ast) : (Timere.Span.t, string) CCResult.t =
+let duration_t_of_ast (ast : ast) : (Timedesc.Span.t, string) CCResult.t =
   match ast with
   | Tokens [ (_, _, Duration duration) ] -> Ok duration
   | _ -> Error "Unrecognized pattern"

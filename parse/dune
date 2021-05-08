@@ -6,7 +6,7 @@
 
 (rule
  (targets parser_components.ml)
- (deps    ../src/parser_components.ml)
+ (deps    ../desc/parser_components.ml)
  (action  (copy %{deps} %{targets}))
 )
 
@@ -16,6 +16,7 @@
  (public_name timere-parse)
  (libraries mparser
             re
+            timedesc
             timere
  )
 )
