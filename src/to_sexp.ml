@@ -11,10 +11,9 @@ let sexp_list_of_ints l = List.map sexp_of_int l
 
 let sexp_of_tz_name t = CCSexp.atom (Timedesc.Time_zone.name t)
 
-let sexp_of_span =
-  Timedesc.Span.to_sexp
+let sexp_of_span = Timedesc.Span.to_sexp
 
-let sexp_of_points ({pick; tz_info} : Points.t) =
+let sexp_of_points ({ pick; tz_info } : Points.t) =
   let open CCSexp in
   let open Points in
   list
@@ -141,7 +140,8 @@ let sexp_list_of_unary_op (op : Time_ast.unary_op) =
   | Not -> [ CCSexp.atom "not" ]
   | Shift n -> [ CCSexp.atom "shift"; sexp_of_span n ]
   | Lengthen n -> [ CCSexp.atom "lengthen"; sexp_of_span n ]
-  | With_tz tz -> [ CCSexp.atom "with_tz"; CCSexp.atom (Timedesc.Time_zone.name tz) ]
+  | With_tz tz ->
+    [ CCSexp.atom "with_tz"; CCSexp.atom (Timedesc.Time_zone.name tz) ]
 
 let to_sexp (t : Time_ast.t) : CCSexp.t =
   let rec aux (t : Time_ast.t) =

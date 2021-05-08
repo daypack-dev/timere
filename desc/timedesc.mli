@@ -449,7 +449,13 @@ module Interval : sig
 
   val compare : t -> t -> int
 
-  val pp : ?display_using_tz:Time_zone.t -> ?format:string -> unit -> Format.formatter -> t -> unit
+  val pp :
+    ?display_using_tz:Time_zone.t ->
+    ?format:string ->
+    unit ->
+    Format.formatter ->
+    t ->
+    unit
   (** Pretty printing for interval.
 
         Default format string:
@@ -469,88 +475,95 @@ module Interval : sig
 
   val to_string : ?display_using_tz:Time_zone.t -> ?format:string -> t -> string
 
-  val pp_seq : ?display_using_tz:Time_zone.t -> ?format:string -> ?sep:(Format.formatter -> unit -> unit) -> unit -> Format.formatter -> t Seq.t -> unit
+  val pp_seq :
+    ?display_using_tz:Time_zone.t ->
+    ?format:string ->
+    ?sep:(Format.formatter -> unit -> unit) ->
+    unit ->
+    Format.formatter ->
+    t Seq.t ->
+    unit
 end
 
 (** {1 Date} *)
 
 module Date : sig
-module ISO_week_date : sig
-  type t = private {
-    iso_week_year : int;
-    week : int;
-    weekday : weekday;
-  }
+  module ISO_week_date : sig
+    type t = private {
+      iso_week_year : int;
+      week : int;
+      weekday : weekday;
+    }
 
-  type error =
-    [ `Does_not_exist
-    | `Invalid_iso_week_year of int
-    | `Invalid_week of int
-    ]
+    type error =
+      [ `Does_not_exist
+      | `Invalid_iso_week_year of int
+      | `Invalid_week of int
+      ]
 
-  exception Error_exn of error
+    exception Error_exn of error
 
-  val equal : t -> t -> bool
+    val equal : t -> t -> bool
 
-  val make :
-    iso_week_year:int -> week:int -> weekday:weekday -> (t, error) result
+    val make :
+      iso_week_year:int -> week:int -> weekday:weekday -> (t, error) result
 
-  val make_exn : iso_week_year:int -> week:int -> weekday:weekday -> t
-end
+    val make_exn : iso_week_year:int -> week:int -> weekday:weekday -> t
+  end
 
-module Ymd_date : sig
-  type t = private {
-    year : int;
-    month : int;
-    day : int;
-  }
+  module Ymd_date : sig
+    type t = private {
+      year : int;
+      month : int;
+      day : int;
+    }
 
-  type error =
-    [ `Does_not_exist
-    | `Invalid_year of int
-    | `Invalid_month of int
-    | `Invalid_day of int
-    ]
+    type error =
+      [ `Does_not_exist
+      | `Invalid_year of int
+      | `Invalid_month of int
+      | `Invalid_day of int
+      ]
 
-  exception Error_exn of error
+    exception Error_exn of error
 
-  val equal : t -> t -> bool
+    val equal : t -> t -> bool
 
-  val make : year:int -> month:int -> day:int -> (t, error) result
+    val make : year:int -> month:int -> day:int -> (t, error) result
 
-  val make_exn : year:int -> month:int -> day:int -> t
-end
+    val make_exn : year:int -> month:int -> day:int -> t
+  end
 
-module ISO_ord_date : sig
-  type t = private {
-    year : int;
-    day_of_year : int;
-  }
+  module ISO_ord_date : sig
+    type t = private {
+      year : int;
+      day_of_year : int;
+    }
 
-  type error =
-    [ `Does_not_exist
-    | `Invalid_year of int
-    | `Invalid_day_of_year of int
-    ]
+    type error =
+      [ `Does_not_exist
+      | `Invalid_year of int
+      | `Invalid_day_of_year of int
+      ]
 
-  exception Error_exn of error
+    exception Error_exn of error
 
-  val equal : t -> t -> bool
+    val equal : t -> t -> bool
 
-  val make : year:int -> day_of_year:int -> (t, error) result
+    val make : year:int -> day_of_year:int -> (t, error) result
 
-  val make_exn : year:int -> day_of_year:int -> t
+    val make_exn : year:int -> day_of_year:int -> t
 
-  val weekday : t -> weekday
+    val weekday : t -> weekday
 
-  val to_iso_week_date : t -> ISO_week_date.t
+    val to_iso_week_date : t -> ISO_week_date.t
 
-  val of_iso_week_date : ISO_week_date.t -> t
+    val of_iso_week_date : ISO_week_date.t -> t
 
-  val to_ymd_date : t -> Ymd_date.t
+    val to_ymd_date : t -> Ymd_date.t
 
-  val of_ymd_date : Ymd_date.t -> t
-end
+    val of_ymd_date : Ymd_date.t -> t
+  end
 end
 
 (** {1 Time} *)
@@ -583,7 +596,13 @@ module Time : sig
     (t, error) result
 
   val make_exn :
-    ?ns:int -> ?s_frac:float -> hour:int -> minute:int -> second:int -> unit -> t
+    ?ns:int ->
+    ?s_frac:float ->
+    hour:int ->
+    minute:int ->
+    second:int ->
+    unit ->
+    t
 
   val to_span : t -> Span.t
 
@@ -774,7 +793,8 @@ type 'a local_result =
         This happens when DST ends and "goes back an hour" for instance.
 *)
 
-val equal_local_result : eq:('a -> 'a -> bool) -> 'a local_result -> 'a local_result -> bool
+val equal_local_result :
+  eq:('a -> 'a -> bool) -> 'a local_result -> 'a local_result -> bool
 
 val to_timestamp : t -> timestamp local_result
 (** [to_timestamp] loses information about leap second
@@ -1079,7 +1099,11 @@ module Time_zone_info : sig
     | `Unrecorded_offset of Span.t
     ]
 
-  val make : ?tz:Time_zone.t -> ?fixed_offset_from_utc:Span.t -> unit -> (t, error) result
+  val make :
+    ?tz:Time_zone.t ->
+    ?fixed_offset_from_utc:Span.t ->
+    unit ->
+    (t, error) result
 
   val equal : t -> t -> bool
 

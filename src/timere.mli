@@ -288,7 +288,8 @@ end
 
 type points = Points.t
 
-val bounded_intervals : [ `Whole | `Snd ] -> Timedesc.Span.t -> points -> points -> t
+val bounded_intervals :
+  [ `Whole | `Snd ] -> Timedesc.Span.t -> points -> points -> t
 (** [bounded_intervals mode bound p1 p2] for each point [x] matched by [p1],
     then for the earliest point [y] matched by [p2] such that [x < y && y - x <= bound]
     - if [mode = `Whole], yields (x, y)
@@ -435,7 +436,9 @@ val ( %> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
 (** {2 Resolution} *)
 
 val resolve :
-  ?search_using_tz:Timedesc.Time_zone.t -> t -> (Timedesc.Interval.t Seq.t, string) result
+  ?search_using_tz:Timedesc.Time_zone.t ->
+  t ->
+  (Timedesc.Interval.t Seq.t, string) result
 (** Resolves a Timere object into a concrete interval sequence *)
 
 (** {2 S-expressions} *)
@@ -466,11 +469,13 @@ module Utils : sig
 
   val flatten_month_day_ranges : int range Seq.t -> int Seq.t option
 
-  val flatten_weekday_ranges : Timedesc.weekday range Seq.t -> Timedesc.weekday Seq.t option
+  val flatten_weekday_ranges :
+    Timedesc.weekday range Seq.t -> Timedesc.weekday Seq.t option
 
   val flatten_month_range_list : int range list -> int list option
 
   val flatten_month_day_range_list : int range list -> int list option
 
-  val flatten_weekday_range_list : Timedesc.weekday range list -> Timedesc.weekday list option
+  val flatten_weekday_range_list :
+    Timedesc.weekday range list -> Timedesc.weekday list option
 end

@@ -115,18 +115,14 @@ module Format_string_parsers = struct
          match single_offset with
          | None -> raise (Date_time_cannot_deduce_offset_from_utc date_time)
          | Some offset -> (
-             match offset.sign with
-             | `Pos -> return "+"
-             | `Neg -> return "-"
-           )
-        );
+             match offset.sign with `Pos -> return "+" | `Neg -> return "-"));
         (attempt (string "tzoff-hour:")
          >> padding
          >>= fun padding ->
          match single_offset with
          | None -> raise (Date_time_cannot_deduce_offset_from_utc date_time)
-         | Some offset ->
-           return (pad_int padding Span.For_human'.(offset.hours)));
+         | Some offset -> return (pad_int padding Span.For_human'.(offset.hours))
+        );
         (attempt (string "tzoff-min:")
          >> padding
          >>= fun padding ->

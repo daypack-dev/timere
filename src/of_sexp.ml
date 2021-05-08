@@ -66,9 +66,7 @@ let tz_info_of_sexp x =
   | Error msg -> invalid_data msg
 
 let date_time_of_sexp x =
-  match Timedesc.of_sexp x with
-  | Ok x -> x
-  | Error msg -> invalid_data msg
+  match Timedesc.of_sexp x with Ok x -> x | Error msg -> invalid_data msg
 
 let timestamp_of_sexp x =
   match Timedesc.Timestamp.of_sexp x with
@@ -200,9 +198,12 @@ let points_of_sexp (x : CCSexp.t) : Points.t =
   | `List l -> (
       match l with
       | [ `Atom "points"; `List (`Atom "pick" :: pick) ] ->
-        {pick = pick_of_sexp_list pick; tz_info = None}
+        { pick = pick_of_sexp_list pick; tz_info = None }
       | [ `Atom "points"; `List (`Atom "pick" :: pick); tz_info ] ->
-        {pick = pick_of_sexp_list pick; tz_info = Some (tz_info_of_sexp tz_info) }
+        {
+          pick = pick_of_sexp_list pick;
+          tz_info = Some (tz_info_of_sexp tz_info);
+        }
       | _ ->
         invalid_data
           (Printf.sprintf "Invalid points: %s" (CCSexp.to_string x)))

@@ -68,7 +68,8 @@ let get_search_space (time : t) : Time.Interval'.t list =
 let timestamp_safe_sub a b =
   let open Timedesc.Span in
   if b >= zero then
-    if a - Timedesc.Timestamp.min_val >= b then a - b else Timedesc.Timestamp.max_val
+    if a - Timedesc.Timestamp.min_val >= b then a - b
+    else Timedesc.Timestamp.max_val
   else
     let b' = abs b in
     if Timedesc.Timestamp.max_val - a >= b' then a + b'
@@ -77,7 +78,8 @@ let timestamp_safe_sub a b =
 let timestamp_safe_add a b =
   let open Timedesc.Span in
   if b >= zero then
-    if Timedesc.Timestamp.max_val - a >= b then a + b else Timedesc.Timestamp.max_val
+    if Timedesc.Timestamp.max_val - a >= b then a + b
+    else Timedesc.Timestamp.max_val
   else
     let b' = abs b in
     if a - Timedesc.Timestamp.min_val >= b' then a - b'
@@ -135,24 +137,13 @@ let set_search_space space (time : t) : t =
 
 let search_space_of_year_range tz year_range =
   let aux_start start =
-    Timedesc.make_exn ~tz
-      ~year:start
-      ~month:1
-      ~day:1
-      ~hour:0
-      ~minute:0
-      ~second:0
-      ()
+    Timedesc.make_exn ~tz ~year:start ~month:1 ~day:1 ~hour:0 ~minute:0
+      ~second:0 ()
     |> Timedesc.to_timestamp
     |> Timedesc.min_of_local_result
   in
   let aux_end_inc end_exc =
-    Timedesc.make_exn ~tz
-      ~year:end_exc
-      ~month:12
-      ~day:31
-      ~hour:23
-      ~minute:59
+    Timedesc.make_exn ~tz ~year:end_exc ~month:12 ~day:31 ~hour:23 ~minute:59
       ~second:59
       ~ns:(Timedesc.Span.ns_count_in_s - 1)
       ()
@@ -161,14 +152,8 @@ let search_space_of_year_range tz year_range =
     |> Timedesc.Span.succ
   in
   let aux_end_exc end_exc =
-    Timedesc.make_exn ~tz
-      ~year:end_exc
-      ~month:1
-      ~day:1
-      ~hour:0
-      ~minute:0
-      ~second:0
-      ()
+    Timedesc.make_exn ~tz ~year:end_exc ~month:1 ~day:1 ~hour:0 ~minute:0
+      ~second:0 ()
     |> Timedesc.to_timestamp
     |> Timedesc.min_of_local_result
   in
@@ -345,11 +330,14 @@ let do_chunk_at_year_boundary tz (s : Time.Interval'.t Seq.t) =
         |> CCOpt.get_exn
       in
       let dt1_year = Timedesc.year dt1 in
-      if dt1_year = Timedesc.year dt2 then fun () -> Seq.Cons ((t1, t2), aux rest)
+      if dt1_year = Timedesc.year dt2 then fun () ->
+        Seq.Cons ((t1, t2), aux rest)
       else
         let t' =
-          Timedesc.make_exn ~tz ~year:dt1_year
-            ~month:12 ~day:31 ~hour:23 ~minute:59 ~second:59 ~ns:(Timedesc.Span.ns_count_in_s - 1) ()
+          Timedesc.make_exn ~tz ~year:dt1_year ~month:12 ~day:31 ~hour:23
+            ~minute:59 ~second:59
+            ~ns:(Timedesc.Span.ns_count_in_s - 1)
+            ()
           |> Timedesc.to_timestamp
           |> Timedesc.max_of_local_result
           |> Timedesc.Span.succ
@@ -367,20 +355,23 @@ let do_chunk_at_month_boundary tz (s : Time.Interval'.t Seq.t) =
       let dt1 =
         CCOpt.get_exn @@ Timedesc.of_timestamp ~tz_of_date_time:tz t1
       in
-      let dt1_year =
-        Timedesc.year dt1
-      in
+      let dt1_year = Timedesc.year dt1 in
       let dt2 =
         t2
         |> Timedesc.Span.pred
         |> Timedesc.of_timestamp ~tz_of_date_time:tz
         |> CCOpt.get_exn
       in
-      if dt1_year = Timedesc.year dt2 && Timedesc.month dt1 = Timedesc.month dt2 then fun () ->
-        Seq.Cons ((t1, t2), aux rest)
+      if
+        dt1_year = Timedesc.year dt2
+        && Timedesc.month dt1 = Timedesc.month dt2
+      then fun () -> Seq.Cons ((t1, t2), aux rest)
       else
         let t' =
-          Timedesc.make_exn ~year:dt1_year ~month:12 ~day:31 ~hour:23 ~minute:59 ~second:59 ~ns:(Timedesc.Span.ns_count_in_s - 1) ()
+          Timedesc.make_exn ~year:dt1_year ~month:12 ~day:31 ~hour:23
+            ~minute:59 ~second:59
+            ~ns:(Timedesc.Span.ns_count_in_s - 1)
+            ()
           |> Timedesc.to_timestamp
           |> Timedesc.max_of_local_result
           |> Timedesc.Span.succ
@@ -430,7 +421,8 @@ let aux_pattern search_using_tz space pat =
       let params =
         Seq.map
           (Pattern_resolver.Search_param.make
-             ~search_using_offset_from_utc_s:Timedesc.Time_zone.(entry.offset))
+             ~search_using_offset_from_utc_s:
+               Timedesc.Time_zone.(entry.offset))
           space
       in
       Intervals.Union.union_multi_seq ~skip_check:true
@@ -469,9 +461,13 @@ let rec aux search_using_tz time =
              Intervals.relative_complement ~skip_check:false ~not_mem_of:s
                (CCList.to_seq space)
            | Shift n ->
-             Seq.map (fun (start, end_exc) -> Timedesc.Span.(start + n, end_exc + n)) s
+             Seq.map
+               (fun (start, end_exc) -> Timedesc.Span.(start + n, end_exc + n))
+               s
            | Lengthen n ->
-             s |> Seq.map (fun (start, end_exc) -> Timedesc.Span.(start, end_exc + n))
+             s
+             |> Seq.map (fun (start, end_exc) ->
+                 Timedesc.Span.(start, end_exc + n))
            | With_tz _ -> s)
        | Inter_seq (_, s) -> aux_inter search_using_tz s
        | Union_seq (_, s) -> aux_union search_using_tz s

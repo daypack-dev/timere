@@ -22,7 +22,7 @@ type 'a local_result =
   ]
 
 let equal_local_result ~eq (x : 'a local_result) (y : 'a local_result) =
-  match x, y with
+  match (x, y) with
   | `Single x, `Single y -> eq x y
   | `Ambiguous (x1, x2), `Ambiguous (y1, y2) -> eq x1 y1 && eq x2 y2
   | _, _ -> false
@@ -59,8 +59,7 @@ let to_timestamp_precise_unsafe (x : t) : timestamp Time_zone.local_result =
   let open Span in
   let timestamp_local = to_timestamp_local x in
   match x.offset_from_utc with
-  | `Single offset ->
-    `Single (timestamp_local - offset)
+  | `Single offset -> `Single (timestamp_local - offset)
   | `Ambiguous (offset1, offset2) ->
     let x1 = timestamp_local - offset1 in
     let x2 = timestamp_local - offset2 in
@@ -160,7 +159,8 @@ let of_dt_with_missing_tz_info_unambiguous ~tz ~offset_from_utc (dt : t) =
     Error (`Invalid_tz_info (CCOpt.map Time_zone.name tz, offset_from_utc))
   in
   (match Time_zone_info.make ?tz ~fixed_offset_from_utc:offset_from_utc () with
-   | Error `Missing_both_tz_and_fixed_offset_from_utc -> failwith "Unexpected case"
+   | Error `Missing_both_tz_and_fixed_offset_from_utc ->
+     failwith "Unexpected case"
    | Error (`Invalid_offset _) | Error (`Unrecorded_offset _) ->
      make_invalid_tz_info_error ?tz ~offset_from_utc ()
    | Ok ({ tz = tz'; fixed_offset_from_utc = _ } as tz_info) -> (
@@ -172,11 +172,14 @@ let of_dt_with_missing_tz_info_unambiguous ~tz ~offset_from_utc (dt : t) =
          if e.offset = offset_from_utc_s then Ok tz_info
          else make_invalid_tz_info_error ?tz ~offset_from_utc ()
        | `Ambiguous (e1, e2) ->
-         if e1.offset = offset_from_utc_s || e2.offset = offset_from_utc_s then Ok tz_info
+         if e1.offset = offset_from_utc_s || e2.offset = offset_from_utc_s then
+           Ok tz_info
          else make_invalid_tz_info_error ?tz ~offset_from_utc ()))
   |> CCResult.map (fun ({ tz; fixed_offset_from_utc } : Time_zone_info.t) ->
-      { dt with tz = tz;
-                offset_from_utc = `Single (CCOpt.get_exn fixed_offset_from_utc);
+      {
+        dt with
+        tz;
+        offset_from_utc = `Single (CCOpt.get_exn fixed_offset_from_utc);
       })
 
 let equal (x : t) (y : t) =
@@ -204,23 +207,17 @@ let iso_week_date dt = Date.ISO_ord_date.to_iso_week_date dt.date
 
 let iso_ord_date dt = dt.date
 
-let year dt =
-  (ymd_date dt).year
+let year dt = (ymd_date dt).year
 
-let month dt =
-  (ymd_date dt).month
+let month dt = (ymd_date dt).month
 
-let day dt =
-  (ymd_date dt).month
+let day dt = (ymd_date dt).month
 
-let iso_week_year dt =
-  (iso_week_date dt).iso_week_year
+let iso_week_year dt = (iso_week_date dt).iso_week_year
 
-let iso_week dt =
-  (iso_week_date dt).week
+let iso_week dt = (iso_week_date dt).week
 
-let day_of_year dt =
-  dt.date.day_of_year
+let day_of_year dt = dt.date.day_of_year
 
 let time dt = dt.time
 
@@ -252,7 +249,12 @@ module ISO_ord_date_time = struct
         | Error e -> Error (e :> error)
         | Ok time ->
           of_dt_with_missing_tz_info ~tz
-            { date; time; tz = dummy_tz; offset_from_utc = dummy_offset_from_utc })
+            {
+              date;
+              time;
+              tz = dummy_tz;
+              offset_from_utc = dummy_offset_from_utc;
+            })
 
   let make_exn ?tz ?ns ?s_frac ~year ~day_of_year ~hour ~minute ~second () =
     match make ?tz ~year ~day_of_year ~hour ~minute ~second ?ns ?s_frac () with
@@ -268,7 +270,12 @@ module ISO_ord_date_time = struct
         | Error e -> Error (e :> error)
         | Ok time ->
           of_dt_with_missing_tz_info_unambiguous ~tz ~offset_from_utc
-            { date; time; tz = dummy_tz; offset_from_utc = dummy_offset_from_utc })
+            {
+              date;
+              time;
+              tz = dummy_tz;
+              offset_from_utc = dummy_offset_from_utc;
+            })
 
   let make_unambiguous_exn ?tz ?ns ?s_frac ~year ~day_of_year ~hour ~minute
       ~second ~offset_from_utc () =
@@ -325,7 +332,12 @@ module Ymd_date_time = struct
         | Error e -> Error (e :> error)
         | Ok time ->
           of_dt_with_missing_tz_info ~tz
-            { date; time; tz = dummy_tz; offset_from_utc = dummy_offset_from_utc })
+            {
+              date;
+              time;
+              tz = dummy_tz;
+              offset_from_utc = dummy_offset_from_utc;
+            })
 
   let make_exn ?tz ?ns ?s_frac ~year ~month ~day ~hour ~minute ~second () =
     match make ?tz ~year ~month ~day ~hour ~minute ~second ?ns ?s_frac () with
@@ -342,7 +354,12 @@ module Ymd_date_time = struct
         | Error e -> Error (e :> error)
         | Ok time ->
           of_dt_with_missing_tz_info_unambiguous ~tz ~offset_from_utc
-            { date; time; tz = dummy_tz; offset_from_utc = dummy_offset_from_utc })
+            {
+              date;
+              time;
+              tz = dummy_tz;
+              offset_from_utc = dummy_offset_from_utc;
+            })
 
   let make_unambiguous_exn ?tz ?ns ?s_frac ~year ~month ~day ~hour ~minute
       ~second ~offset_from_utc () =
@@ -380,7 +397,12 @@ module ISO_week_date_time = struct
         | Error e -> Error (e :> error)
         | Ok time ->
           of_dt_with_missing_tz_info ~tz
-            { date; time; tz = dummy_tz; offset_from_utc = dummy_offset_from_utc })
+            {
+              date;
+              time;
+              tz = dummy_tz;
+              offset_from_utc = dummy_offset_from_utc;
+            })
 
   let make_exn ?tz ?ns ?s_frac ~iso_week_year ~week ~weekday ~hour ~minute
       ~second () =

@@ -52,7 +52,8 @@ let pp_date_time ?frac_s () formatter (dt : Date_time.t) =
   else if frac_s > 9 then invalid_arg "pp_date_time: frac_s cannot be > 9"
   else
     match Date_time.offset_from_utc dt with
-    | `Ambiguous _ -> raise (Printers.Date_time_cannot_deduce_offset_from_utc dt)
+    | `Ambiguous _ ->
+      raise (Printers.Date_time_cannot_deduce_offset_from_utc dt)
     | `Single offset ->
       let offset_view = Span.For_human'.view offset in
       let tz_off =

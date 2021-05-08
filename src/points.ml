@@ -54,7 +54,7 @@ type error =
 
 exception Error_exn of error
 
-let precision ({pick; _} : t) : int =
+let precision ({ pick; _ } : t) : int =
   match pick with
   | S _ -> 0
   | MS _ -> 1
@@ -64,15 +64,18 @@ let precision ({pick; _} : t) : int =
   | MDHMS _ -> 5
   | YMDHMS _ -> 6
 
-let make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ~second () :
-  (t, error) result =
+let make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ~second
+    () : (t, error) result =
   let tz_info =
-    match Timedesc.Time_zone_info.make ?tz ?fixed_offset_from_utc:offset_from_utc () with
+    match
+      Timedesc.Time_zone_info.make ?tz ?fixed_offset_from_utc:offset_from_utc ()
+    with
     | Ok tz_info -> Ok (Some tz_info)
     | Error `Missing_both_tz_and_fixed_offset_from_utc -> Ok None
     | Error (`Invalid_offset tz_offset) | Error (`Unrecorded_offset tz_offset)
       ->
-      Error (`Invalid_tz_info (CCOpt.map Timedesc.Time_zone.name tz, tz_offset))
+      Error
+        (`Invalid_tz_info (CCOpt.map Timedesc.Time_zone.name tz, tz_offset))
   in
   match tz_info with
   | Error e -> Error e
@@ -80,7 +83,8 @@ let make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ~second (
     let year_is_fine =
       match year with
       | None -> true
-      | Some year -> Timedesc.(year min_val) <= year && year <= Timedesc.(year max_val)
+      | Some year ->
+        Timedesc.(year min_val) <= year && year <= Timedesc.(year max_val)
     in
     let month_day_is_fine =
       match day with None -> true | Some x -> -31 <= x && x <= 31 && x <> 0
@@ -118,12 +122,13 @@ let make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ~second (
           Ok (YMDHMS { year; month; month_day; hour; minute; second })
         | _ -> Error `Invalid_pattern_combination
       in
-      CCResult.map (fun pick -> {pick; tz_info; }) pick
+      CCResult.map (fun pick -> { pick; tz_info }) pick
 
-let make_exn ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ~second ()
-  =
+let make_exn ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute
+    ~second () =
   match
-    make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ~second ()
+    make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ~second
+      ()
   with
   | Error e -> raise (Error_exn e)
   | Ok x -> x
@@ -170,9 +175,10 @@ let equal_pick t1 t2 =
   | _, _ -> false
 
 let equal x y =
-  equal_pick x.pick y.pick && CCOpt.equal Timedesc.Time_zone_info.equal x.tz_info y.tz_info
+  equal_pick x.pick y.pick
+  && CCOpt.equal Timedesc.Time_zone_info.equal x.tz_info y.tz_info
 
-let to_pattern ({pick; tz_info = _} : t) =
+let to_pattern ({ pick; tz_info = _ } : t) =
   let years =
     match pick with
     | YMDHMS { year; _ } -> Int_set.add year Int_set.empty
@@ -230,19 +236,18 @@ let to_pattern ({pick; tz_info = _} : t) =
   in
   Pattern.{ years; months; month_days; weekdays; hours; minutes; seconds }
 
-let to_date_time ~default_tz_info ({pick; tz_info} : t) : Timedesc.t option =
-  let tz_info =
-    match tz_info with
-    | None -> default_tz_info
-    | Some x -> x
-  in
+let to_date_time ~default_tz_info ({ pick; tz_info } : t) : Timedesc.t option =
+  let tz_info = match tz_info with None -> default_tz_info | Some x -> x in
   match pick with
   | YMDHMS { year; month; month_day; hour; minute; second } -> (
       let tz = tz_info.tz in
       match tz_info.fixed_offset_from_utc with
       | Some offset_from_utc ->
-        Some (Timedesc.make_unambiguous_exn ~tz ~offset_from_utc ~year ~month ~day:month_day ~hour ~minute ~second ())
+        Some
+          (Timedesc.make_unambiguous_exn ~tz ~offset_from_utc ~year ~month
+             ~day:month_day ~hour ~minute ~second ())
       | None ->
-        Some (Timedesc.make_exn ~tz ~year ~month ~day:month_day ~hour ~minute ~second ())
-    )
+        Some
+          (Timedesc.make_exn ~tz ~year ~month ~day:month_day ~hour ~minute
+             ~second ()))
   | _ -> None
