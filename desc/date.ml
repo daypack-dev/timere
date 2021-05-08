@@ -137,11 +137,11 @@ module ISO_ord_date = struct
     let day_count_of_prev_year = day_count_of_year ~year:(pred iso_week_year) in
     let day_count_of_cur_year = day_count_of_year ~year:iso_week_year in
     let year, day_of_year =
-      if day_of_year < 0 then
-        (pred iso_week_year, day_count_of_prev_year - day_of_year)
+      if day_of_year < 1 then
+        (pred iso_week_year, day_count_of_prev_year + day_of_year)
       else if day_of_year > day_count_of_cur_year then
         (succ iso_week_year, day_of_year - day_count_of_cur_year)
-      else (iso_week_year, day_count_of_cur_year)
+      else (iso_week_year, day_of_year)
     in
     { year; day_of_year }
 
