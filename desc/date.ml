@@ -33,8 +33,9 @@ module ISO_week_date = struct
   let make ~iso_week_year ~week ~weekday : (t, error) result =
     if iso_week_year < Constants.min_year || Constants.max_year < iso_week_year
     then Error (`Invalid_iso_week_year iso_week_year)
-    else if week < 1 || 53 < week then Error (`Invalid_week week)
-    else Ok { iso_week_year; week; weekday }
+    else if week < 1 || (week_count_of_iso_week_year ~iso_week_year) < week then Error (`Invalid_week week)
+    else
+      Ok { iso_week_year; week; weekday }
 
   let make_exn ~iso_week_year ~week ~weekday : t =
     match make ~iso_week_year ~week ~weekday with
@@ -65,7 +66,7 @@ module Ymd_date = struct
     if year < Constants.min_year || Constants.max_year < year then
       Error (`Invalid_year year)
     else if month < 1 || 12 < month then Error (`Invalid_month month)
-    else if day < 1 || 31 < day then Error (`Invalid_day day)
+    else if day < 1 || (day_count_of_month ~year ~month) < day then Error (`Invalid_day day)
     else Ok { year; month; day }
 
   let make_exn ~year ~month ~day : t =
@@ -94,9 +95,7 @@ module ISO_ord_date = struct
   let make ~year ~day_of_year : (t, error) result =
     if year < Constants.min_year || Constants.max_year < year then
       Error (`Invalid_year year)
-    else if day_of_year < 1 || 366 < day_of_year then
-      Error (`Invalid_day_of_year day_of_year)
-    else if (not (is_leap_year ~year)) && day_of_year > 365 then
+    else if day_of_year < 1 || (day_count_of_year ~year) < day_of_year then
       Error (`Invalid_day_of_year day_of_year)
     else Ok { year; day_of_year }
 
