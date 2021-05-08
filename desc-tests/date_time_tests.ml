@@ -4,129 +4,129 @@ module Alco = struct
   let leap_second0 () =
     Alcotest.(check span_testable)
       "same timestamp"
-      (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:2020 ~month:1 ~day:1
+      (Timedesc.make_exn ~tz:Timedesc.Time_zone.utc ~year:2020 ~month:1 ~day:1
          ~hour:0 ~minute:0 ~second:60 ~ns:1_000_000 ()
-       |> Time.Date_time'.to_timestamp_single)
-      (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:2020 ~month:1 ~day:1
+       |> Timedesc.to_timestamp_single)
+      (Timedesc.make_exn ~tz:Timedesc.Time_zone.utc ~year:2020 ~month:1 ~day:1
          ~hour:0 ~minute:0 ~second:59 ~ns:1_000_000 ()
-       |> Time.Date_time'.to_timestamp_single)
+       |> Timedesc.to_timestamp_single)
 
   let of_iso8601_leap_second0 () =
     Alcotest.(check span_testable)
       "same timestamp"
-      (CCResult.get_exn @@ ISO8601.to_timestamp "2020-01-01T00:00:60.001Z")
-      (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:2020 ~month:1 ~day:1
+      (CCResult.get_exn @@ Timedesc.Timestamp.of_iso8601 "2020-01-01T00:00:60.001Z")
+      (Timedesc.make_exn ~tz:Timedesc.Time_zone.utc ~year:2020 ~month:1 ~day:1
          ~hour:0 ~minute:0 ~second:60 ~ns:1_000_000 ()
-       |> Time.Date_time'.to_timestamp_single)
+       |> Timedesc.to_timestamp_single)
 
   let of_iso8601_leap_second1 () =
     Alcotest.(check span_testable)
       "same timestamp"
-      (CCResult.get_exn @@ ISO8601.to_timestamp "2020-01-01T00:00:60.1Z")
-      (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:2020 ~month:1 ~day:1
+      (CCResult.get_exn @@ Timedesc.Timestamp.of_iso8601 "2020-01-01T00:00:60.1Z")
+      (Timedesc.make_exn ~tz:Timedesc.Time_zone.utc ~year:2020 ~month:1 ~day:1
          ~hour:0 ~minute:0 ~second:60 ~ns:100_000_000 ()
-       |> Time.Date_time'.to_timestamp_single)
+       |> Timedesc.to_timestamp_single)
 
   let of_iso8601_leap_second_to_rfc3339_case0 () =
     Alcotest.(check string)
       "same timestamp" "2020-01-01T00:00:60Z"
-      (ISO8601.to_date_time "2020-01-01T00:00:60Z"
+      (Timedesc.of_iso8601 "2020-01-01T00:00:60Z"
        |> CCResult.get_exn
-       |> RFC3339.of_date_time
+       |> Timedesc.to_rfc3339
        |> CCOpt.get_exn)
 
   let of_iso8601_leap_second_to_rfc3339_case1 () =
     Alcotest.(check string)
       "same timestamp" "2020-01-01T00:00:60.12305Z"
-      (ISO8601.to_date_time "2020-01-01T00:00:60.12305Z"
+      (Timedesc.of_iso8601 "2020-01-01T00:00:60.12305Z"
        |> CCResult.get_exn
-       |> RFC3339.of_date_time
+       |> Timedesc.to_rfc3339
        |> CCOpt.get_exn)
 
   let of_iso8601_case0 () =
     Alcotest.(check span_testable)
       "same timestamp"
-      (CCResult.get_exn @@ ISO8601.to_timestamp "2020-01-01T24:00:00Z")
-      (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:2020 ~month:1 ~day:1
+      (CCResult.get_exn @@ Timedesc.Timestamp.of_iso8601 "2020-01-01T24:00:00Z")
+      (Timedesc.make_exn ~tz:Timedesc.Time_zone.utc ~year:2020 ~month:1 ~day:1
          ~hour:23 ~minute:59 ~second:59 ~ns:999_999_999 ()
-       |> Time.Date_time'.to_timestamp_single)
+       |> Timedesc.to_timestamp_single)
 
   let of_iso8601_case1 () =
     Alcotest.(check span_testable)
       "same timestamp"
-      (CCResult.get_exn @@ ISO8601.to_timestamp "1979-05-27T07:32:00Z")
-      (Time.Date_time'.make_exn ~tz:Time_zone.utc ~year:1979 ~month:5 ~day:27
+      (CCResult.get_exn @@ Timedesc.Timestamp.of_iso8601 "1979-05-27T07:32:00Z")
+      (Timedesc.make_exn ~tz:Timedesc.Time_zone.utc ~year:1979 ~month:5 ~day:27
          ~hour:7 ~minute:32 ~second:0 ()
-       |> Time.Date_time'.to_timestamp_single)
+       |> Timedesc.to_timestamp_single)
 
   let of_iso8601_case2 () =
     Alcotest.(check span_testable)
       "same timestamp"
-      (CCResult.get_exn @@ ISO8601.to_timestamp "1979-05-27T07:32:00-07:00")
-      (Time.Date_time'.make_exn
+      (CCResult.get_exn @@ Timedesc.Timestamp.of_iso8601 "1979-05-27T07:32:00-07:00")
+      (Timedesc.make_exn
          ~tz:
-           (Time_zone.make_offset_only_exn
-              (Span.For_human'.make_exn ~sign:`Neg ~hours:7 ()))
+           (Timedesc.Time_zone.make_offset_only_exn
+              (Timedesc.Span.For_human.make_exn ~sign:`Neg ~hours:7 ()))
          ~year:1979 ~month:5 ~day:27 ~hour:7 ~minute:32 ~second:0 ()
-       |> Time.Date_time'.to_timestamp_single)
+       |> Timedesc.to_timestamp_single)
 
   let of_iso8601_case3 () =
     Alcotest.(check span_testable)
       "same timestamp"
       (CCResult.get_exn
-       @@ ISO8601.to_timestamp "1979-05-27T07:32:00.999999-07:00")
-      (Time.Date_time'.make_exn
+       @@ Timedesc.Timestamp.of_iso8601 "1979-05-27T07:32:00.999999-07:00")
+      (Timedesc.make_exn
          ~tz:
-           (Time_zone.make_offset_only_exn
-              (Span.For_human'.make_exn ~sign:`Neg ~hours:7 ()))
+           (Timedesc.Time_zone.make_offset_only_exn
+              (Timedesc.Span.For_human.make_exn ~sign:`Neg ~hours:7 ()))
          ~year:1979 ~month:5 ~day:27 ~hour:7 ~minute:32 ~second:0
          ~ns:999_999_000 ()
-       |> Time.Date_time'.to_timestamp_single)
+       |> Timedesc.to_timestamp_single)
 
   let of_iso8601_case4 () =
     Alcotest.(check span_testable)
       "same timestamp"
       (CCResult.get_exn
-       @@ ISO8601.to_timestamp "1979-05-27T07:32:00.999999999-07:00")
-      (Time.Date_time'.make_exn
+       @@ Timedesc.Timestamp.of_iso8601 "1979-05-27T07:32:00.999999999-07:00")
+      (Timedesc.make_exn
          ~tz:
-           (Time_zone.make_offset_only_exn
-              (Span.For_human'.make_exn ~sign:`Neg ~hours:7 ()))
+           (Timedesc.Time_zone.make_offset_only_exn
+              (Timedesc.Span.For_human.make_exn ~sign:`Neg ~hours:7 ()))
          ~year:1979 ~month:5 ~day:27 ~hour:7 ~minute:32 ~second:0
          ~ns:999_999_999 ()
-       |> Time.Date_time'.to_timestamp_single)
+       |> Timedesc.to_timestamp_single)
 
   let of_iso8601_case5 () =
     Alcotest.(check span_testable)
       "same timestamp"
       (CCResult.get_exn
-       @@ ISO8601.to_timestamp "1979-05-27T07:32:00.000999999-07:00")
-      (Time.Date_time'.make_exn
+       @@ Timedesc.Timestamp.of_iso8601 "1979-05-27T07:32:00.000999999-07:00")
+      (Timedesc.make_exn
          ~tz:
-           (Time_zone.make_offset_only_exn
-              (Span.For_human'.make_exn ~sign:`Neg ~hours:7 ()))
+           (Timedesc.Time_zone.make_offset_only_exn
+              (Timedesc.Span.For_human.make_exn ~sign:`Neg ~hours:7 ()))
          ~year:1979 ~month:5 ~day:27 ~hour:7 ~minute:32 ~second:0 ~ns:999_999 ()
-       |> Time.Date_time'.to_timestamp_single)
+       |> Timedesc.to_timestamp_single)
 
   let to_rfc3339_case0 () =
     Alcotest.(check string)
       "same string" "1979-05-27T07:32:00Z"
-      (RFC3339.of_timestamp (Span.make ~s:296638320L ()))
+      (Timedesc.Timestamp.to_rfc3339 (Timedesc.Span.make ~s:296638320L ()))
 
   let to_rfc3339_case1 () =
     Alcotest.(check string)
       "same string" "1979-05-27T07:32:00.999999Z"
-      (RFC3339.of_timestamp (Span.make ~s:296638320L ~ns:999_999_000 ()))
+      (Timedesc.Timestamp.to_rfc3339 (Timedesc.Span.make ~s:296638320L ~ns:999_999_000 ()))
 
   let to_rfc3339_case2 () =
     Alcotest.(check string)
       "same string" "1979-05-27T07:32:00.999999999Z"
-      (RFC3339.of_timestamp (Span.make ~s:296638320L ~ns:999_999_999 ()))
+      (Timedesc.Timestamp.to_rfc3339 (Timedesc.Span.make ~s:296638320L ~ns:999_999_999 ()))
 
   let to_rfc3339_case3 () =
     Alcotest.(check string)
       "same string" "1979-05-27T07:32:00.000999999Z"
-      (RFC3339.of_timestamp (Span.make ~s:296638320L ~ns:999_999 ()))
+      (Timedesc.Timestamp.to_rfc3339 (Timedesc.Span.make ~s:296638320L ~ns:999_999 ()))
 
   let suite =
     [
@@ -158,10 +158,10 @@ module Qc = struct
       ~name:"to_rfc3339_nano_of_iso8601_is_lossless" timestamp (fun timestamp ->
           let r =
             CCResult.get_exn
-            @@ ISO8601.to_timestamp
-            @@ RFC3339.of_timestamp ~frac_s:9 timestamp
+            @@ Timedesc.Timestamp.of_iso8601
+            @@ Timedesc.Timestamp.to_rfc3339 ~frac_s:9 timestamp
           in
-          Span.equal r timestamp)
+          Timedesc.Span.equal r timestamp)
 
   let to_rfc3339_w_default_frac_s_of_iso8601_is_lossless =
     QCheck.Test.make ~count:100_000
@@ -169,10 +169,10 @@ module Qc = struct
       (fun timestamp ->
          let r =
            CCResult.get_exn
-           @@ ISO8601.to_timestamp
-           @@ RFC3339.of_timestamp timestamp
+           @@ Timedesc.Timestamp.of_iso8601
+           @@ Timedesc.Timestamp.to_rfc3339 timestamp
          in
-         Span.equal r timestamp)
+         Timedesc.Span.equal r timestamp)
 
   let to_rfc3339_of_iso8601_is_accurate =
     QCheck.Test.make ~count:100_000 ~name:"to_rfc3339_of_iso8601_is_accurate"
@@ -180,10 +180,10 @@ module Qc = struct
       (fun (frac_s, timestamp) ->
          let r =
            CCResult.get_exn
-           @@ ISO8601.to_timestamp
-           @@ RFC3339.of_timestamp ~frac_s timestamp
+           @@ Timedesc.Timestamp.of_iso8601
+           @@ Timedesc.Timestamp.to_rfc3339 ~frac_s timestamp
          in
-         Span.(
+         Timedesc.Span.(
            abs (r - timestamp)
            < make ~s:0L
              ~ns:(int_of_float (10. ** float_of_int (CCInt.sub 9 frac_s)))
@@ -194,11 +194,11 @@ module Qc = struct
       QCheck.(pair time_zone timestamp)
       (fun (tz, timestamp) ->
          let r =
-           Time.Date_time'.to_timestamp_single
+           Timedesc.to_timestamp_single
            @@ CCOpt.get_exn
-           @@ Time.Date_time'.of_timestamp ~tz_of_date_time:tz timestamp
+           @@ Timedesc.of_timestamp ~tz_of_date_time:tz timestamp
          in
-         Span.equal r timestamp)
+         Timedesc.Span.equal r timestamp)
 
   let suite =
     [

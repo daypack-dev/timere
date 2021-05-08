@@ -1,33 +1,3 @@
-(* let () =
- *   let search_years_ahead = 1 in
- *   let cur_date_time = CCResult.get_ok @@ Time.Date_time.cur () in
- *   let search_start = Time.Date_time.to_timestamp cur_date_time in
- *   let search_end_exc =
- *     Time.Date_time.make
- *       ~year:(cur_date_time.year + search_years_ahead)
- *       ~month:cur_date_time.month ~day:cur_date_time.day ~hour:cur_date_time.hour
- *       ~minute:cur_date_time.minute ~second:cur_date_time.second
- *       ~tz_offset_s:cur_date_time.tz_offset_s
- *     |> CCResult.get_ok
- *     |> Time.Date_time.to_timestamp
- *   in
- *   let timere = Time.pattern ~months:[ `Jan ] () in
- *   let s =
- *     Resolver_simple.resolve ~search_start ~search_end_exc ~tz_offset_s:0 timere
- *   in
- *   match s () with
- *   | Seq.Nil -> print_endline "No matching time slots"
- *   | Seq.Cons _ ->
- *     s
- *     |> OSeq.take 20
- *     |> OSeq.iter (fun ts ->
- *         match
- *           Printer.sprintf_interval default_interval_format_string ts
- *         with
- *         | Ok s -> Printf.printf "%s\n" s
- *         | Error msg -> Printf.printf "Error: %s\n" msg);
- *     print_newline () *)
-
 let () =
   let alco_suites =
     [

@@ -212,4 +212,6 @@ module Utils = struct
   let tm_int_of_weekday = tm_int_of_weekday
 
   let get_local_tz_for_arg = Time_zone_utils.get_local_tz_for_arg
+
+  let abbr_string_of_weekday = abbr_string_of_weekday
 end
