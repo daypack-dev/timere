@@ -3,8 +3,8 @@ module Alco = struct
     Alcotest.(check bool)
       "all tables can go through make"
       (List.for_all
-         (fun s -> CCOpt.is_some @@ Time_zone.make s)
-         Time_zone.available_time_zones)
+         (fun s -> CCOpt.is_some @@ Timedesc.Time_zone.make s)
+         Timedesc.Time_zone.available_time_zones)
       true
 
   let tzdb_jsons_load_correctly () =
@@ -18,12 +18,12 @@ module Alco = struct
             CCIO.with_in ~flags:[ Open_rdonly; Open_binary ] json_file_path
               (fun ic ->
                  let json_string = CCIO.read_all ic in
-                 let tz_in_memory = Time_zone.make_exn s in
+                 let tz_in_memory = Timedesc.Time_zone.make_exn s in
                  let tz_from_json =
-                   CCOpt.get_exn @@ Time_zone.JSON.of_string json_string
+                   CCOpt.get_exn @@ Timedesc.Time_zone.JSON.of_string json_string
                  in
-                 assert (Time_zone.equal tz_in_memory tz_from_json)))
-         Time_zone.available_time_zones)
+                 assert (Timedesc.Time_zone.equal tz_in_memory tz_from_json)))
+         Timedesc.Time_zone.available_time_zones)
       ()
 
   let suite =
