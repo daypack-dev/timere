@@ -367,7 +367,7 @@ module Time_zone : sig
 
   val make_offset_only_exn : Span.t -> t
 
-  val to_fixed_offset : t -> Span.t option
+  val to_fixed_offset_from_utc : t -> Span.t option
 
   (** {2 Importing and exporting}*)
 
@@ -739,21 +739,6 @@ val is_leap_second : t -> bool
     In other words, [offset] is [None] exactly when it is not possible to assign an offset,
     and [Some _] otherwise.
 *)
-
-(* val tz_info : t -> tz_info
- * 
- * val equal_tz_info : tz_info -> tz_info -> bool
- * 
- * val tz_offset_of_tz_info : tz_info -> Span.t option
- * 
- * type tz_info_error =
- *   [ `Missing_both_tz_and_tz_offset
- *   | `Invalid_offset of Span.t
- *   | `Unrecorded_offset of Span.t
- *   ]
- * 
- * val make_tz_info : ?tz:Time_zone.t -> ?tz_offset:Span.t -> unit ->
- *   (tz_info, tz_info_error) result *)
 
 type 'a local_result =
   [ `Single of 'a

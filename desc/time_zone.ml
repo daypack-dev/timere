@@ -93,7 +93,7 @@ let name t =
       (match dur.sign with `Pos -> '+' | `Neg -> '-')
       dur.hours dur.minutes
 
-let to_fixed_offset t =
+let to_fixed_offset_from_utc t =
   match t.typ with
   | Backed _ -> None
   | Offset_only s -> Some (Span.make_small ~s ())

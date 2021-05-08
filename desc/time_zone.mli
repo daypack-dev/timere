@@ -15,7 +15,7 @@ val equal : t -> t -> bool
 
 val name : t -> string
 
-val to_fixed_offset : t -> Span.t option
+val to_fixed_offset_from_utc : t -> Span.t option
 
 val utc : t
 

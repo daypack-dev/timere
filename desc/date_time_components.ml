@@ -195,7 +195,7 @@ type tz_info_error =
 let make_tz_info ?tz ?tz_offset () : (tz_info, tz_info_error) result =
   match (tz, tz_offset) with
   | None, None -> Error `Missing_both_tz_and_tz_offset
-  | Some tz, None -> Ok { tz; offset_from_utc = Time_zone.to_fixed_offset tz }
+  | Some tz, None -> Ok { tz; offset_from_utc = Time_zone.to_fixed_offset_from_utc tz }
   | None, Some tz_offset -> (
       match Time_zone.make_offset_only tz_offset with
       | None -> Error (`Invalid_offset tz_offset)
@@ -208,7 +208,7 @@ let make_tz_info ?tz ?tz_offset () : (tz_info, tz_info_error) result =
 let tz_offset_of_tz_info ({ tz; offset_from_utc } : tz_info) =
   match offset_from_utc with
   | Some x -> Some x
-  | None -> Time_zone.to_fixed_offset tz
+  | None -> Time_zone.to_fixed_offset_from_utc tz
 
 let full_string_of_weekday (wday : weekday) : string =
   match wday with
