@@ -52,8 +52,11 @@ let to_timestamp_local (x : t) : Span.t =
       ()
   in
   let time_of_day = Time.to_span x.time in
-  if Span.(days_from_epoch < zero) then Span.(Constants.one_day - time_of_day)
-  else time_of_day
+  let time_of_day =
+    if Span.(days_from_epoch < zero) then Span.(Constants.one_day - time_of_day)
+    else time_of_day
+  in
+  Span.(days_from_epoch + time_of_day)
 
 let to_timestamp_precise_unsafe (x : t) : timestamp Time_zone.local_result =
   let open Span in
