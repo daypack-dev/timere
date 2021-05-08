@@ -75,7 +75,8 @@ let duration_gen =
   map
     (fun (pos, days, hours, (minutes, seconds, ns)) ->
        let sign = if pos then `Pos else `Neg in
-       Timedesc.Span.For_human.make_exn ~sign ~days ~hours ~minutes ~seconds ~ns ())
+       Timedesc.Span.For_human.make_exn ~sign ~days ~hours ~minutes ~seconds ~ns
+         ())
     (quad bool nat nat (triple nat nat nat))
 
 let duration = QCheck.make ~print:Print_utils.duration duration_gen
@@ -107,10 +108,12 @@ let pos_timestamp_bound_gen bound =
 let nz_pos_timestamp_bound_gen bound =
   QCheck.Gen.(
     map
-      (fun (s, ns) -> Timedesc.Span.(make ~s ~ns () |> max (make ~ns:1 ()) |> min bound))
+      (fun (s, ns) ->
+         Timedesc.Span.(make ~s ~ns () |> max (make ~ns:1 ()) |> min bound))
       (pair ui64 int))
 
-let small_pos_timestamp_gen = pos_timestamp_bound_gen (Timedesc.Span.make ~s:100L ())
+let small_pos_timestamp_gen =
+  pos_timestamp_bound_gen (Timedesc.Span.make ~s:100L ())
 
 let small_nz_pos_timestamp_gen =
   nz_pos_timestamp_bound_gen (Timedesc.Span.make ~s:100L ())
@@ -295,7 +298,8 @@ let date_time_testable : (module Alcotest.TESTABLE) =
     let equal = Timedesc.equal
   end)
 
-let tz_testable : (module Alcotest.TESTABLE with type t = Timedesc.Time_zone.t) =
+let tz_testable : (module Alcotest.TESTABLE with type t = Timedesc.Time_zone.t)
+  =
   (module struct
     type t = Timedesc.Time_zone.t
 
@@ -319,11 +323,15 @@ let time_zone_gen : Timedesc.Time_zone.t QCheck.Gen.t =
   let open QCheck.Gen in
   let tz_count = List.length Timedesc.Time_zone.available_time_zones in
   map
-    (fun n -> Timedesc.Time_zone.make_exn (List.nth Timedesc.Time_zone.available_time_zones n))
+    (fun n ->
+       Timedesc.Time_zone.make_exn
+         (List.nth Timedesc.Time_zone.available_time_zones n))
     (int_bound (tz_count - 1))
 
 let time_zone =
-  QCheck.make ~print:(fun (t : Timedesc.Time_zone.t) -> Timedesc.Time_zone.name t) time_zone_gen
+  QCheck.make
+    ~print:(fun (t : Timedesc.Time_zone.t) -> Timedesc.Time_zone.name t)
+    time_zone_gen
 
 let permute (seed : int) (l : 'a list) : 'a list =
   let len = List.length l in

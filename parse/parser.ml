@@ -1472,23 +1472,21 @@ let parse_timere s =
       | Error msg -> Error msg
       | Ok ast -> t_of_ast ast)
 
-let date_time_t_of_ast ~tz (ast : ast) : (Timedesc.t, string) CCResult.t
-  =
+let date_time_t_of_ast ~tz (ast : ast) : (Timedesc.t, string) CCResult.t =
   let rec aux tz ast =
     match ast with
     | Tokens [ (_, _, Ymd ((_, year), (_, month), (_, day))); (_, _, Hms hms) ]
     | Tokens [ (_, _, Hms hms); (_, _, Ymd ((_, year), (_, month), (_, day))) ]
       -> (
           match
-            Timedesc.make ~year ~month ~day ~hour:hms.hour
-              ~minute:hms.minute ~second:hms.second ~tz ()
+            Timedesc.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
+              ~second:hms.second ~tz ()
           with
           | Ok x -> Ok x
           | Error _ -> Error "Invalid date time")
     | Tokens [ (_, _, Ymd ((_, year), (_, month), (_, day))) ] -> (
         match
-          Timedesc.make ~year ~month ~day ~hour:0 ~minute:0 ~second:0
-            ~tz ()
+          Timedesc.make ~year ~month ~day ~hour:0 ~minute:0 ~second:0 ~tz ()
         with
         | Ok x -> Ok x
         | Error _ -> Error "Invalid date time")

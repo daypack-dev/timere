@@ -1,4 +1,4 @@
-SRCFILES = desc/*.ml desc/*.mli src/*.ml src/*.mli parse/*.ml parse/*.mli corpus/*.ml debug/*.ml tests/*.ml fuzz/*.ml gen/*.ml gen-build/*.ml tzdb-*/*.ml tzdb-*/*.mli tzlocal-*/*.ml tzlocal-*/*.mli export-js-tzdb-full/*.ml
+SRCFILES = desc/*.ml desc/*.mli src/*.ml src/*.mli parse/*.ml parse/*.mli corpus/*.ml debug/*.ml tests/*.ml desc-tests/*.ml fuzz/*.ml gen/*.ml gen-build/*.ml tzdb-*/*.ml tzdb-*/*.mli tzlocal-*/*.ml tzlocal-*/*.mli export-js-tzdb-full/*.ml
 
 OCAMLFORMAT = ocamlformat \
 	--inplace \

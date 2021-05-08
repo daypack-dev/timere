@@ -14,7 +14,8 @@ module Alco = struct
   let of_iso8601_leap_second0 () =
     Alcotest.(check span_testable)
       "same timestamp"
-      (CCResult.get_exn @@ Timedesc.Timestamp.of_iso8601 "2020-01-01T00:00:60.001Z")
+      (CCResult.get_exn
+       @@ Timedesc.Timestamp.of_iso8601 "2020-01-01T00:00:60.001Z")
       (Timedesc.make_exn ~tz:Timedesc.Time_zone.utc ~year:2020 ~month:1 ~day:1
          ~hour:0 ~minute:0 ~second:60 ~ns:1_000_000 ()
        |> Timedesc.to_timestamp_single)
@@ -22,7 +23,8 @@ module Alco = struct
   let of_iso8601_leap_second1 () =
     Alcotest.(check span_testable)
       "same timestamp"
-      (CCResult.get_exn @@ Timedesc.Timestamp.of_iso8601 "2020-01-01T00:00:60.1Z")
+      (CCResult.get_exn
+       @@ Timedesc.Timestamp.of_iso8601 "2020-01-01T00:00:60.1Z")
       (Timedesc.make_exn ~tz:Timedesc.Time_zone.utc ~year:2020 ~month:1 ~day:1
          ~hour:0 ~minute:0 ~second:60 ~ns:100_000_000 ()
        |> Timedesc.to_timestamp_single)
@@ -62,7 +64,8 @@ module Alco = struct
   let of_iso8601_case2 () =
     Alcotest.(check span_testable)
       "same timestamp"
-      (CCResult.get_exn @@ Timedesc.Timestamp.of_iso8601 "1979-05-27T07:32:00-07:00")
+      (CCResult.get_exn
+       @@ Timedesc.Timestamp.of_iso8601 "1979-05-27T07:32:00-07:00")
       (Timedesc.make_exn
          ~tz:
            (Timedesc.Time_zone.make_offset_only_exn
@@ -116,17 +119,20 @@ module Alco = struct
   let to_rfc3339_case1 () =
     Alcotest.(check string)
       "same string" "1979-05-27T07:32:00.999999Z"
-      (Timedesc.Timestamp.to_rfc3339 (Timedesc.Span.make ~s:296638320L ~ns:999_999_000 ()))
+      (Timedesc.Timestamp.to_rfc3339
+         (Timedesc.Span.make ~s:296638320L ~ns:999_999_000 ()))
 
   let to_rfc3339_case2 () =
     Alcotest.(check string)
       "same string" "1979-05-27T07:32:00.999999999Z"
-      (Timedesc.Timestamp.to_rfc3339 (Timedesc.Span.make ~s:296638320L ~ns:999_999_999 ()))
+      (Timedesc.Timestamp.to_rfc3339
+         (Timedesc.Span.make ~s:296638320L ~ns:999_999_999 ()))
 
   let to_rfc3339_case3 () =
     Alcotest.(check string)
       "same string" "1979-05-27T07:32:00.000999999Z"
-      (Timedesc.Timestamp.to_rfc3339 (Timedesc.Span.make ~s:296638320L ~ns:999_999 ()))
+      (Timedesc.Timestamp.to_rfc3339
+         (Timedesc.Span.make ~s:296638320L ~ns:999_999 ()))
 
   let suite =
     [

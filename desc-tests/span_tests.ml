@@ -95,14 +95,9 @@ module Qc = struct
     QCheck.Test.make ~count:100_000 ~name:"to_of_view" duration (fun duration ->
         let view = Timedesc.Span.For_human.view duration in
         Timedesc.Span.equal duration
-          (Timedesc.Span.For_human.make_exn ~sign:view.sign
-             ~days:view.days
-             ~hours:view.hours
-             ~minutes:view.minutes
-             ~seconds:view.seconds
-             ~ns:view.ns
-             ()
-          ))
+          (Timedesc.Span.For_human.make_exn ~sign:view.sign ~days:view.days
+             ~hours:view.hours ~minutes:view.minutes ~seconds:view.seconds
+             ~ns:view.ns ()))
 
   let suite =
     [

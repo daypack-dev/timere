@@ -15,7 +15,9 @@ let make_date_time ~rng ~min_year ~max_year_inc =
   let hour = rng () mod 24 in
   let minute = rng () mod 60 in
   let second = rng () mod 60 in
-  let available_time_zone_count = List.length Timedesc.Time_zone.available_time_zones in
+  let available_time_zone_count =
+    List.length Timedesc.Time_zone.available_time_zones
+  in
   let tz =
     List.nth Timedesc.Time_zone.available_time_zones
       (rng () mod available_time_zone_count)
