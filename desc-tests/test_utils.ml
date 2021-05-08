@@ -353,61 +353,56 @@ let iso_ord_date_gen : Timedesc.Date.ISO_ord_date.t QCheck.Gen.t =
        let year = Int64.to_int year in
        let day_of_year = Int64.to_int day_of_year in
        let day_of_year =
-         if Timedesc.Utils.is_leap_year ~year then
-           day_of_year + 1
-         else
-           (day_of_year mod 365) + 1
+         if Timedesc.Utils.is_leap_year ~year then day_of_year + 1
+         else (day_of_year mod 365) + 1
        in
-       Timedesc.Date.ISO_ord_date.make_exn
-         ~year ~day_of_year
-    )
-    (pos_int64_bound_gen 9999L) (pos_int64_bound_gen 365L)
+       Timedesc.Date.ISO_ord_date.make_exn ~year ~day_of_year)
+    (pos_int64_bound_gen 9999L)
+    (pos_int64_bound_gen 365L)
 
 let iso_ord_date =
   QCheck.make
     ~print:(fun (x : Timedesc.Date.ISO_ord_date.t) ->
-        Printf.sprintf "%d-%03d" x.year x.day_of_year
-      )
+        Printf.sprintf "%d-%03d" x.year x.day_of_year)
     iso_ord_date_gen
 
 let iso_week_date_gen : Timedesc.Date.ISO_week_date.t QCheck.Gen.t =
   let open QCheck.Gen in
-  map3 (fun iso_week_year week weekday ->
-      let iso_week_year = Int64.to_int iso_week_year in
-      let week = ((Int64.to_int week)
-          mod
-          (
-            Timedesc.Utils.week_count_of_iso_week_year ~iso_week_year
-          )
-         ) + 1
-      in
-      Timedesc.Date.ISO_week_date.make_exn ~iso_week_year ~week ~weekday
-    )
-    (pos_int64_bound_gen 9999L) (pos_int64_bound_gen 53L)
-    weekday_gen
+  map3
+    (fun iso_week_year week weekday ->
+       let iso_week_year = Int64.to_int iso_week_year in
+       let week =
+         Int64.to_int week
+         mod Timedesc.Utils.week_count_of_iso_week_year ~iso_week_year
+         + 1
+       in
+       Timedesc.Date.ISO_week_date.make_exn ~iso_week_year ~week ~weekday)
+    (pos_int64_bound_gen 9999L)
+    (pos_int64_bound_gen 53L) weekday_gen
 
 let iso_week_date =
   QCheck.make
     ~print:(fun (x : Timedesc.Date.ISO_week_date.t) ->
-        Printf.sprintf "%d-%02d-%s" x.iso_week_year x.week (Timedesc.Utils.abbr_string_of_weekday x.weekday)
-      )
+        Printf.sprintf "%d-%02d-%s" x.iso_week_year x.week
+          (Timedesc.Utils.abbr_string_of_weekday x.weekday))
     iso_week_date_gen
 
 let ymd_date_gen : Timedesc.Date.Ymd_date.t QCheck.Gen.t =
   let open QCheck.Gen in
-  map3 (fun year month day ->
-      let year = Int64.to_int year in
-      let month = Int64.to_int month + 1 in
-      let day = (Int64.to_int day mod Timedesc.Utils.day_count_of_month ~year ~month)+ 1 in
-      Timedesc.Date.Ymd_date.make_exn ~year ~month ~day
-    )
+  map3
+    (fun year month day ->
+       let year = Int64.to_int year in
+       let month = Int64.to_int month + 1 in
+       let day =
+         (Int64.to_int day mod Timedesc.Utils.day_count_of_month ~year ~month)
+         + 1
+       in
+       Timedesc.Date.Ymd_date.make_exn ~year ~month ~day)
     (pos_int64_bound_gen 9999L)
-    (pos_int64_bound_gen 11L)
-    (pos_int64_bound_gen 30L)
+    (pos_int64_bound_gen 11L) (pos_int64_bound_gen 30L)
 
 let ymd_date =
   QCheck.make
     ~print:(fun (x : Timedesc.Date.Ymd_date.t) ->
-        Printf.sprintf "%d-%02d-%02d" x.year x.month x.day
-      )
+        Printf.sprintf "%d-%02d-%02d" x.year x.month x.day)
     ymd_date_gen
