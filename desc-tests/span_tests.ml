@@ -92,10 +92,11 @@ module Qc = struct
          Timedesc.Span.(abs (x - x') < make ~s:1L ~ns:1000 ()))
 
   let of_to_view =
-    QCheck.Test.make ~count:100_000 ~name:"to_of_span" duration (fun duration ->
+    QCheck.Test.make ~count:100_000 ~name:"to_of_view" duration (fun duration ->
         let view = Timedesc.Span.For_human.view duration in
         Timedesc.Span.equal duration
           (Timedesc.Span.For_human.make_exn ~sign:view.sign
+             ~days:view.days
              ~hours:view.hours
              ~minutes:view.minutes
              ~seconds:view.seconds

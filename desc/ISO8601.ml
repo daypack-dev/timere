@@ -5,25 +5,25 @@ let to_date_time s : (Date_time.t, string) result =
     choice
       [
         attempt
-          (max_two_digit_nat_zero
+          (two_digit_nat_zero
            >>= fun hour ->
            optional (char ':')
-           >> max_two_digit_nat_zero
+           >> two_digit_nat_zero
            >>= fun minute -> return (hour, minute));
-        (max_two_digit_nat_zero >>= fun hour -> return (hour, 0));
+        (two_digit_nat_zero >>= fun hour -> return (hour, 0));
       ]
   in
   let hms_p =
     choice
       [
         attempt
-          (max_two_digit_nat_zero
+          (two_digit_nat_zero
            >>= fun hour ->
            optional (char ':')
-           >> max_two_digit_nat_zero
+           >> two_digit_nat_zero
            >>= fun minute ->
            optional (char ':')
-           >> max_two_digit_nat_zero
+           >> two_digit_nat_zero
            >>= fun second ->
            choice [ char '.'; char ',' ]
            >> num_string
@@ -40,13 +40,13 @@ let to_date_time s : (Date_time.t, string) result =
              in
              return (hour, minute, second, ns));
         attempt
-          (max_two_digit_nat_zero
+          (two_digit_nat_zero
            >>= fun hour ->
            optional (char ':')
-           >> max_two_digit_nat_zero
+           >> two_digit_nat_zero
            >>= fun minute ->
            optional (char ':')
-           >> max_two_digit_nat_zero
+           >> two_digit_nat_zero
            >>= fun second -> return (hour, minute, second, 0));
         (hm_p |>> fun (hour, minute) -> (hour, minute, 0, 0));
       ]
