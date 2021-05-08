@@ -40,24 +40,18 @@ type t = {
   offset_from_utc : Span.t local_result;
 }
 
-let jd_span_of_epoch =
-  Span.For_human'.make_exn ~days:jd_of_epoch ()
+let jd_span_of_epoch = Span.For_human'.make_exn ~days:jd_of_epoch ()
 
 let to_timestamp_local (x : t) : Span.t =
   (* we obtain the local timestamp by pretending we are in the UTC time zone,
      i.e. ignoring the time zone information
   *)
   Span.(
-    (
-      For_human'.make_exn
-        ~days:(jd_of_ydoy ~year:x.date.year ~day_of_year:x.date.day_of_year)
-        ()
-      +
-      Time.to_span x.time
-    )
-    -
-    jd_span_of_epoch
-  )
+    For_human'.make_exn
+      ~days:(jd_of_ydoy ~year:x.date.year ~day_of_year:x.date.day_of_year)
+      ()
+    + Time.to_span x.time
+    - jd_span_of_epoch)
 
 let to_timestamp_precise_unsafe (x : t) : timestamp Time_zone.local_result =
   let open Span in
@@ -97,11 +91,9 @@ let of_timestamp_local (x : Span.t) =
   let x = Span.(jd_span_of_epoch + x) in
   let v = Span.For_human'.view x in
   let year, month, day = ymd_of_jd v.days in
-  let hour, minute, second, ns =
-    v.hours, v.minutes, v.seconds, v.ns
-  in
-  let date = Date.Ymd_date.make_exn ~year ~month ~day
-             |> Date.ISO_ord_date.of_ymd_date
+  let hour, minute, second, ns = (v.hours, v.minutes, v.seconds, v.ns) in
+  let date =
+    Date.Ymd_date.make_exn ~year ~month ~day |> Date.ISO_ord_date.of_ymd_date
   in
   let time = Time.make_exn ~hour ~minute ~second ~ns () in
   { date; time; tz = Time_zone.utc; offset_from_utc = `Single Span.zero }
