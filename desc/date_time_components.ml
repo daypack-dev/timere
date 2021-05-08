@@ -140,8 +140,9 @@ let jd_of_start_of_iso_week_year ~iso_week_year =
   | `Sun -> jd_of_ymd ~year:(pred iso_week_year) ~month:12 ~day:29
 
 let week_count_of_iso_week_year ~iso_week_year =
-  (jd_of_start_of_iso_week_year ~iso_week_year
-   - jd_of_start_of_iso_week_year ~iso_week_year:(succ iso_week_year))
+  (jd_of_start_of_iso_week_year ~iso_week_year:(succ iso_week_year)
+     - jd_of_start_of_iso_week_year ~iso_week_year
+   )
   / 7
 
 module Weekday_set = struct

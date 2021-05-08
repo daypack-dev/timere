@@ -16,7 +16,7 @@ module Qc = struct
 
   let of_to_iso_week_date =
     QCheck.Test.make ~count:100_000
-      ~name:"to_of_iso_week_date"
+      ~name:"of_to_iso_week_date"
       iso_week_date
       (fun d ->
          let d' =
@@ -42,7 +42,7 @@ module Qc = struct
 
   let of_to_ymd_date =
     QCheck.Test.make ~count:100_000
-      ~name:"to_of_ymd_date"
+      ~name:"of_to_ymd_date"
       ymd_date
       (fun d ->
          let d' =

@@ -117,9 +117,7 @@ module ISO_ord_date = struct
     assert (week_of_year <= 53);
     let iso_week_year, week =
       if week_of_year = 0 then
-        if x.year = 0 then (-1, 52)
-        else
-          (pred x.year, week_count_of_iso_week_year ~iso_week_year:(pred x.year))
+        (pred x.year, week_count_of_iso_week_year ~iso_week_year:(pred x.year))
       else if
         week_of_year = 53
         && week_count_of_iso_week_year ~iso_week_year:x.year < 53

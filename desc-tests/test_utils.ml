@@ -348,8 +348,8 @@ let permute (seed : int) (l : 'a list) : 'a list =
 
 let iso_ord_date_gen : Timedesc.Date.ISO_ord_date.t QCheck.Gen.t =
   let open QCheck.Gen in
-  map
-    (fun (year, day_of_year) ->
+  map2
+    (fun year day_of_year ->
        let year = Int64.to_int year in
        let day_of_year = Int64.to_int day_of_year in
        let day_of_year =
@@ -361,7 +361,7 @@ let iso_ord_date_gen : Timedesc.Date.ISO_ord_date.t QCheck.Gen.t =
        Timedesc.Date.ISO_ord_date.make_exn
          ~year ~day_of_year
     )
-    (pair (pos_int64_bound_gen 9999L) (pos_int64_bound_gen 366L))
+    (pos_int64_bound_gen 9999L) (pos_int64_bound_gen 365L)
 
 let iso_ord_date =
   QCheck.make
