@@ -38,20 +38,12 @@ let default_interval_format_string =
 let () =
   let alco_suites =
     [
-      ("Date_time_tests.Alco", Date_time_tests.Alco.suite);
       ("Time_intervals_tests.Alco", Time_intervals_tests.Alco.suite);
-      ("Time_tests.Alco", Time_tests.Alco.suite);
-      ("Tzdb_tests.Alco", Tzdb_tests.Alco.suite);
     ]
   in
   let qc_suites =
     [
-      ("Span_tests.Qc", Span_tests.Qc.suite);
-      ("Date_time_tests.Qc", Date_time_tests.Qc.suite);
       ("Time_intervals_tests.Qc", Time_intervals_tests.Qc.suite);
-      ("Time_tests.Qc", Time_tests.Qc.suite);
-      ("Resolver_tests.Qc", Resolver_tests.Qc.suite);
-      ("Time_zone_tests.Qc", Time_zone_tests.Qc.suite);
     ]
     |> List.map (fun (name, suite) ->
         (name, List.map QCheck_alcotest.to_alcotest suite))

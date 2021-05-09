@@ -105,8 +105,8 @@ v}
 
     {2 Using both Ptime and Timedesc}
 
-    Ptime is a (very) commonly used package in projects due to being very lightweight, robust, and
-    well designed in general. However it lacks certain features which Timedesc provides, such as
+    Ptime is a (very) commonly used package in projects due to being very portable, and robust.
+    However it lacks certain features which Timedesc provides, such as
     first class support for time zones, support for different date systems. As such one may wish
     to use both Ptime and Timedesc, especially if Ptime is already being used for a particular project.
 

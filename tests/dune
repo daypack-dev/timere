@@ -1,54 +1,12 @@
 (rule
- (targets time_zone_constants.ml)
- (deps    ../gen-artifacts/time_zone_constants.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
- (targets span.ml)
- (deps    ../src/span.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
- (targets constants.ml)
- (deps    ../src/constants.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
  (targets infix.ml)
  (deps    ../src/infix.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
- (targets date_time_components.ml)
- (deps    ../src/date_time_components.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
- (targets of_sexp_utils.ml)
- (deps    ../src/of_sexp_utils.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
- (targets to_sexp_utils.ml)
- (deps    ../src/to_sexp_utils.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
- (targets bigarray_utils.ml)
- (deps    ../src/bigarray_utils.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
- (targets ptime_utils.ml)
- (deps    ../src/ptime_utils.ml)
+ (targets weekday_set.ml)
+ (deps    ../src/weekday_set.ml)
  (action  (copy %{deps} %{targets}))
 )
 
@@ -83,18 +41,6 @@
 )
 
 (rule
- (targets string_map.ml)
- (deps    ../src/string_map.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
- (targets time_zone.ml)
- (deps    ../src/time_zone.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
  (targets int64_utils.ml)
  (deps    ../src/int64_utils.ml)
  (action  (copy %{deps} %{targets}))
@@ -113,14 +59,14 @@
 )
 
 (rule
- (targets time_zone_utils.ml)
- (deps    ../src/time_zone_utils.ml)
+ (targets to_sexp.ml)
+ (deps    ../src/to_sexp.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
- (targets to_sexp.ml)
- (deps    ../src/to_sexp.ml)
+ (targets of_sexp_utils.ml)
+ (deps    ../desc/of_sexp_utils.ml)
  (action  (copy %{deps} %{targets}))
 )
 
@@ -137,24 +83,6 @@
 )
 
 (rule
- (targets RFC3339.ml)
- (deps    ../src/RFC3339.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
- (targets ISO8601.ml)
- (deps    ../src/ISO8601.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
- (targets parser_components.ml)
- (deps    ../src/parser_components.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
  (targets int_set.ml)
  (deps    ../src/int_set.ml)
  (action  (copy %{deps} %{targets}))
@@ -163,6 +91,12 @@
 (rule
  (targets resolver.ml)
  (deps    ../src/resolver.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets test_utils.ml)
+ (deps    ../desc-tests/test_utils.ml)
  (action  (copy %{deps} %{targets}))
 )
 
@@ -184,7 +118,8 @@
             bigarray
             fileutils
             diet
-            timere.tzdb.full
-            timere.tzlocal.unix
+            timedesc
+            timedesc.tzdb.full
+            timedesc.tzlocal.unix
             )
  )

@@ -7,21 +7,21 @@ module Int64_set = Set.Make (struct
   end)
 
 module Span_set = Diet.Make (struct
-    type t = Span.t
+    type t = Timedesc.Span.t
 
-    let compare = Span.compare
+    let compare = Timedesc.Span.compare
 
-    let zero = Span.zero
+    let zero = Timedesc.Span.zero
 
-    let pred = Span.pred
+    let pred = Timedesc.Span.pred
 
-    let succ = Span.succ
+    let succ = Timedesc.Span.succ
 
-    let sub = Span.sub
+    let sub = Timedesc.Span.sub
 
-    let add = Span.add
+    let add = Timedesc.Span.add
 
-    let to_string = Printers.string_of_span
+    let to_string = Timedesc.Span.to_string
   end)
 
 module Alco = struct
@@ -49,7 +49,7 @@ module Qc = struct
          l
          |> CCList.to_seq
          |> Time.Intervals.Slice.slice ~start
-         |> OSeq.for_all (fun (x, _) -> Span.(start <= x)))
+         |> OSeq.for_all (fun (x, _) -> Timedesc.Span.(start <= x)))
 
   let slice_end_exc =
     QCheck.Test.make ~count:10_000 ~name:"slice_end_exc"
@@ -58,7 +58,7 @@ module Qc = struct
          l
          |> CCList.to_seq
          |> Time.Intervals.Slice.slice ~end_exc
-         |> OSeq.for_all (fun (_, y) -> Span.(y <= end_exc)))
+         |> OSeq.for_all (fun (_, y) -> Timedesc.Span.(y <= end_exc)))
 
   let normalize_pairs_are_fine =
     QCheck.Test.make ~count:10_000 ~name:"normalize_pairs_are_fine" time_slots
@@ -66,7 +66,7 @@ module Qc = struct
          l
          |> CCList.to_seq
          |> Time.Intervals.normalize
-         |> OSeq.for_all (fun (x, y) -> Span.(x <= y)))
+         |> OSeq.for_all (fun (x, y) -> Timedesc.Span.(x <= y)))
 
   let normalize_time_slots_are_sorted =
     QCheck.Test.make ~count:10_000 ~name:"normalize_time_slots_are_sorted"
@@ -80,7 +80,7 @@ module Qc = struct
                  match last with
                  | None -> (true, Some (x, y))
                  | Some (last_start, last_end_exc) ->
-                   (last_start <= x && last_end_exc <= x, Some (x, y))
+                   Timedesc.Span.(last_start <= x && last_end_exc <= x, Some (x, y))
                else (false, None))
             (true, None)
           |> fun (x, _) -> x)
@@ -104,7 +104,7 @@ module Qc = struct
                if res then
                  match last with
                  | None -> (true, Some (x, y))
-                 | Some (_, last_end_exc) -> (last_end_exc < x, Some (x, y))
+                 | Some (_, last_end_exc) -> Timedesc.Span.(last_end_exc < x, Some (x, y))
                else (false, None))
             (true, None)
           |> fun (x, _) -> x)
@@ -159,7 +159,7 @@ module Qc = struct
     QCheck.Test.make ~count:10_000 ~name:"invert_disjoint_from_original"
       QCheck.(triple pos_timestamp pos_timestamp sorted_time_slots_maybe_gaps)
       (fun (start, end_exc, l) ->
-         QCheck.assume Span.(start <= end_exc);
+         QCheck.assume Timedesc.Span.(start <= end_exc);
          let sliced =
            l
            |> CCList.to_seq
