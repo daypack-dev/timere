@@ -7,8 +7,8 @@
 
     - Time zone offsets are always in hours
     - What we typically consider a time zone, e.g. "Europe/Paris", always has a constant offset
-    - With a time zone and a specific date time, we can obtain a unique "unix timestamp" (time since unix epoch)
-    - We can calculate time zone offset at some date time, and apply it universally for any other date time in the same time zone, and this always works
+    - With a time zone and a specific date time, we can always obtain a unique "unix timestamp" (time since unix epoch)
+    - We can always calculate time zone offset at some date time, and apply it universally for any other date time in the same time zone
     - Many more on various online resources...
 
     {2 Time zone, time zone offset, and date time}
