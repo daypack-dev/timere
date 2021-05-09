@@ -79,19 +79,19 @@ v}
     This start and end of the DST on and off periods, along with the corresponding offsets,
     form the basis of the table we mentioned above.
 
-    {2 Timere date time API basics}
+    {2 Timedesc date time API basics}
 
-    We highlight some critical cases in practice, and how Timere behaves and how it may differ from other libraries.
+    We highlight some critical cases in practice, and how Timedesc behaves and how it may differ from other libraries.
 
     Take year 2021 for example, DST starts on 2021 Mar 28 for Paris, causing clocks to jump from 2am to 3am. Pick any
-    intermediate point, say 2:30am, we yield an undefined date time. In this case, Timere refuses the construction
+    intermediate point, say 2:30am, we yield an undefined date time. In this case, Timedesc refuses the construction
     of such {!t} in {!make} etc, while some libraries coerce the result into 3:30am.
 
     And DST ends on 2021 Oct 31,
     causing clocks to jump from 3am to 2am. Say we pick 2:30am again, we are actually pointing at {e two} time points (there are two 2:30am)
     unless we make an explicit selection between the first or second occurance.
     Whenever ambiguity of this form is a possiblity for the result of a function, say {!to_timestamp},
-    Timere uses {!local_result} variant type, of which [`Single _] indicates lack of ambiguity for the particular result,
+    Timedesc uses {!local_result} variant type, of which [`Single _] indicates lack of ambiguity for the particular result,
     and [`Ambiguous _] indicates the result is ambiguous.
 
     Some other libraries coerce the ambiguous result
@@ -102,6 +102,22 @@ v}
     while {!make_unambiguous} yields an unambiguous construction.
     In general, if you are provided with the exact offset to UTC,
     then [make_unambiguous] is the better choice.
+
+    {2 Using both Ptime and Timedesc}
+
+    Ptime is a (very) commonly used package in projects due to being very lightweight, robust, and
+    well designed in general. However it lacks certain features which Timedesc provides, such as
+    first class support for time zones, support for different date systems. As such one may wish
+    to use both Ptime and Timedesc, especially if Ptime is already being used for a particular project.
+
+    To facilitate such use of both Ptime and Timedesc, utilities for converting to and from Ptime types are available as
+    - {!Utils.ptime_span_of_span}
+    - {!Utils.ptime_of_timestamp}
+    - {!Utils.span_of_ptime_span}
+    - {!Utils.timestamp_of_ptime}
+
+    Note that Timedesc only supports nanosecond precision, while Ptime supports picosecond precision.
+    If picosecond precision is a concern for you, then the above functions are not suitable.
 *)
 
 (** {1 Span} *)
@@ -332,7 +348,7 @@ module Time_zone : sig
 
       See {!val:available_time_zones} or checking usable time zone names at runtime.
 
-      Alternatively, if you are using [timere.tz.full] (the default implementation for [timere.tz.data]), then you can also see
+      Alternatively, if you are using [timedesc.tz.full] (the default implementation for [timedesc.tz.data]), then you can also see
       {{:https://github.com/daypack-dev/timere/tree/main/gen_artifacts/available-time-zones.txt} [available-time-zones.txt]} for available time zones.
 
       [make] handles names with "UTC" prefix specially, following holds regardless of DB backend chosen
@@ -1123,8 +1139,12 @@ module Utils : sig
   val ptime_of_timestamp : timestamp -> Ptime.t option
 
   val span_of_ptime_span : Ptime.span -> Span.t
+  (** {b Warning}: Subnanosecond information is lost in this conversion
+  *)
 
   val timestamp_of_ptime : Ptime.t -> timestamp
+  (** {b Warning}: Subnanosecond information is lost in this conversion
+  *)
 
   val day_count_of_year : year:int -> int
 
