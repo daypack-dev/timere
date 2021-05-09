@@ -1,6 +1,14 @@
 # Timere
 
-OCaml date time handling and reasoning library
+OCaml date time handling and reasoning suite
+
+This repo houses
+
+- Timedesc - date time handling library
+
+- Timere - reasoning library
+
+- Timere-parse - natural language parsing library
 
 [API documentation](https://daypack-dev.github.io/timere/)
 
@@ -44,6 +52,8 @@ See `examples/` for more examples
 
 ## Features
 
+#### Timedesc
+
 - Timestamp and date time handling with platform independent time zone support
 
   - Subset of the IANA time zone database is built into this library
@@ -52,6 +62,9 @@ See `examples/` for more examples
 
   - ISO8601 parsing and RFC3339 printing
   
+
+#### Timere
+
 - Reasoning over time intervals via `timere` objects/expressions, examples:
 
   - Pattern matching time and intervals. These work across DST boundaries.
@@ -62,19 +75,19 @@ See `examples/` for more examples
 
   - Evaluate (sub)expressions with a different time zone (e.g. intersection of 9am to 5pm of Sydney and 9am to 5pm of New York)
     
-## Usage
+## Basic usage
 
-Include `timere` (and `timere-parse` if needed) in the `libraries` stanza in your dune file
+Include `timedesc` (`timere` and `timere-parse` if needed) in the `libraries` stanza in your dune file
 
 #### Tzdb backend
 
 You can optionally pick one of the following two concrete implementations of time zone data source
 
-- `timere.tzdb.full`
+- `timedesc.tzdb.full`
 
   - This is the default implementation which embeds the IANA time zone database from year 1850 to year 2100 exclusive
 
-- `timere.tzdb.none`
+- `timedesc.tzdb.none`
 
   - This embeds no database.
     This is suitable for when you want to retrieve time zone data during run time, for instance, to reduce the built artifact size.
@@ -91,15 +104,15 @@ You can optionally pick one of the following two concrete implementations of tim
 
 You can optionally pick one of the following three concrete implementations of local time zone detection
 
-- `timere.tzlocal.unix`
+- `timedesc.tzlocal.unix`
 
   - This is the default implementation which tries to look up info of OS for local time zone name. Should work for common Linux distros.
 
-- `timere.tzlocal.none`
+- `timedesc.tzlocal.none`
 
   - This simply returns no time zone guesses
 
-- `timere.tzlocal.utc`
+- `timedesc.tzlocal.utc`
 
   - This simply returns UTC as the only guess
 
@@ -119,7 +132,7 @@ Time zone database derived files are licensed under its original terms (public d
 
 ## Acknowledgement
 
-- Time zone information is extracted via `zdump` command output into `src/time_zone_data.ml`, using the IANA database (as time zone files) distributed on Linux
+- Time zone information is extracted via `zdump` command output into `gen-artifacts/time_zone_db.sexp`, using the IANA database (as time zone files) distributed on Linux
 
 - Time zone data handling code copies approach used by [chrono-tz](https://github.com/chronotope/chrono-tz)
 
