@@ -193,7 +193,7 @@ module Qc = struct
            |> Time.Intervals.normalize
            |> CCList.of_seq
          in
-         (l <> [] && List.for_all (fun (x, y) -> y < start || end_exc < x) l)
+         (l <> [] && List.for_all Timedesc.Span.(fun (x, y) -> y < start || end_exc < x) l)
          || [ (start, end_exc) ] = res)
 
   let relative_complement_result_disjoint_from_not_mem_of =
