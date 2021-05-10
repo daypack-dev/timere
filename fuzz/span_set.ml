@@ -1,17 +1,17 @@
 include Diet.Make (struct
-    type t = Span.t
+    type t = Timedesc.Span.t
 
-    let compare = Span.compare
+    let compare = Timedesc.Span.compare
 
-    let zero = Span.zero
+    let zero = Timedesc.Span.zero
 
-    let pred = Span.pred
+    let pred = Timedesc.Span.pred
 
-    let succ = Span.succ
+    let succ = Timedesc.Span.succ
 
-    let sub = Span.sub
+    let sub = Timedesc.Span.sub
 
-    let add = Span.add
+    let add = Timedesc.Span.add
 
-    let to_string = Printers.string_of_span
+    let to_string = Timedesc.Span.to_string
   end)

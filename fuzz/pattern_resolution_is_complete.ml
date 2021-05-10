@@ -1,5 +1,4 @@
 open Fuzz_utils
-open Date_time_components
 open Span_set_utils
 
 let () =
@@ -24,33 +23,32 @@ let () =
             |> OSeq.filter (fun timestamp ->
                 let dt =
                   CCOpt.get_exn
-                  @@ Time.Date_time'.of_timestamp ~tz_of_date_time:tz
-                    (Span.make ~s:timestamp ())
+                  @@ Timedesc.of_timestamp ~tz_of_date_time:tz
+                    (Timedesc.Span.make ~s:timestamp ())
                 in
                 let weekday =
-                  CCOpt.get_exn
-                  @@ weekday_of_month_day ~year:dt.year ~month:dt.month
-                    ~day:dt.day
+                  Timedesc.weekday dt
                 in
                 let year_is_fine =
                   Int_set.is_empty pattern.years
-                  || Int_set.mem dt.year pattern.years
+                  || Int_set.mem (Timedesc.year dt) pattern.years
                 in
                 let month_is_fine =
                   Int_set.is_empty pattern.months
-                  || Int_set.mem dt.month pattern.months
+                  || Int_set.mem (Timedesc.month dt) pattern.months
                 in
                 let mday_is_fine =
                   Int_set.is_empty pattern.month_days
                   ||
                   let day_count =
-                    day_count_of_month ~year:dt.year ~month:dt.month
+                    Timedesc.Utils.day_count_of_month
+                    ~year:(Timedesc.year dt) ~month:(Timedesc.month dt)
                   in
                   pattern.month_days
                   |> Int_set.to_seq
                   |> Seq.map (fun mday ->
                       if mday < 0 then day_count + mday + 1 else mday)
-                  |> OSeq.mem ~eq:( = ) dt.day
+                  |> OSeq.mem ~eq:( = ) (Timedesc.day dt)
                 in
                 let wday_is_fine =
                   Weekday_set.is_empty pattern.weekdays
@@ -58,15 +56,15 @@ let () =
                 in
                 let hour_is_fine =
                   Int_set.is_empty pattern.hours
-                  || Int_set.mem dt.hour pattern.hours
+                  || Int_set.mem (Timedesc.hour dt) pattern.hours
                 in
                 let minute_is_fine =
                   Int_set.is_empty pattern.minutes
-                  || Int_set.mem dt.minute pattern.minutes
+                  || Int_set.mem (Timedesc.minute dt) pattern.minutes
                 in
                 let second_is_fine =
                   Int_set.is_empty pattern.seconds
-                  || Int_set.mem dt.second pattern.seconds
+                  || Int_set.mem (Timedesc.second dt) pattern.seconds
                 in
                 year_is_fine
                 && month_is_fine
@@ -83,13 +81,13 @@ let () =
           let r =
             OSeq.for_all
               (fun (x', y') ->
-                 OSeq.exists Span.(fun (x, y) -> x <= x' && y' <= y) s)
+                 OSeq.exists Timedesc.Span.(fun (x, y) -> x <= x' && y' <= y) s)
               s'
           in
           if not r then
             Crowbar.fail
               (Fmt.str "tz: %s\nsearch_space: %a\npattern: %a\n"
-                 (Time_zone.name tz)
-                 (Fmt.list (Printers.pp_interval ()))
+                 (Timedesc.Time_zone.name tz)
+                 (Fmt.list (Timedesc.Interval.pp ()))
                  search_space CCSexp.pp
                  (To_sexp.sexp_of_pattern pattern)))

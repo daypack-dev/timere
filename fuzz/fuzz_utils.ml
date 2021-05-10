@@ -8,16 +8,16 @@ let time =
          ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
 
 let timestamp =
-  Crowbar.map [ Crowbar.int64; Crowbar.int ] (fun s ns -> Span.make ~s ~ns ())
+  Crowbar.map [ Crowbar.int64; Crowbar.int ] (fun s ns -> Timedesc.Span.make ~s ~ns ())
 
 let pos_span =
   Crowbar.map [ Crowbar.int64; Crowbar.int ] (fun s ns ->
-      Span.(abs @@ make ~s ~ns ()))
+      Timedesc.Span.(abs @@ make ~s ~ns ()))
 
 let nz_pos_span =
   Crowbar.map [ Crowbar.int64; Crowbar.int ] (fun s ns ->
       let ns = ns + 1 in
-      Span.(abs @@ make ~s ~ns ()))
+      Timedesc.Span.(abs @@ make ~s ~ns ()))
 
 let pattern =
   Crowbar.map
@@ -37,11 +37,11 @@ let points : Points.t Crowbar.gen =
        let rng = Builder.make_rng ~randomness in
        Builder.make_points ~rng ~min_year ~max_year_inc ~max_precision:7)
 
-let time_zone : Time_zone.t Crowbar.gen =
-  let tz_count = List.length Time_zone.available_time_zones in
+let time_zone : Timedesc.Time_zone.t Crowbar.gen =
+  let tz_count = List.length Timedesc.Time_zone.available_time_zones in
   Crowbar.map [ Crowbar.int ] (fun n ->
       let n = max 0 n mod tz_count in
-      Time_zone.make_exn (List.nth Time_zone.available_time_zones n))
+      Timedesc.Time_zone.make_exn (List.nth Timedesc.Time_zone.available_time_zones n))
 
 let search_space =
   Crowbar.map
@@ -49,11 +49,11 @@ let search_space =
       Crowbar.list
         (Crowbar.map [ timestamp; nz_pos_span ] (fun search_start search_size ->
              let search_start =
-               Span.(
-                 min (max Time.timestamp_min search_start) Time.timestamp_max)
+               Timedesc.Span.(
+                 min (max Timedesc.Timestamp.min_val search_start) Timedesc.Timestamp.max_val)
              in
              let search_end_exc =
-               Span.(min Time.timestamp_max (search_start + search_size))
+               Timedesc.Span.(min Timedesc.Timestamp.max_val (search_start + search_size))
              in
              (search_start, search_end_exc)));
     ]

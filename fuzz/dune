@@ -5,50 +5,14 @@
 )
 
 (rule
- (targets span.ml)
- (deps    ../src/span.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
- (targets constants.ml)
- (deps    ../src/constants.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
  (targets infix.ml)
  (deps    ../src/infix.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
- (targets date_time_components.ml)
- (deps    ../src/date_time_components.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
  (targets of_sexp_utils.ml)
- (deps    ../src/of_sexp_utils.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
- (targets to_sexp_utils.ml)
- (deps    ../src/to_sexp_utils.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
- (targets bigarray_utils.ml)
- (deps    ../src/bigarray_utils.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
- (targets ptime_utils.ml)
- (deps    ../src/ptime_utils.ml)
+ (deps    ../desc/of_sexp_utils.ml)
  (action  (copy %{deps} %{targets}))
 )
 
@@ -83,20 +47,8 @@
 )
 
 (rule
- (targets string_map.ml)
- (deps    ../src/string_map.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
- (targets time_zone.ml)
- (deps    ../src/time_zone.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
  (targets int64_utils.ml)
- (deps    ../src/int64_utils.ml)
+ (deps    ../desc/int64_utils.ml)
  (action  (copy %{deps} %{targets}))
 )
 
@@ -109,12 +61,6 @@
 (rule
  (targets misc_utils.ml)
  (deps    ../src/misc_utils.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
- (targets time_zone_utils.ml)
- (deps    ../src/time_zone_utils.ml)
  (action  (copy %{deps} %{targets}))
 )
 
@@ -138,7 +84,13 @@
 
 (rule
  (targets parser_components.ml)
- (deps    ../src/parser_components.ml)
+ (deps    ../desc/parser_components.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets weekday_set.ml)
+ (deps    ../src/weekday_set.ml)
  (action  (copy %{deps} %{targets}))
 )
 
@@ -193,7 +145,8 @@
             bigarray
             fileutils
             diet
-            timere.tzdb.full
-            timere.tzlocal.unix
+            timedesc
+            timedesc.tzdb.full
+            timedesc.tzlocal.unix
  )
  )

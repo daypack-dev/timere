@@ -209,6 +209,14 @@ let day_of_year dt = dt.date.day_of_year
 
 let time dt = dt.time
 
+let hour dt = dt.time.hour
+
+let minute dt = dt.time.minute
+
+let second dt = dt.time.second
+
+let ns dt = dt.time.ns
+
 let tz (dt : t) = dt.tz
 
 let offset_from_utc (dt : t) = dt.offset_from_utc

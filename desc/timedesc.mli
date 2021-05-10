@@ -797,6 +797,14 @@ val day_of_year : t -> int
 
 val time : t -> Time.t
 
+val hour : t -> int
+
+val minute : t -> int
+
+val second : t -> int
+
+val ns : t -> int
+
 val is_leap_second : t -> bool
 
 (** {2 Time zone info} *)
@@ -813,6 +821,10 @@ type 'a local_result =
     - [`Ambiguous] is yielded when date time maps to more than one (exactly two) ['a].
         This happens when DST ends and "goes back an hour" for instance.
 *)
+
+val tz : t -> Time_zone.t
+
+val offset_from_utc : t -> Span.t local_result
 
 val equal_local_result :
   eq:('a -> 'a -> bool) -> 'a local_result -> 'a local_result -> bool
