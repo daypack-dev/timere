@@ -157,8 +157,8 @@ let day_index_of_weekday (weekday : weekday) =
   | `Sat -> 5
   | `Sun -> 6
 
-let iso_week_date_of_jd (jd : int) : (int * int * weekday)=
-  let (year, month, day) = ymd_of_jd jd in
+let iso_week_date_of_jd (jd : int) : int * int * weekday =
+  let year, month, day = ymd_of_jd jd in
   let day_of_year = doy_of_ymd ~year ~month ~day in
   let weekday = weekday_of_jd jd in
   let week_of_year =
@@ -170,8 +170,7 @@ let iso_week_date_of_jd (jd : int) : (int * int * weekday)=
     if week_of_year = 0 then
       (pred year, week_count_of_iso_week_year ~iso_week_year:(pred year))
     else if
-      week_of_year = 53
-      && week_count_of_iso_week_year ~iso_week_year:year < 53
+      week_of_year = 53 && week_count_of_iso_week_year ~iso_week_year:year < 53
     then (succ year, 1)
     else (year, week_of_year)
   in

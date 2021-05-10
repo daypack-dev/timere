@@ -754,25 +754,18 @@ val make_unambiguous_exn :
   t
 (** @raise Error_exn if [make_umabiguous] fails *)
 
-type dnt_error = [
-  | `Does_not_exist
+type dnt_error =
+  [ `Does_not_exist
   | `Invalid_tz_info of string option * Span.t
-]
+  ]
 
 exception Dnt_error_exn of dnt_error
 
 val of_date_and_time :
-  ?tz:Time_zone.t ->
-  Date.t ->
-  Time.t ->
-  (t, dnt_error) result
+  ?tz:Time_zone.t -> Date.t -> Time.t -> (t, dnt_error) result
 (** Construction from already constructed date and time *)
 
-val of_date_and_time_exn :
-  ?tz:Time_zone.t ->
-  Date.t ->
-  Time.t ->
-  t
+val of_date_and_time_exn : ?tz:Time_zone.t -> Date.t -> Time.t -> t
 (** @raise Dnt_error_exn if [of_date_and_time] fails *)
 
 val of_date_and_time_unambiguous :
@@ -784,11 +777,7 @@ val of_date_and_time_unambiguous :
 (** Construction from already constructed date and time *)
 
 val of_date_and_time_unambiguous_exn :
-  ?tz:Time_zone.t ->
-  offset_from_utc:Span.t ->
-  Date.t ->
-  Time.t ->
-  t
+  ?tz:Time_zone.t -> offset_from_utc:Span.t -> Date.t -> Time.t -> t
 (** @raise Dnt_error_exn if [of_date_and_time_umabiguous] fails *)
 
 (** {2 Accessors} *)

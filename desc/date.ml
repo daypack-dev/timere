@@ -1,14 +1,10 @@
 open Date_time_components
 
-type t = {
-  jd : int;
-}
+type t = { jd : int }
 
-let equal (x : t) (y : t) : bool =
-  x.jd = y.jd
+let equal (x : t) (y : t) : bool = x.jd = y.jd
 
-let weekday (x : t) =
-  weekday_of_jd x.jd
+let weekday (x : t) = weekday_of_jd x.jd
 
 module ISO_week_date = struct
   type view = {
@@ -30,8 +26,7 @@ module ISO_week_date = struct
     then Error (`Invalid_iso_week_year iso_week_year)
     else if week < 1 || week_count_of_iso_week_year ~iso_week_year < week then
       Error (`Invalid_week week)
-    else
-      Ok ({ jd = jd_of_iso_week_date ~iso_week_year ~week ~weekday})
+    else Ok { jd = jd_of_iso_week_date ~iso_week_year ~week ~weekday }
 
   let make_exn ~iso_week_year ~week ~weekday : t =
     match make ~iso_week_year ~week ~weekday with
@@ -39,9 +34,7 @@ module ISO_week_date = struct
     | Ok x -> x
 
   let view (x : t) : view =
-    let (iso_week_year, week, weekday) =
-      iso_week_date_of_jd x.jd
-    in
+    let iso_week_year, week, weekday = iso_week_date_of_jd x.jd in
     { iso_week_year; week; weekday }
 end
 
@@ -67,7 +60,7 @@ module Ymd_date = struct
     else if month < 1 || 12 < month then Error (`Invalid_month month)
     else if day < 1 || day_count_of_month ~year ~month < day then
       Error (`Invalid_day day)
-    else Ok ({ jd = jd_of_ymd ~year ~month ~day})
+    else Ok { jd = jd_of_ymd ~year ~month ~day }
 
   let make_exn ~year ~month ~day : t =
     match make ~year ~month ~day with
@@ -75,7 +68,7 @@ module Ymd_date = struct
     | Ok x -> x
 
   let view (x : t) : view =
-    let (year, month, day) = ymd_of_jd x.jd in
+    let year, month, day = ymd_of_jd x.jd in
     { year; month; day }
 end
 
@@ -98,7 +91,7 @@ module ISO_ord_date = struct
       Error (`Invalid_year year)
     else if day_of_year < 1 || day_count_of_year ~year < day_of_year then
       Error (`Invalid_day_of_year day_of_year)
-    else Ok ({jd = jd_of_ydoy ~year ~day_of_year})
+    else Ok { jd = jd_of_ydoy ~year ~day_of_year }
 
   let make_exn ~year ~day_of_year : t =
     match make ~year ~day_of_year with
@@ -106,7 +99,7 @@ module ISO_ord_date = struct
     | Ok x -> x
 
   let view (x : t) : view =
-    let (year, month, day) = ymd_of_jd x.jd in
+    let year, month, day = ymd_of_jd x.jd in
     let day_of_year = doy_of_ymd ~year ~month ~day in
     { year; day_of_year }
 end
