@@ -106,7 +106,7 @@ v}
     {2 Using both Ptime and Timedesc}
 
     Ptime is a (very) commonly used package in projects due to being very portable, and robust.
-    However it lacks certain features which Timedesc provides, such as
+    However, it lacks certain features which Timedesc provides, such as
     first class support for time zones, support for different date systems. As such one may wish
     to use both Ptime and Timedesc, especially if Ptime is already being used for a particular project.
 
@@ -136,6 +136,37 @@ type weekday =
   | `Fri
   | `Sat
   ]
+
+type 'a local_result =
+  [ `Single of 'a
+  | `Ambiguous of 'a * 'a
+  ]
+(** Result for when a local date time may be involved, e.g. using a date time with no precise time zone offset attached.
+
+    - [`Single] is yielded when the date time maps to exactly one ['a].
+        This happens when date time carries an accurate offset,
+        or when the date time is not affected by any offset shifts (thus an accurate offset can be inferred).
+    - [`Ambiguous] is yielded when date time maps to more than one (exactly two) ['a].
+        This happens when DST ends and "goes back an hour" for instance.
+*)
+
+val min_of_local_result : 'a local_result -> 'a
+(** For [min_of_local_result x]
+    - if [x = `Single a], yields [a],
+    - if [x = `Ambiguous (a, b)],  yields [a],
+*)
+
+val max_of_local_result : 'a local_result -> 'a
+(** For [max_of_local_result x]
+    - if [x = `Single a], yields [a],
+    - if [x = `Ambiguous (a, b)], yields [b],
+*)
+
+
+val equal_local_result :
+  eq:('a -> 'a -> bool) -> 'a local_result -> 'a local_result -> bool
+
+(** {1 Span} *)
 
 module Span : sig
   type t = private {
@@ -338,6 +369,10 @@ end
 
 type timestamp = Span.t
 
+(** {1 Date time components} *)
+
+(** {2 Date systems} *)
+
 module Date : sig
   (** Implementation of
       - Gregorian calendar ({!Ymd_date})
@@ -426,6 +461,8 @@ module Date : sig
     val of_ymd_date : Ymd_date.t -> t
   end
 end
+
+(** {2 Time} *)
 
 module Time : sig
   type t = private {
@@ -587,7 +624,7 @@ end
 
 type t
 (** This is the main type, and represents a point in the local timeline
-    with respect to the residing time zone. Conceptually a pair of "date" and "time of day".
+    with respect to the residing time zone. Conceptually a triple of "date", "time" (or "time of day"), and time zone.
 
     A [t] always maps to at least one point on the UTC timeline, and [make] fails if this is not the case.
     [t] may also map to two points on the UTC timeline in the case of DST and without
@@ -618,6 +655,8 @@ type error =
 exception Error_exn of error
 
 val string_of_error : error -> string
+
+(** {2 Constructors} *)
 
 val make :
   ?tz:Time_zone.t ->
@@ -756,80 +795,11 @@ val ns : t -> int
 
 val is_leap_second : t -> bool
 
-
-(** {1 Interval} *)
-module Interval : sig
-  type t = timestamp * timestamp
-
-  val equal : t -> t -> bool
-
-  val lt : t -> t -> bool
-
-  val le : t -> t -> bool
-
-  val gt : t -> t -> bool
-
-  val ge : t -> t -> bool
-
-  val compare : t -> t -> int
-
-  val pp :
-    ?display_using_tz:Time_zone.t ->
-    ?format:string ->
-    unit ->
-    Format.formatter ->
-    t ->
-    unit
-  (** Pretty printing for interval.
-
-        Default format string:
-      {v
-[{syear} {smon:Xxx} {sday:0X} {shour:0X}:{smin:0X}:{ssec:0X} \
-{stzoff-sign}{stzoff-hour:0X}:{stzoff-min:0X}:{stzoff-sec:0X}, {eyear} \
-{emon:Xxx} {eday:0X} {ehour:0X}:{emin:0X}:{esec:0X} \
-{etzoff-sign}{etzoff-hour:0X}:{etzoff-min:0X}:{etzoff-sec:0X})
-    v}
-
-        Follows same format string rules as {!val:Date_time.to_string}, but tags are prefixed with 's' for "start time", and 'e' for "end exc time",
-        e.g. for interval [(x, y)]
-
-      - [{syear}] gives year of the [x]
-      - [{ehour:cX}] gives hour of the [y]
-  *)
-
-  val to_string : ?display_using_tz:Time_zone.t -> ?format:string -> t -> string
-
-  val pp_seq :
-    ?display_using_tz:Time_zone.t ->
-    ?format:string ->
-    ?sep:(Format.formatter -> unit -> unit) ->
-    unit ->
-    Format.formatter ->
-    t Seq.t ->
-    unit
-end
-
-(** {2 Time zone info} *)
-
-type 'a local_result =
-  [ `Single of 'a
-  | `Ambiguous of 'a * 'a
-  ]
-(** Result for when a local date time may be involved, e.g. using a date time with no precise time zone offset attached.
-
-    - [`Single] is yielded when the date time maps to exactly one ['a].
-        This happens when date time carries an accurate offset,
-        or when the date time is not affected by any offset shifts (thus an accurate offset can be inferred).
-    - [`Ambiguous] is yielded when date time maps to more than one (exactly two) ['a].
-        This happens when DST ends and "goes back an hour" for instance.
-*)
-
 val tz : t -> Time_zone.t
 
 val offset_from_utc : t -> Span.t local_result
 
-val equal_local_result :
-  eq:('a -> 'a -> bool) -> 'a local_result -> 'a local_result -> bool
+(** {2 Conversions} *)
 
 val to_timestamp : t -> timestamp local_result
 (** [to_timestamp] loses information about leap second
@@ -843,10 +813,6 @@ val to_timestamp_float : t -> float local_result
 val to_timestamp_float_single : t -> float
 (** @raise Invalid_argument if [to_timestamp_single] does not yield a [`Single] result *)
 
-val min_of_local_result : 'a local_result -> 'a
-
-val max_of_local_result : 'a local_result -> 'a
-
 val of_timestamp : ?tz_of_date_time:Time_zone.t -> timestamp -> t option
 
 val of_timestamp_exn : ?tz_of_date_time:Time_zone.t -> timestamp -> t
@@ -855,13 +821,21 @@ val of_timestamp_float : ?tz_of_date_time:Time_zone.t -> float -> t option
 
 val of_timestamp_float_exn : ?tz_of_date_time:Time_zone.t -> float -> t
 
+(** {2 Comparison}*)
+
 val equal : t -> t -> bool
+
+(** {2 Constants} *)
 
 val min_val : t
 
 val max_val : t
 
+(** {2 Now} *)
+
 val now : ?tz_of_date_time:Time_zone.t -> unit -> t
+
+(** {2 Pretty printing} *)
 
 exception Date_time_cannot_deduce_offset_from_utc of t
 
@@ -948,12 +922,16 @@ val to_rfc3339_micro : t -> string option
 
 val to_rfc3339_nano : t -> string option
 
+(** {2 Parsing} *)
+
 val of_iso8601 : string -> (t, string) result
 (**
      Parses a subset of ISO8601, up to 9 fractional digits for second (nanosecond precision).
 
      If more than 9 fractional digits are provided, then only the first 9 digits are used, i.e. no rounding.
 *)
+
+(** {2 Sexp} *)
 
 val to_sexp : t -> CCSexp.t
 
@@ -965,17 +943,25 @@ val of_sexp_string : string -> (t, string) result
 
 val pp_sexp : Format.formatter -> t -> unit
 
+(** {1 Timestamp} *)
+
 module Timestamp : sig
   (** Timestamp specific functions
 
       See {!Span} for arithemtic functions
   *)
 
+  (** {1 Constants} *)
+
   val min_val : timestamp
 
   val max_val : timestamp
 
+  (** {1 Now} *)
+
   val now : unit -> timestamp
+
+  (** {1 Pretty printing} *)
 
   val pp :
     ?display_using_tz:Time_zone.t ->
@@ -1015,6 +1001,8 @@ module Timestamp : sig
 
   val to_rfc3339_nano : timestamp -> string
 
+  (** {1 Parsing} *)
+
   val of_iso8601 : string -> (timestamp, string) result
   (**
      Parses a subset of ISO8601, up to 9 fractional digits for second (nanosecond precision).
@@ -1022,10 +1010,71 @@ module Timestamp : sig
      If more than 9 fractional digits are provided, then only the first 9 digits are used, i.e. no rounding.
   *)
 
+  (** {1 Sexp} *)
+
   val of_sexp : CCSexp.t -> (timestamp, string) result
 
   val to_sexp : timestamp -> CCSexp.t
 end
+
+(** {1 Interval} *)
+
+module Interval : sig
+  type t = timestamp * timestamp
+
+  (** {1 Comparison} *)
+
+  val equal : t -> t -> bool
+
+  val lt : t -> t -> bool
+
+  val le : t -> t -> bool
+
+  val gt : t -> t -> bool
+
+  val ge : t -> t -> bool
+
+  val compare : t -> t -> int
+
+  (** {1 Pretty printing} *)
+
+  val pp :
+    ?display_using_tz:Time_zone.t ->
+    ?format:string ->
+    unit ->
+    Format.formatter ->
+    t ->
+    unit
+  (** Pretty printing for interval.
+
+        Default format string:
+      {v
+[{syear} {smon:Xxx} {sday:0X} {shour:0X}:{smin:0X}:{ssec:0X} \
+{stzoff-sign}{stzoff-hour:0X}:{stzoff-min:0X}:{stzoff-sec:0X}, {eyear} \
+{emon:Xxx} {eday:0X} {ehour:0X}:{emin:0X}:{esec:0X} \
+{etzoff-sign}{etzoff-hour:0X}:{etzoff-min:0X}:{etzoff-sec:0X})
+    v}
+
+        Follows same format string rules as {!val:Date_time.to_string}, but tags are prefixed with 's' for "start time", and 'e' for "end exc time",
+        e.g. for interval [(x, y)]
+
+      - [{syear}] gives year of the [x]
+      - [{ehour:cX}] gives hour of the [y]
+  *)
+
+  val to_string : ?display_using_tz:Time_zone.t -> ?format:string -> t -> string
+
+  val pp_seq :
+    ?display_using_tz:Time_zone.t ->
+    ?format:string ->
+    ?sep:(Format.formatter -> unit -> unit) ->
+    unit ->
+    Format.formatter ->
+    t Seq.t ->
+    unit
+end
+
+(** {1 Other date time systems}*)
 
 module ISO_week_date_time : sig
   type error =
@@ -1112,7 +1161,8 @@ end
 (** {1 Misc} *)
 
 module Time_zone_info : sig
-  (** {1 Time zone information that can be attached to date time like data}*)
+  (** Time zone information that can be attached to date time like data
+  *)
 
   type t = private {
     tz : Time_zone.t;
