@@ -217,8 +217,7 @@ module Matching_days = struct
           let wday =
             Timedesc.Date.Ymd_date.make_exn ~year:cur_branch.year
               ~month:cur_branch.month ~day
-            |> Timedesc.Date.ISO_ord_date.of_ymd_date
-            |> Timedesc.Date.ISO_ord_date.weekday
+            |> Timedesc.Date.weekday
           in
           Weekday_set.mem wday t.weekdays)
 
