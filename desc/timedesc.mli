@@ -377,14 +377,16 @@ module Date : sig
       - Gregorian calendar ({!Ymd_date})
       - ISO week date calendar ({!ISO_week_date})
       - ISO ordinal date calendar ({!ISO_ord_date})
-
-      {!ISO_ord_date.t} is the main date type, all conversion functions reside in
-      {!ISO_ord_date} module
-
   *)
 
+  type t
+
+  val equal : t -> t -> bool
+
+  val weekday : t -> weekday
+
   module Ymd_date : sig
-    type t = private {
+    type view = private {
       year : int;
       month : int;
       day : int;
@@ -399,15 +401,15 @@ module Date : sig
 
     exception Error_exn of error
 
-    val equal : t -> t -> bool
-
     val make : year:int -> month:int -> day:int -> (t, error) result
 
     val make_exn : year:int -> month:int -> day:int -> t
+
+    val view : t -> view
   end
 
   module ISO_week_date : sig
-    type t = private {
+    type view = private {
       iso_week_year : int;
       week : int;
       weekday : weekday;
@@ -421,16 +423,16 @@ module Date : sig
 
     exception Error_exn of error
 
-    val equal : t -> t -> bool
-
     val make :
       iso_week_year:int -> week:int -> weekday:weekday -> (t, error) result
 
     val make_exn : iso_week_year:int -> week:int -> weekday:weekday -> t
+
+    val view : t -> view
   end
 
   module ISO_ord_date : sig
-    type t = private {
+    type view = private {
       year : int;
       day_of_year : int;
     }
@@ -443,21 +445,11 @@ module Date : sig
 
     exception Error_exn of error
 
-    val equal : t -> t -> bool
-
     val make : year:int -> day_of_year:int -> (t, error) result
 
     val make_exn : year:int -> day_of_year:int -> t
 
-    val weekday : t -> weekday
-
-    val to_iso_week_date : t -> ISO_week_date.t
-
-    val of_iso_week_date : ISO_week_date.t -> t
-
-    val to_ymd_date : t -> Ymd_date.t
-
-    val of_ymd_date : Ymd_date.t -> t
+    val view : t -> view
   end
 end
 
@@ -508,7 +500,7 @@ module Time : sig
   val equal : t -> t -> bool
 end
 
-(** {1 Date time} *)
+(** {2 Time zone} *)
 
 module Time_zone : sig
   type t
@@ -620,6 +612,8 @@ module Time_zone : sig
     end
   end
 end
+
+(** {1 Date time} *)
 
 type t
 (** This is the main type, and represents a point in the local timeline
@@ -762,11 +756,11 @@ val make_unambiguous_exn :
 
 (** {2 Accessors} *)
 
-val ymd_date : t -> Date.Ymd_date.t
+val ymd_date : t -> Date.Ymd_date.view
 
-val iso_week_date : t -> Date.ISO_week_date.t
+val iso_week_date : t -> Date.ISO_week_date.view
 
-val iso_ord_date : t -> Date.ISO_ord_date.t
+val iso_ord_date : t -> Date.ISO_ord_date.view
 
 val year : t -> int
 

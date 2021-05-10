@@ -28,10 +28,12 @@ let sexp_of_tz_info ({ tz; fixed_offset_from_utc } : Time_zone_info.t) =
 
 let sexp_of_date_time (x : Date_time.t) =
   let open CCSexp in
+  let { Date.Ymd_date.year; month; day } = Date_time.ymd_date x in
   list
     [
-      sexp_of_int x.date.year;
-      sexp_of_int x.date.day_of_year;
+      sexp_of_int year;
+      sexp_of_int month;
+      sexp_of_int day;
       sexp_of_int x.time.hour;
       sexp_of_int x.time.minute;
       sexp_of_int x.time.second;

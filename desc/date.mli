@@ -1,6 +1,6 @@
 open Date_time_components
 
-type t
+type t = private { jd : int }
 
 val equal : t -> t -> bool
 

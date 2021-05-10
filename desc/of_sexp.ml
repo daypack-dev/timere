@@ -86,10 +86,11 @@ let date_time_of_sexp (x : CCSexp.t) =
     invalid_data (Printf.sprintf "Invalid date: %s" (CCSexp.to_string x))
   in
   match x with
-  | `List [ year; day_of_year; hour; minute; second; ns; tz; offset_from_utc ]
+  | `List [ year; month; day; hour; minute; second; ns; tz; offset_from_utc ]
     ->
     let year = int_of_sexp year in
-    let day_of_year = int_of_sexp day_of_year in
+    let month = int_of_sexp month in
+    let day = int_of_sexp day in
     let hour = int_of_sexp hour in
     let minute = int_of_sexp minute in
     let second = int_of_sexp second in
@@ -109,14 +110,14 @@ let date_time_of_sexp (x : CCSexp.t) =
       match offset_from_utc with
       | `Single offset_from_utc -> (
           match
-            Date_time.ISO_ord_date_time.make_unambiguous ~year ~day_of_year
+            Date_time.Ymd_date_time.make_unambiguous ~year ~month ~day
               ~hour ~minute ~second ~ns ~tz ~offset_from_utc ()
           with
           | Ok x -> x
           | Error _ -> invalid_data ())
       | `Ambiguous _ -> (
           match
-            Date_time.ISO_ord_date_time.make ~year ~day_of_year ~hour ~minute
+            Date_time.Ymd_date_time.make ~year ~month ~day ~hour ~minute
               ~second ~ns ~tz ()
           with
           | Ok x ->

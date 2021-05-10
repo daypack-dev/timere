@@ -34,7 +34,7 @@ let max_of_local_result (r : 'a local_result) : 'a =
   match r with `Single x | `Ambiguous (_, x) -> x
 
 type t = {
-  date : Date.ISO_ord_date.t;
+  date : Date.t;
   time : Time.t;
   tz : Time_zone.t;
   offset_from_utc : Span.t local_result;
@@ -48,7 +48,7 @@ let to_timestamp_local (x : t) : Span.t =
   *)
   Span.(
     For_human'.make_exn
-      ~days:(jd_of_ydoy ~year:x.date.year ~day_of_year:x.date.day_of_year)
+      ~days:(x.date.jd)
       ()
     + Time.to_span x.time
     - jd_span_of_epoch)
@@ -93,7 +93,7 @@ let of_timestamp_local (x : Span.t) =
   let year, month, day = ymd_of_jd v.days in
   let hour, minute, second, ns = (v.hours, v.minutes, v.seconds, v.ns) in
   let date =
-    Date.Ymd_date.make_exn ~year ~month ~day |> Date.ISO_ord_date.of_ymd_date
+    Date.Ymd_date.make_exn ~year ~month ~day
   in
   let time = Time.make_exn ~hour ~minute ~second ~ns () in
   { date; time; tz = Time_zone.utc; offset_from_utc = `Single Span.zero }
@@ -171,7 +171,7 @@ let of_dt_with_missing_tz_info_unambiguous ~tz ~offset_from_utc (dt : t) =
       })
 
 let equal (x : t) (y : t) =
-  Date.ISO_ord_date.equal x.date y.date
+  Date.equal x.date y.date
   && Time.equal x.time y.time
   && Time_zone.equal x.tz y.tz
   && equal_local_result ~eq:Span.equal x.offset_from_utc y.offset_from_utc
@@ -187,13 +187,13 @@ let max_val =
 
 let is_leap_second (dt : t) = Time.is_leap_second dt.time
 
-let weekday dt = Date.ISO_ord_date.weekday dt.date
+let weekday dt = Date.weekday dt.date
 
-let ymd_date dt = Date.ISO_ord_date.to_ymd_date dt.date
+let ymd_date dt = Date.Ymd_date.view dt.date
 
-let iso_week_date dt = Date.ISO_ord_date.to_iso_week_date dt.date
+let iso_week_date dt = Date.ISO_week_date.view dt.date
 
-let iso_ord_date dt = dt.date
+let iso_ord_date dt = Date.ISO_ord_date.view dt.date
 
 let year dt = (ymd_date dt).year
 
@@ -205,7 +205,7 @@ let iso_week_year dt = (iso_week_date dt).iso_week_year
 
 let iso_week dt = (iso_week_date dt).week
 
-let day_of_year dt = dt.date.day_of_year
+let day_of_year dt = (iso_ord_date dt).day_of_year
 
 let time dt = dt.time
 
@@ -323,7 +323,6 @@ module Ymd_date_time = struct
     match Date.Ymd_date.make ~year ~month ~day with
     | Error e -> Error (e :> error)
     | Ok date -> (
-        let date = Date.ISO_ord_date.of_ymd_date date in
         match Time.make ~hour ~minute ~second ?ns ?s_frac () with
         | Error e -> Error (e :> error)
         | Ok time ->
@@ -345,7 +344,6 @@ module Ymd_date_time = struct
     match Date.Ymd_date.make ~year ~month ~day with
     | Error e -> Error (e :> error)
     | Ok date -> (
-        let date = Date.ISO_ord_date.of_ymd_date date in
         match Time.make ~hour ~minute ~second ?ns ?s_frac () with
         | Error e -> Error (e :> error)
         | Ok time ->
@@ -388,7 +386,6 @@ module ISO_week_date_time = struct
     match Date.ISO_week_date.make ~iso_week_year ~week ~weekday with
     | Error e -> Error (e :> error)
     | Ok date -> (
-        let date = Date.ISO_ord_date.of_iso_week_date date in
         match Time.make ~hour ~minute ~second ?ns ?s_frac () with
         | Error e -> Error (e :> error)
         | Ok time ->
