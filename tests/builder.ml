@@ -15,7 +15,9 @@ let make_date_time ~rng ~min_year ~max_year_inc =
   let hour = rng () mod 24 in
   let minute = rng () mod 60 in
   let second = rng () mod 60 in
-  let available_time_zone_count = List.length Timedesc.Time_zone.available_time_zones in
+  let available_time_zone_count =
+    List.length Timedesc.Time_zone.available_time_zones
+  in
   let tz =
     List.nth Timedesc.Time_zone.available_time_zones
       (rng () mod available_time_zone_count)
@@ -36,7 +38,9 @@ let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
         |> Timedesc.to_timestamp
         |> Timedesc.min_of_local_result
       in
-      let end_exc = Timedesc.Span.add start (Timedesc.Span.make ~ns:(rng ()) ()) in
+      let end_exc =
+        Timedesc.Span.add start (Timedesc.Span.make ~ns:(rng ()) ())
+      in
       (start, end_exc))
   |> CCList.of_seq
   |> List.sort_uniq Time.Interval'.compare
@@ -75,7 +79,8 @@ let make_pattern ~rng ~min_year ~max_year_inc : Pattern.t =
     else
       let end_inc = min 5 (rng ()) in
       OSeq.(0 -- end_inc)
-      |> Seq.map (fun _ -> CCOpt.get_exn @@ Timedesc.Utils.weekday_of_tm_int (rng () mod 7))
+      |> Seq.map (fun _ ->
+          CCOpt.get_exn @@ Timedesc.Utils.weekday_of_tm_int (rng () mod 7))
       |> CCList.of_seq
   in
   let hours =
@@ -123,7 +128,8 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
       ()
   | 3 ->
     Points.make_exn
-      ~weekday:(rng () mod 7 |> Timedesc.Utils.weekday_of_tm_int |> CCOpt.get_exn)
+      ~weekday:
+        (rng () mod 7 |> Timedesc.Utils.weekday_of_tm_int |> CCOpt.get_exn)
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
       ~second:(rng () mod 60)

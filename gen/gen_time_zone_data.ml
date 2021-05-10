@@ -207,7 +207,8 @@ let transitions_of_zdump_lines (l : zdump_line list) : transition list =
   in
   l |> preprocess |> fun (line_num, l) -> aux [] line_num l
 
-let min_timestamp = Timedesc.Span.((Timedesc.Utils.timestamp_of_ptime Ptime.min).s)
+let min_timestamp =
+  Timedesc.Span.((Timedesc.Utils.timestamp_of_ptime Ptime.min).s)
 
 let max_timestamp =
   Timedesc.Span.((Timedesc.Utils.timestamp_of_ptime Ptime.max).s) |> Int64.pred

@@ -2,7 +2,8 @@ let span_set_max_interval_count = 1_000_000
 
 let span_set_full : Span_set.t =
   Span_set.add
-    (Span_set.Interval.make Timedesc.Timestamp.min_val (Timedesc.Span.pred Timedesc.Timestamp.max_val))
+    (Span_set.Interval.make Timedesc.Timestamp.min_val
+       (Timedesc.Span.pred Timedesc.Timestamp.max_val))
     Span_set.empty
 
 let span_set_map (f : Time.Interval'.t -> Time.Interval'.t) (set : Span_set.t) :
@@ -27,14 +28,17 @@ let intervals_of_int64s (s : int64 Seq.t) : Time.Interval'.t Seq.t =
           if y' = x then aux (Some (x', Int64.succ x)) rest
           else fun () -> Seq.Cons ((x', y'), aux None s))
   in
-  aux None s |> Seq.map (fun (x, y) -> (Timedesc.Span.make ~s:x (), Timedesc.Span.make ~s:y ()))
+  aux None s
+  |> Seq.map (fun (x, y) ->
+      (Timedesc.Span.make ~s:x (), Timedesc.Span.make ~s:y ()))
 
 let span_set_of_intervals (s : Time.Interval'.t Seq.t) : Span_set.t =
   Seq.fold_left
     (fun (count, acc) (x, y) ->
        if count >= span_set_max_interval_count then Crowbar.bad_test ()
        else if Timedesc.Span.(x = y) then (count, acc)
-       else (succ count, Span_set.(add (Interval.make x (Timedesc.Span.pred y)) acc)))
+       else
+         (succ count, Span_set.(add (Interval.make x (Timedesc.Span.pred y)) acc)))
     (0, Span_set.empty) s
   |> snd
 

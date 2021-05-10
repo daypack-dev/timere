@@ -26,9 +26,7 @@ let () =
                   @@ Timedesc.of_timestamp ~tz_of_date_time:tz
                     (Timedesc.Span.make ~s:timestamp ())
                 in
-                let weekday =
-                  Timedesc.weekday dt
-                in
+                let weekday = Timedesc.weekday dt in
                 let year_is_fine =
                   Int_set.is_empty pattern.years
                   || Int_set.mem (Timedesc.year dt) pattern.years
@@ -42,7 +40,7 @@ let () =
                   ||
                   let day_count =
                     Timedesc.Utils.day_count_of_month
-                    ~year:(Timedesc.year dt) ~month:(Timedesc.month dt)
+                      ~year:(Timedesc.year dt) ~month:(Timedesc.month dt)
                   in
                   pattern.month_days
                   |> Int_set.to_seq

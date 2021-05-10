@@ -1,13 +1,12 @@
 open Fuzz_utils
 open Span_set_utils
 
-let timestamp_is_okay (tz : Timedesc.Time_zone.t) (pattern : Pattern.t) timestamp =
+let timestamp_is_okay (tz : Timedesc.Time_zone.t) (pattern : Pattern.t)
+    timestamp =
   let dt =
     CCOpt.get_exn @@ Timedesc.of_timestamp ~tz_of_date_time:tz timestamp
   in
-  let weekday =
-    Timedesc.weekday dt
-  in
+  let weekday = Timedesc.weekday dt in
   let year_is_fine =
     Int_set.is_empty pattern.years
     || Int_set.mem (Timedesc.year dt) pattern.years
@@ -20,13 +19,12 @@ let timestamp_is_okay (tz : Timedesc.Time_zone.t) (pattern : Pattern.t) timestam
     Int_set.is_empty pattern.month_days
     ||
     let day_count =
-      Timedesc.Utils.day_count_of_month
-        ~year:(Timedesc.year dt) ~month:(Timedesc.month dt)
+      Timedesc.Utils.day_count_of_month ~year:(Timedesc.year dt)
+        ~month:(Timedesc.month dt)
     in
     pattern.month_days
     |> Int_set.to_seq
-    |> Seq.map (fun mday ->
-        if mday < 0 then day_count + mday + 1 else mday)
+    |> Seq.map (fun mday -> if mday < 0 then day_count + mday + 1 else mday)
     |> OSeq.mem ~eq:( = ) (Timedesc.day dt)
   in
   let wday_is_fine =
@@ -74,7 +72,8 @@ let () =
         in
         if not r then
           Crowbar.fail
-            (Fmt.str "tz: %s\nsearch_space: %a\npattern: %a\n" (Timedesc.Time_zone.name tz)
+            (Fmt.str "tz: %s\nsearch_space: %a\npattern: %a\n"
+               (Timedesc.Time_zone.name tz)
                (Fmt.list (Timedesc.Interval.pp ()))
                search_space CCSexp.pp
                (To_sexp.sexp_of_pattern pattern)))

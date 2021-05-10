@@ -27,17 +27,21 @@ let () =
           && OSeq.for_all
             (fun (x, y) ->
                let r =
-                 OSeq.filter Timedesc.Span.(fun x1 -> x1 < x && x - x1 <= bound) s1
+                 OSeq.filter
+                   Timedesc.Span.(fun x1 -> x1 < x && x - x1 <= bound)
+                   s1
                in
                let xr = CCOpt.get_exn @@ Seq_utils.last_element_of_seq r in
                y = Timedesc.Span.succ x
                && OSeq.mem ~eq:Timedesc.Span.equal x s2
-               && not (OSeq.exists Timedesc.Span.(fun x2 -> xr < x2 && x2 < x) s2))
+               && not
+                 (OSeq.exists Timedesc.Span.(fun x2 -> xr < x2 && x2 < x) s2))
             s'
         in
         if not r then
           Crowbar.fail
-            (Fmt.str "tz: %s, bound: %a\np1: %a, p2: %a\n" (Timedesc.Time_zone.name tz)
+            (Fmt.str "tz: %s, bound: %a\np1: %a, p2: %a\n"
+               (Timedesc.Time_zone.name tz)
                Timedesc.Span.pp bound CCSexp.pp
                (To_sexp.sexp_of_points p1)
                CCSexp.pp

@@ -89,7 +89,8 @@ let to_be_exported =
 
         method dhms days hours minutes seconds =
           wrap (fun () ->
-              Timedesc.Span.For_human.make_frac ~days ~hours ~minutes ~seconds ())
+              Timedesc.Span.For_human.make_frac ~days ~hours ~minutes ~seconds
+                ())
 
         method days x = Timedesc.Span.For_human.(x.days)
 
@@ -117,7 +118,8 @@ let to_be_exported =
         val available_time_zones =
           js_array_of_list Timedesc.Time_zone.available_time_zones
 
-        method makeOffsetOnly offset = Timedesc.Time_zone.make_offset_only offset
+        method makeOffsetOnly offset =
+          Timedesc.Time_zone.make_offset_only offset
 
         method toJSONString t =
           Yojson.Basic.to_string @@ Timedesc.Time_zone.JSON.to_json t

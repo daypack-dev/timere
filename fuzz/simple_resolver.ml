@@ -3,7 +3,8 @@ open Span_set_utils
 let timestamp_safe_sub a b =
   let open Timedesc.Span in
   if b >= zero then
-    if a - Timedesc.Timestamp.min_val >= b then a - b else Timedesc.Timestamp.min_val
+    if a - Timedesc.Timestamp.min_val >= b then a - b
+    else Timedesc.Timestamp.min_val
   else
     let b' = abs b in
     if Timedesc.Timestamp.max_val - a >= b' then a + b'
@@ -12,8 +13,8 @@ let timestamp_safe_sub a b =
 let timestamp_safe_add a b =
   let open Timedesc.Span in
   if b >= zero then
-    if Timedesc.Timestamp.max_val - a >= b then a + b else
-      Timedesc.Timestamp.max_val
+    if Timedesc.Timestamp.max_val - a >= b then a + b
+    else Timedesc.Timestamp.max_val
   else
     let b' = abs b in
     if a - Timedesc.Timestamp.min_val >= b' then a - b'
@@ -44,8 +45,8 @@ let normalize (s : Time.Interval'.t Seq.t) : Time.Interval'.t Seq.t =
   |> List.rev
   |> CCList.to_seq
 
-let find_after (bound : Timedesc.Span.t) (start : Timedesc.Span.t) (s2 : Timedesc.Span.t Seq.t) :
-  Timedesc.Span.t option =
+let find_after (bound : Timedesc.Span.t) (start : Timedesc.Span.t)
+    (s2 : Timedesc.Span.t Seq.t) : Timedesc.Span.t option =
   let open Timedesc.Span in
   let s =
     s2
@@ -69,12 +70,13 @@ let do_chunk_at_year_boundary tz (s : Time.Interval'.t Seq.t) :
         |> Timedesc.of_timestamp ~tz_of_date_time:tz
         |> CCOpt.get_exn
       in
-      if Timedesc.year dt1 = Timedesc.year dt2 then fun () -> Seq.Cons ((t1, t2), aux rest)
+      if Timedesc.year dt1 = Timedesc.year dt2 then fun () ->
+        Seq.Cons ((t1, t2), aux rest)
       else
         let t' =
-          Timedesc.make_exn ~tz:(Timedesc.tz dt1)
-            ~year:(Timedesc.year dt1)
-            ~month:12 ~day:31 ~hour:23 ~minute:59 ~second:59 ~ns:(Timedesc.Span.ns_count_in_s - 1)
+          Timedesc.make_exn ~tz:(Timedesc.tz dt1) ~year:(Timedesc.year dt1)
+            ~month:12 ~day:31 ~hour:23 ~minute:59 ~second:59
+            ~ns:(Timedesc.Span.ns_count_in_s - 1)
             ()
           |> Timedesc.to_timestamp
           |> Timedesc.max_of_local_result
@@ -100,14 +102,19 @@ let do_chunk_at_month_boundary tz (s : Time.Interval'.t Seq.t) :
         |> Timedesc.of_timestamp ~tz_of_date_time:tz
         |> CCOpt.get_exn
       in
-      if Timedesc.year dt1 = Timedesc.year dt2
-      && Timedesc.month dt1 = Timedesc.month dt2 then fun () ->
-        Seq.Cons ((t1, t2), aux rest)
+      if
+        Timedesc.year dt1 = Timedesc.year dt2
+        && Timedesc.month dt1 = Timedesc.month dt2
+      then fun () -> Seq.Cons ((t1, t2), aux rest)
       else
         let t' =
-          Timedesc.make_exn ~tz:(Timedesc.tz dt1)
-            ~year:(Timedesc.year dt1)
-            ~month:(Timedesc.month dt1) ~day:(Timedesc.Utils.day_count_of_month ~year:(Timedesc.year dt1) ~month:(Timedesc.month dt1)) ~hour:23 ~minute:59 ~second:59 ~ns:(Timedesc.Span.ns_count_in_s - 1)
+          Timedesc.make_exn ~tz:(Timedesc.tz dt1) ~year:(Timedesc.year dt1)
+            ~month:(Timedesc.month dt1)
+            ~day:
+              (Timedesc.Utils.day_count_of_month ~year:(Timedesc.year dt1)
+                 ~month:(Timedesc.month dt1))
+            ~hour:23 ~minute:59 ~second:59
+            ~ns:(Timedesc.Span.ns_count_in_s - 1)
             ()
           |> Timedesc.to_timestamp
           |> Timedesc.max_of_local_result
@@ -125,19 +132,22 @@ let aux_pattern_mem search_using_tz (pattern : Pattern.t) (timestamp : int64) :
     @@ Timedesc.of_timestamp ~tz_of_date_time:search_using_tz
       (Timedesc.Span.make ~s:timestamp ())
   in
-  let weekday =
-    Timedesc.weekday dt
-  in
+  let weekday = Timedesc.weekday dt in
   let year_is_fine =
-    Int_set.is_empty pattern.years || Int_set.mem (Timedesc.year dt) pattern.years
+    Int_set.is_empty pattern.years
+    || Int_set.mem (Timedesc.year dt) pattern.years
   in
   let month_is_fine =
-    Int_set.is_empty pattern.months || Int_set.mem (Timedesc.month dt) pattern.months
+    Int_set.is_empty pattern.months
+    || Int_set.mem (Timedesc.month dt) pattern.months
   in
   let mday_is_fine =
     Int_set.is_empty pattern.month_days
     ||
-    let day_count = Timedesc.Utils.day_count_of_month ~year:(Timedesc.year dt) ~month:(Timedesc.month dt) in
+    let day_count =
+      Timedesc.Utils.day_count_of_month ~year:(Timedesc.year dt)
+        ~month:(Timedesc.month dt)
+    in
     pattern.month_days
     |> Int_set.to_seq
     |> Seq.map (fun mday -> if mday < 0 then day_count + mday + 1 else mday)
@@ -148,13 +158,16 @@ let aux_pattern_mem search_using_tz (pattern : Pattern.t) (timestamp : int64) :
     || Weekday_set.mem weekday pattern.weekdays
   in
   let hour_is_fine =
-    Int_set.is_empty pattern.hours || Int_set.mem (Timedesc.hour dt) pattern.hours
+    Int_set.is_empty pattern.hours
+    || Int_set.mem (Timedesc.hour dt) pattern.hours
   in
   let minute_is_fine =
-    Int_set.is_empty pattern.minutes || Int_set.mem (Timedesc.minute dt) pattern.minutes
+    Int_set.is_empty pattern.minutes
+    || Int_set.mem (Timedesc.minute dt) pattern.minutes
   in
   let second_is_fine =
-    Int_set.is_empty pattern.seconds || Int_set.mem (Timedesc.second dt) pattern.seconds
+    Int_set.is_empty pattern.seconds
+    || Int_set.mem (Timedesc.second dt) pattern.seconds
   in
   year_is_fine
   && month_is_fine
@@ -169,32 +182,39 @@ let aux_pattern (search_start, search_end_exc) search_using_tz pattern :
   let search_space_set =
     span_set_of_intervals @@ Seq.return (search_start, search_end_exc)
   in
-  Seq_utils.a_to_b_inc_int64 ~a:Timedesc.Span.(search_start.s) ~b:Timedesc.Span.(search_end_exc.s)
+  Seq_utils.a_to_b_inc_int64
+    ~a:Timedesc.Span.(search_start.s)
+    ~b:Timedesc.Span.(search_end_exc.s)
   |> Seq.filter (aux_pattern_mem search_using_tz pattern)
   |> intervals_of_int64s
   |> span_set_of_intervals
   |> Span_set.inter search_space_set
 
-let aux_points_mem search_using_tz ({pick; tz_info} : Points.t) timestamp =
+let aux_points_mem search_using_tz ({ pick; tz_info } : Points.t) timestamp =
   let search_using_tz =
     match tz_info with
     | None -> search_using_tz
     | Some Timedesc.Time_zone_info.{ tz; _ } -> tz
   in
-  aux_pattern_mem search_using_tz (Points.to_pattern {pick; tz_info}) timestamp
+  aux_pattern_mem search_using_tz
+    (Points.to_pattern { pick; tz_info })
+    timestamp
 
 let aux_points (search_start, search_end_exc) search_using_tz points :
   Timedesc.Span.t Seq.t =
-  Seq_utils.a_to_b_inc_int64 ~a:Timedesc.Span.(search_start.s) ~b:Timedesc.Span.(search_end_exc.s)
+  Seq_utils.a_to_b_inc_int64
+    ~a:Timedesc.Span.(search_start.s)
+    ~b:Timedesc.Span.(search_end_exc.s)
   |> Seq.filter (aux_points_mem search_using_tz points)
   |> intervals_of_int64s
   |> Seq.map fst
 
-let resolve ?(search_using_tz = Timedesc.Time_zone.utc) ~(search_start : Timedesc.Span.t)
-    ~(search_end_exc : Timedesc.Span.t) (t : Time_ast.t) : Time.Interval'.t Seq.t =
+let resolve ?(search_using_tz = Timedesc.Time_zone.utc)
+    ~(search_start : Timedesc.Span.t) ~(search_end_exc : Timedesc.Span.t)
+    (t : Time_ast.t) : Time.Interval'.t Seq.t =
   let default_search_space = Timedesc.(Timestamp.min_val, Timestamp.max_val) in
-  let rec aux (search_space : Time.Interval'.t) (search_using_tz : Timedesc.Time_zone.t)
-      t =
+  let rec aux (search_space : Time.Interval'.t)
+      (search_using_tz : Timedesc.Time_zone.t) t =
     match t with
     | Time_ast.Empty -> Span_set.empty
     | All -> span_set_full

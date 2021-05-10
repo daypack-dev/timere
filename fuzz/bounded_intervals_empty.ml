@@ -22,7 +22,8 @@ let () =
         in
         if not r then
           Crowbar.fail
-            (Fmt.str "tz: %s, bound: %a\np1: %a, p2: %a\n" (Timedesc.Time_zone.name tz)
+            (Fmt.str "tz: %s, bound: %a\np1: %a, p2: %a\n"
+               (Timedesc.Time_zone.name tz)
                Timedesc.Span.pp bound CCSexp.pp
                (To_sexp.sexp_of_points p1)
                CCSexp.pp

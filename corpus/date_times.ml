@@ -48,8 +48,7 @@ let () =
     (fun i text ->
        Printf.printf "%d. %S\n" i text;
        match Timere_parse.date_time ~tz:Timedesc.Time_zone.utc text with
-       | Ok dt ->
-         Format.printf "  Ok %a\n\n%!" (Timedesc.pp_rfc3339 ()) dt
+       | Ok dt -> Format.printf "  Ok %a\n\n%!" (Timedesc.pp_rfc3339 ()) dt
        | Error msg ->
          Printf.printf "  Error %s\n" msg;
          print_endline "  ^^^^^";

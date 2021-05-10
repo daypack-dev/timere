@@ -80,7 +80,8 @@ module Qc = struct
                  match last with
                  | None -> (true, Some (x, y))
                  | Some (last_start, last_end_exc) ->
-                   Timedesc.Span.(last_start <= x && last_end_exc <= x, Some (x, y))
+                   Timedesc.Span.
+                     (last_start <= x && last_end_exc <= x, Some (x, y))
                else (false, None))
             (true, None)
           |> fun (x, _) -> x)
@@ -104,7 +105,8 @@ module Qc = struct
                if res then
                  match last with
                  | None -> (true, Some (x, y))
-                 | Some (_, last_end_exc) -> Timedesc.Span.(last_end_exc < x, Some (x, y))
+                 | Some (_, last_end_exc) ->
+                   Timedesc.Span.(last_end_exc < x, Some (x, y))
                else (false, None))
             (true, None)
           |> fun (x, _) -> x)
@@ -193,7 +195,8 @@ module Qc = struct
            |> Time.Intervals.normalize
            |> CCList.of_seq
          in
-         (l <> [] && List.for_all Timedesc.Span.(fun (x, y) -> y < start || end_exc < x) l)
+         l <> []
+         && List.for_all Timedesc.Span.(fun (x, y) -> y < start || end_exc < x) l
          || [ (start, end_exc) ] = res)
 
   let relative_complement_result_disjoint_from_not_mem_of =

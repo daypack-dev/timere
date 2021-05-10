@@ -15,6 +15,7 @@ let () =
         let r = OSeq.equal ~eq:Time.Interval'.equal s s' in
         if not r then
           Crowbar.fail
-            (Fmt.str "tz: %s, times: %a\n" (Timedesc.Time_zone.name tz)
+            (Fmt.str "tz: %s, times: %a\n"
+               (Timedesc.Time_zone.name tz)
                (Fmt.list Printers.pp_sexp)
                l'))

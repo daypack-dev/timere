@@ -15,8 +15,7 @@ let display_timestamps ~display_using_tz s =
     |> OSeq.take 20
     |> OSeq.iter (fun x ->
         let s =
-          Timedesc.Timestamp.to_string
-           ~display_using_tz
+          Timedesc.Timestamp.to_string ~display_using_tz
             ~format:default_date_time_format_string x
         in
         Printf.printf "%s\n" s;
@@ -30,8 +29,7 @@ let display_intervals ~display_using_tz s =
     |> OSeq.take 20
     |> OSeq.iter (fun (x, y) ->
         let s =
-          Timedesc.Interval.to_string
-           ~display_using_tz
+          Timedesc.Interval.to_string ~display_using_tz
             ~format:default_interval_format_string (x, y)
         in
         let size = Timedesc.Span.sub y x in
@@ -99,15 +97,15 @@ let debug_resolver () =
    * in *)
   print_endline (To_sexp.to_sexp_string timere);
   let search_start_dt =
-    Timedesc.make_exn ~year:2000 ~month:1 ~day:1 ~hour:10 ~minute:0
-      ~second:0 ~tz ()
+    Timedesc.make_exn ~year:2000 ~month:1 ~day:1 ~hour:10 ~minute:0 ~second:0
+      ~tz ()
   in
   let search_start =
     Timedesc.to_timestamp search_start_dt |> Timedesc.min_of_local_result
   in
   let search_end_exc_dt =
-    Timedesc.make_exn ~year:2003 ~month:1 ~day:1 ~hour:0 ~minute:0
-      ~second:0 ~tz ()
+    Timedesc.make_exn ~year:2003 ~month:1 ~day:1 ~hour:0 ~minute:0 ~second:0 ~tz
+      ()
   in
   let search_end_exc =
     Timedesc.to_timestamp search_end_exc_dt |> Timedesc.max_of_local_result
@@ -167,11 +165,11 @@ let debug_example () =
              "(bounded_intervals whole (duration 366 0 0 0) (points (pick \
               ymdhms 2020 Jun 16 10 0 0)) (points (pick dhms 17 12 0 0)))";
            after
-             (Timedesc.make_exn ~tz ~year:2000 ~month:1 ~day:1 ~hour:0
-                ~minute:0 ~second:0 ());
+             (Timedesc.make_exn ~tz ~year:2000 ~month:1 ~day:1 ~hour:0 ~minute:0
+                ~second:0 ());
            before
-             (Timedesc.make_exn ~tz ~year:2050 ~month:1 ~day:1 ~hour:0
-                ~minute:0 ~second:0 ());
+             (Timedesc.make_exn ~tz ~year:2050 ~month:1 ~day:1 ~hour:0 ~minute:0
+                ~second:0 ());
          ])
   in
   match Resolver.resolve timere with
@@ -183,7 +181,8 @@ let debug_fuzz_bounded_intervals () =
   let tz =
     (fun n ->
        let n = max 0 n mod tz_count in
-       Timedesc.Time_zone.make_exn (List.nth Timedesc.Time_zone.available_time_zones n))
+       Timedesc.Time_zone.make_exn
+         (List.nth Timedesc.Time_zone.available_time_zones n))
       (-578721249560635033)
   in
   let bound = Timedesc.Span.make ~s:51753L () in
@@ -229,7 +228,9 @@ let debug_fuzz_bounded_intervals () =
     (OSeq.for_all
        (fun x1 ->
           match
-            Seq.filter Timedesc.Span.(fun x2 -> x1 < x2 && x2 - x1 <= bound) s2 ()
+            Seq.filter
+              Timedesc.Span.(fun x2 -> x1 < x2 && x2 - x1 <= bound)
+              s2 ()
           with
           | Seq.Nil -> true
           | Seq.Cons (xr2, _) ->
@@ -308,7 +309,8 @@ let debug_fuzz_pattern () =
   let tz =
     (fun n ->
        let n = max 0 n mod tz_count in
-       Timedesc.Time_zone.make_exn (List.nth Timedesc.Time_zone.available_time_zones n))
+       Timedesc.Time_zone.make_exn
+         (List.nth Timedesc.Time_zone.available_time_zones n))
       4014879592515549111
   in
   print_endline (Timedesc.Time_zone.name tz);
@@ -316,11 +318,14 @@ let debug_fuzz_pattern () =
     List.map
       (fun (search_start, search_size) ->
          let search_start =
-           min (max Timedesc.Timestamp.min_val search_start) Timedesc.Timestamp.max_val
+           min
+             (max Timedesc.Timestamp.min_val search_start)
+             Timedesc.Timestamp.max_val
          in
          let search_size = Timedesc.Span.make ~s:(Int64.abs search_size) () in
          let search_end_exc =
-           min Timedesc.Timestamp.max_val (Timedesc.Span.add search_start search_size)
+           min Timedesc.Timestamp.max_val
+             (Timedesc.Span.add search_start search_size)
          in
          (search_start, search_end_exc))
       [ (Timedesc.Span.make ~s:(-5208492133891178625L) (), 201999689168823L) ]
@@ -349,7 +354,8 @@ let debug_fuzz_pattern () =
         |> OSeq.filter (fun timestamp ->
             List.exists
               (fun (x, y) ->
-                 Timedesc.Span.(x.s) <= timestamp && timestamp < Timedesc.Span.(y.s))
+                 Timedesc.Span.(x.s) <= timestamp
+                 && timestamp < Timedesc.Span.(y.s))
               search_space)
         |> OSeq.filter (fun timestamp ->
             let dt =
@@ -357,46 +363,44 @@ let debug_fuzz_pattern () =
               @@ Timedesc.of_timestamp ~tz_of_date_time:tz
                 (Timedesc.Span.make ~s:timestamp ())
             in
-                let weekday =
-                  Timedesc.weekday dt
-                in
-                let year_is_fine =
-                  Int_set.is_empty pattern.years
-                  || Int_set.mem (Timedesc.year dt) pattern.years
-                in
-                let month_is_fine =
-                  Int_set.is_empty pattern.months
-                  || Int_set.mem (Timedesc.month dt) pattern.months
-                in
-                let mday_is_fine =
-                  Int_set.is_empty pattern.month_days
-                  ||
-                  let day_count =
-                    Timedesc.Utils.day_count_of_month
-                    ~year:(Timedesc.year dt) ~month:(Timedesc.month dt)
-                  in
-                  pattern.month_days
-                  |> Int_set.to_seq
-                  |> Seq.map (fun mday ->
-                      if mday < 0 then day_count + mday + 1 else mday)
-                  |> OSeq.mem ~eq:( = ) (Timedesc.day dt)
-                in
-                let wday_is_fine =
-                  Weekday_set.is_empty pattern.weekdays
-                  || Weekday_set.mem weekday pattern.weekdays
-                in
-                let hour_is_fine =
-                  Int_set.is_empty pattern.hours
-                  || Int_set.mem (Timedesc.hour dt) pattern.hours
-                in
-                let minute_is_fine =
-                  Int_set.is_empty pattern.minutes
-                  || Int_set.mem (Timedesc.minute dt) pattern.minutes
-                in
-                let second_is_fine =
-                  Int_set.is_empty pattern.seconds
-                  || Int_set.mem (Timedesc.second dt) pattern.seconds
-                in
+            let weekday = Timedesc.weekday dt in
+            let year_is_fine =
+              Int_set.is_empty pattern.years
+              || Int_set.mem (Timedesc.year dt) pattern.years
+            in
+            let month_is_fine =
+              Int_set.is_empty pattern.months
+              || Int_set.mem (Timedesc.month dt) pattern.months
+            in
+            let mday_is_fine =
+              Int_set.is_empty pattern.month_days
+              ||
+              let day_count =
+                Timedesc.Utils.day_count_of_month ~year:(Timedesc.year dt)
+                  ~month:(Timedesc.month dt)
+              in
+              pattern.month_days
+              |> Int_set.to_seq
+              |> Seq.map (fun mday ->
+                  if mday < 0 then day_count + mday + 1 else mday)
+              |> OSeq.mem ~eq:( = ) (Timedesc.day dt)
+            in
+            let wday_is_fine =
+              Weekday_set.is_empty pattern.weekdays
+              || Weekday_set.mem weekday pattern.weekdays
+            in
+            let hour_is_fine =
+              Int_set.is_empty pattern.hours
+              || Int_set.mem (Timedesc.hour dt) pattern.hours
+            in
+            let minute_is_fine =
+              Int_set.is_empty pattern.minutes
+              || Int_set.mem (Timedesc.minute dt) pattern.minutes
+            in
+            let second_is_fine =
+              Int_set.is_empty pattern.seconds
+              || Int_set.mem (Timedesc.second dt) pattern.seconds
+            in
             year_is_fine
             && month_is_fine
             && mday_is_fine
@@ -407,7 +411,11 @@ let debug_fuzz_pattern () =
       in
       OSeq.for_all
         (fun x' ->
-           if OSeq.exists (fun (x, y) -> Timedesc.Span.(x.s) <= x' && x' < Timedesc.Span.(y.s)) s
+           if
+             OSeq.exists
+               (fun (x, y) ->
+                  Timedesc.Span.(x.s) <= x' && x' < Timedesc.Span.(y.s))
+               s
            then true
            else (
              Printf.printf "x': %Ld\n" x';

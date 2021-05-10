@@ -8,7 +8,8 @@ let time =
          ~max_year_inc:2002 ~max_height ~max_branching ~randomness)
 
 let timestamp =
-  Crowbar.map [ Crowbar.int64; Crowbar.int ] (fun s ns -> Timedesc.Span.make ~s ~ns ())
+  Crowbar.map [ Crowbar.int64; Crowbar.int ] (fun s ns ->
+      Timedesc.Span.make ~s ~ns ())
 
 let pos_span =
   Crowbar.map [ Crowbar.int64; Crowbar.int ] (fun s ns ->
@@ -41,7 +42,8 @@ let time_zone : Timedesc.Time_zone.t Crowbar.gen =
   let tz_count = List.length Timedesc.Time_zone.available_time_zones in
   Crowbar.map [ Crowbar.int ] (fun n ->
       let n = max 0 n mod tz_count in
-      Timedesc.Time_zone.make_exn (List.nth Timedesc.Time_zone.available_time_zones n))
+      Timedesc.Time_zone.make_exn
+        (List.nth Timedesc.Time_zone.available_time_zones n))
 
 let search_space =
   Crowbar.map
@@ -50,10 +52,13 @@ let search_space =
         (Crowbar.map [ timestamp; nz_pos_span ] (fun search_start search_size ->
              let search_start =
                Timedesc.Span.(
-                 min (max Timedesc.Timestamp.min_val search_start) Timedesc.Timestamp.max_val)
+                 min
+                   (max Timedesc.Timestamp.min_val search_start)
+                   Timedesc.Timestamp.max_val)
              in
              let search_end_exc =
-               Timedesc.Span.(min Timedesc.Timestamp.max_val (search_start + search_size))
+               Timedesc.Span.(
+                 min Timedesc.Timestamp.max_val (search_start + search_size))
              in
              (search_start, search_end_exc)));
     ]
