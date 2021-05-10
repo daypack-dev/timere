@@ -64,9 +64,9 @@ let ymd_of_jd jd =
 
 let jd_of_epoch = jd_of_ymd ~year:1970 ~month:1 ~day:1
 
-let weekday_of_ymd ~year ~month ~day =
+let weekday_of_jd jd =
   (* epoch was on thursday *)
-  let d = (jd_of_ymd ~year ~month ~day - jd_of_epoch) mod 7 in
+  let d = (jd - jd_of_epoch) mod 7 in
   match if d < 0 then d + 7 else d with
   | 0 -> `Thu
   | 1 -> `Fri
@@ -76,6 +76,9 @@ let weekday_of_ymd ~year ~month ~day =
   | 5 -> `Tue
   | 6 -> `Wed
   | _ -> failwith "Unexpected case"
+
+let weekday_of_ymd ~year ~month ~day =
+  weekday_of_jd (jd_of_ymd ~year ~month ~day)
 
 let is_leap_year ~year =
   let divisible_by_4 = year mod 4 = 0 in
@@ -143,6 +146,54 @@ let week_count_of_iso_week_year ~iso_week_year =
   (jd_of_start_of_iso_week_year ~iso_week_year:(succ iso_week_year)
    - jd_of_start_of_iso_week_year ~iso_week_year)
   / 7
+
+let day_index_of_weekday (weekday : weekday) =
+  match weekday with
+  | `Mon -> 0
+  | `Tue -> 1
+  | `Wed -> 2
+  | `Thu -> 3
+  | `Fri -> 4
+  | `Sat -> 5
+  | `Sun -> 6
+
+let iso_week_date_of_jd (jd : int) : (int * int * weekday)=
+  let (year, month, day) = ymd_of_jd jd in
+  let day_of_year = doy_of_ymd ~year ~month ~day in
+  let weekday = weekday_of_jd jd in
+  let week_of_year =
+    (10 + day_of_year - (day_index_of_weekday weekday + 1)) / 7
+  in
+  assert (week_of_year >= 0);
+  assert (week_of_year <= 53);
+  let iso_week_year, week =
+    if week_of_year = 0 then
+      (pred year, week_count_of_iso_week_year ~iso_week_year:(pred year))
+    else if
+      week_of_year = 53
+      && week_count_of_iso_week_year ~iso_week_year:year < 53
+    then (succ year, 1)
+    else (year, week_of_year)
+  in
+  (iso_week_year, week, weekday)
+
+let jd_of_iso_week_date ~iso_week_year ~week ~weekday =
+  let weekday_int = day_index_of_weekday weekday + 1 in
+  let jan_4_weekday_int =
+    day_index_of_weekday (weekday_of_ymd ~year:iso_week_year ~month:1 ~day:4)
+    + 1
+  in
+  let day_of_year = (week * 7) + weekday_int - (jan_4_weekday_int + 3) in
+  let day_count_of_prev_year = day_count_of_year ~year:(pred iso_week_year) in
+  let day_count_of_cur_year = day_count_of_year ~year:iso_week_year in
+  let year, day_of_year =
+    if day_of_year < 1 then
+      (pred iso_week_year, day_count_of_prev_year + day_of_year)
+    else if day_of_year > day_count_of_cur_year then
+      (succ iso_week_year, day_of_year - day_count_of_cur_year)
+    else (iso_week_year, day_of_year)
+  in
+  jd_of_ydoy ~year ~day_of_year
 
 module Weekday_set = struct
   include CCSet.Make (struct

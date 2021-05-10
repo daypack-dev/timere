@@ -1,7 +1,13 @@
 open Date_time_components
 
+type t
+
+val equal : t -> t -> bool
+
+val weekday : t -> weekday
+
 module ISO_week_date : sig
-  type t = private {
+  type view = private {
     iso_week_year : int;
     week : int;
     weekday : weekday;
@@ -15,16 +21,16 @@ module ISO_week_date : sig
 
   exception Error_exn of error
 
-  val equal : t -> t -> bool
-
   val make :
     iso_week_year:int -> week:int -> weekday:weekday -> (t, error) result
 
   val make_exn : iso_week_year:int -> week:int -> weekday:weekday -> t
+
+  val view : t -> view
 end
 
 module Ymd_date : sig
-  type t = private {
+  type view = private {
     year : int;
     month : int;
     day : int;
@@ -39,15 +45,15 @@ module Ymd_date : sig
 
   exception Error_exn of error
 
-  val equal : t -> t -> bool
-
   val make : year:int -> month:int -> day:int -> (t, error) result
 
   val make_exn : year:int -> month:int -> day:int -> t
+
+  val view : t -> view
 end
 
 module ISO_ord_date : sig
-  type t = private {
+  type view = private {
     year : int;
     day_of_year : int;
   }
@@ -60,19 +66,9 @@ module ISO_ord_date : sig
 
   exception Error_exn of error
 
-  val equal : t -> t -> bool
-
   val make : year:int -> day_of_year:int -> (t, error) result
 
   val make_exn : year:int -> day_of_year:int -> t
 
-  val weekday : t -> weekday
-
-  val to_iso_week_date : t -> ISO_week_date.t
-
-  val of_iso_week_date : ISO_week_date.t -> t
-
-  val to_ymd_date : t -> Ymd_date.t
-
-  val of_ymd_date : Ymd_date.t -> t
+  val view : t -> view
 end
