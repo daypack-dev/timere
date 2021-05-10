@@ -162,7 +162,6 @@ val max_of_local_result : 'a local_result -> 'a
     - if [x = `Ambiguous (a, b)], yields [b],
 *)
 
-
 val equal_local_result :
   eq:('a -> 'a -> bool) -> 'a local_result -> 'a local_result -> bool
 
