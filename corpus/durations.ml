@@ -19,7 +19,7 @@ let () =
        Printf.printf "%d. %S\n" i text;
        match Timere_parse.duration text with
        | Ok duration ->
-         Printf.printf "  Ok %s\n\n" (Timere.Span.For_human.to_string duration)
+         Printf.printf "  Ok %s\n\n" (Timedesc.Span.For_human.to_string duration)
        | Error msg ->
          Printf.printf "  Error %s\n" msg;
          print_endline "  ^^^^^";

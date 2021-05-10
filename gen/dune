@@ -6,7 +6,7 @@
 
 (rule
  (targets parser_components.ml)
- (deps    ../src/parser_components.ml)
+ (deps    ../desc/parser_components.ml)
  (action  (copy %{deps} %{targets}))
 )
 
@@ -20,8 +20,9 @@
             containers
             fileutils
             ptime
-            timere
-            timere.tzdb.none
+            timedesc
+            timedesc.tzdb.none
+            timedesc.tzlocal.none
             bigarray
  )
 )

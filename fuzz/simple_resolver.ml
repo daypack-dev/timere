@@ -56,7 +56,6 @@ let find_after (bound : Timedesc.Span.t) (start : Timedesc.Span.t) (s2 : Timedes
 
 let do_chunk_at_year_boundary tz (s : Time.Interval'.t Seq.t) :
   Time.Interval'.t Seq.t =
-  let open Time in
   let rec aux s =
     match s () with
     | Seq.Nil -> Seq.empty
@@ -88,7 +87,6 @@ let do_chunk_at_year_boundary tz (s : Time.Interval'.t Seq.t) :
 
 let do_chunk_at_month_boundary tz (s : Time.Interval'.t Seq.t) :
   Time.Interval'.t Seq.t =
-  let open Time in
   let rec aux s =
     match s () with
     | Seq.Nil -> Seq.empty

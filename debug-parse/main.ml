@@ -17,7 +17,7 @@ let debug_duration () =
   | Error msg -> print_endline msg
   | Ok dur ->
     Fmt.pr "%a@."
-      Timere.Span.For_human.pp
+      Timedesc.Span.For_human.pp
       dur
 
 let () =

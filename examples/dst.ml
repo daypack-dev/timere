@@ -5,15 +5,15 @@ let display_intervals ~display_using_tz s =
     s
     |> OSeq.take 60
     |> OSeq.iter (fun (x, y) ->
-        let s = Timere.Interval.to_string ~display_using_tz (x, y) in
+        let s = Timedesc.Interval.to_string ~display_using_tz (x, y) in
         let size =
-          Timere.Span.sub y x
+          Timedesc.Span.sub y x
         in
-        let size_str = Timere.Span.For_human.to_string size in
+        let size_str = Timedesc.Span.For_human.to_string size in
         Printf.printf "%s - %s\n" s size_str
       )
 
-let tz = Timere.Time_zone.make_exn "Australia/Sydney"
+let tz = Timedesc.Time_zone.make_exn "Australia/Sydney"
 
 let timere =
   let open Timere in

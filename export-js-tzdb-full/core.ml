@@ -10,24 +10,23 @@ let raise_with_msg msg =
 let wrap f = try f () with Invalid_argument msg -> raise_with_msg msg
 
 let js_date_of_date_time dt =
-  let open Timere.Date_time in
   let date = new%js Js.date_now in
-  let _ = date##setUTCFullYear dt.year in
-  let _ = date##setUTCMonth (pred dt.month) in
-  let _ = date##setUTCDate dt.day in
-  let _ = date##setUTCHours dt.hour in
-  let _ = date##setUTCMinutes dt.minute in
-  let _ = date##setUTCSeconds dt.second in
-  let _ = date##setUTCMilliseconds 0 in
+  let _ = date##setUTCFullYear (Timedesc.year dt) in
+  let _ = date##setUTCMonth (pred (Timedesc.month dt)) in
+  let _ = date##setUTCDate (Timedesc.day dt) in
+  let _ = date##setUTCHours (Timedesc.hour dt) in
+  let _ = date##setUTCMinutes (Timedesc.minute dt) in
+  let _ = date##setUTCSeconds (Timedesc.second dt) in
+  let _ = date##setUTCMilliseconds (Timedesc.ns dt / 1_000_000) in
   date
 
 let js_date_of_timestamp x =
-  match Timere.Date_time.of_timestamp x with
+  match Timedesc.of_timestamp x with
   | None -> raise_with_msg "Invalid timestamp"
   | Some dt -> js_date_of_date_time dt
 
 let weekday_of_int x =
-  match Timere.Utils.weekday_of_tm_int x with
+  match Timedesc.Utils.weekday_of_tm_int x with
   | None -> raise_with_msg "Invalid weekday"
   | Some x -> x
 
@@ -39,8 +38,8 @@ let date_time_of_js_date (date : Js.date Js.t) =
   let minute = date##getUTCMinutes in
   let second = date##getUTCSeconds in
   match
-    Timere.Date_time.make ~year ~month ~day ~hour ~minute ~second
-      ~tz:Timere.Time_zone.utc ()
+    Timedesc.make ~year ~month ~day ~hour ~minute ~second
+      ~tz:Timedesc.Time_zone.utc ()
   with
   | Error _ -> raise_with_msg "Invalid date"
   | Ok x -> x
@@ -79,26 +78,26 @@ let to_be_exported =
     val duration =
       object%js
         method d days =
-          wrap (fun () -> Timere.Span.For_human.make_frac ~days ())
+          wrap (fun () -> Timedesc.Span.For_human.make_frac ~days ())
 
         method dh days hours =
-          wrap (fun () -> Timere.Span.For_human.make_frac ~days ~hours ())
+          wrap (fun () -> Timedesc.Span.For_human.make_frac ~days ~hours ())
 
         method dhm days hours minutes =
           wrap (fun () ->
-              Timere.Span.For_human.make_frac ~days ~hours ~minutes ())
+              Timedesc.Span.For_human.make_frac ~days ~hours ~minutes ())
 
         method dhms days hours minutes seconds =
           wrap (fun () ->
-              Timere.Span.For_human.make_frac ~days ~hours ~minutes ~seconds ())
+              Timedesc.Span.For_human.make_frac ~days ~hours ~minutes ~seconds ())
 
-        method days x = Timere.Span.For_human.(x.days)
+        method days x = Timedesc.Span.For_human.(x.days)
 
-        method hours x = Timere.Span.For_human.(x.hours)
+        method hours x = Timedesc.Span.For_human.(x.hours)
 
-        method minutes x = Timere.Span.For_human.(x.minutes)
+        method minutes x = Timedesc.Span.For_human.(x.minutes)
 
-        method seconds x = Timere.Span.For_human.(x.seconds)
+        method seconds x = Timedesc.Span.For_human.(x.seconds)
       end
 
     method shift dur x = wrap (fun () -> Timere.shift dur x)
@@ -107,24 +106,24 @@ let to_be_exported =
 
     val timeZone =
       object%js
-        method make name = wrap (fun () -> Timere.Time_zone.make_exn name)
+        method make name = wrap (fun () -> Timedesc.Time_zone.make_exn name)
 
-        method name t = Timere.Time_zone.name t
+        method name t = Timedesc.Time_zone.name t
 
-        val utc = Timere.Time_zone.utc
+        val utc = Timedesc.Time_zone.utc
 
-        method equal t1 t2 = Js.bool @@ Timere.Time_zone.equal t1 t2
+        method equal t1 t2 = Js.bool @@ Timedesc.Time_zone.equal t1 t2
 
         val available_time_zones =
-          js_array_of_list Timere.Time_zone.available_time_zones
+          js_array_of_list Timedesc.Time_zone.available_time_zones
 
-        method makeOffsetOnly offset = Timere.Time_zone.make_offset_only offset
+        method makeOffsetOnly offset = Timedesc.Time_zone.make_offset_only offset
 
         method toJSONString t =
-          Yojson.Basic.to_string @@ Timere.Time_zone.JSON.to_json t
+          Yojson.Basic.to_string @@ Timedesc.Time_zone.JSON.to_json t
 
         method ofJSONString s =
-          match Timere.Time_zone.JSON.of_string (Js.to_string s) with
+          match Timedesc.Time_zone.JSON.of_string (Js.to_string s) with
           | None -> raise_with_msg "Invalid JSON string"
           | Some x -> x
       end
@@ -160,7 +159,7 @@ let to_be_exported =
       end
 
     method resolve t =
-      match Timere.resolve ~search_using_tz:Timere.Time_zone.utc t with
+      match Timere.resolve ~search_using_tz:Timedesc.Time_zone.utc t with
       | Error msg -> raise_with_msg msg
       | Ok s ->
         let s = ref s in

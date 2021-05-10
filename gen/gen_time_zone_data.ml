@@ -207,10 +207,10 @@ let transitions_of_zdump_lines (l : zdump_line list) : transition list =
   in
   l |> preprocess |> fun (line_num, l) -> aux [] line_num l
 
-let min_timestamp = Timere.Span.((Timere.Utils.timestamp_of_ptime Ptime.min).s)
+let min_timestamp = Timedesc.Span.((Timedesc.Utils.timestamp_of_ptime Ptime.min).s)
 
 let max_timestamp =
-  Timere.Span.((Timere.Utils.timestamp_of_ptime Ptime.max).s) |> Int64.pred
+  Timedesc.Span.((Timedesc.Utils.timestamp_of_ptime Ptime.max).s) |> Int64.pred
 
 let timestamp_of_date_time_utc (x : date_time) : int64 =
   assert (x.tz = String "UT");
@@ -218,16 +218,16 @@ let timestamp_of_date_time_utc (x : date_time) : int64 =
   Ptime.of_date_time
     ((x.year, x.month, x.day), ((x.hour, x.minute, x.second), offset))
   |> CCOpt.get_exn
-  |> Timere.Utils.timestamp_of_ptime
-  |> fun x -> Timere.Span.(x.s)
+  |> Timedesc.Utils.timestamp_of_ptime
+  |> fun x -> Timedesc.Span.(x.s)
 
 let timestamp_of_date_time_local (x : date_time) : int64 =
   let offset = 0 in
   Ptime.of_date_time
     ((x.year, x.month, x.day), ((x.hour, x.minute, x.second), offset))
   |> CCOpt.get_exn
-  |> Timere.Utils.timestamp_of_ptime
-  |> fun x -> Timere.Span.(x.s)
+  |> Timedesc.Utils.timestamp_of_ptime
+  |> fun x -> Timedesc.Span.(x.s)
 
 let transition_record_indexed_by_utc_of_transition (x : transition) :
   transition_record =
@@ -394,24 +394,24 @@ let () =
     output_list_file_name (fun oc -> CCIO.write_lines_l oc all_time_zones);
 
   Printf.printf "Generating %s\n" data_output_file_name;
-  let time_zones : Timere.Time_zone.t list =
+  let time_zones : Timedesc.Time_zone.t list =
     List.map
       (fun (name, l) ->
          let transitions =
            List.map
              (fun (r : transition_record) ->
                 ( r.start,
-                  { Timere.Time_zone.is_dst = r.is_dst; offset = r.offset } ))
+                  { Timedesc.Time_zone.is_dst = r.is_dst; offset = r.offset } ))
              l
          in
-         CCOpt.get_exn @@ Timere.Time_zone.Raw.of_transitions ~name transitions)
+         CCOpt.get_exn @@ Timedesc.Time_zone.Raw.of_transitions ~name transitions)
       tables_utc
   in
-  let db = Timere.Time_zone.Db.of_seq @@ CCList.to_seq time_zones in
+  let db = Timedesc.Time_zone.Db.of_seq @@ CCList.to_seq time_zones in
   CCIO.with_out ~flags:[ Open_wronly; Open_creat ] data_output_file_name
     (fun oc ->
        Format.fprintf (CCFormat.of_chan oc) "%a@." CCSexp.pp
-         (Timere.Time_zone.Db.Sexp.to_sexp db));
+         (Timedesc.Time_zone.Db.Sexp.to_sexp db));
 
   Printf.printf "Generating %s\n" tz_constants_file_name;
   CCIO.with_out ~flags:[ Open_wronly; Open_creat ] tz_constants_file_name
@@ -453,4 +453,4 @@ let greatest_pos_tz_offset_s = %d
       CCIO.with_out ~flags:[ Open_wronly; Open_creat ] output_file_name
         (fun oc ->
            Yojson.Basic.pretty_to_channel oc
-             (Timere.Time_zone.JSON.to_json tz)))
+             (Timedesc.Time_zone.JSON.to_json tz)))
