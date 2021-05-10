@@ -754,7 +754,46 @@ val make_unambiguous_exn :
   t
 (** @raise Error_exn if [make_umabiguous] fails *)
 
+type dnt_error = [
+  | `Does_not_exist
+  | `Invalid_tz_info of string option * Span.t
+]
+
+exception Dnt_error_exn of dnt_error
+
+val of_date_and_time :
+  ?tz:Time_zone.t ->
+  Date.t ->
+  Time.t ->
+  (t, dnt_error) result
+(** Construction from already constructed date and time *)
+
+val of_date_and_time_exn :
+  ?tz:Time_zone.t ->
+  Date.t ->
+  Time.t ->
+  t
+(** @raise Dnt_error_exn if [of_date_and_time] fails *)
+
+val of_date_and_time_unambiguous :
+  ?tz:Time_zone.t ->
+  offset_from_utc:Span.t ->
+  Date.t ->
+  Time.t ->
+  (t, dnt_error) result
+(** Construction from already constructed date and time *)
+
+val of_date_and_time_unambiguous_exn :
+  ?tz:Time_zone.t ->
+  offset_from_utc:Span.t ->
+  Date.t ->
+  Time.t ->
+  t
+(** @raise Dnt_error_exn if [of_date_and_time_umabiguous] fails *)
+
 (** {2 Accessors} *)
+
+val date : t -> Date.t
 
 val ymd_date : t -> Date.Ymd_date.view
 
@@ -1109,6 +1148,34 @@ module ISO_week_date_time : sig
     second:int ->
     unit ->
     t
+
+  val make_unambiguous :
+    ?tz:Time_zone.t ->
+    ?ns:int ->
+    ?s_frac:float ->
+    iso_week_year:int ->
+    week:int ->
+    weekday:weekday ->
+    hour:int ->
+    minute:int ->
+    second:int ->
+    offset_from_utc:Span.t ->
+    unit ->
+    (t, error) result
+
+  val make_unambiguous_exn :
+    ?tz:Time_zone.t ->
+    ?ns:int ->
+    ?s_frac:float ->
+    iso_week_year:int ->
+    week:int ->
+    weekday:weekday ->
+    hour:int ->
+    minute:int ->
+    second:int ->
+    offset_from_utc:Span.t ->
+    unit ->
+    t
 end
 
 module ISO_ord_date_time : sig
@@ -1147,6 +1214,32 @@ module ISO_ord_date_time : sig
     hour:int ->
     minute:int ->
     second:int ->
+    unit ->
+    t
+
+  val make_unambiguous :
+    ?tz:Time_zone.t ->
+    ?ns:int ->
+    ?s_frac:float ->
+    year:int ->
+    day_of_year:int ->
+    hour:int ->
+    minute:int ->
+    second:int ->
+    offset_from_utc:Span.t ->
+    unit ->
+    (t, error) result
+
+  val make_unambiguous_exn :
+    ?tz:Time_zone.t ->
+    ?ns:int ->
+    ?s_frac:float ->
+    year:int ->
+    day_of_year:int ->
+    hour:int ->
+    minute:int ->
+    second:int ->
+    offset_from_utc:Span.t ->
     unit ->
     t
 end
