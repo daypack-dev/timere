@@ -117,10 +117,25 @@ v}
     - {!Utils.timestamp_of_ptime}
 
     Note that Timedesc only supports nanosecond precision, while Ptime supports picosecond precision.
-    If picosecond precision is a concern for you, then the above functions are not suitable.
+    If subnanosecond precision is a concern for you, then the above functions are not suitable.
 *)
 
-(** {1 Span} *)
+(** {1 Basic exceptions} *)
+
+exception Invalid_format_string of string
+(** Printing exception *)
+
+(** {1 Basic types} *)
+
+type weekday =
+  [ `Sun
+  | `Mon
+  | `Tue
+  | `Wed
+  | `Thu
+  | `Fri
+  | `Sat
+  ]
 
 module Span : sig
   type t = private {
@@ -321,22 +336,143 @@ module Span : sig
   val pp_sexp : Format.formatter -> t -> unit
 end
 
-(** {1 Date time handling} *)
-
-type weekday =
-  [ `Sun
-  | `Mon
-  | `Tue
-  | `Wed
-  | `Thu
-  | `Fri
-  | `Sat
-  ]
-
-exception Invalid_format_string of string
-(** Printing exception *)
-
 type timestamp = Span.t
+
+module Date : sig
+  (** Implementation of
+      - Gregorian calendar ({!Ymd_date})
+      - ISO week date calendar ({!ISO_week_date})
+      - ISO ordinal date calendar ({!ISO_ord_date})
+
+      {!ISO_ord_date.t} is the main date type, all conversion functions reside in
+      {!ISO_ord_date} module
+
+  *)
+
+  module Ymd_date : sig
+    type t = private {
+      year : int;
+      month : int;
+      day : int;
+    }
+
+    type error =
+      [ `Does_not_exist
+      | `Invalid_year of int
+      | `Invalid_month of int
+      | `Invalid_day of int
+      ]
+
+    exception Error_exn of error
+
+    val equal : t -> t -> bool
+
+    val make : year:int -> month:int -> day:int -> (t, error) result
+
+    val make_exn : year:int -> month:int -> day:int -> t
+  end
+
+  module ISO_week_date : sig
+    type t = private {
+      iso_week_year : int;
+      week : int;
+      weekday : weekday;
+    }
+
+    type error =
+      [ `Does_not_exist
+      | `Invalid_iso_week_year of int
+      | `Invalid_week of int
+      ]
+
+    exception Error_exn of error
+
+    val equal : t -> t -> bool
+
+    val make :
+      iso_week_year:int -> week:int -> weekday:weekday -> (t, error) result
+
+    val make_exn : iso_week_year:int -> week:int -> weekday:weekday -> t
+  end
+
+  module ISO_ord_date : sig
+    type t = private {
+      year : int;
+      day_of_year : int;
+    }
+
+    type error =
+      [ `Does_not_exist
+      | `Invalid_year of int
+      | `Invalid_day_of_year of int
+      ]
+
+    exception Error_exn of error
+
+    val equal : t -> t -> bool
+
+    val make : year:int -> day_of_year:int -> (t, error) result
+
+    val make_exn : year:int -> day_of_year:int -> t
+
+    val weekday : t -> weekday
+
+    val to_iso_week_date : t -> ISO_week_date.t
+
+    val of_iso_week_date : ISO_week_date.t -> t
+
+    val to_ymd_date : t -> Ymd_date.t
+
+    val of_ymd_date : Ymd_date.t -> t
+  end
+end
+
+module Time : sig
+  type t = private {
+    hour : int;
+    minute : int;
+    second : int;
+    ns : int;
+  }
+
+  type error =
+    [ `Invalid_hour of int
+    | `Invalid_minute of int
+    | `Invalid_second of int
+    | `Invalid_s_frac of float
+    | `Invalid_ns of int
+    ]
+
+  exception Error_exn of error
+
+  val make :
+    ?ns:int ->
+    ?s_frac:float ->
+    hour:int ->
+    minute:int ->
+    second:int ->
+    unit ->
+    (t, error) result
+
+  val make_exn :
+    ?ns:int ->
+    ?s_frac:float ->
+    hour:int ->
+    minute:int ->
+    second:int ->
+    unit ->
+    t
+
+  val to_span : t -> Span.t
+
+  val of_span : Span.t -> t option
+
+  val is_leap_second : t -> bool
+
+  val equal : t -> t -> bool
+end
+
+(** {1 Date time} *)
 
 module Time_zone : sig
   type t
@@ -346,9 +482,9 @@ module Time_zone : sig
 
       Naming follows the convention used in [/usr/share/zoneinfo/posix/] distributed on Linux, e.g. "Australia/Sydney".
 
-      See {!val:available_time_zones} or checking usable time zone names at runtime.
+      See {!val:available_time_zones} for checking usable time zone names at runtime.
 
-      Alternatively, if you are using [timedesc.tz.full] (the default implementation for [timedesc.tz.data]), then you can also see
+      Alternatively, if you are using [timedesc.tzdb.full] (the default implementation for [timedesc.tzdb]), then you can also see
       {{:https://github.com/daypack-dev/timere/tree/main/gen_artifacts/available-time-zones.txt} [available-time-zones.txt]} for available time zones.
 
       [make] handles names with "UTC" prefix specially, following holds regardless of DB backend chosen
@@ -448,193 +584,6 @@ module Time_zone : sig
     end
   end
 end
-
-(** {1 Interval} *)
-module Interval : sig
-  type t = timestamp * timestamp
-
-  val equal : t -> t -> bool
-
-  val lt : t -> t -> bool
-
-  val le : t -> t -> bool
-
-  val gt : t -> t -> bool
-
-  val ge : t -> t -> bool
-
-  val compare : t -> t -> int
-
-  val pp :
-    ?display_using_tz:Time_zone.t ->
-    ?format:string ->
-    unit ->
-    Format.formatter ->
-    t ->
-    unit
-  (** Pretty printing for interval.
-
-        Default format string:
-      {v
-[{syear} {smon:Xxx} {sday:0X} {shour:0X}:{smin:0X}:{ssec:0X} \
-{stzoff-sign}{stzoff-hour:0X}:{stzoff-min:0X}:{stzoff-sec:0X}, {eyear} \
-{emon:Xxx} {eday:0X} {ehour:0X}:{emin:0X}:{esec:0X} \
-{etzoff-sign}{etzoff-hour:0X}:{etzoff-min:0X}:{etzoff-sec:0X})
-    v}
-
-        Follows same format string rules as {!val:Date_time.to_string}, but tags are prefixed with 's' for "start time", and 'e' for "end exc time",
-        e.g. for interval [(x, y)]
-
-      - [{syear}] gives year of the [x]
-      - [{ehour:cX}] gives hour of the [y]
-  *)
-
-  val to_string : ?display_using_tz:Time_zone.t -> ?format:string -> t -> string
-
-  val pp_seq :
-    ?display_using_tz:Time_zone.t ->
-    ?format:string ->
-    ?sep:(Format.formatter -> unit -> unit) ->
-    unit ->
-    Format.formatter ->
-    t Seq.t ->
-    unit
-end
-
-(** {1 Date} *)
-
-module Date : sig
-  (** {!ISO_ord_date.t} is the main date type, all conversion functions reside in
-      {!ISO_ord_date} module
-
-  *)
-
-  module ISO_week_date : sig
-    type t = private {
-      iso_week_year : int;
-      week : int;
-      weekday : weekday;
-    }
-
-    type error =
-      [ `Does_not_exist
-      | `Invalid_iso_week_year of int
-      | `Invalid_week of int
-      ]
-
-    exception Error_exn of error
-
-    val equal : t -> t -> bool
-
-    val make :
-      iso_week_year:int -> week:int -> weekday:weekday -> (t, error) result
-
-    val make_exn : iso_week_year:int -> week:int -> weekday:weekday -> t
-  end
-
-  module Ymd_date : sig
-    type t = private {
-      year : int;
-      month : int;
-      day : int;
-    }
-
-    type error =
-      [ `Does_not_exist
-      | `Invalid_year of int
-      | `Invalid_month of int
-      | `Invalid_day of int
-      ]
-
-    exception Error_exn of error
-
-    val equal : t -> t -> bool
-
-    val make : year:int -> month:int -> day:int -> (t, error) result
-
-    val make_exn : year:int -> month:int -> day:int -> t
-  end
-
-  module ISO_ord_date : sig
-    type t = private {
-      year : int;
-      day_of_year : int;
-    }
-
-    type error =
-      [ `Does_not_exist
-      | `Invalid_year of int
-      | `Invalid_day_of_year of int
-      ]
-
-    exception Error_exn of error
-
-    val equal : t -> t -> bool
-
-    val make : year:int -> day_of_year:int -> (t, error) result
-
-    val make_exn : year:int -> day_of_year:int -> t
-
-    val weekday : t -> weekday
-
-    val to_iso_week_date : t -> ISO_week_date.t
-
-    val of_iso_week_date : ISO_week_date.t -> t
-
-    val to_ymd_date : t -> Ymd_date.t
-
-    val of_ymd_date : Ymd_date.t -> t
-  end
-end
-
-(** {1 Time} *)
-
-module Time : sig
-  type t = private {
-    hour : int;
-    minute : int;
-    second : int;
-    ns : int;
-  }
-
-  type error =
-    [ `Invalid_hour of int
-    | `Invalid_minute of int
-    | `Invalid_second of int
-    | `Invalid_s_frac of float
-    | `Invalid_ns of int
-    ]
-
-  exception Error_exn of error
-
-  val make :
-    ?ns:int ->
-    ?s_frac:float ->
-    hour:int ->
-    minute:int ->
-    second:int ->
-    unit ->
-    (t, error) result
-
-  val make_exn :
-    ?ns:int ->
-    ?s_frac:float ->
-    hour:int ->
-    minute:int ->
-    second:int ->
-    unit ->
-    t
-
-  val to_span : t -> Span.t
-
-  val of_span : Span.t -> t option
-
-  val is_leap_second : t -> bool
-
-  val equal : t -> t -> bool
-end
-
-(** {1 Date time} *)
 
 type t
 (** This is the main type, and represents a point in the local timeline
@@ -773,7 +722,7 @@ val make_unambiguous_exn :
   t
 (** @raise Error_exn if [make_umabiguous] fails *)
 
-(** {1 Accessors} *)
+(** {2 Accessors} *)
 
 val ymd_date : t -> Date.Ymd_date.t
 
@@ -806,6 +755,59 @@ val second : t -> int
 val ns : t -> int
 
 val is_leap_second : t -> bool
+
+
+(** {1 Interval} *)
+module Interval : sig
+  type t = timestamp * timestamp
+
+  val equal : t -> t -> bool
+
+  val lt : t -> t -> bool
+
+  val le : t -> t -> bool
+
+  val gt : t -> t -> bool
+
+  val ge : t -> t -> bool
+
+  val compare : t -> t -> int
+
+  val pp :
+    ?display_using_tz:Time_zone.t ->
+    ?format:string ->
+    unit ->
+    Format.formatter ->
+    t ->
+    unit
+  (** Pretty printing for interval.
+
+        Default format string:
+      {v
+[{syear} {smon:Xxx} {sday:0X} {shour:0X}:{smin:0X}:{ssec:0X} \
+{stzoff-sign}{stzoff-hour:0X}:{stzoff-min:0X}:{stzoff-sec:0X}, {eyear} \
+{emon:Xxx} {eday:0X} {ehour:0X}:{emin:0X}:{esec:0X} \
+{etzoff-sign}{etzoff-hour:0X}:{etzoff-min:0X}:{etzoff-sec:0X})
+    v}
+
+        Follows same format string rules as {!val:Date_time.to_string}, but tags are prefixed with 's' for "start time", and 'e' for "end exc time",
+        e.g. for interval [(x, y)]
+
+      - [{syear}] gives year of the [x]
+      - [{ehour:cX}] gives hour of the [y]
+  *)
+
+  val to_string : ?display_using_tz:Time_zone.t -> ?format:string -> t -> string
+
+  val pp_seq :
+    ?display_using_tz:Time_zone.t ->
+    ?format:string ->
+    ?sep:(Format.formatter -> unit -> unit) ->
+    unit ->
+    Format.formatter ->
+    t Seq.t ->
+    unit
+end
 
 (** {2 Time zone info} *)
 
