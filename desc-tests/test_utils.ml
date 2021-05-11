@@ -391,14 +391,13 @@ let ymd_date_gen : (int * int * int) QCheck.Gen.t =
   let open QCheck.Gen in
   map3
     (fun year month day ->
-       let year = Int64.to_int year in
        let month = Int64.to_int month + 1 in
        let day =
          (Int64.to_int day mod Timedesc.Utils.day_count_of_month ~year ~month)
          + 1
        in
        (year, month, day))
-    (pos_int64_bound_gen 9999L)
+    (int_range 1 9998)
     (pos_int64_bound_gen 11L) (pos_int64_bound_gen 30L)
 
 let ymd_date =
