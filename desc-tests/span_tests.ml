@@ -4,11 +4,11 @@ let normalize ({ s; ns } : Timedesc.Span.t) : Timedesc.Span.t =
   Timedesc.Span.make ~s ~ns ()
 
 module Qc = struct
-  let normalize_is_lossless =
-    QCheck.Test.make ~count:100_000 ~name:"normalize_is_lossless"
+  let make_is_lossless =
+    QCheck.Test.make ~count:100_000 ~name:"make_is_lossless"
       QCheck.(pair int64 int)
       (fun (s, ns) ->
-         let span = normalize (Timedesc.Span.make ~s ~ns ()) in
+         let span = (Timedesc.Span.make ~s ~ns ()) in
          Int64.add (Int64.mul s 1_000_000_000L) (Int64.of_int ns)
          = Int64.add
            (Int64.mul Timedesc.Span.(span.s) 1_000_000_000L)
@@ -112,7 +112,7 @@ module Qc = struct
 
   let suite =
     [
-      normalize_is_lossless;
+      make_is_lossless;
       normalize_is_idempotent;
       add_sub;
       sub_add;
@@ -131,5 +131,6 @@ module Qc = struct
       neg_add_self;
       to_of_float_s_is_accurate;
       of_to_view;
+      to_of_sexp;
     ]
 end

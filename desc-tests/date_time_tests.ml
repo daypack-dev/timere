@@ -217,6 +217,17 @@ module Qc = struct
         Timedesc.equal s s'
       )
 
+  let timestamp_to_of_sexp =
+    QCheck.Test.make ~count:100_000 ~name:"timestamp_to_of_sexp" timestamp (fun s ->
+        let s' =
+          s
+          |> Timedesc.Timestamp.to_sexp
+          |> Timedesc.Timestamp.of_sexp
+          |> CCResult.get_exn
+        in
+        Timedesc.Timestamp.equal s s'
+      )
+
   let suite =
     [
       to_rfc3339_nano_of_iso8601_is_lossless;
@@ -224,5 +235,6 @@ module Qc = struct
       to_rfc3339_of_iso8601_is_accurate;
       of_to_timestamp;
       to_of_sexp;
+      timestamp_to_of_sexp;
     ]
 end

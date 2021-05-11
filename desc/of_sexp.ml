@@ -1,25 +1,4 @@
 open Of_sexp_utils
-open Date_time_components
-
-let month_of_sexp (x : CCSexp.t) =
-  match x with
-  | `Atom s -> (
-      match month_of_abbr_string s with
-      | Some x -> x
-      | None -> invalid_data (Printf.sprintf "Failed to parse month: %s" s))
-  | `List _ ->
-    invalid_data
-      (Printf.sprintf "Expected atom for month: %s" (CCSexp.to_string x))
-
-let weekday_of_sexp (x : CCSexp.t) =
-  match x with
-  | `Atom s -> (
-      match weekday_of_abbr_string s with
-      | Some x -> x
-      | None -> invalid_data (Printf.sprintf "Failed to parse weekday: %s" s))
-  | `List _ ->
-    invalid_data
-      (Printf.sprintf "Expected atom for weekday: %s" (CCSexp.to_string x))
 
 let int_of_sexp (x : CCSexp.t) =
   match x with
