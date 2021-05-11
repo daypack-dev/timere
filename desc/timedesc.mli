@@ -276,8 +276,8 @@ module Span : sig
     val to_string : t -> string
   end
 
-  (** {1 Constants} *)
   val ns_count_in_s : int
+  (** {1 Constants} *)
 
   val ns_count_in_s_float : float
 
