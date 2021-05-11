@@ -12,7 +12,7 @@ module Alco = struct
       "everything loads correctly"
       (List.iter
          (fun s ->
-            let json_file_path = Filename.concat "tzdb-json" (s ^ ".json") in
+            let json_file_path = Filename.concat "../tzdb-json" (s ^ ".json") in
             print_endline json_file_path;
             flush stdout;
             CCIO.with_in ~flags:[ Open_rdonly; Open_binary ] json_file_path
