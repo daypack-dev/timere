@@ -206,11 +206,23 @@ module Qc = struct
          in
          Timedesc.Span.equal r timestamp)
 
+  let to_of_sexp =
+    QCheck.Test.make ~count:100_000 ~name:"to_of_sexp" date_time (fun s ->
+        let s' =
+          s
+          |> Timedesc.to_sexp
+          |> Timedesc.of_sexp
+          |> CCResult.get_exn
+        in
+        Timedesc.equal s s'
+      )
+
   let suite =
     [
       to_rfc3339_nano_of_iso8601_is_lossless;
       to_rfc3339_w_default_frac_s_of_iso8601_is_lossless;
       to_rfc3339_of_iso8601_is_accurate;
       of_to_timestamp;
+      to_of_sexp;
     ]
 end

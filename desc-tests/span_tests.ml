@@ -99,6 +99,17 @@ module Qc = struct
              ~hours:view.hours ~minutes:view.minutes ~seconds:view.seconds
              ~ns:view.ns ()))
 
+  let to_of_sexp =
+    QCheck.Test.make ~count:100_000 ~name:"to_of_sexp" timestamp (fun s ->
+        let s' =
+          s
+          |> Timedesc.Span.to_sexp
+          |> Timedesc.Span.of_sexp
+          |> CCResult.get_exn
+        in
+        Timedesc.Span.equal s s'
+      )
+
   let suite =
     [
       normalize_is_lossless;
