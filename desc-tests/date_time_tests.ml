@@ -117,10 +117,9 @@ module Alco = struct
       (CCResult.get_exn
        @@ Timedesc.Timestamp.of_iso8601 "1969-12-31T23:59:59.000999999+00:00")
       (Timedesc.make_exn
-         ~tz:
-           (Timedesc.Time_zone.make_offset_only_exn
-              (Timedesc.Span.zero))
-         ~year:1969 ~month:12 ~day:31 ~hour:23 ~minute:59 ~second:59 ~ns:999_999 ()
+         ~tz:(Timedesc.Time_zone.make_offset_only_exn Timedesc.Span.zero)
+         ~year:1969 ~month:12 ~day:31 ~hour:23 ~minute:59 ~second:59 ~ns:999_999
+         ()
        |> Timedesc.to_timestamp_single)
 
   let of_iso8601_case7 () =
@@ -131,7 +130,8 @@ module Alco = struct
       (Timedesc.make_exn
          ~tz:
            (Timedesc.Time_zone.make_offset_only_exn
-              (Timedesc.Span.For_human.make_exn ~sign:`Neg ~hours:7 ~minutes:30 ()))
+              (Timedesc.Span.For_human.make_exn ~sign:`Neg ~hours:7 ~minutes:30
+                 ()))
          ~year:1910 ~month:2 ~day:28 ~hour:2 ~minute:59 ~second:57 ~ns:999 ()
        |> Timedesc.to_timestamp_single)
 
@@ -161,14 +161,12 @@ module Alco = struct
   let to_rfc3339_case4 () =
     Alcotest.(check string)
       "same string" "1969-12-31T23:59:59Z"
-      (Timedesc.Timestamp.to_rfc3339
-         (Timedesc.Span.make ~s:(-1L) ~ns:0 ()))
+      (Timedesc.Timestamp.to_rfc3339 (Timedesc.Span.make ~s:(-1L) ~ns:0 ()))
 
   let to_rfc3339_case5 () =
     Alcotest.(check string)
       "same string" "1969-12-31T23:59:59.000000999Z"
-      (Timedesc.Timestamp.to_rfc3339
-         (Timedesc.Span.make ~s:(-1L) ~ns:999 ()))
+      (Timedesc.Timestamp.to_rfc3339 (Timedesc.Span.make ~s:(-1L) ~ns:999 ()))
 
   let to_rfc3339_case6 () =
     Alcotest.(check string)
@@ -272,16 +270,19 @@ module Qc = struct
          Timedesc.Timestamp.equal s s')
 
   let consistent_with_ptime =
-    QCheck.Test.make ~count:100_000 ~name:"consistent_with_ptime" QCheck.(pair ymd_date time)
+    QCheck.Test.make ~count:100_000 ~name:"consistent_with_ptime"
+      QCheck.(pair ymd_date time)
       (fun ((year, month, day), (hour, minute, second, _ns)) ->
          let ptime =
-           CCOpt.get_exn @@ Ptime.of_date_time ((year, month, day), ((hour, minute, second), 0))
+           CCOpt.get_exn
+           @@ Ptime.of_date_time ((year, month, day), ((hour, minute, second), 0))
          in
          let dt =
-           Timedesc.make_unambiguous_exn ~year ~month ~day ~hour ~minute ~second ~offset_from_utc:Timedesc.Span.zero ()
+           Timedesc.make_unambiguous_exn ~year ~month ~day ~hour ~minute ~second
+             ~offset_from_utc:Timedesc.Span.zero ()
          in
-         Timedesc.Utils.timestamp_of_ptime ptime = Timedesc.to_timestamp_single dt
-      )
+         Timedesc.Utils.timestamp_of_ptime ptime
+         = Timedesc.to_timestamp_single dt)
 
   let suite =
     [

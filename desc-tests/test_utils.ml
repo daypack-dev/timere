@@ -397,8 +397,7 @@ let ymd_date_gen : (int * int * int) QCheck.Gen.t =
          + 1
        in
        (year, month, day))
-    (int_range 1 9998)
-    (pos_int64_bound_gen 11L) (pos_int64_bound_gen 30L)
+    (int_range 1 9998) (pos_int64_bound_gen 11L) (pos_int64_bound_gen 30L)
 
 let ymd_date =
   QCheck.make
@@ -409,11 +408,8 @@ let ymd_date =
 let time_gen : (int * int * int * int) QCheck.Gen.t =
   let open QCheck.Gen in
   map3
-    (fun hour minute (second, ns) ->
-       (hour, minute, second, ns)
-    )
-    (int_bound 23)
-    (int_bound 59)
+    (fun hour minute (second, ns) -> (hour, minute, second, ns))
+    (int_bound 23) (int_bound 59)
     (pair (int_bound 59) (int_bound (pred Timedesc.Span.ns_count_in_s)))
 
 let time =
@@ -436,13 +432,10 @@ let date_time =
 
 let ptime_gen : Ptime.t QCheck.Gen.t =
   let open QCheck.Gen in
-  map2 (fun (year, month, day) (hour, minute, second, _ns) ->
-      CCOpt.get_exn @@ Ptime.of_date_time ((year, month, day), ((hour, minute, second), 0))
-    )
-    ymd_date_gen
-    time_gen
+  map2
+    (fun (year, month, day) (hour, minute, second, _ns) ->
+       CCOpt.get_exn
+       @@ Ptime.of_date_time ((year, month, day), ((hour, minute, second), 0)))
+    ymd_date_gen time_gen
 
-let ptime =
-  QCheck.make
-    ~print:Ptime.to_rfc3339
-    ptime_gen
+let ptime = QCheck.make ~print:Ptime.to_rfc3339 ptime_gen
