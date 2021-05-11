@@ -103,3 +103,15 @@ module ISO_ord_date = struct
     let day_of_year = doy_of_ymd ~year ~month ~day in
     { year; day_of_year }
 end
+
+let year d = (Ymd_date.view d).year
+
+let month d = (Ymd_date.view d).month
+
+let day d = (Ymd_date.view d).month
+
+let iso_week_year d = (ISO_week_date.view d).iso_week_year
+
+let iso_week d = (ISO_week_date.view d).week
+
+let day_of_year d = (ISO_ord_date.view d).day_of_year

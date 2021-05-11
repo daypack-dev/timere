@@ -380,7 +380,7 @@ type timestamp = Span.t
 
 (** {1 Date time components} *)
 
-(** {2 Date systems} *)
+(** {2 Date} *)
 
 module Date : sig
   (** Implementation of
@@ -393,7 +393,20 @@ module Date : sig
 
   val equal : t -> t -> bool
 
+  (** {2 Accessors} *)
+  val year : t -> int
+
+  val month : t -> int
+
+  val day : t -> int
+
   val weekday : t -> weekday
+
+  val iso_week_year : t -> int
+
+  val iso_week : t -> int
+
+  val day_of_year : t -> int
 
   module Ymd_date : sig
     type view = private {

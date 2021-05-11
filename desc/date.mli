@@ -4,7 +4,19 @@ type t = private { jd : int }
 
 val equal : t -> t -> bool
 
+val year : t -> int
+
+val month : t -> int
+
+val day : t -> int
+
 val weekday : t -> weekday
+
+val iso_week_year : t -> int
+
+val iso_week : t -> int
+
+val day_of_year : t -> int
 
 module ISO_week_date : sig
   type view = private {
