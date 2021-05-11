@@ -29,7 +29,7 @@ test : lib
 	OCAMLRUNPARAM=b dune exec ./tests/main.exe
 
 .PHONY: cov-desc-test
-cov-desc-test : lib
+cov-desc-test : desc
 	find . -name '*.coverage' | xargs rm -f
 	dune runtest --instrument-with bisect_ppx --force desc-tests/
 	bisect-ppx-report html
