@@ -209,24 +209,20 @@ module Qc = struct
   let to_of_sexp =
     QCheck.Test.make ~count:100_000 ~name:"to_of_sexp" date_time (fun s ->
         let s' =
-          s
-          |> Timedesc.to_sexp
-          |> Timedesc.of_sexp
-          |> CCResult.get_exn
+          s |> Timedesc.to_sexp |> Timedesc.of_sexp |> CCResult.get_exn
         in
-        Timedesc.equal s s'
-      )
+        Timedesc.equal s s')
 
   let timestamp_to_of_sexp =
-    QCheck.Test.make ~count:100_000 ~name:"timestamp_to_of_sexp" timestamp (fun s ->
-        let s' =
-          s
-          |> Timedesc.Timestamp.to_sexp
-          |> Timedesc.Timestamp.of_sexp
-          |> CCResult.get_exn
-        in
-        Timedesc.Timestamp.equal s s'
-      )
+    QCheck.Test.make ~count:100_000 ~name:"timestamp_to_of_sexp" timestamp
+      (fun s ->
+         let s' =
+           s
+           |> Timedesc.Timestamp.to_sexp
+           |> Timedesc.Timestamp.of_sexp
+           |> CCResult.get_exn
+         in
+         Timedesc.Timestamp.equal s s')
 
   let suite =
     [

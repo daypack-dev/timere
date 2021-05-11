@@ -393,8 +393,8 @@ module Date : sig
 
   val equal : t -> t -> bool
 
-  (** {2 Accessors} *)
   val year : t -> int
+  (** {2 Accessors} *)
 
   val month : t -> int
 

@@ -8,7 +8,7 @@ module Qc = struct
     QCheck.Test.make ~count:100_000 ~name:"make_is_lossless"
       QCheck.(pair int64 int)
       (fun (s, ns) ->
-         let span = (Timedesc.Span.make ~s ~ns ()) in
+         let span = Timedesc.Span.make ~s ~ns () in
          Int64.add (Int64.mul s 1_000_000_000L) (Int64.of_int ns)
          = Int64.add
            (Int64.mul Timedesc.Span.(span.s) 1_000_000_000L)
@@ -107,8 +107,7 @@ module Qc = struct
           |> Timedesc.Span.of_sexp
           |> CCResult.get_exn
         in
-        Timedesc.Span.equal s s'
-      )
+        Timedesc.Span.equal s s')
 
   let suite =
     [

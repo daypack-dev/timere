@@ -409,12 +409,12 @@ let ymd_date =
 
 let date_time_gen =
   let open QCheck.Gen in
-  map2 (fun timestamp tz_of_date_time ->
-      Timedesc.of_timestamp_exn ~tz_of_date_time timestamp
-    )
-    timestamp_gen
-    time_zone_gen
+  map2
+    (fun timestamp tz_of_date_time ->
+       Timedesc.of_timestamp_exn ~tz_of_date_time timestamp)
+    timestamp_gen time_zone_gen
 
 let date_time =
-  QCheck.make ~print:(fun dt -> dt |> Timedesc.to_string |> CCOpt.get_exn)
+  QCheck.make
+    ~print:(fun dt -> dt |> Timedesc.to_string |> CCOpt.get_exn)
     date_time_gen
