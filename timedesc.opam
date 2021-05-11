@@ -7,11 +7,11 @@ Features:
 
   - Subset of the IANA time zone database is built into this library
 
-  - Support for ISO week date time and ISO ordinal date time
+- Supports Gregorian calendar date, ISO week date, and ISO ordinal date
 
-  - Timestamp and all date time types support nanosecond precision
+- Supports nanosecond precision
 
-  - ISO8601 parsing and RFC3339 printing
+- ISO8601 parsing and RFC3339 printing
 """
 maintainer: "Darren Ldl <darrenldldev@gmail.com>"
 authors: "Daypack developers"
