@@ -3,5 +3,3 @@ include CCSet.Make (struct
 
     let compare = compare
   end)
-
-let to_seq x = x |> to_list |> CCList.to_seq
