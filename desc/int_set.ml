@@ -3,4 +3,3 @@ include CCSet.Make (struct
 
     let compare = compare
   end)
-
