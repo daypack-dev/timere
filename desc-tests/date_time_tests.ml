@@ -224,6 +224,18 @@ module Qc = struct
          in
          Timedesc.Timestamp.equal s s')
 
+  let consistent_with_ptime =
+    QCheck.Test.make ~count:100_000 ~name:"consistent_with_ptime" QCheck.(pair ymd_date time)
+      (fun ((year, month, day), (hour, minute, second, _ns)) ->
+         let ptime =
+           CCOpt.get_exn @@ Ptime.of_date_time ((year, month, day), ((hour, minute, second), 0))
+         in
+         let dt =
+           Timedesc.make_unambiguous_exn ~year ~month ~day ~hour ~minute ~second ~offset_from_utc:Timedesc.Span.zero ()
+         in
+         Timedesc.Utils.timestamp_of_ptime ptime = Timedesc.to_timestamp_single dt
+      )
+
   let suite =
     [
       to_rfc3339_nano_of_iso8601_is_lossless;
@@ -232,5 +244,6 @@ module Qc = struct
       of_to_timestamp;
       to_of_sexp;
       timestamp_to_of_sexp;
+      consistent_with_ptime;
     ]
 end

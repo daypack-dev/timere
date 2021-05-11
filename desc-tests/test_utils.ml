@@ -407,6 +407,22 @@ let ymd_date =
         Printf.sprintf "%d-%02d-%02d" year month day)
     ymd_date_gen
 
+let time_gen : (int * int * int * int) QCheck.Gen.t =
+  let open QCheck.Gen in
+  map3
+    (fun hour minute (second, ns) ->
+       (hour, minute, second, ns)
+    )
+    (int_bound 23)
+    (int_bound 59)
+    (pair (int_bound 59) (int_bound (pred Timedesc.Span.ns_count_in_s)))
+
+let time =
+  QCheck.make
+    ~print:(fun (hour, minute, second, ns) ->
+        Printf.sprintf "%d:%d:%d_%d" hour minute second ns)
+    time_gen
+
 let date_time_gen =
   let open QCheck.Gen in
   map2
@@ -418,3 +434,16 @@ let date_time =
   QCheck.make
     ~print:(fun dt -> dt |> Timedesc.to_string |> CCOpt.get_exn)
     date_time_gen
+
+let ptime_gen : Ptime.t QCheck.Gen.t =
+  let open QCheck.Gen in
+  map2 (fun (year, month, day) (hour, minute, second, _ns) ->
+      CCOpt.get_exn @@ Ptime.of_date_time ((year, month, day), ((hour, minute, second), 0))
+    )
+    ymd_date_gen
+    time_gen
+
+let ptime =
+  QCheck.make
+    ~print:Ptime.to_rfc3339
+    ptime_gen
