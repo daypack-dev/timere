@@ -34,6 +34,8 @@ module Span = struct
 end
 
 module Timestamp = struct
+  include Span
+
   let min_val = timestamp_min
 
   let max_val = timestamp_max

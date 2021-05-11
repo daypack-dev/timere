@@ -276,12 +276,14 @@ module Span : sig
     val to_string : t -> string
   end
 
+  (** {1 Constants} *)
   val ns_count_in_s : int
 
   val ns_count_in_s_float : float
 
   val zero : t
 
+  (** {1 Constructors} *)
   val make : ?s:int64 -> ?ns:int -> unit -> t
   (** [s] defaults to [0L], [ns] defaults to [0]
 
@@ -295,17 +297,21 @@ module Span : sig
   val make_small : ?s:int -> ?ns:int -> unit -> t
   (** Wrapper around [make] *)
 
-  val add : t -> t -> t
+  (** {1 Conversion} *)
 
-  val sub : t -> t -> t
+  val to_float_s : t -> float
+  (** Returns span in seconds, fraction represents subsecond span.
 
-  val succ : t -> t
+      Representation is the same as result from [Unix.gettimeofday].
+  *)
 
-  val pred : t -> t
+  val of_float_s : float -> t
+  (** Convert from span in seconds, fraction represents subsecond span
 
-  val neg : t -> t
+      Representation is the same as result from [Unix.gettimeofday].
+  *)
 
-  val abs : t -> t
+  (** {1 Comparison} *)
 
   val equal : t -> t -> bool
 
@@ -319,17 +325,19 @@ module Span : sig
 
   val compare : t -> t -> int
 
-  val to_float_s : t -> float
-  (** Returns span in seconds, fraction represents subsecond span.
+  (** {1 Arithmetic} *)
 
-      Representation is the same as result from [Unix.gettimeofday].
-  *)
+  val add : t -> t -> t
 
-  val of_float_s : float -> t
-  (** Convert from span in seconds, fraction represents subsecond span
+  val sub : t -> t -> t
 
-      Representation is same as result from [Unix.gettimeofday].
-  *)
+  val succ : t -> t
+
+  val pred : t -> t
+
+  val neg : t -> t
+
+  val abs : t -> t
 
   val max : t -> t -> t
 
@@ -350,6 +358,8 @@ module Span : sig
   val ( - ) : t -> t -> t
 
   val ( + ) : t -> t -> t
+
+  (** {1 Pretty printing} *)
 
   val to_string : t -> string
 
@@ -665,7 +675,7 @@ val make :
   (t, error) result
 (** Constructs a date time providing only a time zone (defaults to local time zone).
 
-    Nanosecond used is the addition of [ns] and [frac * 10^9].
+    Nanosecond used is the addition of [ns] and [s_frac * 10^9].
 
     A precise offset is inferred if possible.
 
@@ -690,7 +700,7 @@ val make :
 
     Returns [Error `Invalid_second] if [second > 60].
 
-    Returns [Error `Invalid_ns] if [frac < 0.0].
+    Returns [Error `Invalid_ns] if [s_frac < 0.0].
 
     Returns [Error `Invalid_ns] if [ns < 0].
 
@@ -728,7 +738,7 @@ val make_unambiguous :
   (t, error) result
 (** Constructs a date time providing time zone offset (offset from UTC), and optionally a time zone.
 
-    Nanosecond used is the addition of [ns] and [frac * 10^9].
+    Nanosecond used is the addition of [ns] and [s_frac * 10^9].
 
     If a time zone is provided, then [offset_from_utc] is checked against the time zone record,
     and returns [Error `Invalid_tz_info] if [offset_from_utc] is not a possible
@@ -829,10 +839,11 @@ val to_timestamp : t -> timestamp local_result
 val to_timestamp_single : t -> timestamp
 (** @raise Invalid_argument if [to_timestamp] does not yield a [`Single] result *)
 
-val to_timestamp_float : t -> float local_result
+val to_timestamp_float_s : t -> float local_result
+(** Returns timestamp in seconds, fraction represent *)
 
-val to_timestamp_float_single : t -> float
-(** @raise Invalid_argument if [to_timestamp_single] does not yield a [`Single] result *)
+val to_timestamp_float_s_single : t -> float
+(** @raise Invalid_argument if [to_timestamp_float_s] does not yield a [`Single] result *)
 
 val of_timestamp : ?tz_of_date_time:Time_zone.t -> timestamp -> t option
 
@@ -968,19 +979,83 @@ val pp_sexp : Format.formatter -> t -> unit
 
 module Timestamp : sig
   (** Timestamp specific functions
-
-      See {!Span} for arithemtic functions
   *)
+
+  type t = timestamp
 
   (** {1 Constants} *)
 
-  val min_val : timestamp
+  val min_val : t
 
-  val max_val : timestamp
+  val max_val : t
 
   (** {1 Now} *)
 
-  val now : unit -> timestamp
+  val now : unit -> t
+
+  (** {1 Re-export from Span} *)
+
+  (** {2 Conversion} *)
+
+  val to_float_s : t -> float
+  (** Returns span in seconds, fraction represents subsecond span.
+
+      Representation is the same as result from [Unix.gettimeofday].
+  *)
+
+  val of_float_s : float -> t
+  (** Convert from span in seconds, fraction represents subsecond span
+
+      Representation is the same as result from [Unix.gettimeofday].
+  *)
+
+  (** {2 Comparison} *)
+
+  val equal : t -> t -> bool
+
+  val lt : t -> t -> bool
+
+  val le : t -> t -> bool
+
+  val gt : t -> t -> bool
+
+  val ge : t -> t -> bool
+
+  val compare : t -> t -> int
+
+  (** {2 Arithmetic} *)
+
+  val add : t -> t -> t
+
+  val sub : t -> t -> t
+
+  val succ : t -> t
+
+  val pred : t -> t
+
+  val neg : t -> t
+
+  val abs : t -> t
+
+  val max : t -> t -> t
+
+  val min : t -> t -> t
+
+  val ( < ) : t -> t -> bool
+
+  val ( <= ) : t -> t -> bool
+
+  val ( > ) : t -> t -> bool
+
+  val ( >= ) : t -> t -> bool
+
+  val ( = ) : t -> t -> bool
+
+  val ( <> ) : t -> t -> bool
+
+  val ( - ) : t -> t -> t
+
+  val ( + ) : t -> t -> t
 
   (** {1 Pretty printing} *)
 
@@ -989,7 +1064,7 @@ module Timestamp : sig
     ?format:string ->
     unit ->
     Format.formatter ->
-    timestamp ->
+    t ->
     unit
   (** Pretty printing for timestamp.
 
@@ -999,7 +1074,7 @@ module Timestamp : sig
   val to_string :
     ?display_using_tz:Time_zone.t -> ?format:string -> timestamp -> string
 
-  val pp_rfc3339 : ?frac_s:int -> unit -> Format.formatter -> timestamp -> unit
+  val pp_rfc3339 : ?frac_s:int -> unit -> Format.formatter -> t -> unit
   (**
      Pretty prints according to RFC3339, e.g. [2020-01-20T13:00:00.0001+10].
 
@@ -1008,23 +1083,23 @@ module Timestamp : sig
      @raise Invalid_argument if [frac_s < 0 || frac_s > 9]
   *)
 
-  val pp_rfc3339_milli : Format.formatter -> timestamp -> unit
+  val pp_rfc3339_milli : Format.formatter -> t -> unit
 
-  val pp_rfc3339_micro : Format.formatter -> timestamp -> unit
+  val pp_rfc3339_micro : Format.formatter -> t -> unit
 
-  val pp_rfc3339_nano : Format.formatter -> timestamp -> unit
+  val pp_rfc3339_nano : Format.formatter -> t -> unit
 
-  val to_rfc3339 : ?frac_s:int -> timestamp -> string
+  val to_rfc3339 : ?frac_s:int -> t -> string
 
-  val to_rfc3339_milli : timestamp -> string
+  val to_rfc3339_milli : t -> string
 
-  val to_rfc3339_micro : timestamp -> string
+  val to_rfc3339_micro : t -> string
 
-  val to_rfc3339_nano : timestamp -> string
+  val to_rfc3339_nano : t -> string
 
   (** {1 Parsing} *)
 
-  val of_iso8601 : string -> (timestamp, string) result
+  val of_iso8601 : string -> (t, string) result
   (**
      Parses a subset of ISO8601, up to 9 fractional digits for second (nanosecond precision).
 
@@ -1033,9 +1108,9 @@ module Timestamp : sig
 
   (** {1 Sexp} *)
 
-  val of_sexp : CCSexp.t -> (timestamp, string) result
+  val of_sexp : CCSexp.t -> (t, string) result
 
-  val to_sexp : timestamp -> CCSexp.t
+  val to_sexp : t -> CCSexp.t
 end
 
 (** {1 Interval} *)

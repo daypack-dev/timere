@@ -68,7 +68,7 @@ let to_timestamp x : timestamp local_result =
   | `Single x -> `Single x
   | `Ambiguous (x, y) -> `Ambiguous (x, y)
 
-let to_timestamp_float x : float local_result =
+let to_timestamp_float_s x : float local_result =
   match to_timestamp_precise_unsafe x with
   | `None -> failwith "Unexpected case"
   | `Single x -> `Single (Span.to_float_s x)
@@ -80,11 +80,11 @@ let to_timestamp_single (x : t) : timestamp =
   | `Ambiguous _ ->
     invalid_arg "to_timestamp_single: date time maps to two timestamps"
 
-let to_timestamp_float_single (x : t) : float =
+let to_timestamp_float_s_single (x : t) : float =
   match to_timestamp x with
   | `Single x -> Span.to_float_s x
   | `Ambiguous _ ->
-    invalid_arg "to_timestamp_float_single: date time maps to two timestamps"
+    invalid_arg "to_timestamp_float_s_single: date time maps to two timestamps"
 
 let of_timestamp_local (x : Span.t) =
   let x = Span.(jd_span_of_epoch + x) in
