@@ -22,7 +22,7 @@ lib :
 
 .PHONY: desc-test
 desc-test : desc
-	OCAMLRUNPARAM=b dune runtest --force desc-tests/
+	OCAMLRUNPARAM=b dune runtest --force desc/
 
 .PHONY: test
 test : lib
@@ -31,7 +31,7 @@ test : lib
 .PHONY: cov-desc-test
 cov-desc-test : desc
 	find . -name '*.coverage' | xargs rm -f
-	dune runtest --instrument-with bisect_ppx --force desc-tests/
+	dune runtest --instrument-with bisect_ppx --force desc/
 	bisect-ppx-report html
 
 .PHONY: cov-test
