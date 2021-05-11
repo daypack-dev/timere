@@ -849,9 +849,9 @@ val of_timestamp : ?tz_of_date_time:Time_zone.t -> timestamp -> t option
 
 val of_timestamp_exn : ?tz_of_date_time:Time_zone.t -> timestamp -> t
 
-val of_timestamp_float : ?tz_of_date_time:Time_zone.t -> float -> t option
+val of_timestamp_float_s : ?tz_of_date_time:Time_zone.t -> float -> t option
 
-val of_timestamp_float_exn : ?tz_of_date_time:Time_zone.t -> float -> t
+val of_timestamp_float_s_exn : ?tz_of_date_time:Time_zone.t -> float -> t
 
 (** {2 Comparison}*)
 

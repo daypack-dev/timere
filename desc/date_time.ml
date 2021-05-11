@@ -115,11 +115,11 @@ let of_timestamp_exn ?tz_of_date_time x =
   | None -> invalid_arg "of_timestamp_exn"
   | Some x -> x
 
-let of_timestamp_float ?tz_of_date_time (x : float) : t option =
+let of_timestamp_float_s ?tz_of_date_time (x : float) : t option =
   of_timestamp ?tz_of_date_time @@ Span.of_float_s x
 
-let of_timestamp_float_exn ?tz_of_date_time x =
-  match of_timestamp_float ?tz_of_date_time x with
+let of_timestamp_float_s_exn ?tz_of_date_time x =
+  match of_timestamp_float_s ?tz_of_date_time x with
   | None -> invalid_arg "of_timestamp_exn"
   | Some x -> x
 
