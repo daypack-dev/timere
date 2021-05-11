@@ -34,14 +34,9 @@
  (libraries
             timedesc
             unix
-            ptime
             oseq
-            mparser
             containers
             seq
-            yojson
             fmt
-            bigarray
-            fileutils
  )
 )

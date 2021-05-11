@@ -25,12 +25,9 @@ depends: [
   "dune" {>= "2.7.0"}
   "oseq"
   "seq"
-  "mparser"
   "containers" {>= "3.0"}
-  "ptime"
-  "yojson"
   "fmt"
-  "fileutils"
+  "timedesc"
   "crowbar" {with-test}
   "alcotest" {with-test}
   "qcheck-alcotest" {with-test}
