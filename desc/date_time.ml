@@ -151,17 +151,17 @@ let iso_week_date dt = Date.ISO_week_date.view dt.date
 
 let iso_ord_date dt = Date.ISO_ord_date.view dt.date
 
-let year dt = (ymd_date dt).year
+let year dt = Date.year dt.date
 
-let month dt = (ymd_date dt).month
+let month dt = Date.month dt.date
 
-let day dt = (ymd_date dt).month
+let day dt = Date.day dt.date
 
-let iso_week_year dt = (iso_week_date dt).iso_week_year
+let iso_week_year dt = Date.iso_week_year dt.date
 
-let iso_week dt = (iso_week_date dt).week
+let iso_week dt = Date.iso_week dt.date
 
-let day_of_year dt = (iso_ord_date dt).day_of_year
+let day_of_year dt = Date.day_of_year dt.date
 
 let time dt = dt.time
 
