@@ -111,6 +111,30 @@ module Alco = struct
          ~year:1979 ~month:5 ~day:27 ~hour:7 ~minute:32 ~second:0 ~ns:999_999 ()
        |> Timedesc.to_timestamp_single)
 
+  let of_iso8601_case6 () =
+    Alcotest.(check span_testable)
+      "same timestamp"
+      (CCResult.get_exn
+       @@ Timedesc.Timestamp.of_iso8601 "1969-12-31T23:59:59.000999999+00:00")
+      (Timedesc.make_exn
+         ~tz:
+           (Timedesc.Time_zone.make_offset_only_exn
+              (Timedesc.Span.zero))
+         ~year:1969 ~month:12 ~day:31 ~hour:23 ~minute:59 ~second:59 ~ns:999_999 ()
+       |> Timedesc.to_timestamp_single)
+
+  let of_iso8601_case7 () =
+    Alcotest.(check span_testable)
+      "same timestamp"
+      (CCResult.get_exn
+       @@ Timedesc.Timestamp.of_iso8601 "1910-02-28T02:59:57.000000999-07:30")
+      (Timedesc.make_exn
+         ~tz:
+           (Timedesc.Time_zone.make_offset_only_exn
+              (Timedesc.Span.For_human.make_exn ~sign:`Neg ~hours:7 ~minutes:30 ()))
+         ~year:1910 ~month:2 ~day:28 ~hour:2 ~minute:59 ~second:57 ~ns:999 ()
+       |> Timedesc.to_timestamp_single)
+
   let to_rfc3339_case0 () =
     Alcotest.(check string)
       "same string" "1979-05-27T07:32:00Z"
@@ -134,6 +158,24 @@ module Alco = struct
       (Timedesc.Timestamp.to_rfc3339
          (Timedesc.Span.make ~s:296638320L ~ns:999_999 ()))
 
+  let to_rfc3339_case4 () =
+    Alcotest.(check string)
+      "same string" "1969-12-31T23:59:59Z"
+      (Timedesc.Timestamp.to_rfc3339
+         (Timedesc.Span.make ~s:(-1L) ~ns:0 ()))
+
+  let to_rfc3339_case5 () =
+    Alcotest.(check string)
+      "same string" "1969-12-31T23:59:59.000000999Z"
+      (Timedesc.Timestamp.to_rfc3339
+         (Timedesc.Span.make ~s:(-1L) ~ns:999 ()))
+
+  let to_rfc3339_case6 () =
+    Alcotest.(check string)
+      "same string" "1910-02-28T02:59:59.000000999Z"
+      (Timedesc.Timestamp.to_rfc3339
+         (Timedesc.Span.make ~s:(-1888434001L) ~ns:999 ()))
+
   let suite =
     [
       Alcotest.test_case "leap_second0" `Quick leap_second0;
@@ -151,10 +193,15 @@ module Alco = struct
       Alcotest.test_case "of_iso8601_case3" `Quick of_iso8601_case3;
       Alcotest.test_case "of_iso8601_case4" `Quick of_iso8601_case4;
       Alcotest.test_case "of_iso8601_case5" `Quick of_iso8601_case5;
+      Alcotest.test_case "of_iso8601_case6" `Quick of_iso8601_case6;
+      Alcotest.test_case "of_iso8601_case7" `Quick of_iso8601_case7;
       Alcotest.test_case "to_rfc3339_case0" `Quick to_rfc3339_case0;
       Alcotest.test_case "to_rfc3339_case1" `Quick to_rfc3339_case1;
       Alcotest.test_case "to_rfc3339_case2" `Quick to_rfc3339_case2;
       Alcotest.test_case "to_rfc3339_case3" `Quick to_rfc3339_case3;
+      Alcotest.test_case "to_rfc3339_case4" `Quick to_rfc3339_case4;
+      Alcotest.test_case "to_rfc3339_case5" `Quick to_rfc3339_case5;
+      Alcotest.test_case "to_rfc3339_case6" `Quick to_rfc3339_case6;
     ]
 end
 
