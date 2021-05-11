@@ -2,7 +2,7 @@
 
 OCaml date time handling and reasoning suite
 
-This repo houses
+This repo houses:
 
 - Timedesc - date time handling library
 
