@@ -58,10 +58,11 @@ See `examples/` for more examples
 
   - Subset of the IANA time zone database is built into this library
 
-  - Both types support nanosecond precision
+- Supports Gregorian calendar date, ISO week date, and ISO ordinal date
 
-  - ISO8601 parsing and RFC3339 printing
-  
+- Supports nanosecond precision
+
+- ISO8601 parsing and RFC3339 printing
 
 #### Timere
 
