@@ -656,8 +656,14 @@ module Time_zone : sig
       {{:https://github.com/daypack-dev/timere/tree/main/gen_artifacts/available-time-zones.txt} [available-time-zones.txt]} for available time zones.
 
       [make] handles names with "UTC" prefix specially, following holds regardless of DB backend chosen
-      - "UTC" is alway interpreted as [utc]
-      - "UTC+/-offset" is always interpreted as call to [make_offset_only] with the provided signed offset
+      {ul
+        {li [UTC] is alway interpreted as [utc]}
+        {li [UTC+/-offset] is always interpreted as call to {!make_offset_only} with the provided signed offset}
+        {li {ul
+          {li e.g. "UTC+1:30" is equivalent to [make_offset_only (Span.For_human.make_exn ~hours:1 ~minutes:30 ())]}
+          {li [offset] may be single/double digit hour, optionally followed by colon and single/double digit minute}
+        }}
+      }
   *)
 
   val make_exn : string -> t
@@ -841,8 +847,6 @@ val make :
     Returns [Error `Invalid_ns] if [ns < 0].
 
     Returns [Error `Invalid_ns] if [total ns >= 10^9].
-
-    Returns [Error `Invalid_tz_info] if offset is out of range.
 *)
 
 val make_exn :
@@ -873,14 +877,15 @@ val make_unambiguous :
   unit ->
   (t, error) result
 (** Constructs a date time providing time zone offset (offset from UTC), and optionally a time zone.
+    As an example, for "UTC+1", you would give a duration of positive 1 hour for [offset_from_utc].
+
+    Subsecond value of [offset_from_utc] is ignored.
 
     Nanosecond used is the addition of [ns] and [s_frac * 10^9].
 
     If a time zone is provided, then [offset_from_utc] is checked against the time zone record,
     and returns [Error `Invalid_tz_info] if [offset_from_utc] is not a possible
     offset for the particular date time in said time zone.
-
-    As an example, for "UTC+1", you would give a duration of positive 1 hour for [offset_from_utc].
 
     Otherwise same leap second handling and error handling as [make].
 *)
