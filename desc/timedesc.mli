@@ -1,6 +1,6 @@
 (** Time description and manipulations
 
-    Timedesc provides utilities to describe points of time and properly handle calendar and time zone information
+    Timedesc provides utilities to describe points of time and properly handle calendar and time zone information.
 *)
 
 (** {1 Tutorial}
@@ -12,9 +12,51 @@
     Then we can simply do [Timedesc.now ~tz_of_date_time:(Timedesc.Time_zone.make_exn "America/New_York") ()].
 
     And if we want to construct a date time from scratch, we can use constructors such as {!make},
-    with similar time zone specification.
+    with similar time zone specification:
+    [Timedesc.make ~tz:(Timedesc.Time_zone.make_exn "Australia/Sydney") ~year:2021 ~month:5 ~day:30 ~hour:14 ~minute:10 ~second:0 ()].
 
-    {2 Advanced usage}
+    Since we deal with timestamps quite frequently, lets have a look at how Timedesc also makes work with
+    them easier.
+    Suppose we receive a timestamp similar to the result returned by [Unix.gettimeofday], i.e.
+    seconds since unix epoch in [float], we can digest it in myriad ways. If we just
+    want to construct a date time out of it, then we can use {!of_timestamp_float_s}.
+    If we want to get it into the representation used in Timedesc, say to perform arithmetic operations over it etc, then we can use {!Timestamp.of_float_s}.
+
+    In general it is better to use {!timestamp} as much as possible, unless you require a precision higher
+    than nanosecond. This is because floating point is a lossy representation -
+    if you convert a date time to floating point
+    and back, you may not get the same date time back (it may not round trip).
+    Also, performing arithmetic operations over floating points can introduce more and more errors, and
+    it is advisable to use the arithmetic functions provided in {!Span} or {!Timestamp}.
+
+    To access the values of date time, we can use the constructors such as {!year}, {!month}, {!day}, {!hour}.
+
+    {2:tute_time_zone Time zone}
+
+    By now, one nicety should be obvious: you don't have to worry about what is the time zone offset at when and where - Timedesc
+    takes care of that for you properly! All you have to do is to make a time zone following the *nix naming convention.
+    However, even though we follow the same naming convention, we don't actually rely on the OS time zone database, and our code
+    will run fine on any platform.
+
+    To see what time zones Timedesc supports during run time, we can refer to {!Time_zone.available_time_zones}.
+
+    If you are aware of DST: Yes, Timedesc takes care of that for you properly as well - Timedesc does not
+    allow you to construct a date time that does not exist for the particular time zone, and any
+    ambiguity is made explicit as return type via {!local_result}.
+
+    {2 Span/duration}
+
+    Timedesc offers both machine-friendly and human-friendly ways of dealing with spans.
+
+    For the machine-friendly side, functions in the top level of {!Span} provide efficient constructions
+    and arithmetic operations.
+
+    For the human-friendly side, {!Span.For_human} provides functions which work at a level closer to
+    human language. For instance, we say things like "2 hours and 15 minutes" quite frequently,
+    to represent this as {!Span.t}, we can do [Timedesc.Span.For_human.make_exn ~hours:2 ~minutes:15 ()].
+    And in the case of fractional descriptions, such as "1.5 hours", we can do
+    [Timedesc.Span.For_human.make_frac_exn ~hours:1.5 ()]. To access the human friendly "view",
+    we can use {!Span.For_human.view}.
 
     {2 Using both Ptime and Timedesc}
 
@@ -31,6 +73,30 @@
 
     Note that Timedesc only supports nanosecond precision, while Ptime supports picosecond precision.
     If subnanosecond precision is a concern for you, then the above functions are not suitable.
+
+    {1 Advanced usage}
+
+    {2 Other calendar systems}
+
+    Other than Gregorian calendar, Timedesc also supports ISO week date and ISO ordinal date.
+
+    To construct date time in the alternative systems, we can use constructors such as
+    {!ISO_week_date_time.make} and {!ISO_ord_date_time.make}.
+
+    Then to access the representation in the alternative date systems, we can use accessors
+    such as {!iso_week_year}, {!iso_week}, and {!day_of_year}.
+
+    {2 Using date by itself}
+
+    Sometimes we are only interested in the date component rather than both date and time.
+    We can use {!Date} module in this case.
+
+    To construct a Gregorian calendar date, we can use {!Date.Ymd_date.make}. To construct
+    ISO week date and ISO ordinal date, we can use {!Date.ISO_week_date.make} and {!Date.ISO_ord_date}
+    respectively.
+
+    We have similar set of accessors for accessing values of {!Date.t}, such as {!Date.year},
+    {!Date.iso_week_year}, {!Date.day_of_year}.
 
     {1 Further reading}
 
@@ -409,6 +475,7 @@ module Date : sig
   val equal : t -> t -> bool
 
   val year : t -> int
+
   (** {2 Accessors} *)
 
   val month : t -> int
