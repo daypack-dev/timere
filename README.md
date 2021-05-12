@@ -141,4 +141,4 @@ Time zone database derived files are licensed under its original terms (public d
 
 - Local time zone detection approach for `timere.tzlocal.unix` backend is copied from [tzlocal](https://github.com/regebro/tzlocal)
 
-- Some internal calculations in Timedesc based around Julian day are copied from [Ptime](https://github.com/dbuenzli/ptime)
+- Some internal calculations/formulas in Timedesc based around Julian day are copied from [Ptime](https://github.com/dbuenzli/ptime)
