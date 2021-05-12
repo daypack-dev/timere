@@ -9,23 +9,27 @@
 
     Suppose we want to get the time right now, we can simply do [Timedesc.now ()].
     But what if we want to get the time right now in a different time zone? Say New York?
-    Then we can simply do [Timedesc.now ~tz_of_date_time:(Timedesc.Time_zone.make_exn "America/New_York") ()].
+    Then we can simply do:
+
+    [Timedesc.now ~tz_of_date_time:(Timedesc.Time_zone.make_exn "America/New_York") ()].
 
     And if we want to construct a date time from scratch, we can use constructors such as {!make},
     with similar time zone specification:
+
     [Timedesc.make ~tz:(Timedesc.Time_zone.make_exn "Australia/Sydney") ~year:2021 ~month:5 ~day:30 ~hour:14 ~minute:10 ~second:0 ()].
 
-    Since we deal with timestamps quite frequently, lets have a look at how Timedesc also makes work with
+    Since we deal with timestamps quite frequently, lets have a look at how Timedesc also makes working with
     them easier.
     Suppose we receive a timestamp similar to the result returned by [Unix.gettimeofday], i.e.
     seconds since unix epoch in [float], we can digest it in myriad ways. If we just
     want to construct a date time out of it, then we can use {!of_timestamp_float_s}.
-    If we want to get it into the representation used in Timedesc, say to perform arithmetic operations over it etc, then we can use {!Timestamp.of_float_s}.
+    If we want to get it into the representation used in Timedesc, say to perform arithmetic operations over it etc, then we can use {!Timestamp.of_float_s}. But in either case, we can always swap back and forth via
+    {!to_timestamp} and {!of_timestamp}.
 
     In general it is better to use {!timestamp} as much as possible, unless you require a precision higher
     than nanosecond. This is because floating point is a lossy representation -
     if you convert a date time to floating point
-    and back, you may not get the same date time back (it may not round trip).
+    and back, you may not get the same date time back (i.e. it may not round trip).
     Also, performing arithmetic operations over floating points can introduce more and more errors, and
     it is advisable to use the arithmetic functions provided in {!Span} or {!Timestamp}.
 
@@ -39,6 +43,7 @@
     will run fine on any platform.
 
     To see what time zones Timedesc supports during run time, we can refer to {!Time_zone.available_time_zones}.
+    Alternatively, for a text file containing all the supported time zones by default, refer to {{:https://github.com/daypack-dev/timere/blob/main/gen-artifacts/available-time-zones.txt} [available-time-zones.txt]} in the repository.
 
     If you are aware of DST: Yes, Timedesc takes care of that for you properly as well - Timedesc does not
     allow you to construct a date time that does not exist for the particular time zone, and any
@@ -53,10 +58,15 @@
 
     For the human-friendly side, {!Span.For_human} provides functions which work at a level closer to
     human language. For instance, we say things like "2 hours and 15 minutes" quite frequently,
-    to represent this as {!Span.t}, we can do [Timedesc.Span.For_human.make_exn ~hours:2 ~minutes:15 ()].
-    And in the case of fractional descriptions, such as "1.5 hours", we can do
-    [Timedesc.Span.For_human.make_frac_exn ~hours:1.5 ()]. To access the human friendly "view",
-    we can use {!Span.For_human.view}.
+    to represent this as {!Span.t}, we can do:
+
+    [Timedesc.Span.For_human.make_exn ~hours:2 ~minutes:15 ()]
+
+    And in the case of fractional descriptions, such as "1.5 hours", we can do:
+
+    [Timedesc.Span.For_human.make_frac_exn ~hours:1.5 ()]
+
+    Finally, to access the human friendly "view", we can use {!Span.For_human.view}.
 
     {2 Using both Ptime and Timedesc}
 
@@ -65,7 +75,9 @@
     first class support for time zones, support for different date systems. As such one may wish
     to use both Ptime and Timedesc, especially if Ptime is already being used for a particular project.
 
-    To facilitate such use of both Ptime and Timedesc, utilities for converting to and from Ptime types are available as
+    To facilitate such use of both Ptime and Timedesc, utilities for
+    converting to and from Ptime types are available as:
+
     - {!Utils.ptime_span_of_span}
     - {!Utils.ptime_of_timestamp}
     - {!Utils.span_of_ptime_span}
@@ -97,6 +109,9 @@
 
     We have similar set of accessors for accessing values of {!Date.t}, such as {!Date.year},
     {!Date.iso_week_year}, {!Date.day_of_year}.
+
+    To obtain a "view" (in a manner similar to the human-friendly "view" from [Span]), we can
+    {!Date.ISO_week_date.view} and {!Date.ISO_ord_date.view}.
 
     {1 Further reading}
 
@@ -176,7 +191,7 @@ v}
     This start and end of the DST on and off periods, along with the corresponding offsets,
     form the basis of the table we mentioned above.
 
-    {2 Timedesc date time API basics}
+    {2 Timedesc date time API behaviour highlights}
 
     We highlight some critical cases in practice, and how Timedesc behaves and how it may differ from other libraries.
 
@@ -458,6 +473,8 @@ module Span : sig
 end
 
 type timestamp = Span.t
+(** Definition of timestamp throughout the library follows the "seconds since unix epoch" definition
+*)
 
 (** {1 Date time components} *)
 
