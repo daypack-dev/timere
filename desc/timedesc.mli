@@ -363,7 +363,7 @@ module Span : sig
     (**
        [sign] defaults to [`Pos].
 
-       Returns [Error] if any of the arguments are negative
+       Returns [Error] if any of the arguments are negative.
     *)
 
     val make_frac_exn :
@@ -688,7 +688,7 @@ module Time_zone : sig
 
       One use of this is to create a time zone for [to_string] functions.
 
-      Returns [None] when offset exceeds 24 hours
+      Returns [None] when offset exceeds 24 hours in size.
   *)
 
   val make_offset_only_exn : Span.t -> t
