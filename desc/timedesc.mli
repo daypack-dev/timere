@@ -93,6 +93,13 @@
 
     {1 Advanced usage}
 
+    {2 Unambiguous date time}
+
+    Occasionally, we receive date times which carry both the time zone and the exact offset from UTC.
+    Naturally we can discard the time zone since the offset alone suffices in deducing the precise
+    timestamp. However, we can actually ask Timedesc to digest both via {!make_unambiguous}, which
+    checks the offset against the time zone record to make sure it is actually a possible offset.
+
     {2 Other calendar systems}
 
     Other than Gregorian calendar, Timedesc also supports ISO week date and ISO ordinal date.
