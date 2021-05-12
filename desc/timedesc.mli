@@ -1,7 +1,38 @@
-(** {1 Introduction}
+(** Time description and manipulations
 
-    It is advised to read through this to understand why certain API seem needlessly complicated
-    compared to alternatives (possibly in another programming language).
+    Timedesc provides utilities to describe points of time and properly handle calendar and time zone information
+*)
+
+(** {1 Tutorial}
+
+    {2 Getting started}
+
+    Suppose we want to get the time right now, we can simply do [Timedesc.now ()].
+    But what if we want to get the time right now in a different time zone? Say New York?
+    Then we can simply do [Timedesc.now ~tz_of_date_time:(Timedesc.Time_zone.make_exn "America/New_York") ()].
+
+    And if we want to construct a date time from scratch, we can use constructors such as {!make},
+    with similar time zone specification.
+
+    {2 Advanced usage}
+
+    {2 Using both Ptime and Timedesc}
+
+    Ptime is a (very) commonly used package in projects due to being very portable, and robust.
+    However, it lacks certain features which Timedesc provides, such as
+    first class support for time zones, support for different date systems. As such one may wish
+    to use both Ptime and Timedesc, especially if Ptime is already being used for a particular project.
+
+    To facilitate such use of both Ptime and Timedesc, utilities for converting to and from Ptime types are available as
+    - {!Utils.ptime_span_of_span}
+    - {!Utils.ptime_of_timestamp}
+    - {!Utils.span_of_ptime_span}
+    - {!Utils.timestamp_of_ptime}
+
+    Note that Timedesc only supports nanosecond precision, while Ptime supports picosecond precision.
+    If subnanosecond precision is a concern for you, then the above functions are not suitable.
+
+    {1 Further reading}
 
     {2 Misconceptions}
 
@@ -102,22 +133,6 @@ v}
     while {!make_unambiguous} yields an unambiguous construction.
     In general, if you are provided with the exact offset to UTC,
     then [make_unambiguous] is the better choice.
-
-    {2 Using both Ptime and Timedesc}
-
-    Ptime is a (very) commonly used package in projects due to being very portable, and robust.
-    However, it lacks certain features which Timedesc provides, such as
-    first class support for time zones, support for different date systems. As such one may wish
-    to use both Ptime and Timedesc, especially if Ptime is already being used for a particular project.
-
-    To facilitate such use of both Ptime and Timedesc, utilities for converting to and from Ptime types are available as
-    - {!Utils.ptime_span_of_span}
-    - {!Utils.ptime_of_timestamp}
-    - {!Utils.span_of_ptime_span}
-    - {!Utils.timestamp_of_ptime}
-
-    Note that Timedesc only supports nanosecond precision, while Ptime supports picosecond precision.
-    If subnanosecond precision is a concern for you, then the above functions are not suitable.
 *)
 
 (** {1 Basic exceptions} *)
