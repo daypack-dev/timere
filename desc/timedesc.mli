@@ -49,6 +49,11 @@
     allow you to construct a date time that does not exist for the particular time zone, and any
     ambiguity is made explicit as return type via {!local_result}.
 
+    This does mean Timedesc does not "resolve" the result into one of the possibilities arbitrarily,
+    and you need to resolve the ambiguity yourself.
+    If such a coercion is desirable, however, then you can use either {!min_of_local_result} or
+    {!max_of_local_result}.
+
     {2 Span/duration}
 
     Timedesc offers both machine-friendly and human-friendly ways of dealing with spans.
@@ -478,15 +483,15 @@ type timestamp = Span.t
 
 (** {1 Date time components} *)
 
-(** {2 Date} *)
+(** {2 Date}
+
+    Implementation of date in:
+    - Gregorian calendar ({!Date.Ymd_date})
+    - ISO week date calendar ({!Date.ISO_week_date})
+    - ISO ordinal date calendar ({!Date.ISO_ord_date})
+*)
 
 module Date : sig
-  (** Implementation of
-      - Gregorian calendar ({!Ymd_date})
-      - ISO week date calendar ({!ISO_week_date})
-      - ISO ordinal date calendar ({!ISO_ord_date})
-  *)
-
   type t
 
   val equal : t -> t -> bool
@@ -575,7 +580,10 @@ module Date : sig
   end
 end
 
-(** {2 Time} *)
+(** {2 Time}
+
+    Implementation of time of day with nanosecond precision
+*)
 
 module Time : sig
   type t = private {
@@ -622,7 +630,10 @@ module Time : sig
   val equal : t -> t -> bool
 end
 
-(** {2 Time zone} *)
+(** {2 Time zone}
+
+    Implementation of time zone which uses IANA time zone database underneath
+*)
 
 module Time_zone : sig
   type t
@@ -735,7 +746,13 @@ module Time_zone : sig
   end
 end
 
-(** {1 Date time} *)
+(** {1 Date time}
+
+    Implementation of time zone aware date time in:
+    - Gregorian calendar (top level of current module)
+    - ISO week date calendar ({!ISO_week_date_time})
+    - ISO ordinal date calendar ({!ISO_ord_date_time})
+*)
 
 type t
 (** This is the main type, and represents a point in the local timeline
