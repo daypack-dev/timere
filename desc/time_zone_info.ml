@@ -20,6 +20,11 @@ type error =
   ]
 
 let make ?tz ?fixed_offset_from_utc () : (t, error) result =
+  let fixed_offset_from_utc =
+    CCOpt.map (fun offset ->
+        Span.(make ~s:offset.s ())
+      ) fixed_offset_from_utc
+  in
   match (tz, fixed_offset_from_utc) with
   | None, None -> Error `Missing_both_tz_and_fixed_offset_from_utc
   | Some tz, None ->
