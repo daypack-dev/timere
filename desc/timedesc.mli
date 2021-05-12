@@ -122,7 +122,7 @@
     We have similar set of accessors for accessing values of {!Date.t}, such as {!Date.year},
     {!Date.iso_week_year}, {!Date.day_of_year}.
 
-    To obtain a "view" (in a manner similar to the human-friendly "view" from [Span]), we can
+    To obtain a "view" (in a manner similar to the human-friendly "view" from {!Span.For_human}), we can
     {!Date.ISO_week_date.view} and {!Date.ISO_ord_date.view}.
 
     {1 Further reading}
