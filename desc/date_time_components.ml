@@ -157,8 +157,7 @@ let day_index_of_weekday (weekday : weekday) =
   | `Sat -> 5
   | `Sun -> 6
 
-let iso_int_of_weekday weekday =
-  day_index_of_weekday weekday + 1
+let iso_int_of_weekday weekday = day_index_of_weekday weekday + 1
 
 let weekday_of_iso_int x =
   match x with
