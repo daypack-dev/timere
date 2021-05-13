@@ -25,7 +25,7 @@ let () =
   let open Timere in
   match
     resolve (
-      after (Date_time.now ())
+      after (Timedesc.now ())
       & months [`Dec]
       & days [25]
       & weekdays [`Wed]
