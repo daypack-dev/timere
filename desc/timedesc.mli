@@ -1,6 +1,7 @@
 (** Time description and manipulations
 
-    Timedesc provides utilities to describe points of time and properly handle calendar and time zone information.
+    Timedesc provides utilities to describe points of time, and properly
+    handle calendar and time zone information.
 *)
 
 (** {1 Tutorial}
@@ -123,7 +124,7 @@
     {!Date.iso_week_year}, {!Date.day_of_year}.
 
     To obtain a "view" (in a manner similar to the human-friendly "view" from {!Span.For_human}), we can
-    {!Date.ISO_week_date.view} and {!Date.ISO_ord_date.view}.
+    use {!Date.ISO_week_date.view} and {!Date.ISO_ord_date.view}.
 
     {1 Further reading}
 
