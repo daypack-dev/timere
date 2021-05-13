@@ -385,14 +385,16 @@ module Span : sig
     val to_string : t -> string
   end
 
-  val ns_count_in_s : int
   (** {1 Constants} *)
+
+  val ns_count_in_s : int
 
   val ns_count_in_s_float : float
 
   val zero : t
 
   (** {1 Constructors} *)
+
   val make : ?s:int64 -> ?ns:int -> unit -> t
   (** [s] defaults to [0L], [ns] defaults to [0]
 
@@ -972,7 +974,7 @@ val tz : t -> Time_zone.t
 
 val offset_from_utc : t -> Span.t local_result
 
-(** {2 Conversions} *)
+(** {2 Conversion} *)
 
 val to_timestamp : t -> timestamp local_result
 (** [to_timestamp] loses information about leap second
