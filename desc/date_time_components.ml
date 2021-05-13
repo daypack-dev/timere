@@ -147,17 +147,15 @@ let week_count_of_iso_week_year ~iso_week_year =
    - jd_of_start_of_iso_week_year ~iso_week_year)
   / 7
 
-let day_index_of_weekday (weekday : weekday) =
+let iso_int_of_weekday (weekday : weekday) =
   match weekday with
-  | `Mon -> 0
-  | `Tue -> 1
-  | `Wed -> 2
-  | `Thu -> 3
-  | `Fri -> 4
-  | `Sat -> 5
-  | `Sun -> 6
-
-let iso_int_of_weekday weekday = day_index_of_weekday weekday + 1
+  | `Mon -> 1
+  | `Tue -> 2
+  | `Wed -> 3
+  | `Thu -> 4
+  | `Fri -> 5
+  | `Sat -> 6
+  | `Sun -> 7
 
 let weekday_of_iso_int x =
   match x with
@@ -174,9 +172,7 @@ let iso_week_date_of_jd (jd : int) : int * int * weekday =
   let year, month, day = ymd_of_jd jd in
   let day_of_year = doy_of_ymd ~year ~month ~day in
   let weekday = weekday_of_jd jd in
-  let week_of_year =
-    (10 + day_of_year - (day_index_of_weekday weekday + 1)) / 7
-  in
+  let week_of_year = (10 + day_of_year - iso_int_of_weekday weekday) / 7 in
   assert (week_of_year >= 0);
   assert (week_of_year <= 53);
   let iso_week_year, week =
@@ -190,10 +186,9 @@ let iso_week_date_of_jd (jd : int) : int * int * weekday =
   (iso_week_year, week, weekday)
 
 let jd_of_iso_week_date ~iso_week_year ~week ~weekday =
-  let weekday_int = day_index_of_weekday weekday + 1 in
+  let weekday_int = iso_int_of_weekday weekday in
   let jan_4_weekday_int =
-    day_index_of_weekday (weekday_of_ymd ~year:iso_week_year ~month:1 ~day:4)
-    + 1
+    iso_int_of_weekday (weekday_of_ymd ~year:iso_week_year ~month:1 ~day:4)
   in
   let day_of_year = (week * 7) + weekday_int - (jan_4_weekday_int + 3) in
   let day_count_of_prev_year = day_count_of_year ~year:(pred iso_week_year) in
