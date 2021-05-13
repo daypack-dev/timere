@@ -1539,6 +1539,10 @@ module Utils : sig
 
   val tm_int_of_weekday : weekday -> int
 
+  val weekday_of_iso_int : int -> weekday option
+
+  val iso_int_of_weekday : weekday -> int
+
   val get_local_tz_for_arg : unit -> Time_zone.t
 
   val abbr_string_of_weekday : weekday -> string

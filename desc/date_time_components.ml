@@ -157,6 +157,20 @@ let day_index_of_weekday (weekday : weekday) =
   | `Sat -> 5
   | `Sun -> 6
 
+let iso_int_of_weekday weekday =
+  day_index_of_weekday weekday + 1
+
+let weekday_of_iso_int x =
+  match x with
+  | 1 -> Some `Mon
+  | 2 -> Some `Tue
+  | 3 -> Some `Wed
+  | 4 -> Some `Thu
+  | 5 -> Some `Fri
+  | 6 -> Some `Sat
+  | 7 -> Some `Sun
+  | _ -> None
+
 let iso_week_date_of_jd (jd : int) : int * int * weekday =
   let year, month, day = ymd_of_jd jd in
   let day_of_year = doy_of_ymd ~year ~month ~day in
