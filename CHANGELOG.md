@@ -8,6 +8,8 @@
 
 ## Timere 0.4.0
 
+- Migration of date time components to Timedesc
+
 - Changed `inter []` to mean `always` instead of `empty`
 
 - Fixed `overapproximate_search_space_bottom_up` handling of bounded intervals, previously the default search time zone was used
