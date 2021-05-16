@@ -42,7 +42,8 @@ let deduce_smallest_lossless_frac_s ~ns =
   else 9
 
 let pp_date_time ?frac_s () formatter (dt : Date_time.t) =
-  let ns = dt.time.ns mod Span.ns_count_in_s in
+  let { Time.hour; minute; second; ns } = Date_time.time_view dt in
+  let ns = ns mod Span.ns_count_in_s in
   let frac_s =
     match frac_s with
     | None -> deduce_smallest_lossless_frac_s ~ns
@@ -66,16 +67,16 @@ let pp_date_time ?frac_s () formatter (dt : Date_time.t) =
             offset_view.minutes
       in
       let second =
-        if Date_time.is_leap_second dt then 60 else dt.time.second
+        if Date_time.is_leap_second dt then 60 else second
       in
       let Date.Ymd_date.{ year; month; day } = Date_time.ymd_date dt in
       if frac_s = 0 then
         Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d%s" year month day
-          dt.time.hour dt.time.minute second tz_off
+          hour minute second tz_off
       else
         let divisor = get_divisor frac_s in
         Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d.%0*d%s" year month day
-          dt.time.hour dt.time.minute second frac_s (ns / divisor) tz_off
+          hour minute second frac_s (ns / divisor) tz_off
 
 let of_date_time ?frac_s (dt : Date_time.t) : string option =
   try Some (Fmt.str "%a" (pp_date_time ?frac_s ()) dt)

@@ -596,7 +596,9 @@ end
 *)
 
 module Time : sig
-  type t = private {
+  type t
+
+  type view = private {
     hour : int;
     minute : int;
     second : int;
@@ -613,6 +615,7 @@ module Time : sig
 
   exception Error_exn of error
 
+  (** {1 Constructors} *)
   val make :
     ?ns:int ->
     ?s_frac:float ->
@@ -631,13 +634,29 @@ module Time : sig
     unit ->
     t
 
-  val to_span : t -> Span.t
+  (** {1 Comparison} *)
 
-  val of_span : Span.t -> t option
+  val equal : t -> t -> bool
+
+  (** {1 Accessors} *)
+
+  val view : t -> view
+
+  val hour : t -> int
+
+  val minute : t -> int
+
+  val second : t -> int
+
+  val ns : t -> int
 
   val is_leap_second : t -> bool
 
-  val equal : t -> t -> bool
+  (** {1 Conversion} *)
+
+  val to_span : t -> Span.t
+
+  val of_span : Span.t -> t option
 end
 
 (** {2 Time zone}

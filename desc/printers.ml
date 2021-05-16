@@ -62,6 +62,7 @@ module Format_string_parsers = struct
     in
     let Date.Ymd_date.{ year; month; day } = Date_time.ymd_date date_time in
     let weekday = Date_time.weekday date_time in
+    let Time.{ hour; minute; second; ns } = Date_time.time_view date_time in
     choice
       [
         attempt (string "year") >> return (Printf.sprintf "%04d" year);
@@ -83,27 +84,27 @@ module Format_string_parsers = struct
            (map_string_to_size_and_casing x (full_string_of_weekday weekday)));
         (attempt (string "hour:")
          >> padding
-         >>= fun padding -> return (pad_int padding date_time.time.hour));
+         >>= fun padding -> return (pad_int padding hour));
         (attempt (string "12hour:")
          >> padding
          >>= fun padding ->
          let hour =
-           if date_time.time.hour = 0 then 12 else date_time.time.hour mod 12
+           if hour = 0 then 12 else hour mod 12
          in
          return (pad_int padding hour));
         (attempt (string "min:")
          >> padding
-         >>= fun padding -> return (pad_int padding date_time.time.minute));
+         >>= fun padding -> return (pad_int padding minute));
         (attempt (string "sec:")
          >> padding
-         >>= fun padding -> return (pad_int padding date_time.time.second));
-        attempt (string "ns") >> return (string_of_int date_time.time.ns);
+         >>= fun padding -> return (pad_int padding second));
+        attempt (string "ns") >> return (string_of_int ns);
         (attempt (string "sec-frac:")
          >> nat_zero
          >>= fun precision ->
          if precision = 0 then fail "Precision cannot be 0"
          else
-           let ns = float_of_int date_time.time.ns in
+           let ns = float_of_int ns in
            let precision' = float_of_int precision in
            let frac =
              ns *. (10. ** precision') /. Span.ns_count_in_s_float

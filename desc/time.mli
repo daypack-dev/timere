@@ -1,4 +1,6 @@
-type t = private {
+type t
+
+type view = private {
   hour : int;
   minute : int;
   second : int;
@@ -26,6 +28,16 @@ val make :
 
 val make_exn :
   ?ns:int -> ?s_frac:float -> hour:int -> minute:int -> second:int -> unit -> t
+
+val view : t -> view
+
+val hour : t -> int
+
+val minute : t -> int
+
+val second : t -> int
+
+val ns : t -> int
 
 val to_span : t -> Span.t
 

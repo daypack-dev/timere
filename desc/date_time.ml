@@ -169,13 +169,15 @@ let day_of_year dt = Date.day_of_year dt.date
 
 let time dt = dt.time
 
-let hour dt = dt.time.hour
+let time_view dt = Time.view dt.time
 
-let minute dt = dt.time.minute
+let hour dt = Time.hour dt.time
 
-let second dt = dt.time.second
+let minute dt = Time.minute dt.time
 
-let ns dt = dt.time.ns
+let second dt = Time.second dt.time
+
+let ns dt = Time.ns dt.time
 
 let tz (dt : t) = dt.tz
 

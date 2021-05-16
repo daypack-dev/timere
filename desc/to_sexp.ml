@@ -32,15 +32,16 @@ let sexp_of_tz_info ({ tz; fixed_offset_from_utc } : Time_zone_info.t) =
 let sexp_of_date_time (x : Date_time.t) =
   let open CCSexp in
   let { Date.Ymd_date.year; month; day } = Date_time.ymd_date x in
+  let { Time.hour; minute; second; ns } = Date_time.time_view x in
   list
     [
       sexp_of_int year;
       sexp_of_int month;
       sexp_of_int day;
-      sexp_of_int x.time.hour;
-      sexp_of_int x.time.minute;
-      sexp_of_int x.time.second;
-      sexp_of_int x.time.ns;
+      sexp_of_int hour;
+      sexp_of_int minute;
+      sexp_of_int second;
+      sexp_of_int ns;
       sexp_of_tz_name x.tz;
       (match x.offset_from_utc with
        | `Single offset ->
