@@ -108,7 +108,7 @@ let year d = (Ymd_date.view d).year
 
 let month d = (Ymd_date.view d).month
 
-let day d = (Ymd_date.view d).month
+let day d = (Ymd_date.view d).day
 
 let iso_week_year d = (ISO_week_date.view d).iso_week_year
 
