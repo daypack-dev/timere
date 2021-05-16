@@ -9,7 +9,7 @@ let weekday (x : t) = weekday_of_jd x.jd
 module ISO_week_date = struct
   type view = {
     iso_week_year : int;
-    week : int;
+    iso_week : int;
     weekday : weekday;
   }
 
@@ -34,8 +34,8 @@ module ISO_week_date = struct
     | Ok x -> x
 
   let view (x : t) : view =
-    let iso_week_year, week, weekday = iso_week_date_of_jd x.jd in
-    { iso_week_year; week; weekday }
+    let iso_week_year, iso_week, weekday = iso_week_date_of_jd x.jd in
+    { iso_week_year; iso_week; weekday }
 end
 
 module Ymd_date = struct
@@ -112,6 +112,6 @@ let day d = (Ymd_date.view d).day
 
 let iso_week_year d = (ISO_week_date.view d).iso_week_year
 
-let iso_week d = (ISO_week_date.view d).week
+let iso_week d = (ISO_week_date.view d).iso_week
 
 let day_of_year d = (ISO_ord_date.view d).day_of_year

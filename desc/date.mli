@@ -21,7 +21,7 @@ val day_of_year : t -> int
 module ISO_week_date : sig
   type view = private {
     iso_week_year : int;
-    week : int;
+    iso_week : int;
     weekday : weekday;
   }
 
