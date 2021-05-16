@@ -131,13 +131,17 @@ let equal (x : t) (y : t) =
   && equal_local_result ~eq:Span.equal x.offset_from_utc y.offset_from_utc
 
 let now ?tz_of_date_time () : t =
-  timestamp_now () |> of_timestamp ?tz_of_date_time |> CCOpt.get_exn_or "Expected successful date time construction for now"
+  timestamp_now ()
+  |> of_timestamp ?tz_of_date_time
+  |> CCOpt.get_exn_or "Expected successful date time construction for now"
 
 let min_val =
-  CCOpt.get_exn_or "Expected successful date time construction for min_val" @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_min
+  CCOpt.get_exn_or "Expected successful date time construction for min_val"
+  @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_min
 
 let max_val =
-  CCOpt.get_exn_or "Expected successful date time construction for max_val" @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_max
+  CCOpt.get_exn_or "Expected successful date time construction for max_val"
+  @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_max
 
 let is_leap_second (dt : t) = Time.is_leap_second dt.time
 
@@ -236,7 +240,11 @@ let of_date_and_time_unambiguous ?tz ~offset_from_utc (date : Date.t)
         date;
         time;
         tz;
-        offset_from_utc = `Single (CCOpt.get_exn_or "Expected fixed_offset_from_utc in tz_info to be Some _" fixed_offset_from_utc);
+        offset_from_utc =
+          `Single
+            (CCOpt.get_exn_or
+               "Expected fixed_offset_from_utc in tz_info to be Some _"
+               fixed_offset_from_utc);
       })
 
 let of_date_and_time_unambiguous_exn ?tz ~offset_from_utc date time =
@@ -391,8 +399,8 @@ module ISO_week_date_time = struct
 
   exception Error_exn of error
 
-  let make ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday ~hour ~minute ~second
-      () : (t, error) result =
+  let make ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday ~hour ~minute
+      ~second () : (t, error) result =
     match Date.ISO_week_date.make ~iso_week_year ~iso_week ~weekday with
     | Error e -> Error (e :> error)
     | Ok date -> (
@@ -406,8 +414,8 @@ module ISO_week_date_time = struct
   let make_exn ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday ~hour ~minute
       ~second () =
     match
-      make ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday ~hour ~minute ~second
-        ()
+      make ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday ~hour ~minute
+        ~second ()
     with
     | Ok x -> x
     | Error e -> raise (Error_exn e)
@@ -426,8 +434,8 @@ module ISO_week_date_time = struct
             | Error e -> Error (e :> error)
             | Ok dt -> Ok dt))
 
-  let make_unambiguous_exn ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday ~hour
-      ~minute ~second ~offset_from_utc () =
+  let make_unambiguous_exn ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday
+      ~hour ~minute ~second ~offset_from_utc () =
     match
       make_unambiguous ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday ~hour
         ~minute ~second ~offset_from_utc ()

@@ -31,7 +31,11 @@ let () =
                    Timedesc.Span.(fun x1 -> x1 < x && x - x1 <= bound)
                    s1
                in
-               let xr = CCOpt.get_exn_or "Expected successful retrieval of last element of seq" @@ Seq_utils.last_element_of_seq r in
+               let xr =
+                 CCOpt.get_exn_or
+                   "Expected successful retrieval of last element of seq"
+                 @@ Seq_utils.last_element_of_seq r
+               in
                y = Timedesc.Span.succ x
                && OSeq.mem ~eq:Timedesc.Span.equal x s2
                && not

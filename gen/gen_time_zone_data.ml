@@ -405,7 +405,9 @@ let () =
                   { Timedesc.Time_zone.is_dst = r.is_dst; offset = r.offset } ))
              l
          in
-         CCOpt.get_exn_or "Expected successful construction of time zone from transitions" @@ Timedesc.Time_zone.Raw.of_transitions ~name transitions)
+         CCOpt.get_exn_or
+           "Expected successful construction of time zone from transitions"
+         @@ Timedesc.Time_zone.Raw.of_transitions ~name transitions)
       tables_utc
   in
   let db = Timedesc.Time_zone.Db.of_seq @@ CCList.to_seq time_zones in

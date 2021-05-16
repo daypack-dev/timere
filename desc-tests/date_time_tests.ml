@@ -285,41 +285,45 @@ module Qc = struct
          = Timedesc.to_timestamp_single dt)
 
   let iso_ord_date_accessors =
-    QCheck.Test.make ~count:100_000
-      ~name:"iso_ord_date_accessors" QCheck.(pair iso_ord_date time)
+    QCheck.Test.make ~count:100_000 ~name:"iso_ord_date_accessors"
+      QCheck.(pair iso_ord_date time)
       (fun ((year', day_of_year'), (hour, minute, second, ns)) ->
          let d =
-           Timedesc.ISO_ord_date_time.make_exn ~tz:Timedesc.Time_zone.utc ~year:year'
-             ~day_of_year:day_of_year' ~hour ~minute ~second ~ns ()
+           Timedesc.ISO_ord_date_time.make_exn ~tz:Timedesc.Time_zone.utc
+             ~year:year' ~day_of_year:day_of_year' ~hour ~minute ~second ~ns ()
          in
          let year = Timedesc.year d in
          let day_of_year = Timedesc.day_of_year d in
          year = year' && day_of_year = day_of_year')
 
   let iso_week_date_accessors =
-    QCheck.Test.make ~count:100_000
-      ~name:"iso_week_date_accessors" QCheck.(pair iso_week_date time)
+    QCheck.Test.make ~count:100_000 ~name:"iso_week_date_accessors"
+      QCheck.(pair iso_week_date time)
       (fun ((iso_week_year', iso_week', weekday'), (hour, minute, second, ns)) ->
          let d =
-           Timedesc.ISO_week_date_time.make_exn ~tz:Timedesc.Time_zone.utc ~iso_week_year:iso_week_year'
-             ~iso_week:iso_week' ~weekday:weekday' ~hour ~minute ~second ~ns ()
+           Timedesc.ISO_week_date_time.make_exn ~tz:Timedesc.Time_zone.utc
+             ~iso_week_year:iso_week_year' ~iso_week:iso_week' ~weekday:weekday'
+             ~hour ~minute ~second ~ns ()
          in
          let iso_week_year = Timedesc.iso_week_year d in
          let iso_week = Timedesc.iso_week d in
          let weekday = Timedesc.weekday d in
-         iso_week_year = iso_week_year' && iso_week = iso_week' && weekday = weekday')
+         iso_week_year = iso_week_year'
+         && iso_week = iso_week'
+         && weekday = weekday')
 
   let ymd_date_accessors =
     QCheck.Test.make ~count:100_000 ~name:"ymd_date_accessors"
-      QCheck.(pair ymd_date time) (fun ((year', month', day'), (hour, minute, second, ns)) ->
-          let d =
-            Timedesc.make_exn ~tz:Timedesc.Time_zone.utc ~year:year' ~month:month' ~day:day'
-              ~hour ~minute ~second ~ns ()
-          in
-          let year = Timedesc.year d in
-          let month = Timedesc.month d in
-          let day = Timedesc.day d in
-          year = year' && month = month' && day = day')
+      QCheck.(pair ymd_date time)
+      (fun ((year', month', day'), (hour, minute, second, ns)) ->
+         let d =
+           Timedesc.make_exn ~tz:Timedesc.Time_zone.utc ~year:year' ~month:month'
+             ~day:day' ~hour ~minute ~second ~ns ()
+         in
+         let year = Timedesc.year d in
+         let month = Timedesc.month d in
+         let day = Timedesc.day d in
+         year = year' && month = month' && day = day')
 
   let suite =
     [

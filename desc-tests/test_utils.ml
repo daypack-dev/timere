@@ -427,7 +427,11 @@ let date_time_gen =
 
 let date_time =
   QCheck.make
-    ~print:(fun dt -> dt |> Timedesc.to_string |> CCOpt.get_exn_or "Expected successful construction of string from timedesc object")
+    ~print:(fun dt ->
+        dt
+        |> Timedesc.to_string
+        |> CCOpt.get_exn_or
+          "Expected successful construction of string from timedesc object")
     date_time_gen
 
 let ptime_gen : Ptime.t QCheck.Gen.t =

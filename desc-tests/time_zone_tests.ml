@@ -7,7 +7,8 @@ module Qc = struct
           tz
           |> Timedesc.Time_zone.Sexp.to_sexp
           |> Timedesc.Time_zone.Sexp.of_sexp
-          |> CCOpt.get_exn_or "Expected successful construction of time zone from sexp"
+          |> CCOpt.get_exn_or
+            "Expected successful construction of time zone from sexp"
         in
         Timedesc.Time_zone.equal tz tz')
 
@@ -17,7 +18,8 @@ module Qc = struct
           tz
           |> Timedesc.Time_zone.JSON.to_json
           |> Timedesc.Time_zone.JSON.of_json
-          |> CCOpt.get_exn_or "Expected successful construction of time zone from JSOn"
+          |> CCOpt.get_exn_or
+            "Expected successful construction of time zone from JSOn"
         in
         Timedesc.Time_zone.equal tz tz')
 

@@ -24,8 +24,9 @@ module ISO_week_date = struct
   let make ~iso_week_year ~iso_week ~weekday : (t, error) result =
     if iso_week_year < Constants.min_year || Constants.max_year < iso_week_year
     then Error (`Invalid_iso_week_year iso_week_year)
-    else if iso_week < 1 || week_count_of_iso_week_year ~iso_week_year < iso_week then
-      Error (`Invalid_iso_week iso_week)
+    else if
+      iso_week < 1 || week_count_of_iso_week_year ~iso_week_year < iso_week
+    then Error (`Invalid_iso_week iso_week)
     else Ok { jd = jd_of_iso_week_date ~iso_week_year ~iso_week ~weekday }
 
   let make_exn ~iso_week_year ~iso_week ~weekday : t =

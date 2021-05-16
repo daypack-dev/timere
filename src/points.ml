@@ -96,12 +96,18 @@ let make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ~second
       match minute with None -> true | Some x -> 0 <= x && x < 60
     in
     let second_is_fine = 0 <= second && second < 60 in
-    if not year_is_fine then Error (`Invalid_year (CCOpt.get_exn_or "Expected year to be Some _" year))
+    if not year_is_fine then
+      Error
+        (`Invalid_year (CCOpt.get_exn_or "Expected year to be Some _" year))
     else if not month_day_is_fine then
       Error (`Invalid_day (CCOpt.get_exn_or "Expected day to be Some _" day))
-    else if not hour_is_fine then Error (`Invalid_hour (CCOpt.get_exn_or "Expected hour to be Some _" hour))
+    else if not hour_is_fine then
+      Error
+        (`Invalid_hour (CCOpt.get_exn_or "Expected hour to be Some _" hour))
     else if not minute_is_fine then
-      Error (`Invalid_minute (CCOpt.get_exn_or "Expected minute to be Some _" minute))
+      Error
+        (`Invalid_minute
+           (CCOpt.get_exn_or "Expected minute to be Some _" minute))
     else if not second_is_fine then Error (`Invalid_second second)
     else
       let pick =
