@@ -23,6 +23,8 @@
 
 - Renamed `week` to `iso_week` for ISO week date API
 
+- Replaced use of `CCOpt.get_exn` with `CCOpt.get_exn_or`
+
 ## Timedesc 0.1.0
 
 - Migration of date time components from Timere
