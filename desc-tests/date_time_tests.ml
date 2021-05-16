@@ -284,6 +284,43 @@ module Qc = struct
          Timedesc.Utils.timestamp_of_ptime ptime
          = Timedesc.to_timestamp_single dt)
 
+  let iso_ord_date_accessors =
+    QCheck.Test.make ~count:100_000
+      ~name:"iso_ord_date_accessors" QCheck.(pair iso_ord_date time)
+      (fun ((year', day_of_year'), (hour, minute, second, ns)) ->
+         let d =
+           Timedesc.ISO_ord_date_time.make_exn ~year:year'
+             ~day_of_year:day_of_year' ~hour ~minute ~second ~ns ()
+         in
+         let year = Timedesc.year d in
+         let day_of_year = Timedesc.day_of_year d in
+         year = year' && day_of_year = day_of_year')
+
+  let iso_week_date_accessors =
+    QCheck.Test.make ~count:100_000
+      ~name:"iso_week_date_accessors" QCheck.(pair iso_week_date time)
+      (fun ((iso_week_year', iso_week', weekday'), (hour, minute, second, ns)) ->
+         let d =
+           Timedesc.ISO_week_date_time.make_exn ~iso_week_year:iso_week_year'
+             ~iso_week:iso_week' ~weekday:weekday' ~hour ~minute ~second ~ns ()
+         in
+         let iso_week_year = Timedesc.iso_week_year d in
+         let iso_week = Timedesc.iso_week d in
+         let weekday = Timedesc.weekday d in
+         iso_week_year = iso_week_year' && iso_week = iso_week' && weekday = weekday')
+
+  let ymd_date_accessors =
+    QCheck.Test.make ~count:100_000 ~name:"ymd_date_accessors"
+      QCheck.(pair ymd_date time) (fun ((year', month', day'), (hour, minute, second, ns)) ->
+          let d =
+            Timedesc.make_exn ~year:year' ~month:month' ~day:day'
+              ~hour ~minute ~second ~ns ()
+          in
+          let year = Timedesc.year d in
+          let month = Timedesc.month d in
+          let day = Timedesc.day d in
+          year = year' && month = month' && day = day')
+
   let suite =
     [
       to_rfc3339_nano_of_iso8601_is_lossless;
@@ -293,5 +330,8 @@ module Qc = struct
       to_of_sexp;
       timestamp_to_of_sexp;
       consistent_with_ptime;
+      iso_ord_date_accessors;
+      iso_week_date_accessors;
+      ymd_date_accessors;
     ]
 end
