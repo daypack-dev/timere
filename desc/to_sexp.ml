@@ -1,6 +1,6 @@
 open Date_time_components
 
-let sexp_of_month x = CCSexp.atom @@ CCOpt.get_exn @@ abbr_string_of_month x
+let sexp_of_month x = CCSexp.atom @@ CCOpt.get_exn_or "Expected valid month" @@ abbr_string_of_month x
 
 let sexp_of_weekday x = CCSexp.atom @@ abbr_string_of_weekday x
 
@@ -54,5 +54,5 @@ let sexp_of_date_time (x : Date_time.t) =
 let sexp_of_timestamp x =
   x
   |> Date_time.of_timestamp ~tz_of_date_time:Time_zone.utc
-  |> CCOpt.get_exn
+  |> CCOpt.get_exn_or "expected successful date time construction"
   |> sexp_of_date_time

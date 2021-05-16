@@ -62,13 +62,13 @@ let do_chunk_at_year_boundary tz (s : Time.Interval'.t Seq.t) :
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((t1, t2), rest) ->
       let dt1 =
-        CCOpt.get_exn @@ Timedesc.of_timestamp ~tz_of_date_time:tz t1
+        CCOpt.get_exn_or "Expected successful date time construction" @@ Timedesc.of_timestamp ~tz_of_date_time:tz t1
       in
       let dt2 =
         t2
         |> Timedesc.Span.pred
         |> Timedesc.of_timestamp ~tz_of_date_time:tz
-        |> CCOpt.get_exn
+        |> CCOpt.get_exn_or "Expected successful date time construction"
       in
       if Timedesc.year dt1 = Timedesc.year dt2 then fun () ->
         Seq.Cons ((t1, t2), aux rest)
@@ -94,13 +94,13 @@ let do_chunk_at_month_boundary tz (s : Time.Interval'.t Seq.t) :
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((t1, t2), rest) ->
       let dt1 =
-        CCOpt.get_exn @@ Timedesc.of_timestamp ~tz_of_date_time:tz t1
+        CCOpt.get_exn_or "Expected successful date time construction" @@ Timedesc.of_timestamp ~tz_of_date_time:tz t1
       in
       let dt2 =
         t2
         |> Timedesc.Span.pred
         |> Timedesc.of_timestamp ~tz_of_date_time:tz
-        |> CCOpt.get_exn
+        |> CCOpt.get_exn_or "Expected successful date time construction"
       in
       if
         Timedesc.year dt1 = Timedesc.year dt2
@@ -128,7 +128,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval'.t Seq.t) :
 let aux_pattern_mem search_using_tz (pattern : Pattern.t) (timestamp : int64) :
   bool =
   let dt =
-    CCOpt.get_exn
+    CCOpt.get_exn_or "Expected successful date time construction"
     @@ Timedesc.of_timestamp ~tz_of_date_time:search_using_tz
       (Timedesc.Span.make ~s:timestamp ())
   in

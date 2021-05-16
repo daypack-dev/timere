@@ -467,12 +467,12 @@ module Ast_normalize = struct
         else
           invalid_data
             (Printf.sprintf "%s: Invalid second: %d"
-               (string_of_pos @@ CCOpt.get_exn @@ pos_second)
+               (string_of_pos @@ CCOpt.get_exn_or "Expected pos_second to be Some _" @@ pos_second)
                minute)
       else
         invalid_data
           (Printf.sprintf "%s: Invalid minute: %d"
-             (string_of_pos @@ CCOpt.get_exn @@ pos_minute)
+             (string_of_pos @@ CCOpt.get_exn_or "Expected pos_minute to be Some _" @@ pos_minute)
              minute)
     in
     let rec aux acc (l : token list) : token list =
@@ -544,7 +544,7 @@ module Ast_normalize = struct
 
   let recognize_duration (l : token list) : token list =
     let make_duration ~pos ~days ~hours ~minutes ~seconds =
-      ( CCOpt.get_exn pos,
+      ( CCOpt.get_exn_or "Expected pos to be Some _" pos,
         text_map_empty,
         Duration
           (Timedesc.Span.For_human.make_frac_exn
@@ -853,7 +853,7 @@ let pattern ?(years = []) ?(months = []) ?pos_days ?(days = []) ?(weekdays = [])
   if not (List.for_all (fun x -> 1 <= x && x <= 31) days) then
     `Error
       (Printf.sprintf "%s: Invalid month days"
-         (string_of_pos @@ CCOpt.get_exn @@ pos_days))
+         (string_of_pos @@ CCOpt.get_exn_or "Expected pos_days to be Some _" @@ pos_days))
   else
     let f = Timere.pattern ~years ~months ~days ~weekdays in
     match hms with
@@ -874,7 +874,7 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.Hms.t option)
   | Some day when not (1 <= day && day <= 31) ->
     `Error
       (Printf.sprintf "%s: Invalid month days"
-         (string_of_pos @@ CCOpt.get_exn @@ pos_day))
+         (string_of_pos @@ CCOpt.get_exn_or "Expected pos_day to be Some _" @@ pos_day))
   | _ -> (
       let default_month = match lean_toward with `Front -> 1 | `Back -> 12 in
       let default_day = match lean_toward with `Front -> 1 | `Back -> -1 in

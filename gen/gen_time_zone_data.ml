@@ -218,7 +218,7 @@ let timestamp_of_date_time_utc (x : date_time) : int64 =
   let offset = 0 in
   Ptime.of_date_time
     ((x.year, x.month, x.day), ((x.hour, x.minute, x.second), offset))
-  |> CCOpt.get_exn
+  |> CCOpt.get_exn_or "Expected successful construction of ptime"
   |> Timedesc.Utils.timestamp_of_ptime
   |> fun x -> Timedesc.Span.(x.s)
 
@@ -226,7 +226,7 @@ let timestamp_of_date_time_local (x : date_time) : int64 =
   let offset = 0 in
   Ptime.of_date_time
     ((x.year, x.month, x.day), ((x.hour, x.minute, x.second), offset))
-  |> CCOpt.get_exn
+  |> CCOpt.get_exn_or "Expected successful construction of ptime"
   |> Timedesc.Utils.timestamp_of_ptime
   |> fun x -> Timedesc.Span.(x.s)
 
@@ -405,7 +405,7 @@ let () =
                   { Timedesc.Time_zone.is_dst = r.is_dst; offset = r.offset } ))
              l
          in
-         CCOpt.get_exn @@ Timedesc.Time_zone.Raw.of_transitions ~name transitions)
+         CCOpt.get_exn_or "Expected successful construction of time zone from transitions" @@ Timedesc.Time_zone.Raw.of_transitions ~name transitions)
       tables_utc
   in
   let db = Timedesc.Time_zone.Db.of_seq @@ CCList.to_seq time_zones in

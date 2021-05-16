@@ -74,10 +74,11 @@ module Search_param = struct
       Timedesc.Time_zone.make_offset_only_exn search_using_offset_from_utc
     in
     let start_dt =
-      CCOpt.get_exn @@ Timedesc.of_timestamp ~tz_of_date_time start
+      CCOpt.get_exn_or "Expected successful date time construction from timestamp" @@ Timedesc.of_timestamp ~tz_of_date_time start
     in
     let end_inc_dt =
-      CCOpt.get_exn
+      CCOpt.get_exn_or
+        "Expected successful date time construction from timestamp"
       @@ Timedesc.of_timestamp ~tz_of_date_time (Timedesc.Span.pred end_exc)
     in
     {

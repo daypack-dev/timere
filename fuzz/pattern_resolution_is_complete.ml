@@ -7,7 +7,7 @@ let () =
         Crowbar.guard (search_space <> []);
         let search_start = fst (List.hd search_space) in
         let search_end_exc =
-          snd (CCOpt.get_exn @@ Misc_utils.last_element_of_list search_space)
+          snd (CCOpt.get_exn_or "Expected successful retrieval of last element of list" @@ Misc_utils.last_element_of_list search_space)
         in
         let search_space_set =
           span_set_of_intervals @@ CCList.to_seq search_space
@@ -22,7 +22,7 @@ let () =
             Seq_utils.a_to_b_inc_int64 ~a:search_start.s ~b:search_end_exc.s
             |> OSeq.filter (fun timestamp ->
                 let dt =
-                  CCOpt.get_exn
+                  CCOpt.get_exn_or "Expected successful construction of date time"
                   @@ Timedesc.of_timestamp ~tz_of_date_time:tz
                     (Timedesc.Span.make ~s:timestamp ())
                 in

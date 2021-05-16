@@ -80,7 +80,7 @@ let make_pattern ~rng ~min_year ~max_year_inc : Pattern.t =
       let end_inc = min 5 (rng ()) in
       OSeq.(0 -- end_inc)
       |> Seq.map (fun _ ->
-          CCOpt.get_exn @@ Timedesc.Utils.weekday_of_tm_int (rng () mod 7))
+          CCOpt.get_exn_or "Expected successful weekday construction from tm_int" @@ Timedesc.Utils.weekday_of_tm_int (rng () mod 7))
       |> CCList.of_seq
   in
   let hours =
@@ -129,7 +129,7 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
   | 3 ->
     Points.make_exn
       ~weekday:
-        (rng () mod 7 |> Timedesc.Utils.weekday_of_tm_int |> CCOpt.get_exn)
+        (rng () mod 7 |> Timedesc.Utils.weekday_of_tm_int |> CCOpt.get_exn_or "Expected successful weekday construction from tm_int")
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
       ~second:(rng () mod 60)

@@ -843,7 +843,7 @@ module Hms_ranges = Ranges.Make (struct
 
     let to_int = Hms'.to_second_of_day
 
-    let of_int x = CCOpt.get_exn (Hms'.of_second_of_day x)
+    let of_int x = CCOpt.get_exn_or "Expected valid second of day" (Hms'.of_second_of_day x)
   end)
 
 module Weekday_tm_int_ranges = Ranges.Make (struct
@@ -863,7 +863,7 @@ module Weekday_ranges = Ranges.Make (struct
 
     let to_int = Timedesc.Utils.tm_int_of_weekday
 
-    let of_int x = x |> Timedesc.Utils.weekday_of_tm_int |> CCOpt.get_exn
+    let of_int x = x |> Timedesc.Utils.weekday_of_tm_int |> CCOpt.get_exn_or "Expected successful construction of weekday"
   end)
 
 module Month_day_ranges = Ranges.Make (struct
@@ -1237,7 +1237,7 @@ let hms_intervals_inc (hms_a : Hms'.t) (hms_b : Hms'.t) : t =
     |> Hms'.to_second_of_day
     |> succ
     |> Hms'.of_second_of_day
-    |> CCOpt.get_exn
+    |> CCOpt.get_exn_or "Expected successful construction of hms from second of day"
   in
   hms_intervals_exc hms_a hms_b
 

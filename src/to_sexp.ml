@@ -1,5 +1,5 @@
 let sexp_of_month x =
-  CCSexp.atom @@ CCOpt.get_exn @@ Time.abbr_string_of_month x
+  CCSexp.atom @@ CCOpt.get_exn_or "Expected valid month" @@ Time.abbr_string_of_month x
 
 let sexp_of_weekday x = CCSexp.atom @@ Time.abbr_string_of_weekday x
 
@@ -78,7 +78,7 @@ let sexp_of_date_time = Timedesc.to_sexp
 let sexp_of_timestamp x =
   x
   |> Timedesc.of_timestamp ~tz_of_date_time:Timedesc.Time_zone.utc
-  |> CCOpt.get_exn
+  |> CCOpt.get_exn_or "Expected successful construction of date time from timestamp"
   |> sexp_of_date_time
 
 let sexp_of_range ~(f : 'a -> CCSexp.t) (r : 'a Time.Range.range) =

@@ -131,13 +131,13 @@ let equal (x : t) (y : t) =
   && equal_local_result ~eq:Span.equal x.offset_from_utc y.offset_from_utc
 
 let now ?tz_of_date_time () : t =
-  timestamp_now () |> of_timestamp ?tz_of_date_time |> CCOpt.get_exn
+  timestamp_now () |> of_timestamp ?tz_of_date_time |> CCOpt.get_exn_or "Expected successful date time construction for now"
 
 let min_val =
-  CCOpt.get_exn @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_min
+  CCOpt.get_exn_or "Expected successful date time construction for min_val" @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_min
 
 let max_val =
-  CCOpt.get_exn @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_max
+  CCOpt.get_exn_or "Expected successful date time construction for max_val" @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_max
 
 let is_leap_second (dt : t) = Time.is_leap_second dt.time
 
@@ -236,7 +236,7 @@ let of_date_and_time_unambiguous ?tz ~offset_from_utc (date : Date.t)
         date;
         time;
         tz;
-        offset_from_utc = `Single (CCOpt.get_exn fixed_offset_from_utc);
+        offset_from_utc = `Single (CCOpt.get_exn_or "Expected fixed_offset_from_utc in tz_info to be Some _" fixed_offset_from_utc);
       })
 
 let of_date_and_time_unambiguous_exn ?tz ~offset_from_utc date time =

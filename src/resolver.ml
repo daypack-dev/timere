@@ -321,13 +321,13 @@ let do_chunk_at_year_boundary tz (s : Time.Interval'.t Seq.t) =
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((t1, t2), rest) ->
       let dt1 =
-        CCOpt.get_exn @@ Timedesc.of_timestamp ~tz_of_date_time:tz t1
+        CCOpt.get_exn_or "Expected successful date time construction" @@ Timedesc.of_timestamp ~tz_of_date_time:tz t1
       in
       let dt2 =
         t2
         |> Timedesc.Span.pred
         |> Timedesc.of_timestamp ~tz_of_date_time:tz
-        |> CCOpt.get_exn
+        |> CCOpt.get_exn_or "Expected successful date time construction"
       in
       let dt1_year = Timedesc.year dt1 in
       if dt1_year = Timedesc.year dt2 then fun () ->
@@ -353,14 +353,14 @@ let do_chunk_at_month_boundary tz (s : Time.Interval'.t Seq.t) =
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((t1, t2), rest) ->
       let dt1 =
-        CCOpt.get_exn @@ Timedesc.of_timestamp ~tz_of_date_time:tz t1
+        CCOpt.get_exn_or "Expected successful date time construction" @@ Timedesc.of_timestamp ~tz_of_date_time:tz t1
       in
       let dt1_year = Timedesc.year dt1 in
       let dt2 =
         t2
         |> Timedesc.Span.pred
         |> Timedesc.of_timestamp ~tz_of_date_time:tz
-        |> CCOpt.get_exn
+        |> CCOpt.get_exn_or "Expected successful date time construction"
       in
       if
         dt1_year = Timedesc.year dt2
@@ -520,7 +520,7 @@ and skip_points_in_p1 ~last_start2 ~(rest1 : timestamp Seq.t) ~(p1 : Points.t)
 
 and aux_bounded_intervals search_using_tz space pick bound p1 p2 =
   let _, search_space_end_exc =
-    CCOpt.get_exn @@ Misc_utils.last_element_of_list space
+    CCOpt.get_exn_or "Expected successful retrieval of last element in list" @@ Misc_utils.last_element_of_list space
   in
   let rec aux_bounded_intervals' s1 s2 space1 space2 p1 p2 =
     match s1 () with
@@ -600,7 +600,7 @@ and aux_inter search_using_tz timeres =
     let batch_for_sampling = collect_batch interval_batches in
     if List.exists CCOpt.is_none batch_for_sampling then Seq.empty
     else
-      let batch_for_sampling = CCList.map CCOpt.get_exn batch_for_sampling in
+      let batch_for_sampling = CCList.map (CCOpt.get_exn_or "Unexpected None in batch_for_sampling") batch_for_sampling in
       match batch_for_sampling with
       | [] -> Seq.empty
       | _ ->
