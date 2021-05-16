@@ -15,9 +15,11 @@
 - Fixed `overapproximate_search_space_bottom_up` handling of bounded intervals, previously the default search time zone was used
   during points to date time conversion instead of the time zone passed during execution
 
-## Timedesc 0.2.0
+## Timedesc 0.1.1
 
 - Added ISO int conversion functions for `weekday`
+
+- Fixed `Timedesc.Date.day` accessor
 
 ## Timedesc 0.1.0
 
