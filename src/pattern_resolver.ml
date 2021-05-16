@@ -15,7 +15,7 @@ module Branch = struct
 
   let of_date_time (x : Timedesc.t) : t =
     let { Timedesc.Date.Ymd_date.year; month; day } = Timedesc.ymd_date x in
-    let { Timedesc.Time.hour; minute; second; ns } = Timedesc.time x in
+    let { Timedesc.Time.hour; minute; second; ns } = Timedesc.time_view x in
     { year; month; day; hour; minute; second; ns }
 
   let set_to_first_ns (x : t) : t = { x with ns = 0 }

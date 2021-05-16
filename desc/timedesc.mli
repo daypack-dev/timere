@@ -980,6 +980,8 @@ val day_of_year : t -> int
 
 val time : t -> Time.t
 
+val time_view : t -> Time.view
+
 val hour : t -> int
 
 val minute : t -> int
