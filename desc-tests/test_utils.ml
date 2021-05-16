@@ -350,14 +350,13 @@ let iso_ord_date_gen : (int * int) QCheck.Gen.t =
   let open QCheck.Gen in
   map2
     (fun year day_of_year ->
-       let year = Int64.to_int year in
        let day_of_year = Int64.to_int day_of_year in
        let day_of_year =
          if Timedesc.Utils.is_leap_year ~year then day_of_year + 1
          else (day_of_year mod 365) + 1
        in
        (year, day_of_year))
-    (pos_int64_bound_gen 9999L)
+    (int_range 1 9998)
     (pos_int64_bound_gen 365L)
 
 let iso_ord_date =
@@ -370,14 +369,13 @@ let iso_week_date_gen : (int * int * Timedesc.weekday) QCheck.Gen.t =
   let open QCheck.Gen in
   map3
     (fun iso_week_year week weekday ->
-       let iso_week_year = Int64.to_int iso_week_year in
        let week =
          Int64.to_int week
          mod Timedesc.Utils.week_count_of_iso_week_year ~iso_week_year
          + 1
        in
        (iso_week_year, week, weekday))
-    (pos_int64_bound_gen 9999L)
+    (int_range 1 9998)
     (pos_int64_bound_gen 53L) weekday_gen
 
 let iso_week_date =
