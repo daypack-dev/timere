@@ -185,12 +185,12 @@ let iso_week_date_of_jd (jd : int) : int * int * weekday =
   in
   (iso_week_year, week, weekday)
 
-let jd_of_iso_week_date ~iso_week_year ~week ~weekday =
+let jd_of_iso_week_date ~iso_week_year ~iso_week ~weekday =
   let weekday_int = iso_int_of_weekday weekday in
   let jan_4_weekday_int =
     iso_int_of_weekday (weekday_of_ymd ~year:iso_week_year ~month:1 ~day:4)
   in
-  let day_of_year = (week * 7) + weekday_int - (jan_4_weekday_int + 3) in
+  let day_of_year = (iso_week * 7) + weekday_int - (jan_4_weekday_int + 3) in
   let day_count_of_prev_year = day_count_of_year ~year:(pred iso_week_year) in
   let day_count_of_cur_year = day_count_of_year ~year:iso_week_year in
   let year, day_of_year =

@@ -28,15 +28,15 @@ module ISO_week_date : sig
   type error =
     [ `Does_not_exist
     | `Invalid_iso_week_year of int
-    | `Invalid_week of int
+    | `Invalid_iso_week of int
     ]
 
   exception Error_exn of error
 
   val make :
-    iso_week_year:int -> week:int -> weekday:weekday -> (t, error) result
+    iso_week_year:int -> iso_week:int -> weekday:weekday -> (t, error) result
 
-  val make_exn : iso_week_year:int -> week:int -> weekday:weekday -> t
+  val make_exn : iso_week_year:int -> iso_week:int -> weekday:weekday -> t
 
   val view : t -> view
 end

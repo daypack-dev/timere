@@ -555,15 +555,15 @@ module Date : sig
     type error =
       [ `Does_not_exist
       | `Invalid_iso_week_year of int
-      | `Invalid_week of int
+      | `Invalid_iso_week of int
       ]
 
     exception Error_exn of error
 
     val make :
-      iso_week_year:int -> week:int -> weekday:weekday -> (t, error) result
+      iso_week_year:int -> iso_week:int -> weekday:weekday -> (t, error) result
 
-    val make_exn : iso_week_year:int -> week:int -> weekday:weekday -> t
+    val make_exn : iso_week_year:int -> iso_week:int -> weekday:weekday -> t
 
     val view : t -> view
   end
@@ -1320,7 +1320,7 @@ module ISO_week_date_time : sig
   type error =
     [ `Does_not_exist
     | `Invalid_iso_week_year of int
-    | `Invalid_week of int
+    | `Invalid_iso_week of int
     | `Invalid_hour of int
     | `Invalid_minute of int
     | `Invalid_second of int
@@ -1336,7 +1336,7 @@ module ISO_week_date_time : sig
     ?ns:int ->
     ?s_frac:float ->
     iso_week_year:int ->
-    week:int ->
+    iso_week:int ->
     weekday:weekday ->
     hour:int ->
     minute:int ->
@@ -1349,7 +1349,7 @@ module ISO_week_date_time : sig
     ?ns:int ->
     ?s_frac:float ->
     iso_week_year:int ->
-    week:int ->
+    iso_week:int ->
     weekday:weekday ->
     hour:int ->
     minute:int ->
@@ -1362,7 +1362,7 @@ module ISO_week_date_time : sig
     ?ns:int ->
     ?s_frac:float ->
     iso_week_year:int ->
-    week:int ->
+    iso_week:int ->
     weekday:weekday ->
     hour:int ->
     minute:int ->
@@ -1376,7 +1376,7 @@ module ISO_week_date_time : sig
     ?ns:int ->
     ?s_frac:float ->
     iso_week_year:int ->
-    week:int ->
+    iso_week:int ->
     weekday:weekday ->
     hour:int ->
     minute:int ->

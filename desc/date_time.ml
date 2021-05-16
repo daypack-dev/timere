@@ -380,7 +380,7 @@ module ISO_week_date_time = struct
   type error =
     [ `Does_not_exist
     | `Invalid_iso_week_year of int
-    | `Invalid_week of int
+    | `Invalid_iso_week of int
     | `Invalid_hour of int
     | `Invalid_minute of int
     | `Invalid_second of int
@@ -391,9 +391,9 @@ module ISO_week_date_time = struct
 
   exception Error_exn of error
 
-  let make ?tz ?ns ?s_frac ~iso_week_year ~week ~weekday ~hour ~minute ~second
+  let make ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday ~hour ~minute ~second
       () : (t, error) result =
-    match Date.ISO_week_date.make ~iso_week_year ~week ~weekday with
+    match Date.ISO_week_date.make ~iso_week_year ~iso_week ~weekday with
     | Error e -> Error (e :> error)
     | Ok date -> (
         match Time.make ~hour ~minute ~second ?ns ?s_frac () with
@@ -403,18 +403,18 @@ module ISO_week_date_time = struct
             | Error e -> Error (e :> error)
             | Ok dt -> Ok dt))
 
-  let make_exn ?tz ?ns ?s_frac ~iso_week_year ~week ~weekday ~hour ~minute
+  let make_exn ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday ~hour ~minute
       ~second () =
     match
-      make ?tz ?ns ?s_frac ~iso_week_year ~week ~weekday ~hour ~minute ~second
+      make ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday ~hour ~minute ~second
         ()
     with
     | Ok x -> x
     | Error e -> raise (Error_exn e)
 
-  let make_unambiguous ?tz ?ns ?s_frac ~iso_week_year ~week ~weekday ~hour
+  let make_unambiguous ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday ~hour
       ~minute ~second ~offset_from_utc () : (t, error) result =
-    match Date.ISO_week_date.make ~iso_week_year ~week ~weekday with
+    match Date.ISO_week_date.make ~iso_week_year ~iso_week ~weekday with
     | Error e -> Error (e :> error)
     | Ok date -> (
         match Time.make ~hour ~minute ~second ?ns ?s_frac () with
@@ -426,10 +426,10 @@ module ISO_week_date_time = struct
             | Error e -> Error (e :> error)
             | Ok dt -> Ok dt))
 
-  let make_unambiguous_exn ?tz ?ns ?s_frac ~iso_week_year ~week ~weekday ~hour
+  let make_unambiguous_exn ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday ~hour
       ~minute ~second ~offset_from_utc () =
     match
-      make_unambiguous ?tz ?ns ?s_frac ~iso_week_year ~week ~weekday ~hour
+      make_unambiguous ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday ~hour
         ~minute ~second ~offset_from_utc ()
     with
     | Ok x -> x

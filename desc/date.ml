@@ -16,20 +16,20 @@ module ISO_week_date = struct
   type error =
     [ `Does_not_exist
     | `Invalid_iso_week_year of int
-    | `Invalid_week of int
+    | `Invalid_iso_week of int
     ]
 
   exception Error_exn of error
 
-  let make ~iso_week_year ~week ~weekday : (t, error) result =
+  let make ~iso_week_year ~iso_week ~weekday : (t, error) result =
     if iso_week_year < Constants.min_year || Constants.max_year < iso_week_year
     then Error (`Invalid_iso_week_year iso_week_year)
-    else if week < 1 || week_count_of_iso_week_year ~iso_week_year < week then
-      Error (`Invalid_week week)
-    else Ok { jd = jd_of_iso_week_date ~iso_week_year ~week ~weekday }
+    else if iso_week < 1 || week_count_of_iso_week_year ~iso_week_year < iso_week then
+      Error (`Invalid_iso_week iso_week)
+    else Ok { jd = jd_of_iso_week_date ~iso_week_year ~iso_week ~weekday }
 
-  let make_exn ~iso_week_year ~week ~weekday : t =
-    match make ~iso_week_year ~week ~weekday with
+  let make_exn ~iso_week_year ~iso_week ~weekday : t =
+    match make ~iso_week_year ~iso_week ~weekday with
     | Error e -> raise (Error_exn e)
     | Ok x -> x
 
