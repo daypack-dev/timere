@@ -356,8 +356,7 @@ let iso_ord_date_gen : (int * int) QCheck.Gen.t =
          else (day_of_year mod 365) + 1
        in
        (year, day_of_year))
-    (int_range 1 9998)
-    (pos_int64_bound_gen 365L)
+    (int_range 1 9998) (pos_int64_bound_gen 365L)
 
 let iso_ord_date =
   QCheck.make
@@ -375,8 +374,7 @@ let iso_week_date_gen : (int * int * Timedesc.weekday) QCheck.Gen.t =
          + 1
        in
        (iso_week_year, week, weekday))
-    (int_range 1 9998)
-    (pos_int64_bound_gen 53L) weekday_gen
+    (int_range 1 9998) (pos_int64_bound_gen 53L) weekday_gen
 
 let iso_week_date =
   QCheck.make
