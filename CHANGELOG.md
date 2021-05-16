@@ -19,13 +19,15 @@
 
 - Added ISO int conversion functions for `weekday`
 
-- Fixed `Timedesc.Date.day` accessor
+- Fixed `Timedesc.Date.day` accessor, which is used by `Timedesc.day`
 
 - Renamed `week` to `iso_week` for ISO week date API
 
 - Replaced use of `CCOpt.get_exn` with `CCOpt.get_exn_or`
 
 - Made `Timedesc.Time.t` abstract with modified underlying representation
+
+- Fixed `Timedesc.Time.make` to handle `24:00:00` "properly" by rewriting it to `23:59:59.999_999_999`
 
 ## Timedesc 0.1.0
 

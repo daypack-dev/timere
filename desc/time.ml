@@ -27,7 +27,7 @@ let make ?(ns = 0) ?(s_frac = 0.0) ~hour ~minute ~second () : (t, error) result
       match
         if hour = 24 then
           if minute = 0 && second = 0 && ns = 0 then
-            Ok (hour, minute, second, ns)
+            Ok (23, 59, 59, Span.ns_count_in_s - 1)
           else Error (`Invalid_hour hour)
         else Ok (hour, minute, second, ns)
       with
