@@ -71,7 +71,7 @@ type view = {
 }
 
 let view (x : t) : view =
-  let v = Span.For_human'.view @@ Span.make_small ~s:x.s ~ns:x.ns () in
+  let v = Span.For_human'.view @@ to_span x in
   { hour = v.hours; minute = v.minutes; second = v.seconds; ns = v.ns }
 
 let hour x = (view x).hour
