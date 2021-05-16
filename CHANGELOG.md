@@ -25,6 +25,8 @@
 
 - Replaced use of `CCOpt.get_exn` with `CCOpt.get_exn_or`
 
+- Made `Timedesc.Time.t` abstract with modified underlying representation
+
 ## Timedesc 0.1.0
 
 - Migration of date time components from Timere
