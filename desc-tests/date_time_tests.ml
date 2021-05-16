@@ -325,6 +325,20 @@ module Qc = struct
          let day = Timedesc.day d in
          year = year' && month = month' && day = day')
 
+  let time_accessors =
+    QCheck.Test.make ~count:100_000 ~name:"time_accessors"
+      QCheck.(pair ymd_date time)
+      (fun ((year', month', day'), (hour, minute, second, ns)) ->
+         let d =
+           Timedesc.make_exn ~tz:Timedesc.Time_zone.utc ~year:year' ~month:month'
+             ~day:day' ~hour ~minute ~second ~ns ()
+         in
+         let hour' = Timedesc.hour d in
+         let minute' = Timedesc.minute d in
+         let second' = Timedesc.second d in
+         let ns' = Timedesc.ns d in
+         hour = hour' && minute = minute' && second = second' && ns = ns')
+
   let suite =
     [
       to_rfc3339_nano_of_iso8601_is_lossless;
@@ -337,5 +351,6 @@ module Qc = struct
       iso_ord_date_accessors;
       iso_week_date_accessors;
       ymd_date_accessors;
+      time_accessors;
     ]
 end
