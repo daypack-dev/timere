@@ -88,9 +88,7 @@ module Format_string_parsers = struct
         (attempt (string "12hour:")
          >> padding
          >>= fun padding ->
-         let hour =
-           if hour = 0 then 12 else hour mod 12
-         in
+         let hour = if hour = 0 then 12 else hour mod 12 in
          return (pad_int padding hour));
         (attempt (string "min:")
          >> padding

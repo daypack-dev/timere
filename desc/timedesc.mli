@@ -616,6 +616,7 @@ module Time : sig
   exception Error_exn of error
 
   (** {1 Constructors} *)
+
   val make :
     ?ns:int ->
     ?s_frac:float ->

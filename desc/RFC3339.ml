@@ -66,13 +66,11 @@ let pp_date_time ?frac_s () formatter (dt : Date_time.t) =
           Printf.sprintf "%c%02d:%02d" sign offset_view.hours
             offset_view.minutes
       in
-      let second =
-        if Date_time.is_leap_second dt then 60 else second
-      in
+      let second = if Date_time.is_leap_second dt then 60 else second in
       let Date.Ymd_date.{ year; month; day } = Date_time.ymd_date dt in
       if frac_s = 0 then
-        Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d%s" year month day
-          hour minute second tz_off
+        Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d%s" year month day hour
+          minute second tz_off
       else
         let divisor = get_divisor frac_s in
         Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d.%0*d%s" year month day

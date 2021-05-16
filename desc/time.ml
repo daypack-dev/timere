@@ -38,7 +38,9 @@ let make ?(ns = 0) ?(s_frac = 0.0) ~hour ~minute ~second () : (t, error) result
         let ns = if is_leap_second then ns + Span.ns_count_in_s else ns in
         let s =
           CCInt64.to_int
-            (Span.For_human'.make_exn ~sign:`Pos ~hours:hour ~minutes:minute ~seconds:second ()).s
+            (Span.For_human'.make_exn ~sign:`Pos ~hours:hour ~minutes:minute
+               ~seconds:second ())
+            .s
         in
         Ok { s; ns }
 
@@ -48,9 +50,7 @@ let make_exn ?ns ?s_frac ~hour ~minute ~second () : t =
   | Ok x -> x
 
 let to_span (x : t) : Span.t =
-  Span.make_small ~s:x.s
-    ~ns:(x.ns mod Span.ns_count_in_s)
-    ()
+  Span.make_small ~s:x.s ~ns:(x.ns mod Span.ns_count_in_s) ()
 
 let of_span (x : Span.t) : t option =
   if Span.(zero <= x && x < Constants.one_day) then
@@ -61,8 +61,7 @@ let of_span (x : Span.t) : t option =
 
 let is_leap_second (x : t) = x.ns >= Span.ns_count_in_s
 
-let equal (x : t) (y : t) =
-  x.s = y.s && x.ns = y.ns
+let equal (x : t) (y : t) = x.s = y.s && x.ns = y.ns
 
 type view = {
   hour : int;
@@ -75,14 +74,10 @@ let view (x : t) : view =
   let v = Span.For_human'.view @@ Span.make_small ~s:x.s ~ns:x.ns () in
   { hour = v.hours; minute = v.minutes; second = v.seconds; ns = v.ns }
 
-let hour x =
-  (view x).hour
+let hour x = (view x).hour
 
-let minute x =
-  (view x).minute
+let minute x = (view x).minute
 
-let second x =
-  (view x).second
+let second x = (view x).second
 
-let ns x =
-  (view x).ns
+let ns x = (view x).ns
