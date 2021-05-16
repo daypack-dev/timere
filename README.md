@@ -121,6 +121,14 @@ __Note__: While `tzdb-json/` may be useful and usable outside of Timere,
 we make no guarantees that the JSON format stays unmodified
 (though changes of the format should be a rare occurrence, if ever occurring)
 
+## Advanced usage
+
+#### Building a custom Tzdb backend
+
+Timedesc itself can help build a time zone data source backend.
+
+TODO
+
 ## Changelog
 
 See [here](CHANGELOG.md)
