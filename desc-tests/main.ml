@@ -1,6 +1,7 @@
 let () =
   let alco_suites =
     [
+      ("Time_tests.Alco", Time_tests.Alco.suite);
       ("Date_time_tests.Alco", Date_time_tests.Alco.suite);
       ("Tzdb_tests.Alco", Tzdb_tests.Alco.suite);
     ]
