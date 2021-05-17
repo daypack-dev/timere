@@ -25,7 +25,9 @@
 
 - Replaced use of `CCOpt.get_exn` with `CCOpt.get_exn_or`
 
-- Made `Timedesc.Time.t` abstract with modified underlying representation
+- Made `Timedesc.Time.t` abstract
+
+- Modified `Timedesc.Time.t` underlying representation
 
 - Fixed `Timedesc.Time.make` to handle `24:00:00` "properly" by rewriting it to `23:59:59.999_999_999`
 
