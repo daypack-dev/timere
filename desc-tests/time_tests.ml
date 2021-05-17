@@ -10,7 +10,5 @@ module Alco = struct
        |> Timedesc.Time.to_span)
 
   let suite =
-    [
-      Alcotest.test_case "end_of_day_24_00_00" `Quick end_of_day_24_00_00;
-    ]
+    [ Alcotest.test_case "end_of_day_24_00_00" `Quick end_of_day_24_00_00 ]
 end
