@@ -22,7 +22,7 @@ depends: [
   "dune" {>= "2.7.0"}
   "oseq"
   "ptime"
-  "timere" {>= "0.3.1"}
+  "timere" {>= "0.4.0"}
   "re"
   "mparser"
 ]
