@@ -329,8 +329,10 @@ module Sexp = struct
     CCSexp.(
       list
         (atom "tz"
-         :: atom (name t)
-         :: List.map
+         ::
+         atom (name t)
+         ::
+         List.map
            (fun ((start, _), entry) ->
               list
                 [

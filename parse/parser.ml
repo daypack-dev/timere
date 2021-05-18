@@ -278,7 +278,8 @@ module Ast_normalize = struct
           match extract_single x with
           | Some x ->
             (pos_x, m, constr_grouped [ `Range_inc (x, x) ])
-            :: recognize_single_interval
+            ::
+            recognize_single_interval
               ((pos_comma, text_map_empty, Comma) :: rest)
           | _ -> recognize_fallback tokens)
       | (pos_x, m_x, x)
@@ -288,7 +289,8 @@ module Ast_normalize = struct
             ( pos_x,
               text_map_union m_x m_y,
               constr_grouped [ `Range_inc (x, y) ] )
-            :: recognize_single_interval
+            ::
+            recognize_single_interval
               ((pos_comma, text_map_empty, Comma) :: rest)
           | _, _ -> recognize_fallback tokens)
       | (pos_comma, _, Comma)
@@ -296,9 +298,10 @@ module Ast_normalize = struct
           match (extract_single x, extract_single y) with
           | Some x, Some y ->
             (pos_comma, text_map_empty, Comma)
-            :: ( pos_x,
-                 text_map_union m_x m_y,
-                 constr_grouped [ `Range_inc (x, y) ] )
+            ::
+            ( pos_x,
+              text_map_union m_x m_y,
+              constr_grouped [ `Range_inc (x, y) ] )
             :: recognize_single_interval rest
           | _, _ -> recognize_fallback tokens)
       | _ -> recognize_fallback tokens
@@ -390,12 +393,14 @@ module Ast_normalize = struct
       | (pos_x, _, Month_day x)
         :: (pos_comma, _, Comma) :: (pos_y, _, Nat y) :: rest ->
         (pos_x, text_map_empty, Month_day x)
-        :: (pos_comma, text_map_empty, Comma)
+        ::
+        (pos_comma, text_map_empty, Comma)
         :: propagate_guesses ((pos_y, text_map_empty, Month_day y) :: rest)
       | (pos_x, _, Month_day x) :: (pos_to, _, To) :: (pos_y, _, Nat y) :: rest
         ->
         (pos_x, text_map_empty, Month_day x)
-        :: (pos_to, text_map_empty, To)
+        ::
+        (pos_to, text_map_empty, To)
         :: propagate_guesses ((pos_y, text_map_empty, Month_day y) :: rest)
       | [] -> []
       | x :: xs -> x :: propagate_guesses xs

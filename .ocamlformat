@@ -1,7 +1,7 @@
+version = 0.18.0
 break-infix = fit-or-vertical
 break-infix-before-func
 field-space = loose
 let-and = sparse
 sequence-style = terminator
 type-decl = sparse
-indicate-multiline-delimiters=no
