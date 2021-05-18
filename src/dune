@@ -31,9 +31,7 @@
  (name timere)
  (public_name timere)
  (instrumentation (backend bisect_ppx))
- (libraries
-            timedesc
-            unix
+ (libraries timedesc
             oseq
             containers
             seq
