@@ -9,6 +9,7 @@ let () =
   let qc_suites =
     [
       ("Span_tests.Qc", Span_tests.Qc.suite);
+      ("Time_tests.Qc", Time_tests.Qc.suite);
       ("Date_tests.Qc", Date_tests.Qc.suite);
       ("Date_time_tests.Qc", Date_time_tests.Qc.suite);
       ("Ptime_tests.Qc", Ptime_tests.Qc.suite);

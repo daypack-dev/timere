@@ -12,3 +12,17 @@ module Alco = struct
   let suite =
     [ Alcotest.test_case "end_of_day_24_00_00" `Quick end_of_day_24_00_00 ]
 end
+
+module Qc = struct
+  let accessors =
+    QCheck.Test.make ~count:100_000 ~name:"accessors" time
+      (fun (hour, minute, second, ns) ->
+         let time = Timedesc.Time.make_exn ~hour ~minute ~second ~ns () in
+         let hour' = Timedesc.Time.hour time in
+         let minute' = Timedesc.Time.minute time in
+         let second' = Timedesc.Time.second time in
+         let ns' = Timedesc.Time.ns time in
+         hour = hour' && minute = minute' && second = second' && ns = ns')
+
+  let suite = [ accessors ]
+end
