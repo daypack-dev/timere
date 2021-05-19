@@ -539,6 +539,14 @@ module Date : sig
     exception Error_exn of error
 
     val make : year:int -> month:int -> day:int -> (t, error) result
+    (** Constructs a date in the Gregorian calendar.
+
+        Returns [Error `Invalid_year] if [year < 0 || 9999 < year].
+
+        Returns [Error `Invalid_month] if [month < 1 || 12 < month].
+
+        Returns [Error `Invalid_day] if [day < 1 || day count of month < day].
+    *)
 
     val make_exn : year:int -> month:int -> day:int -> t
 
@@ -562,6 +570,12 @@ module Date : sig
 
     val make :
       iso_week_year:int -> iso_week:int -> weekday:weekday -> (t, error) result
+    (** Constructs a date in the ISO week calendar.
+
+        Returns [Error `Invalid_iso_week_year] if [iso_week_year < 0 || 9999 < iso_week_year].
+
+        Returns [Error `Invalid_iso_week] if [iso_week < 1 || week count of iso_week_year < iso_week].
+    *)
 
     val make_exn : iso_week_year:int -> iso_week:int -> weekday:weekday -> t
 
@@ -583,6 +597,12 @@ module Date : sig
     exception Error_exn of error
 
     val make : year:int -> day_of_year:int -> (t, error) result
+    (** Constructs a date in the ISO ordinal calendar.
+
+        Returns [Error `Invalid_year] if [year < 0 || 9999 < year].
+
+        Returns [Error `Invalid_day_of_year] if [day_of_year < 1 || day count of year < day_of_year].
+    *)
 
     val make_exn : year:int -> day_of_year:int -> t
 
@@ -625,6 +645,30 @@ module Time : sig
     second:int ->
     unit ->
     (t, error) result
+  (** Constructs {!t} from specification of the time of day.
+
+      Leap second can be specified by providing 60 for [second].
+      Note that leap second informtation is lost upon translation to timestamp(s),
+      specifically second 60 is treated as second 59.
+
+      [24:00:00] is treated as [23:59:59.999_999_999].
+
+      Nanosecond used is the addition of [ns] and [s_frac * 10^9].
+
+      Returns [Error `Invalid_hour] if [hour < 0 || 24 < hour].
+
+      Returns [Error `Invalid_hour] if [hour = 24] and [minute <> 0 || second <> 0 || total ns <> 0].
+
+      Returns [Error `Invalid_minute] if [minute < 0 || 59 < minute].
+
+      Returns [Error `Invalid_second] if [second < 0 || 60 < second].
+
+      Returns [Error `Invalid_ns] if [s_frac < 0.0].
+
+      Returns [Error `Invalid_ns] if [ns < 0].
+
+      Returns [Error `Invalid_ns] if [total ns >= 10^9].
+  *)
 
   val make_exn :
     ?ns:int ->
@@ -840,8 +884,6 @@ val make :
   (t, error) result
 (** Constructs a date time providing only a time zone (defaults to local time zone).
 
-    Nanosecond used is the addition of [ns] and [s_frac * 10^9].
-
     A precise offset is inferred if possible.
 
     Note that this may yield a ambiguous date time if the time zone has varying offsets,
@@ -849,27 +891,9 @@ val make :
 
     See {!val:make_unambiguous} for the more precise construction.
 
-    Leap second can be specified by providing 60 for [second].
-    Note that leap second informtation is lost upon translation to timestamp(s),
-    specifically second 60 is treated as second 59.
+    See {!Date.Ymd_date.make} for error handling of date specification.
 
-    Returns [Error `Invalid_year] if [year < 0 || 9999 < year].
-
-    Returns [Error `Invalid_month] if [month < 1 || 12 < month].
-
-    Returns [Error `Invalid_day] if [day < 1 || 31 < day].
-
-    Returns [Error `Invalid_hour] if [hour > 23].
-
-    Returns [Error `Invalid_minute] if [minute > 59].
-
-    Returns [Error `Invalid_second] if [second > 60].
-
-    Returns [Error `Invalid_ns] if [s_frac < 0.0].
-
-    Returns [Error `Invalid_ns] if [ns < 0].
-
-    Returns [Error `Invalid_ns] if [total ns >= 10^9].
+    See {!Time.make} for error handling of time of day specification.
 *)
 
 val make_exn :
