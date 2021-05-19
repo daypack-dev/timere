@@ -123,6 +123,20 @@ we make no guarantees that the JSON format stays unmodified
 
 ## Advanced usage
 
+#### Using Timedesc in utop
+
+To use Timedesc in utop, you need to pick the backends explicitly first
+
+For example, to use the default implementations, one can first type the following lines in utop
+
+```
+#require "timedesc.tzdb.full";;
+#require "timedesc.tzlocal.unix";;
+#require "timedesc";;
+```
+
+then `Timedesc` should be accessible in utop
+
 #### Building a custom Tzdb backend
 
 Timedesc itself can help build a time zone data source backend.
