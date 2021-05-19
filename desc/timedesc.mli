@@ -617,6 +617,7 @@ end
 
 module Time : sig
   type t
+  (** Representation of time of day *)
 
   type view = private {
     hour : int;
