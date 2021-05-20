@@ -456,6 +456,8 @@ let matching_date_time_ranges (search_param : Search_param.t) (t : Pattern.t) :
     |> Seq.flat_map (Matching_minutes.matching_minutes t)
     |> Seq.flat_map (Matching_seconds.matching_second_ranges t)
 
+let one_ns = Timedesc.Span.make ~ns:1 ()
+
 let resolve (search_param : Search_param.t) (t : Pattern.t) :
   (Timedesc.Span.t * Timedesc.Span.t) Seq.t =
   let f (x, y) =
@@ -472,7 +474,7 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
       |> CCOpt.map Timedesc.to_timestamp_single
     in
     match (x, y) with
-    | Some x, Some y -> Some (x, Timedesc.Span.succ y)
+    | Some x, Some y -> Some (x, y)
     | None, None -> None
     | None, Some y -> Some (Timedesc.Timestamp.min_val, y)
     | Some x, None -> Some (x, Timedesc.Timestamp.max_val)
@@ -483,6 +485,7 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
       | `Range_inc (x, y) -> (x, y)
       | `Range_exc _ -> failwith "Unexpected case")
   |> Seq.filter_map f
+  |> Seq.map (fun (x, y) -> (x, Timestamp_utils.timestamp_safe_add y one_ns))
   |> Time.Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
   |> Time.Intervals.Slice.slice
     ~start:(Timedesc.to_timestamp_single search_param.start_dt)

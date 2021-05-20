@@ -11,6 +11,12 @@
 )
 
 (rule
+ (targets timestamp_utils.ml)
+ (deps    ../src/timestamp_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
  (targets pattern.ml)
  (deps    ../src/pattern.ml)
  (action  (copy %{deps} %{targets}))
