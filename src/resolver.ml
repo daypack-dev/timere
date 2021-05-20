@@ -292,7 +292,6 @@ let restrict_search_space_top_down (time : t) : t =
         time
     | Unary_op (cur, op, t) -> (
         match op with
-        (* | Take_points _ | Drop_points _ -> stop_propagation *)
         | _ ->
           let space = restrict_search_space time parent_search_space cur in
           set_search_space space (Unary_op (cur, op, aux space t)))
