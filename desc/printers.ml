@@ -99,13 +99,16 @@ module Format_string_parsers = struct
 
   let string_of_frac ~precision ~ns =
     let ns = float_of_int ns in
-    let precision' = float_of_int precision in
-    let frac =
-      ns *. (10. ** precision') /. Span.ns_count_in_s_float
-      |> CCFloat.round
-      |> int_of_float
-    in
-    Printf.sprintf "%0*d" precision frac
+    if precision = 0 then
+      ""
+    else
+      let precision' = float_of_int precision in
+      let frac =
+        ns *. (10. ** precision') /. Span.ns_count_in_s_float
+        |> CCFloat.round
+        |> int_of_float
+      in
+      Printf.sprintf ".%0*d" precision frac
 
   let date_time_inner (date_time : Date_time.t) : (string, unit) t =
     let single_offset =
@@ -195,13 +198,13 @@ module Format_string_parsers = struct
 end
 
 let default_date_time_format_string =
-  "{year} {mon:Xxx} {day:0X} {hour:0X}:{min:0X}:{sec:0X}.{sec-frac} \
+  "{year} {mon:Xxx} {day:0X} {hour:0X}:{min:0X}:{sec:0X}{sec-frac} \
    {tzoff-sign}{tzoff-hour:0X}:{tzoff-min:0X}:{tzoff-sec:0X}"
 
 let default_interval_format_string =
-  "[{syear} {smon:Xxx} {sday:0X} {shour:0X}:{smin:0X}:{ssec:0X}.{ssec-frac} \
+  "[{syear} {smon:Xxx} {sday:0X} {shour:0X}:{smin:0X}:{ssec:0X}{ssec-frac} \
    {stzoff-sign}{stzoff-hour:0X}:{stzoff-min:0X}:{stzoff-sec:0X}, {eyear} \
-   {emon:Xxx} {eday:0X} {ehour:0X}:{emin:0X}:{esec:0X}.{esec-frac} \
+   {emon:Xxx} {eday:0X} {ehour:0X}:{emin:0X}:{esec:0X}{esec-frac} \
    {etzoff-sign}{etzoff-hour:0X}:{etzoff-min:0X}:{etzoff-sec:0X})"
 
 exception Invalid_format_string of string
