@@ -66,9 +66,10 @@ let () =
             (fun (x, y) ->
                timestamp_is_okay tz pattern x
                && timestamp_is_okay tz pattern (Timedesc.Span.pred y)
-               && not
-                 (Span_set.mem y search_space_set
-                  && timestamp_is_okay tz pattern y))
+               && (Timedesc.Timestamp.(y = max_val)
+                   || not
+                     (Span_set.mem y search_space_set
+                      && timestamp_is_okay tz pattern y)))
             s
         in
         if not r then
