@@ -474,10 +474,8 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
     match (x, y) with
     | Some x, Some y -> Some (x, y)
     | None, None -> None
-    | None, Some y ->
-      Some (Timedesc.Timestamp.min_val, y)
-    | Some x, None ->
-      Some (x, Timedesc.Timestamp.max_val)
+    | None, Some y -> Some (Timedesc.Timestamp.min_val, y)
+    | Some x, None -> Some (x, Timedesc.Timestamp.max_val)
   in
   matching_date_time_ranges search_param t
   |> Seq.map (fun r ->

@@ -5,10 +5,7 @@ let display_timestamps ~display_using_tz s =
     s
     |> OSeq.take 20
     |> OSeq.iter (fun x ->
-        let s =
-          Timedesc.Timestamp.to_string ~display_using_tz
-            x
-        in
+        let s = Timedesc.Timestamp.to_string ~display_using_tz x in
         Printf.printf "%s\n" s;
         flush stdout)
 
@@ -19,23 +16,18 @@ let display_intervals ~display_using_tz s =
     s
     |> OSeq.take 20
     |> OSeq.iter (fun (x, y) ->
-        let s =
-          Timedesc.Interval.to_string ~display_using_tz
-            (x, y)
-        in
+        let s = Timedesc.Interval.to_string ~display_using_tz (x, y) in
         let size = Timedesc.Span.sub y x in
         let size_str = Timedesc.Span.For_human.to_string size in
         Printf.printf "%s - %s\n" s size_str;
         flush stdout)
 
 let debug_resolver () =
-  let s =
-    {|
+  let s = {|
 (with_tz Etc/GMT+8
 (pattern)
       )
-      |}
-  in
+      |} in
   let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in
   (* let timere =
    *   (fun max_height max_branching randomness ->
@@ -94,8 +86,8 @@ let debug_resolver () =
     Timedesc.to_timestamp search_start_dt |> Timedesc.min_of_local_result
   in
   let search_end_exc_dt =
-    Timedesc.make_exn ~year:0000 ~month:1 ~day:1 ~hour:14 ~minute:0 ~second:1 ~tz
-      ()
+    Timedesc.make_exn ~year:0000 ~month:1 ~day:1 ~hour:14 ~minute:0 ~second:1
+      ~tz ()
   in
   let search_end_exc =
     Timedesc.to_timestamp search_end_exc_dt |> Timedesc.max_of_local_result
@@ -114,8 +106,7 @@ let debug_resolver () =
            *   (Date_time'.make_exn ~tz ~year:2010 ~month:`Jan ~day:1 ~hour:0
            *      ~minute:0 ~second:0 ()); *)
           intervals [ (search_start, search_end_exc) ];
-        ]
-    )
+        ])
     (* ) *)
   in
   print_endline "^^^^^";
@@ -125,15 +116,18 @@ let debug_resolver () =
    *  | Error msg -> print_endline msg
    *  | Ok s -> display_intervals ~display_using_tz:Timedesc.Time_zone.utc s); *)
   (let s =
-     Resolver.aux_pattern tz [(search_start, search_end_exc)]
-       Pattern.{ years = Int_set.empty;
-                 months = Int_set.empty;
-                 month_days = Int_set.empty;
-                 weekdays = Weekday_set.empty;
-                 hours = Int_set.empty;
-                 minutes = Int_set.empty;
-                 seconds = Int_set.empty;
-               }
+     Resolver.aux_pattern tz
+       [ (search_start, search_end_exc) ]
+       Pattern.
+         {
+           years = Int_set.empty;
+           months = Int_set.empty;
+           month_days = Int_set.empty;
+           weekdays = Weekday_set.empty;
+           hours = Int_set.empty;
+           minutes = Int_set.empty;
+           seconds = Int_set.empty;
+         }
      |> Resolver.normalize
    in
    display_intervals ~display_using_tz:Timedesc.Time_zone.utc s);

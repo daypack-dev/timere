@@ -24,8 +24,7 @@ let () =
           let s' =
             Seq_utils.a_to_b_inc_int64 ~a:search_start.s ~b:search_end_exc.s
             |> OSeq.filter (fun timestamp ->
-                Simple_resolver.aux_pattern_mem tz pattern timestamp
-                )
+                Simple_resolver.aux_pattern_mem tz pattern timestamp)
             |> intervals_of_int64s
             |> span_set_of_intervals
             |> Span_set.inter search_space_set
@@ -34,8 +33,7 @@ let () =
           let r =
             OSeq.for_all
               (fun (x', y') ->
-                 OSeq.exists Timedesc.Span.(fun (x, y) -> x <= x' && y' <= y) s
-              )
+                 OSeq.exists Timedesc.Span.(fun (x, y) -> x <= x' && y' <= y) s)
               s'
           in
           if not r then

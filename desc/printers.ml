@@ -99,8 +99,7 @@ module Format_string_parsers = struct
 
   let string_of_frac ~precision ~ns =
     let ns = float_of_int ns in
-    if precision = 0 then
-      ""
+    if precision = 0 then ""
     else
       let precision' = float_of_int precision in
       let frac =
@@ -157,14 +156,11 @@ module Format_string_parsers = struct
          >> nat_zero
          >>= fun precision ->
          if precision = 0 then fail "Precision cannot be 0"
-         else
-           return (string_of_frac ~precision ~ns)
-        );
+         else return (string_of_frac ~precision ~ns));
         (attempt (string "sec-frac")
          >>
          let precision = deduce_smallest_lossless_frac_s ~ns in
-         return (string_of_frac ~precision ~ns)
-        );
+         return (string_of_frac ~precision ~ns));
         (attempt (string "tzoff-sign")
          >>= fun _ ->
          match single_offset with
