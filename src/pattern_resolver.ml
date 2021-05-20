@@ -12,7 +12,7 @@ module Branch = struct
   let to_date_time ~offset_from_utc (x : t) : Timedesc.t option =
     match
       Timedesc.make_unambiguous ~offset_from_utc ~year:x.year ~month:x.month
-        ~day:x.day ~hour:x.hour ~minute:x.minute ~second:x.second ~ns:x.ns ()
+        ~day:x.day ~hour:x.hour ~minute:x.minute ~second:x.second ()
     with
     | Ok t -> Some t
     | Error `Does_not_exist -> None
