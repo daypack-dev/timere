@@ -10,8 +10,9 @@ module Branch = struct
   }
 
   let to_date_time ~offset_from_utc (x : t) : Timedesc.t option =
-    match Timedesc.make_unambiguous ~offset_from_utc ~year:x.year ~month:x.month
-      ~day:x.day ~hour:x.hour ~minute:x.minute ~second:x.second ()
+    match
+      Timedesc.make_unambiguous ~offset_from_utc ~year:x.year ~month:x.month
+        ~day:x.day ~hour:x.hour ~minute:x.minute ~second:x.second ()
     with
     | Ok t -> Some t
     | Error `Does_not_exist -> None
@@ -470,9 +471,7 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
         ~offset_from_utc:search_param.search_using_offset_from_utc
       |> CCOpt.map Timedesc.to_timestamp_single
     in
-    match (x, y) with
-    | Some x, Some y -> Some (x, y)
-    | _, _ -> None
+    match (x, y) with Some x, Some y -> Some (x, y) | _, _ -> None
   in
   matching_date_time_ranges search_param t
   |> Seq.map (fun r ->
@@ -480,9 +479,7 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
       | `Range_inc (x, y) -> (x, y)
       | `Range_exc _ -> failwith "Unexpected case")
   |> Seq.filter_map f
-  |> Seq.map (fun (x, y) ->
-      (x, Timedesc.Span.succ y)
-      )
+  |> Seq.map (fun (x, y) -> (x, Timedesc.Span.succ y))
   |> Time.Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
   |> Time.Intervals.Slice.slice
     ~start:(Timedesc.to_timestamp_single search_param.start_dt)
