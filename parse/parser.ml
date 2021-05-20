@@ -952,7 +952,7 @@ let t_of_hmss (hmss : Timere.Hms.t Timere.range list) =
                  Ok
                    Timere.(
                      bounded_intervals `Whole
-                       (Timedesc.Span.For_human.make_exn ~days:2 ())
+                       (Timedesc.Span.For_human.make_exn ~hours:30 ())
                        p1 p2)
                | _ -> Error ())
          | _ -> failwith "unexpected case")
