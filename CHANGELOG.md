@@ -16,6 +16,8 @@
 
 - Fixed incorrect resolution due to incorrect definition of `Resolver.timestamp_safe_sub`
 
+- Added automatic second fraction precision support for non-RFC3339 pretty printers
+
 ## Timere 0.4.0
 
 - Migration of date time components to Timedesc
