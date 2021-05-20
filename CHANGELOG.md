@@ -18,6 +18,8 @@
 
 - Added automatic second fraction precision support for non-RFC3339 pretty printers
 
+- General fixes in `pattern_resolver` and `resolver` for edge cases nearing `Timedesc.Timestamp.min_val` and `Timedesc.Timestamp.max_val`
+
 ## Timere 0.4.0
 
 - Migration of date time components to Timedesc
