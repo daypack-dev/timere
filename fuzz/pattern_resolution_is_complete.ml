@@ -35,10 +35,17 @@ let () =
             OSeq.for_all
               (fun (x', y') ->
                  let r = OSeq.exists Timedesc.Span.(fun (x, y) -> x <= x' && y' <= y) s in
-                 if not r then
+                 if not r then (
                    Format.printf "x': %a, y': %a\n%!"
                      (Timedesc.Timestamp.pp_rfc3339 ()) x'
                      (Timedesc.Timestamp.pp_rfc3339 ()) y';
+
+                   Seq.iter (fun (x, y) ->
+                       Format.printf "x': %a, y': %a\n%!"
+                         (Timedesc.Timestamp.pp_rfc3339 ()) x
+                         (Timedesc.Timestamp.pp_rfc3339 ()) y;
+                     ) s;
+                 );
                  r
               )
               s'
