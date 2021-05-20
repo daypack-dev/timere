@@ -6,6 +6,8 @@
 
 - Added support for parsing "24:00" and "24:00:00"
 
+- Added exception raising version of functions
+
 ## Timere 0.4.1
 
 - Fixed unhandled exception/crash due to trying to construct invalid date times when resolving patterns
