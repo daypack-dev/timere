@@ -12,6 +12,8 @@
 
 - Fixed lossy behaviour in `Pattern_resolver.Branch.to_date_time`
 
+- Fixed incorrect resolution due to incorrect definition of `Resolver.timestamp_safe_sub`
+
 ## Timere 0.4.0
 
 - Migration of date time components to Timedesc
