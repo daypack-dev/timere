@@ -6,6 +6,10 @@
 
 - Added support for parsing "24:00" and "24:00:00"
 
+## Timere 0.4.1
+
+- Fixed unhandled exception/crash due to trying to construct invalid date times when resolving patterns
+
 ## Timere 0.4.0
 
 - Migration of date time components to Timedesc
