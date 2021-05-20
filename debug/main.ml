@@ -1,12 +1,3 @@
-let default_date_time_format_string =
-  "{year} {mon:Xxx} {day:0X} {wday:Xxx} \
-   {hour:0X}:{min:0X}:{sec:0X}.{sec-frac:9}"
-
-let default_interval_format_string =
-  "[{syear} {smon:Xxx} {sday:0X} {swday:Xxx} \
-   {shour:0X}:{smin:0X}:{ssec:0X}.{ssec-frac:9}, {eyear} {emon:Xxx} {eday:0X} \
-   {ewday:Xxx} {ehour:0X}:{emin:0X}:{esec:0X}.{esec-frac:9})"
-
 let display_timestamps ~display_using_tz s =
   match s () with
   | Seq.Nil -> print_endline "No timestamps"
@@ -16,7 +7,7 @@ let display_timestamps ~display_using_tz s =
     |> OSeq.iter (fun x ->
         let s =
           Timedesc.Timestamp.to_string ~display_using_tz
-            ~format:default_date_time_format_string x
+            x
         in
         Printf.printf "%s\n" s;
         flush stdout)
@@ -30,7 +21,7 @@ let display_intervals ~display_using_tz s =
     |> OSeq.iter (fun (x, y) ->
         let s =
           Timedesc.Interval.to_string ~display_using_tz
-            ~format:default_interval_format_string (x, y)
+            (x, y)
         in
         let size = Timedesc.Span.sub y x in
         let size_str = Timedesc.Span.For_human.to_string size in
@@ -40,22 +31,9 @@ let display_intervals ~display_using_tz s =
 let debug_resolver () =
   let s =
     {|
-(union
-                            (intervals
-                             ((2002 9 15 8 23 8 0 UTC (single 0))
-                              (2002 9 15 8 23 8 507 UTC (single 0))))
-                            (intervals
-                             ((2002 12 9 14 27 23 0 UTC (single 0))
-                              (2002 12 9 14 27 23 134 UTC (single 0))))
-                            (bounded_intervals whole (86400 0)
-                             (points (pick hms 14 8 23))
-                             (points (pick hms 3 14 8)))
-                            (bounded_intervals whole (86400 0)
-                             (points (pick hms 14 8 23))
-                             (points (pick hms 3 14 8)))
-                            (bounded_intervals whole (86400 0)
-                             (points (pick hms 14 8 23))
-                             (points (pick hms 3 14 8))))
+(with_tz Etc/GMT+8
+(pattern)
+      )
       |}
   in
   let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in
@@ -116,7 +94,7 @@ let debug_resolver () =
     Timedesc.to_timestamp search_start_dt |> Timedesc.min_of_local_result
   in
   let search_end_exc_dt =
-    Timedesc.make_exn ~year:2003 ~month:1 ~day:1 ~hour:0 ~minute:0 ~second:0 ~tz
+    Timedesc.make_exn ~year:0000 ~month:1 ~day:1 ~hour:14 ~minute:0 ~second:1 ~tz
       ()
   in
   let search_end_exc =
@@ -124,6 +102,8 @@ let debug_resolver () =
   in
   let timere' =
     Time.(
+      (* with_tz (Timedesc.Time_zone.make_exn "Etc/GMT+8")
+       *   ( *)
       inter
         [
           timere;
@@ -134,14 +114,29 @@ let debug_resolver () =
            *   (Date_time'.make_exn ~tz ~year:2010 ~month:`Jan ~day:1 ~hour:0
            *      ~minute:0 ~second:0 ()); *)
           intervals [ (search_start, search_end_exc) ];
-        ])
+        ]
+    )
+    (* ) *)
   in
   print_endline "^^^^^";
   print_endline (To_sexp.to_sexp_string timere');
   print_endline "=====";
-  (match Resolver.resolve ~search_using_tz:tz timere' with
-   | Error msg -> print_endline msg
-   | Ok s -> display_intervals ~display_using_tz:Timedesc.Time_zone.utc s);
+  (* (match Resolver.resolve ~search_using_tz:tz timere' with
+   *  | Error msg -> print_endline msg
+   *  | Ok s -> display_intervals ~display_using_tz:Timedesc.Time_zone.utc s); *)
+  (let s =
+     Resolver.aux_pattern tz [(search_start, search_end_exc)]
+       Pattern.{ years = Int_set.empty;
+                 months = Int_set.empty;
+                 month_days = Int_set.empty;
+                 weekdays = Weekday_set.empty;
+                 hours = Int_set.empty;
+                 minutes = Int_set.empty;
+                 seconds = Int_set.empty;
+               }
+     |> Resolver.normalize
+   in
+   display_intervals ~display_using_tz:Timedesc.Time_zone.utc s);
   print_endline "=====";
   let s =
     Simple_resolver.resolve ~search_start ~search_end_exc ~search_using_tz:tz
