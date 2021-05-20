@@ -256,8 +256,8 @@ let overapproximate_search_space_bottom_up default_tz (time : t) : t =
       let t = aux tz time in
       get_search_space t
     | Unary_op_on_chunked (_op, chunked) -> aux_chunked tz chunked
-  and aux_seq tz_offset_s s =
-    let s = Seq.map (aux tz_offset_s) s in
+  and aux_seq tz s =
+    let s = Seq.map (aux tz) s in
     let space =
       Seq.map get_search_space s
       |> Seq.map CCList.to_seq
