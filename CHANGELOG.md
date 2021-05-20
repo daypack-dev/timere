@@ -10,6 +10,8 @@
 
 - Fixed unhandled exception/crash due to trying to construct invalid date times when resolving patterns
 
+- Fixed lossy behaviour in `Pattern_resolver.Branch.to_date_time`
+
 ## Timere 0.4.0
 
 - Migration of date time components to Timedesc
