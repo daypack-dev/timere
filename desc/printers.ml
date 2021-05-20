@@ -1,5 +1,48 @@
 open Date_time_components
 
+let frac_s_1_divisor = Span.ns_count_in_s / 10
+
+let frac_s_2_divisor = frac_s_1_divisor / 10
+
+let frac_s_3_divisor = frac_s_2_divisor / 10
+
+let frac_s_4_divisor = frac_s_3_divisor / 10
+
+let frac_s_5_divisor = frac_s_4_divisor / 10
+
+let frac_s_6_divisor = frac_s_5_divisor / 10
+
+let frac_s_7_divisor = frac_s_6_divisor / 10
+
+let frac_s_8_divisor = frac_s_7_divisor / 10
+
+let frac_s_9_divisor = frac_s_8_divisor / 10
+
+let get_divisor frac_s =
+  match frac_s with
+  | 1 -> frac_s_1_divisor
+  | 2 -> frac_s_2_divisor
+  | 3 -> frac_s_3_divisor
+  | 4 -> frac_s_4_divisor
+  | 5 -> frac_s_5_divisor
+  | 6 -> frac_s_6_divisor
+  | 7 -> frac_s_7_divisor
+  | 8 -> frac_s_8_divisor
+  | 9 -> frac_s_9_divisor
+  | _ -> failwith "Unexpected case"
+
+let deduce_smallest_lossless_frac_s ~ns =
+  if ns = 0 then 0
+  else if ns mod frac_s_1_divisor = 0 then 1
+  else if ns mod frac_s_2_divisor = 0 then 2
+  else if ns mod frac_s_3_divisor = 0 then 3
+  else if ns mod frac_s_4_divisor = 0 then 4
+  else if ns mod frac_s_5_divisor = 0 then 5
+  else if ns mod frac_s_6_divisor = 0 then 6
+  else if ns mod frac_s_7_divisor = 0 then 7
+  else if ns mod frac_s_8_divisor = 0 then 8
+  else 9
+
 type case =
   | Upper
   | Lower
@@ -54,6 +97,16 @@ module Format_string_parsers = struct
        >>= fun padding -> char 'X' >> return (Some padding))
     <|> (char 'X' >> return None)
 
+  let string_of_frac ~precision ~ns =
+    let ns = float_of_int ns in
+    let precision' = float_of_int precision in
+    let frac =
+      ns *. (10. ** precision') /. Span.ns_count_in_s_float
+      |> CCFloat.round
+      |> int_of_float
+    in
+    Printf.sprintf "%0*d" precision frac
+
   let date_time_inner (date_time : Date_time.t) : (string, unit) t =
     let single_offset =
       match date_time.offset_from_utc with
@@ -102,14 +155,13 @@ module Format_string_parsers = struct
          >>= fun precision ->
          if precision = 0 then fail "Precision cannot be 0"
          else
-           let ns = float_of_int ns in
-           let precision' = float_of_int precision in
-           let frac =
-             ns *. (10. ** precision') /. Span.ns_count_in_s_float
-             |> CCFloat.round
-             |> int_of_float
-           in
-           return (Printf.sprintf "%0*d" precision frac));
+           return (string_of_frac ~precision ~ns)
+        );
+        (attempt (string "sec-frac")
+         >>
+         let precision = deduce_smallest_lossless_frac_s ~ns in
+         return (string_of_frac ~precision ~ns)
+        );
         (attempt (string "tzoff-sign")
          >>= fun _ ->
          match single_offset with
@@ -143,13 +195,13 @@ module Format_string_parsers = struct
 end
 
 let default_date_time_format_string =
-  "{year} {mon:Xxx} {day:0X} {hour:0X}:{min:0X}:{sec:0X} \
+  "{year} {mon:Xxx} {day:0X} {hour:0X}:{min:0X}:{sec:0X}.{sec-frac} \
    {tzoff-sign}{tzoff-hour:0X}:{tzoff-min:0X}:{tzoff-sec:0X}"
 
 let default_interval_format_string =
-  "[{syear} {smon:Xxx} {sday:0X} {shour:0X}:{smin:0X}:{ssec:0X} \
+  "[{syear} {smon:Xxx} {sday:0X} {shour:0X}:{smin:0X}:{ssec:0X}.{ssec-frac} \
    {stzoff-sign}{stzoff-hour:0X}:{stzoff-min:0X}:{stzoff-sec:0X}, {eyear} \
-   {emon:Xxx} {eday:0X} {ehour:0X}:{emin:0X}:{esec:0X} \
+   {emon:Xxx} {eday:0X} {ehour:0X}:{emin:0X}:{esec:0X}.{esec-frac} \
    {etzoff-sign}{etzoff-hour:0X}:{etzoff-min:0X}:{etzoff-sec:0X})"
 
 exception Invalid_format_string of string

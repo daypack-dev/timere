@@ -1,52 +1,9 @@
-let frac_s_1_divisor = Span.ns_count_in_s / 10
-
-let frac_s_2_divisor = frac_s_1_divisor / 10
-
-let frac_s_3_divisor = frac_s_2_divisor / 10
-
-let frac_s_4_divisor = frac_s_3_divisor / 10
-
-let frac_s_5_divisor = frac_s_4_divisor / 10
-
-let frac_s_6_divisor = frac_s_5_divisor / 10
-
-let frac_s_7_divisor = frac_s_6_divisor / 10
-
-let frac_s_8_divisor = frac_s_7_divisor / 10
-
-let frac_s_9_divisor = frac_s_8_divisor / 10
-
-let get_divisor frac_s =
-  match frac_s with
-  | 1 -> frac_s_1_divisor
-  | 2 -> frac_s_2_divisor
-  | 3 -> frac_s_3_divisor
-  | 4 -> frac_s_4_divisor
-  | 5 -> frac_s_5_divisor
-  | 6 -> frac_s_6_divisor
-  | 7 -> frac_s_7_divisor
-  | 8 -> frac_s_8_divisor
-  | 9 -> frac_s_9_divisor
-  | _ -> failwith "Unexpected case"
-
-let deduce_smallest_lossless_frac_s ~ns =
-  if ns = 0 then 0
-  else if ns mod frac_s_1_divisor = 0 then 1
-  else if ns mod frac_s_2_divisor = 0 then 2
-  else if ns mod frac_s_3_divisor = 0 then 3
-  else if ns mod frac_s_4_divisor = 0 then 4
-  else if ns mod frac_s_5_divisor = 0 then 5
-  else if ns mod frac_s_6_divisor = 0 then 6
-  else if ns mod frac_s_7_divisor = 0 then 7
-  else if ns mod frac_s_8_divisor = 0 then 8
-  else 9
-
 let pp_date_time ?frac_s () formatter (dt : Date_time.t) =
   let { Time.hour; minute; second; ns } = Date_time.time_view dt in
   let ns = ns mod Span.ns_count_in_s in
   let frac_s =
     match frac_s with
-    | None -> deduce_smallest_lossless_frac_s ~ns
+    | None -> Printers.deduce_smallest_lossless_frac_s ~ns
     | Some x -> x
   in
   if frac_s < 0 then invalid_arg "pp_date_time: frac_s cannot be < 0"
@@ -72,7 +29,7 @@ let pp_date_time ?frac_s () formatter (dt : Date_time.t) =
         Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d%s" year month day hour
           minute second tz_off
       else
-        let divisor = get_divisor frac_s in
+        let divisor = Printers.get_divisor frac_s in
         Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d.%0*d%s" year month day
           hour minute second frac_s (ns / divisor) tz_off
 
