@@ -40,8 +40,10 @@ let () =
                      (Timedesc.Timestamp.pp_rfc3339 ()) x'
                      (Timedesc.Timestamp.pp_rfc3339 ()) y';
 
+                   Printf.printf "len: %d\n" (OSeq.length s);
+
                    Seq.iter (fun (x, y) ->
-                       Format.printf "x': %a, y': %a\n%!"
+                       Format.printf "x: %a, y: %a\n%!"
                          (Timedesc.Timestamp.pp_rfc3339 ()) x
                          (Timedesc.Timestamp.pp_rfc3339 ()) y;
                      ) s;
