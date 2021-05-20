@@ -1229,7 +1229,7 @@ let bounded_intervals pick (bound : Timedesc.Span.t) (start : Points.t)
 
 let hms_intervals_exc (hms_a : Hms'.t) (hms_b : Hms'.t) : t =
   bounded_intervals `Whole
-    (Timedesc.Span.For_human.make_exn ~days:1 ())
+    (Timedesc.Span.For_human.make_exn ~hours:30 ())
     (Points.make_exn ~hour:hms_a.hour ~minute:hms_a.minute ~second:hms_a.second
        ())
     (Points.make_exn ~hour:hms_b.hour ~minute:hms_b.minute ~second:hms_b.second
