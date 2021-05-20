@@ -9,9 +9,13 @@ module Branch = struct
     ns : int;
   }
 
-  let to_date_time ~offset_from_utc (x : t) : Timedesc.t =
-    Timedesc.make_unambiguous_exn ~offset_from_utc ~year:x.year ~month:x.month
+  let to_date_time ~offset_from_utc (x : t) : Timedesc.t option =
+    match Timedesc.make_unambiguous ~offset_from_utc ~year:x.year ~month:x.month
       ~day:x.day ~hour:x.hour ~minute:x.minute ~second:x.second ()
+    with
+    | Ok t -> Some t
+    | Error `Does_not_exist -> None
+    | Error _ -> failwith "Unexpected case"
 
   let of_date_time (x : Timedesc.t) : t =
     let { Timedesc.Date.Ymd_date.year; month; day } = Timedesc.ymd_date x in
@@ -458,22 +462,27 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
       x
       |> Branch.to_date_time
         ~offset_from_utc:search_param.search_using_offset_from_utc
-      |> Timedesc.to_timestamp_single
+      |> CCOpt.map Timedesc.to_timestamp_single
     in
     let y =
       y
       |> Branch.to_date_time
         ~offset_from_utc:search_param.search_using_offset_from_utc
-      |> Timedesc.to_timestamp_single
+      |> CCOpt.map Timedesc.to_timestamp_single
     in
-    (x, y)
+    match (x, y) with
+    | Some x, Some y -> Some (x, y)
+    | _, _ -> None
   in
   matching_date_time_ranges search_param t
-  |> Seq.map (Time.Range.map ~f_inc:f ~f_exc:failwith_unexpected_case)
   |> Seq.map (fun r ->
       match r with
-      | `Range_inc (x, y) -> (x, Timedesc.Span.succ y)
+      | `Range_inc (x, y) -> (x, y)
       | `Range_exc _ -> failwith "Unexpected case")
+  |> Seq.filter_map f
+  |> Seq.map (fun (x, y) ->
+      (x, Timedesc.Span.succ y)
+      )
   |> Time.Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
   |> Time.Intervals.Slice.slice
     ~start:(Timedesc.to_timestamp_single search_param.start_dt)

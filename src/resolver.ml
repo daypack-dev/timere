@@ -137,19 +137,25 @@ let set_search_space space (time : t) : t =
 
 let search_space_of_year_range tz year_range =
   let aux_start start =
-    Timedesc.make_exn ~tz ~year:start ~month:1 ~day:1 ~hour:0 ~minute:0
-      ~second:0 ()
-    |> Timedesc.to_timestamp
-    |> Timedesc.min_of_local_result
+    if start = Timedesc.(year min_val) then
+      Timedesc.Timestamp.min_val
+    else
+      Timedesc.make_exn ~tz ~year:start ~month:1 ~day:1 ~hour:0 ~minute:0
+        ~second:0 ()
+      |> Timedesc.to_timestamp
+      |> Timedesc.min_of_local_result
   in
   let aux_end_inc end_exc =
-    Timedesc.make_exn ~tz ~year:end_exc ~month:12 ~day:31 ~hour:23 ~minute:59
-      ~second:59
-      ~ns:(Timedesc.Span.ns_count_in_s - 1)
-      ()
-    |> Timedesc.to_timestamp
-    |> Timedesc.max_of_local_result
-    |> Timedesc.Span.succ
+    if end_exc = Timedesc.(year max_val) then
+      Timedesc.Timestamp.max_val
+    else
+      Timedesc.make_exn ~tz ~year:end_exc ~month:12 ~day:31 ~hour:23 ~minute:59
+        ~second:59
+        ~ns:(Timedesc.Span.ns_count_in_s - 1)
+        ()
+      |> Timedesc.to_timestamp
+      |> Timedesc.max_of_local_result
+      |> Timedesc.Span.succ
   in
   let aux_end_exc end_exc =
     Timedesc.make_exn ~tz ~year:end_exc ~month:1 ~day:1 ~hour:0 ~minute:0
