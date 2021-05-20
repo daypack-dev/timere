@@ -472,7 +472,7 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
       |> CCOpt.map Timedesc.to_timestamp_single
     in
     match (x, y) with
-    | Some x, Some y -> Some (x, y)
+    | Some x, Some y -> Some (x, Timedesc.Span.succ y)
     | None, None -> None
     | None, Some y -> Some (Timedesc.Timestamp.min_val, y)
     | Some x, None -> Some (x, Timedesc.Timestamp.max_val)
@@ -483,7 +483,6 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
       | `Range_inc (x, y) -> (x, y)
       | `Range_exc _ -> failwith "Unexpected case")
   |> Seq.filter_map f
-  |> Seq.map (fun (x, y) -> (x, Timedesc.Span.succ y))
   |> Time.Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
   |> Time.Intervals.Slice.slice
     ~start:(Timedesc.to_timestamp_single search_param.start_dt)
