@@ -259,13 +259,13 @@ module Points : sig
     (t, error) result
   (** [make_points] call must be exactly one of the following forms (ignoring [tz] and [tz_offset_s] which are optional in all cases)
       {v
-make_points ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
-make_points         ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
-make_points                  ~day:_     ~hour:_ ~minute:_ ~second:_ ()
-make_points                  ~weekday:_ ~hour:_ ~minute:_ ~second:_ ()
-make_points                             ~hour:_ ~minute:_ ~second:_ ()
-make_points                                     ~minute:_ ~second:_ ()
-make_points                                               ~second:_ ()
+make ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
+make         ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
+make                  ~day:_     ~hour:_ ~minute:_ ~second:_ ()
+make                  ~weekday:_ ~hour:_ ~minute:_ ~second:_ ()
+make                             ~hour:_ ~minute:_ ~second:_ ()
+make                                     ~minute:_ ~second:_ ()
+make                                               ~second:_ ()
     v}
 
       returns [Error] otherwise
