@@ -24,57 +24,8 @@ let () =
           let s' =
             Seq_utils.a_to_b_inc_int64 ~a:search_start.s ~b:search_end_exc.s
             |> OSeq.filter (fun timestamp ->
-                let dt =
-                  CCOpt.get_exn_or
-                    "Expected successful construction of date time"
-                  @@ Timedesc.of_timestamp ~tz_of_date_time:tz
-                    (Timedesc.Span.make ~s:timestamp ())
-                in
-                let weekday = Timedesc.weekday dt in
-                let year_is_fine =
-                  Int_set.is_empty pattern.years
-                  || Int_set.mem (Timedesc.year dt) pattern.years
-                in
-                let month_is_fine =
-                  Int_set.is_empty pattern.months
-                  || Int_set.mem (Timedesc.month dt) pattern.months
-                in
-                let mday_is_fine =
-                  Int_set.is_empty pattern.month_days
-                  ||
-                  let day_count =
-                    Timedesc.Utils.day_count_of_month
-                      ~year:(Timedesc.year dt) ~month:(Timedesc.month dt)
-                  in
-                  pattern.month_days
-                  |> Int_set.to_seq
-                  |> Seq.map (fun mday ->
-                      if mday < 0 then day_count + mday + 1 else mday)
-                  |> OSeq.mem ~eq:( = ) (Timedesc.day dt)
-                in
-                let wday_is_fine =
-                  Weekday_set.is_empty pattern.weekdays
-                  || Weekday_set.mem weekday pattern.weekdays
-                in
-                let hour_is_fine =
-                  Int_set.is_empty pattern.hours
-                  || Int_set.mem (Timedesc.hour dt) pattern.hours
-                in
-                let minute_is_fine =
-                  Int_set.is_empty pattern.minutes
-                  || Int_set.mem (Timedesc.minute dt) pattern.minutes
-                in
-                let second_is_fine =
-                  Int_set.is_empty pattern.seconds
-                  || Int_set.mem (Timedesc.second dt) pattern.seconds
-                in
-                year_is_fine
-                && month_is_fine
-                && mday_is_fine
-                && wday_is_fine
-                && hour_is_fine
-                && minute_is_fine
-                && second_is_fine)
+                Simple_resolver.aux_pattern_mem tz pattern timestamp
+                )
             |> intervals_of_int64s
             |> span_set_of_intervals
             |> Span_set.inter search_space_set
