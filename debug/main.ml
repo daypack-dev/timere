@@ -40,10 +40,22 @@ let display_intervals ~display_using_tz s =
 let debug_resolver () =
   let s =
     {|
-(with_tz UTC+1:00
- (bounded_intervals whole (31622400 0)
-  (points (pick ymdhms 2001 May 10 10 0 0)) (points (pick ymdhms 2001 May 10 14 0 0)))
-)
+(union
+                            (intervals
+                             ((2002 9 15 8 23 8 0 UTC (single 0))
+                              (2002 9 15 8 23 8 507 UTC (single 0))))
+                            (intervals
+                             ((2002 12 9 14 27 23 0 UTC (single 0))
+                              (2002 12 9 14 27 23 134 UTC (single 0))))
+                            (bounded_intervals whole (86400 0)
+                             (points (pick hms 14 8 23))
+                             (points (pick hms 3 14 8)))
+                            (bounded_intervals whole (86400 0)
+                             (points (pick hms 14 8 23))
+                             (points (pick hms 3 14 8)))
+                            (bounded_intervals whole (86400 0)
+                             (points (pick hms 14 8 23))
+                             (points (pick hms 3 14 8))))
       |}
   in
   let timere = CCResult.get_exn @@ Of_sexp.of_sexp_string s in
@@ -81,23 +93,23 @@ let debug_resolver () =
   let tz = Timedesc.Time_zone.make_exn "UTC" in
   (* let timere =
    *   let open Time in
-   *   with_tz tz
-   *     (inter
-   *        [
-   *          years [ 2020 ];
-   *          (\* between_exc (month_days [ -1 ]) (month_days [ 1 ]); *\)
-   *          (\* always; *\)
-   *          hms_interval_exc
-   *            (make_hms_exn ~hour:1 ~minute:15 ~second:0)
-   *            (make_hms_exn ~hour:2 ~minute:30 ~second:0);
-   *          months [ `Oct ];
-   *        ])
-   *     (\* (pattern ~months:[`Mar] ~hours:[23] ~minutes:[0] ~seconds:[0]()) *\)
+   *   (\* with_tz tz
+   *    *   (inter
+   *    *      [
+   *    *        years [ 2020 ];
+   *    *        (\\* between_exc (month_days [ -1 ]) (month_days [ 1 ]); *\\)
+   *    *        (\\* always; *\\)
+   *    *        hms_interval_exc
+   *    *          (make_hms_exn ~hour:1 ~minute:15 ~second:0)
+   *    *          (make_hms_exn ~hour:2 ~minute:30 ~second:0);
+   *    *        months [ `Oct ];
+   *    *      ]) *\)
+   *     (pattern ~hours:[15] ~minutes:[0] ~seconds:[0] ())
    *     (\* (pattern ~months:[`Mar] ~hours:[4] ~minutes:[30] ~seconds:[0]()) *\)
    * in *)
   print_endline (To_sexp.to_sexp_string timere);
   let search_start_dt =
-    Timedesc.make_exn ~year:2000 ~month:1 ~day:1 ~hour:10 ~minute:0 ~second:0
+    Timedesc.make_exn ~year:0000 ~month:1 ~day:1 ~hour:14 ~minute:0 ~second:0
       ~tz ()
   in
   let search_start =
