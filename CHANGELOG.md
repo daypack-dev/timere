@@ -8,6 +8,8 @@
 
 - Added exception raising version of functions
 
+- Upgraded ruleset
+
 ## Timere 0.4.1
 
 - Fixed unhandled exception/crash due to trying to construct invalid date times when resolving patterns
