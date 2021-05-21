@@ -20,6 +20,10 @@
 
 - General fixes in `pattern_resolver` and `resolver` for edge cases nearing `Timedesc.Timestamp.min_val` and `Timedesc.Timestamp.max_val`
 
+## Timedesc 0.2.1
+
+- Added `ceil`, `floor` and `round` to `Span` (and also re-exported them in `Timestamp`)
+
 ## Timere 0.4.0
 
 - Migration of date time components to Timedesc
