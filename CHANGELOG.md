@@ -22,7 +22,9 @@
 
 ## Timedesc 0.2.1
 
-- Added `ceil`, `floor` and `round` to `Span` (and also re-exported them in `Timestamp`)
+- Added `ceil`, `floor` and `round` to `Timedesc.Span` (and also re-exported them in `Timedesc.Timestamp`)
+
+- Rounded down `Timedesc.Timestamp.max_val` to closest integer
 
 ## Timere 0.4.0
 
