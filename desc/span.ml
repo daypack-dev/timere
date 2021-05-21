@@ -83,6 +83,21 @@ let max x y = if ge x y then x else y
 
 let min x y = if le x y then x else y
 
+let ceil x =
+  if x.ns = 0 then
+    x
+  else
+    { s = Int64.succ x.s; ns = 0 }
+
+let floor x =
+  { x with ns = 0 }
+
+let round x =
+  if x.ns >= ns_count_in_s / 2 then
+    { s = Int64.succ x.s; ns = 0 }
+  else
+    { x with ns = 0 }
+
 module For_human' = struct
   module Int64_multipliers = struct
     let minute_to_seconds = 60L

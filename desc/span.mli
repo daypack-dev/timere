@@ -123,6 +123,12 @@ val max : t -> t -> t
 
 val min : t -> t -> t
 
+val ceil : t -> t
+
+val floor : t -> t
+
+val round : t -> t
+
 val ( < ) : t -> t -> bool
 
 val ( <= ) : t -> t -> bool

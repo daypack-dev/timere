@@ -454,6 +454,12 @@ module Span : sig
 
   val min : t -> t -> t
 
+  val ceil : t -> t
+
+  val floor : t -> t
+
+  val round : t -> t
+
   val ( < ) : t -> t -> bool
 
   val ( <= ) : t -> t -> bool
@@ -1231,6 +1237,12 @@ module Timestamp : sig
   val max : t -> t -> t
 
   val min : t -> t -> t
+
+  val ceil : t -> t
+
+  val floor : t -> t
+
+  val round : t -> t
 
   val ( < ) : t -> t -> bool
 
