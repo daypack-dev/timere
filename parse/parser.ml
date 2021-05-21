@@ -903,9 +903,9 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.Hms.t option)
   | _ -> (
       let default_month = match lean_toward with `Front -> 1 | `Back -> 12 in
       let default_day = match lean_toward with `Front -> 1 | `Back -> -1 in
-      let default_hour = match lean_toward with `Front -> 0 | `Back -> 23 in
-      let default_minute = match lean_toward with `Front -> 0 | `Back -> 59 in
-      let default_second = match lean_toward with `Front -> 0 | `Back -> 59 in
+      let default_hour = match lean_toward with `Front -> 0 | `Back -> 0 in
+      let default_minute = match lean_toward with `Front -> 0 | `Back -> 0 in
+      let default_second = match lean_toward with `Front -> 0 | `Back -> 0 in
       match (year, month, day, weekday, hms) with
       | None, None, None, None, Some hms ->
         `Some
