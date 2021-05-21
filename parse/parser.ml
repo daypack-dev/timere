@@ -165,6 +165,14 @@ let month_p : (int, unit) t =
 
 let symbols = "()[]&|>"
 
+let is_op s = s = "and" || s = "or"
+
+let fail_if_op s = if is_op s then fail "" else return ()
+
+let get_non_op_string =
+  many1_satisfy (fun c -> c <> ' ' && not (String.contains symbols c))
+  >>= fun s -> fail_if_op s >> return s
+
 module String_map = CCMap.Make (String)
 
 let time_zones =
@@ -222,7 +230,7 @@ let token_p : (token, unit) MParser.t =
       attempt (string "sec") >>$ (Int_map.empty, Seconds);
       attempt (string "s") >>$ (Int_map.empty, Seconds);
       attempt
-        (many1_satisfy (fun c -> c <> ' ' && not (String.contains symbols c))
+        (get_non_op_string
          >>= fun s ->
          match String_map.find_opt (String.lowercase_ascii s) time_zones with
          | None -> fail ""
@@ -230,20 +238,24 @@ let token_p : (token, unit) MParser.t =
              match Timedesc.Time_zone.make s with
              | None -> fail ""
              | Some tz -> return (Int_map.empty, Time_zone tz)));
-      (attempt
-         (many1_satisfy (fun c -> c <> ' ' && not (String.contains symbols c)))
+      (attempt get_non_op_string
        >>= fun s ->
-       fail (Printf.sprintf "%s: Unrecognized token: %s" (string_of_pos pos) s));
+       fail_if_op s
+       >> fail
+         (Printf.sprintf "%s: Unrecognized token: %s" (string_of_pos pos) s));
     ]
   >>= fun (guess, original_str) -> spaces >> return (pos, guess, original_str)
 
 let tokens_p = spaces >> many1 token_p << spaces
 
 let inter : (ast -> ast -> ast, unit) t =
-  spaces >> string "&&" >> spaces >> return (fun a b -> Binary_op (Inter, a, b))
+  spaces
+  >> string "and"
+  >> spaces
+  >> return (fun a b -> Binary_op (Inter, a, b))
 
 let union : (ast -> ast -> ast, unit) t =
-  spaces >> string "||" >> spaces >> return (fun a b -> Binary_op (Union, a, b))
+  spaces >> string "or" >> spaces >> return (fun a b -> Binary_op (Union, a, b))
 
 (* let round_robin_pick : (ast -> ast -> ast, unit) t =
  *   spaces >> string ">>" >> return (fun a b -> Round_robin_pick [ a; b ]) *)
@@ -927,9 +939,8 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.Hms.t option)
              ())
       | Some year, Some month, Some day, None, None ->
         `Some
-          (Timere.Points.make_exn ~year ~month ~day
-             ~hour:default_hour ~minute:default_minute ~second:default_second
-             ())
+          (Timere.Points.make_exn ~year ~month ~day ~hour:default_hour
+             ~minute:default_minute ~second:default_second ())
       | None, Some month, None, None, None ->
         `Some
           (Timere.Points.make_exn ~month ~day:default_day ~hour:default_hour
@@ -1389,10 +1400,9 @@ module Rules = struct
       (_, _, Ymd ((_, year2), (_, month2), (pos_day2, day2)));
     ] -> (
         match
-          ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
-              `Front,
-            points ~year:year2 ~month:month2 ~pos_day:pos_day2 ~day:day2
-              `Back )
+          ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1 `Front,
+            points ~year:year2 ~month:month2 ~pos_day:pos_day2 ~day:day2 `Back
+          )
         with
         | `Some p1, `Some p2 ->
           `Some
@@ -1417,20 +1427,15 @@ module Rules = struct
       (_, _, To);
       (_, _, Month month2);
       (pos_day2, _, Month_day day2);
-    ]
-      -> (
+    ] -> (
         match
-          ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
-              `Front,
-            points ~month:month2 ~pos_day:pos_day2 ~day:day2
-              `Back )
+          ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1 `Front,
+            points ~month:month2 ~pos_day:pos_day2 ~day:day2 `Back )
         with
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timedesc.Span.For_human.make_exn
-                  ~days:366
-                  ())
+               (Timedesc.Span.For_human.make_exn ~days:366 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1446,22 +1451,17 @@ module Rules = struct
       (_, _, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
       (_, _, To);
       (pos_day2, _, Month_day day2);
-    ]
-      -> (
-          match
-            ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
-                `Front,
-              points ~pos_day:pos_day2 ~day:day2
-                `Back )
-          with
-          | `Some p1, `Some p2 ->
-            `Some
-              (Timere.bounded_intervals `Whole
-                 (Timedesc.Span.For_human.make_exn
-                    ~days:366
-                    ())
-                 p1 p2)
-          | _, _ -> `None)
+    ] -> (
+        match
+          ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1 `Front,
+            points ~pos_day:pos_day2 ~day:day2 `Back )
+        with
+        | `Some p1, `Some p2 ->
+          `Some
+            (Timere.bounded_intervals `Whole
+               (Timedesc.Span.For_human.make_exn ~days:366 ())
+               p1 p2)
+        | _, _ -> `None)
     | _ -> `None
 
   let rule_md_to_md l =
@@ -1493,22 +1493,17 @@ module Rules = struct
       (_, _, To);
       (_, _, Month month2);
       (pos_day2, _, Month_day day2);
-    ]
-      -> (
-          match
-            ( points ~month:month1 ~pos_day:pos_day1 ~day:day1
-                `Front,
-              points ~month:month2 ~pos_day:pos_day2 ~day:day2
-                `Back )
-          with
-          | `Some p1, `Some p2 ->
-            `Some
-              (Timere.bounded_intervals `Whole
-                 (Timedesc.Span.For_human.make_exn
-                    ~days:366
-                    ())
-                 p1 p2)
-          | _, _ -> `None)
+    ] -> (
+        match
+          ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 `Front,
+            points ~month:month2 ~pos_day:pos_day2 ~day:day2 `Back )
+        with
+        | `Some p1, `Some p2 ->
+          `Some
+            (Timere.bounded_intervals `Whole
+               (Timedesc.Span.For_human.make_exn ~days:366 ())
+               p1 p2)
+        | _, _ -> `None)
     | _ -> `None
 
   let rule_md_to_d l =
@@ -1536,45 +1531,26 @@ module Rules = struct
       (pos_day1, _, Month_day day1);
       (_, _, To);
       (pos_day2, _, Month_day day2);
-    ]
-      -> (
-          match
-            ( points ~month:month1 ~pos_day:pos_day1 ~day:day1
-                `Front,
-              points ~pos_day:pos_day2 ~day:day2
-                `Back )
-          with
-          | `Some p1, `Some p2 ->
-            `Some
-              (Timere.bounded_intervals `Whole
-                 (Timedesc.Span.For_human.make_exn
-                    ~days:366
-                    ())
-                 p1 p2)
-          | _, _ -> `None)
+    ] -> (
+        match
+          ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 `Front,
+            points ~pos_day:pos_day2 ~day:day2 `Back )
+        with
+        | `Some p1, `Some p2 ->
+          `Some
+            (Timere.bounded_intervals `Whole
+               (Timedesc.Span.For_human.make_exn ~days:366 ())
+               p1 p2)
+        | _, _ -> `None)
     | _ -> `None
 
   let rule_d_to_d l =
     match l with
+    | [ (pos_day1, _, Nat day1); (_, _, To); (pos_day2, _, Nat day2) ]
+    | [ (pos_day1, _, Nat day1); (_, _, To); (pos_day2, _, Month_day day2) ]
+    | [ (pos_day1, _, Month_day day1); (_, _, To); (pos_day2, _, Nat day2) ]
     | [
-      (pos_day1, _, Nat day1);
-      (_, _, To);
-      (pos_day2, _, Nat day2);
-    ]
-    | [
-      (pos_day1, _, Nat day1);
-      (_, _, To);
-      (pos_day2, _, Month_day day2);
-    ]
-    | [
-      (pos_day1, _, Month_day day1);
-      (_, _, To);
-      (pos_day2, _, Nat day2);
-    ]
-    | [
-      (pos_day1, _, Month_day day1);
-      (_, _, To);
-      (pos_day2, _, Month_day day2);
+      (pos_day1, _, Month_day day1); (_, _, To); (pos_day2, _, Month_day day2);
     ] -> (
         match
           ( points ~pos_day:pos_day1 ~day:day1 `Front,
