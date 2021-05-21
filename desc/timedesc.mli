@@ -455,10 +455,18 @@ module Span : sig
   val min : t -> t -> t
 
   val ceil : t -> t
+  (** Rounds up to nearest second *)
 
   val floor : t -> t
+  (** Rounds down to nearest second *)
 
   val round : t -> t
+  (** Rounds to nearest second
+
+      For [round x]
+      - if [x.ns >= 500_000_000], then [round x = ceil x]
+      - otherwise [round x = floor x]
+  *)
 
   val ( < ) : t -> t -> bool
 
