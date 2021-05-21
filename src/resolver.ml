@@ -1,5 +1,4 @@
 open Time_ast
-
 open Timestamp_utils
 
 type timestamp = Timedesc.Span.t
