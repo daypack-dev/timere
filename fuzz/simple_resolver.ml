@@ -1,24 +1,5 @@
 open Span_set_utils
-
-let timestamp_safe_sub a b =
-  let open Timedesc.Span in
-  if b >= zero then
-    if a - Timedesc.Timestamp.min_val >= b then a - b
-    else Timedesc.Timestamp.min_val
-  else
-    let b' = abs b in
-    if Timedesc.Timestamp.max_val - a >= b' then a + b'
-    else Timedesc.Timestamp.max_val
-
-let timestamp_safe_add a b =
-  let open Timedesc.Span in
-  if b >= zero then
-    if Timedesc.Timestamp.max_val - a >= b then a + b
-    else Timedesc.Timestamp.max_val
-  else
-    let b' = abs b in
-    if a - Timedesc.Timestamp.min_val >= b' then a - b'
-    else Timedesc.Timestamp.min_val
+open Timestamp_utils
 
 let do_chunk ~drop_partial (n : Timedesc.Span.t) (s : Time.Interval'.t Seq.t) :
   Time.Interval'.t Seq.t =
