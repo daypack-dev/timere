@@ -169,7 +169,7 @@ let is_op s = s = "and" || s = "or"
 
 let fail_if_op s = if is_op s then fail "" else return ()
 
-let get_non_op_string =
+let non_op_string =
   many1_satisfy (fun c -> c <> ' ' && not (String.contains symbols c))
   >>= fun s -> fail_if_op s >> return s
 
@@ -230,7 +230,7 @@ let token_p : (token, unit) MParser.t =
       attempt (string "sec") >>$ (Int_map.empty, Seconds);
       attempt (string "s") >>$ (Int_map.empty, Seconds);
       attempt
-        (get_non_op_string
+        (non_op_string
          >>= fun s ->
          match String_map.find_opt (String.lowercase_ascii s) time_zones with
          | None -> fail ""
@@ -238,7 +238,7 @@ let token_p : (token, unit) MParser.t =
              match Timedesc.Time_zone.make s with
              | None -> fail ""
              | Some tz -> return (Int_map.empty, Time_zone tz)));
-      (attempt get_non_op_string
+      (attempt non_op_string
        >>= fun s ->
        fail_if_op s
        >> fail
