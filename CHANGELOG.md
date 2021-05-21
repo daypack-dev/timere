@@ -25,6 +25,8 @@
 
   - This makes resolver code simpler
 
+- Fixed crash due to `Points.to_date_time` by changing to simply return `None` if date time conversion fails
+
 ## Timedesc 0.3.0
 
 - Added `ceil`, `floor` and `round` to `Timedesc.Span` (and also re-exported them in `Timedesc.Timestamp`)
