@@ -5,133 +5,133 @@ module Alco = struct
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:0L ())
-      (Timedesc.Span.(floor @@ make ~s:0L ~ns:1_000 ()))
+      Timedesc.Span.(floor @@ make ~s:0L ~ns:1_000 ())
 
   let floor_case1 () =
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:0L ())
-      (Timedesc.Span.(floor @@ make ~s:0L ~ns:999_999_999 ()))
+      Timedesc.Span.(floor @@ make ~s:0L ~ns:999_999_999 ())
 
   let floor_case2 () =
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:10L ())
-      (Timedesc.Span.(floor @@ make ~s:10L ()))
+      Timedesc.Span.(floor @@ make ~s:10L ())
 
   let floor_case3 () =
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:(-1L) ())
-      (Timedesc.Span.(floor @@ make ~s:(-1L) ~ns:1_000 ()))
+      Timedesc.Span.(floor @@ make ~s:(-1L) ~ns:1_000 ())
 
   let floor_case4 () =
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:(-1L) ())
-      (Timedesc.Span.(floor @@ make ~s:(-1L) ~ns:999_999_999 ()))
+      Timedesc.Span.(floor @@ make ~s:(-1L) ~ns:999_999_999 ())
 
   let floor_case5 () =
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:(-10L) ())
-      (Timedesc.Span.(floor @@ make ~s:(-10L) ()))
+      Timedesc.Span.(floor @@ make ~s:(-10L) ())
 
   let ceil_case0 () =
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:1L ())
-      (Timedesc.Span.(ceil @@ make ~s:0L ~ns:1 ()))
+      Timedesc.Span.(ceil @@ make ~s:0L ~ns:1 ())
 
   let ceil_case1 () =
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:1L ())
-      (Timedesc.Span.(ceil @@ make ~s:0L ~ns:999_999_999 ()))
+      Timedesc.Span.(ceil @@ make ~s:0L ~ns:999_999_999 ())
 
   let ceil_case2 () =
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:10L ())
-      (Timedesc.Span.(ceil @@ make ~s:10L ()))
+      Timedesc.Span.(ceil @@ make ~s:10L ())
 
   let ceil_case3 () =
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:(-1L) ())
-      (Timedesc.Span.(ceil @@ make ~s:(-2L) ~ns:1 ()))
+      Timedesc.Span.(ceil @@ make ~s:(-2L) ~ns:1 ())
 
   let ceil_case4 () =
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:(-1L) ())
-      (Timedesc.Span.(ceil @@ make ~s:(-2L) ~ns:999_999_999 ()))
+      Timedesc.Span.(ceil @@ make ~s:(-2L) ~ns:999_999_999 ())
 
   let ceil_case5 () =
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:(-10L) ())
-      (Timedesc.Span.(ceil @@ make ~s:(-10L) ()))
+      Timedesc.Span.(ceil @@ make ~s:(-10L) ())
 
   let round_case0 () =
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:0L ())
-      (Timedesc.Span.(round @@ make ~s:0L ~ns:1_000 ()))
+      Timedesc.Span.(round @@ make ~s:0L ~ns:1_000 ())
 
   let round_case1 () =
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:1L ())
-      (Timedesc.Span.(round @@ make ~s:0L ~ns:999_999_999 ()))
+      Timedesc.Span.(round @@ make ~s:0L ~ns:999_999_999 ())
 
   let round_case2 () =
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:0L ())
-      (Timedesc.Span.(round @@ make ~s:0L ~ns:499_999_999 ()))
+      Timedesc.Span.(round @@ make ~s:0L ~ns:499_999_999 ())
 
   let round_case3 () =
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:1L ())
-      (Timedesc.Span.(round @@ make ~s:0L ~ns:500_000_000 ()))
+      Timedesc.Span.(round @@ make ~s:0L ~ns:500_000_000 ())
 
   let round_case4 () =
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:10L ())
-      (Timedesc.Span.(round @@ make ~s:10L ()))
+      Timedesc.Span.(round @@ make ~s:10L ())
 
   let round_case5 () =
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:(-2L) ())
-      (Timedesc.Span.(round @@ make ~s:(-2L) ~ns:1_000 ()))
+      Timedesc.Span.(round @@ make ~s:(-2L) ~ns:1_000 ())
 
   let round_case6 () =
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:(-1L) ())
-      (Timedesc.Span.(round @@ make ~s:(-2L) ~ns:999_999_999 ()))
+      Timedesc.Span.(round @@ make ~s:(-2L) ~ns:999_999_999 ())
 
   let round_case7 () =
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:(-2L) ())
-      (Timedesc.Span.(round @@ make ~s:(-2L) ~ns:499_999_999 ()))
+      Timedesc.Span.(round @@ make ~s:(-2L) ~ns:499_999_999 ())
 
   let round_case8 () =
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:(-1L) ())
-      (Timedesc.Span.(round @@ make ~s:(-2L) ~ns:500_000_000 ()))
+      Timedesc.Span.(round @@ make ~s:(-2L) ~ns:500_000_000 ())
 
   let round_case9 () =
     Alcotest.(check span_testable)
       "same span"
       (Timedesc.Span.make ~s:(-10L) ())
-      (Timedesc.Span.(round @@ make ~s:(-10L) ()))
+      Timedesc.Span.(round @@ make ~s:(-10L) ())
 
   let suite =
     [
@@ -253,40 +253,29 @@ module Qc = struct
 
   let floor_is_idempotent =
     QCheck.Test.make ~count:100_000 ~name:"floor_is_idempotent" timestamp
-      (fun x ->
-         Timedesc.Span.(equal (floor x) (floor @@ floor x))
-      )
+      (fun x -> Timedesc.Span.(equal (floor x) (floor @@ floor x)))
 
   let floor_result_is_le_original =
-    QCheck.Test.make ~count:100_000 ~name:"floor_result_is_le_original" timestamp
-      (fun x ->
-         Timedesc.Span.(le (floor x) x)
-      )
+    QCheck.Test.make ~count:100_000 ~name:"floor_result_is_le_original"
+      timestamp (fun x -> Timedesc.Span.(le (floor x) x))
 
   let ceil_is_idempotent =
     QCheck.Test.make ~count:100_000 ~name:"ceil_is_idempotent" timestamp
-      (fun x ->
-         Timedesc.Span.(equal (ceil x) (ceil @@ ceil x))
-      )
+      (fun x -> Timedesc.Span.(equal (ceil x) (ceil @@ ceil x)))
 
   let ceil_result_is_ge_original =
     QCheck.Test.make ~count:100_000 ~name:"ceil_result_is_ge_original" timestamp
-      (fun x ->
-         Timedesc.Span.(ge (ceil x) x)
-      )
+      (fun x -> Timedesc.Span.(ge (ceil x) x))
 
   let round_is_idempotent =
     QCheck.Test.make ~count:100_000 ~name:"round_is_idempotent" timestamp
-      (fun x ->
-         Timedesc.Span.(equal (round x) (round @@ round x))
-      )
+      (fun x -> Timedesc.Span.(equal (round x) (round @@ round x)))
 
   let round_result_is_bounded_by_ceil_and_floor =
-    QCheck.Test.make ~count:100_000 ~name:"round_result_is_bounded_by_ceil_and_floor" timestamp
-      (fun x ->
-         let r = Timedesc.Span.round x in
-         Timedesc.Span.((floor x) <= r && r <= (ceil x))
-      )
+    QCheck.Test.make ~count:100_000
+      ~name:"round_result_is_bounded_by_ceil_and_floor" timestamp (fun x ->
+          let r = Timedesc.Span.round x in
+          Timedesc.Span.(floor x <= r && r <= ceil x))
 
   let of_to_view =
     QCheck.Test.make ~count:100_000 ~name:"to_of_view" duration (fun duration ->
