@@ -920,9 +920,23 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.Hms.t option)
           (Timere.Points.make_exn ~year ~month:default_month ~day:default_day
              ~hour:default_hour ~minute:default_minute ~second:default_second
              ())
+      | Some year, Some month, None, None, None ->
+        `Some
+          (Timere.Points.make_exn ~year ~month ~day:default_day
+             ~hour:default_hour ~minute:default_minute ~second:default_second
+             ())
+      | Some year, Some month, Some day, None, None ->
+        `Some
+          (Timere.Points.make_exn ~year ~month ~day
+             ~hour:default_hour ~minute:default_minute ~second:default_second
+             ())
       | None, Some month, None, None, None ->
         `Some
           (Timere.Points.make_exn ~month ~day:default_day ~hour:default_hour
+             ~minute:default_minute ~second:default_second ())
+      | None, Some month, Some day, None, None ->
+        `Some
+          (Timere.Points.make_exn ~month ~day ~hour:default_hour
              ~minute:default_minute ~second:default_second ())
       | None, None, Some day, None, None ->
         `Some
@@ -1367,6 +1381,213 @@ module Rules = struct
         | _, _ -> `None)
     | _ -> `None
 
+  let rule_ymd_to_ymd l =
+    match l with
+    | [
+      (_, _, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
+      (_, _, To);
+      (_, _, Ymd ((_, year2), (_, month2), (pos_day2, day2)));
+    ] -> (
+        match
+          ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
+              `Front,
+            points ~year:year2 ~month:month2 ~pos_day:pos_day2 ~day:day2
+              `Back )
+        with
+        | `Some p1, `Some p2 ->
+          `Some
+            (Timere.bounded_intervals `Whole
+               (Timedesc.Span.For_human.make_exn
+                  ~days:((year2 - year1 + 1) * 366)
+                  ())
+               p1 p2)
+        | _, _ -> `None)
+    | _ -> `None
+
+  let rule_ymd_to_md l =
+    match l with
+    | [
+      (_, _, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
+      (_, _, To);
+      (_, _, Month month2);
+      (pos_day2, _, Nat day2);
+    ]
+    | [
+      (_, _, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
+      (_, _, To);
+      (_, _, Month month2);
+      (pos_day2, _, Month_day day2);
+    ]
+      -> (
+        match
+          ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
+              `Front,
+            points ~month:month2 ~pos_day:pos_day2 ~day:day2
+              `Back )
+        with
+        | `Some p1, `Some p2 ->
+          `Some
+            (Timere.bounded_intervals `Whole
+               (Timedesc.Span.For_human.make_exn
+                  ~days:366
+                  ())
+               p1 p2)
+        | _, _ -> `None)
+    | _ -> `None
+
+  let rule_ymd_to_d l =
+    match l with
+    | [
+      (_, _, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
+      (_, _, To);
+      (pos_day2, _, Nat day2);
+    ]
+    | [
+      (_, _, Ymd ((_, year1), (_, month1), (pos_day1, day1)));
+      (_, _, To);
+      (pos_day2, _, Month_day day2);
+    ]
+      -> (
+          match
+            ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
+                `Front,
+              points ~pos_day:pos_day2 ~day:day2
+                `Back )
+          with
+          | `Some p1, `Some p2 ->
+            `Some
+              (Timere.bounded_intervals `Whole
+                 (Timedesc.Span.For_human.make_exn
+                    ~days:366
+                    ())
+                 p1 p2)
+          | _, _ -> `None)
+    | _ -> `None
+
+  let rule_md_to_md l =
+    match l with
+    | [
+      (_, _, Month month1);
+      (pos_day1, _, Nat day1);
+      (_, _, To);
+      (_, _, Month month2);
+      (pos_day2, _, Nat day2);
+    ]
+    | [
+      (_, _, Month month1);
+      (pos_day1, _, Month day1);
+      (_, _, To);
+      (_, _, Month month2);
+      (pos_day2, _, Nat day2);
+    ]
+    | [
+      (_, _, Month month1);
+      (pos_day1, _, Nat day1);
+      (_, _, To);
+      (_, _, Month month2);
+      (pos_day2, _, Month_day day2);
+    ]
+    | [
+      (_, _, Month month1);
+      (pos_day1, _, Month_day day1);
+      (_, _, To);
+      (_, _, Month month2);
+      (pos_day2, _, Month_day day2);
+    ]
+      -> (
+          match
+            ( points ~month:month1 ~pos_day:pos_day1 ~day:day1
+                `Front,
+              points ~month:month2 ~pos_day:pos_day2 ~day:day2
+                `Back )
+          with
+          | `Some p1, `Some p2 ->
+            `Some
+              (Timere.bounded_intervals `Whole
+                 (Timedesc.Span.For_human.make_exn
+                    ~days:366
+                    ())
+                 p1 p2)
+          | _, _ -> `None)
+    | _ -> `None
+
+  let rule_md_to_d l =
+    match l with
+    | [
+      (_, _, Month month1);
+      (pos_day1, _, Nat day1);
+      (_, _, To);
+      (pos_day2, _, Nat day2);
+    ]
+    | [
+      (_, _, Month month1);
+      (pos_day1, _, Month day1);
+      (_, _, To);
+      (pos_day2, _, Nat day2);
+    ]
+    | [
+      (_, _, Month month1);
+      (pos_day1, _, Nat day1);
+      (_, _, To);
+      (pos_day2, _, Month_day day2);
+    ]
+    | [
+      (_, _, Month month1);
+      (pos_day1, _, Month_day day1);
+      (_, _, To);
+      (pos_day2, _, Month_day day2);
+    ]
+      -> (
+          match
+            ( points ~month:month1 ~pos_day:pos_day1 ~day:day1
+                `Front,
+              points ~pos_day:pos_day2 ~day:day2
+                `Back )
+          with
+          | `Some p1, `Some p2 ->
+            `Some
+              (Timere.bounded_intervals `Whole
+                 (Timedesc.Span.For_human.make_exn
+                    ~days:366
+                    ())
+                 p1 p2)
+          | _, _ -> `None)
+    | _ -> `None
+
+  let rule_d_to_d l =
+    match l with
+    | [
+      (pos_day1, _, Nat day1);
+      (_, _, To);
+      (pos_day2, _, Nat day2);
+    ]
+    | [
+      (pos_day1, _, Nat day1);
+      (_, _, To);
+      (pos_day2, _, Month_day day2);
+    ]
+    | [
+      (pos_day1, _, Month_day day1);
+      (_, _, To);
+      (pos_day2, _, Nat day2);
+    ]
+    | [
+      (pos_day1, _, Month_day day1);
+      (_, _, To);
+      (pos_day2, _, Month_day day2);
+    ] -> (
+        match
+          ( points ~pos_day:pos_day1 ~day:day1 `Front,
+            points ~pos_day:pos_day2 ~day:day2 `Back )
+        with
+        | `Some p1, `Some p2 ->
+          `Some
+            (Timere.bounded_intervals `Whole
+               (Timedesc.Span.For_human.make_exn ~days:32 ())
+               p1 p2)
+        | _, _ -> `None)
+    | _ -> `None
+
   let rule_d_hms_to_hms l =
     match l with
     | [
@@ -1428,6 +1649,12 @@ module Rules = struct
       rule_md_hms_to_hms;
       rule_d_hms_to_d_hms;
       rule_d_hms_to_hms;
+      rule_ymd_to_ymd;
+      rule_ymd_to_md;
+      rule_ymd_to_d;
+      rule_md_to_md;
+      rule_md_to_d;
+      rule_d_to_d;
       rule_hms_to_hms;
     ]
 end
