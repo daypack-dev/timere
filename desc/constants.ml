@@ -7,10 +7,7 @@ let timestamp_min : Span.t =
 let timestamp_max : Span.t =
   let x = Ptime.max |> Ptime_utils.timestamp_of_ptime in
   Span.(
-    floor
-      (x
-       - make_small ~s:1 ()
-       - make ~s:(Int64.of_int greatest_pos_tz_offset_s) ()))
+    floor (x - make_small ~s:1 () - make_small ~s:greatest_pos_tz_offset_s ()))
 
 let min_year = 0
 
