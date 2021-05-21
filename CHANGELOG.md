@@ -20,10 +20,12 @@
 
 - General fixes in `pattern_resolver` and `resolver` for edge cases nearing `Timedesc.Timestamp.min_val` and `Timedesc.Timestamp.max_val`
 
-- Bumped Timedesc dep to 0.2.1 for easier to handle time zone transitions
+- Bumped Timedesc dep to `0.3.0` for easier to handle time zone transitions
   (due to the updated definition of `Timedesc.Timestamp.max_val`)
 
-## Timedesc 0.2.1
+  - This makes resolver code simpler
+
+## Timedesc 0.3.0
 
 - Added `ceil`, `floor` and `round` to `Timedesc.Span` (and also re-exported them in `Timedesc.Timestamp`)
 

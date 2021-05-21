@@ -22,7 +22,7 @@ depends: [
   "dune" {>= "2.7.0"}
   "oseq" {>= "0.3"}
   "re"
-  "timedesc" {>= "0.2.1"}
+  "timedesc" {>= "0.3.0"}
   "timere" {>= "0.4.1"}
   "mparser" {>= "1.2.3"}
 ]
