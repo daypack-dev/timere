@@ -59,12 +59,12 @@
   Ok (bounded_intervals whole (172800 0) (points (pick dhms 16 11 0 0)) (points (pick hms 6 0 0)))
 
 20. "16th 8am to 10am, 11am to 12pm"
-  Ok (inter (pattern (month_days 16)) (union (bounded_intervals whole (172800 0) (points (pick hms 8 0 0)) (points (pick hms 10 0 0))) (bounded_intervals whole (172800 0) (points (pick hms 11 0 0)) (points (pick hms 12 0 0)))))
+  Ok (inter (pattern (month_days 16)) (union (bounded_intervals whole (108000 0) (points (pick hms 8 0 0)) (points (pick hms 10 0 0))) (bounded_intervals whole (108000 0) (points (pick hms 11 0 0)) (points (pick hms 12 0 0)))))
 
 21. "16th 6am to 8am, 9am, 10am to 11am"
-  Ok (inter (pattern (month_days 16)) (union (bounded_intervals whole (172800 0) (points (pick hms 6 0 0)) (points (pick hms 8 0 0))) (pattern (hours 9) (minutes 0) (seconds 0)) (bounded_intervals whole (172800 0) (points (pick hms 10 0 0)) (points (pick hms 11 0 0)))))
+  Ok (inter (pattern (month_days 16)) (union (bounded_intervals whole (108000 0) (points (pick hms 6 0 0)) (points (pick hms 8 0 0))) (pattern (hours 9) (minutes 0) (seconds 0)) (bounded_intervals whole (108000 0) (points (pick hms 10 0 0)) (points (pick hms 11 0 0)))))
 
-22. "jan || Feb"
+22. "jan or Feb"
   Ok (union (pattern (months Jan)) (pattern (months Feb)))
 
 23. "2020 jun 16th 10am to 12pm"
@@ -81,4 +81,7 @@
 
 27. "2020.06.16 10am"
   Ok (pattern (years 2020) (months Jun) (month_days 16) (hours 10) (minutes 0) (seconds 0))
+
+28. "2021 aug 26th to 27th"
+  Ok (bounded_intervals whole (31622400 0) (points (pick ymdhms 2021 Aug 26 0 0 0)) (points (pick dhms 27 23 59 59)))
 

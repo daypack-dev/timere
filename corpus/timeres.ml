@@ -22,12 +22,13 @@ let texts =
     "16th 11am to 6am";
     "16th 8am to 10am, 11am to 12pm";
     "16th 6am to 8am, 9am, 10am to 11am";
-    "jan || Feb";
+    "jan or Feb";
     "2020 jun 16th 10am to 12pm";
     "2020 jun 16th 10am to 17th 12pm";
     "2020 jun 16th 10am to jul 1 12pm";
     "2020.06.16";
     "2020.06.16 10am";
+    "2021 aug 26th to 27th";
   ]
 
 let () =
