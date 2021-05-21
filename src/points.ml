@@ -248,12 +248,18 @@ let to_date_time ~default_tz_info ({ pick; tz_info } : t) : Timedesc.t option =
   | YMDHMS { year; month; month_day; hour; minute; second } -> (
       let tz = tz_info.tz in
       match tz_info.fixed_offset_from_utc with
-      | Some offset_from_utc ->
-        Some
-          (Timedesc.make_unambiguous_exn ~tz ~offset_from_utc ~year ~month
-             ~day:month_day ~hour ~minute ~second ())
+      | Some offset_from_utc -> (
+          match Timedesc.make_unambiguous ~tz ~offset_from_utc ~year ~month
+            ~day:month_day ~hour ~minute ~second ()
+            with
+            | Ok x -> Some x
+            | Error _ -> None
+        )
       | None ->
-        Some
-          (Timedesc.make_exn ~tz ~year ~month ~day:month_day ~hour ~minute
-             ~second ()))
+          (match Timedesc.make ~tz ~year ~month ~day:month_day ~hour ~minute
+                   ~second () with
+          | Ok x -> Some x
+          | Error _ -> None
+          )
+    )
   | _ -> None
