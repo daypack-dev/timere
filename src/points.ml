@@ -249,17 +249,17 @@ let to_date_time ~default_tz_info ({ pick; tz_info } : t) : Timedesc.t option =
       let tz = tz_info.tz in
       match tz_info.fixed_offset_from_utc with
       | Some offset_from_utc -> (
-          match Timedesc.make_unambiguous ~tz ~offset_from_utc ~year ~month
-            ~day:month_day ~hour ~minute ~second ()
-            with
-            | Ok x -> Some x
-            | Error _ -> None
-        )
-      | None ->
-          (match Timedesc.make ~tz ~year ~month ~day:month_day ~hour ~minute
-                   ~second () with
+          match
+            Timedesc.make_unambiguous ~tz ~offset_from_utc ~year ~month
+              ~day:month_day ~hour ~minute ~second ()
+          with
           | Ok x -> Some x
-          | Error _ -> None
-          )
-    )
+          | Error _ -> None)
+      | None -> (
+          match
+            Timedesc.make ~tz ~year ~month ~day:month_day ~hour ~minute ~second
+              ()
+          with
+          | Ok x -> Some x
+          | Error _ -> None))
   | _ -> None
