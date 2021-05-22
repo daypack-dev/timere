@@ -18,8 +18,6 @@
 
 - Fixed incorrect resolution due to incorrect definition of `Resolver.timestamp_safe_sub`
 
-- Added automatic second fraction precision support for non-RFC3339 pretty printers
-
 - General fixes in `pattern_resolver` and `resolver` for edge cases nearing `Timedesc.Timestamp.min_val` and `Timedesc.Timestamp.max_val`
 
 - Bumped Timedesc dep to `0.3.0` for easier to handle time zone transitions
@@ -36,6 +34,12 @@
 - Added `ceil`, `floor` and `round` to `Timedesc.Span` (and also re-exported them in `Timedesc.Timestamp`)
 
 - Rounded down `Timedesc.Timestamp.max_val` to closest integer
+
+- Added automatic second fraction precision support for non-RFC3339 pretty printers
+
+- Updated default format string for pretty printers to include second fraction
+
+- Updated format string system to better support second fraction
 
 ## Timere 0.4.0
 
