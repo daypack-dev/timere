@@ -1194,13 +1194,53 @@ let minute_ranges minute_ranges = pattern ~minute_ranges ()
 
 let second_ranges second_ranges = pattern ~second_ranges ()
 
-let bounded_intervals pick (bound : Timedesc.Span.t) (start : Points.t)
+let bounded_intervals ?(bound : Timedesc.Span.t option) pick (start : Points.t)
     (end_exc : Points.t) : t =
-  if Timedesc.Span.(bound < zero) then
-    invalid_arg "bounded_intervals: bound is negative";
+  let default_bound start end_exc =
+    let open Points in
+    match start.pick, end_exc.pick with
+    | YMDHMS { year = x; _ }, YMDHMS { year = y; _ } ->
+      Timedesc.Span.For_human.make_exn ~days:((y - x + 1) * 366) ()
+    | YMDHMS _, MDHMS _
+    | MDHMS _, MDHMS _ ->
+      Timedesc.Span.For_human.make_exn ~days:366 ()
+    | YMDHMS _, DHMS _
+    | MDHMS _, DHMS _
+    | DHMS _, DHMS _
+      ->
+      Timedesc.Span.For_human.make_exn ~days:32 ()
+    | YMDHMS _, HMS _
+    | MDHMS _, HMS _
+    | DHMS _, HMS _
+    | HMS _, HMS _ ->
+      Timedesc.Span.For_human.make_exn ~hours:30 ()
+    | YMDHMS _, MS _
+    | MDHMS _, MS _
+    | DHMS _, MS _
+    | HMS _, MS _
+    | MS _, MS _ ->
+      Timedesc.Span.For_human.make_exn ~hours:1 ()
+    | YMDHMS _, S _
+    | MDHMS _, S _
+    | DHMS _, S _
+    | HMS _, S _
+    | MS _, S _
+    | S _, S _ ->
+      Timedesc.Span.For_human.make_exn ~minutes:1 ()
+    | _ -> failwith "Unexpected case"
+  in
+  let bound =
+    match bound with
+    | None -> default_bound start end_exc
+    | Some bound ->
+      if Timedesc.Span.(bound < zero) then
+        invalid_arg "bounded_intervals: bound is negative"
+      else
+        bound
+  in
   if Points.precision start < Points.precision end_exc then
-    invalid_arg "bounded_intervals: start is less precise than end_exc"
-  else if
+    invalid_arg "bounded_intervals: start is less precise than end_exc";
+  if
     CCOpt.equal Timedesc.Time_zone_info.equal start.tz_info end_exc.tz_info
   then
     match (start.pick, end_exc.pick) with
@@ -1229,7 +1269,6 @@ let bounded_intervals pick (bound : Timedesc.Span.t) (start : Points.t)
 
 let hms_intervals_exc (hms_a : Hms'.t) (hms_b : Hms'.t) : t =
   bounded_intervals `Whole
-    (Timedesc.Span.For_human.make_exn ~hours:30 ())
     (Points.make_exn ~hour:hms_a.hour ~minute:hms_a.minute ~second:hms_a.second
        ())
     (Points.make_exn ~hour:hms_b.hour ~minute:hms_b.minute ~second:hms_b.second

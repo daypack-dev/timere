@@ -977,7 +977,6 @@ let t_of_hmss (hmss : Timere.Hms.t Timere.range list) =
                  Ok
                    Timere.(
                      bounded_intervals `Whole
-                       (Timedesc.Span.For_human.make_exn ~hours:30 ())
                        p1 p2)
                | _ -> Error ())
          | _ -> failwith "unexpected case")
@@ -1138,9 +1137,6 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timedesc.Span.For_human.make_exn
-                  ~days:((year2 - year1 + 1) * 366)
-                  ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1171,7 +1167,6 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timedesc.Span.For_human.make_exn ~days:366 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1200,7 +1195,6 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timedesc.Span.For_human.make_exn ~days:366 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1221,7 +1215,6 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timedesc.Span.For_human.make_exn ~days:366 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1271,7 +1264,6 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timedesc.Span.For_human.make_exn ~days:366 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1317,7 +1309,6 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timedesc.Span.For_human.make_exn ~days:32 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1345,7 +1336,6 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timedesc.Span.For_human.make_exn ~days:32 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1387,7 +1377,6 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timedesc.Span.For_human.make_exn ~days:32 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1407,9 +1396,6 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timedesc.Span.For_human.make_exn
-                  ~days:((year2 - year1 + 1) * 366)
-                  ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1435,7 +1421,6 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timedesc.Span.For_human.make_exn ~days:366 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1459,7 +1444,6 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timedesc.Span.For_human.make_exn ~days:366 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1501,7 +1485,6 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timedesc.Span.For_human.make_exn ~days:366 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1539,7 +1522,6 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timedesc.Span.For_human.make_exn ~days:366 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1559,7 +1541,6 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timedesc.Span.For_human.make_exn ~days:32 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1582,7 +1563,6 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timedesc.Span.For_human.make_exn ~days:2 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None
@@ -1594,7 +1574,6 @@ module Rules = struct
         | `Some p1, `Some p2 ->
           `Some
             (Timere.bounded_intervals `Whole
-               (Timedesc.Span.For_human.make_exn ~days:2 ())
                p1 p2)
         | _, _ -> `None)
     | _ -> `None

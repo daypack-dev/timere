@@ -10,7 +10,7 @@
 
 - Upgraded ruleset
 
-## Timere 0.4.1
+## Timere 0.5.0
 
 - Fixed unhandled exception/crash due to trying to construct invalid date times when resolving patterns
 
@@ -28,6 +28,8 @@
   - This makes resolver code simpler
 
 - Fixed crash due to `Points.to_date_time` by changing to simply return `None` if date time conversion fails
+
+- Added automatic bound deduction by default for `bounded_intervals`
 
 ## Timedesc 0.3.0
 

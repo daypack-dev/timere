@@ -294,7 +294,7 @@ let build ~enable_extra_restrictions:_ ~min_year ~max_year_inc ~max_height
           make_points ~rng ~min_year ~max_year_inc
             ~max_precision:(Points.precision p1)
         in
-        Time.bounded_intervals pick (make_pos_duration ~rng) p1 p2
+        Time.bounded_intervals ~bound:(make_pos_duration ~rng) pick p1 p2
       | 4 ->
         Time.chunk (make_chunking ~rng) (make_chunk_selector ~rng)
           (aux (new_height ~rng height))

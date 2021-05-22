@@ -258,7 +258,7 @@ module Points : sig
     unit ->
     (t, error) result
   (** [make_points] call must be exactly one of the following forms (ignoring [tz] and [tz_offset_s] which are optional in all cases)
-      {v
+      {[
 make ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
 make         ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
 make                  ~day:_     ~hour:_ ~minute:_ ~second:_ ()
@@ -266,7 +266,7 @@ make                  ~weekday:_ ~hour:_ ~minute:_ ~second:_ ()
 make                             ~hour:_ ~minute:_ ~second:_ ()
 make                                     ~minute:_ ~second:_ ()
 make                                               ~second:_ ()
-    v}
+    ]}
 
       returns [Error] otherwise
   *)
@@ -289,7 +289,8 @@ end
 type points = Points.t
 
 val bounded_intervals :
-  [ `Whole | `Snd ] -> Timedesc.Span.t -> points -> points -> t
+  ?bound:Timedesc.Span.t ->
+  [ `Whole | `Snd ] -> points -> points -> t
 (** [bounded_intervals mode bound p1 p2] for each point [x] matched by [p1],
     then for the earliest point [y] matched by [p2] such that [x < y && y - x <= bound]
     - if [mode = `Whole], yields (x, y)
@@ -298,7 +299,7 @@ val bounded_intervals :
     Examples:
 
     {[
-      bounded_intervals `Whole (Span.For_human.make ~days:1 ())
+      bounded_intervals `Whole
         (make_points ~hour:13 ~minute:0 ~second:0 ()) (* p1 *)
         (make_points ~hour:14 ~minute:0 ~second:0 ()) (* p2 *)
     ]}
@@ -306,18 +307,23 @@ val bounded_intervals :
     searching forward up to 24 hour period, we can find a "2pm" mark in [p2]
 
     {[
-      bounded_intervals `Whole (Span.For_human.make ~days:1 ())
+      bounded_intervals `Whole
         (make_points ~month:2 ~day:10 ~hour:13 ~minute:0 ~second:0 ()) (* p1 *)
         (make_points                  ~hour:14 ~minute:0 ~second:0 ()) (* p2 *)
     ]}
     yields all the "Feb 10th 1pm to 2pm" intervals (or specifically "Feb 10th 1pm to Feb 10th 2pm")
 
     {[
-      bounded_intervals `Whole (Span.For_human.make ~days:1 ())
+      bounded_intervals `Whole
         (make_points ~month:`Feb ~day:10 ~hour:23 ~minute:0 ~second:0 ()) (* p1 *)
         (make_points                     ~hour:3  ~minute:0 ~second:0 ()) (* p2 *)
     ]}
     yields all the "Feb 10th 11pm to 3am" intervals (or specifically "Feb 10th 11pm to Feb 11th 3am")
+
+    Default bound is inferred as follows:
+    {[
+
+    ]}
 
     @raise Invalid_argument if bound is negative
 

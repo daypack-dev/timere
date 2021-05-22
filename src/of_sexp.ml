@@ -249,7 +249,7 @@ let of_sexp (x : CCSexp.t) =
             | _ -> invalid_data (Printf.sprintf "Invalid pick: %s" pick)
           in
           let bound = span_of_sexp bound in
-          bounded_intervals pick bound (points_of_sexp start)
+          bounded_intervals ~bound pick (points_of_sexp start)
             (points_of_sexp end_exc)
         | [ `Atom "unchunk"; x ] -> aux_chunked CCFun.id x
         | _ ->
