@@ -1110,12 +1110,12 @@ val pp : ?format:string -> unit -> Format.formatter -> t -> unit
                  (leave out character for no padding)
 {ns}             nanosecond
 {sec-frac:c}     fraction of second
-                 character c is used as the separator
-                 the smallest lossless number of digits required after decimal point is used for
+                 character c is used as the decimal separator
+                 the smallest number of digits required after decimal separator for a lossless representation is used
 {sec-frac:cN}    fraction of second
-                 character c is used as the separator
-                 N determines the number of digits to take after decimal point
-                 result is truncated to said precision
+                 character c is used as the decimal separator
+                 N determines the number of digits to take after decimal separator
+                 result is truncated to said number of digits
 {tzoff-sign}     time zone offset sign ('+' or '-')
                  raises Date_time_cannot_deduce_offset_from_utc if time zone offset cannot be calculated
 {tzoff-hour:cX}  time zone offset hour, follows same padding rule as "{hour:cX}"

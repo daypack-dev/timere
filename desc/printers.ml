@@ -155,7 +155,7 @@ module Format_string_parsers = struct
          opt smallest_lossless_frac_s nat_zero
          >>= fun frac_s ->
          if frac_s > 9 then
-           fail "Number of digits after decimal point cannot be > 9"
+           fail "Number of digits after decimal separator cannot be > 9"
          else return (string_of_s_frac ~sep ~frac_s ~ns));
         (attempt (string "tzoff-sign")
          >>= fun _ ->
