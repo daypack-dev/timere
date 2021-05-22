@@ -323,7 +323,9 @@ val bounded_intervals :
     {v
 if p2 is YMDHMS then (year of p2 - year of p1 + 1) * 366 days
 if p2 is  MDHMS then 366 days
-if p2 is   DHMS then  32 days
+if p2 is   DHMS then
+  if day of p1 < day of p2 then 31 - day of p2 days
+  else                                      31 days
 if p2 is    HMS then  30 hours
 if p2 is     MS then   1 hours
 if p2 is      S then   1 minutes
