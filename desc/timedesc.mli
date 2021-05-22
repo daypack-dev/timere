@@ -1082,7 +1082,7 @@ val pp : ?format:string -> unit -> Format.formatter -> t -> unit
 
      Default format string:
    {v
-{year} {mon:Xxx} {day:0X} {hour:0X}:{min:0X}:{sec:0X} \
+{year} {mon:Xxx} {day:0X} {hour:0X}:{min:0X}:{sec:0X}{sec-frac} \
 {tzoff-sign}{tzoff-hour:0X}:{tzoff-min:0X}:{tzoff-sec:0X}
      v}
 
@@ -1356,9 +1356,9 @@ module Interval : sig
 
         Default format string:
       {v
-[{syear} {smon:Xxx} {sday:0X} {shour:0X}:{smin:0X}:{ssec:0X} \
+[{syear} {smon:Xxx} {sday:0X} {shour:0X}:{smin:0X}:{ssec:0X}{ssec-frac} \
 {stzoff-sign}{stzoff-hour:0X}:{stzoff-min:0X}:{stzoff-sec:0X}, {eyear} \
-{emon:Xxx} {eday:0X} {ehour:0X}:{emin:0X}:{esec:0X} \
+{emon:Xxx} {eday:0X} {ehour:0X}:{emin:0X}:{esec:0X}{esec-frac} \
 {etzoff-sign}{etzoff-hour:0X}:{etzoff-min:0X}:{etzoff-sec:0X})
     v}
 
