@@ -259,14 +259,14 @@ module Points : sig
     (t, error) result
   (** Call must be exactly one of the following forms (ignoring [tz] and [tz_offset_s] which are optional in all cases)
       {[
-make ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
-make         ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
-make                  ~day:_     ~hour:_ ~minute:_ ~second:_ ()
-make                  ~weekday:_ ~hour:_ ~minute:_ ~second:_ ()
-make                             ~hour:_ ~minute:_ ~second:_ ()
-make                                     ~minute:_ ~second:_ ()
-make                                               ~second:_ ()
-    ]}
+        make ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
+          make         ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
+          make                  ~day:_     ~hour:_ ~minute:_ ~second:_ ()
+          make                  ~weekday:_ ~hour:_ ~minute:_ ~second:_ ()
+          make                             ~hour:_ ~minute:_ ~second:_ ()
+          make                                     ~minute:_ ~second:_ ()
+          make                                               ~second:_ ()
+      ]}
 
       returns [Error] otherwise
   *)
@@ -289,8 +289,7 @@ end
 type points = Points.t
 
 val bounded_intervals :
-  ?bound:Timedesc.Span.t ->
-  [ `Whole | `Snd ] -> points -> points -> t
+  ?bound:Timedesc.Span.t -> [ `Whole | `Snd ] -> points -> points -> t
 (** [bounded_intervals mode bound p1 p2] for each point [x] matched by [p1],
     then for the earliest point [y] matched by [p2] such that [x < y && y - x <= bound]
     - if [mode = `Whole], yields (x, y)

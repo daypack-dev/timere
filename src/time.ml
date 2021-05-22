@@ -1198,27 +1198,17 @@ let bounded_intervals ?(bound : Timedesc.Span.t option) pick (start : Points.t)
     (end_exc : Points.t) : t =
   let default_bound start end_exc =
     let open Points in
-    match start.pick, end_exc.pick with
+    match (start.pick, end_exc.pick) with
     | YMDHMS { year = x; _ }, YMDHMS { year = y; _ } ->
       Timedesc.Span.For_human.make_exn ~days:((y - x + 1) * 366) ()
-    | YMDHMS _, MDHMS _
-    | MDHMS _, MDHMS _ ->
+    | YMDHMS _, MDHMS _ | MDHMS _, MDHMS _ ->
       Timedesc.Span.For_human.make_exn ~days:366 ()
-    | YMDHMS _, DHMS _
-    | MDHMS _, DHMS _
-    | DHMS _, DHMS _
-      ->
+    | YMDHMS _, DHMS _ | MDHMS _, DHMS _ | DHMS _, DHMS _ ->
       Timedesc.Span.For_human.make_exn ~days:32 ()
-    | YMDHMS _, HMS _
-    | MDHMS _, HMS _
-    | DHMS _, HMS _
-    | HMS _, HMS _ ->
+    | YMDHMS _, HMS _ | MDHMS _, HMS _ | DHMS _, HMS _ | HMS _, HMS _ ->
       Timedesc.Span.For_human.make_exn ~hours:30 ()
-    | YMDHMS _, MS _
-    | MDHMS _, MS _
-    | DHMS _, MS _
-    | HMS _, MS _
-    | MS _, MS _ ->
+    | YMDHMS _, MS _ | MDHMS _, MS _ | DHMS _, MS _ | HMS _, MS _ | MS _, MS _
+      ->
       Timedesc.Span.For_human.make_exn ~hours:1 ()
     | YMDHMS _, S _
     | MDHMS _, S _
@@ -1235,13 +1225,11 @@ let bounded_intervals ?(bound : Timedesc.Span.t option) pick (start : Points.t)
     | Some bound ->
       if Timedesc.Span.(bound < zero) then
         invalid_arg "bounded_intervals: bound is negative"
-      else
-        bound
+      else bound
   in
   if Points.precision start < Points.precision end_exc then
     invalid_arg "bounded_intervals: start is less precise than end_exc";
-  if
-    CCOpt.equal Timedesc.Time_zone_info.equal start.tz_info end_exc.tz_info
+  if CCOpt.equal Timedesc.Time_zone_info.equal start.tz_info end_exc.tz_info
   then
     match (start.pick, end_exc.pick) with
     | Points.(S second_start, S second_end_exc)
