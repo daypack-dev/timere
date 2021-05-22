@@ -257,7 +257,7 @@ module Points : sig
     second:int ->
     unit ->
     (t, error) result
-  (** [make_points] call must be exactly one of the following forms (ignoring [tz] and [tz_offset_s] which are optional in all cases)
+  (** Call must be exactly one of the following forms (ignoring [tz] and [tz_offset_s] which are optional in all cases)
       {[
 make ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
 make         ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
@@ -300,38 +300,45 @@ val bounded_intervals :
 
     {[
       bounded_intervals `Whole
-        (make_points ~hour:13 ~minute:0 ~second:0 ()) (* p1 *)
-        (make_points ~hour:14 ~minute:0 ~second:0 ()) (* p2 *)
+        (Points.make ~hour:13 ~minute:0 ~second:0 ()) (* p1 *)
+        (Points.make ~hour:14 ~minute:0 ~second:0 ()) (* p2 *)
     ]}
     yields all the "1pm to 2pm" intervals, since at each "1pm" mark represented by [p1],
     searching forward up to 24 hour period, we can find a "2pm" mark in [p2]
 
     {[
       bounded_intervals `Whole
-        (make_points ~month:2 ~day:10 ~hour:13 ~minute:0 ~second:0 ()) (* p1 *)
-        (make_points                  ~hour:14 ~minute:0 ~second:0 ()) (* p2 *)
+        (Points.make ~month:2 ~day:10 ~hour:13 ~minute:0 ~second:0 ()) (* p1 *)
+        (Points.make                  ~hour:14 ~minute:0 ~second:0 ()) (* p2 *)
     ]}
     yields all the "Feb 10th 1pm to 2pm" intervals (or specifically "Feb 10th 1pm to Feb 10th 2pm")
 
     {[
       bounded_intervals `Whole
-        (make_points ~month:`Feb ~day:10 ~hour:23 ~minute:0 ~second:0 ()) (* p1 *)
-        (make_points                     ~hour:3  ~minute:0 ~second:0 ()) (* p2 *)
+        (Points.make ~month:`Feb ~day:10 ~hour:23 ~minute:0 ~second:0 ()) (* p1 *)
+        (Points.make                     ~hour:3  ~minute:0 ~second:0 ()) (* p2 *)
     ]}
     yields all the "Feb 10th 11pm to 3am" intervals (or specifically "Feb 10th 11pm to Feb 11th 3am")
 
-    Default bound is inferred as follows:
-    {[
-
-    ]}
+    Default bound is inferred as follows, and should suffice in yielding desired results for most cases:
+    {v
+if p2 is YMDHMS then (year of p2 - year of p1 + 1) * 366 days
+if p2 is  MDHMS then 366 days
+if p2 is   DHMS then  32 days
+if p2 is    HMS then  30 hours
+if p2 is     MS then   1 hours
+if p2 is      S then   1 minutes
+    v}
+    where we say [p2 is YMDHMS] if [p2 = Points.make_exn ~year:_ ~month:_ ~day:_ ~hour:_ ~minute:_ ~second:_ ()]
+    and so on.
 
     @raise Invalid_argument if bound is negative
 
     @raise Invalid_argument if precision (number of date time arguments passed to [make_points] during construction)
     of [p1] < precision of [p2]
 
-    For example, [make_points_exn ~hour:3 ~minute:0 ~second:0 ()]
-    has a lower precision than [make_points_exn ~day:10 ~hour:12 ~minute:30 ~second:0 ()]
+    For example, [Points.make_exn ~hour:3 ~minute:0 ~second:0 ()]
+    has a lower precision than [make_points_exn ~day:10 ~hour:12 ~minute:30 ~second:0 ()].
 *)
 
 (** {2 Hour minute second intervals} *)
