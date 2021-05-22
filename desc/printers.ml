@@ -114,9 +114,7 @@ module Format_string_parsers = struct
     let Date.Ymd_date.{ year; month; day } = Date_time.ymd_date date_time in
     let weekday = Date_time.weekday date_time in
     let Time.{ hour; minute; second; ns } = Date_time.time_view date_time in
-    let smallest_lossless_frac_s =
-      deduce_smallest_lossless_frac_s ~ns
-    in
+    let smallest_lossless_frac_s = deduce_smallest_lossless_frac_s ~ns in
     choice
       [
         attempt (string "year") >> return (Printf.sprintf "%04d" year);
@@ -152,10 +150,12 @@ module Format_string_parsers = struct
          >>= fun padding -> return (pad_int padding second));
         attempt (string "ns") >> return (string_of_int ns);
         (attempt (string "sec-frac:")
-         >> any_char >>= fun sep ->
-         (opt smallest_lossless_frac_s nat_zero)
+         >> any_char
+         >>= fun sep ->
+         opt smallest_lossless_frac_s nat_zero
          >>= fun frac_s ->
-         if frac_s > 9 then fail "Number of digits after decimal point cannot be > 9"
+         if frac_s > 9 then
+           fail "Number of digits after decimal point cannot be > 9"
          else return (string_of_s_frac ~sep ~frac_s ~ns));
         (attempt (string "tzoff-sign")
          >>= fun _ ->
