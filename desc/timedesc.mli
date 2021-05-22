@@ -1082,7 +1082,7 @@ val pp : ?format:string -> unit -> Format.formatter -> t -> unit
 
      Default format string:
    {v
-{year} {mon:Xxx} {day:0X} {hour:0X}:{min:0X}:{sec:0X}{sec-frac} \
+{year} {mon:Xxx} {day:0X} {hour:0X}:{min:0X}:{sec:0X}{sec-frac:.} \
 {tzoff-sign}{tzoff-hour:0X}:{tzoff-min:0X}:{tzoff-sec:0X}
      v}
 
@@ -1095,7 +1095,7 @@ val pp : ?format:string -> unit -> Format.formatter -> t -> unit
                  casing of second 'x' controls casing of following letters
 {mon:cX}         month in number form (e.g. 01) character 'c' before 'X' is used for padding
                  (leave out character for no padding)
-{day:cX}        month day (e.g.  1) character 'c' before 'X' is used for padding
+{day:cX}         month day (e.g.  1) character 'c' before 'X' is used for padding
                  (leave out character for no padding)
 {wday:Xxx}       abbreviated weekday name (e.g. Sun), the casing of 'x' controls the casing
 {wday:Xx*}       full weekday name (e.g. Sunday), casing of first 'x' controls casing of first letter,
@@ -1109,9 +1109,13 @@ val pp : ?format:string -> unit -> Format.formatter -> t -> unit
 {sec:cX}         second, character 'c' before 'X' determines padding
                  (leave out character for no padding)
 {ns}             nanosecond
-{sec-frac:N}     fraction of second (only digits)
+{sec-frac:c}     fraction of second
+                 character c is used as the separator
+                 the smallest lossless number of digits required after decimal point is used for
+{sec-frac:cN}    fraction of second
+                 character c is used as the separator
                  N determines the number of digits to take after decimal point
-                 result is rounded to closest fraction of said precision
+                 result is truncated to said precision
 {tzoff-sign}     time zone offset sign ('+' or '-')
                  raises Date_time_cannot_deduce_offset_from_utc if time zone offset cannot be calculated
 {tzoff-hour:cX}  time zone offset hour, follows same padding rule as "{hour:cX}"
@@ -1356,9 +1360,9 @@ module Interval : sig
 
         Default format string:
       {v
-[{syear} {smon:Xxx} {sday:0X} {shour:0X}:{smin:0X}:{ssec:0X}{ssec-frac} \
+[{syear} {smon:Xxx} {sday:0X} {shour:0X}:{smin:0X}:{ssec:0X}{ssec-frac:.} \
 {stzoff-sign}{stzoff-hour:0X}:{stzoff-min:0X}:{stzoff-sec:0X}, {eyear} \
-{emon:Xxx} {eday:0X} {ehour:0X}:{emin:0X}:{esec:0X}{esec-frac} \
+{emon:Xxx} {eday:0X} {ehour:0X}:{emin:0X}:{esec:0X}{esec-frac:.} \
 {etzoff-sign}{etzoff-hour:0X}:{etzoff-min:0X}:{etzoff-sec:0X})
     v}
 

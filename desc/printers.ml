@@ -76,6 +76,14 @@ let pad_int (c : char option) (x : int) : string =
 
 exception Date_time_cannot_deduce_offset_from_utc of Date_time.t
 
+let string_of_frac ~sep ~frac_s ~ns =
+  let ns = ns mod Span.ns_count_in_s in
+  assert (0 <= frac_s && frac_s <= 9);
+  if frac_s = 0 then ""
+  else
+    let divisor = get_divisor frac_s in
+    Printf.sprintf "%c%0*d" sep frac_s (ns / divisor)
+
 module Format_string_parsers = struct
   open MParser
   open Parser_components
@@ -97,18 +105,6 @@ module Format_string_parsers = struct
        >>= fun padding -> char 'X' >> return (Some padding))
     <|> (char 'X' >> return None)
 
-  let string_of_frac ~precision ~ns =
-    let ns = float_of_int ns in
-    if precision = 0 then ""
-    else
-      let precision' = float_of_int precision in
-      let frac =
-        ns *. (10. ** precision') /. Span.ns_count_in_s_float
-        |> CCFloat.round
-        |> int_of_float
-      in
-      Printf.sprintf ".%0*d" precision frac
-
   let date_time_inner (date_time : Date_time.t) : (string, unit) t =
     let single_offset =
       match date_time.offset_from_utc with
@@ -118,6 +114,9 @@ module Format_string_parsers = struct
     let Date.Ymd_date.{ year; month; day } = Date_time.ymd_date date_time in
     let weekday = Date_time.weekday date_time in
     let Time.{ hour; minute; second; ns } = Date_time.time_view date_time in
+    let smallest_lossless_frac_s =
+      deduce_smallest_lossless_frac_s ~ns
+    in
     choice
       [
         attempt (string "year") >> return (Printf.sprintf "%04d" year);
@@ -153,14 +152,11 @@ module Format_string_parsers = struct
          >>= fun padding -> return (pad_int padding second));
         attempt (string "ns") >> return (string_of_int ns);
         (attempt (string "sec-frac:")
-         >> nat_zero
-         >>= fun precision ->
-         if precision = 0 then fail "Precision cannot be 0"
-         else return (string_of_frac ~precision ~ns));
-        (attempt (string "sec-frac")
-         >>
-         let precision = deduce_smallest_lossless_frac_s ~ns in
-         return (string_of_frac ~precision ~ns));
+         >> any_char >>= fun sep ->
+         (opt smallest_lossless_frac_s nat_zero)
+         >>= fun frac_s ->
+         if frac_s > 9 then fail "Number of digits after decimal point cannot be > 9"
+         else return (string_of_frac ~sep ~frac_s ~ns));
         (attempt (string "tzoff-sign")
          >>= fun _ ->
          match single_offset with
@@ -194,13 +190,13 @@ module Format_string_parsers = struct
 end
 
 let default_date_time_format_string =
-  "{year} {mon:Xxx} {day:0X} {hour:0X}:{min:0X}:{sec:0X}{sec-frac} \
+  "{year} {mon:Xxx} {day:0X} {hour:0X}:{min:0X}:{sec:0X}{sec-frac:.} \
    {tzoff-sign}{tzoff-hour:0X}:{tzoff-min:0X}:{tzoff-sec:0X}"
 
 let default_interval_format_string =
-  "[{syear} {smon:Xxx} {sday:0X} {shour:0X}:{smin:0X}:{ssec:0X}{ssec-frac} \
+  "[{syear} {smon:Xxx} {sday:0X} {shour:0X}:{smin:0X}:{ssec:0X}{ssec-frac:.} \
    {stzoff-sign}{stzoff-hour:0X}:{stzoff-min:0X}:{stzoff-sec:0X}, {eyear} \
-   {emon:Xxx} {eday:0X} {ehour:0X}:{emin:0X}:{esec:0X}{esec-frac} \
+   {emon:Xxx} {eday:0X} {ehour:0X}:{emin:0X}:{esec:0X}{esec-frac:.} \
    {etzoff-sign}{etzoff-hour:0X}:{etzoff-min:0X}:{etzoff-sec:0X})"
 
 exception Invalid_format_string of string
