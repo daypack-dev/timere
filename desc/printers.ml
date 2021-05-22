@@ -76,7 +76,7 @@ let pad_int (c : char option) (x : int) : string =
 
 exception Date_time_cannot_deduce_offset_from_utc of Date_time.t
 
-let string_of_frac ~sep ~frac_s ~ns =
+let string_of_s_frac ~sep ~frac_s ~ns =
   let ns = ns mod Span.ns_count_in_s in
   assert (0 <= frac_s && frac_s <= 9);
   if frac_s = 0 then ""
@@ -156,7 +156,7 @@ module Format_string_parsers = struct
          (opt smallest_lossless_frac_s nat_zero)
          >>= fun frac_s ->
          if frac_s > 9 then fail "Number of digits after decimal point cannot be > 9"
-         else return (string_of_frac ~sep ~frac_s ~ns));
+         else return (string_of_s_frac ~sep ~frac_s ~ns));
         (attempt (string "tzoff-sign")
          >>= fun _ ->
          match single_offset with

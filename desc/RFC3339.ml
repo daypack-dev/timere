@@ -25,13 +25,8 @@ let pp_date_time ?frac_s () formatter (dt : Date_time.t) =
       in
       let second = if Date_time.is_leap_second dt then 60 else second in
       let Date.Ymd_date.{ year; month; day } = Date_time.ymd_date dt in
-      if frac_s = 0 then
-        Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d%s" year month day hour
-          minute second tz_off
-      else
-        let divisor = Printers.get_divisor frac_s in
-        Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d.%0*d%s" year month day
-          hour minute second frac_s (ns / divisor) tz_off
+        Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d%s%s" year month day
+          hour minute second (Printers.string_of_s_frac ~sep:'.' ~frac_s ~ns) tz_off
 
 let of_date_time ?frac_s (dt : Date_time.t) : string option =
   try Some (Fmt.str "%a" (pp_date_time ?frac_s ()) dt)
