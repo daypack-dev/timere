@@ -1201,22 +1201,11 @@ let bounded_intervals ?(bound : Timedesc.Span.t option) pick (start : Points.t)
     match (start.pick, end_exc.pick) with
     | YMDHMS { year = x; _ }, YMDHMS { year = y; _ } ->
       Timedesc.Span.For_human.make_exn ~days:((y - x + 1) * 366) ()
-    | YMDHMS _, MDHMS _ | MDHMS _, MDHMS _ ->
-      Timedesc.Span.For_human.make_exn ~days:366 ()
-    | YMDHMS _, DHMS _ | MDHMS _, DHMS _ | DHMS _, DHMS _ ->
-      Timedesc.Span.For_human.make_exn ~days:32 ()
-    | YMDHMS _, HMS _ | MDHMS _, HMS _ | DHMS _, HMS _ | HMS _, HMS _ ->
-      Timedesc.Span.For_human.make_exn ~hours:30 ()
-    | YMDHMS _, MS _ | MDHMS _, MS _ | DHMS _, MS _ | HMS _, MS _ | MS _, MS _
-      ->
-      Timedesc.Span.For_human.make_exn ~hours:1 ()
-    | YMDHMS _, S _
-    | MDHMS _, S _
-    | DHMS _, S _
-    | HMS _, S _
-    | MS _, S _
-    | S _, S _ ->
-      Timedesc.Span.For_human.make_exn ~minutes:1 ()
+    | _, MDHMS _ -> Timedesc.Span.For_human.make_exn ~days:366 ()
+    | _, DHMS _ -> Timedesc.Span.For_human.make_exn ~days:32 ()
+    | _, HMS _ -> Timedesc.Span.For_human.make_exn ~hours:30 ()
+    | _, MS _ -> Timedesc.Span.For_human.make_exn ~hours:1 ()
+    | _, S _ -> Timedesc.Span.For_human.make_exn ~minutes:1 ()
     | _ -> failwith "Unexpected case"
   in
   let bound =
