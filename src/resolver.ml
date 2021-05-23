@@ -54,7 +54,7 @@ and chunked_of_ast_chunked (c : Time_ast.chunked) : chunked =
   | Unary_op_on_chunked (op, chunked) ->
     Unary_op_on_chunked (op, chunked_of_ast_chunked chunked)
 
-let get_search_space (time : t) : Time.Interval'.t list =
+let search_space_of_t (time : t) : search_space =
   match time with
   | All -> default_search_space
   | Empty -> []
@@ -102,6 +102,30 @@ let search_space_of_result_space (time : t) space : search_space =
       | [] -> []
       | (x, y) :: rest -> (timestamp_safe_sub x bound, y) :: rest)
   | Unchunk _ -> space
+
+let result_space_of_t ?pretend_search_space (time : t) : search_space =
+  let space = match pretend_search_space with
+    | None -> search_space_of_t time
+    | Some x -> x
+  in
+  match time with
+  | All | Empty | Intervals _ | Pattern _ -> space
+  | Unary_op (_, op, _) -> (
+      match op with
+      | Not -> default_search_space
+      | With_tz _ -> space
+      | Shift n ->
+        space
+        |> List.map (fun (x, y) ->
+            (timestamp_safe_add x n, timestamp_safe_add y n))
+      | Lengthen n ->
+        space
+        |> CCList.to_seq
+        |> Seq.map (fun (x, y) -> (x, timestamp_safe_add y n))
+        |> Time.Intervals.normalize
+        |> CCList.of_seq
+    )
+  | _ -> failwith "Unimplemented"
 
 let set_search_space space (time : t) : t =
   match time with
@@ -173,32 +197,22 @@ let overapproximate_search_space_bottom_up default_tz (time : t) : t =
         in
         Pattern (space, pat)
     | Unary_op (_, op, t) -> (
+        let tz = match op with
+          | With_tz tz -> tz
+          | _ -> tz
+        in
+        let t = aux tz t in
         match op with
-        | Not -> Unary_op (default_search_space, op, aux tz t)
-        | With_tz tz ->
-          let t = aux tz t in
-          Unary_op (get_search_space t, op, t)
-        | Shift n ->
-          let space =
-            get_search_space t
-            |> List.map (fun (x, y) ->
-                (timestamp_safe_add x n, timestamp_safe_add y n))
-          in
-          Unary_op (space, op, t)
-        | Lengthen n ->
-          let space =
-            get_search_space t
-            |> CCList.to_seq
-            |> Seq.map (fun (x, y) -> (x, timestamp_safe_add y n))
-            |> Time.Intervals.normalize
-            |> CCList.of_seq
-          in
-          Unary_op (space, op, t))
+        | Not ->
+          Unary_op (default_search_space, op, t)
+        | _ ->
+          Unary_op (result_space_of_t t, op, t)
+      )
     | Inter_seq (_, s) ->
       let s = Seq.map (aux tz) s in
       let space =
         s
-        |> Seq.map get_search_space
+        |> Seq.map result_space_of_t
         |> Seq.map CCList.to_seq
         |> Seq.map (Intervals.normalize ~skip_sort:true)
         |> Intervals.Inter.inter_multi_seq ~skip_check:true
@@ -235,12 +249,12 @@ let overapproximate_search_space_bottom_up default_tz (time : t) : t =
     match chunked with
     | Unary_op_on_t (_op, time) ->
       let t = aux tz time in
-      get_search_space t
+      result_space_of_t t
     | Unary_op_on_chunked (_op, chunked) -> aux_chunked tz chunked
   and aux_seq tz s =
     let s = Seq.map (aux tz) s in
     let space =
-      Seq.map get_search_space s
+      Seq.map result_space_of_t s
       |> Seq.map CCList.to_seq
       |> Intervals.Union.union_multi_seq
       |> CCList.of_seq
@@ -373,7 +387,7 @@ let dynamic_search_space_adjustment_trigger_size =
 let inter_slice_size = Timedesc.Span.For_human.(make_exn ~days:10 ())
 
 let slice_search_space ~start (t : t) : t =
-  let current = get_search_space t |> CCList.to_seq in
+  let current = search_space_of_t t |> CCList.to_seq in
   let restriction =
     Time.Intervals.Slice.slice ~skip_check:true ~start
       (CCList.to_seq default_search_space)
@@ -429,7 +443,7 @@ let aux_points search_using_tz space (p : Points.t) : timestamp Seq.t =
 
 let rec aux search_using_tz time =
   let open Time in
-  (match get_search_space time with
+  (match search_space_of_t time with
    | [] -> Seq.empty
    | _ -> (
        match time with
