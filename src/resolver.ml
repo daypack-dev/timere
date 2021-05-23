@@ -66,7 +66,7 @@ let get_search_space (time : t) : Time.Interval'.t list =
   | Bounded_intervals { search_space; _ } -> search_space
   | Unchunk (s, _) -> s
 
-let calibrate_search_space_for_set (time : t) space : search_space =
+let search_space_of_result_space (time : t) space : search_space =
   let open Timedesc.Span in
   match time with
   | All | Empty | Intervals _ | Pattern _ -> space
@@ -253,7 +253,7 @@ let restrict_search_space_top_down (time : t) : t =
   let open Time in
   let restrict_search_space time (parent : search_space) (cur : search_space) =
     parent
-    |> calibrate_search_space_for_set time
+    |> search_space_of_result_space time
     |> CCList.to_seq
     |> Intervals.Inter.inter ~skip_check:true (CCList.to_seq cur)
     |> CCList.of_seq
@@ -378,7 +378,7 @@ let slice_search_space ~start (t : t) : t =
     Time.Intervals.Slice.slice ~skip_check:true ~start
       (CCList.to_seq default_search_space)
     |> CCList.of_seq
-    |> calibrate_search_space_for_set t
+    |> search_space_of_result_space t
     |> CCList.to_seq
   in
   let space = Time.Intervals.Inter.inter current restriction |> CCList.of_seq in
