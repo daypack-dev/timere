@@ -195,7 +195,7 @@ let aux_points (search_start, search_end_exc) search_using_tz points :
 let resolve ?(search_using_tz = Timedesc.Time_zone.utc)
     ~(search_start : Timedesc.Span.t) ~(search_end_exc : Timedesc.Span.t)
     (t : Time_ast.t) : Time.Interval'.t Seq.t =
-  let default_search_space = Timedesc.(Timestamp.min_val, Timestamp.max_val) in
+  let default_result_space = Timedesc.(Timestamp.min_val, Timestamp.max_val) in
   let rec aux (search_space : Time.Interval'.t)
       (search_using_tz : Timedesc.Time_zone.t) t =
     match t with
@@ -253,7 +253,7 @@ let resolve ?(search_using_tz = Timedesc.Time_zone.utc)
     in
     match chunked with
     | Unary_op_on_t (op, t) ->
-      aux default_search_space search_using_tz t
+      aux default_result_space search_using_tz t
       |> intervals_of_span_set
       |> chunk_based_on_op_on_t op
     | Unary_op_on_chunked (op, c) -> (

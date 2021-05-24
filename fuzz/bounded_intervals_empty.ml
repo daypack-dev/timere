@@ -4,16 +4,16 @@ let () =
   Crowbar.add_test ~name:"bounded_intervals_empty"
     [ time_zone; Crowbar.range 100_000; points; points ] (fun tz bound p1 p2 ->
         let bound = Timedesc.Span.make_small ~s:bound () in
-        let s1 = Resolver.aux_points tz Resolver.default_search_space p1 in
-        let s2 = Resolver.aux_points tz Resolver.default_search_space p2 in
+        let s1 = Resolver.aux_points tz Resolver.default_result_space p1 in
+        let s2 = Resolver.aux_points tz Resolver.default_result_space p2 in
         let s =
           Resolver.(
-            aux_bounded_intervals tz Resolver.default_search_space `Whole bound p1
+            aux_bounded_intervals tz Resolver.default_result_space `Whole bound p1
               p2)
         in
         let s' =
           Resolver.(
-            aux_bounded_intervals tz Resolver.default_search_space `Snd bound p1
+            aux_bounded_intervals tz Resolver.default_result_space `Snd bound p1
               p2)
         in
         let r =
