@@ -72,8 +72,8 @@ let deduce_child_result_space_bound_from_parent ~(parent : t) : result_space =
   let open Timedesc.Span in
   let space = result_space_of_t parent in
   match parent with
-  | All | Empty | Intervals _ | Pattern _ |
-    Bounded_intervals _ -> failwith "Unexpected case"
+  | All | Empty | Intervals _ | Pattern _ | Bounded_intervals _ ->
+    failwith "Unexpected case"
   | Unary_op (_, op, _) -> (
       match op with
       | Shift n ->
@@ -212,8 +212,8 @@ let overapproximate_result_space_bottom_up default_tz (t : t) : t =
         | With_tz _ -> Unary_op (child_result_space, op, t)
         | Shift n ->
           let space =
-            List.map (fun (x, y) ->
-                (timestamp_safe_add x n, timestamp_safe_add y n))
+            List.map
+              (fun (x, y) -> (timestamp_safe_add x n, timestamp_safe_add y n))
               child_result_space
           in
           Unary_op (space, op, t)
@@ -225,8 +225,7 @@ let overapproximate_result_space_bottom_up default_tz (t : t) : t =
             |> Time.Intervals.normalize
             |> CCList.of_seq
           in
-          Unary_op (space, op, t)
-      )
+          Unary_op (space, op, t))
     | Inter_seq (_, s) ->
       let s = Seq.map (aux tz) s in
       let space =
@@ -261,18 +260,16 @@ let restrict_result_space_top_down (t : t) : t =
   let rec aux bound (parent : t) : t =
     let parent = restrict_result_space ~bound parent in
     match parent with
-    | All
-    | Empty
-    | Intervals _
-    | Pattern _
-    | Bounded_intervals _ -> t
-    | Unary_op (cur, op, t) -> (
-        Unary_op (cur, op, aux (deduce_child_result_space_bound_from_parent ~parent) t)
-      )
+    | All | Empty | Intervals _ | Pattern _ | Bounded_intervals _ -> t
+    | Unary_op (cur, op, t) ->
+      Unary_op
+        (cur, op, aux (deduce_child_result_space_bound_from_parent ~parent) t)
     | Inter_seq (cur, s) ->
-      (Inter_seq (cur, aux_seq (deduce_child_result_space_bound_from_parent ~parent) s))
+      Inter_seq
+        (cur, aux_seq (deduce_child_result_space_bound_from_parent ~parent) s)
     | Union_seq (cur, s) ->
-      (Union_seq (cur, aux_seq (deduce_child_result_space_bound_from_parent ~parent) s))
+      Union_seq
+        (cur, aux_seq (deduce_child_result_space_bound_from_parent ~parent) s)
     | Unchunk (_, _) -> t
   and aux_seq bound l = Seq.map (aux bound) l in
   aux default_result_space t
@@ -366,7 +363,9 @@ let slice_result_space ~start (t : t) : t =
     |> CCList.to_seq
     |> Time.Intervals.Slice.slice ~skip_check:true ~start
   in
-  let space = Time.Intervals.Inter.inter current result_space_bound |> CCList.of_seq in
+  let space =
+    Time.Intervals.Inter.inter current result_space_bound |> CCList.of_seq
+  in
   set_result_space space t |> restrict_result_space_top_down
 
 let slice_result_space_multi ~start (l : t list) : t list =
