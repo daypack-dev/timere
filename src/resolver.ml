@@ -451,7 +451,7 @@ let rec aux search_using_tz time =
            | [] -> []
            | (x, y) :: rest -> (timestamp_safe_sub x bound, y) :: rest
          in
-         aux_bounded_intervals search_using_tz search_space pick bound start
+         aux_bounded_intervals ~search_space search_using_tz pick bound start
            end_exc
        | Unchunk (_, c) -> aux_chunked search_using_tz c))
   |> normalize
@@ -497,10 +497,10 @@ and skip_points_in_p1 ~last_start2 ~(rest1 : timestamp Seq.t) ~(p1 : Points.t)
       (aux_points search_using_tz space p1, space)
     else (rest1, space)
 
-and aux_bounded_intervals search_using_tz space pick bound p1 p2 =
+and aux_bounded_intervals ~search_space search_using_tz pick bound p1 p2 =
   let _, search_space_end_exc =
     CCOpt.get_exn_or "Expected successful retrieval of last element in list"
-    @@ Misc_utils.last_element_of_list space
+    @@ Misc_utils.last_element_of_list search_space
   in
   let rec aux_bounded_intervals' s1 s2 space1 space2 p1 p2 =
     match s1 () with
@@ -534,9 +534,9 @@ and aux_bounded_intervals search_using_tz space pick bound p1 p2 =
               aux_bounded_intervals' s1 s2 space1 space2 p1 p2)
   in
   aux_bounded_intervals'
-    (aux_points search_using_tz space p1)
-    (aux_points search_using_tz space p2)
-    space space p1 p2
+    (aux_points search_using_tz search_space p1)
+    (aux_points search_using_tz search_space p2)
+    search_space search_space p1 p2
 
 and aux_union search_using_tz timeres =
   let open Time in
