@@ -361,13 +361,8 @@ let inter_slice_size = Timedesc.Span.For_human.(make_exn ~days:10 ())
 
 let slice_result_space ~start (t : t) : t =
   let current = result_space_of_t t |> CCList.to_seq in
-  let result_space_bound =
-    default_result_space
-    |> CCList.to_seq
-    |> Time.Intervals.Slice.slice ~skip_check:true ~start
-  in
   let space =
-    Time.Intervals.Inter.inter current result_space_bound |> CCList.of_seq
+    Time.Intervals.Slice.slice ~skip_check:true ~start current |> CCList.of_seq
   in
   set_result_space space t |> restrict_result_space_top_down
 
