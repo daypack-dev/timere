@@ -8,13 +8,13 @@ let () =
         let s2 = Resolver.aux_points tz Resolver.default_result_space p2 in
         let s =
           Resolver.(
-            aux_bounded_intervals ~search_space:Resolver.default_result_space tz `Whole bound p1
-              p2)
+            aux_bounded_intervals ~search_space:Resolver.default_result_space tz
+              `Whole bound p1 p2)
         in
         let s' =
           Resolver.(
-            aux_bounded_intervals ~search_space:Resolver.default_result_space tz `Snd bound p1
-              p2)
+            aux_bounded_intervals ~search_space:Resolver.default_result_space tz
+              `Snd bound p1 p2)
         in
         let r =
           (not (OSeq.is_empty s1 && OSeq.is_empty s2))
