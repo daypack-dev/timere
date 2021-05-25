@@ -263,13 +263,17 @@ let restrict_result_space_top_down (t : t) : t =
     | All | Empty | Intervals _ | Pattern _ | Bounded_intervals _ -> t
     | Unary_op (cur, op, t') ->
       Unary_op
-        (cur, op, aux (deduce_child_result_space_bound_from_parent ~parent:t) t')
+        ( cur,
+          op,
+          aux (deduce_child_result_space_bound_from_parent ~parent:t) t' )
     | Inter_seq (cur, s) ->
       Inter_seq
-        (cur, aux_seq (deduce_child_result_space_bound_from_parent ~parent:t) s)
+        ( cur,
+          aux_seq (deduce_child_result_space_bound_from_parent ~parent:t) s )
     | Union_seq (cur, s) ->
       Union_seq
-        (cur, aux_seq (deduce_child_result_space_bound_from_parent ~parent:t) s)
+        ( cur,
+          aux_seq (deduce_child_result_space_bound_from_parent ~parent:t) s )
     | Unchunk (_, _) -> t
   and aux_seq bound l = Seq.map (aux bound) l in
   aux default_result_space t
