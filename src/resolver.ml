@@ -155,7 +155,6 @@ let restrict_result_space ~(bound : result_space) t =
   let new_result_space =
     Intervals.Inter.inter ~skip_check:true (CCList.to_seq cur)
       (CCList.to_seq bound)
-    (* search_space_of_pretend_result_space ~pretend_result_space:result_space time *)
     |> CCList.of_seq
   in
   set_result_space new_result_space t
