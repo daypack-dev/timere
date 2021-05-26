@@ -29,6 +29,8 @@
 
 - Added automatic bound deduction by default for `bounded_intervals`
 
+- Overhaul of search space optimization code in `resolver`
+
 ## Timedesc 0.3.0
 
 - Added `ceil`, `floor` and `round` to `Timedesc.Span` (and also re-exported them in `Timedesc.Timestamp`)
