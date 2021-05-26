@@ -6,7 +6,7 @@ This repo houses:
 
 - Timedesc - date time handling library
 
-- Timere - reasoning library
+- Timere - date time reasoning library
 
 - Timere-parse - natural language parsing library
 
