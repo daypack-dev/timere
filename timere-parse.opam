@@ -23,7 +23,7 @@ depends: [
   "oseq" {>= "0.3"}
   "re"
   "timedesc" {>= "0.3.0"}
-  "timere" {>= "0.4.1"}
+  "timere" {>= "0.5.0"}
   "mparser" {>= "1.2.3"}
 ]
 build: [
