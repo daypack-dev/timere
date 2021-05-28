@@ -241,16 +241,23 @@ let of_sexp (x : CCSexp.t) =
           with_tz tz (aux x)
         | `Atom "inter" :: l -> inter (List.map aux l)
         | `Atom "union" :: l -> union (List.map aux l)
-        | [ `Atom "bounded_intervals"; `Atom pick; bound; start; end_exc ] ->
-          let pick =
-            match pick with
+        | [ `Atom "bounded_intervals"; `Atom inc_exc; `Atom mode; bound; start; end_ ] ->
+          let inc_exc =
+            match inc_exc with
+            | "inc" -> `Inc
+            | "exc" -> `Exc
+            | _ -> invalid_data (Printf.sprintf "Invalid inc_exc: %s" inc_exc)
+          in
+          let mode =
+            match mode with
             | "whole" -> `Whole
+            | "fst" -> `Fst
             | "snd" -> `Snd
-            | _ -> invalid_data (Printf.sprintf "Invalid pick: %s" pick)
+            | _ -> invalid_data (Printf.sprintf "Invalid mode: %s" mode)
           in
           let bound = span_of_sexp bound in
-          bounded_intervals ~bound pick (points_of_sexp start)
-            (points_of_sexp end_exc)
+          bounded_intervals ~inc_exc ~bound mode (points_of_sexp start)
+            (points_of_sexp end_)
         | [ `Atom "unchunk"; x ] -> aux_chunked CCFun.id x
         | _ ->
           invalid_data

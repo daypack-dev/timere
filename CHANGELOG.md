@@ -10,6 +10,14 @@
 
 - Upgraded ruleset
 
+## Timere 0.6.0
+
+- Added `inc_exc` argument to `bounded_intervals`
+
+  - This fixes expressiveness issues caused by lack of an inclusive version
+
+- Swapped to using `inc_exc` for `hms_intervals` API
+
 ## Timere 0.5.0
 
 - Fixed unhandled exception/crash due to trying to construct invalid date times when resolving patterns

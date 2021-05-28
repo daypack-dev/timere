@@ -37,10 +37,11 @@ type t =
   | Inter_seq of t Seq.t
   | Union_seq of t Seq.t
   | Bounded_intervals of {
-      pick : [ `Whole | `Snd ];
+      inc_exc : [`Inc | `Exc];
+      mode : [ `Whole | `Fst | `Snd ];
       bound : Timedesc.Span.t;
       start : Points.t;
-      end_exc : Points.t;
+      end_ : Points.t;
     }
   | Unchunk of chunked
 

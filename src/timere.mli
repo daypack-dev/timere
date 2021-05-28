@@ -10,6 +10,11 @@ type t
     of intervals).
 *)
 
+type inc_exc = [
+  | `Inc
+  | `Exc
+]
+
 type 'a range =
   [ `Range_inc of 'a * 'a
   | `Range_exc of 'a * 'a
@@ -289,11 +294,18 @@ end
 type points = Points.t
 
 val bounded_intervals :
-  ?bound:Timedesc.Span.t -> [ `Whole | `Snd ] -> points -> points -> t
-(** [bounded_intervals mode bound p1 p2] for each point [x] matched by [p1],
+  ?inc_exc:inc_exc ->
+  ?bound:Timedesc.Span.t -> [ `Whole | `Fst | `Snd ] -> points -> points -> t
+(** [bounded_intervals mode p1 p2] for each point [x] matched by [p1],
     then for the earliest point [y] matched by [p2] such that [x < y && y - x <= bound]
-    - if [mode = `Whole], yields (x, y)
+    - if [mode = `Whole && inc_exc = `Exc], yields (x, y)
+    - if [mode = `Whole && inc_exc = `Inc], yields (x, y + 1)
+    - if [mode = `Fst], yields (x, x + 1)
     - if [mode = `Snd], yields (y, y + 1)
+
+    above implies [inc_exc] does not impact operations if mode is [`Fst] or [`Snd].
+
+    [inc_exc] defaults to [`Exc].
 
     Examples:
 
@@ -319,7 +331,7 @@ val bounded_intervals :
     ]}
     yields all the "Feb 10th 11pm to 3am" intervals (or specifically "Feb 10th 11pm to Feb 11th 3am")
 
-    Default bound is inferred as follows, and should suffice in yielding desired results for most cases:
+    Default [bound] is inferred as follows, and should suffice in yielding desired results for most cases:
     {v
 if p2 is YMDHMS then (year of p2 - year of p1 + 1) * 366 days
 if p2 is  MDHMS then 366 days
