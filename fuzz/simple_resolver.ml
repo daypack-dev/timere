@@ -227,18 +227,26 @@ let resolve ?(search_using_tz = Timedesc.Time_zone.utc)
       Seq.fold_left
         (fun acc t -> Span_set.union acc (aux search_space search_using_tz t))
         Span_set.empty s
-    | Bounded_intervals { pick; bound; start; end_exc } ->
+    | Bounded_intervals { inc_exc; mode; bound; start; end_ } ->
       let x, y = search_space in
       let search_space = (timestamp_safe_sub x bound, y) in
       let s1 = aux_points search_space search_using_tz start in
-      let s2 = aux_points search_space search_using_tz end_exc in
+      let s2 = aux_points search_space search_using_tz end_ in
       s1
       |> Seq.filter_map (fun start ->
           find_after bound start s2
           |> CCOpt.map (fun x ->
-              match pick with
-              | `Whole -> (start, x)
-              | `Snd -> (x, Timedesc.Span.succ x)))
+              match mode with
+              | `Whole -> (
+                  match inc_exc with
+                  | `Inc ->
+                    (start, Timedesc.Span.succ x)
+                  | `Exc ->
+                    (start, x)
+              )
+              | `Fst -> (start, Timedesc.Span.succ start)
+              | `Snd -> (x, Timedesc.Span.succ x)
+            ))
       |> span_set_of_intervals
     | Unchunk chunked ->
       aux_chunked search_using_tz chunked |> span_set_of_intervals
