@@ -6,12 +6,22 @@ let () =
         let bound = Timedesc.Span.make_small ~s:bound () in
         let s1 = Resolver.aux_points tz Resolver.default_result_space p1 in
         let s2 = Resolver.aux_points tz Resolver.default_result_space p2 in
-        let s =
+        let r1 =
           Resolver.(
             aux_bounded_intervals ~search_space:Resolver.default_result_space tz
-              `Whole bound p1 p2)
+              `Whole_exc bound p1 p2)
         in
-        let s' =
+        let r2 =
+          Resolver.(
+            aux_bounded_intervals ~search_space:Resolver.default_result_space tz
+              `Whole_inc bound p1 p2)
+        in
+        let r3 =
+          Resolver.(
+            aux_bounded_intervals ~search_space:Resolver.default_result_space tz
+              `Fst bound p1 p2)
+        in
+        let r4 =
           Resolver.(
             aux_bounded_intervals ~search_space:Resolver.default_result_space tz
               `Snd bound p1 p2)
@@ -26,10 +36,15 @@ let () =
                with
                | Seq.Nil -> true
                | Seq.Cons (xr2, _) ->
-                 OSeq.mem ~eq:Time.Interval'.equal (x1, xr2) s
+                 OSeq.mem ~eq:Time.Interval'.equal (x1, xr2) r1
+                 && OSeq.mem ~eq:Time.Interval'.equal (x1, Timedesc.Span.succ xr2) r2
+                 && OSeq.mem ~eq:Time.Interval'.equal
+                   (x1, Timedesc.Span.succ xr2)
+                   r3
                  && OSeq.mem ~eq:Time.Interval'.equal
                    (xr2, Timedesc.Span.succ xr2)
-                   s')
+                   r4
+            )
             s1
         in
         if not r then
