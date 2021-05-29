@@ -39,7 +39,7 @@ let () =
                  OSeq.mem ~eq:Time.Interval'.equal (x1, xr2) r1
                  && OSeq.mem ~eq:Time.Interval'.equal (x1, Timedesc.Span.succ xr2) r2
                  && OSeq.mem ~eq:Time.Interval'.equal
-                   (x1, Timedesc.Span.succ xr2)
+                   (x1, Timedesc.Span.succ x1)
                    r3
                  && OSeq.mem ~eq:Time.Interval'.equal
                    (xr2, Timedesc.Span.succ xr2)

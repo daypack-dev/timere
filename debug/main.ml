@@ -209,12 +209,11 @@ let debug_fuzz_bounded_intervals () =
   let s =
     Resolver.(
       aux_bounded_intervals ~search_space:Resolver.default_result_space tz
-        `Exc
-        `Whole bound p1 p2)
+        `Whole_exc bound p1 p2)
   in
   let s' =
     Resolver.(
-      aux_bounded_intervals ~search_space:Resolver.default_result_space tz `Exc `Snd
+      aux_bounded_intervals ~search_space:Resolver.default_result_space tz `Snd
         bound p1 p2)
   in
   Printf.printf "p1: %s\n" (To_sexp.sexp_of_points p1 |> CCSexp.to_string);

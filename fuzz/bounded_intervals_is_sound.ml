@@ -43,20 +43,9 @@ let () =
             r2
           && OSeq.for_all
             (fun (x, y) ->
-               let r =
-                 OSeq.filter
-                   Timedesc.Span.(fun x1 -> x1 < x && x - x1 <= bound)
-                   s1
-               in
-               let xr =
-                 CCOpt.get_exn_or
-                   "Expected successful retrieval of last element of seq"
-                 @@ Seq_utils.last_element_of_seq r
-               in
                y = Timedesc.Span.succ x
                && OSeq.mem ~eq:Timedesc.Span.equal x s1
-               && not
-                 (OSeq.exists Timedesc.Span.(fun x1 -> xr < x1 && x1 < x) s1))
+            )
             r3
           && OSeq.for_all
             (fun (x, y) ->
