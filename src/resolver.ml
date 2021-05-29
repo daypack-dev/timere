@@ -21,8 +21,7 @@ type t =
   | Pattern of result_space * Pattern.t
   | Bounded_intervals of {
       result_space : result_space;
-      inc_exc : [ `Inc | `Exc ];
-      mode : [ `Whole | `Fst | `Snd ];
+      mode : [ `Whole_inc | `Whole_exc | `Fst | `Snd ];
       bound : Timedesc.Span.t;
       start : Points.t;
       end_ : Points.t;
@@ -45,9 +44,9 @@ let rec t_of_ast (ast : Time_ast.t) : t =
   | Unary_op (op, t) -> Unary_op (default_result_space, op, t_of_ast t)
   | Inter_seq s -> Inter_seq (default_result_space, Seq.map t_of_ast s)
   | Union_seq s -> Union_seq (default_result_space, Seq.map t_of_ast s)
-  | Bounded_intervals { inc_exc; mode; bound; start; end_ } ->
+  | Bounded_intervals { mode; bound; start; end_ } ->
     Bounded_intervals
-      { result_space = default_result_space; inc_exc; mode; bound; start; end_ }
+      { result_space = default_result_space; mode; bound; start; end_ }
   | Unchunk chunked ->
     Unchunk (default_result_space, chunked_of_ast_chunked chunked)
 
@@ -113,8 +112,8 @@ let set_result_space space (t : t) : t =
   | Unary_op (_, op, x) -> Unary_op (space, op, x)
   | Inter_seq (_, x) -> Inter_seq (space, x)
   | Union_seq (_, x) -> Union_seq (space, x)
-  | Bounded_intervals { result_space = _; inc_exc; mode; bound; start; end_ } ->
-    Bounded_intervals { result_space = space; inc_exc; mode; bound; start; end_ }
+  | Bounded_intervals { result_space = _; mode; bound; start; end_ } ->
+    Bounded_intervals { result_space = space; mode; bound; start; end_ }
   | Unchunk (_, c) -> Unchunk (space, c)
 
 let result_space_of_year_range tz year_range =
@@ -181,7 +180,7 @@ let overapproximate_result_space_bottom_up default_tz (t : t) : t =
           |> CCList.of_seq
         in
         Pattern (space, pat)
-    | Bounded_intervals { result_space = _; inc_exc; mode; bound; start; end_ } ->
+    | Bounded_intervals { result_space = _; mode; bound; start; end_ } ->
       let result_space =
         match
           Points.to_date_time
@@ -202,7 +201,7 @@ let overapproximate_result_space_bottom_up default_tz (t : t) : t =
           in
           [ (space_start, space_end_exc) ]
       in
-      Bounded_intervals { result_space; inc_exc; mode; bound; start; end_ }
+      Bounded_intervals { result_space; mode; bound; start; end_ }
     | Unary_op (_, op, t) -> (
         let tz = match op with With_tz tz -> tz | _ -> tz in
         let t = aux tz t in
@@ -440,13 +439,13 @@ let rec aux search_using_tz time =
            | With_tz _ -> s)
        | Inter_seq (_, s) -> aux_inter search_using_tz s
        | Union_seq (_, s) -> aux_union search_using_tz s
-       | Bounded_intervals { result_space; inc_exc; mode; bound; start; end_ } ->
+       | Bounded_intervals { result_space; mode; bound; start; end_ } ->
          let search_space =
            match result_space with
            | [] -> []
            | (x, y) :: rest -> (timestamp_safe_sub x bound, y) :: rest
          in
-         aux_bounded_intervals ~search_space search_using_tz inc_exc mode bound start
+         aux_bounded_intervals ~search_space search_using_tz mode bound start
            end_
        | Unchunk (_, c) -> aux_chunked search_using_tz c))
   |> normalize
@@ -492,7 +491,7 @@ and skip_points_in_p1 ~last_start2 ~(rest1 : timestamp Seq.t) ~(p1 : Points.t)
       (aux_points search_using_tz space p1, space)
     else (rest1, space)
 
-and aux_bounded_intervals ~search_space search_using_tz inc_exc mode bound p1 p2 =
+and aux_bounded_intervals ~search_space search_using_tz mode bound p1 p2 =
   let _, search_space_end_exc =
     CCOpt.get_exn_or "Expected successful retrieval of last element in list"
     @@ Misc_utils.last_element_of_list search_space
@@ -514,13 +513,10 @@ and aux_bounded_intervals ~search_space search_using_tz inc_exc mode bound p1 p2
             else if start2 - start1 <= bound then
               let interval =
                 match mode with
-                | `Whole -> (
-                    match inc_exc with
-                    | `Inc ->
-                      (start1, succ start2)
-                    | `Exc ->
-                      (start1, start2)
-                  )
+                | `Whole_inc ->
+                  (start1, succ start2)
+                | `Whole_exc ->
+                  (start1, start2)
                 | `Fst -> (start1, succ start1)
                 | `Snd -> (start2, succ start2)
               in

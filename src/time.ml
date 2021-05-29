@@ -926,11 +926,10 @@ let equal t1 t2 =
     | Unary_op (op1, t1), Unary_op (op2, t2) ->
       equal_unary_op op1 op2 && aux t1 t2
     | ( Bounded_intervals
-          { inc_exc = inc_exc1; mode = mode1; bound = b1; start = start1; end_ = end_1 },
+          { mode = mode1; bound = b1; start = start1; end_ = end_1 },
         Bounded_intervals
-          { inc_exc = inc_exc2; mode = mode2; bound = b2; start = start2; end_ = end_2 } ) ->
-      inc_exc1 = inc_exc2
-      && mode1 = mode2
+          { mode = mode2; bound = b2; start = start2; end_ = end_2 } ) ->
+      mode1 = mode2
       && b1 = b2
       && Points.equal start1 start2
       && Points.equal end_1 end_2
@@ -1226,6 +1225,13 @@ let bounded_intervals ?(inc_exc : inc_exc = `Exc) ?(bound : Timedesc.Span.t opti
         invalid_arg "bounded_intervals: bound is negative"
       else bound
   in
+  let mode =
+    match mode, inc_exc with
+    | `Whole, `Inc -> `Whole_inc
+    | `Whole, `Exc -> `Whole_exc
+    | `Fst, _ -> `Fst
+    | `Snd, _ -> `Snd
+  in
   if Points.precision start < Points.precision end_ then
     invalid_arg "bounded_intervals: start is less precise than end_exc";
   if CCOpt.equal Timedesc.Time_zone_info.equal start.tz_info end_.tz_info
@@ -1251,8 +1257,8 @@ let bounded_intervals ?(inc_exc : inc_exc = `Exc) ?(bound : Timedesc.Span.t opti
         && minute_start = minute_end_exc
         && second_start = second_end_exc ->
       always
-    | _, _ -> Bounded_intervals { inc_exc; mode; bound; start; end_ }
-  else Bounded_intervals { inc_exc; mode; bound; start; end_ }
+    | _, _ -> Bounded_intervals { mode; bound; start; end_ }
+  else Bounded_intervals { mode; bound; start; end_ }
 
 let hms_intervals_exc (hms_a : Hms'.t) (hms_b : Hms'.t) : t =
   bounded_intervals `Whole

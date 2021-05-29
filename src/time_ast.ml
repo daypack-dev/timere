@@ -37,8 +37,7 @@ type t =
   | Inter_seq of t Seq.t
   | Union_seq of t Seq.t
   | Bounded_intervals of {
-      inc_exc : [`Inc | `Exc];
-      mode : [ `Whole | `Fst | `Snd ];
+      mode : [ `Whole_inc | `Whole_exc | `Fst | `Snd ];
       bound : Timedesc.Span.t;
       start : Points.t;
       end_ : Points.t;
