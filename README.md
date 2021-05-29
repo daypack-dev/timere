@@ -161,6 +161,6 @@ Time zone database derived files are licensed under its original terms (public d
 
   - This includes data representation and choices of some algorithms
 
-- Local time zone detection approach for `timere.tzlocal.unix` backend is copied from [tzlocal](https://github.com/regebro/tzlocal)
+- Local time zone detection approach for `timedesc.tzlocal.unix` backend is copied from [tzlocal](https://github.com/regebro/tzlocal)
 
 - Some internal calculations/formulas in Timedesc based around Julian day are copied from [Ptime](https://github.com/dbuenzli/ptime)
