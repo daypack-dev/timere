@@ -513,10 +513,8 @@ and aux_bounded_intervals ~search_space search_using_tz mode bound p1 p2 =
             else if start2 - start1 <= bound then
               let interval =
                 match mode with
-                | `Whole_inc ->
-                  (start1, succ start2)
-                | `Whole_exc ->
-                  (start1, start2)
+                | `Whole_inc -> (start1, succ start2)
+                | `Whole_exc -> (start1, start2)
                 | `Fst -> (start1, succ start1)
                 | `Snd -> (start2, succ start2)
               in

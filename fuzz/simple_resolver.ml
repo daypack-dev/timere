@@ -237,13 +237,10 @@ let resolve ?(search_using_tz = Timedesc.Time_zone.utc)
           find_after bound start s2
           |> CCOpt.map (fun x ->
               match mode with
-              | `Whole_inc ->
-                (start, Timedesc.Span.succ x)
-              | `Whole_exc ->
-                (start, x)
+              | `Whole_inc -> (start, Timedesc.Span.succ x)
+              | `Whole_exc -> (start, x)
               | `Fst -> (start, Timedesc.Span.succ start)
-              | `Snd -> (x, Timedesc.Span.succ x)
-            ))
+              | `Snd -> (x, Timedesc.Span.succ x)))
       |> span_set_of_intervals
     | Unchunk chunked ->
       aux_chunked search_using_tz chunked |> span_set_of_intervals

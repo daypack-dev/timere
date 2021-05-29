@@ -10,10 +10,10 @@ exception Intervals_are_not_sorted
 
 exception Intervals_are_not_disjoint
 
-type inc_exc = [
-  | `Inc
+type inc_exc =
+  [ `Inc
   | `Exc
-]
+  ]
 
 let one_ns = Timedesc.Span.make ~ns:1 ()
 
@@ -1199,8 +1199,9 @@ let minute_ranges minute_ranges = pattern ~minute_ranges ()
 
 let second_ranges second_ranges = pattern ~second_ranges ()
 
-let bounded_intervals ?(inc_exc : inc_exc = `Exc) ?(bound : Timedesc.Span.t option) mode (start : Points.t)
-    (end_ : Points.t) : t =
+let bounded_intervals ?(inc_exc : inc_exc = `Exc)
+    ?(bound : Timedesc.Span.t option) mode (start : Points.t) (end_ : Points.t)
+  : t =
   let default_bound start end_exc =
     let open Points in
     match (start.pick, end_exc.pick) with
@@ -1226,7 +1227,7 @@ let bounded_intervals ?(inc_exc : inc_exc = `Exc) ?(bound : Timedesc.Span.t opti
       else bound
   in
   let mode =
-    match mode, inc_exc with
+    match (mode, inc_exc) with
     | `Whole, `Inc -> `Whole_inc
     | `Whole, `Exc -> `Whole_exc
     | `Fst, _ -> `Fst
@@ -1234,8 +1235,7 @@ let bounded_intervals ?(inc_exc : inc_exc = `Exc) ?(bound : Timedesc.Span.t opti
   in
   if Points.precision start < Points.precision end_ then
     invalid_arg "bounded_intervals: start is less precise than end_exc";
-  if CCOpt.equal Timedesc.Time_zone_info.equal start.tz_info end_.tz_info
-  then
+  if CCOpt.equal Timedesc.Time_zone_info.equal start.tz_info end_.tz_info then
     match (start.pick, end_.pick) with
     | Points.(S second_start, S second_end_exc)
       when second_start = second_end_exc ->

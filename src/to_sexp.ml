@@ -170,7 +170,11 @@ let to_sexp (t : Time_ast.t) : CCSexp.t =
         list
           [
             atom "bounded_intervals";
-            (match mode with `Whole_inc -> atom "whole_inc" | `Whole_exc -> atom "whole_exc" | `Fst -> atom "fst" | `Snd -> atom "snd");
+            (match mode with
+             | `Whole_inc -> atom "whole_inc"
+             | `Whole_exc -> atom "whole_exc"
+             | `Fst -> atom "fst"
+             | `Snd -> atom "snd");
             sexp_of_span bound;
             sexp_of_points start;
             sexp_of_points end_;

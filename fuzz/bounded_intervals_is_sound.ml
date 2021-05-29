@@ -38,14 +38,13 @@ let () =
             (fun (x, y) ->
                OSeq.mem ~eq:( = ) x s1
                && OSeq.mem ~eq:( = ) (Timedesc.Span.pred y) s2
-               && Timedesc.Span.((Timedesc.Span.pred y) - x <= bound)
-               && not (OSeq.exists Timedesc.Span.(fun x2 -> x < x2 && x2 <= y) s2))
+               && Timedesc.Span.(Timedesc.Span.pred y - x <= bound)
+               && not
+                 (OSeq.exists Timedesc.Span.(fun x2 -> x < x2 && x2 <= y) s2))
             r2
           && OSeq.for_all
             (fun (x, y) ->
-               y = Timedesc.Span.succ x
-               && OSeq.mem ~eq:Timedesc.Span.equal x s1
-            )
+               y = Timedesc.Span.succ x && OSeq.mem ~eq:Timedesc.Span.equal x s1)
             r3
           && OSeq.for_all
             (fun (x, y) ->

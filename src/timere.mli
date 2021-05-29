@@ -10,10 +10,10 @@ type t
     of intervals).
 *)
 
-type inc_exc = [
-  | `Inc
+type inc_exc =
+  [ `Inc
   | `Exc
-]
+  ]
 
 type 'a range =
   [ `Range_inc of 'a * 'a
@@ -295,7 +295,11 @@ type points = Points.t
 
 val bounded_intervals :
   ?inc_exc:inc_exc ->
-  ?bound:Timedesc.Span.t -> [ `Whole | `Fst | `Snd ] -> points -> points -> t
+  ?bound:Timedesc.Span.t ->
+  [ `Whole | `Fst | `Snd ] ->
+  points ->
+  points ->
+  t
 (** [bounded_intervals mode p1 p2] for each point [x] matched by [p1],
     then for the earliest point [y] matched by [p2] such that [x < y && y - x <= bound]
     - if [mode = `Whole && inc_exc = `Exc], yields (x, y)

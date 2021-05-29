@@ -28,7 +28,7 @@ let () =
         in
         let r =
           (not (OSeq.is_empty s1 && OSeq.is_empty s2))
-          || (List.for_all OSeq.is_empty [r1; r2; r3; r4])
+          || List.for_all OSeq.is_empty [ r1; r2; r3; r4 ]
         in
         if not r then
           Crowbar.fail
