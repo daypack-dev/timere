@@ -1260,11 +1260,11 @@ let bounded_intervals ?(inc_exc : inc_exc = `Exc)
     | _, _ -> Bounded_intervals { mode; bound; start; end_ }
   else Bounded_intervals { mode; bound; start; end_ }
 
-let hms_intervals ?(inc_exc : inc_exc = `Exc) (hms_a : Hms'.t) (hms_b : Hms'.t) : t =
+let hms_intervals ?(inc_exc : inc_exc = `Exc) (hms_a : Hms'.t) (hms_b : Hms'.t)
+  : t =
   let hms_b =
     match inc_exc with
-    | `Exc ->
-      hms_b
+    | `Exc -> hms_b
     | `Inc ->
       hms_b
       |> Hms'.to_second_of_day
