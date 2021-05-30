@@ -9,21 +9,16 @@ let ns_count_in_s = 1_000_000_000
 
 let ns_count_in_s_float = float_of_int ns_count_in_s
 
-let check { s; ns } =
-  assert (ns >= 0);
-  assert (ns < ns_count_in_s);
-  {s; ns}
-
 let normalize { s; ns } =
   if ns >= 0 then
     let s_to_add = ns / ns_count_in_s in
     let ns' = ns mod ns_count_in_s in
     { s = Int64.add s (Int64.of_int s_to_add); ns = ns' }
   else
-    let ns = abs ns in
+    let ns = -ns in
     let s_to_sub = (ns + ns_count_in_s - 1) / ns_count_in_s in
     let ns_to_sub_from_one_s = ns mod ns_count_in_s in
-    check {
+    {
       s = Int64.sub s (Int64.of_int s_to_sub);
       ns = ns_count_in_s - ns_to_sub_from_one_s;
     }
