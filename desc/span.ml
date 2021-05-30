@@ -15,12 +15,9 @@ let normalize { s; ns } =
   let rewrite_for_edge_case { s; ns } =
     if ns = Int.min_int then
       if s > Int64.min_int then
-        {s = Int64.pred s;
-         ns = Int.min_int + ns_count_in_s}
-      else
-        raise Out_of_range
-    else
-      {s; ns}
+        { s = Int64.pred s; ns = Int.min_int + ns_count_in_s }
+      else raise Out_of_range
+    else { s; ns }
   in
   if ns >= 0 then
     let s_to_add = ns / ns_count_in_s in

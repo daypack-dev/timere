@@ -136,53 +136,49 @@ module Alco = struct
   let edge_case0 () =
     Alcotest.(check bool)
       "same span"
-      (let Timedesc.Span.{ s; ns } = Timedesc.Span.make ~s:(-10L) ~ns:Int.min_int () in
-       0 <= ns && ns < 1_000_000_000
-       &&
-       Int64.add (Int64.mul (-10L) 1_000_000_000L) (Int64.of_int Int.min_int)
-       = Int64.add
-         (Int64.mul s 1_000_000_000L)
-         (Int64.of_int ns)
-      )
+      (let Timedesc.Span.{ s; ns } =
+         Timedesc.Span.make ~s:(-10L) ~ns:Int.min_int ()
+       in
+       0 <= ns
+       && ns < 1_000_000_000
+       && Int64.add (Int64.mul (-10L) 1_000_000_000L) (Int64.of_int Int.min_int)
+          = Int64.add (Int64.mul s 1_000_000_000L) (Int64.of_int ns))
       true
 
   let edge_case1 () =
     Alcotest.(check bool)
       "same span"
-      (let Timedesc.Span.{ s; ns } = Timedesc.Span.make ~s:(10L) ~ns:Int.min_int () in
-       0 <= ns && ns < 1_000_000_000
-       &&
-       Int64.add (Int64.mul 10L 1_000_000_000L) (Int64.of_int Int.min_int)
-       = Int64.add
-         (Int64.mul s 1_000_000_000L)
-         (Int64.of_int ns)
-      )
+      (let Timedesc.Span.{ s; ns } =
+         Timedesc.Span.make ~s:10L ~ns:Int.min_int ()
+       in
+       0 <= ns
+       && ns < 1_000_000_000
+       && Int64.add (Int64.mul 10L 1_000_000_000L) (Int64.of_int Int.min_int)
+          = Int64.add (Int64.mul s 1_000_000_000L) (Int64.of_int ns))
       true
 
   let edge_case2 () =
     Alcotest.(check bool)
       "same span"
-      (let Timedesc.Span.{ s; ns } = Timedesc.Span.make ~s:(10L) ~ns:Int.max_int () in
-       0 <= ns && ns < 1_000_000_000
-       &&
-       Int64.add (Int64.mul 10L 1_000_000_000L) (Int64.of_int Int.min_int)
-       = Int64.add
-         (Int64.mul s 1_000_000_000L)
-         (Int64.of_int ns)
-      )
+      (let Timedesc.Span.{ s; ns } =
+         Timedesc.Span.make ~s:10L ~ns:Int.max_int ()
+       in
+       0 <= ns
+       && ns < 1_000_000_000
+       && Int64.add (Int64.mul 10L 1_000_000_000L) (Int64.of_int Int.min_int)
+          = Int64.add (Int64.mul s 1_000_000_000L) (Int64.of_int ns))
       true
 
   let edge_case3 () =
     Alcotest.(check bool)
       "same span"
-      (let Timedesc.Span.{ s; ns } = Timedesc.Span.make ~s:(-10L) ~ns:Int.max_int () in
-       0 <= ns && ns < 1_000_000_000
-       &&
-       Int64.add (Int64.mul (-10L) 1_000_000_000L) (Int64.of_int Int.min_int)
-       = Int64.add
-         (Int64.mul s 1_000_000_000L)
-         (Int64.of_int ns)
-      )
+      (let Timedesc.Span.{ s; ns } =
+         Timedesc.Span.make ~s:(-10L) ~ns:Int.max_int ()
+       in
+       0 <= ns
+       && ns < 1_000_000_000
+       && Int64.add (Int64.mul (-10L) 1_000_000_000L) (Int64.of_int Int.min_int)
+          = Int64.add (Int64.mul s 1_000_000_000L) (Int64.of_int ns))
       true
 
   let suite =
@@ -235,8 +231,7 @@ module Qc = struct
       QCheck.(pair int64 int)
       (fun (s, ns) ->
          let span = Timedesc.Span.make ~s ~ns () in
-         0 <= span.ns && span.ns < 1_000_000_000
-      )
+         0 <= span.ns && span.ns < 1_000_000_000)
 
   let normalize_is_idempotent =
     QCheck.Test.make ~count:100_000 ~name:"normalize_is_idempotent" timestamp
