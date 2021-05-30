@@ -275,7 +275,7 @@ let to_pattern ({ pick; tz_info = _ } : t) =
 let to_date_time ~default_tz_info ({ pick; tz_info } : t) : Timedesc.t option =
   let tz_info = match tz_info with None -> default_tz_info | Some x -> x in
   match pick with
-  | YMDHMS { year; month; month_day; hour; minute; second } -> (
+  | YMDHMSN { year; month; month_day; hour; minute; second; ns } -> (
       let tz = tz_info.tz in
       match tz_info.fixed_offset_from_utc with
       | Some offset_from_utc -> (

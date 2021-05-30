@@ -1218,20 +1218,20 @@ let second_ranges second_ranges = pattern ~second_ranges ()
 let bounded_intervals ?(inc_exc : inc_exc = `Exc)
     ?(bound : Timedesc.Span.t option) mode (start : Points.t) (end_ : Points.t)
   : t =
-  let default_bound start end_exc =
+  let default_bound start end_ =
     let open Points in
-    match (start.pick, end_exc.pick) with
-    | YMDHMS { year = x; _ }, YMDHMS { year = y; _ } ->
+    match (start.pick, end_.pick) with
+    | YMDHMSN { year = x; _ }, YMDHMSN { year = y; _ } ->
       Timedesc.Span.For_human.make_exn ~days:((y - x + 1) * 366) ()
-    | _, MDHMS _ -> Timedesc.Span.For_human.make_exn ~days:366 ()
-    | YMDHMS { month_day = x; _ }, DHMS { month_day = y; _ }
-    | MDHMS { month_day = x; _ }, DHMS { month_day = y; _ }
-    | DHMS { month_day = x; _ }, DHMS { month_day = y; _ } ->
+    | _, MDHMSN _ -> Timedesc.Span.For_human.make_exn ~days:366 ()
+    | YMDHMSN { month_day = x; _ }, DHMSN { month_day = y; _ }
+    | MDHMSN { month_day = x; _ }, DHMSN { month_day = y; _ }
+    | DHMSN { month_day = x; _ }, DHMSN { month_day = y; _ } ->
       if x < y then Timedesc.Span.For_human.make_exn ~days:(31 - x) ()
       else Timedesc.Span.For_human.make_exn ~days:31 ()
-    | _, HMS _ -> Timedesc.Span.For_human.make_exn ~hours:26 ()
-    | _, MS _ -> Timedesc.Span.For_human.make_exn ~hours:1 ()
-    | _, S _ -> Timedesc.Span.For_human.make_exn ~minutes:1 ()
+    | _, HMSN _ -> Timedesc.Span.For_human.make_exn ~hours:26 ()
+    | _, MSN _ -> Timedesc.Span.For_human.make_exn ~hours:1 ()
+    | _, SN _ -> Timedesc.Span.For_human.make_exn ~minutes:1 ()
     | _ -> failwith "Unexpected case"
   in
   let bound =
@@ -1253,25 +1253,30 @@ let bounded_intervals ?(inc_exc : inc_exc = `Exc)
     invalid_arg "bounded_intervals: start is less precise than end_exc";
   if CCOpt.equal Timedesc.Time_zone_info.equal start.tz_info end_.tz_info then
     match (start.pick, end_.pick) with
-    | Points.(S second_start, S second_end_exc)
-      when second_start = second_end_exc ->
+    | Points.(N ns_start, N ns_end)
+      when ns_start = ns_end -> always
+    | Points.(SN { second = second_start; ns = ns_start}, SN {second = second_end; ns = ns_end })
+      when second_start = second_end && ns_start = ns_end ->
       always
     | Points.(
-        ( MS { minute = minute_start; second = second_start },
-          MS { minute = minute_end_exc; second = second_end_exc } ))
-      when minute_start = minute_end_exc && second_start = second_end_exc ->
+        ( MSN { minute = minute_start; second = second_start; ns = ns_start },
+          MSN { minute = minute_end_exc; second = second_end; ns = ns_end } ))
+      when minute_start = minute_end_exc && second_start = second_end && ns_start = ns_end ->
       always
     | Points.(
-        ( HMS { hour = hour_start; minute = minute_start; second = second_start },
-          HMS
+        ( HMSN { hour = hour_start; minute = minute_start; second = second_start; ns = ns_start },
+          HMSN
             {
               hour = hour_end_exc;
               minute = minute_end_exc;
               second = second_end_exc;
+              ns = ns_end;
             } ))
       when hour_start = hour_end_exc
         && minute_start = minute_end_exc
-        && second_start = second_end_exc ->
+        && second_start = second_end_exc
+        && ns_start = ns_end
+      ->
       always
     | _, _ -> Bounded_intervals { mode; bound; start; end_ }
   else Bounded_intervals { mode; bound; start; end_ }
