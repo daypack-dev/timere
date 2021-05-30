@@ -33,7 +33,12 @@ let () =
           let r =
             OSeq.for_all
               (fun (x', y') ->
-                 OSeq.exists Timedesc.Span.(fun (x, y) -> x <= x' && y' <= y) s)
+                 let r = OSeq.exists Timedesc.Span.(fun (x, y) -> x <= x' && y' <= y) s
+                 in
+                 if not r then
+                   Fmt.pr "%a\n%!" (Timedesc.Interval.pp ()) (x', y');
+                 r
+              )
               s'
           in
           if not r then
