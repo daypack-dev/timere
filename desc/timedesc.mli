@@ -342,7 +342,7 @@ module Span : sig
 
        Returns [Error] if any of the arguments are negative.
 
-       @raise Out_of_range if value cannot be represented even after normalization
+       @raise Out_of_range if the value cannot be represented even after normalization
     *)
 
     val make_exn :
@@ -370,7 +370,7 @@ module Span : sig
 
        Returns [Error] if any of the arguments are negative.
 
-       @raise Out_of_range if value cannot be represented even after normalization
+       @raise Out_of_range if the value cannot be represented even after normalization
     *)
 
     val make_frac_exn :
@@ -410,7 +410,7 @@ module Span : sig
       represent "negative (1 second and 500 nanosecond)", then the call could look like
       [make ~s:(-1L) ~ns:(-500)]
 
-      @raise Out_of_range if value cannot be represented even after normalization
+      @raise Out_of_range if the value cannot be represented even after normalization
   *)
 
   val make_small : ?s:int -> ?ns:int -> unit -> t
