@@ -245,6 +245,7 @@ module Points : sig
     | `Invalid_hour of int
     | `Invalid_minute of int
     | `Invalid_second of int
+    | `Invalid_ns of int
     | `Invalid_pattern_combination
     | `Invalid_tz_info of string option * Timedesc.Span.t
     ]
