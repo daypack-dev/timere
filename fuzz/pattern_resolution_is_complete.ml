@@ -30,25 +30,10 @@ let () =
             |> Span_set.inter search_space_set
             |> intervals_of_span_set
           in
-          Fmt.pr "search_start: %a\n%!" Timedesc.Span.pp search_start;
-          Fmt.pr "search_end_exc: %a\n%!" Timedesc.Span.pp search_end_exc;
-          OSeq.iteri (fun i (x, y) ->
-              Fmt.pr "s' %d: %a, %a\n%!" i Timedesc.Span.pp x Timedesc.Span.pp y;
-            ) s';
-          OSeq.iteri (fun i (x, y) ->
-              Fmt.pr "s  %d: %a, %a\n%!" i Timedesc.Span.pp x Timedesc.Span.pp y;
-            ) s;
-          Printf.printf "s = s': %b\n" (OSeq.equal ~eq:Timedesc.Interval.equal s s');
           let r =
             OSeq.for_all
               (fun (x', y') ->
-                 let r = OSeq.exists Timedesc.Span.(fun (x, y) -> x <= x' && y' <= y) s
-                 in
-                 if not r then (
-                   Fmt.pr "%a\n%!" (Timedesc.Interval.pp ()) (x', y');
-                   Fmt.pr "s: %a\n%!" (Timedesc.Interval.pp_seq ()) s;
-                 );
-                 r
+                 OSeq.exists Timedesc.Span.(fun (x, y) -> x <= x' && y' <= y) s
               )
               s'
           in
