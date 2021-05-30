@@ -20,18 +20,20 @@ let normalize { s; ns } =
     else { s; ns }
   in
   if ns >= 0 then
-    let s_to_add = ns / ns_count_in_s in
+    let s_to_add = Int64.of_int (ns / ns_count_in_s) in
     let ns' = ns mod ns_count_in_s in
-    { s = Int64.add s (Int64.of_int s_to_add); ns = ns' }
+    if s < 0L || Int64.sub Int64.max_int s >= s_to_add then
+      { s = Int64.add s s_to_add; ns = ns' }
+    else raise Out_of_range
   else
     let { s; ns } = rewrite_for_edge_case { s; ns } in
     let ns = -ns in
-    let s_to_sub = (ns + ns_count_in_s - 1) / ns_count_in_s in
+    let s_to_sub = Int64.of_int ((ns + ns_count_in_s - 1) / ns_count_in_s) in
     let ns_to_sub_from_one_s = ns mod ns_count_in_s in
-    {
-      s = Int64.sub s (Int64.of_int s_to_sub);
-      ns = ns_count_in_s - ns_to_sub_from_one_s;
-    }
+    let ns' = ns_count_in_s - ns_to_sub_from_one_s in
+    if s >= 0L || Int64.sub s Int64.min_int >= s_to_sub then
+      { s = Int64.sub s s_to_sub; ns = ns' }
+    else raise Out_of_range
 
 let make ?(s = 0L) ?(ns = 0) () = normalize { s; ns }
 
