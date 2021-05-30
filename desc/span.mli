@@ -1,3 +1,5 @@
+exception Out_of_range
+
 type t = private {
   s : int64;
   ns : int;

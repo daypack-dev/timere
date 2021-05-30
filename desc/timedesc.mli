@@ -291,6 +291,8 @@ module Span : sig
       [lt x y iff. x.s < y.s || (x.s = y.s && x.ns < y.ns)]
   *)
 
+  exception Out_of_range
+
   module For_human : sig
     type sign =
       [ `Pos
@@ -403,6 +405,8 @@ module Span : sig
       Interpretation of provided input is still [s + ns], i.e. if you wish to
       represent "negative (1 second and 500 nanosecond)", then the call could look like
       [make ~s:(-1L) ~ns:(-500)]
+
+      @raise Out_of_range if value cannot be represented even after normalization
   *)
 
   val make_small : ?s:int -> ?ns:int -> unit -> t
