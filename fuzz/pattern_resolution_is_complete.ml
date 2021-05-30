@@ -23,7 +23,7 @@ let () =
         | _ ->
           let s' =
             Seq_utils.a_to_b_inc_int64 ~a:search_start.s ~b:search_end_exc.s
-            |> OSeq.filter (fun timestamp ->
+            |> Seq.filter (fun timestamp ->
                 Simple_resolver.aux_pattern_mem tz pattern timestamp)
             |> intervals_of_int64s
             |> span_set_of_intervals
