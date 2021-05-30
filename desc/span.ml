@@ -9,8 +9,6 @@ let zero = { s = 0L; ns = 0 }
 
 let ns_count_in_s = 1_000_000_000
 
-let ns_count_in_s_int64 = Int64.of_int ns_count_in_s
-
 let ns_count_in_s_float = float_of_int ns_count_in_s
 
 let normalize { s; ns } =
