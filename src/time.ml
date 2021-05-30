@@ -1260,23 +1260,24 @@ let bounded_intervals ?(inc_exc : inc_exc = `Exc)
     | _, _ -> Bounded_intervals { mode; bound; start; end_ }
   else Bounded_intervals { mode; bound; start; end_ }
 
-let hms_intervals_exc (hms_a : Hms'.t) (hms_b : Hms'.t) : t =
-  bounded_intervals `Whole
+let hms_intervals ?(inc_exc : inc_exc = `Exc) (hms_a : Hms'.t) (hms_b : Hms'.t) : t =
+  let hms_b =
+    match inc_exc with
+    | `Exc ->
+      hms_b
+    | `Inc ->
+      hms_b
+      |> Hms'.to_second_of_day
+      |> succ
+      |> Hms'.of_second_of_day
+      |> CCOpt.get_exn_or
+        "Expected successful construction of hms from second of day"
+  in
+  bounded_intervals ~inc_exc:`Exc `Whole
     (Points.make_exn ~hour:hms_a.hour ~minute:hms_a.minute ~second:hms_a.second
        ())
     (Points.make_exn ~hour:hms_b.hour ~minute:hms_b.minute ~second:hms_b.second
        ())
-
-let hms_intervals_inc (hms_a : Hms'.t) (hms_b : Hms'.t) : t =
-  let hms_b =
-    hms_b
-    |> Hms'.to_second_of_day
-    |> succ
-    |> Hms'.of_second_of_day
-    |> CCOpt.get_exn_or
-      "Expected successful construction of hms from second of day"
-  in
-  hms_intervals_exc hms_a hms_b
 
 let sorted_interval_seq ?(skip_invalid : bool = false) (s : Interval'.t Seq.t) :
   t =

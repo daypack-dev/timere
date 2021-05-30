@@ -391,12 +391,10 @@ module Hms : sig
   val of_second_of_day : int -> t option
 end
 
-val hms_intervals_inc : Hms.t -> Hms.t -> t
-(** Same as [hms_intervals_exc ...] with end point increased by one second
-*)
-
-val hms_intervals_exc : Hms.t -> Hms.t -> t
+val hms_intervals : ?inc_exc:inc_exc -> Hms.t -> Hms.t -> t
 (** Same as [bounded_intervals ...] with bound fixed to [Span.For_human.make ~days:1 ()]
+
+    [inc_exc] defaults to [`Exc]
 *)
 
 (** {2 Chunking} *)
