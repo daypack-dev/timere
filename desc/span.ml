@@ -18,9 +18,9 @@ let normalize { s; ns } =
   if ns >= 0 then
     let s_to_add = ns / ns_count_in_s in
     let ns' = ns mod ns_count_in_s in
-    check { s = Int64.add s (Int64.of_int s_to_add); ns = ns' }
+    { s = Int64.add s (Int64.of_int s_to_add); ns = ns' }
   else
-    let ns = -ns in
+    let ns = abs ns in
     let s_to_sub = (ns + ns_count_in_s - 1) / ns_count_in_s in
     let ns_to_sub_from_one_s = ns mod ns_count_in_s in
     check {
