@@ -171,10 +171,10 @@ let make_hms ~rng =
     ~second:(rng () mod 60)
 
 let make_hms_intervals_inc ~rng =
-  Time.hms_intervals_inc (make_hms ~rng) (make_hms ~rng)
+  Time.hms_intervals ~inc_exc:`Inc (make_hms ~rng) (make_hms ~rng)
 
 let make_hms_intervals_exc ~rng =
-  Time.hms_intervals_exc (make_hms ~rng) (make_hms ~rng)
+  Time.hms_intervals ~inc_exc:`Exc (make_hms ~rng) (make_hms ~rng)
 
 let new_height ~rng height =
   assert (height > 1);
