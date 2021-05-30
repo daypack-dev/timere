@@ -9,6 +9,11 @@ let ns_count_in_s = 1_000_000_000
 
 let ns_count_in_s_float = float_of_int ns_count_in_s
 
+let check { s; ns } =
+  assert (ns >= 0);
+  assert (ns < ns_count_in_s);
+  {s; ns}
+
 let normalize { s; ns } =
   if ns >= 0 then
     let s_to_add = ns / ns_count_in_s in
@@ -34,10 +39,13 @@ let add { s = s_x; ns = ns_x } { s = s_y; ns = ns_y } : t =
 
 let sub { s = s_x; ns = ns_x } { s = s_y; ns = ns_y } : t =
   let ns = ns_x - ns_y in
-  if ns >= 0 then { s = Int64.sub s_x s_y; ns }
-  else
-    let s_x = Int64.pred s_x in
-    { s = Int64.sub s_x s_y; ns = ns + ns_count_in_s }
+  (
+    if ns >= 0 then { s = Int64.sub s_x s_y; ns }
+    else
+      let s_x = Int64.pred s_x in
+      { s = Int64.sub s_x s_y; ns = ns + ns_count_in_s }
+  )
+  |> check
 
 let succ x = add x { s = 0L; ns = 1 }
 
@@ -203,7 +211,7 @@ module For_human' = struct
     else if minutes < 0 then Error (`Invalid_minutes minutes)
     else if seconds < 0 then Error (`Invalid_seconds seconds)
     else if ns < 0 then Error (`Invalid_ns ns)
-    else Ok (({ sign; days; hours; minutes; seconds; ns } : view) |> to_span)
+    else Ok (({ sign; days; hours; minutes; seconds; ns } : view) |> to_span |> check)
 
   let make_exn ?sign ?days ?hours ?minutes ?seconds ?ns () =
     match make ?sign ?days ?hours ?minutes ?seconds ?ns () with
