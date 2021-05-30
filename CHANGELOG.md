@@ -18,6 +18,12 @@
 
 - Swapped to using `inc_exc` for `hms_intervals` API
 
+## Timedesc 0.3.1
+
+- Fixed `Timedesc.Span.make` handling of `ns` when `ns = Int.min_int`
+
+- Added `Timedesc.Span.Out_of_range` exception for when it is not possible to even normalize the value
+
 ## Timere 0.5.0
 
 - Fixed unhandled exception/crash due to trying to construct invalid date times when resolving patterns
