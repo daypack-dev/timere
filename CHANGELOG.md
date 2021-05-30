@@ -22,7 +22,7 @@
 
 - Fixed `Timedesc.Span.make` handling of `ns` when `ns = Int.min_int`
 
-- Added `Timedesc.Span.Out_of_range` exception for when it is not possible to even normalize the value
+- Added `Timedesc.Span.Out_of_range` exception for when it is not possible represent the value even after normalization
 
 ## Timere 0.5.0
 
