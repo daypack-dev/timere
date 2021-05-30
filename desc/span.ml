@@ -18,17 +18,17 @@ let normalize { s; ns } =
   if ns >= 0 then
     let s_to_add = ns / ns_count_in_s in
     let ns' = ns mod ns_count_in_s in
-    { s = Int64.add s (Int64.of_int s_to_add); ns = ns' }
+    check { s = Int64.add s (Int64.of_int s_to_add); ns = ns' }
   else
     let ns = -ns in
     let s_to_sub = (ns + ns_count_in_s - 1) / ns_count_in_s in
     let ns_to_sub_from_one_s = ns mod ns_count_in_s in
-    {
+    check {
       s = Int64.sub s (Int64.of_int s_to_sub);
       ns = ns_count_in_s - ns_to_sub_from_one_s;
     }
 
-let make ?(s = 0L) ?(ns = 0) () = normalize { s; ns } |> check
+let make ?(s = 0L) ?(ns = 0) () = normalize { s; ns }
 
 let make_small ?(s = 0) ?ns () = make ~s:(Int64.of_int s) ?ns ()
 
@@ -36,17 +36,13 @@ let add { s = s_x; ns = ns_x } { s = s_y; ns = ns_y } : t =
   let s = Int64.add s_x s_y in
   let ns = ns_x + ns_y in
   normalize { s; ns }
-  |> check
 
 let sub { s = s_x; ns = ns_x } { s = s_y; ns = ns_y } : t =
   let ns = ns_x - ns_y in
-  (
-    if ns >= 0 then { s = Int64.sub s_x s_y; ns }
-    else
-      let s_x = Int64.pred s_x in
-      { s = Int64.sub s_x s_y; ns = ns + ns_count_in_s }
-  )
-  |> check
+  if ns >= 0 then { s = Int64.sub s_x s_y; ns }
+  else
+    let s_x = Int64.pred s_x in
+    { s = Int64.sub s_x s_y; ns = ns + ns_count_in_s }
 
 let succ x = add x { s = 0L; ns = 1 }
 
