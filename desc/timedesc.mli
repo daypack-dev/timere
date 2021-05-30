@@ -341,6 +341,8 @@ module Span : sig
        [sign] defaults to [`Pos].
 
        Returns [Error] if any of the arguments are negative.
+
+       @raise Out_of_range if value cannot be represented even after normalization
     *)
 
     val make_exn :
@@ -367,6 +369,8 @@ module Span : sig
        [sign] defaults to [`Pos].
 
        Returns [Error] if any of the arguments are negative.
+
+       @raise Out_of_range if value cannot be represented even after normalization
     *)
 
     val make_frac_exn :
