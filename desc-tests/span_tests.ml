@@ -137,11 +137,11 @@ module Alco = struct
     Alcotest.(check bool)
       "same span"
       (let Timedesc.Span.{ s; ns } =
-         Timedesc.Span.make ~s:(-10L) ~ns:Int.min_int ()
+         Timedesc.Span.make ~s:(-10L) ~ns:CCInt.min_int ()
        in
        0 <= ns
        && ns < 1_000_000_000
-       && Int64.add (Int64.mul (-10L) 1_000_000_000L) (Int64.of_int Int.min_int)
+       && Int64.add (Int64.mul (-10L) 1_000_000_000L) (Int64.of_int CCInt.min_int)
           = Int64.add (Int64.mul s 1_000_000_000L) (Int64.of_int ns))
       true
 
@@ -149,11 +149,11 @@ module Alco = struct
     Alcotest.(check bool)
       "same span"
       (let Timedesc.Span.{ s; ns } =
-         Timedesc.Span.make ~s:10L ~ns:Int.min_int ()
+         Timedesc.Span.make ~s:10L ~ns:CCInt.min_int ()
        in
        0 <= ns
        && ns < 1_000_000_000
-       && Int64.add (Int64.mul 10L 1_000_000_000L) (Int64.of_int Int.min_int)
+       && Int64.add (Int64.mul 10L 1_000_000_000L) (Int64.of_int CCInt.min_int)
           = Int64.add (Int64.mul s 1_000_000_000L) (Int64.of_int ns))
       true
 
@@ -161,11 +161,11 @@ module Alco = struct
     Alcotest.(check bool)
       "same span"
       (let Timedesc.Span.{ s; ns } =
-         Timedesc.Span.make ~s:10L ~ns:Int.max_int ()
+         Timedesc.Span.make ~s:10L ~ns:CCInt.max_int ()
        in
        0 <= ns
        && ns < 1_000_000_000
-       && Int64.add (Int64.mul 10L 1_000_000_000L) (Int64.of_int Int.max_int)
+       && Int64.add (Int64.mul 10L 1_000_000_000L) (Int64.of_int CCInt.max_int)
           = Int64.add (Int64.mul s 1_000_000_000L) (Int64.of_int ns))
       true
 
@@ -173,11 +173,11 @@ module Alco = struct
     Alcotest.(check bool)
       "same span"
       (let Timedesc.Span.{ s; ns } =
-         Timedesc.Span.make ~s:(-10L) ~ns:Int.max_int ()
+         Timedesc.Span.make ~s:(-10L) ~ns:CCInt.max_int ()
        in
        0 <= ns
        && ns < 1_000_000_000
-       && Int64.add (Int64.mul (-10L) 1_000_000_000L) (Int64.of_int Int.max_int)
+       && Int64.add (Int64.mul (-10L) 1_000_000_000L) (Int64.of_int CCInt.max_int)
           = Int64.add (Int64.mul s 1_000_000_000L) (Int64.of_int ns))
       true
 
