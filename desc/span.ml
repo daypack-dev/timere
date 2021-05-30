@@ -16,8 +16,8 @@ let ns_count_in_s_float = float_of_int ns_count_in_s
 let normalize { s; ns } =
   let rewrite_for_edge_case { s; ns } =
     if ns = Int.min_int then
-      if Int64.sub s Int64.min_int >= ns_count_in_s_int64 then
-        {s = Int64.sub s ns_count_in_s_int64;
+      if s > Int64.min_int then
+        {s = Int64.pred s;
          ns = Int.min_int + ns_count_in_s}
       else
         raise Out_of_range
