@@ -39,6 +39,7 @@ type pick =
 
 type t = {
   pick : pick;
+  ns : int;
   tz_info : Timedesc.Time_zone_info.t option;
 }
 
@@ -64,7 +65,7 @@ let precision ({ pick; _ } : t) : int =
   | MDHMS _ -> 5
   | YMDHMS _ -> 6
 
-let make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ~second
+let make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ?(ns = 0) ~second
     () : (t, error) result =
   let tz_info =
     match
@@ -128,12 +129,12 @@ let make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ~second
           Ok (YMDHMS { year; month; month_day; hour; minute; second })
         | _ -> Error `Invalid_pattern_combination
       in
-      CCResult.map (fun pick -> { pick; tz_info }) pick
+      CCResult.map (fun pick -> { pick; ns; tz_info }) pick
 
 let make_exn ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute
-    ~second () =
+    ?ns ~second () =
   match
-    make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ~second
+    make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ?ns ~second
       ()
   with
   | Error e -> raise (Error_exn e)
@@ -182,9 +183,10 @@ let equal_pick t1 t2 =
 
 let equal x y =
   equal_pick x.pick y.pick
+  && x.ns = y.ns
   && CCOpt.equal Timedesc.Time_zone_info.equal x.tz_info y.tz_info
 
-let to_pattern ({ pick; tz_info = _ } : t) =
+let to_pattern ({ pick; ns; tz_info = _ } : t) =
   let years =
     match pick with
     | YMDHMS { year; _ } -> Int_set.add year Int_set.empty
@@ -240,7 +242,7 @@ let to_pattern ({ pick; tz_info = _ } : t) =
     | S second ->
       Int_set.add second Int_set.empty
   in
-  Pattern.{ years; months; month_days; weekdays; hours; minutes; seconds }
+  { Pattern.years; months; month_days; weekdays; hours; minutes; seconds; ns = Diet.Int.(add (Interval.make ns ns) empty) }
 
 let to_date_time ~default_tz_info ({ pick; tz_info } : t) : Timedesc.t option =
   let tz_info = match tz_info with None -> default_tz_info | Some x -> x in

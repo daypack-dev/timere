@@ -15,13 +15,14 @@ let sexp_of_tz_name t = CCSexp.atom (Timedesc.Time_zone.name t)
 
 let sexp_of_span = Timedesc.Span.to_sexp
 
-let sexp_of_points ({ pick; tz_info } : Points.t) =
+let sexp_of_points ({ pick; ns; tz_info } : Points.t) =
   let open CCSexp in
   let open Points in
   list
     (CCList.filter_map CCFun.id
        [
          Some (atom "points");
+         Some (sexp_of_int ns);
          Some
            (list
               (atom "pick"

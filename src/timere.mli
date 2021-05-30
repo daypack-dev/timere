@@ -46,6 +46,7 @@ val pattern :
   ?minute_ranges:int range list ->
   ?seconds:int list ->
   ?second_ranges:int range list ->
+  ?ns_ranges:int range list ->
   unit ->
   t
 (** Pattern matches over date times.
@@ -259,6 +260,7 @@ module Points : sig
     ?weekday:Timedesc.weekday ->
     ?hour:int ->
     ?minute:int ->
+    ?ns:int ->
     second:int ->
     unit ->
     (t, error) result
@@ -285,6 +287,7 @@ module Points : sig
     ?weekday:Timedesc.weekday ->
     ?hour:int ->
     ?minute:int ->
+    ?ns:int ->
     second:int ->
     unit ->
     t

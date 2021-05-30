@@ -6,6 +6,7 @@ type t = {
   hours : Int_set.t;
   minutes : Int_set.t;
   seconds : Int_set.t;
+  ns : Diet.Int.t;
 }
 
 let equal p1 p2 =
@@ -66,6 +67,7 @@ let union p1 p2 =
     hours = union_int_sets p1.hours p2.hours;
     minutes = union_int_sets p1.minutes p2.minutes;
     seconds = union_int_sets p1.seconds p2.seconds;
+    ns = Diet.Int.union p1.ns p2.ns;
   }
 
 let inter p1 p2 =
@@ -82,6 +84,9 @@ let inter p1 p2 =
   in
   let inter_weekday_sets a b =
     inter_sets ~is_empty:Weekday_set.is_empty ~inter:Weekday_set.inter a b
+  in
+  let inter_ns_sets a b =
+    inter_sets ~is_empty:Diet.Int.is_empty ~inter:Diet.Int.inter a b
   in
   match inter_int_sets p1.years p2.years with
   | None -> None
@@ -104,13 +109,17 @@ let inter p1 p2 =
                           match inter_int_sets p1.seconds p2.seconds with
                           | None -> None
                           | Some seconds ->
-                            Some
-                              {
-                                years;
-                                months;
-                                month_days;
-                                weekdays;
-                                hours;
-                                minutes;
-                                seconds;
-                              }))))))
+                            match inter_ns_sets p1.ns p2.ns with
+                            | None -> None
+                            | Some ns ->
+                              Some
+                                {
+                                  years;
+                                  months;
+                                  month_days;
+                                  weekdays;
+                                  hours;
+                                  minutes;
+                                  seconds;
+                                  ns;
+                                }))))))
