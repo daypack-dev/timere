@@ -32,6 +32,7 @@ let () =
           in
           Fmt.pr "s': %a\n%!" (Timedesc.Interval.pp_seq ()) s';
           Fmt.pr "s: %a\n%!" (Timedesc.Interval.pp_seq ()) s;
+          Printf.printf "s = s': %b\n" (OSeq.equal ~eq:Timedesc.Interval.equal s s');
           let r =
             OSeq.for_all
               (fun (x', y') ->
