@@ -30,8 +30,12 @@ let () =
             |> Span_set.inter search_space_set
             |> intervals_of_span_set
           in
-          Fmt.pr "s': %a\n%!" (Timedesc.Interval.pp_seq ()) s';
-          Fmt.pr "s: %a\n%!" (Timedesc.Interval.pp_seq ()) s;
+          OSeq.iteri (fun i (x, y) ->
+              Fmt.pr "s' %d: %a, %a\n%!" i Timedesc.Span.pp x Timedesc.Span.pp y;
+            ) s';
+          OSeq.iteri (fun i (x, y) ->
+              Fmt.pr "s  %d: %a, %a\n%!" i Timedesc.Span.pp x Timedesc.Span.pp y;
+            ) s;
           Printf.printf "s = s': %b\n" (OSeq.equal ~eq:Timedesc.Interval.equal s s');
           let r =
             OSeq.for_all
