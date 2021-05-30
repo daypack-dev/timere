@@ -30,6 +30,8 @@ let () =
             |> Span_set.inter search_space_set
             |> intervals_of_span_set
           in
+          Fmt.pr "search_start: %a\n%!" Timedesc.Span.pp search_start;
+          Fmt.pr "search_end_exc: %a\n%!" Timedesc.Span.pp search_end_exc;
           OSeq.iteri (fun i (x, y) ->
               Fmt.pr "s' %d: %a, %a\n%!" i Timedesc.Span.pp x Timedesc.Span.pp y;
             ) s';
