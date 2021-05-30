@@ -165,7 +165,7 @@ module Alco = struct
        in
        0 <= ns
        && ns < 1_000_000_000
-       && Int64.add (Int64.mul 10L 1_000_000_000L) (Int64.of_int Int.min_int)
+       && Int64.add (Int64.mul 10L 1_000_000_000L) (Int64.of_int Int.max_int)
           = Int64.add (Int64.mul s 1_000_000_000L) (Int64.of_int ns))
       true
 
@@ -177,7 +177,7 @@ module Alco = struct
        in
        0 <= ns
        && ns < 1_000_000_000
-       && Int64.add (Int64.mul (-10L) 1_000_000_000L) (Int64.of_int Int.min_int)
+       && Int64.add (Int64.mul (-10L) 1_000_000_000L) (Int64.of_int Int.max_int)
           = Int64.add (Int64.mul s 1_000_000_000L) (Int64.of_int ns))
       true
 
