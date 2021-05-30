@@ -208,7 +208,7 @@ module For_human' = struct
     else if minutes < 0 then Error (`Invalid_minutes minutes)
     else if seconds < 0 then Error (`Invalid_seconds seconds)
     else if ns < 0 then Error (`Invalid_ns ns)
-    else Ok (({ sign; days; hours; minutes; seconds; ns } : view) |> to_span |> check)
+    else Ok (({ sign; days; hours; minutes; seconds; ns } : view) |> to_span)
 
   let make_exn ?sign ?days ?hours ?minutes ?seconds ?ns () =
     match make ?sign ?days ?hours ?minutes ?seconds ?ns () with
