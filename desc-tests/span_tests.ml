@@ -133,6 +133,38 @@ module Alco = struct
       (Timedesc.Span.make ~s:(-10L) ())
       Timedesc.Span.(round @@ make ~s:(-10L) ())
 
+  let edge_case0 () =
+    Alcotest.(check bool)
+      "same span"
+      (let Timedesc.Span.{ s = _; ns } = Timedesc.Span.make ~s:(-10L) ~ns:Int.min_int () in
+       0 <= ns && ns < 1_000_000_000
+      )
+      true
+
+  let edge_case1 () =
+    Alcotest.(check bool)
+      "same span"
+      (let Timedesc.Span.{ s = _; ns } = Timedesc.Span.make ~s:(10L) ~ns:Int.min_int () in
+       0 <= ns && ns < 1_000_000_000
+      )
+      true
+
+  let edge_case2 () =
+    Alcotest.(check bool)
+      "same span"
+      (let Timedesc.Span.{ s = _; ns } = Timedesc.Span.make ~s:(10L) ~ns:Int.max_int () in
+       0 <= ns && ns < 1_000_000_000
+      )
+      true
+
+  let edge_case3 () =
+    Alcotest.(check bool)
+      "same span"
+      (let Timedesc.Span.{ s = _; ns } = Timedesc.Span.make ~s:(-10L) ~ns:Int.max_int () in
+       0 <= ns && ns < 1_000_000_000
+      )
+      true
+
   let suite =
     [
       Alcotest.test_case "floor_case0" `Quick floor_case0;
@@ -157,6 +189,10 @@ module Alco = struct
       Alcotest.test_case "round_case7" `Quick round_case7;
       Alcotest.test_case "round_case8" `Quick round_case8;
       Alcotest.test_case "round_case9" `Quick round_case9;
+      Alcotest.test_case "edge_case0" `Quick edge_case0;
+      Alcotest.test_case "edge_case1" `Quick edge_case1;
+      Alcotest.test_case "edge_case2" `Quick edge_case2;
+      Alcotest.test_case "edge_case3" `Quick edge_case3;
     ]
 end
 
@@ -173,6 +209,14 @@ module Qc = struct
          = Int64.add
            (Int64.mul Timedesc.Span.(span.s) 1_000_000_000L)
            (Int64.of_int span.ns))
+
+  let make_result_ns_is_within_bound =
+    QCheck.Test.make ~count:1_000_000 ~name:"make_result_ns_is_within_bound"
+      QCheck.(pair int64 int)
+      (fun (s, ns) ->
+         let span = Timedesc.Span.make ~s ~ns () in
+         0 <= span.ns && span.ns < 1_000_000_000
+      )
 
   let normalize_is_idempotent =
     QCheck.Test.make ~count:100_000 ~name:"normalize_is_idempotent" timestamp
@@ -298,6 +342,7 @@ module Qc = struct
   let suite =
     [
       make_is_lossless;
+      make_result_ns_is_within_bound;
       normalize_is_idempotent;
       add_sub;
       sub_add;
