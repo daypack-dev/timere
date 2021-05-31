@@ -15,46 +15,49 @@ let sexp_of_tz_name t = CCSexp.atom (Timedesc.Time_zone.name t)
 
 let sexp_of_span = Timedesc.Span.to_sexp
 
-let sexp_of_points ({ pick; ns; tz_info } : Points.t) =
+let sexp_of_points ({ pick; tz_info } : Points.t) =
   let open CCSexp in
   let open Points in
   list
     (CCList.filter_map CCFun.id
        [
          Some (atom "points");
-         Some (sexp_of_int ns);
          Some
            (list
               (atom "pick"
                ::
                (match pick with
-                | S x -> [ atom "s"; sexp_of_int x ]
-                | MS { minute; second } ->
-                  [ atom "ms"; sexp_of_int minute; sexp_of_int second ]
-                | HMS { hour; minute; second } ->
+                | N ns -> [ atom "n"; sexp_of_int ns ]
+                | SN { second; ns } -> [ atom "s"; sexp_of_int second; sexp_of_int ns ]
+                | MSN { minute; second; ns } ->
+                  [ atom "ms"; sexp_of_int minute; sexp_of_int second; sexp_of_int ns ]
+                | HMSN { hour; minute; second; ns } ->
                   [
                     atom "hms";
                     sexp_of_int hour;
                     sexp_of_int minute;
                     sexp_of_int second;
+                    sexp_of_int ns;
                   ]
-                | WHMS { weekday; hour; minute; second } ->
+                | WHMSN { weekday; hour; minute; second; ns } ->
                   [
                     atom "whms";
                     sexp_of_weekday weekday;
                     sexp_of_int hour;
                     sexp_of_int minute;
                     sexp_of_int second;
+                    sexp_of_int ns;
                   ]
-                | DHMS { month_day; hour; minute; second } ->
+                | DHMSN { month_day; hour; minute; second; ns } ->
                   [
                     atom "dhms";
                     sexp_of_int month_day;
                     sexp_of_int hour;
                     sexp_of_int minute;
                     sexp_of_int second;
+                    sexp_of_int ns;
                   ]
-                | MDHMS { month; month_day; hour; minute; second } ->
+                | MDHMSN { month; month_day; hour; minute; second; ns } ->
                   [
                     atom "mdhms";
                     sexp_of_month month;
@@ -62,8 +65,9 @@ let sexp_of_points ({ pick; ns; tz_info } : Points.t) =
                     sexp_of_int hour;
                     sexp_of_int minute;
                     sexp_of_int second;
+                    sexp_of_int ns;
                   ]
-                | YMDHMS { year; month; month_day; hour; minute; second } ->
+                | YMDHMSN { year; month; month_day; hour; minute; second; ns } ->
                   [
                     atom "ymdhms";
                     sexp_of_int year;
@@ -72,6 +76,7 @@ let sexp_of_points ({ pick; ns; tz_info } : Points.t) =
                     sexp_of_int hour;
                     sexp_of_int minute;
                     sexp_of_int second;
+                    sexp_of_int ns;
                   ])));
          CCOpt.map Timedesc.Time_zone_info.to_sexp tz_info;
        ])

@@ -261,8 +261,8 @@ module Points : sig
     ?weekday:Timedesc.weekday ->
     ?hour:int ->
     ?minute:int ->
+    ?second:int ->
     ?ns:int ->
-    second:int ->
     unit ->
     (t, error) result
   (** Call must be exactly one of the following forms (ignoring [tz] and [tz_offset_s] which are optional in all cases)

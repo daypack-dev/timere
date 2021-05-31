@@ -147,42 +147,46 @@ let points_of_sexp (x : CCSexp.t) : Points.t =
     | [ `Atom "n"; x ] -> N (int_of_sexp x)
     | [ `Atom "sn"; second; ns ] -> SN { second = (int_of_sexp second);
                                          ns = (int_of_sexp ns); }
-    | [ `Atom "ms"; minute; second ] ->
-      MSN { minute = int_of_sexp minute; second = int_of_sexp second }
-    | [ `Atom "hms"; hour; minute; second ] ->
-      HMS
+    | [ `Atom "msn"; minute; second; ns ] ->
+      MSN { minute = int_of_sexp minute; second = int_of_sexp second; ns = int_of_sexp ns }
+    | [ `Atom "hmsn"; hour; minute; second; ns ] ->
+      HMSN
         {
           hour = int_of_sexp hour;
           minute = int_of_sexp minute;
           second = int_of_sexp second;
+          ns = int_of_sexp ns;
         }
-    | [ `Atom "whms"; weekday; hour; minute; second ] ->
-      WHMS
+    | [ `Atom "whmsn"; weekday; hour; minute; second; ns ] ->
+      WHMSN
         {
           weekday = weekday_of_sexp weekday;
           hour = int_of_sexp hour;
           minute = int_of_sexp minute;
           second = int_of_sexp second;
+          ns = int_of_sexp ns;
         }
-    | [ `Atom "dhms"; month_day; hour; minute; second ] ->
-      DHMS
+    | [ `Atom "dhms"; month_day; hour; minute; second; ns ] ->
+      DHMSN
         {
           month_day = int_of_sexp month_day;
           hour = int_of_sexp hour;
           minute = int_of_sexp minute;
           second = int_of_sexp second;
+          ns = int_of_sexp ns;
         }
-    | [ `Atom "mdhms"; month; month_day; hour; minute; second ] ->
-      MDHMS
+    | [ `Atom "mdhms"; month; month_day; hour; minute; second; ns ] ->
+      MDHMSN
         {
           month = month_of_sexp month;
           month_day = int_of_sexp month_day;
           hour = int_of_sexp hour;
           minute = int_of_sexp minute;
           second = int_of_sexp second;
+          ns = int_of_sexp ns;
         }
-    | [ `Atom "ymdhms"; year; month; month_day; hour; minute; second ] ->
-      YMDHMS
+    | [ `Atom "ymdhms"; year; month; month_day; hour; minute; second; ns ] ->
+      YMDHMSN
         {
           year = int_of_sexp year;
           month = month_of_sexp month;
@@ -190,6 +194,7 @@ let points_of_sexp (x : CCSexp.t) : Points.t =
           hour = int_of_sexp hour;
           minute = int_of_sexp minute;
           second = int_of_sexp second;
+          ns = int_of_sexp ns;
         }
     | _ ->
       invalid_data (Printf.sprintf "Invalid points: %s" (CCSexp.to_string x))
@@ -199,12 +204,11 @@ let points_of_sexp (x : CCSexp.t) : Points.t =
     invalid_data (Printf.sprintf "Invalid points: %s" (CCSexp.to_string x))
   | `List l -> (
       match l with
-      | [ `Atom "points"; ns; `List (`Atom "pick" :: pick) ] ->
-        { pick = pick_of_sexp_list pick; ns = int_of_sexp ns; tz_info = None }
-      | [ `Atom "points"; ns; `List (`Atom "pick" :: pick); tz_info ] ->
+      | [ `Atom "points"; `List (`Atom "pick" :: pick) ] ->
+        { pick = pick_of_sexp_list pick; tz_info = None }
+      | [ `Atom "points"; `List (`Atom "pick" :: pick); tz_info ] ->
         {
           pick = pick_of_sexp_list pick;
-          ns = int_of_sexp ns;
           tz_info = Some (tz_info_of_sexp tz_info);
         }
       | _ ->
