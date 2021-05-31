@@ -131,17 +131,19 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
   let day =
     if rng () mod 2 = 0 then 1 + (rng () mod 31) else -(1 + (rng () mod 31))
   in
-  let precision = min max_precision (rng () mod 7) in
+  let precision = min max_precision (rng () mod 8) in
   match precision with
-  | 0 -> Points.make_exn ~second:(rng () mod 60) ()
-  | 1 -> Points.make_exn ~minute:(rng () mod 60) ~second:(rng () mod 60) ()
-  | 2 ->
+  | 0 -> Points.make_exn ~ns:(rng () mod 1_000_000_000) ()
+  | 1 -> Points.make_exn ~second:(rng () mod 60) ~ns:(rng () mod 1_000_000_000) ()
+  | 2 -> Points.make_exn ~minute:(rng () mod 60) ~second:(rng () mod 60) ~ns:(rng () mod 1_000_000_000) ()
+  | 3 ->
     Points.make_exn
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
       ~second:(rng () mod 60)
+      ~ns:(rng () mod 1_000_000_000)
       ()
-  | 3 ->
+  | 4 ->
     Points.make_exn
       ~weekday:
         (rng () mod 7
@@ -151,22 +153,25 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
       ~second:(rng () mod 60)
+      ~ns:(rng () mod 1_000_000_000)
       ()
-  | 4 ->
+  | 5 ->
     Points.make_exn ~day
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
       ~second:(rng () mod 60)
+      ~ns:(rng () mod 1_000_000_000)
       ()
-  | 5 ->
+  | 6 ->
     Points.make_exn
       ~month:(succ (rng () mod 12))
       ~day
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
       ~second:(rng () mod 60)
+      ~ns:(rng () mod 1_000_000_000)
       ()
-  | 6 ->
+  | 7 ->
     Points.make_exn
       ~year:(min max_year_inc (min_year + rng ()))
       ~month:(succ (rng () mod 12))
@@ -174,6 +179,7 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
       ~hour:(rng () mod 24)
       ~minute:(rng () mod 60)
       ~second:(rng () mod 60)
+      ~ns:(rng () mod 1_000_000_000)
       ()
   | _ -> failwith "Unexpected case"
 
