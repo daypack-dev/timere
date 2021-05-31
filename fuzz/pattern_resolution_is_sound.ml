@@ -44,6 +44,10 @@ let timestamp_is_okay (tz : Timedesc.Time_zone.t) (pattern : Pattern.t)
     Int_set.is_empty pattern.seconds
     || Int_set.mem (Timedesc.second dt) pattern.seconds
   in
+  let ns_is_fine =
+    Diet.Int.is_empty pattern.ns
+    || Diet.Int.mem (Timedesc.ns dt) pattern.ns
+  in
   year_is_fine
   && month_is_fine
   && mday_is_fine
@@ -51,6 +55,7 @@ let timestamp_is_okay (tz : Timedesc.Time_zone.t) (pattern : Pattern.t)
   && hour_is_fine
   && minute_is_fine
   && second_is_fine
+  && ns_is_fine
 
 let () =
   Crowbar.add_test ~name:"pattern_resolution_is_sound"
