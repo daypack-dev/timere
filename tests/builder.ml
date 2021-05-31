@@ -26,8 +26,7 @@ let make_date_time ~rng ~min_year ~max_year_inc =
   in
   match Timedesc.make ~year ~month ~day ~hour ~minute ~second ~ns ~tz () with
   | Error _ ->
-    Timedesc.make_exn ~year ~month ~day ~hour ~minute ~second
-      ~ns
+    Timedesc.make_exn ~year ~month ~day ~hour ~minute ~second ~ns
       ~tz:Timedesc.Time_zone.utc ()
   | Ok x -> x
 
@@ -134,8 +133,14 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
   let precision = min max_precision (rng () mod 8) in
   match precision with
   | 0 -> Points.make_exn ~ns:(rng () mod 1_000_000_000) ()
-  | 1 -> Points.make_exn ~second:(rng () mod 60) ~ns:(rng () mod 1_000_000_000) ()
-  | 2 -> Points.make_exn ~minute:(rng () mod 60) ~second:(rng () mod 60) ~ns:(rng () mod 1_000_000_000) ()
+  | 1 ->
+    Points.make_exn ~second:(rng () mod 60) ~ns:(rng () mod 1_000_000_000) ()
+  | 2 ->
+    Points.make_exn
+      ~minute:(rng () mod 60)
+      ~second:(rng () mod 60)
+      ~ns:(rng () mod 1_000_000_000)
+      ()
   | 3 ->
     Points.make_exn
       ~hour:(rng () mod 24)

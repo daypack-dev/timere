@@ -179,11 +179,11 @@ let make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ?second
           in
           CCResult.map (fun pick -> { pick; tz_info }) pick)
 
-let make_exn ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ?second ?ns
-    () =
+let make_exn ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute
+    ?second ?ns () =
   match
-    make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ?second ?ns
-      ()
+    make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ?second
+      ?ns ()
   with
   | Error e -> raise (Error_exn e)
   | Ok x -> x

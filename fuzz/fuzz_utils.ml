@@ -11,12 +11,9 @@ let timestamp =
   Crowbar.map [ Crowbar.int64; Crowbar.int ] (fun s ns ->
       Timedesc.Span.make ~s ~ns:(ns mod 1_000_000_000) ())
 
-let pos_span =
-  Crowbar.map [ timestamp ] (
-      Timedesc.Span.abs)
+let pos_span = Crowbar.map [ timestamp ] Timedesc.Span.abs
 
-let nz_pos_span =
-  Crowbar.map [ pos_span ] Timedesc.Span.succ
+let nz_pos_span = Crowbar.map [ pos_span ] Timedesc.Span.succ
 
 let pattern =
   Crowbar.map

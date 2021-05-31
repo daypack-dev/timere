@@ -45,8 +45,7 @@ let timestamp_is_okay (tz : Timedesc.Time_zone.t) (pattern : Pattern.t)
     || Int_set.mem (Timedesc.second dt) pattern.seconds
   in
   let ns_is_fine =
-    Diet.Int.is_empty pattern.ns
-    || Diet.Int.mem (Timedesc.ns dt) pattern.ns
+    Diet.Int.is_empty pattern.ns || Diet.Int.mem (Timedesc.ns dt) pattern.ns
   in
   year_is_fine
   && month_is_fine
