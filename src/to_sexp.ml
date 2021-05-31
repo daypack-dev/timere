@@ -29,17 +29,17 @@ let sexp_of_points ({ pick; tz_info } : Points.t) =
                (match pick with
                 | N ns -> [ atom "n"; sexp_of_int ns ]
                 | SN { second; ns } ->
-                  [ atom "s"; sexp_of_int second; sexp_of_int ns ]
+                  [ atom "sn"; sexp_of_int second; sexp_of_int ns ]
                 | MSN { minute; second; ns } ->
                   [
-                    atom "ms";
+                    atom "msn";
                     sexp_of_int minute;
                     sexp_of_int second;
                     sexp_of_int ns;
                   ]
                 | HMSN { hour; minute; second; ns } ->
                   [
-                    atom "hms";
+                    atom "hmsn";
                     sexp_of_int hour;
                     sexp_of_int minute;
                     sexp_of_int second;
@@ -47,7 +47,7 @@ let sexp_of_points ({ pick; tz_info } : Points.t) =
                   ]
                 | WHMSN { weekday; hour; minute; second; ns } ->
                   [
-                    atom "whms";
+                    atom "whmsn";
                     sexp_of_weekday weekday;
                     sexp_of_int hour;
                     sexp_of_int minute;
@@ -56,7 +56,7 @@ let sexp_of_points ({ pick; tz_info } : Points.t) =
                   ]
                 | DHMSN { month_day; hour; minute; second; ns } ->
                   [
-                    atom "dhms";
+                    atom "dhmsn";
                     sexp_of_int month_day;
                     sexp_of_int hour;
                     sexp_of_int minute;
@@ -65,7 +65,7 @@ let sexp_of_points ({ pick; tz_info } : Points.t) =
                   ]
                 | MDHMSN { month; month_day; hour; minute; second; ns } ->
                   [
-                    atom "mdhms";
+                    atom "mdhmsn";
                     sexp_of_month month;
                     sexp_of_int month_day;
                     sexp_of_int hour;
@@ -75,7 +75,7 @@ let sexp_of_points ({ pick; tz_info } : Points.t) =
                   ]
                 | YMDHMSN { year; month; month_day; hour; minute; second; ns } ->
                   [
-                    atom "ymdhms";
+                    atom "ymdhmsn";
                     sexp_of_int year;
                     sexp_of_month month;
                     sexp_of_int month_day;
