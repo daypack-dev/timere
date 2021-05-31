@@ -477,9 +477,7 @@ val resolve :
 exception Resolution_error of string
 
 val resolve_exn :
-  ?search_using_tz:Timedesc.Time_zone.t ->
-  t ->
-  Timedesc.Interval.t Seq.t
+  ?search_using_tz:Timedesc.Time_zone.t -> t -> Timedesc.Interval.t Seq.t
 (** @raise Resolution_error if [resolve] fails *)
 
 (** {2 S-expressions} *)
