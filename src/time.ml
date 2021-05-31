@@ -1087,6 +1087,7 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
     ?(month_ranges = []) ?(days = []) ?(day_ranges = []) ?(weekdays = [])
     ?(weekday_ranges = []) ?(hours = []) ?(hour_ranges = []) ?(minutes = [])
     ?(minute_ranges = []) ?(seconds = []) ?(second_ranges = [])
+    ?(ns = [])
     ?(ns_ranges = []) () : t =
   let years =
     try years @ Year_ranges.Flatten.flatten_list year_ranges
@@ -1117,8 +1118,8 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
     try seconds @ Second_ranges.Flatten.flatten_list second_ranges
     with Range.Range_is_invalid -> invalid_arg "pattern: invalid second range"
   in
-  match (years, months, month_days, weekdays, hours, minutes, seconds) with
-  | [], [], [], [], [], [], [] -> All
+  match (years, months, month_days, weekdays, hours, minutes, seconds, ns, ns_ranges) with
+  | [], [], [], [], [], [], [], [], [] -> All
   | _ ->
     if
       Stdlib.not
@@ -1144,9 +1145,17 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
       Stdlib.not
         (List.for_all
            (fun x ->
+              0 <= x && x < Timedesc.Span.ns_count_in_s
+           )
+           ns)
+    then invalid_arg "pattern: invalid ns ranges"
+    else if
+      Stdlib.not
+        (List.for_all
+           (fun x ->
               match x with
-              | `Range_inc (x, y) -> x <= y
-              | `Range_exc (x, y) -> x < y)
+              | `Range_inc (x, y) -> 0 <= x && x <= y && y < Timedesc.Span.ns_count_in_s
+              | `Range_exc (x, y) -> 0 <= x && x < y && y <= Timedesc.Span.ns_count_in_s)
            ns_ranges)
     then invalid_arg "pattern: invalid ns ranges"
     else
@@ -1157,6 +1166,22 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
       let hours = Int_set.of_list hours in
       let minutes = Int_set.of_list minutes in
       let seconds = Int_set.of_list seconds in
+      let intervals_of_ns =
+        List.map (fun x ->
+            Diet.Int.Interval.make x x
+          )
+          ns
+      in
+      let intervals_of_ns_ranges =
+        List.map (fun x ->
+            match x with
+            | `Range_inc (x, y) -> Diet.Int.Interval.make x y
+            | `Range_exc (x, y) -> Diet.Int.Interval.make x (pred y))
+          ns_ranges
+      in
+      let add l acc =
+        List.fold_left (fun acc x -> Diet.Int.add x acc) acc l
+      in
       Pattern
         {
           Pattern.years;
@@ -1167,12 +1192,9 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
           minutes;
           seconds;
           ns =
-            ns_ranges
-            |> List.map (fun x ->
-                match x with
-                | `Range_inc (x, y) -> Diet.Int.Interval.make x y
-                | `Range_exc (x, y) -> Diet.Int.Interval.make x (pred y))
-            |> List.fold_left (fun acc x -> Diet.Int.add x acc) Diet.Int.empty;
+            Diet.Int.empty
+            |> add intervals_of_ns
+            |> add intervals_of_ns_ranges
         }
 
 let month_day_ranges_are_valid_strict ~safe_month_day_range_inc day_ranges =
