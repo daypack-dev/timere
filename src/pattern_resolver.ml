@@ -474,17 +474,17 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
       |> CCOpt.map Timedesc.to_timestamp_single
     in
     match (x, y) with
-    | Some x, Some y -> Some (x, y)
-    | None, None -> None
-    | None, Some y -> Some (Timedesc.Timestamp.min_val, y)
-    | Some x, None -> Some (x, Timedesc.Timestamp.max_val)
+    | Some x, Some y -> (x, y)
+    | None, None -> (Timedesc.Timestamp.min_val, Timedesc.Timestamp.max_val)
+    | None, Some y -> (Timedesc.Timestamp.min_val, y)
+    | Some x, None -> (x, Timedesc.Timestamp.max_val)
   in
   matching_date_time_ranges search_param t
   |> Seq.map (fun r ->
       match r with
       | `Range_inc (x, y) -> (x, y)
       | `Range_exc _ -> failwith "Unexpected case")
-  |> Seq.filter_map f
+  |> Seq.map f
   |> Seq.map (fun (x, y) -> (x, Timestamp_utils.timestamp_safe_add y one_ns))
   |> Time.Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
   |> (fun s ->
@@ -503,6 +503,7 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
           (fun (x, y) ->
              assert (Timedesc.Span.(x.ns) = 0);
              assert (Timedesc.Span.(y.ns) = 0);
+             assert (Timedesc.Span.(x.s) < Timedesc.Span.(y.s));
              Seq_utils.a_to_b_exc_int64
                ~a:Timedesc.Span.(x.s)
                ~b:Timedesc.Span.(y.s)
