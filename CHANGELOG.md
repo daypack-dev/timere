@@ -22,6 +22,8 @@
 
 - Added `Timere.resolve_exn`
 
+- Minor fixes of `resolve` for edge cases
+
 ## Timedesc 0.3.1
 
 - Fixed `Timedesc.Span.make` handling of `ns` when `ns = Int.min_int`
