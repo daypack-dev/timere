@@ -126,6 +126,14 @@ let sexp_of_pattern (pat : Pattern.t) : CCSexp.t =
   let seconds =
     pat.seconds |> Int_set.to_seq |> CCList.of_seq |> sexp_list_of_ints
   in
+  let ns =
+    Diet.Int.fold
+      (fun interval acc ->
+         (Diet.Int.Interval.x interval, Diet.Int.Interval.y interval) :: acc)
+      pat.ns []
+    |> List.rev
+    |> List.map (fun (x, y) -> `List [ sexp_of_int x; sexp_of_int y ])
+  in
   let open CCSexp in
   [
     Some (atom "pattern");
@@ -146,6 +154,7 @@ let sexp_of_pattern (pat : Pattern.t) : CCSexp.t =
     (match seconds with
      | [] -> None
      | _ -> Some (list (atom "seconds" :: seconds)));
+    (match seconds with [] -> None | _ -> Some (list (atom "ns" :: ns)));
   ]
   |> CCList.filter_map CCFun.id
   |> list

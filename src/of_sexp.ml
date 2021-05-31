@@ -129,10 +129,26 @@ let pattern_of_sexp (x : CCSexp.t) =
               (List.map int_of_sexp seconds, l)
             | _ -> ([], l)
           in
+          let ns_ranges, l =
+            match l with
+            | `List (`Atom "ns" :: ns) :: l ->
+              ( List.map
+                  (fun l ->
+                     match l with
+                     | `List [ x; y ] ->
+                       `Range_inc (int_of_sexp x, int_of_sexp y)
+                     | _ ->
+                       invalid_data
+                         (Printf.sprintf "Invalid pattern: %s"
+                            (CCSexp.to_string x)))
+                  ns,
+                l )
+            | _ -> ([], l)
+          in
           match l with
           | [] ->
             Time.pattern ~years ~months ~days ~weekdays ~hours ~minutes
-              ~seconds ()
+              ~seconds ~ns_ranges ()
           | _ ->
             invalid_data
               (Printf.sprintf "Invalid pattern: %s" (CCSexp.to_string x)))
@@ -240,8 +256,6 @@ let of_sexp (x : CCSexp.t) =
           |> sorted_intervals ~skip_invalid:false
         | `Atom "pattern" :: _ -> pattern_of_sexp x
         | [ `Atom "not"; x ] -> not (aux x)
-        (* | [ `Atom "drop_points"; n; x ] -> drop_points (int_of_sexp n) (aux x)
-         * | [ `Atom "take_points"; n; x ] -> take_points (int_of_sexp n) (aux x) *)
         | [ `Atom "shift"; n; x ] ->
           let n = span_of_sexp n in
           shift n (aux x)
