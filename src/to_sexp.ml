@@ -154,7 +154,7 @@ let sexp_of_pattern (pat : Pattern.t) : CCSexp.t =
     (match seconds with
      | [] -> None
      | _ -> Some (list (atom "seconds" :: seconds)));
-    (match seconds with [] -> None | _ -> Some (list (atom "ns" :: ns)));
+    (match ns with [] -> None | _ -> Some (list (atom "ns" :: ns)));
   ]
   |> CCList.filter_map CCFun.id
   |> list
