@@ -24,6 +24,10 @@
 
 - Minor fixes of `resolve` for edge cases
 
+## Timedesc 0.3.2
+
+- Added `Timedesc.Utils.jd_of_ymd` and `Timedesc.Utils.jd_of_unix_epoch`
+
 ## Timedesc 0.3.1
 
 - Fixed `Timedesc.Span.make` handling of `ns` when `ns = Int.min_int`

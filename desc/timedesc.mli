@@ -1629,4 +1629,8 @@ module Utils : sig
   val abbr_string_of_weekday : weekday -> string
 
   val is_leap_year : year:int -> bool
+
+  val jd_of_ymd : year:int -> month:int -> day:int -> int
+
+  val jd_of_unix_epoch : int
 end

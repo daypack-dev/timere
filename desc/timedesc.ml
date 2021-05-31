@@ -222,4 +222,8 @@ module Utils = struct
   let abbr_string_of_weekday = abbr_string_of_weekday
 
   let is_leap_year = is_leap_year
+
+  let jd_of_ymd = jd_of_ymd
+
+  let jd_of_unix_epoch = jd_of_unix_epoch
 end
