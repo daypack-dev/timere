@@ -9,12 +9,13 @@ let make_rng ~randomness : unit -> int =
     ret
 
 let make_date_time ~rng ~min_year ~max_year_inc =
-  let year = min max_year_inc (min_year + rng ()) in
+  let year = min (pred max_year_inc) (succ min_year + rng ()) in
   let month = succ (rng () mod 12) in
   let day = 1 + (rng () mod Timedesc.Utils.day_count_of_month ~year ~month) in
   let hour = rng () mod 24 in
   let minute = rng () mod 60 in
   let second = rng () mod 60 in
+  let ns = rng () mod 1_000_000_000 in
   let available_time_zone_count =
     List.length Timedesc.Time_zone.available_time_zones
   in
@@ -23,9 +24,10 @@ let make_date_time ~rng ~min_year ~max_year_inc =
       (rng () mod available_time_zone_count)
     |> Timedesc.Time_zone.make_exn
   in
-  match Timedesc.make ~year ~month ~day ~hour ~minute ~second ~tz () with
+  match Timedesc.make ~year ~month ~day ~hour ~minute ~second ~ns ~tz () with
   | Error _ ->
     Timedesc.make_exn ~year ~month ~day ~hour ~minute ~second
+      ~ns
       ~tz:Timedesc.Time_zone.utc ()
   | Ok x -> x
 
