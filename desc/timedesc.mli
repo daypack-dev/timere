@@ -1633,4 +1633,6 @@ module Utils : sig
   val jd_of_ymd : year:int -> month:int -> day:int -> int
 
   val jd_of_unix_epoch : int
+
+  val jd_span_of_unix_epoch : Span.t
 end

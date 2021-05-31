@@ -226,4 +226,6 @@ module Utils = struct
   let jd_of_ymd = jd_of_ymd
 
   let jd_of_unix_epoch = jd_of_unix_epoch
+
+  let jd_span_of_unix_epoch = jd_span_of_unix_epoch
 end
