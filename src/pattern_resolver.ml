@@ -10,14 +10,12 @@ module Branch = struct
   }
 
   let to_span t =
-    let jd =
-      Timedesc.Utils.jd_of_ymd ~year:t.year ~month:t.month ~day:t.day
-    in
+    let jd = Timedesc.Utils.jd_of_ymd ~year:t.year ~month:t.month ~day:t.day in
     Timedesc.Span.(
       For_human.make_exn ~days:jd ()
       - Timedesc.Utils.jd_span_of_unix_epoch
-      +
-      For_human.make_exn ~hours:t.hour ~minutes:t.minute ~seconds:t.second ~ns:t.ns ())
+      + For_human.make_exn ~hours:t.hour ~minutes:t.minute ~seconds:t.second
+        ~ns:t.ns ())
 
   let to_date_time ~offset_from_utc (x : t) : Timedesc.t option =
     match
@@ -484,18 +482,20 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
     match (x, y) with
     | Some x, Some y -> Some (x, y)
     | _, _ ->
-      let x = Timedesc.Span.(Branch.to_span x' - search_param.search_using_offset_from_utc) in
-      let y = Timedesc.Span.(Branch.to_span y' - search_param.search_using_offset_from_utc) in
-      if Timedesc.Span.(y <= Timedesc.Timestamp.min_val)
-      then
-        None
-      else if Timedesc.Span.(Timedesc.Timestamp.max_val <= x) then
-        None
+      let x =
+        Timedesc.Span.(
+          Branch.to_span x' - search_param.search_using_offset_from_utc)
+      in
+      let y =
+        Timedesc.Span.(
+          Branch.to_span y' - search_param.search_using_offset_from_utc)
+      in
+      if Timedesc.Span.(y <= Timedesc.Timestamp.min_val) then None
+      else if Timedesc.Span.(Timedesc.Timestamp.max_val <= x) then None
       else
-        Some (
-          Timedesc.Span.max Timedesc.Timestamp.min_val x,
-          Timedesc.Span.min Timedesc.Timestamp.max_val y
-        )
+        Some
+          ( Timedesc.Span.max Timedesc.Timestamp.min_val x,
+            Timedesc.Span.min Timedesc.Timestamp.max_val y )
   in
   matching_date_time_ranges search_param t
   |> Seq.map (fun r ->

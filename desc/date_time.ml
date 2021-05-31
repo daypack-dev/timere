@@ -44,7 +44,9 @@ let jd_span_of_unix_epoch = Span.For_human'.make_exn ~days:jd_of_unix_epoch ()
 
 let timestamp_local_of_date_and_time (date : Date.t) (time : Time.t) : Span.t =
   Span.(
-    For_human'.make_exn ~days:date.jd () - jd_span_of_unix_epoch + Time.to_span time)
+    For_human'.make_exn ~days:date.jd ()
+    - jd_span_of_unix_epoch
+    + Time.to_span time)
 
 let to_timestamp_local (x : t) : Span.t =
   (* we obtain the local timestamp by pretending we are in the UTC time zone,
