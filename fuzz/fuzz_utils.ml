@@ -9,6 +9,10 @@ let time =
 
 let timestamp =
   Crowbar.map [ Crowbar.int64; Crowbar.int ] (fun s ns ->
+      let s =
+        min Timedesc.Span.(Timedesc.Timestamp.max_val.s) s
+        |> max Timedesc.Span.(Timedesc.Timestamp.min_val.s)
+      in
       Timedesc.Span.make ~s ~ns:(ns mod 1_000_000_000) ())
 
 let pos_span = Crowbar.map [ timestamp ] Timedesc.Span.abs
