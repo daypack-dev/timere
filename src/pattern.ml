@@ -108,18 +108,18 @@ let inter p1 p2 =
                       | Some minutes -> (
                           match inter_int_sets p1.seconds p2.seconds with
                           | None -> None
-                          | Some seconds ->
-                            match inter_ns_sets p1.ns p2.ns with
-                            | None -> None
-                            | Some ns ->
-                              Some
-                                {
-                                  years;
-                                  months;
-                                  month_days;
-                                  weekdays;
-                                  hours;
-                                  minutes;
-                                  seconds;
-                                  ns;
-                                }))))))
+                          | Some seconds -> (
+                              match inter_ns_sets p1.ns p2.ns with
+                              | None -> None
+                              | Some ns ->
+                                Some
+                                  {
+                                    years;
+                                    months;
+                                    month_days;
+                                    weekdays;
+                                    hours;
+                                    minutes;
+                                    seconds;
+                                    ns;
+                                  })))))))

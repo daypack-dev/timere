@@ -145,10 +145,15 @@ let points_of_sexp (x : CCSexp.t) : Points.t =
   let pick_of_sexp_list (l : CCSexp.t list) : pick =
     match l with
     | [ `Atom "n"; x ] -> N (int_of_sexp x)
-    | [ `Atom "sn"; second; ns ] -> SN { second = (int_of_sexp second);
-                                         ns = (int_of_sexp ns); }
+    | [ `Atom "sn"; second; ns ] ->
+      SN { second = int_of_sexp second; ns = int_of_sexp ns }
     | [ `Atom "msn"; minute; second; ns ] ->
-      MSN { minute = int_of_sexp minute; second = int_of_sexp second; ns = int_of_sexp ns }
+      MSN
+        {
+          minute = int_of_sexp minute;
+          second = int_of_sexp second;
+          ns = int_of_sexp ns;
+        }
     | [ `Atom "hmsn"; hour; minute; second; ns ] ->
       HMSN
         {

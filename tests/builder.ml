@@ -109,10 +109,8 @@ let make_pattern ~rng ~min_year ~max_year_inc : Pattern.t =
       let end_inc = min 5 (rng ()) in
       OSeq.(0 -- end_inc)
       |> Seq.map (fun _ -> rng () mod 1_000_000_000)
-      |> Seq.fold_left (fun acc ns ->
-          Diet.Int.add (Diet.Int.Interval.make ns ns)
-            acc
-        )
+      |> Seq.fold_left
+        (fun acc ns -> Diet.Int.add (Diet.Int.Interval.make ns ns) acc)
         Diet.Int.empty
   in
   Pattern.

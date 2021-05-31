@@ -488,35 +488,32 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
   |> Seq.map (fun (x, y) -> (x, Timestamp_utils.timestamp_safe_add y one_ns))
   |> Time.Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
   |> (fun s ->
-      if Diet.Int.is_empty t.ns then
-        s
+      if Diet.Int.is_empty t.ns then s
       else
         let ns_inc_seq =
-          Diet.Int.fold (fun interval acc ->
-              (Diet.Int.Interval.x interval,
-               Diet.Int.Interval.y interval)
-              :: acc
-            )
-            t.ns
-            []
+          Diet.Int.fold
+            (fun interval acc ->
+               (Diet.Int.Interval.x interval, Diet.Int.Interval.y interval)
+               :: acc)
+            t.ns []
           |> List.rev
           |> CCList.to_seq
         in
-        Seq.flat_map (fun (x, y) ->
-            assert (Timedesc.Span.(x.ns) = 0);
-            assert (Timedesc.Span.(y.ns) = 0);
-            Seq_utils.a_to_b_exc_int64 ~a:Timedesc.Span.(x.s) ~b:Timedesc.Span.(y.s)
-            |> Seq.flat_map (fun s ->
-                Seq.map (fun (ns_start, ns_end_inc) ->
-                    (Timedesc.Span.make ~s ~ns:ns_start (),
-                     Timedesc.Span.(succ @@ make ~s ~ns:ns_end_inc ())
-                    )
-                  )
-                  ns_inc_seq
-              )
-          ) s
-        |> Time.Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
-    )
+        Seq.flat_map
+          (fun (x, y) ->
+             assert (Timedesc.Span.(x.ns) = 0);
+             assert (Timedesc.Span.(y.ns) = 0);
+             Seq_utils.a_to_b_exc_int64
+               ~a:Timedesc.Span.(x.s)
+               ~b:Timedesc.Span.(y.s)
+             |> Seq.flat_map (fun s ->
+                 Seq.map
+                   (fun (ns_start, ns_end_inc) ->
+                      ( Timedesc.Span.make ~s ~ns:ns_start (),
+                        Timedesc.Span.(succ @@ make ~s ~ns:ns_end_inc ()) ))
+                   ns_inc_seq))
+          s
+        |> Time.Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true)
   |> Time.Intervals.Slice.slice
     ~start:(Timedesc.to_timestamp_single search_param.start_dt)
     ~end_exc:

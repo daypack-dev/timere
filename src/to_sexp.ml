@@ -28,9 +28,15 @@ let sexp_of_points ({ pick; tz_info } : Points.t) =
                ::
                (match pick with
                 | N ns -> [ atom "n"; sexp_of_int ns ]
-                | SN { second; ns } -> [ atom "s"; sexp_of_int second; sexp_of_int ns ]
+                | SN { second; ns } ->
+                  [ atom "s"; sexp_of_int second; sexp_of_int ns ]
                 | MSN { minute; second; ns } ->
-                  [ atom "ms"; sexp_of_int minute; sexp_of_int second; sexp_of_int ns ]
+                  [
+                    atom "ms";
+                    sexp_of_int minute;
+                    sexp_of_int second;
+                    sexp_of_int ns;
+                  ]
                 | HMSN { hour; minute; second; ns } ->
                   [
                     atom "hms";

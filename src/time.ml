@@ -1086,7 +1086,8 @@ let with_tz tz t = Unary_op (With_tz tz, t)
 let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
     ?(month_ranges = []) ?(days = []) ?(day_ranges = []) ?(weekdays = [])
     ?(weekday_ranges = []) ?(hours = []) ?(hour_ranges = []) ?(minutes = [])
-    ?(minute_ranges = []) ?(seconds = []) ?(second_ranges = []) ?(ns_ranges = []) () : t =
+    ?(minute_ranges = []) ?(seconds = []) ?(second_ranges = [])
+    ?(ns_ranges = []) () : t =
   let years =
     try years @ Year_ranges.Flatten.flatten_list year_ranges
     with Range.Range_is_invalid -> invalid_arg "pattern: invalid year range"
@@ -1139,12 +1140,15 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
       invalid_arg "pattern: not all minutes are valid"
     else if Stdlib.not (List.for_all (fun x -> 0 <= x && x < 60) seconds) then
       invalid_arg "pattern: not all seconds are valid"
-    else if Stdlib.not (List.for_all (fun x ->
-        match x with
-        | `Range_inc (x, y) -> x <= y
-        | `Range_exc (x, y) -> x < y
-      ) ns_ranges) then
-      invalid_arg "pattern: invalid ns ranges"
+    else if
+      Stdlib.not
+        (List.for_all
+           (fun x ->
+              match x with
+              | `Range_inc (x, y) -> x <= y
+              | `Range_exc (x, y) -> x < y)
+           ns_ranges)
+    then invalid_arg "pattern: invalid ns ranges"
     else
       let years = Int_set.of_list years in
       let months = Int_set.of_list months in
@@ -1167,11 +1171,8 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
             |> List.map (fun x ->
                 match x with
                 | `Range_inc (x, y) -> Diet.Int.Interval.make x y
-                | `Range_exc (x, y) -> Diet.Int.Interval.make x (pred y)
-              )
-            |> List.fold_left (fun acc x ->
-                Diet.Int.add x acc
-              ) Diet.Int.empty
+                | `Range_exc (x, y) -> Diet.Int.Interval.make x (pred y))
+            |> List.fold_left (fun acc x -> Diet.Int.add x acc) Diet.Int.empty;
         }
 
 let month_day_ranges_are_valid_strict ~safe_month_day_range_inc day_ranges =
@@ -1253,18 +1254,27 @@ let bounded_intervals ?(inc_exc : inc_exc = `Exc)
     invalid_arg "bounded_intervals: start is less precise than end_exc";
   if CCOpt.equal Timedesc.Time_zone_info.equal start.tz_info end_.tz_info then
     match (start.pick, end_.pick) with
-    | Points.(N ns_start, N ns_end)
-      when ns_start = ns_end -> always
-    | Points.(SN { second = second_start; ns = ns_start}, SN {second = second_end; ns = ns_end })
+    | Points.(N ns_start, N ns_end) when ns_start = ns_end -> always
+    | Points.(
+        ( SN { second = second_start; ns = ns_start },
+          SN { second = second_end; ns = ns_end } ))
       when second_start = second_end && ns_start = ns_end ->
       always
     | Points.(
         ( MSN { minute = minute_start; second = second_start; ns = ns_start },
           MSN { minute = minute_end_exc; second = second_end; ns = ns_end } ))
-      when minute_start = minute_end_exc && second_start = second_end && ns_start = ns_end ->
+      when minute_start = minute_end_exc
+        && second_start = second_end
+        && ns_start = ns_end ->
       always
     | Points.(
-        ( HMSN { hour = hour_start; minute = minute_start; second = second_start; ns = ns_start },
+        ( HMSN
+            {
+              hour = hour_start;
+              minute = minute_start;
+              second = second_start;
+              ns = ns_start;
+            },
           HMSN
             {
               hour = hour_end_exc;
@@ -1275,8 +1285,7 @@ let bounded_intervals ?(inc_exc : inc_exc = `Exc)
       when hour_start = hour_end_exc
         && minute_start = minute_end_exc
         && second_start = second_end_exc
-        && ns_start = ns_end
-      ->
+        && ns_start = ns_end ->
       always
     | _, _ -> Bounded_intervals { mode; bound; start; end_ }
   else Bounded_intervals { mode; bound; start; end_ }
