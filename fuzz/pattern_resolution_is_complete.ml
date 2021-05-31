@@ -12,9 +12,6 @@ let () =
                "Expected successful retrieval of last element of list"
              @@ Misc_utils.last_element_of_list search_space)
         in
-        let search_space_set =
-          span_set_of_intervals @@ CCList.to_seq search_space
-        in
         let s =
           Resolver.aux_pattern tz search_space pattern |> Resolver.normalize
         in
@@ -22,12 +19,9 @@ let () =
         | [] -> Crowbar.check (OSeq.is_empty s)
         | _ ->
           let s' =
-            Seq_utils.a_to_b_inc_int64 ~a:search_start.s ~b:search_end_exc.s
-            |> Seq.filter (fun timestamp ->
-                Simple_resolver.aux_pattern_mem tz pattern timestamp)
-            |> intervals_of_int64s
-            |> span_set_of_intervals
-            |> Span_set.inter search_space_set
+            Simple_resolver.aux_pattern
+              (search_start, search_end_exc)
+              tz pattern
             |> intervals_of_span_set
           in
           let r =
