@@ -9,7 +9,7 @@ let make_rng ~randomness : unit -> int =
     ret
 
 let make_date_time ~rng ~min_year ~max_year_inc =
-  let year = min (pred max_year_inc) (succ min_year + rng ()) in
+  let year = min max_year_inc (min_year + rng ()) in
   let month = succ (rng () mod 12) in
   let day = 1 + (rng () mod Timedesc.Utils.day_count_of_month ~year ~month) in
   let hour = rng () mod 24 in
