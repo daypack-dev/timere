@@ -46,6 +46,7 @@ val pattern :
   ?minute_ranges:int range list ->
   ?seconds:int list ->
   ?second_ranges:int range list ->
+  ?ns:int list ->
   ?ns_ranges:int range list ->
   unit ->
   t
@@ -472,6 +473,14 @@ val resolve :
   t ->
   (Timedesc.Interval.t Seq.t, string) result
 (** Resolves a Timere object into a concrete interval sequence *)
+
+exception Resolution_error of string
+
+val resolve_exn :
+  ?search_using_tz:Timedesc.Time_zone.t ->
+  t ->
+  Timedesc.Interval.t Seq.t
+(** @raise Resolution_error if [resolve] fails *)
 
 (** {2 S-expressions} *)
 

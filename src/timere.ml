@@ -20,6 +20,13 @@ type points = Points.t
 
 let resolve = Resolver.resolve
 
+exception Resolution_error of string
+
+let resolve_exn ?search_using_tz time =
+  match resolve ?search_using_tz time with
+  | Ok s -> s
+  | Error msg -> raise (Resolution_error msg)
+
 let to_sexp = To_sexp.to_sexp
 
 let to_sexp_string = To_sexp.to_sexp_string
