@@ -171,7 +171,7 @@ let points_of_sexp (x : CCSexp.t) : Points.t =
           second = int_of_sexp second;
           ns = int_of_sexp ns;
         }
-    | [ `Atom "dhms"; month_day; hour; minute; second; ns ] ->
+    | [ `Atom "dhmsn"; month_day; hour; minute; second; ns ] ->
       DHMSN
         {
           month_day = int_of_sexp month_day;
@@ -180,7 +180,7 @@ let points_of_sexp (x : CCSexp.t) : Points.t =
           second = int_of_sexp second;
           ns = int_of_sexp ns;
         }
-    | [ `Atom "mdhms"; month; month_day; hour; minute; second; ns ] ->
+    | [ `Atom "mdhmsn"; month; month_day; hour; minute; second; ns ] ->
       MDHMSN
         {
           month = month_of_sexp month;
@@ -190,7 +190,7 @@ let points_of_sexp (x : CCSexp.t) : Points.t =
           second = int_of_sexp second;
           ns = int_of_sexp ns;
         }
-    | [ `Atom "ymdhms"; year; month; month_day; hour; minute; second; ns ] ->
+    | [ `Atom "ymdhmsn"; year; month; month_day; hour; minute; second; ns ] ->
       YMDHMSN
         {
           year = int_of_sexp year;
