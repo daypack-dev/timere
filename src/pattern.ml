@@ -17,6 +17,7 @@ let equal p1 p2 =
   && Int_set.equal p1.hours p2.hours
   && Int_set.equal p1.minutes p2.minutes
   && Int_set.equal p1.seconds p2.seconds
+  && Diet.Int.equal p1.ns p2.ns
 
 type error =
   | Invalid_years of Int_set.t
