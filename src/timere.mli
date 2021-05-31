@@ -289,8 +289,8 @@ module Points : sig
     ?weekday:Timedesc.weekday ->
     ?hour:int ->
     ?minute:int ->
+    ?second:int ->
     ?ns:int ->
-    second:int ->
     unit ->
     t
     (** @raise Error_exn if [make] fails *)
