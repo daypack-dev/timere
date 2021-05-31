@@ -62,11 +62,11 @@ let ymd_of_jd jd =
   let year = (100 * b) + d - 4800 + (m / 10) in
   (year, month, day)
 
-let jd_of_epoch = jd_of_ymd ~year:1970 ~month:1 ~day:1
+let jd_of_unix_epoch = jd_of_ymd ~year:1970 ~month:1 ~day:1
 
 let weekday_of_jd jd =
   (* epoch was on thursday *)
-  let d = (jd - jd_of_epoch) mod 7 in
+  let d = (jd - jd_of_unix_epoch) mod 7 in
   match if d < 0 then d + 7 else d with
   | 0 -> `Thu
   | 1 -> `Fri
