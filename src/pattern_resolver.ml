@@ -379,8 +379,6 @@ module Matching_years = struct
            ~f_exc:failwith_unexpected_case)
 end
 
-type error = Pattern.error
-
 let matching_date_time_ranges (search_param : Search_param.t) (t : Pattern.t) :
   Branch.t Time.Range.range Seq.t =
   let overall_search_start =

@@ -19,34 +19,6 @@ let equal p1 p2 =
   && Int_set.equal p1.seconds p2.seconds
   && Diet.Int.equal p1.ns p2.ns
 
-type error =
-  | Invalid_years of Int_set.t
-  | Invalid_month_days of Int_set.t
-  | Invalid_hours of Int_set.t
-  | Invalid_minutes of Int_set.t
-  | Invalid_seconds of Int_set.t
-
-module Check = struct
-  let check_pattern (x : t) : (unit, error) result =
-    let invalid_years = Int_set.filter (fun x -> x < 0 || 9999 < x) x.years in
-    let invalid_month_days =
-      Int_set.filter (fun x -> x < 1 || 31 < x) x.month_days
-    in
-    let invalid_hours = Int_set.filter (fun x -> x < 0 || 23 < x) x.hours in
-    let invalid_minutes = Int_set.filter (fun x -> x < 0 || 59 < x) x.minutes in
-    let invalid_seconds = Int_set.filter (fun x -> x < 0 || 59 < x) x.seconds in
-    if Int_set.is_empty invalid_years then
-      if Int_set.is_empty invalid_month_days then
-        if Int_set.is_empty invalid_hours then
-          if Int_set.is_empty invalid_minutes then
-            if Int_set.is_empty invalid_seconds then Ok ()
-            else Error (Invalid_seconds invalid_seconds)
-          else Error (Invalid_minutes invalid_minutes)
-        else Error (Invalid_hours invalid_hours)
-      else Error (Invalid_month_days invalid_month_days)
-    else Error (Invalid_years invalid_years)
-end
-
 let union p1 p2 =
   let union_sets (type a) ~(is_empty : a -> bool) ~(union : a -> a -> a)
       ~(empty : a) (a : a) (b : a) =
