@@ -9,6 +9,14 @@ module Branch = struct
     ns : int;
   }
 
+  let to_span t =
+    let days_since_unix_epoch =
+      Timedesc.Utils.jd_of_ymd ~year:t.year ~month:t.month ~day:t.day- Timedesc.Utils.jd_of_unix_epoch
+    in
+    Timedesc.Span.(
+      For_human.make_exn ~days:days_since_unix_epoch ()  +
+    For_human.make_exn ~hours:t.hour ~minutes:t.minute ~seconds:t.second ~ns:t.ns ())
+
   let to_date_time ~offset_from_utc (x : t) : Timedesc.t option =
     match
       Timedesc.make_unambiguous ~offset_from_utc ~year:x.year ~month:x.month
@@ -458,31 +466,41 @@ let one_ns = Timedesc.Span.make ~ns:1 ()
 
 let resolve (search_param : Search_param.t) (t : Pattern.t) :
   (Timedesc.Span.t * Timedesc.Span.t) Seq.t =
-  let f (x, y) =
+  let f (x', y') =
     let x =
-      x
+      x'
       |> Branch.to_date_time
         ~offset_from_utc:search_param.search_using_offset_from_utc
       |> CCOpt.map Timedesc.to_timestamp_single
     in
     let y =
-      y
+      y'
       |> Branch.to_date_time
         ~offset_from_utc:search_param.search_using_offset_from_utc
       |> CCOpt.map Timedesc.to_timestamp_single
     in
     match (x, y) with
-    | Some x, Some y -> (x, y)
-    | None, None -> (Timedesc.Timestamp.min_val, Timedesc.Timestamp.max_val)
-    | None, Some y -> (Timedesc.Timestamp.min_val, y)
-    | Some x, None -> (x, Timedesc.Timestamp.max_val)
+    | Some x, Some y -> Some (x, y)
+    | _, _ ->
+      let x = Timedesc.Span.(Branch.to_span x' - search_param.search_using_offset_from_utc) in
+      let y = Timedesc.Span.(Branch.to_span y' - search_param.search_using_offset_from_utc) in
+      if Timedesc.Span.(y <= Timedesc.Timestamp.min_val)
+      then
+        None
+      else if Timedesc.Span.(Timedesc.Timestamp.max_val <= x) then
+        None
+      else
+        Some (
+          Timedesc.Span.max Timedesc.Timestamp.min_val x,
+          Timedesc.Span.min Timedesc.Timestamp.max_val y
+        )
   in
   matching_date_time_ranges search_param t
   |> Seq.map (fun r ->
       match r with
       | `Range_inc (x, y) -> (x, y)
       | `Range_exc _ -> failwith "Unexpected case")
-  |> Seq.map f
+  |> Seq.filter_map f
   |> Seq.map (fun (x, y) -> (x, Timestamp_utils.timestamp_safe_add y one_ns))
   |> Time.Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
   |> (fun s ->
