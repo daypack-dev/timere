@@ -10,12 +10,14 @@ module Branch = struct
   }
 
   let to_span t =
-    let days_since_unix_epoch =
-      Timedesc.Utils.jd_of_ymd ~year:t.year ~month:t.month ~day:t.day- Timedesc.Utils.jd_of_unix_epoch
+    let jd =
+      Timedesc.Utils.jd_of_ymd ~year:t.year ~month:t.month ~day:t.day
     in
     Timedesc.Span.(
-      For_human.make_exn ~days:days_since_unix_epoch ()  +
-    For_human.make_exn ~hours:t.hour ~minutes:t.minute ~seconds:t.second ~ns:t.ns ())
+      For_human.make_exn ~days:jd ()
+      - Timedesc.Utils.jd_span_of_unix_epoch
+      +
+      For_human.make_exn ~hours:t.hour ~minutes:t.minute ~seconds:t.second ~ns:t.ns ())
 
   let to_date_time ~offset_from_utc (x : t) : Timedesc.t option =
     match
