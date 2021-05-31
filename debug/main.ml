@@ -127,6 +127,7 @@ let debug_resolver () =
            hours = Int_set.empty;
            minutes = Int_set.empty;
            seconds = Int_set.empty;
+           ns = Diet.Int.empty;
          }
      |> Resolver.normalize
    in

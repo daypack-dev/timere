@@ -103,6 +103,18 @@ let make_pattern ~rng ~min_year ~max_year_inc : Pattern.t =
       let end_inc = min 5 (rng ()) in
       OSeq.(0 -- end_inc) |> Seq.map (fun _ -> rng () mod 60) |> CCList.of_seq
   in
+  let ns =
+    if rng () mod 2 = 0 then Diet.Int.empty
+    else
+      let end_inc = min 5 (rng ()) in
+      OSeq.(0 -- end_inc)
+      |> Seq.map (fun _ -> rng () mod 1_000_000_000)
+      |> Seq.fold_left (fun acc ns ->
+          Diet.Int.add (Diet.Int.Interval.make ns ns)
+            acc
+        )
+        Diet.Int.empty
+  in
   Pattern.
     {
       years = Int_set.of_list years;
@@ -112,6 +124,7 @@ let make_pattern ~rng ~min_year ~max_year_inc : Pattern.t =
       hours = Int_set.of_list hours;
       minutes = Int_set.of_list minutes;
       seconds = Int_set.of_list seconds;
+      ns;
     }
 
 let make_points ~rng ~min_year ~max_year_inc ~max_precision =
