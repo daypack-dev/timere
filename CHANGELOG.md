@@ -26,7 +26,13 @@
 
 ## Timedesc 0.3.2
 
-- Added `Timedesc.Utils.jd_of_ymd` and `Timedesc.Utils.jd_of_unix_epoch`
+- Added following to `Timedesc.Utils`
+
+  - `jd_of_ymd`
+
+  - `jd_of_unix_epoch`
+
+  - `jd_span_of_unix_epoch`
 
 ## Timedesc 0.3.1
 
