@@ -169,8 +169,32 @@ let aux_pattern (search_start, search_end_exc) search_using_tz pattern :
     ~a:Timedesc.Span.(search_start.s)
     ~b:Timedesc.Span.(search_end_exc.s)
   |> Seq.filter (aux_pattern_mem search_using_tz pattern)
-  |> intervals_of_int64s
-  |> span_set_of_intervals
+  |> (fun s ->
+      if Diet.Int.is_empty pattern.ns then
+        s
+        |> intervals_of_int64s
+        |> span_set_of_intervals
+      else
+        let ns_inc_seq =
+          Diet.Int.fold (fun interval acc ->
+              ( Diet.Int.Interval.x interval,
+                Diet.Int.Interval.y interval) :: acc
+            )
+            pattern.ns
+            []
+          |> List.rev
+          |> CCList.to_seq
+        in
+        s
+        |> Seq.flat_map (fun s ->
+            Seq.map (fun (x, y) ->
+                (Timedesc.Span.make ~s ~ns:x (),
+                 Timedesc.Span.(succ @@ make ~s ~ns:y ()))
+              )
+              ns_inc_seq
+          )
+        |> span_set_of_intervals
+    )
   |> Span_set.inter search_space_set
 
 let aux_points_mem search_using_tz ({ pick; tz_info } : Points.t) timestamp =
