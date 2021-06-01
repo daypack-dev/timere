@@ -638,19 +638,23 @@ module Ranges = struct
       (* not sure what would be a reasonable normalization procedure when domain is a field *)
       s
 
-  let get_inc (type a) ~(to_int : a -> int) ~(of_int : int -> a) (s : a Range.range Seq.t) : (a * a) Seq.t =
-    Seq.map (fun x ->
-        match x with
-        | `Range_inc (x, y) -> (x, y)
-        | `Range_exc (x, y) -> (x, y |> to_int |> pred |> of_int)
-      ) s
+  let get_inc (type a) ~(to_int : a -> int) ~(of_int : int -> a)
+      (s : a Range.range Seq.t) : (a * a) Seq.t =
+    Seq.map
+      (fun x ->
+         match x with
+         | `Range_inc (x, y) -> (x, y)
+         | `Range_exc (x, y) -> (x, y |> to_int |> pred |> of_int))
+      s
 
-  let get_exc (type a) ~(to_int : a -> int) ~(of_int : int -> a) (s : a Range.range Seq.t) : (a * a) Seq.t =
-    Seq.map (fun x ->
-        match x with
-        | `Range_inc (x, y) -> (x, y |> to_int |> succ |> of_int)
-        | `Range_exc (x, y) -> (x, y)
-      ) s
+  let get_exc (type a) ~(to_int : a -> int) ~(of_int : int -> a)
+      (s : a Range.range Seq.t) : (a * a) Seq.t =
+    Seq.map
+      (fun x ->
+         match x with
+         | `Range_inc (x, y) -> (x, y |> to_int |> succ |> of_int)
+         | `Range_exc (x, y) -> (x, y))
+      s
 
   module Check = struct
     let seq_is_valid (type a) ~(modulo : int option) ~(to_int : a -> int)
@@ -749,11 +753,9 @@ module Ranges = struct
       normalize ?skip_filter_invalid ?skip_filter_empty ?skip_sort ~modulo
         ~to_int ~of_int s
 
-    let get_inc s =
-      get_inc ~to_int ~of_int s
+    let get_inc s = get_inc ~to_int ~of_int s
 
-    let get_exc s =
-      get_exc ~to_int ~of_int s
+    let get_exc s = get_exc ~to_int ~of_int s
 
     module Check = struct
       let seq_is_valid s = Check.seq_is_valid ~modulo ~to_int s

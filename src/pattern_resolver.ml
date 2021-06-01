@@ -117,8 +117,7 @@ module Matching_seconds = struct
         Branch.set_to_last_ns { cur_branch with second = y } )
     in
     if Int_set.is_empty t.seconds then
-      Seq.return
-        (cur_branch_search_start, cur_branch_search_end_inc)
+      Seq.return (cur_branch_search_start, cur_branch_search_end_inc)
     else
       t.seconds
       |> Int_set.to_seq
@@ -157,8 +156,7 @@ module Matching_minutes = struct
         Branch.set_to_last_sec_ns { cur_branch with minute = y } )
     in
     if Int_set.is_empty t.minutes then
-      Seq.return
-        (cur_branch_search_start, cur_branch_search_end_inc)
+      Seq.return (cur_branch_search_start, cur_branch_search_end_inc)
     else
       t.minutes
       |> Int_set.to_seq
@@ -195,8 +193,7 @@ module Matching_hours = struct
         Branch.set_to_last_min_sec_ns { cur_branch with hour = y } )
     in
     if Int_set.is_empty t.hours then
-      Seq.return
-        (cur_branch_search_start, cur_branch_search_end_inc)
+      Seq.return (cur_branch_search_start, cur_branch_search_end_inc)
     else
       t.hours
       |> Int_set.to_seq
@@ -271,8 +268,7 @@ module Matching_days = struct
     in
     match (Int_set.is_empty t.month_days, Weekday_set.is_empty t.weekdays) with
     | true, true ->
-      Seq.return
-        ((cur_branch_search_start, cur_branch_search_end_inc))
+      Seq.return (cur_branch_search_start, cur_branch_search_end_inc)
     | true, false ->
       int_month_days_of_matching_weekdays ~cur_branch t
       |> Time.Month_day_ranges.Of_seq.range_seq_of_seq
@@ -323,8 +319,7 @@ module Matching_months = struct
     let month_start = cur_branch_search_start.month in
     let month_end_inc = cur_branch_search_end_inc.month in
     if Int_set.is_empty t.months then
-      Seq.return
-        (cur_branch_search_start, cur_branch_search_end_inc)
+      Seq.return (cur_branch_search_start, cur_branch_search_end_inc)
     else
       t.months
       |> Int_set.to_seq
@@ -377,8 +372,8 @@ module Matching_years = struct
       |> Seq.map (map_inc ~overall_search_start ~overall_search_end_inc)
 end
 
-let matching_date_time_inc_ranges (search_param : Search_param.t) (t : Pattern.t) :
-  (Branch.t * Branch.t) Seq.t =
+let matching_date_time_inc_ranges (search_param : Search_param.t)
+    (t : Pattern.t) : (Branch.t * Branch.t) Seq.t =
   let overall_search_start =
     Branch.set_to_first_month_day_hour_min_sec_ns search_param.start
   in
