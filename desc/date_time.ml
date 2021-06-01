@@ -186,7 +186,10 @@ let tz (dt : t) = dt.tz
 let offset_from_utc (dt : t) = dt.offset_from_utc
 
 module Zoneless = struct
-  type zoneless = { date : Date.t; time : Time.t }
+  type zoneless = {
+    date : Date.t;
+    time : Time.t;
+  }
 
   type error_when_zoned =
     [ `Does_not_exist
@@ -195,8 +198,7 @@ module Zoneless = struct
 
   exception Error_when_zoned_exn of error_when_zoned
 
-  let make date time =
-    { date; time }
+  let make date time = { date; time }
 
   let to_timestamp_local (x : zoneless) =
     timestamp_local_of_date_and_time x.date x.time
@@ -224,20 +226,20 @@ module Zoneless = struct
     | Ok x -> x
     | Error e -> raise (Error_when_zoned_exn e)
 
-  let to_zoned_unambiguous ?tz ~offset_from_utc ({ date; time} as zl : zoneless)
-    : (t, error_when_zoned) result =
+  let to_zoned_unambiguous ?tz ~offset_from_utc
+      ({ date; time } as zl : zoneless) : (t, error_when_zoned) result =
     let make_invalid_tz_info_error ?tz ~offset_from_utc () =
       Error (`Invalid_tz_info (CCOpt.map Time_zone.name tz, offset_from_utc))
     in
-    (match Time_zone_info.make ?tz ~fixed_offset_from_utc:offset_from_utc () with
+    (match
+       Time_zone_info.make ?tz ~fixed_offset_from_utc:offset_from_utc ()
+     with
      | Error `Missing_both_tz_and_fixed_offset_from_utc ->
        failwith "Unexpected case"
      | Error (`Invalid_offset _) | Error (`Unrecorded_offset _) ->
        make_invalid_tz_info_error ?tz ~offset_from_utc ()
      | Ok ({ tz = tz'; fixed_offset_from_utc = _ } as tz_info) -> (
-         let Span.{ s = timestamp_local; ns = _ } =
-           to_timestamp_local zl
-         in
+         let Span.{ s = timestamp_local; ns = _ } = to_timestamp_local zl in
          let offset_from_utc_s = Int64.to_int offset_from_utc.s in
          match Time_zone.lookup_timestamp_local tz' timestamp_local with
          | `None -> Error `Does_not_exist
@@ -245,8 +247,8 @@ module Zoneless = struct
            if e.offset = offset_from_utc_s then Ok tz_info
            else make_invalid_tz_info_error ?tz ~offset_from_utc ()
          | `Ambiguous (e1, e2) ->
-           if e1.offset = offset_from_utc_s || e2.offset = offset_from_utc_s then
-             Ok tz_info
+           if e1.offset = offset_from_utc_s || e2.offset = offset_from_utc_s
+           then Ok tz_info
            else make_invalid_tz_info_error ?tz ~offset_from_utc ()))
     |> CCResult.map (fun ({ tz; fixed_offset_from_utc } : Time_zone_info.t) ->
         {
@@ -265,8 +267,7 @@ module Zoneless = struct
     | Ok x -> x
     | Error e -> raise (Error_when_zoned_exn e)
 
-  let of_zoned (x : t) : zoneless =
-    { date = x.date; time = x.time }
+  let of_zoned (x : t) : zoneless = { date = x.date; time = x.time }
 end
 
 module ISO_ord_date_time = struct
@@ -310,7 +311,7 @@ module ISO_ord_date_time = struct
         | Error e -> Error (e :> error)
         | Ok time -> (
             match
-              Zoneless.to_zoned_unambiguous ?tz ~offset_from_utc {date; time}
+              Zoneless.to_zoned_unambiguous ?tz ~offset_from_utc { date; time }
             with
             | Ok dt -> Ok dt
             | Error e -> Error (e :> error)))
@@ -368,7 +369,7 @@ module Ymd_date_time = struct
         match Time.make ~hour ~minute ~second ?ns ?s_frac () with
         | Error e -> Error (e :> error)
         | Ok time -> (
-            match Zoneless.to_zoned ?tz {date; time} with
+            match Zoneless.to_zoned ?tz { date; time } with
             | Error e -> Error (e :> error)
             | Ok dt -> Ok dt))
 
@@ -386,7 +387,7 @@ module Ymd_date_time = struct
         | Error e -> Error (e :> error)
         | Ok time -> (
             match
-              Zoneless.to_zoned_unambiguous ?tz ~offset_from_utc {date; time}
+              Zoneless.to_zoned_unambiguous ?tz ~offset_from_utc { date; time }
             with
             | Ok dt -> Ok dt
             | Error e -> Error (e :> error)))
@@ -424,7 +425,7 @@ module ISO_week_date_time = struct
         match Time.make ~hour ~minute ~second ?ns ?s_frac () with
         | Error e -> Error (e :> error)
         | Ok time -> (
-            match Zoneless.to_zoned ?tz {date; time} with
+            match Zoneless.to_zoned ?tz { date; time } with
             | Error e -> Error (e :> error)
             | Ok dt -> Ok dt))
 
@@ -446,7 +447,7 @@ module ISO_week_date_time = struct
         | Error e -> Error (e :> error)
         | Ok time -> (
             match
-              Zoneless.to_zoned_unambiguous ?tz ~offset_from_utc {date; time}
+              Zoneless.to_zoned_unambiguous ?tz ~offset_from_utc { date; time }
             with
             | Error e -> Error (e :> error)
             | Ok dt -> Ok dt))
