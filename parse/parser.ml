@@ -903,60 +903,63 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.Hms.t option)
   | _ -> (
       let default_month = match lean_toward with `Front -> 1 | `Back -> 12 in
       let default_day = match lean_toward with `Front -> 1 | `Back -> -1 in
-      let default_hour = match lean_toward with `Front -> 0 | `Back -> 0 in
-      let default_minute = match lean_toward with `Front -> 0 | `Back -> 0 in
-      let default_second = match lean_toward with `Front -> 0 | `Back -> 0 in
+      let default_hour = match lean_toward with `Front -> 0 | `Back -> 23 in
+      let default_minute = match lean_toward with `Front -> 0 | `Back -> 59 in
+      let default_second = match lean_toward with `Front -> 0 | `Back -> 59 in
+      let default_ns = match lean_toward with `Front -> 0 | `Back -> Timedesc.Span.ns_count_in_s - 1 in
       match (year, month, day, weekday, hms) with
       | None, None, None, None, Some hms ->
         `Some
           (Timere.Points.make_exn ~hour:hms.hour ~minute:hms.minute
-             ~second:hms.second ())
+             ~second:hms.second ~ns:default_ns ())
       | None, None, None, Some weekday, Some hms ->
         `Some
           (Timere.Points.make_exn ~weekday ~hour:hms.hour ~minute:hms.minute
-             ~second:hms.second ())
+             ~second:hms.second ~ns:default_ns ())
       | None, None, Some day, None, Some hms ->
         `Some
           (Timere.Points.make_exn ~day ~hour:hms.hour ~minute:hms.minute
-             ~second:hms.second ())
+             ~second:hms.second ~ns:default_ns ())
       | None, Some month, Some day, None, Some hms ->
         `Some
           (Timere.Points.make_exn ~month ~day ~hour:hms.hour
-             ~minute:hms.minute ~second:hms.second ())
+             ~minute:hms.minute ~second:hms.second ~ns:default_ns ())
       | Some year, Some month, Some day, None, Some hms ->
         `Some
           (Timere.Points.make_exn ~year ~month ~day ~hour:hms.hour
-             ~minute:hms.minute ~second:hms.second ())
+             ~minute:hms.minute ~second:hms.second ~ns:default_ns ())
       | Some year, None, None, None, None ->
         `Some
           (Timere.Points.make_exn ~year ~month:default_month ~day:default_day
              ~hour:default_hour ~minute:default_minute ~second:default_second
+             ~ns:default_ns
              ())
       | Some year, Some month, None, None, None ->
         `Some
           (Timere.Points.make_exn ~year ~month ~day:default_day
              ~hour:default_hour ~minute:default_minute ~second:default_second
+             ~ns:default_ns
              ())
       | Some year, Some month, Some day, None, None ->
         `Some
           (Timere.Points.make_exn ~year ~month ~day ~hour:default_hour
-             ~minute:default_minute ~second:default_second ())
+             ~minute:default_minute ~second:default_second ~ns:default_ns ())
       | None, Some month, None, None, None ->
         `Some
           (Timere.Points.make_exn ~month ~day:default_day ~hour:default_hour
-             ~minute:default_minute ~second:default_second ())
+             ~minute:default_minute ~second:default_second ~ns:default_ns ())
       | None, Some month, Some day, None, None ->
         `Some
           (Timere.Points.make_exn ~month ~day ~hour:default_hour
-             ~minute:default_minute ~second:default_second ())
+             ~minute:default_minute ~second:default_second ~ns:default_ns ())
       | None, None, Some day, None, None ->
         `Some
           (Timere.Points.make_exn ~day ~hour:default_hour
-             ~minute:default_minute ~second:default_second ())
+             ~minute:default_minute ~second:default_second ~ns:default_ns ())
       | None, None, None, Some weekday, None ->
         `Some
           (Timere.Points.make_exn ~weekday ~hour:default_hour
-             ~minute:default_minute ~second:default_second ())
+             ~minute:default_minute ~second:default_second ~ns:default_ns ())
       | _ -> invalid_arg "points")
 
 let t_of_hmss (hmss : Timere.Hms.t Timere.range list) =
