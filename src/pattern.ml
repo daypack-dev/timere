@@ -9,6 +9,57 @@ type t = {
   ns : Diet.Int.t;
 }
 
+let set_of_int_seq s =
+  Seq.fold_left (fun acc x ->
+      Int_set.add x acc
+    )
+    Int_set.empty
+    s
+
+let full_hours =
+  set_of_int_seq
+  OSeq.(0 -- 23)
+
+let full_minutes =
+  set_of_int_seq
+  OSeq.(0 -- 59)
+
+let full_seconds =
+  set_of_int_seq
+    OSeq.(0 -- 59)
+
+let full_ns =
+  Diet.Int.add
+    (Diet.Int.Interval.make 0 (Timedesc.Span.ns_count_in_s - 1)) Diet.Int.empty
+
+let optimize_hours (t : Pattern.t) : Pattern.t =
+  if Int_set.equal t.hours full_hours then
+    { t with hours = Int_set.empty }
+  else t
+
+let optimize_minutes (t : Pattern.t) : Pattern.t =
+  if Int_set.equal t.minutes full_minutes then
+    { t with minutes = Int_set.empty }
+  else t
+
+let optimize_seconds (t : Pattern.t) : Pattern.t =
+  if Int_set.equal t.seconds full_seconds then
+    { t with seconds = Int_set.empty }
+  else t
+
+let optimize_ns (t : Pattern.t) : Pattern.t =
+  if Diet.Int.equal t.ns full_ns then
+    { t with ns = Diet.Int.empty }
+  else
+    t
+
+let optimize (t : Pattern.t) : Pattern.t =
+  t
+  |> optimize_hours
+  |> optimize_minutes
+  |> optimize_seconds
+  |> optimize_ns
+
 let equal p1 p2 =
   Int_set.equal p1.years p2.years
   && Int_set.equal p1.months p2.months
