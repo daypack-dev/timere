@@ -685,10 +685,10 @@ module Ranges = struct
       |> normalize ~skip_filter_invalid:true ~skip_filter_empty:true ~skip_sort
         ~modulo ~to_int ~of_int
 
-    let range_list_of_seq (type a) ?(skip_sort = false) ~(modulo : int option)
+    let range_list_of_seq (type a) ?skip_sort ~(modulo : int option)
         ~(to_int : a -> int) ~(of_int : int -> a) (s : a Seq.t) :
       a Range.range list =
-      range_seq_of_seq ~skip_sort ~modulo ~to_int ~of_int s |> CCList.of_seq
+      range_seq_of_seq ?skip_sort ~modulo ~to_int ~of_int s |> CCList.of_seq
   end
 
   module Of_list = struct
