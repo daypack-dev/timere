@@ -38,7 +38,7 @@
 
 - Added `Zoneless` module
 
-  - Also moved "date and time" API into `Zoneless` module
+  - Moved "date and time" API into `Zoneless` module
 
 ## Timedesc 0.3.1
 
