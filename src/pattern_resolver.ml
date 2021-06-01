@@ -108,25 +108,23 @@ end
 let failwith_unexpected_case (_ : 'a) = failwith "Unexpected case"
 
 module Matching_seconds = struct
-  let matching_second_ranges (t : Pattern.t) (cur_branch : Branch.t) :
-    Branch.t Time.Range.range Seq.t =
+  let matching_second_inc_ranges (t : Pattern.t) (cur_branch : Branch.t) :
+    (Branch.t * Branch.t) Seq.t =
     let cur_branch_search_start = Branch.set_to_first_sec_ns cur_branch in
     let cur_branch_search_end_inc = Branch.set_to_last_sec_ns cur_branch in
-    let range_map_inc ~(cur_branch : Branch.t) (x, y) =
+    let map_inc ~(cur_branch : Branch.t) (x, y) =
       ( Branch.set_to_first_ns { cur_branch with second = x },
         Branch.set_to_last_ns { cur_branch with second = y } )
     in
     if Int_set.is_empty t.seconds then
       Seq.return
-        (`Range_inc (cur_branch_search_start, cur_branch_search_end_inc))
+        (cur_branch_search_start, cur_branch_search_end_inc)
     else
       t.seconds
       |> Int_set.to_seq
       |> Time.Second_ranges.Of_seq.range_seq_of_seq
-      |> Seq.map
-        (Time.Range.map
-           ~f_inc:(range_map_inc ~cur_branch)
-           ~f_exc:failwith_unexpected_case)
+      |> Time.Second_ranges.get_inc
+      |> Seq.map (map_inc ~cur_branch)
 end
 
 module Matching_minutes = struct
@@ -150,25 +148,23 @@ module Matching_minutes = struct
       |> Int_set.to_seq
       |> Seq.map (fun minute -> { cur_branch_search_start with minute })
 
-  let matching_minute_ranges (t : Pattern.t) (cur_branch : Branch.t) :
-    Branch.t Time.Range.range Seq.t =
+  let matching_minute_inc_ranges (t : Pattern.t) (cur_branch : Branch.t) :
+    (Branch.t * Branch.t) Seq.t =
     let cur_branch_search_start = get_cur_branch_search_start cur_branch in
     let cur_branch_search_end_inc = get_cur_branch_search_end_inc cur_branch in
-    let range_map_inc ~(cur_branch : Branch.t) (x, y) =
+    let map_inc ~(cur_branch : Branch.t) (x, y) =
       ( Branch.set_to_first_sec_ns { cur_branch with minute = x },
         Branch.set_to_last_sec_ns { cur_branch with minute = y } )
     in
     if Int_set.is_empty t.minutes then
       Seq.return
-        (`Range_inc (cur_branch_search_start, cur_branch_search_end_inc))
+        (cur_branch_search_start, cur_branch_search_end_inc)
     else
       t.minutes
       |> Int_set.to_seq
       |> Time.Minute_ranges.Of_seq.range_seq_of_seq
-      |> Seq.map
-        (Time.Range.map
-           ~f_inc:(range_map_inc ~cur_branch)
-           ~f_exc:failwith_unexpected_case)
+      |> Time.Minute_ranges.get_inc
+      |> Seq.map (map_inc ~cur_branch)
 end
 
 module Matching_hours = struct
@@ -190,25 +186,23 @@ module Matching_hours = struct
       |> Int_set.to_seq
       |> Seq.map (fun hour -> { cur_branch with hour })
 
-  let matching_hour_ranges (t : Pattern.t) (cur_branch : Branch.t) :
-    Branch.t Time.Range.range Seq.t =
+  let matching_hour_inc_ranges (t : Pattern.t) (cur_branch : Branch.t) :
+    (Branch.t * Branch.t) Seq.t =
     let cur_branch_search_start = get_cur_branch_search_start cur_branch in
     let cur_branch_search_end_inc = get_cur_branch_search_end_inc cur_branch in
-    let range_map_inc ~(cur_branch : Branch.t) (x, y) =
+    let map_inc ~(cur_branch : Branch.t) (x, y) =
       ( Branch.set_to_first_min_sec_ns { cur_branch with hour = x },
         Branch.set_to_last_min_sec_ns { cur_branch with hour = y } )
     in
     if Int_set.is_empty t.hours then
       Seq.return
-        (`Range_inc (cur_branch_search_start, cur_branch_search_end_inc))
+        (cur_branch_search_start, cur_branch_search_end_inc)
     else
       t.hours
       |> Int_set.to_seq
       |> Time.Hour_ranges.Of_seq.range_seq_of_seq
-      |> Seq.map
-        (Time.Range.map
-           ~f_inc:(range_map_inc ~cur_branch)
-           ~f_exc:failwith_unexpected_case)
+      |> Time.Hour_ranges.get_inc
+      |> Seq.map (map_inc ~cur_branch)
 end
 
 module Matching_days = struct
@@ -267,32 +261,33 @@ module Matching_days = struct
     matching_int_month_days t ~cur_branch
     |> Seq.map (fun day -> { cur_branch with day })
 
-  let matching_day_ranges (t : Pattern.t) (cur_branch : Branch.t) :
-    Branch.t Time.Range.range Seq.t =
+  let matching_day_inc_ranges (t : Pattern.t) (cur_branch : Branch.t) :
+    (Branch.t * Branch.t) Seq.t =
     let cur_branch_search_start = get_cur_branch_search_start cur_branch in
     let cur_branch_search_end_inc = get_cur_branch_search_end_inc cur_branch in
-    let range_map_inc ~(cur_branch : Branch.t) (x, y) =
+    let map_inc ~(cur_branch : Branch.t) (x, y) =
       ( Branch.set_to_first_hour_min_sec_ns { cur_branch with day = x },
         Branch.set_to_last_hour_min_sec_ns { cur_branch with day = y } )
     in
-    let f_inc = range_map_inc ~cur_branch in
-    let f_exc = failwith_unexpected_case in
     match (Int_set.is_empty t.month_days, Weekday_set.is_empty t.weekdays) with
     | true, true ->
       Seq.return
-        (`Range_inc (cur_branch_search_start, cur_branch_search_end_inc))
+        ((cur_branch_search_start, cur_branch_search_end_inc))
     | true, false ->
       int_month_days_of_matching_weekdays ~cur_branch t
       |> Time.Month_day_ranges.Of_seq.range_seq_of_seq
-      |> Seq.map (Time.Range.map ~f_inc ~f_exc)
+      |> Time.Month_day_ranges.get_inc
+      |> Seq.map (map_inc ~cur_branch)
     | false, true ->
       direct_matching_int_month_days t ~cur_branch
       |> Time.Month_day_ranges.Of_seq.range_seq_of_seq
-      |> Seq.map (Time.Range.map ~f_inc ~f_exc)
+      |> Time.Month_day_ranges.get_inc
+      |> Seq.map (map_inc ~cur_branch)
     | false, false ->
       matching_int_month_days t ~cur_branch
       |> Time.Month_day_ranges.Of_seq.range_seq_of_seq
-      |> Seq.map (Time.Range.map ~f_inc ~f_exc)
+      |> Time.Month_day_ranges.get_inc
+      |> Seq.map (map_inc ~cur_branch)
 end
 
 module Matching_months = struct
@@ -317,11 +312,11 @@ module Matching_months = struct
           month_start <= month && month <= month_end_inc)
       |> Seq.map (fun month -> { cur_branch_search_start with month })
 
-  let matching_month_ranges (t : Pattern.t) (cur_branch : Branch.t) :
-    Branch.t Time.Range.range Seq.t =
+  let matching_month_inc_ranges (t : Pattern.t) (cur_branch : Branch.t) :
+    (Branch.t * Branch.t) Seq.t =
     let cur_branch_search_start = get_cur_branch_search_start cur_branch in
     let cur_branch_search_end_inc = get_cur_branch_search_end_inc cur_branch in
-    let range_map_inc ~(cur_branch : Branch.t) (x, y) =
+    let map_inc ~(cur_branch : Branch.t) (x, y) =
       ( Branch.set_to_first_day_hour_min_sec_ns { cur_branch with month = x },
         Branch.set_to_last_day_hour_min_sec_ns { cur_branch with month = y } )
     in
@@ -329,17 +324,15 @@ module Matching_months = struct
     let month_end_inc = cur_branch_search_end_inc.month in
     if Int_set.is_empty t.months then
       Seq.return
-        (`Range_inc (cur_branch_search_start, cur_branch_search_end_inc))
+        (cur_branch_search_start, cur_branch_search_end_inc)
     else
       t.months
       |> Int_set.to_seq
       |> Seq.filter (fun month ->
           month_start <= month && month <= month_end_inc)
       |> Time.Month_ranges.Of_seq.range_seq_of_seq
-      |> Seq.map
-        (Time.Range.map
-           ~f_inc:(range_map_inc ~cur_branch)
-           ~f_exc:failwith_unexpected_case)
+      |> Time.Month_ranges.get_inc
+      |> Seq.map (map_inc ~cur_branch)
 end
 
 module Matching_years = struct
@@ -356,10 +349,10 @@ module Matching_years = struct
           && year <= overall_search_end_inc.year)
       |> Seq.map (fun year -> { overall_search_start with year })
 
-  let matching_year_ranges ~(overall_search_start : Branch.t)
+  let matching_year_inc_ranges ~(overall_search_start : Branch.t)
       ~(overall_search_end_inc : Branch.t) (t : Pattern.t) :
-    Branch.t Time.Range.range Seq.t =
-    let range_map_inc ~(overall_search_start : Branch.t)
+    (Branch.t * Branch.t) Seq.t =
+    let map_inc ~(overall_search_start : Branch.t)
         ~(overall_search_end_inc : Branch.t) (x, y) =
       let range_map_start =
         Branch.set_to_first_month_day_hour_min_sec_ns
@@ -372,7 +365,7 @@ module Matching_years = struct
       (range_map_start, range_map_end_inc)
     in
     if Int_set.is_empty t.years then
-      Seq.return (`Range_inc (overall_search_start, overall_search_end_inc))
+      Seq.return (overall_search_start, overall_search_end_inc)
     else
       t.years
       |> Int_set.to_seq
@@ -380,15 +373,12 @@ module Matching_years = struct
           overall_search_start.year <= year
           && year <= overall_search_end_inc.year)
       |> Time.Year_ranges.Of_seq.range_seq_of_seq
-      |> Seq.map
-        (Time.Range.map
-           ~f_inc:
-             (range_map_inc ~overall_search_start ~overall_search_end_inc)
-           ~f_exc:failwith_unexpected_case)
+      |> Time.Year_ranges.get_inc
+      |> Seq.map (map_inc ~overall_search_start ~overall_search_end_inc)
 end
 
-let matching_date_time_ranges (search_param : Search_param.t) (t : Pattern.t) :
-  Branch.t Time.Range.range Seq.t =
+let matching_date_time_inc_ranges (search_param : Search_param.t) (t : Pattern.t) :
+  (Branch.t * Branch.t) Seq.t =
   let overall_search_start =
     Branch.set_to_first_month_day_hour_min_sec_ns search_param.start
   in
@@ -405,12 +395,12 @@ let matching_date_time_ranges (search_param : Search_param.t) (t : Pattern.t) :
       Int_set.is_empty t.seconds )
   with
   | _years_is_empty, true, true, true, true, true, true ->
-    Matching_years.matching_year_ranges ~overall_search_start
+    Matching_years.matching_year_inc_ranges ~overall_search_start
       ~overall_search_end_inc t
   | _years_is_empty, _months_is_empty, true, true, true, true, true ->
     Matching_years.matching_years ~overall_search_start
       ~overall_search_end_inc t
-    |> Seq.flat_map (Matching_months.matching_month_ranges t)
+    |> Seq.flat_map (Matching_months.matching_month_inc_ranges t)
   | ( _years_is_empty,
       _months_is_empty,
       _month_days_is_empty,
@@ -421,7 +411,7 @@ let matching_date_time_ranges (search_param : Search_param.t) (t : Pattern.t) :
     Matching_years.matching_years ~overall_search_start
       ~overall_search_end_inc t
     |> Seq.flat_map (Matching_months.matching_months t)
-    |> Seq.flat_map (Matching_days.matching_day_ranges t)
+    |> Seq.flat_map (Matching_days.matching_day_inc_ranges t)
   | ( _years_is_empty,
       _months_is_empty,
       _month_days_is_empty,
@@ -433,7 +423,7 @@ let matching_date_time_ranges (search_param : Search_param.t) (t : Pattern.t) :
       ~overall_search_end_inc t
     |> Seq.flat_map (Matching_months.matching_months t)
     |> Seq.flat_map (Matching_days.matching_days t)
-    |> Seq.flat_map (Matching_hours.matching_hour_ranges t)
+    |> Seq.flat_map (Matching_hours.matching_hour_inc_ranges t)
   | ( _years_is_empty,
       _months_is_empty,
       _month_days_is_empty,
@@ -446,7 +436,7 @@ let matching_date_time_ranges (search_param : Search_param.t) (t : Pattern.t) :
     |> Seq.flat_map (Matching_months.matching_months t)
     |> Seq.flat_map (Matching_days.matching_days t)
     |> Seq.flat_map (Matching_hours.matching_hours t)
-    |> Seq.flat_map (Matching_minutes.matching_minute_ranges t)
+    |> Seq.flat_map (Matching_minutes.matching_minute_inc_ranges t)
   | ( _years_is_empty,
       _months_is_empty,
       _month_days_is_empty,
@@ -460,7 +450,7 @@ let matching_date_time_ranges (search_param : Search_param.t) (t : Pattern.t) :
     |> Seq.flat_map (Matching_days.matching_days t)
     |> Seq.flat_map (Matching_hours.matching_hours t)
     |> Seq.flat_map (Matching_minutes.matching_minutes t)
-    |> Seq.flat_map (Matching_seconds.matching_second_ranges t)
+    |> Seq.flat_map (Matching_seconds.matching_second_inc_ranges t)
 
 let one_ns = Timedesc.Span.make ~ns:1 ()
 
@@ -497,11 +487,7 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
           ( Timedesc.Span.max Timedesc.Timestamp.min_val x,
             Timedesc.Span.min Timedesc.Timestamp.max_val y )
   in
-  matching_date_time_ranges search_param t
-  |> Seq.map (fun r ->
-      match r with
-      | `Range_inc (x, y) -> (x, y)
-      | `Range_exc _ -> failwith "Unexpected case")
+  matching_date_time_inc_ranges search_param t
   |> Seq.filter_map f
   |> Seq.map (fun (x, y) -> (x, Timestamp_utils.timestamp_safe_add y one_ns))
   |> Time.Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
