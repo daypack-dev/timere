@@ -36,6 +36,10 @@
 
   - `jd_span_of_unix_epoch`
 
+- Added `Zoneless` module
+
+  - Also moved "date and time" API into `Zoneless` module
+
 ## Timedesc 0.3.1
 
 - Fixed `Timedesc.Span.make` handling of `ns` when `ns = Int.min_int`

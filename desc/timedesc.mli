@@ -975,35 +975,6 @@ val make_unambiguous_exn :
   t
 (** @raise Error_exn if [make_umabiguous] fails *)
 
-type dnt_error =
-  [ `Does_not_exist
-  | `Invalid_tz_info of string option * Span.t
-  ]
-
-exception Dnt_error_exn of dnt_error
-
-val of_date_and_time :
-  ?tz:Time_zone.t -> Date.t -> Time.t -> (t, dnt_error) result
-(** Construction from already constructed date and time
-
-    [tz] defaults to {!Utils.get_local_tz_for_arg ()}
-*)
-
-val of_date_and_time_exn : ?tz:Time_zone.t -> Date.t -> Time.t -> t
-(** @raise Dnt_error_exn if [of_date_and_time] fails *)
-
-val of_date_and_time_unambiguous :
-  ?tz:Time_zone.t ->
-  offset_from_utc:Span.t ->
-  Date.t ->
-  Time.t ->
-  (t, dnt_error) result
-(** Construction from already constructed date and time *)
-
-val of_date_and_time_unambiguous_exn :
-  ?tz:Time_zone.t -> offset_from_utc:Span.t -> Date.t -> Time.t -> t
-(** @raise Dnt_error_exn if [of_date_and_time_umabiguous] fails *)
-
 (** {2 Accessors} *)
 
 val date : t -> Date.t
@@ -1535,6 +1506,47 @@ module ISO_ord_date_time : sig
 end
 
 (** {1 Misc} *)
+
+module Zoneless : sig
+  (** Time zone-less date time *)
+
+  type zoneless = private {
+    date : Date.t;
+    time : Time.t;
+  }
+
+  type error_when_zoned =
+    [ `Does_not_exist
+    | `Invalid_tz_info of string option * Span.t
+    ]
+
+  exception Error_when_zoned_exn of error_when_zoned
+
+  val make : Date.t -> Time.t -> zoneless
+
+  val to_timestamp_local : zoneless -> timestamp
+  (** This yields a "local timestamp" - we pretend we are in the UTC time zone, and
+      calculate seconds since unix epoch
+  *)
+
+  val to_zoned :
+    ?tz:Time_zone.t -> zoneless -> (t, error_when_zoned) result
+    (** [tz] defaults to {!Utils.get_local_tz_for_arg ()}
+    *)
+
+  val to_zoned_exn : ?tz:Time_zone.t -> zoneless -> t
+  (** @raise Error_when_zoned_exn if [to_zoned] fails *)
+
+  val to_zoned_unambiguous :
+    ?tz:Time_zone.t ->
+    offset_from_utc:Span.t ->
+    zoneless ->
+    (t, error_when_zoned) result
+
+  val to_zoned_unambiguous_exn :
+    ?tz:Time_zone.t -> offset_from_utc:Span.t -> zoneless -> t
+    (** @raise Error_when_zoned_exn if [to_zoned_unambiguous] fails *)
+end
 
 module Time_zone_info : sig
   (** Time zone information that can be attached to date time like data
