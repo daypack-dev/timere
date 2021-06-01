@@ -984,7 +984,10 @@ exception Dnt_error_exn of dnt_error
 
 val of_date_and_time :
   ?tz:Time_zone.t -> Date.t -> Time.t -> (t, dnt_error) result
-(** Construction from already constructed date and time *)
+(** Construction from already constructed date and time
+
+    [tz] defaults to {!Utils.get_local_tz_for_arg ()}
+*)
 
 val of_date_and_time_exn : ?tz:Time_zone.t -> Date.t -> Time.t -> t
 (** @raise Dnt_error_exn if [of_date_and_time] fails *)
