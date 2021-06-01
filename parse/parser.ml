@@ -906,7 +906,11 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.Hms.t option)
       let default_hour = match lean_toward with `Front -> 0 | `Back -> 23 in
       let default_minute = match lean_toward with `Front -> 0 | `Back -> 59 in
       let default_second = match lean_toward with `Front -> 0 | `Back -> 59 in
-      let default_ns = match lean_toward with `Front -> 0 | `Back -> Timedesc.Span.ns_count_in_s - 1 in
+      let default_ns =
+        match lean_toward with
+        | `Front -> 0
+        | `Back -> Timedesc.Span.ns_count_in_s - 1
+      in
       match (year, month, day, weekday, hms) with
       | None, None, None, None, Some hms ->
         `Some
@@ -932,14 +936,12 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.Hms.t option)
         `Some
           (Timere.Points.make_exn ~year ~month:default_month ~day:default_day
              ~hour:default_hour ~minute:default_minute ~second:default_second
-             ~ns:default_ns
-             ())
+             ~ns:default_ns ())
       | Some year, Some month, None, None, None ->
         `Some
           (Timere.Points.make_exn ~year ~month ~day:default_day
              ~hour:default_hour ~minute:default_minute ~second:default_second
-             ~ns:default_ns
-             ())
+             ~ns:default_ns ())
       | Some year, Some month, Some day, None, None ->
         `Some
           (Timere.Points.make_exn ~year ~month ~day ~hour:default_hour
