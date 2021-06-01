@@ -24,11 +24,13 @@
 
 - Minor fixes of `resolve` for edge cases
 
-## Timedesc 0.3.2
+## Timedesc 0.4.0
 
 - Added following to `Timedesc.Utils`
 
   - `jd_of_ymd`
+
+  - `jd_of_date`
 
   - `jd_of_unix_epoch`
 
