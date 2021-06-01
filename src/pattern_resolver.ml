@@ -107,11 +107,59 @@ end
 
 let failwith_unexpected_case (_ : 'a) = failwith "Unexpected case"
 
+module Matching_ns = struct
+  let get_cur_branch_search_start cur_branch =
+    Branch.set_to_first_ns cur_branch
+
+  let get_cur_branch_search_end_inc cur_branch =
+    Branch.set_to_last_ns cur_branch
+
+  let matching_ns_inc_ranges (t : Pattern.t) (cur_branch : Branch.t) :
+    (Branch.t * Branch.t) Seq.t =
+    let cur_branch_search_start = get_cur_branch_search_start cur_branch in
+    let cur_branch_search_end_inc = get_cur_branch_search_end_inc cur_branch in
+    let map_inc ~(cur_branch : Branch.t) (x, y) =
+      ( { cur_branch with ns = x },
+        { cur_branch with ns = y } )
+    in
+    if Diet.Int.is_empty t.ns then
+      Seq.return (cur_branch_search_start, cur_branch_search_end_inc)
+    else
+      let ns_inc_list =
+        Diet.Int.fold
+          (fun interval acc ->
+             (Diet.Int.Interval.x interval, Diet.Int.Interval.y interval)
+             :: acc)
+          t.ns []
+        |> List.rev
+      in
+      let ns_inc_seq = ns_inc_list |> CCList.to_seq in
+      Seq.map (map_inc ~cur_branch) ns_inc_seq
+end
+
 module Matching_seconds = struct
+  let get_cur_branch_search_start cur_branch =
+    Branch.set_to_first_sec_ns cur_branch
+
+  let get_cur_branch_search_end_inc cur_branch =
+    Branch.set_to_last_sec_ns cur_branch
+
+  let matching_seconds (t : Pattern.t) (cur_branch : Branch.t) : Branch.t Seq.t =
+    let cur_branch_search_start = get_cur_branch_search_start cur_branch in
+    let cur_branch_search_end_inc = get_cur_branch_search_end_inc cur_branch in
+    if Int_set.is_empty t.seconds then
+      Seq.map
+        (fun second -> { cur_branch with second })
+        OSeq.(cur_branch_search_start.second -- cur_branch_search_end_inc.second)
+    else
+      t.seconds
+      |> Int_set.to_seq
+      |> Seq.map (fun second -> { cur_branch with second })
+
   let matching_second_inc_ranges (t : Pattern.t) (cur_branch : Branch.t) :
     (Branch.t * Branch.t) Seq.t =
-    let cur_branch_search_start = Branch.set_to_first_sec_ns cur_branch in
-    let cur_branch_search_end_inc = Branch.set_to_last_sec_ns cur_branch in
+    let cur_branch_search_start = get_cur_branch_search_start cur_branch in
+    let cur_branch_search_end_inc = get_cur_branch_search_end_inc cur_branch in
     let map_inc ~(cur_branch : Branch.t) (x, y) =
       ( Branch.set_to_first_ns { cur_branch with second = x },
         Branch.set_to_last_ns { cur_branch with second = y } )
@@ -387,12 +435,14 @@ let matching_date_time_inc_ranges (search_param : Search_param.t)
       Weekday_set.is_empty t.weekdays,
       Int_set.is_empty t.hours,
       Int_set.is_empty t.minutes,
-      Int_set.is_empty t.seconds )
+      Int_set.is_empty t.seconds,
+      Diet.Int.is_empty t.ns
+    )
   with
-  | _years_is_empty, true, true, true, true, true, true ->
+  | _years_is_empty, true, true, true, true, true, true, true ->
     Matching_years.matching_year_inc_ranges ~overall_search_start
       ~overall_search_end_inc t
-  | _years_is_empty, _months_is_empty, true, true, true, true, true ->
+  | _years_is_empty, _months_is_empty, true, true, true, true, true, true ->
     Matching_years.matching_years ~overall_search_start
       ~overall_search_end_inc t
     |> Seq.flat_map (Matching_months.matching_month_inc_ranges t)
@@ -402,7 +452,8 @@ let matching_date_time_inc_ranges (search_param : Search_param.t)
       _weekdays_is_empty,
       true,
       true,
-      true ) ->
+      true,
+      true) ->
     Matching_years.matching_years ~overall_search_start
       ~overall_search_end_inc t
     |> Seq.flat_map (Matching_months.matching_months t)
@@ -413,7 +464,7 @@ let matching_date_time_inc_ranges (search_param : Search_param.t)
       _weekdays_is_empty,
       _hours_is_empty,
       true,
-      true ) ->
+      true, true ) ->
     Matching_years.matching_years ~overall_search_start
       ~overall_search_end_inc t
     |> Seq.flat_map (Matching_months.matching_months t)
@@ -425,7 +476,9 @@ let matching_date_time_inc_ranges (search_param : Search_param.t)
       _weekdays_is_empty,
       _hours_is_empty,
       _minutes_is_empty,
-      true ) ->
+      true,
+      true
+    ) ->
     Matching_years.matching_years ~overall_search_start
       ~overall_search_end_inc t
     |> Seq.flat_map (Matching_months.matching_months t)
@@ -438,7 +491,9 @@ let matching_date_time_inc_ranges (search_param : Search_param.t)
       _weekdays_is_empty,
       _hours_is_empty,
       _minutes_is_empty,
-      _seconds_is_empty ) ->
+      _seconds_is_empty,
+      true
+    ) ->
     Matching_years.matching_years ~overall_search_start
       ~overall_search_end_inc t
     |> Seq.flat_map (Matching_months.matching_months t)
@@ -446,6 +501,23 @@ let matching_date_time_inc_ranges (search_param : Search_param.t)
     |> Seq.flat_map (Matching_hours.matching_hours t)
     |> Seq.flat_map (Matching_minutes.matching_minutes t)
     |> Seq.flat_map (Matching_seconds.matching_second_inc_ranges t)
+  | ( _years_is_empty,
+      _months_is_empty,
+      _month_days_is_empty,
+      _weekdays_is_empty,
+      _hours_is_empty,
+      _minutes_is_empty,
+      _seconds_is_empty,
+      _ns_is_empty
+    ) ->
+    Matching_years.matching_years ~overall_search_start
+      ~overall_search_end_inc t
+    |> Seq.flat_map (Matching_months.matching_months t)
+    |> Seq.flat_map (Matching_days.matching_days t)
+    |> Seq.flat_map (Matching_hours.matching_hours t)
+    |> Seq.flat_map (Matching_minutes.matching_minutes t)
+    |> Seq.flat_map (Matching_seconds.matching_seconds t)
+    |> Seq.flat_map (Matching_ns.matching_ns_inc_ranges t)
 
 let one_ns = Timedesc.Span.make ~ns:1 ()
 
@@ -486,40 +558,6 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
   |> Seq.filter_map f
   |> Seq.map (fun (x, y) -> (x, Timestamp_utils.timestamp_safe_add y one_ns))
   |> Time.Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
-  |> (fun s ->
-      if Diet.Int.is_empty t.ns then s
-      else
-        let ns_inc_list =
-          Diet.Int.fold
-            (fun interval acc ->
-               (Diet.Int.Interval.x interval, Diet.Int.Interval.y interval)
-               :: acc)
-            t.ns []
-          |> List.rev
-        in
-        match ns_inc_list with
-        | [] -> failwith "Unexpected case"
-        | [ (x, y) ] when x = 0 && y = Timedesc.Span.ns_count_in_s - 1 -> s
-        | _ ->
-          let ns_inc_seq = ns_inc_list |> CCList.to_seq in
-          Seq.flat_map
-            (fun (x, y) ->
-               assert (Timedesc.Span.(x.ns) = 0);
-               assert (Timedesc.Span.(y.ns) = 0);
-               assert (Timedesc.Span.(x.s) < Timedesc.Span.(y.s));
-               Seq_utils.a_to_b_exc_int64
-                 ~a:Timedesc.Span.(x.s)
-                 ~b:Timedesc.Span.(y.s)
-               |> Seq.flat_map (fun s ->
-                   Seq.map
-                     (fun (ns_start, ns_end_inc) ->
-                        ( Timedesc.Span.make ~s ~ns:ns_start (),
-                          Timedesc.Span.(succ @@ make ~s ~ns:ns_end_inc ())
-                        ))
-                     ns_inc_seq))
-            s
-          |> Time.Intervals.normalize ~skip_filter_invalid:true
-            ~skip_sort:true)
   |> Time.Intervals.Slice.slice
     ~start:(Timedesc.to_timestamp_single search_param.start_dt)
     ~end_exc:
