@@ -40,7 +40,9 @@ let union p1 p2 =
     hours = union_int_sets p1.hours p2.hours;
     minutes = union_int_sets p1.minutes p2.minutes;
     seconds = union_int_sets p1.seconds p2.seconds;
-    ns = Diet.Int.union p1.ns p2.ns;
+    ns =
+      union_sets ~is_empty:Diet.Int.is_empty ~union:Diet.Int.union
+        ~empty:Diet.Int.empty p1.ns p2.ns;
   }
 
 let inter p1 p2 =
