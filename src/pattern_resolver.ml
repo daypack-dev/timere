@@ -108,8 +108,7 @@ end
 let failwith_unexpected_case (_ : 'a) = failwith "Unexpected case"
 
 module Matching_ns = struct
-  let get_cur_branch_search_start cur_branch =
-    Branch.set_to_first_ns cur_branch
+  let get_cur_branch_search_start cur_branch = Branch.set_to_first_ns cur_branch
 
   let get_cur_branch_search_end_inc cur_branch =
     Branch.set_to_last_ns cur_branch
@@ -119,8 +118,7 @@ module Matching_ns = struct
     let cur_branch_search_start = get_cur_branch_search_start cur_branch in
     let cur_branch_search_end_inc = get_cur_branch_search_end_inc cur_branch in
     let map_inc ~(cur_branch : Branch.t) (x, y) =
-      ( { cur_branch with ns = x },
-        { cur_branch with ns = y } )
+      ({ cur_branch with ns = x }, { cur_branch with ns = y })
     in
     if Diet.Int.is_empty t.ns then
       Seq.return (cur_branch_search_start, cur_branch_search_end_inc)
@@ -128,8 +126,7 @@ module Matching_ns = struct
       let ns_inc_list =
         Diet.Int.fold
           (fun interval acc ->
-             (Diet.Int.Interval.x interval, Diet.Int.Interval.y interval)
-             :: acc)
+             (Diet.Int.Interval.x interval, Diet.Int.Interval.y interval) :: acc)
           t.ns []
         |> List.rev
       in
@@ -144,13 +141,15 @@ module Matching_seconds = struct
   let get_cur_branch_search_end_inc cur_branch =
     Branch.set_to_last_sec_ns cur_branch
 
-  let matching_seconds (t : Pattern.t) (cur_branch : Branch.t) : Branch.t Seq.t =
+  let matching_seconds (t : Pattern.t) (cur_branch : Branch.t) : Branch.t Seq.t
+    =
     let cur_branch_search_start = get_cur_branch_search_start cur_branch in
     let cur_branch_search_end_inc = get_cur_branch_search_end_inc cur_branch in
     if Int_set.is_empty t.seconds then
       Seq.map
         (fun second -> { cur_branch with second })
-        OSeq.(cur_branch_search_start.second -- cur_branch_search_end_inc.second)
+        OSeq.(
+          cur_branch_search_start.second -- cur_branch_search_end_inc.second)
     else
       t.seconds
       |> Int_set.to_seq
@@ -436,8 +435,7 @@ let matching_date_time_inc_ranges (search_param : Search_param.t)
       Int_set.is_empty t.hours,
       Int_set.is_empty t.minutes,
       Int_set.is_empty t.seconds,
-      Diet.Int.is_empty t.ns
-    )
+      Diet.Int.is_empty t.ns )
   with
   | _years_is_empty, true, true, true, true, true, true, true ->
     Matching_years.matching_year_inc_ranges ~overall_search_start
@@ -453,7 +451,7 @@ let matching_date_time_inc_ranges (search_param : Search_param.t)
       true,
       true,
       true,
-      true) ->
+      true ) ->
     Matching_years.matching_years ~overall_search_start
       ~overall_search_end_inc t
     |> Seq.flat_map (Matching_months.matching_months t)
@@ -464,7 +462,8 @@ let matching_date_time_inc_ranges (search_param : Search_param.t)
       _weekdays_is_empty,
       _hours_is_empty,
       true,
-      true, true ) ->
+      true,
+      true ) ->
     Matching_years.matching_years ~overall_search_start
       ~overall_search_end_inc t
     |> Seq.flat_map (Matching_months.matching_months t)
@@ -477,8 +476,7 @@ let matching_date_time_inc_ranges (search_param : Search_param.t)
       _hours_is_empty,
       _minutes_is_empty,
       true,
-      true
-    ) ->
+      true ) ->
     Matching_years.matching_years ~overall_search_start
       ~overall_search_end_inc t
     |> Seq.flat_map (Matching_months.matching_months t)
@@ -492,8 +490,7 @@ let matching_date_time_inc_ranges (search_param : Search_param.t)
       _hours_is_empty,
       _minutes_is_empty,
       _seconds_is_empty,
-      true
-    ) ->
+      true ) ->
     Matching_years.matching_years ~overall_search_start
       ~overall_search_end_inc t
     |> Seq.flat_map (Matching_months.matching_months t)
@@ -508,8 +505,7 @@ let matching_date_time_inc_ranges (search_param : Search_param.t)
       _hours_is_empty,
       _minutes_is_empty,
       _seconds_is_empty,
-      _ns_is_empty
-    ) ->
+      _ns_is_empty ) ->
     Matching_years.matching_years ~overall_search_start
       ~overall_search_end_inc t
     |> Seq.flat_map (Matching_months.matching_months t)
