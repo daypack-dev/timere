@@ -139,6 +139,10 @@ end
 module Zoneless = struct
   include Zoneless'
 
+  let of_iso8601 = ISO8601.to_zoneless
+
+  let maybe_zoneless_of_iso8601 = ISO8601.to_maybe_zoneless
+
   let to_sexp = To_sexp.sexp_of_zoneless
 
   let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.zoneless_of_sexp

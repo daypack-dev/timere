@@ -1441,6 +1441,18 @@ module Zoneless : sig
 
   val of_zoned : t -> zoneless
 
+  (** {1 Parsing} *)
+
+  val of_iso8601 : string -> (zoneless, string) result
+  (**
+       Parses a subset of ISO8601, up to 9 fractional digits for second (nanosecond precision).
+
+       If more than 9 fractional digits are provided, then only the first 9 digits are used, i.e. no rounding.
+  *)
+
+  val maybe_zoneless_of_iso8601 :
+    string -> ([`Zoned of t | `Zoneless of zoneless], string) result
+
   (** {1 Sexp} *)
 
   val to_sexp : zoneless -> CCSexp.t
