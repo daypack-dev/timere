@@ -138,50 +138,58 @@ module Alco = struct
   let maybe_zoneless_of_iso8601_case0 () =
     Alcotest.(check maybe_zoneless_testable)
       "same timestamp"
-      (CCResult.get_exn @@ Timedesc.Zoneless.maybe_zoneless_of_iso8601 "2020-01-01T24:00:00Z")
-      (`Zoned (Timedesc.make_exn ~tz:Timedesc.Time_zone.utc ~year:2020 ~month:1 ~day:1
-                 ~hour:23 ~minute:59 ~second:59 ~ns:999_999_999 ()
-              ))
+      (CCResult.get_exn
+       @@ Timedesc.Zoneless.maybe_zoneless_of_iso8601 "2020-01-01T24:00:00Z")
+      (`Zoned
+         (Timedesc.make_exn ~tz:Timedesc.Time_zone.utc ~year:2020 ~month:1 ~day:1
+            ~hour:23 ~minute:59 ~second:59 ~ns:999_999_999 ()))
 
   let maybe_zoneless_of_iso8601_case1 () =
     Alcotest.(check maybe_zoneless_testable)
       "same timestamp"
-      (CCResult.get_exn @@ Timedesc.Zoneless.maybe_zoneless_of_iso8601 "1910-05-27T07:32:00Z")
-      (`Zoned (Timedesc.make_exn ~tz:Timedesc.Time_zone.utc ~year:1910 ~month:5 ~day:27
-                 ~hour:7 ~minute:32 ~second:0 ()
-       ))
+      (CCResult.get_exn
+       @@ Timedesc.Zoneless.maybe_zoneless_of_iso8601 "1910-05-27T07:32:00Z")
+      (`Zoned
+         (Timedesc.make_exn ~tz:Timedesc.Time_zone.utc ~year:1910 ~month:5
+            ~day:27 ~hour:7 ~minute:32 ~second:0 ()))
 
   let maybe_zoneless_of_iso8601_case2 () =
     Alcotest.(check maybe_zoneless_testable)
       "same timestamp"
-      (CCResult.get_exn @@ Timedesc.Zoneless.maybe_zoneless_of_iso8601 "2020-01-01T24:00:00")
-      (`Zoneless (Timedesc.Zoneless.make (Timedesc.Date.Ymd_date.make_exn ~year:2020 ~month:1 ~day:1)
-                 (Timedesc.Time.make_exn ~hour:23 ~minute:59 ~second:59 ~ns:999_999_999 ())
-              ))
+      (CCResult.get_exn
+       @@ Timedesc.Zoneless.maybe_zoneless_of_iso8601 "2020-01-01T24:00:00")
+      (`Zoneless
+         (Timedesc.Zoneless.make
+            (Timedesc.Date.Ymd_date.make_exn ~year:2020 ~month:1 ~day:1)
+            (Timedesc.Time.make_exn ~hour:23 ~minute:59 ~second:59
+               ~ns:999_999_999 ())))
 
   let maybe_zoneless_of_iso8601_case3 () =
     Alcotest.(check maybe_zoneless_testable)
       "same timestamp"
-      (CCResult.get_exn @@ Timedesc.Zoneless.maybe_zoneless_of_iso8601 "1910-05-27T07:32:00")
-      (`Zoneless (Timedesc.Zoneless.make (Timedesc.Date.Ymd_date.make_exn ~year:1979 ~month:5 ~day:27)
-                 (Timedesc.Time.make_exn ~hour:7 ~minute:32 ~second:0 ())
-              ))
+      (CCResult.get_exn
+       @@ Timedesc.Zoneless.maybe_zoneless_of_iso8601 "1910-05-27T07:32:00")
+      (`Zoneless
+         (Timedesc.Zoneless.make
+            (Timedesc.Date.Ymd_date.make_exn ~year:1979 ~month:5 ~day:27)
+            (Timedesc.Time.make_exn ~hour:7 ~minute:32 ~second:0 ())))
 
   let zoneless_of_iso8601_case0 () =
     Alcotest.(check zoneless_testable)
       "same timestamp"
       (CCResult.get_exn @@ Timedesc.Zoneless.of_iso8601 "2020-01-01T24:00:00")
-      ((Timedesc.Zoneless.make (Timedesc.Date.Ymd_date.make_exn ~year:2020 ~month:1 ~day:1)
-                    (Timedesc.Time.make_exn ~hour:23 ~minute:59 ~second:59 ~ns:999_999_999 ())
-                 ))
+      (Timedesc.Zoneless.make
+         (Timedesc.Date.Ymd_date.make_exn ~year:2020 ~month:1 ~day:1)
+         (Timedesc.Time.make_exn ~hour:23 ~minute:59 ~second:59 ~ns:999_999_999
+            ()))
 
   let zoneless_of_iso8601_case1 () =
     Alcotest.(check zoneless_testable)
       "same timestamp"
       (CCResult.get_exn @@ Timedesc.Zoneless.of_iso8601 "1910-05-27T07:32:00")
-      ((Timedesc.Zoneless.make (Timedesc.Date.Ymd_date.make_exn ~year:1979 ~month:5 ~day:27)
-                    (Timedesc.Time.make_exn ~hour:7 ~minute:32 ~second:0 ())
-                 ))
+      (Timedesc.Zoneless.make
+         (Timedesc.Date.Ymd_date.make_exn ~year:1979 ~month:5 ~day:27)
+         (Timedesc.Time.make_exn ~hour:7 ~minute:32 ~second:0 ()))
 
   let to_rfc3339_case0 () =
     Alcotest.(check string)
@@ -241,12 +249,18 @@ module Alco = struct
       Alcotest.test_case "of_iso8601_case5" `Quick of_iso8601_case5;
       Alcotest.test_case "of_iso8601_case6" `Quick of_iso8601_case6;
       Alcotest.test_case "of_iso8601_case7" `Quick of_iso8601_case7;
-      Alcotest.test_case "maybe_zoneless_of_iso8601_case0" `Quick maybe_zoneless_of_iso8601_case0;
-      Alcotest.test_case "maybe_zoneless_of_iso8601_case1" `Quick maybe_zoneless_of_iso8601_case1;
-      Alcotest.test_case "maybe_zoneless_of_iso8601_case2" `Quick maybe_zoneless_of_iso8601_case2;
-      Alcotest.test_case "maybe_zoneless_of_iso8601_case3" `Quick maybe_zoneless_of_iso8601_case3;
-      Alcotest.test_case "zoneless_of_iso8601_case0" `Quick zoneless_of_iso8601_case0;
-      Alcotest.test_case "zoneless_of_iso8601_case1" `Quick zoneless_of_iso8601_case1;
+      Alcotest.test_case "maybe_zoneless_of_iso8601_case0" `Quick
+        maybe_zoneless_of_iso8601_case0;
+      Alcotest.test_case "maybe_zoneless_of_iso8601_case1" `Quick
+        maybe_zoneless_of_iso8601_case1;
+      Alcotest.test_case "maybe_zoneless_of_iso8601_case2" `Quick
+        maybe_zoneless_of_iso8601_case2;
+      Alcotest.test_case "maybe_zoneless_of_iso8601_case3" `Quick
+        maybe_zoneless_of_iso8601_case3;
+      Alcotest.test_case "zoneless_of_iso8601_case0" `Quick
+        zoneless_of_iso8601_case0;
+      Alcotest.test_case "zoneless_of_iso8601_case1" `Quick
+        zoneless_of_iso8601_case1;
       Alcotest.test_case "to_rfc3339_case0" `Quick to_rfc3339_case0;
       Alcotest.test_case "to_rfc3339_case1" `Quick to_rfc3339_case1;
       Alcotest.test_case "to_rfc3339_case2" `Quick to_rfc3339_case2;

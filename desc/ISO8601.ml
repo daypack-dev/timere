@@ -14,7 +14,8 @@ let date_p : (Date.t, unit) MParser.t =
   | Error e ->
     fail
       (Printf.sprintf "Invalid date: %s"
-         (Date_time.Ymd_date_time.string_of_error (e :> Date_time.Ymd_date_time.error)))
+         (Date_time.Ymd_date_time.string_of_error
+            (e :> Date_time.Ymd_date_time.error)))
 
 let hm_p : (int * int, unit) MParser.t =
   let open MParser in
@@ -78,7 +79,8 @@ let time_p : (Time.t, unit) MParser.t =
   | Error e ->
     fail
       (Printf.sprintf "Invalid time: %s"
-         (Date_time.Ymd_date_time.string_of_error (e :> Date_time.Ymd_date_time.error)))
+         (Date_time.Ymd_date_time.string_of_error
+            (e :> Date_time.Ymd_date_time.error)))
 
 let offset_p : (Span.t, unit) MParser.t =
   let open MParser in
@@ -92,32 +94,35 @@ let offset_p : (Span.t, unit) MParser.t =
            |>> fun (hour, minute) ->
            Span.For_human'.make_exn ~sign ~hours:hour ~minutes:minute ())
 
-type maybe_zoneless = [
-  | `Zoned of Date_time.t
+type maybe_zoneless =
+  [ `Zoned of Date_time.t
   | `Zoneless of Date_time.Zoneless'.zoneless
-]
+  ]
 
 let to_maybe_zoneless s : (maybe_zoneless, string) result =
   let open MParser in
   let open Parser_components in
   let p =
-    date_p >>= fun date ->
+    date_p
+    >>= fun date ->
     any_char
-    >> time_p >>= fun time ->
-    (((attempt (offset_p << spaces << eof)) >>= fun offset ->
-     match
-       Date_time.Zoneless'.to_zoned_unambiguous ~offset_from_utc:offset
-         (Date_time.Zoneless'.make date time)
-     with
-     | Error e ->
-       fail
-         (Printf.sprintf "Invalid date time: %s"
-            (Date_time.Ymd_date_time.string_of_error (e :> Date_time.Ymd_date_time.error)))
-     | Ok x -> return (`Zoned x)
-    )
-    <|>
-    (spaces >> eof >> return (`Zoneless (Date_time.Zoneless'.make date time)))
-    )
+    >> time_p
+    >>= fun time ->
+    attempt (offset_p << spaces << eof)
+    >>= (fun offset ->
+        match
+          Date_time.Zoneless'.to_zoned_unambiguous ~offset_from_utc:offset
+            (Date_time.Zoneless'.make date time)
+        with
+        | Error e ->
+          fail
+            (Printf.sprintf "Invalid date time: %s"
+               (Date_time.Ymd_date_time.string_of_error
+                  (e :> Date_time.Ymd_date_time.error)))
+        | Ok x -> return (`Zoned x))
+        <|> (spaces
+             >> eof
+             >> return (`Zoneless (Date_time.Zoneless'.make date time)))
   in
   parse_string p s () |> result_of_mparser_result
 

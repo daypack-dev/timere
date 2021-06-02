@@ -1451,7 +1451,7 @@ module Zoneless : sig
   *)
 
   val maybe_zoneless_of_iso8601 :
-    string -> ([`Zoned of t | `Zoneless of zoneless], string) result
+    string -> ([ `Zoned of t | `Zoneless of zoneless ], string) result
 
   (** {1 Sexp} *)
 

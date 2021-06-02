@@ -289,11 +289,14 @@ let span_testable : (module Alcotest.TESTABLE with type t = Timedesc.Span.t) =
     let equal = Timedesc.Span.equal
   end)
 
-let zoneless_testable : (module Alcotest.TESTABLE with type t = Timedesc.Zoneless.zoneless) =
+let zoneless_testable :
+  (module Alcotest.TESTABLE with type t = Timedesc.Zoneless.zoneless) =
   (module struct
     type t = Timedesc.Zoneless.zoneless
 
-    let pp formatter t = Timedesc.pp () formatter (Timedesc.Zoneless.to_zoned_exn ~tz:Timedesc.Time_zone.utc t)
+    let pp formatter t =
+      Timedesc.pp () formatter
+        (Timedesc.Zoneless.to_zoned_exn ~tz:Timedesc.Time_zone.utc t)
 
     let equal = Timedesc.Zoneless.equal
   end)
@@ -307,24 +310,30 @@ let date_time_testable : (module Alcotest.TESTABLE with type t = Timedesc.t) =
     let equal = Timedesc.equal
   end)
 
-let maybe_zoneless_testable : (module Alcotest.TESTABLE with type t = [ `Zoned of Timedesc.t | `Zoneless of Timedesc.Zoneless.zoneless ]) =
+let maybe_zoneless_testable :
+  (module Alcotest.TESTABLE
+    with type t = [ `Zoned of Timedesc.t
+                  | `Zoneless of Timedesc.Zoneless.zoneless
+                  ]) =
   (module struct
-    type t = [ `Zoned of Timedesc.t | `Zoneless of Timedesc.Zoneless.zoneless ]
+    type t =
+      [ `Zoned of Timedesc.t
+      | `Zoneless of Timedesc.Zoneless.zoneless
+      ]
 
     let pp formatter (t : t) =
       match t with
-      | `Zoned t ->
-        Timedesc.pp () formatter t
+      | `Zoned t -> Timedesc.pp () formatter t
       | `Zoneless t ->
-        Timedesc.pp () formatter (Timedesc.Zoneless.to_zoned_exn ~tz:Timedesc.Time_zone.utc t)
+        Timedesc.pp () formatter
+          (Timedesc.Zoneless.to_zoned_exn ~tz:Timedesc.Time_zone.utc t)
 
     let equal x y =
-      match x, y with
+      match (x, y) with
       | `Zoned x, `Zoned y -> Timedesc.equal x y
       | `Zoneless x, `Zoneless y -> Timedesc.Zoneless.equal x y
       | _, _ -> false
   end)
-
 
 let tz_testable : (module Alcotest.TESTABLE with type t = Timedesc.Time_zone.t)
   =
