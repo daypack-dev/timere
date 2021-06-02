@@ -1389,6 +1389,65 @@ module Interval : sig
     unit
 end
 
+(** {1 Time zone-less date time} *)
+
+module Zoneless : sig
+  type zoneless
+
+  type error_when_zoned =
+    [ `Does_not_exist
+    | `Invalid_tz_info of string option * Span.t
+    ]
+
+  exception Error_when_zoned_exn of error_when_zoned
+
+  (** {1 Constructors} *)
+
+  val make : Date.t -> Time.t -> zoneless
+
+  (** {1 Accessors} *)
+
+  val date : zoneless -> Date.t
+
+  val time : zoneless -> Time.t
+
+  (** {1 Comparison} *)
+
+  val equal : zoneless -> zoneless -> bool
+
+  (** {1 Conversion} *)
+
+  val to_timestamp_local : zoneless -> timestamp
+  (** This yields a "local timestamp" - we pretend we are in the UTC time zone, and
+      calculate seconds since unix epoch
+  *)
+
+  val to_zoned : ?tz:Time_zone.t -> zoneless -> (t, error_when_zoned) result
+  (** [tz] defaults to result of {!Utils.get_local_tz_for_arg}
+  *)
+
+  val to_zoned_exn : ?tz:Time_zone.t -> zoneless -> t
+  (** @raise Error_when_zoned_exn if [to_zoned] fails *)
+
+  val to_zoned_unambiguous :
+    ?tz:Time_zone.t ->
+    offset_from_utc:Span.t ->
+    zoneless ->
+    (t, error_when_zoned) result
+
+  val to_zoned_unambiguous_exn :
+    ?tz:Time_zone.t -> offset_from_utc:Span.t -> zoneless -> t
+  (** @raise Error_when_zoned_exn if [to_zoned_unambiguous] fails *)
+
+  val of_zoned : t -> zoneless
+
+  (** {1 Sexp} *)
+
+  val to_sexp : zoneless -> CCSexp.t
+
+  val of_sexp : CCSexp.t -> (zoneless, string) result
+end
+
 (** {1 Other date time systems}*)
 
 module ISO_week_date_time : sig
@@ -1525,65 +1584,6 @@ module ISO_ord_date_time : sig
     offset_from_utc:Span.t ->
     unit ->
     t
-end
-
-(** {1 Time zone-less date time} *)
-
-module Zoneless : sig
-  type zoneless
-
-  type error_when_zoned =
-    [ `Does_not_exist
-    | `Invalid_tz_info of string option * Span.t
-    ]
-
-  exception Error_when_zoned_exn of error_when_zoned
-
-  (** {1 Constructors} *)
-
-  val make : Date.t -> Time.t -> zoneless
-
-  (** {1 Accessors} *)
-
-  val date : zoneless -> Date.t
-
-  val time : zoneless -> Time.t
-
-  (** {1 Comparison} *)
-
-  val equal : zoneless -> zoneless -> bool
-
-  (** {1 Conversion} *)
-
-  val to_timestamp_local : zoneless -> timestamp
-  (** This yields a "local timestamp" - we pretend we are in the UTC time zone, and
-      calculate seconds since unix epoch
-  *)
-
-  val to_zoned : ?tz:Time_zone.t -> zoneless -> (t, error_when_zoned) result
-  (** [tz] defaults to result of {!Utils.get_local_tz_for_arg}
-  *)
-
-  val to_zoned_exn : ?tz:Time_zone.t -> zoneless -> t
-  (** @raise Error_when_zoned_exn if [to_zoned] fails *)
-
-  val to_zoned_unambiguous :
-    ?tz:Time_zone.t ->
-    offset_from_utc:Span.t ->
-    zoneless ->
-    (t, error_when_zoned) result
-
-  val to_zoned_unambiguous_exn :
-    ?tz:Time_zone.t -> offset_from_utc:Span.t -> zoneless -> t
-  (** @raise Error_when_zoned_exn if [to_zoned_unambiguous] fails *)
-
-  val of_zoned : t -> zoneless
-
-  (** {1 Sexp} *)
-
-  val to_sexp : zoneless -> CCSexp.t
-
-  val of_sexp : CCSexp.t -> (zoneless, string) result
 end
 
 (** {1 Misc} *)
