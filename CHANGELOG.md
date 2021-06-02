@@ -40,6 +40,9 @@
 
   - Moved "date and time" API into `Zoneless` module
 
+  - `Zoneless` also includes extra ISO8601 parsing functions for handling ISO8601 strings
+    with no time zone designators
+
 - Added comparison functions
 
   - `compare_chrono_min`
