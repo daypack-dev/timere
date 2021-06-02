@@ -1,3 +1,9 @@
+(** Date time reasoning
+
+    Timere provides a set of highly expressive APIs to describe
+    scheduling constraints, and an efficient resolution algorithm
+*)
+
 type timestamp = Timedesc.timestamp
 
 type t
