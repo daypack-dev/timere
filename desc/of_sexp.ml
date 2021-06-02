@@ -65,17 +65,14 @@ let date_of_sexp (x : CCSexp.t) =
     invalid_data (Printf.sprintf "Invalid date: %s" (CCSexp.to_string x))
   in
   match x with
-  | `List [ year; month; day; ] -> (
+  | `List [ year; month; day ] -> (
       let year = int_of_sexp year in
       let month = int_of_sexp month in
       let day = int_of_sexp day in
       match Date.Ymd_date.make ~year ~month ~day with
       | Ok x -> x
-      | Error _ ->
-        invalid_data ()
-    )
-  | _ ->
-    invalid_data ()
+      | Error _ -> invalid_data ())
+  | _ -> invalid_data ()
 
 let time_of_sexp (x : CCSexp.t) =
   let invalid_data () =
@@ -89,9 +86,7 @@ let time_of_sexp (x : CCSexp.t) =
       let ns = int_of_sexp ns in
       match Time.make ~hour ~minute ~second ~ns () with
       | Ok x -> x
-      | Error _ ->
-        invalid_data ()
-    )
+      | Error _ -> invalid_data ())
   | _ -> invalid_data ()
 
 let zoneless_of_sexp (x : CCSexp.t) =
@@ -102,9 +97,8 @@ let zoneless_of_sexp (x : CCSexp.t) =
   | `List [ date; time ] ->
     let date = date_of_sexp date in
     let time = time_of_sexp time in
-    (Date_time.Zoneless'.make date time)
-  | _ ->
-    invalid_data ()
+    Date_time.Zoneless'.make date time
+  | _ -> invalid_data ()
 
 let date_time_of_sexp (x : CCSexp.t) =
   let invalid_data () =
@@ -129,14 +123,15 @@ let date_time_of_sexp (x : CCSexp.t) =
       match offset_from_utc with
       | `Single offset_from_utc -> (
           match
-            Date_time.Zoneless'.to_zoned_unambiguous
-              ~tz ~offset_from_utc (Date_time.Zoneless'.make date time)
+            Date_time.Zoneless'.to_zoned_unambiguous ~tz ~offset_from_utc
+              (Date_time.Zoneless'.make date time)
           with
           | Ok x -> x
           | Error _ -> invalid_data ())
       | `Ambiguous _ -> (
           match
-            Date_time.Zoneless'.to_zoned ~tz (Date_time.Zoneless'.make date time)
+            Date_time.Zoneless'.to_zoned ~tz
+              (Date_time.Zoneless'.make date time)
           with
           | Ok x ->
             if

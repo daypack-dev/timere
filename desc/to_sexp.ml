@@ -32,23 +32,13 @@ let sexp_of_tz_info ({ tz; fixed_offset_from_utc } : Time_zone_info.t) =
 let sexp_of_date (x : Date.t) =
   let open CCSexp in
   let { Date.Ymd_date.year; month; day } = Date.Ymd_date.view x in
-  list
-    [
-      sexp_of_int year;
-      sexp_of_int month;
-      sexp_of_int day;
-    ]
+  list [ sexp_of_int year; sexp_of_int month; sexp_of_int day ]
 
 let sexp_of_time (x : Time.t) =
   let open CCSexp in
   let { Time.hour; minute; second; ns } = Time.view x in
   list
-    [
-      sexp_of_int hour;
-      sexp_of_int minute;
-      sexp_of_int second;
-      sexp_of_int ns;
-    ]
+    [ sexp_of_int hour; sexp_of_int minute; sexp_of_int second; sexp_of_int ns ]
 
 let sexp_of_date_time (x : Date_time.t) =
   let open CCSexp in
@@ -71,11 +61,7 @@ let sexp_of_date_time (x : Date_time.t) =
 
 let sexp_of_zoneless (x : Date_time.Zoneless'.zoneless) =
   let open CCSexp in
-  list
-    [
-      sexp_of_date x.date;
-      sexp_of_time x.time;
-    ]
+  list [ sexp_of_date x.date; sexp_of_time x.time ]
 
 (* let sexp_of_timestamp x =
  *   x

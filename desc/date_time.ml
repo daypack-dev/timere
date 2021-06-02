@@ -201,8 +201,7 @@ module Zoneless' = struct
   let make date time = { date; time }
 
   let equal (x : zoneless) (y : zoneless) =
-    Date.equal x.date y.date
-    && Time.equal x.time y.time
+    Date.equal x.date y.date && Time.equal x.time y.time
 
   let date (x : zoneless) = x.date
 

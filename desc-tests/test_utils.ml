@@ -430,9 +430,7 @@ let date_time =
           "Expected successful construction of string from timedesc object")
     date_time_gen
 
-let zoneless =
-  QCheck.map Timedesc.Zoneless.of_zoned
-    date_time
+let zoneless = QCheck.map Timedesc.Zoneless.of_zoned date_time
 
 let ptime_gen : Ptime.t QCheck.Gen.t =
   let open QCheck.Gen in

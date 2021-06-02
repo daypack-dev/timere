@@ -259,11 +259,15 @@ module Qc = struct
         Timedesc.equal s s')
 
   let zoneless_to_of_sexp =
-    QCheck.Test.make ~count:100_000 ~name:"zoneless_to_of_sexp" zoneless (fun s ->
-        let s' =
-          s |> Timedesc.Zoneless.to_sexp |> Timedesc.Zoneless.of_sexp |> CCResult.get_exn
-        in
-        Timedesc.Zoneless.equal s s')
+    QCheck.Test.make ~count:100_000 ~name:"zoneless_to_of_sexp" zoneless
+      (fun s ->
+         let s' =
+           s
+           |> Timedesc.Zoneless.to_sexp
+           |> Timedesc.Zoneless.of_sexp
+           |> CCResult.get_exn
+         in
+         Timedesc.Zoneless.equal s s')
 
   let timestamp_to_of_sexp =
     QCheck.Test.make ~count:100_000 ~name:"timestamp_to_of_sexp" timestamp
