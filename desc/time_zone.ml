@@ -292,9 +292,12 @@ module Raw = struct
   let of_table ~name table = { typ = Backed name; record = process_table table }
 
   let of_transitions ~name (l : (int64 * entry) list) : t option =
-    table_of_transitions l
-    |> CCOpt.map (fun table ->
-        { typ = Backed name; record = process_table table })
+    match fixed_offset_of_name name with
+    | Some offset -> make_offset_only offset
+    | None ->
+      table_of_transitions l
+      |> CCOpt.map (fun table ->
+          { typ = Backed name; record = process_table table })
 end
 
 let offset_is_recorded offset (t : t) =
