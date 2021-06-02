@@ -1,4 +1,4 @@
-open Date_time_components
+open Date_time_utils
 
 type t = { jd : int }
 

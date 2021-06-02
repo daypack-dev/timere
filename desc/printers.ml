@@ -1,4 +1,4 @@
-open Date_time_components
+open Date_time_utils
 
 let frac_s_1_divisor = Span.ns_count_in_s / 10
 
