@@ -40,6 +40,14 @@
 
   - Moved "date and time" API into `Zoneless` module
 
+- Added comparison functions
+
+  - `compare_chrono_min`
+
+  - `compare_chrono_max`
+
+  - `compare_struct`
+
 ## Timedesc 0.3.1
 
 - Fixed `Timedesc.Span.make` handling of `ns` when `ns = Int.min_int`

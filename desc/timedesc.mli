@@ -1046,6 +1046,24 @@ val of_timestamp_float_s_exn : ?tz_of_date_time:Time_zone.t -> float -> t
 
 val equal : t -> t -> bool
 
+val compare_chrono_min : t -> t -> int
+(** Compare based on ordering of [min_of_local_result @@ to_timestamp _]
+
+    {b Warning}: [compare_chrono_min x y = 0] does not imply [equal x y]
+*)
+
+val compare_chrono_max : t -> t -> int
+(** Compare based on ordering of [max_of_local_result @@ to_timestamp _]
+
+    {b Warning}: [compare_chrono_max x y = 0] does not imply [equal x y]
+*)
+
+val compare_struct : t -> t -> int
+(** Structural comparison, [compare_struct x y = 0] implies [equal x y]
+
+    Ordering does not correspond to chronological ordering
+*)
+
 (** {2 Constants} *)
 
 val min_val : t

@@ -277,6 +277,26 @@ module Zoneless' = struct
   let of_zoned (x : t) : zoneless = { date = x.date; time = x.time }
 end
 
+let compare_chrono_min (x : t) (y : t) : int =
+  let x = min_of_local_result @@ to_timestamp x in
+  let y = min_of_local_result @@ to_timestamp y in
+  Span.compare x y
+
+let compare_chrono_max (x : t) (y : t) : int =
+  let x = max_of_local_result @@ to_timestamp x in
+  let y = max_of_local_result @@ to_timestamp y in
+  Span.compare x y
+
+let compare_struct (x : t) (y : t) : int =
+  let cmp_res = String.compare (Time_zone.name x.tz) (Time_zone.name y.tz) in
+  let tz_lt = cmp_res < 0 in
+  let tz_eq = cmp_res = 0 in
+  let x_timestamp_local = Zoneless'.(to_timestamp_local @@ of_zoned x) in
+  let y_timestamp_local = Zoneless'.(to_timestamp_local @@ of_zoned y) in
+  let lt = tz_lt || (tz_eq && Span.lt x_timestamp_local y_timestamp_local) in
+  let eq = tz_eq && Span.equal x_timestamp_local y_timestamp_local in
+  if lt then -1 else if eq then 0 else 1
+
 module ISO_ord_date_time = struct
   type error =
     [ `Does_not_exist
