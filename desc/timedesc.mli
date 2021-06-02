@@ -1509,7 +1509,7 @@ module ISO_ord_date_time : sig
     t
 end
 
-(** Time zone-less date time *)
+(** {1 Time zone-less date time} *)
 
 module Zoneless : sig
   type zoneless
