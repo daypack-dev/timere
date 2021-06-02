@@ -1505,7 +1505,7 @@ module ISO_ord_date_time : sig
     t
 end
 
-(** {1 Misc} *)
+(** Zoneless combination of date and time *)
 
 module Zoneless : sig
   (** Time zone-less date time *)
@@ -1555,6 +1555,8 @@ module Zoneless : sig
 
   val of_zoned : t -> zoneless
 end
+
+(** {1 Misc} *)
 
 module Time_zone_info : sig
   (** Time zone information that can be attached to date time like data
