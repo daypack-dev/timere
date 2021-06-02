@@ -1537,7 +1537,7 @@ module Zoneless : sig
   *)
 
   val to_zoned : ?tz:Time_zone.t -> zoneless -> (t, error_when_zoned) result
-  (** [tz] defaults to {!Utils.get_local_tz_for_arg ()}
+  (** [tz] defaults to result of {!Utils.get_local_tz_for_arg}
   *)
 
   val to_zoned_exn : ?tz:Time_zone.t -> zoneless -> t
