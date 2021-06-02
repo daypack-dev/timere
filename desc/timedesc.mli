@@ -1505,11 +1505,9 @@ module ISO_ord_date_time : sig
     t
 end
 
-(** Time zone-less combination of date and time *)
+(** Time zone-less date time *)
 
 module Zoneless : sig
-  (** Time zone-less date time *)
-
   type zoneless
 
   type error_when_zoned =
