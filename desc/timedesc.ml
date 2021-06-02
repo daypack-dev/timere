@@ -64,9 +64,9 @@ module Timestamp = struct
 
   let of_iso8601 = ISO8601.to_timestamp
 
-  let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.timestamp_of_sexp
+  let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.span_of_sexp
 
-  let to_sexp = To_sexp.sexp_of_timestamp
+  let to_sexp = To_sexp.sexp_of_span
 end
 
 let to_string = Printers.string_of_date_time
@@ -134,6 +134,14 @@ module Interval = struct
   let to_string = Printers.string_of_interval
 
   let pp_seq = Printers.pp_intervals
+end
+
+module Zoneless = struct
+  include Zoneless'
+
+  let to_sexp = To_sexp.sexp_of_zoneless
+
+  let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.zoneless_of_sexp
 end
 
 module Time_zone_info = struct

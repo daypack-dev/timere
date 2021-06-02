@@ -60,19 +60,60 @@ let tz_info_of_sexp (x : CCSexp.t) : Time_zone_info.t =
         invalid_data
           (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x)))
 
-let date_time_of_sexp (x : CCSexp.t) =
+let date_of_sexp (x : CCSexp.t) =
   let invalid_data () =
     invalid_data (Printf.sprintf "Invalid date: %s" (CCSexp.to_string x))
   in
   match x with
-  | `List [ year; month; day; hour; minute; second; ns; tz; offset_from_utc ] ->
-    let year = int_of_sexp year in
-    let month = int_of_sexp month in
-    let day = int_of_sexp day in
-    let hour = int_of_sexp hour in
-    let minute = int_of_sexp minute in
-    let second = int_of_sexp second in
-    let ns = int_of_sexp ns in
+  | `List [ year; month; day; ] -> (
+      let year = int_of_sexp year in
+      let month = int_of_sexp month in
+      let day = int_of_sexp day in
+      match Date.Ymd_date.make ~year ~month ~day with
+      | Ok x -> x
+      | Error _ ->
+        invalid_data ()
+    )
+  | _ ->
+    invalid_data ()
+
+let time_of_sexp (x : CCSexp.t) =
+  let invalid_data () =
+    invalid_data (Printf.sprintf "Invalid time: %s" (CCSexp.to_string x))
+  in
+  match x with
+  | `List [ hour; minute; second; ns ] -> (
+      let hour = int_of_sexp hour in
+      let minute = int_of_sexp minute in
+      let second = int_of_sexp second in
+      let ns = int_of_sexp ns in
+      match Time.make ~hour ~minute ~second ~ns () with
+      | Ok x -> x
+      | Error _ ->
+        invalid_data ()
+    )
+  | _ -> invalid_data ()
+
+let zoneless_of_sexp (x : CCSexp.t) =
+  let invalid_data () =
+    invalid_data (Printf.sprintf "Invalid zoneless: %s" (CCSexp.to_string x))
+  in
+  match x with
+  | `List [ date; time ] ->
+    let date = date_of_sexp date in
+    let time = time_of_sexp time in
+    (Date_time.Zoneless'.make date time)
+  | _ ->
+    invalid_data ()
+
+let date_time_of_sexp (x : CCSexp.t) =
+  let invalid_data () =
+    invalid_data (Printf.sprintf "Invalid date time: %s" (CCSexp.to_string x))
+  in
+  match x with
+  | `List [ date; time; tz; offset_from_utc ] ->
+    let date = date_of_sexp date in
+    let time = time_of_sexp time in
     let tz = tz_make_of_sexp tz in
     let offset_from_utc =
       match offset_from_utc with
@@ -88,15 +129,14 @@ let date_time_of_sexp (x : CCSexp.t) =
       match offset_from_utc with
       | `Single offset_from_utc -> (
           match
-            Date_time.Ymd_date_time.make_unambiguous ~year ~month ~day ~hour
-              ~minute ~second ~ns ~tz ~offset_from_utc ()
+            Date_time.Zoneless'.to_zoned_unambiguous
+              ~tz ~offset_from_utc (Date_time.Zoneless'.make date time)
           with
           | Ok x -> x
           | Error _ -> invalid_data ())
       | `Ambiguous _ -> (
           match
-            Date_time.Ymd_date_time.make ~year ~month ~day ~hour ~minute
-              ~second ~ns ~tz ()
+            Date_time.Zoneless'.to_zoned ~tz (Date_time.Zoneless'.make date time)
           with
           | Ok x ->
             if
@@ -109,17 +149,17 @@ let date_time_of_sexp (x : CCSexp.t) =
     dt
   | _ -> invalid_data ()
 
-let timestamp_of_sexp x =
-  let dt = date_time_of_sexp x in
-  match dt.offset_from_utc with
-  | `Ambiguous _ ->
-    invalid_data "Expected time zone offset 0, but got `Ambiguous instead"
-  | `Single offset ->
-    let tz = dt.tz in
-    let tz_name = Time_zone.name tz in
-    if tz_name <> "UTC" then
-      invalid_data
-        (Printf.sprintf "Expected time zone UTC, but got %s instead" tz_name)
-    else if not Span.(equal offset zero) then
-      invalid_data "Expected time zone offset 0"
-    else Date_time.to_timestamp_single dt
+(* let timestamp_of_sexp x =
+ *   let dt = date_time_of_sexp x in
+ *   match dt.offset_from_utc with
+ *   | `Ambiguous _ ->
+ *     invalid_data "Expected time zone offset 0, but got `Ambiguous instead"
+ *   | `Single offset ->
+ *     let tz = dt.tz in
+ *     let tz_name = Time_zone.name tz in
+ *     if tz_name <> "UTC" then
+ *       invalid_data
+ *         (Printf.sprintf "Expected time zone UTC, but got %s instead" tz_name)
+ *     else if not Span.(equal offset zero) then
+ *       invalid_data "Expected time zone offset 0"
+ *     else Date_time.to_timestamp_single dt *)

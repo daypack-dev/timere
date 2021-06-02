@@ -498,6 +498,8 @@ module Span : sig
 
   val pp : Format.formatter -> t -> unit
 
+  (** {1 Sexp} *)
+
   val to_sexp : t -> CCSexp.t
 
   val to_sexp_string : t -> string
@@ -1314,6 +1316,8 @@ end
 
 module Interval : sig
   type t = timestamp * timestamp
+  (** Exclusive interval, i.e. [\[x, y)] (including x, excluding y)
+  *)
 
   (** {1 Comparison} *)
 
@@ -1517,17 +1521,17 @@ module Zoneless : sig
 
   exception Error_when_zoned_exn of error_when_zoned
 
-  (** Constructors *)
+  (** {1 Constructors} *)
 
   val make : Date.t -> Time.t -> zoneless
 
-  (** Accessors *)
+  (** {1 Accessors} *)
 
   val date : zoneless -> Date.t
 
   val time : zoneless -> Time.t
 
-  (** Conversion *)
+  (** {1 Conversion} *)
 
   val to_timestamp_local : zoneless -> timestamp
   (** This yields a "local timestamp" - we pretend we are in the UTC time zone, and
@@ -1552,6 +1556,12 @@ module Zoneless : sig
   (** @raise Error_when_zoned_exn if [to_zoned_unambiguous] fails *)
 
   val of_zoned : t -> zoneless
+
+  (** {1 Sexp} *)
+
+  val to_sexp : zoneless -> CCSexp.t
+
+  val of_sexp : CCSexp.t -> (zoneless, string) result
 end
 
 (** {1 Misc} *)
