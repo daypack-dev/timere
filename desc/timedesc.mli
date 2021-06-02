@@ -1531,6 +1531,10 @@ module Zoneless : sig
 
   val time : zoneless -> Time.t
 
+  (** {1 Comparison} *)
+
+  val equal : zoneless -> zoneless -> bool
+
   (** {1 Conversion} *)
 
   val to_timestamp_local : zoneless -> timestamp

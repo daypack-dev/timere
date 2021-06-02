@@ -258,6 +258,13 @@ module Qc = struct
         in
         Timedesc.equal s s')
 
+  let zoneless_to_of_sexp =
+    QCheck.Test.make ~count:100_000 ~name:"zoneless_to_of_sexp" zoneless (fun s ->
+        let s' =
+          s |> Timedesc.Zoneless.to_sexp |> Timedesc.Zoneless.of_sexp |> CCResult.get_exn
+        in
+        Timedesc.Zoneless.equal s s')
+
   let timestamp_to_of_sexp =
     QCheck.Test.make ~count:100_000 ~name:"timestamp_to_of_sexp" timestamp
       (fun s ->
@@ -346,6 +353,7 @@ module Qc = struct
       to_rfc3339_of_iso8601_is_accurate;
       of_to_timestamp;
       to_of_sexp;
+      zoneless_to_of_sexp;
       timestamp_to_of_sexp;
       consistent_with_ptime;
       iso_ord_date_accessors;
