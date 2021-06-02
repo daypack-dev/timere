@@ -101,41 +101,54 @@ let to_fixed_offset_from_utc t =
   | Backed _ -> None
   | Offset_only s -> Some (Span.make_small ~s ())
 
-let equal t1 t2 =
-  (match (t1.typ, t2.typ) with
-   | Backed name1, Backed name2 -> CCString.equal name1 name2
-   | Offset_only s1, Offset_only s2 -> CCInt.equal s1 s2
-   | _, _ -> false)
-  && Bigarray.Array1.dim (fst t1.record.table)
-     = Bigarray.Array1.dim (fst t2.record.table)
-  && Array.length (snd t1.record.table) = Array.length (snd t2.record.table)
-  && CCArray.for_all2
-    (fun e1 e2 -> e1 = e2)
-    (snd t1.record.table) (snd t2.record.table)
-
 let fixed_offset_name_parser =
   let open MParser in
   let open Parser_components in
   string "UTC"
-  >> (char '+' >> return `Pos <|> (char '-' >> return `Neg))
-  >>= fun sign ->
-  attempt
-    (max_two_digit_nat_zero
-     >>= fun hour ->
-     char ':' >> max_two_digit_nat_zero << eof >>= fun minute -> return (hour, minute))
-  <|> (max_two_digit_nat_zero << eof >>= fun hour -> return (hour, 0))
-  >>= fun (hour, minute) ->
-  if hour < 24 && minute < 60 then
-    return (Span.For_human'.make_exn ~sign ~hours:hour ~minutes:minute ())
-  else fail "Invalid offset"
+  >>
+  (attempt
+     (
+       (char '+' >> return `Pos <|> (char '-' >> return `Neg))
+       >>= fun sign ->
+       attempt
+         (max_two_digit_nat_zero
+          >>= fun hour ->
+          char ':' >> max_two_digit_nat_zero << eof >>= fun minute -> return (hour, minute))
+       <|> (max_two_digit_nat_zero << eof >>= fun hour -> return (hour, 0))
+       >>= fun (hour, minute) ->
+       if hour < 24 && minute < 60 then
+         return (Span.For_human'.make_exn ~sign ~hours:hour ~minutes:minute ())
+       else fail "Invalid offset"
+     )
+     <|>
+     (eof >> return Span.zero)
+  )
 
 let fixed_offset_of_name (s : string) : Span.t option =
   match
     Parser_components.result_of_mparser_result
     @@ MParser.(parse_string (fixed_offset_name_parser << eof)) s ()
   with
-  | Ok dt -> Some dt
+  | Ok x -> Some x
   | Error _ -> None
+
+let equal t1 t2 =
+  (match (t1.typ, t2.typ) with
+   | Backed name1, Backed name2 -> CCString.equal name1 name2
+   | Offset_only s1, Offset_only s2 -> CCInt.equal s1 s2
+   | Backed name, Offset_only offset
+   | Offset_only offset, Backed name ->
+     match fixed_offset_of_name name with
+     | Some offset' ->
+       offset = CCInt64.to_int Span.(offset'.s)
+     | None -> false
+  )
+  && Bigarray.Array1.dim (fst t1.record.table)
+     = Bigarray.Array1.dim (fst t2.record.table)
+  && Array.length (snd t1.record.table) = Array.length (snd t2.record.table)
+  && CCArray.for_all2
+    (fun e1 e2 -> e1 = e2)
+    (snd t1.record.table) (snd t2.record.table)
 
 let one_day = Span.For_human'.(make_exn ~days:1 ())
 
@@ -162,14 +175,12 @@ let utc : t =
   CCOpt.get_exn_or "Expected successful construction of UTC" (make_offset_only Span.zero)
 
 let make name : t option =
-  if name = "UTC" then Some utc
-  else
-    match fixed_offset_of_name name with
-    | Some fixed -> make_offset_only fixed
-    | None -> (
-        match lookup_record name with
-        | Some record -> Some { typ = Backed name; record }
-        | None -> None)
+  match fixed_offset_of_name name with
+  | Some fixed -> make_offset_only fixed
+  | None -> (
+      match lookup_record name with
+      | Some record -> Some { typ = Backed name; record }
+      | None -> None)
 
 let make_exn name : t =
   match make name with Some x -> x | None -> invalid_arg "make_exn"
