@@ -104,7 +104,7 @@ let to_maybe_zoneless s : (maybe_zoneless, string) result =
     date_p >>= fun date ->
     any_char
     >> time_p >>= fun time ->
-    (((attempt (offset_p << space << eof)) >>= fun offset ->
+    (((attempt (offset_p << spaces << eof)) >>= fun offset ->
      match
        Date_time.Zoneless'.to_zoned_unambiguous ~offset_from_utc:offset
          (Date_time.Zoneless'.make date time)
@@ -116,7 +116,7 @@ let to_maybe_zoneless s : (maybe_zoneless, string) result =
      | Ok x -> return (`Zoned x)
     )
     <|>
-    (space >> eof >> return (`Zoneless (Date_time.Zoneless'.make date time)))
+    (spaces >> eof >> return (`Zoneless (Date_time.Zoneless'.make date time)))
     )
   in
   parse_string p s () |> result_of_mparser_result
