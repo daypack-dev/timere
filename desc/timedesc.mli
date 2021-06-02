@@ -1505,7 +1505,7 @@ module ISO_ord_date_time : sig
     t
 end
 
-(** Zoneless combination of date and time *)
+(** Time zone-less combination of date and time *)
 
 module Zoneless : sig
   (** Time zone-less date time *)
