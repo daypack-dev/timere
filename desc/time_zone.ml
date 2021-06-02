@@ -89,8 +89,7 @@ let name t =
   | Backed name -> name
   | Offset_only s ->
     let dur = Span.(make_small ~s () |> For_human'.view) in
-    if dur.hours = 0 && dur.minutes = 0 then
-      "UTC"
+    if dur.hours = 0 && dur.minutes = 0 then "UTC"
     else
       Printf.sprintf "UTC%c%02d:%02d"
         (match dur.sign with `Pos -> '+' | `Neg -> '-')
@@ -105,24 +104,24 @@ let fixed_offset_name_parser =
   let open MParser in
   let open Parser_components in
   string "UTC"
-  >>
-  (attempt
-     (
-       (char '+' >> return `Pos <|> (char '-' >> return `Neg))
-       >>= fun sign ->
-       attempt
-         (max_two_digit_nat_zero
-          >>= fun hour ->
-          char ':' >> max_two_digit_nat_zero << eof >>= fun minute -> return (hour, minute))
-       <|> (max_two_digit_nat_zero << eof >>= fun hour -> return (hour, 0))
-       >>= fun (hour, minute) ->
-       if hour < 24 && minute < 60 then
-         return (Span.For_human'.make_exn ~sign ~hours:hour ~minutes:minute ())
-       else fail "Invalid offset"
-     )
-     <|>
-     (eof >> return Span.zero)
-  )
+  >> (attempt
+        (char '+'
+         >> return `Pos
+            <|> (char '-' >> return `Neg)
+         >>= fun sign ->
+         attempt
+           (max_two_digit_nat_zero
+            >>= fun hour ->
+            char ':'
+            >> max_two_digit_nat_zero
+               << eof
+            >>= fun minute -> return (hour, minute))
+         <|> (max_two_digit_nat_zero << eof >>= fun hour -> return (hour, 0))
+         >>= fun (hour, minute) ->
+         if hour < 24 && minute < 60 then
+           return (Span.For_human'.make_exn ~sign ~hours:hour ~minutes:minute ())
+         else fail "Invalid offset")
+      <|> (eof >> return Span.zero))
 
 let fixed_offset_of_name (s : string) : Span.t option =
   match
@@ -136,13 +135,10 @@ let equal t1 t2 =
   (match (t1.typ, t2.typ) with
    | Backed name1, Backed name2 -> CCString.equal name1 name2
    | Offset_only s1, Offset_only s2 -> CCInt.equal s1 s2
-   | Backed name, Offset_only offset
-   | Offset_only offset, Backed name ->
-     match fixed_offset_of_name name with
-     | Some offset' ->
-       offset = CCInt64.to_int Span.(offset'.s)
-     | None -> false
-  )
+   | Backed name, Offset_only offset | Offset_only offset, Backed name -> (
+       match fixed_offset_of_name name with
+       | Some offset' -> offset = CCInt64.to_int Span.(offset'.s)
+       | None -> false))
   && Bigarray.Array1.dim (fst t1.record.table)
      = Bigarray.Array1.dim (fst t2.record.table)
   && Array.length (snd t1.record.table) = Array.length (snd t2.record.table)
@@ -172,7 +168,8 @@ let make_offset_only_exn offset =
   | Some x -> x
 
 let utc : t =
-  CCOpt.get_exn_or "Expected successful construction of UTC" (make_offset_only Span.zero)
+  CCOpt.get_exn_or "Expected successful construction of UTC"
+    (make_offset_only Span.zero)
 
 let make name : t option =
   match fixed_offset_of_name name with

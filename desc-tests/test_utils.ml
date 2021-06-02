@@ -323,12 +323,9 @@ let maybe_zoneless_testable :
 
     let pp formatter (t : t) =
       match t with
-      | `Zoned t ->
-        Fmt.pf formatter "zoned: %a"
-        (Timedesc.pp ()) t
+      | `Zoned t -> Fmt.pf formatter "zoned: %a" (Timedesc.pp ()) t
       | `Zoneless t ->
-        Fmt.pf formatter "zoneless: %a"
-        (Timedesc.pp ())
+        Fmt.pf formatter "zoneless: %a" (Timedesc.pp ())
           (Timedesc.Zoneless.to_zoned_exn ~tz:Timedesc.Time_zone.utc t)
 
     let equal x y =
