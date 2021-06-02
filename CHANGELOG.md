@@ -43,6 +43,8 @@
   - `Zoneless` also includes extra ISO8601 parsing functions for handling ISO8601 strings
     with no time zone designators
 
+- Updated definition of `Time_zone.equal` and `Time_zone.utc`
+
 - Added comparison functions
 
   - `compare_chrono_min`

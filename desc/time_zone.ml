@@ -89,9 +89,12 @@ let name t =
   | Backed name -> name
   | Offset_only s ->
     let dur = Span.(make_small ~s () |> For_human'.view) in
-    Printf.sprintf "UTC%c%02d:%02d"
-      (match dur.sign with `Pos -> '+' | `Neg -> '-')
-      dur.hours dur.minutes
+    if dur.hours = 0 && dur.minutes = 0 then
+      "UTC"
+    else
+      Printf.sprintf "UTC%c%02d:%02d"
+        (match dur.sign with `Pos -> '+' | `Neg -> '-')
+        dur.hours dur.minutes
 
 let to_fixed_offset_from_utc t =
   match t.typ with
@@ -119,8 +122,8 @@ let fixed_offset_name_parser =
   attempt
     (max_two_digit_nat_zero
      >>= fun hour ->
-     char ':' >> max_two_digit_nat_zero >>= fun minute -> return (hour, minute))
-  <|> (max_two_digit_nat_zero >>= fun hour -> return (hour, 0))
+     char ':' >> max_two_digit_nat_zero << eof >>= fun minute -> return (hour, minute))
+  <|> (max_two_digit_nat_zero << eof >>= fun hour -> return (hour, 0))
   >>= fun (hour, minute) ->
   if hour < 24 && minute < 60 then
     return (Span.For_human'.make_exn ~sign ~hours:hour ~minutes:minute ())
@@ -156,14 +159,7 @@ let make_offset_only_exn offset =
   | Some x -> x
 
 let utc : t =
-  {
-    typ = Backed "UTC";
-    record =
-      process_table
-        ( Bigarray.Array1.of_array Bigarray.Int64 Bigarray.C_layout
-            [| Constants.timestamp_min.s |],
-          [| { is_dst = false; offset = 0 } |] );
-  }
+  CCOpt.get_exn_or "Expected successful construction of UTC" (make_offset_only Span.zero)
 
 let make name : t option =
   if name = "UTC" then Some utc
