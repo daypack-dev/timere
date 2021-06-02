@@ -1544,7 +1544,9 @@ module Zoneless : sig
 
   val to_zoned_unambiguous_exn :
     ?tz:Time_zone.t -> offset_from_utc:Span.t -> zoneless -> t
-    (** @raise Error_when_zoned_exn if [to_zoned_unambiguous] fails *)
+  (** @raise Error_when_zoned_exn if [to_zoned_unambiguous] fails *)
+
+  val of_zoned : t -> zoneless
 end
 
 module Time_zone_info : sig
