@@ -1510,10 +1510,7 @@ end
 module Zoneless : sig
   (** Time zone-less date time *)
 
-  type zoneless = private {
-    date : Date.t;
-    time : Time.t;
-  }
+  type zoneless
 
   type error_when_zoned =
     [ `Does_not_exist
@@ -1522,7 +1519,17 @@ module Zoneless : sig
 
   exception Error_when_zoned_exn of error_when_zoned
 
+  (** Constructors *)
+
   val make : Date.t -> Time.t -> zoneless
+
+  (** Accessors *)
+
+  val date : zoneless -> Date.t
+
+  val time : zoneless -> Time.t
+
+  (** Conversion *)
 
   val to_timestamp_local : zoneless -> timestamp
   (** This yields a "local timestamp" - we pretend we are in the UTC time zone, and

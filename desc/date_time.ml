@@ -200,6 +200,10 @@ module Zoneless = struct
 
   let make date time = { date; time }
 
+  let date (x : zoneless) = x.date
+
+  let time (x : zoneless) = x.time
+
   let to_timestamp_local (x : zoneless) =
     timestamp_local_of_date_and_time x.date x.time
 
