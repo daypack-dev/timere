@@ -977,8 +977,9 @@ let t_of_hmss (hmss : Timere.Hms.t Timere.range list) =
                      ~hours:[ Hms.(x.hour) ]
                      ~minutes:[ x.minute ] ~seconds:[ x.second ] ())
              else
-               match (points ~hms:x `Front, points ~hms:y `Front) with
-               | `Some p1, `Some p2 -> Ok Timere.(bounded_intervals `Whole p1 p2)
+               match (points ~hms:x `Front, points ~hms:y `Back) with
+               | `Some p1, `Some p2 ->
+                 Ok Timere.(bounded_intervals ~inc_exc:`Inc `Whole p1 p2)
                | _ -> Error ())
          | _ -> failwith "unexpected case")
       hmss
@@ -1135,7 +1136,8 @@ module Rules = struct
             points ~year:year2 ~month:month2 ~pos_day:pos_day2 ~day:day2
               ~hms:hms2 `Front )
         with
-        | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
+        | `Some p1, `Some p2 ->
+          `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1162,7 +1164,8 @@ module Rules = struct
               ~hms:hms1 `Front,
             points ~month:month2 ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Front )
         with
-        | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
+        | `Some p1, `Some p2 ->
+          `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1187,7 +1190,8 @@ module Rules = struct
               ~hms:hms1 `Front,
             points ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Front )
         with
-        | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
+        | `Some p1, `Some p2 ->
+          `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1204,7 +1208,8 @@ module Rules = struct
               ~hms:hms1 `Front,
             points ~hms:hms2 `Front )
         with
-        | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
+        | `Some p1, `Some p2 ->
+          `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1250,7 +1255,8 @@ module Rules = struct
           ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
             points ~month:month2 ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Front )
         with
-        | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
+        | `Some p1, `Some p2 ->
+          `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1292,7 +1298,8 @@ module Rules = struct
           ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
             points ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Front )
         with
-        | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
+        | `Some p1, `Some p2 ->
+          `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1316,7 +1323,8 @@ module Rules = struct
           ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
             points ~hms:hms2 `Front )
         with
-        | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
+        | `Some p1, `Some p2 ->
+          `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1354,7 +1362,8 @@ module Rules = struct
           ( points ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
             points ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Front )
         with
-        | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
+        | `Some p1, `Some p2 ->
+          `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1370,7 +1379,8 @@ module Rules = struct
             points ~year:year2 ~month:month2 ~pos_day:pos_day2 ~day:day2 `Back
           )
         with
-        | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
+        | `Some p1, `Some p2 ->
+          `Some (Timere.bounded_intervals ~inc_exc:`Inc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1392,7 +1402,8 @@ module Rules = struct
           ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1 `Front,
             points ~month:month2 ~pos_day:pos_day2 ~day:day2 `Back )
         with
-        | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
+        | `Some p1, `Some p2 ->
+          `Some (Timere.bounded_intervals ~inc_exc:`Inc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1412,7 +1423,8 @@ module Rules = struct
           ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1 `Front,
             points ~pos_day:pos_day2 ~day:day2 `Back )
         with
-        | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
+        | `Some p1, `Some p2 ->
+          `Some (Timere.bounded_intervals ~inc_exc:`Inc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1450,7 +1462,8 @@ module Rules = struct
           ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 `Front,
             points ~month:month2 ~pos_day:pos_day2 ~day:day2 `Back )
         with
-        | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
+        | `Some p1, `Some p2 ->
+          `Some (Timere.bounded_intervals ~inc_exc:`Inc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1484,7 +1497,8 @@ module Rules = struct
           ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 `Front,
             points ~pos_day:pos_day2 ~day:day2 `Back )
         with
-        | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
+        | `Some p1, `Some p2 ->
+          `Some (Timere.bounded_intervals ~inc_exc:`Inc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1500,7 +1514,8 @@ module Rules = struct
           ( points ~pos_day:pos_day1 ~day:day1 `Front,
             points ~pos_day:pos_day2 ~day:day2 `Back )
         with
-        | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
+        | `Some p1, `Some p2 ->
+          `Some (Timere.bounded_intervals ~inc_exc:`Inc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1519,7 +1534,8 @@ module Rules = struct
           ( points ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
             points ~hms:hms2 `Front )
         with
-        | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
+        | `Some p1, `Some p2 ->
+          `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1527,7 +1543,8 @@ module Rules = struct
     match l with
     | [ (_, _, Hms hms1); (_, _, To); (_, _, Hms hms2) ] -> (
         match (points ~hms:hms1 `Front, points ~hms:hms2 `Front) with
-        | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
+        | `Some p1, `Some p2 ->
+          `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
