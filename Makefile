@@ -49,7 +49,7 @@ debug-parse : lib
 	dune exec ./debug-parse/main.exe
 
 .PHONY: corpus
-corpus: corpus-timeres corpus-date-times corpus-hmss corpus-durations
+corpus: corpus-timeres corpus-date-times corpus-hmss corpus-spans
 
 .PHONY: corpus-timeres
 corpus-timeres:
@@ -63,9 +63,9 @@ corpus-date-times:
 corpus-hmss:
 	dune exec ./corpus/hmss.exe > corpus-outputs/hmss.txt
 
-.PHONY: corpus-durations
-corpus-durations:
-	dune exec ./corpus/durations.exe > corpus-outputs/durations.txt
+.PHONY: corpus-spans
+corpus-spans:
+	dune exec ./corpus/spans.exe > corpus-outputs/spans.txt
 
 .PHONY: doc
 doc :

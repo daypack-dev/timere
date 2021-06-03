@@ -55,7 +55,7 @@ type guess =
   | Month of int
   | Months of int Timere.range list
   | Ymd of (MParser.pos * int) * (MParser.pos * int) * (MParser.pos * int)
-  | Duration of Timedesc.Span.t
+  | Span of Timedesc.Span.t
   | Time_zone of Timedesc.Time_zone.t
 
 type token = (int * int * int) * text_map * guess
@@ -109,7 +109,7 @@ let string_of_token (_, _, guess) =
   | Month _ -> "month"
   | Months _ -> "months"
   | Ymd _ -> "ymd"
-  | Duration _ -> "duration"
+  | Span _ -> "span"
   | Time_zone tz -> Timedesc.Time_zone.name tz
 
 let weekdays : (string * Timedesc.weekday) list =
@@ -563,11 +563,11 @@ module Ast_normalize = struct
       ~constr_single:(fun x -> Hms x)
       l
 
-  let recognize_duration (l : token list) : token list =
-    let make_duration ~pos ~days ~hours ~minutes ~seconds =
+  let recognize_span (l : token list) : token list =
+    let make_span ~pos ~days ~hours ~minutes ~seconds =
       ( CCOpt.get_exn_or "Expected pos to be Some _" pos,
         text_map_empty,
-        Duration
+        Span
           (Timedesc.Span.For_human.make_frac_exn
              ~days:(CCOpt.value ~default:0.0 days)
              ~hours:(CCOpt.value ~default:0.0 hours)
@@ -615,7 +615,7 @@ module Ast_normalize = struct
         let token =
           ( CCOpt.value ~default:pos_seconds pos,
             text_map_empty,
-            Duration
+            Span
               (Timedesc.Span.For_human.make_frac_exn
                  ~days:(CCOpt.value ~default:0.0 days)
                  ~hours:(CCOpt.value ~default:0.0 hours)
@@ -626,17 +626,13 @@ module Ast_normalize = struct
       | [] ->
         if CCOpt.is_some days || CCOpt.is_some hours || CCOpt.is_some minutes
         then
-          let new_token =
-            make_duration ~pos ~days ~hours ~minutes ~seconds:0.0
-          in
+          let new_token = make_span ~pos ~days ~hours ~minutes ~seconds:0.0 in
           List.rev (new_token :: acc)
         else List.rev acc
       | token :: rest ->
         if CCOpt.is_some days || CCOpt.is_some hours || CCOpt.is_some minutes
         then
-          let new_token =
-            make_duration ~pos ~days ~hours ~minutes ~seconds:0.0
-          in
+          let new_token = make_span ~pos ~days ~hours ~minutes ~seconds:0.0 in
           aux_start_with_days (token :: new_token :: acc) rest
         else aux_start_with_days (token :: acc) rest
     in
@@ -771,7 +767,7 @@ module Ast_normalize = struct
             l
             |> recognize_hms
             |> recognize_float
-            |> recognize_duration
+            |> recognize_span
             |> recognize_month_day
             |> group_nats
             |> group_month_days
@@ -1683,15 +1679,15 @@ let parse_hms s =
       | Error msg -> Error msg
       | Ok ast -> hms_t_of_ast ast)
 
-let duration_t_of_ast (ast : ast) : (Timedesc.Span.t, string) CCResult.t =
+let span_t_of_ast (ast : ast) : (Timedesc.Span.t, string) CCResult.t =
   match ast with
-  | Tokens [ (_, _, Duration duration) ] -> Ok duration
+  | Tokens [ (_, _, Span span) ] -> Ok span
   | _ -> Error "Unrecognized pattern"
 
-let parse_duration s =
+let parse_span s =
   match parse_into_ast s with
   | Error msg -> Error msg
   | Ok ast -> (
       match Ast_normalize.normalize ast with
       | Error msg -> Error msg
-      | Ok ast -> duration_t_of_ast ast)
+      | Ok ast -> span_t_of_ast ast)

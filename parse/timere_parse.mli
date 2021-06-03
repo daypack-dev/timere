@@ -13,6 +13,6 @@ val hms : string -> (Timere.Hms.t, string) result
 
 val hms_exn : string -> Timere.Hms.t
 
-val duration : string -> (Timedesc.Span.t, string) result
+val span : string -> (Timedesc.Span.t, string) result
 
-val duration_exn : string -> Timedesc.Span.t
+val span_exn : string -> Timedesc.Span.t

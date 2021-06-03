@@ -15,7 +15,7 @@ let hms = Parser.parse_hms
 let hms_exn x =
   match hms x with Ok x -> x | Error msg -> raise (Error_exn msg)
 
-let duration = Parser.parse_duration
+let span = Parser.parse_span
 
-let duration_exn x =
-  match duration x with Ok x -> x | Error msg -> raise (Error_exn msg)
+let span_exn x =
+  match span x with Ok x -> x | Error msg -> raise (Error_exn msg)

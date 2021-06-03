@@ -3,10 +3,11 @@
    (names date_times
           hmss
           timeres
-          durations
+          spans
    )
    (libraries 
       containers
+      timedesc
       timere
       timere-parse
       fmt

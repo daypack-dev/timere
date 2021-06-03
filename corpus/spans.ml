@@ -17,7 +17,7 @@ let () =
   List.iteri
     (fun i text ->
        Printf.printf "%d. %S\n" i text;
-       match Timere_parse.duration text with
+       match Timere_parse.span text with
        | Ok duration ->
          Printf.printf "  Ok %s\n\n"
            (Timedesc.Span.For_human.to_string duration)
