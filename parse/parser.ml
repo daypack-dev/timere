@@ -802,27 +802,29 @@ module Ast_normalize = struct
     in
     try Ok (aux e) with Invalid_data msg -> Error msg
 
-  let flatten_round_robin_select (e : ast) : ast =
-    let rec aux e =
-      match e with
-      | Tokens _ -> e
-      | Unary_op (op, e) -> Unary_op (op, aux e)
-      | Binary_op (op, e1, e2) -> Binary_op (op, aux e1, aux e2)
-      | Round_robin_pick l ->
-        l
-        |> CCList.to_seq
-        |> Seq.map aux
-        |> Seq.flat_map (fun e ->
-            match e with
-            | Round_robin_pick l -> CCList.to_seq l
-            | _ -> Seq.return e)
-        |> CCList.of_seq
-        |> fun l -> Round_robin_pick l
-    in
-    aux e
+  (* let flatten_round_robin_select (e : ast) : ast =
+   *   let rec aux e =
+   *     match e with
+   *     | Tokens _ -> e
+   *     | Unary_op (op, e) -> Unary_op (op, aux e)
+   *     | Binary_op (op, e1, e2) -> Binary_op (op, aux e1, aux e2)
+   *     | Round_robin_pick l ->
+   *       l
+   *       |> CCList.to_seq
+   *       |> Seq.map aux
+   *       |> Seq.flat_map (fun e ->
+   *           match e with
+   *           | Round_robin_pick l -> CCList.to_seq l
+   *           | _ -> Seq.return e)
+   *       |> CCList.of_seq
+   *       |> fun l -> Round_robin_pick l
+   *   in
+   *   aux e *)
 
   let normalize (e : ast) : (ast, string) CCResult.t =
-    e |> flatten_round_robin_select |> process_tokens
+    e
+    (* |> flatten_round_robin_select *)
+    |> process_tokens
 end
 
 let parse_into_ast (s : string) : (ast, string) CCResult.t =
@@ -977,9 +979,9 @@ let t_of_hmss (hmss : Timere.Hms.t Timere.range list) =
                      ~hours:[ Hms.(x.hour) ]
                      ~minutes:[ x.minute ] ~seconds:[ x.second ] ())
              else
-               match (points ~hms:x `Front, points ~hms:y `Back) with
+               match (points ~hms:x `Front, points ~hms:y `Front) with
                | `Some p1, `Some p2 ->
-                 Ok Timere.(bounded_intervals ~inc_exc:`Inc `Whole p1 p2)
+                 Ok Timere.(bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
                | _ -> Error ())
          | _ -> failwith "unexpected case")
       hmss

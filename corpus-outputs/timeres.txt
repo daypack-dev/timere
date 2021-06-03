@@ -83,5 +83,5 @@
   Ok (pattern (years 2020) (months Jun) (month_days 16) (hours 10) (minutes 0) (seconds 0))
 
 28. "2021 aug 26th to 27th"
-  Ok (bounded_intervals whole_exc (432000 0) (points (pick ymdhmsn 2021 Aug 26 0 0 0 0)) (points (pick dhmsn 27 23 59 59 999999999)))
+  Ok (bounded_intervals whole_inc (432000 0) (points (pick ymdhmsn 2021 Aug 26 0 0 0 0)) (points (pick dhmsn 27 23 59 59 999999999)))
 
