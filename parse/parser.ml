@@ -1133,7 +1133,7 @@ module Rules = struct
           ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
               ~hms:hms1 `Front,
             points ~year:year2 ~month:month2 ~pos_day:pos_day2 ~day:day2
-              ~hms:hms2 `Back )
+              ~hms:hms2 `Front )
         with
         | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
         | _, _ -> `None)
@@ -1160,7 +1160,7 @@ module Rules = struct
         match
           ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
               ~hms:hms1 `Front,
-            points ~month:month2 ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Back )
+            points ~month:month2 ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Front )
         with
         | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
         | _, _ -> `None)
@@ -1185,7 +1185,7 @@ module Rules = struct
         match
           ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
               ~hms:hms1 `Front,
-            points ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Back )
+            points ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Front )
         with
         | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
         | _, _ -> `None)
@@ -1202,7 +1202,7 @@ module Rules = struct
         match
           ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
               ~hms:hms1 `Front,
-            points ~hms:hms2 `Back )
+            points ~hms:hms2 `Front )
         with
         | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
         | _, _ -> `None)
@@ -1248,7 +1248,7 @@ module Rules = struct
     ] -> (
         match
           ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
-            points ~month:month2 ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Back )
+            points ~month:month2 ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Front )
         with
         | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
         | _, _ -> `None)
@@ -1290,7 +1290,7 @@ module Rules = struct
     ] -> (
         match
           ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
-            points ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Back )
+            points ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Front )
         with
         | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
         | _, _ -> `None)
@@ -1314,7 +1314,7 @@ module Rules = struct
     ] -> (
         match
           ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
-            points ~hms:hms2 `Back )
+            points ~hms:hms2 `Front )
         with
         | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
         | _, _ -> `None)
@@ -1352,7 +1352,7 @@ module Rules = struct
     ] -> (
         match
           ( points ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
-            points ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Back )
+            points ~pos_day:pos_day2 ~day:day2 ~hms:hms2 `Front )
         with
         | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
         | _, _ -> `None)
@@ -1517,7 +1517,7 @@ module Rules = struct
     ] -> (
         match
           ( points ~pos_day:pos_day1 ~day:day1 ~hms:hms1 `Front,
-            points ~hms:hms2 `Back )
+            points ~hms:hms2 `Front )
         with
         | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
         | _, _ -> `None)
@@ -1526,7 +1526,7 @@ module Rules = struct
   let rule_hms_to_hms l =
     match l with
     | [ (_, _, Hms hms1); (_, _, To); (_, _, Hms hms2) ] -> (
-        match (points ~hms:hms1 `Front, points ~hms:hms2 `Back) with
+        match (points ~hms:hms1 `Front, points ~hms:hms2 `Front) with
         | `Some p1, `Some p2 -> `Some (Timere.bounded_intervals `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
