@@ -10,6 +10,8 @@
 
 - Upgraded ruleset
 
+- Renamed `Timere_parse.duration` to `Timere_parse.span`
+
 ## Timere 0.6.0
 
 - Added `inc_exc` argument to `bounded_intervals`
