@@ -478,7 +478,11 @@ val resolve :
   ?search_using_tz:Timedesc.Time_zone.t ->
   t ->
   (Timedesc.Interval.t Seq.t, string) result
-(** Resolves a Timere object into a concrete interval sequence *)
+(** Resolves a Timere object into a concrete interval sequence.
+ *
+ * Intervals are left-closed, right-open, i.e. each interval is
+ * of the form [\[x, y)], which includes x and excludes y.
+ * *)
 
 exception Resolution_error of string
 

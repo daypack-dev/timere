@@ -1334,7 +1334,8 @@ end
 
 module Interval : sig
   type t = timestamp * timestamp
-  (** Exclusive interval, i.e. [\[x, y)] (including x, excluding y)
+  (** Left-closed, right-open interval, i.e. interval is
+   *  of the form [\[x, y)], which includes x and excludes y
   *)
 
   (** {1 Comparison} *)
