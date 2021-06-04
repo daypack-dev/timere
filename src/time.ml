@@ -1206,19 +1206,20 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
         List.fold_left (fun acc x -> Diet.Int.add x acc) acc l
       in
       Pattern
-        {
-          Pattern.years;
-          months;
-          month_days;
-          weekdays;
-          hours;
-          minutes;
-          seconds;
-          ns =
-            Diet.Int.empty
-            |> add intervals_of_ns
-            |> add intervals_of_ns_ranges;
-        }
+        (Pattern.optimize
+           {
+             Pattern.years;
+             months;
+             month_days;
+             weekdays;
+             hours;
+             minutes;
+             seconds;
+             ns =
+               Diet.Int.empty
+               |> add intervals_of_ns
+               |> add intervals_of_ns_ranges;
+           })
 
 let month_day_ranges_are_valid_strict ~safe_month_day_range_inc day_ranges =
   let safe_month_day_start, safe_month_day_end_inc = safe_month_day_range_inc in
