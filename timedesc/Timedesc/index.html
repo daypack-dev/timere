@@ -42,12 +42,11 @@ Europe/Paris -------------|------------- ... -------------|-------------
 {sec:cX}         second, character 'c' before 'X' determines padding
                  (leave out character for no padding)
 {ns}             nanosecond
-{sec-frac:c}     fraction of second
-                 character c is used as the decimal separator
-                 the smallest number of digits required after decimal separator for a lossless representation is used
 {sec-frac:cN}    fraction of second
                  character c is used as the decimal separator
                  N determines the number of digits to take after decimal separator
+                 if N is not specified, then the smallest number of digits required
+                 after decimal separator for a lossless representation is used
                  result is truncated to said number of digits
 {tzoff-sign}     time zone offset sign ('+' or '-')
                  raises Date_time_cannot_deduce_offset_from_utc if time zone offset cannot be calculated
