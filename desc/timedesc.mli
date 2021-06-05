@@ -307,6 +307,12 @@ module Span : sig
   val make_small : ?s:int -> ?ns:int -> unit -> t
   (** Wrapper around [make] *)
 
+  (** {1 Accessors} *)
+
+  val get_s : t -> int64
+
+  val get_subsec_ns : t -> int
+
   (** {1 Conversion} *)
 
   val to_s_ns : t -> int64 * int
