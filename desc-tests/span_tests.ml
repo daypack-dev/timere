@@ -136,7 +136,7 @@ module Alco = struct
   let edge_case0 () =
     Alcotest.(check bool)
       "same span"
-      (let (s, ns) =
+      (let s, ns =
          Timedesc.Span.(to_s_ns @@ make ~s:(-10L) ~ns:CCInt.min_int ())
        in
        0 <= ns
@@ -150,7 +150,7 @@ module Alco = struct
   let edge_case1 () =
     Alcotest.(check bool)
       "same span"
-      (let (s, ns) =
+      (let s, ns =
          Timedesc.Span.(to_s_ns @@ make ~s:10L ~ns:CCInt.min_int ())
        in
        0 <= ns
@@ -162,7 +162,7 @@ module Alco = struct
   let edge_case2 () =
     Alcotest.(check bool)
       "same span"
-      (let (s, ns) =
+      (let s, ns =
          Timedesc.Span.(to_s_ns @@ make ~s:10L ~ns:CCInt.max_int ())
        in
        0 <= ns
@@ -174,7 +174,7 @@ module Alco = struct
   let edge_case3 () =
     Alcotest.(check bool)
       "same span"
-      (let (s, ns) =
+      (let s, ns =
          Timedesc.Span.(to_s_ns @@ make ~s:(-10L) ~ns:CCInt.max_int ())
        in
        0 <= ns
@@ -217,7 +217,7 @@ module Alco = struct
 end
 
 let normalize (x : Timedesc.Span.t) : Timedesc.Span.t =
-  let (s, ns) = Timedesc.Span.to_s_ns x in
+  let s, ns = Timedesc.Span.to_s_ns x in
   Timedesc.Span.make ~s ~ns ()
 
 module Qc = struct

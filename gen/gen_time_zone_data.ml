@@ -211,7 +211,8 @@ let min_timestamp =
   Timedesc.Span.get_s (Timedesc.Utils.timestamp_of_ptime Ptime.min)
 
 let max_timestamp =
-  Timedesc.Span.get_s (Timedesc.Utils.timestamp_of_ptime Ptime.max) |> Int64.pred
+  Timedesc.Span.get_s (Timedesc.Utils.timestamp_of_ptime Ptime.max)
+  |> Int64.pred
 
 let timestamp_of_date_time_utc (x : date_time) : int64 =
   assert (x.tz = String "UT");

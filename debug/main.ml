@@ -353,11 +353,10 @@ let debug_fuzz_pattern () =
             ~a:(Timedesc.Span.get_s (fst (List.hd search_space)))
             ~b:
               (Timedesc.Span.get_s
-              (snd
-                 (CCOpt.get_exn_or
-                    "Expected successful retrieval of last element of list"
-                 @@ Misc_utils.last_element_of_list search_space))
-              )
+                 (snd
+                    (CCOpt.get_exn_or
+                       "Expected successful retrieval of last element of list"
+                    @@ Misc_utils.last_element_of_list search_space)))
           |> OSeq.filter (fun timestamp ->
                  List.exists
                    (fun (x, y) ->
