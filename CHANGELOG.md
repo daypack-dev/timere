@@ -26,6 +26,12 @@
 
 - Minor fixes of `resolve` for edge cases
 
+## Timedesc 0.5.0
+
+- Made `Timedesc.Span.t` abstract
+
+- Added accessors `get_s`, `get_subsec_ns` and conversion function `to_s_ns` to `Timedesc.Span` module
+
 ## Timedesc 0.4.0
 
 - Added following to `Timedesc.Utils`
