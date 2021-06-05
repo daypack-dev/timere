@@ -282,105 +282,6 @@ module Span : sig
 
   exception Out_of_range
 
-  (** Human friendly APIs *)
-  module For_human : sig
-    type sign =
-      [ `Pos
-      | `Neg
-      ]
-
-    type view = private {
-      sign : sign;
-      days : int;
-      hours : int;
-      minutes : int;
-      seconds : int;
-      ns : int;
-    }
-
-    type error =
-      [ `Invalid_days of int
-      | `Invalid_hours of int
-      | `Invalid_minutes of int
-      | `Invalid_seconds of int
-      | `Invalid_ns of int
-      ]
-
-    type error_f =
-      [ `Invalid_days_f of float
-      | `Invalid_hours_f of float
-      | `Invalid_minutes_f of float
-      | `Invalid_seconds_f of float
-      | `Invalid_ns of int
-      ]
-
-    exception Error_exn of error
-
-    exception Error_f_exn of error_f
-
-    val make :
-      ?sign:sign ->
-      ?days:int ->
-      ?hours:int ->
-      ?minutes:int ->
-      ?seconds:int ->
-      ?ns:int ->
-      unit ->
-      (t, error) result
-    (**
-       [sign] defaults to [`Pos].
-
-       Returns [Error] if any of the arguments are negative.
-
-       @raise Out_of_range if the value cannot be represented even after normalization
-    *)
-
-    val make_exn :
-      ?sign:sign ->
-      ?days:int ->
-      ?hours:int ->
-      ?minutes:int ->
-      ?seconds:int ->
-      ?ns:int ->
-      unit ->
-      t
-    (** @raise Error_exn if [make] fails *)
-
-    val make_frac :
-      ?sign:sign ->
-      ?days:float ->
-      ?hours:float ->
-      ?minutes:float ->
-      ?seconds:float ->
-      ?ns:int ->
-      unit ->
-      (t, error_f) result
-    (**
-       [sign] defaults to [`Pos].
-
-       Returns [Error] if any of the arguments are negative.
-
-       @raise Out_of_range if the value cannot be represented even after normalization
-    *)
-
-    val make_frac_exn :
-      ?sign:sign ->
-      ?days:float ->
-      ?hours:float ->
-      ?minutes:float ->
-      ?seconds:float ->
-      ?ns:int ->
-      unit ->
-      t
-    (** @raise Error_exn if [make] fails *)
-
-    val view : t -> view
-
-    val pp : Format.formatter -> t -> unit
-
-    val to_string : t -> string
-  end
-
   (** {1 Constants} *)
 
   val ns_count_in_s : int
@@ -508,6 +409,105 @@ module Span : sig
   val of_sexp_string : string -> (t, string) result
 
   val pp_sexp : Format.formatter -> t -> unit
+
+  (** Human friendly APIs *)
+  module For_human : sig
+    type sign =
+      [ `Pos
+      | `Neg
+      ]
+
+    type view = private {
+      sign : sign;
+      days : int;
+      hours : int;
+      minutes : int;
+      seconds : int;
+      ns : int;
+    }
+
+    type error =
+      [ `Invalid_days of int
+      | `Invalid_hours of int
+      | `Invalid_minutes of int
+      | `Invalid_seconds of int
+      | `Invalid_ns of int
+      ]
+
+    type error_f =
+      [ `Invalid_days_f of float
+      | `Invalid_hours_f of float
+      | `Invalid_minutes_f of float
+      | `Invalid_seconds_f of float
+      | `Invalid_ns of int
+      ]
+
+    exception Error_exn of error
+
+    exception Error_f_exn of error_f
+
+    val make :
+      ?sign:sign ->
+      ?days:int ->
+      ?hours:int ->
+      ?minutes:int ->
+      ?seconds:int ->
+      ?ns:int ->
+      unit ->
+      (t, error) result
+    (**
+       [sign] defaults to [`Pos].
+
+       Returns [Error] if any of the arguments are negative.
+
+       @raise Out_of_range if the value cannot be represented even after normalization
+    *)
+
+    val make_exn :
+      ?sign:sign ->
+      ?days:int ->
+      ?hours:int ->
+      ?minutes:int ->
+      ?seconds:int ->
+      ?ns:int ->
+      unit ->
+      t
+    (** @raise Error_exn if [make] fails *)
+
+    val make_frac :
+      ?sign:sign ->
+      ?days:float ->
+      ?hours:float ->
+      ?minutes:float ->
+      ?seconds:float ->
+      ?ns:int ->
+      unit ->
+      (t, error_f) result
+    (**
+       [sign] defaults to [`Pos].
+
+       Returns [Error] if any of the arguments are negative.
+
+       @raise Out_of_range if the value cannot be represented even after normalization
+    *)
+
+    val make_frac_exn :
+      ?sign:sign ->
+      ?days:float ->
+      ?hours:float ->
+      ?minutes:float ->
+      ?seconds:float ->
+      ?ns:int ->
+      unit ->
+      t
+    (** @raise Error_exn if [make] fails *)
+
+    val view : t -> view
+
+    val pp : Format.formatter -> t -> unit
+
+    val to_string : t -> string
+  end
 end
 
 type timestamp = Span.t
