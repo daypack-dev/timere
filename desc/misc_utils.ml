@@ -16,18 +16,18 @@ let take_first_n_list (n : int) (l : 'a list) : 'a list =
   aux n [] l
 
 let convert_of_int_to_int64 (f : int -> 'a) : int64 -> 'a =
-  fun x -> x |> Int64.to_int |> f
+ fun x -> x |> Int64.to_int |> f
 
 let convert_to_int_to_int64 (f : 'a -> int) : 'a -> int64 =
-  fun x -> x |> f |> Int64.of_int
+ fun x -> x |> f |> Int64.of_int
 
 let get_ok_error_list (l : ('a, 'b) result list) : ('a list, 'b) result =
   List.find_opt CCResult.is_error l
   |> (fun x ->
-      match x with
-      | None -> None
-      | Some (Ok _) -> None
-      | Some (Error x) -> Some x)
+       match x with
+       | None -> None
+       | Some (Ok _) -> None
+       | Some (Error x) -> Some x)
   |> fun x ->
   match x with None -> Ok (List.map CCResult.get_exn l) | Some x -> Error x
 

@@ -164,16 +164,16 @@ let to_be_exported =
       match Timere.resolve ~search_using_tz:Timedesc.Time_zone.utc t with
       | Error msg -> raise_with_msg msg
       | Ok s ->
-        let s = ref s in
-        fun () ->
-          wrap (fun () ->
-              match !s () with
-              | Seq.Nil -> Js.null
-              | Seq.Cons ((x, y), rest) ->
-                s := rest;
-                Js.some
-                  (Js.array
-                     [| js_date_of_timestamp x; js_date_of_timestamp y |]))
+          let s = ref s in
+          fun () ->
+            wrap (fun () ->
+                match !s () with
+                | Seq.Nil -> Js.null
+                | Seq.Cons ((x, y), rest) ->
+                    s := rest;
+                    Js.some
+                      (Js.array
+                         [| js_date_of_timestamp x; js_date_of_timestamp y |]))
 
     method to_sexp_string t = Js.string (Timere.to_sexp_string t)
 

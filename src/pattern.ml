@@ -121,14 +121,14 @@ let inter p1 p2 =
                               match inter_ns_sets p1.ns p2.ns with
                               | None -> None
                               | Some ns ->
-                                Some
-                                  {
-                                    years;
-                                    months;
-                                    month_days;
-                                    weekdays;
-                                    hours;
-                                    minutes;
-                                    seconds;
-                                    ns;
-                                  })))))))
+                                  Some
+                                    {
+                                      years;
+                                      months;
+                                      month_days;
+                                      weekdays;
+                                      hours;
+                                      minutes;
+                                      seconds;
+                                      ns;
+                                    })))))))

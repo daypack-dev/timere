@@ -40,9 +40,9 @@ let check_table ((starts, entries) : table) : bool =
     let is_sorted = ref true in
     while !is_sorted && !i < size do
       (if !i > 0 then
-         let cur = starts.{!i} in
-         let prev = starts.{!i - 1} in
-         if cur < prev then is_sorted := false);
+       let cur = starts.{!i} in
+       let prev = starts.{!i - 1} in
+       if cur < prev then is_sorted := false);
       i := !i + 1
     done;
     !is_sorted
@@ -81,19 +81,19 @@ let process_table ((starts, entries) : table) : record =
 let lookup_record name : record option =
   M.find_opt name db
   |> CCOpt.map (fun table ->
-      assert (check_table table);
-      process_table table)
+         assert (check_table table);
+         process_table table)
 
 let name t =
   match t.typ with
   | Backed name -> name
   | Offset_only s ->
-    let dur = Span.(make_small ~s () |> For_human'.view) in
-    if dur.hours = 0 && dur.minutes = 0 then "UTC"
-    else
-      Printf.sprintf "UTC%c%02d:%02d"
-        (match dur.sign with `Pos -> '+' | `Neg -> '-')
-        dur.hours dur.minutes
+      let dur = Span.(make_small ~s () |> For_human'.view) in
+      if dur.hours = 0 && dur.minutes = 0 then "UTC"
+      else
+        Printf.sprintf "UTC%c%02d:%02d"
+          (match dur.sign with `Pos -> '+' | `Neg -> '-')
+          dur.hours dur.minutes
 
 let to_fixed_offset_from_utc t =
   match t.typ with
@@ -106,22 +106,22 @@ let fixed_offset_name_parser =
   string "UTC"
   >> (attempt
         (char '+'
-         >> return `Pos
-            <|> (char '-' >> return `Neg)
-         >>= fun sign ->
-         attempt
-           (max_two_digit_nat_zero
-            >>= fun hour ->
-            char ':'
-            >> max_two_digit_nat_zero
-               << eof
-            >>= fun minute -> return (hour, minute))
-         <|> (max_two_digit_nat_zero << eof >>= fun hour -> return (hour, 0))
-         >>= fun (hour, minute) ->
-         if hour < 24 && minute < 60 then
-           return (Span.For_human'.make_exn ~sign ~hours:hour ~minutes:minute ())
-         else fail "Invalid offset")
-      <|> (eof >> return Span.zero))
+        >> return `Pos
+        <|> (char '-' >> return `Neg)
+        >>= fun sign ->
+        attempt
+          (max_two_digit_nat_zero
+          >>= fun hour ->
+          char ':'
+          >> max_two_digit_nat_zero
+          << eof
+          >>= fun minute -> return (hour, minute))
+        <|> (max_two_digit_nat_zero << eof >>= fun hour -> return (hour, 0))
+        >>= fun (hour, minute) ->
+        if hour < 24 && minute < 60 then
+          return (Span.For_human'.make_exn ~sign ~hours:hour ~minutes:minute ())
+        else fail "Invalid offset")
+     <|> (eof >> return Span.zero))
 
 let fixed_offset_of_name (s : string) : Span.t option =
   match
@@ -133,18 +133,18 @@ let fixed_offset_of_name (s : string) : Span.t option =
 
 let equal t1 t2 =
   (match (t1.typ, t2.typ) with
-   | Backed name1, Backed name2 -> CCString.equal name1 name2
-   | Offset_only s1, Offset_only s2 -> CCInt.equal s1 s2
-   | Backed name, Offset_only offset | Offset_only offset, Backed name -> (
-       match fixed_offset_of_name name with
-       | Some offset' -> offset = CCInt64.to_int @@ Span.get_s offset'
-       | None -> false))
+  | Backed name1, Backed name2 -> CCString.equal name1 name2
+  | Offset_only s1, Offset_only s2 -> CCInt.equal s1 s2
+  | Backed name, Offset_only offset | Offset_only offset, Backed name -> (
+      match fixed_offset_of_name name with
+      | Some offset' -> offset = CCInt64.to_int @@ Span.get_s offset'
+      | None -> false))
   && Bigarray.Array1.dim (fst t1.record.table)
      = Bigarray.Array1.dim (fst t2.record.table)
   && Array.length (snd t1.record.table) = Array.length (snd t2.record.table)
   && CCArray.for_all2
-    (fun e1 e2 -> e1 = e2)
-    (snd t1.record.table) (snd t2.record.table)
+       (fun e1 e2 -> e1 = e2)
+       (snd t1.record.table) (snd t2.record.table)
 
 let one_day = Span.For_human'.(make_exn ~days:1 ())
 
@@ -244,9 +244,9 @@ let lookup_timestamp_local (t : t) timestamp : entry local_result =
       match (x1, x2, x3) with
       | None, None, None -> `None
       | Some x, None, None | None, Some x, None | None, None, Some x ->
-        `Single x
+          `Single x
       | Some x, Some y, None | Some x, None, Some y | None, Some x, Some y ->
-        `Ambiguous (x, y)
+          `Ambiguous (x, y)
       | Some _, Some _, Some _ -> failwith "Unexpected case")
 
 module Raw = struct
@@ -260,14 +260,15 @@ module Raw = struct
       | Seq.Cons ((k1, entry1), s) -> (
           match s () with
           | Seq.Nil ->
-            fun () ->
-              Seq.Cons
-                (((k1, Span.get_s Constants.timestamp_max), entry1), aux Seq.empty)
+              fun () ->
+                Seq.Cons
+                  ( ((k1, Span.get_s Constants.timestamp_max), entry1),
+                    aux Seq.empty )
           | Seq.Cons ((k2, entry2), rest) ->
-            fun () ->
-              Seq.Cons
-                ( ((k1, k2), entry1),
-                  aux (fun () -> Seq.Cons ((k2, entry2), rest)) ))
+              fun () ->
+                Seq.Cons
+                  ( ((k1, k2), entry1),
+                    aux (fun () -> Seq.Cons ((k2, entry2), rest)) ))
     in
     OSeq.(0 --^ size) |> OSeq.map (fun i -> (starts.{i}, entries.(i))) |> aux
 
@@ -295,9 +296,9 @@ module Raw = struct
     match fixed_offset_of_name name with
     | Some offset -> make_offset_only offset
     | None ->
-      table_of_transitions l
-      |> CCOpt.map (fun table ->
-          { typ = Backed name; record = process_table table })
+        table_of_transitions l
+        |> CCOpt.map (fun table ->
+               { typ = Backed name; record = process_table table })
 end
 
 let offset_is_recorded offset (t : t) =
@@ -311,22 +312,22 @@ module Sexp = struct
       | `List l -> (
           match l with
           | `Atom "tz" :: `Atom name :: transitions ->
-            transitions
-            |> List.map (fun x ->
-                match x with
-                | `List [ start; `List [ `Atom is_dst; offset ] ] ->
-                  let start = int64_of_sexp start in
-                  let is_dst =
-                    match is_dst with
-                    | "t" -> true
-                    | "f" -> false
-                    | _ -> invalid_data ""
-                  in
-                  let offset = int_of_sexp offset in
-                  let entry = { is_dst; offset } in
-                  (start, entry)
-                | _ -> invalid_data "")
-            |> Raw.of_transitions ~name
+              transitions
+              |> List.map (fun x ->
+                     match x with
+                     | `List [ start; `List [ `Atom is_dst; offset ] ] ->
+                         let start = int64_of_sexp start in
+                         let is_dst =
+                           match is_dst with
+                           | "t" -> true
+                           | "f" -> false
+                           | _ -> invalid_data ""
+                         in
+                         let offset = int_of_sexp offset in
+                         let entry = { is_dst; offset } in
+                         (start, entry)
+                     | _ -> invalid_data "")
+              |> Raw.of_transitions ~name
           | _ -> invalid_data "")
       | `Atom _ -> invalid_data ""
     with _ -> None
@@ -341,15 +342,15 @@ module Sexp = struct
          ::
          List.map
            (fun ((start, _), entry) ->
-              list
-                [
-                  sexp_of_int64 start;
-                  list
-                    [
-                      (if entry.is_dst then atom "t" else atom "f");
-                      sexp_of_int entry.offset;
-                    ];
-                ])
+             list
+               [
+                 sexp_of_int64 start;
+                 list
+                   [
+                     (if entry.is_dst then atom "t" else atom "f");
+                     sexp_of_int entry.offset;
+                   ];
+               ])
            (Raw.to_transitions t)))
 
   let of_string s =
@@ -366,35 +367,35 @@ module JSON = struct
     try
       match json with
       | `Assoc l ->
-        let name =
-          match List.assoc "name" l with
-          | `String s -> s
-          | _ -> raise Invalid_data
-        in
-        let table_rows =
-          match List.assoc "table" l with
-          | `List l -> l
-          | _ -> raise Invalid_data
-        in
-        table_rows
-        |> List.map (fun row ->
-            match row with
-            | `List [ `String s; `Assoc e ] ->
-              let start = Int64.of_string s in
-              let is_dst =
-                match List.assoc "is_dst" e with
-                | `Bool b -> b
-                | _ -> raise Invalid_data
-              in
-              let offset =
-                match List.assoc "offset" e with
-                | `Int x -> x
-                | _ -> raise Invalid_data
-              in
-              let entry = { is_dst; offset } in
-              (start, entry)
-            | _ -> raise Invalid_data)
-        |> Raw.of_transitions ~name
+          let name =
+            match List.assoc "name" l with
+            | `String s -> s
+            | _ -> raise Invalid_data
+          in
+          let table_rows =
+            match List.assoc "table" l with
+            | `List l -> l
+            | _ -> raise Invalid_data
+          in
+          table_rows
+          |> List.map (fun row ->
+                 match row with
+                 | `List [ `String s; `Assoc e ] ->
+                     let start = Int64.of_string s in
+                     let is_dst =
+                       match List.assoc "is_dst" e with
+                       | `Bool b -> b
+                       | _ -> raise Invalid_data
+                     in
+                     let offset =
+                       match List.assoc "offset" e with
+                       | `Int x -> x
+                       | _ -> raise Invalid_data
+                     in
+                     let entry = { is_dst; offset } in
+                     (start, entry)
+                 | _ -> raise Invalid_data)
+          |> Raw.of_transitions ~name
       | _ -> raise Invalid_data
     with _ -> None
 
@@ -407,17 +408,17 @@ module JSON = struct
         ( "table",
           `List
             (Raw.to_transition_seq t
-             |> Seq.map (fun ((start, _), entry) ->
-                 `List
-                   [
-                     `String (Int64.to_string start);
-                     `Assoc
-                       [
-                         ("is_dst", `Bool entry.is_dst);
-                         ("offset", `Int entry.offset);
-                       ];
-                   ])
-             |> CCList.of_seq) );
+            |> Seq.map (fun ((start, _), entry) ->
+                   `List
+                     [
+                       `String (Int64.to_string start);
+                       `Assoc
+                         [
+                           ("is_dst", `Bool entry.is_dst);
+                           ("offset", `Int entry.offset);
+                         ];
+                     ])
+            |> CCList.of_seq) );
       ]
 end
 
@@ -454,14 +455,14 @@ module Db = struct
         match x with
         | `Atom _ -> invalid_data ""
         | `List l ->
-          Some
-            (l
-             |> CCList.to_seq
-             |> Seq.map (fun x ->
-                 match Sexp.of_sexp x with
-                 | None -> invalid_data ""
-                 | Some x -> x)
-             |> of_seq)
+            Some
+              (l
+              |> CCList.to_seq
+              |> Seq.map (fun x ->
+                     match Sexp.of_sexp x with
+                     | None -> invalid_data ""
+                     | Some x -> x)
+              |> of_seq)
       with _ -> None
 
     let to_sexp db =
@@ -485,9 +486,9 @@ let local () : t option =
   match Timedesc_tzlocal.local () with
   | [] -> None
   | l ->
-    List.fold_left
-      (fun tz name -> match tz with Some tz -> Some tz | None -> make name)
-      None l
+      List.fold_left
+        (fun tz name -> match tz with Some tz -> Some tz | None -> make name)
+        None l
 
 let local_exn () : t =
   match local () with

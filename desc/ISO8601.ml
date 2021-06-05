@@ -12,10 +12,10 @@ let date_p : (Date.t, unit) MParser.t =
   match Date.Ymd_date.make ~year ~month ~day with
   | Ok x -> return x
   | Error e ->
-    fail
-      (Printf.sprintf "Invalid date: %s"
-         (Date_time.Ymd_date_time.string_of_error
-            (e :> Date_time.Ymd_date_time.error)))
+      fail
+        (Printf.sprintf "Invalid date: %s"
+           (Date_time.Ymd_date_time.string_of_error
+              (e :> Date_time.Ymd_date_time.error)))
 
 let hm_p : (int * int, unit) MParser.t =
   let open MParser in
@@ -24,10 +24,10 @@ let hm_p : (int * int, unit) MParser.t =
     [
       attempt
         (two_digit_nat_zero
-         >>= fun hour ->
-         optional (char ':')
-         >> two_digit_nat_zero
-         >>= fun minute -> return (hour, minute));
+        >>= fun hour ->
+        optional (char ':')
+        >> two_digit_nat_zero
+        >>= fun minute -> return (hour, minute));
       (two_digit_nat_zero >>= fun hour -> return (hour, 0));
     ]
 
@@ -39,36 +39,36 @@ let time_p : (Time.t, unit) MParser.t =
       [
         attempt
           (two_digit_nat_zero
-           >>= fun hour ->
-           optional (char ':')
-           >> two_digit_nat_zero
-           >>= fun minute ->
-           optional (char ':')
-           >> two_digit_nat_zero
-           >>= fun second ->
-           choice [ char '.'; char ',' ]
-           >> num_string
-           >>= fun s ->
-           let s = if String.length s > 9 then String.sub s 0 9 else s in
-           let len = String.length s in
-           if len = 9 then return (hour, minute, second, int_of_string s)
-           else
-             let diff = 9 - len in
-             let ns =
-               int_of_float
-               @@ CCFloat.round
-               @@ (float_of_int (int_of_string s) *. (10. ** float_of_int diff))
-             in
-             return (hour, minute, second, ns));
+          >>= fun hour ->
+          optional (char ':')
+          >> two_digit_nat_zero
+          >>= fun minute ->
+          optional (char ':')
+          >> two_digit_nat_zero
+          >>= fun second ->
+          choice [ char '.'; char ',' ]
+          >> num_string
+          >>= fun s ->
+          let s = if String.length s > 9 then String.sub s 0 9 else s in
+          let len = String.length s in
+          if len = 9 then return (hour, minute, second, int_of_string s)
+          else
+            let diff = 9 - len in
+            let ns =
+              int_of_float
+              @@ CCFloat.round
+              @@ (float_of_int (int_of_string s) *. (10. ** float_of_int diff))
+            in
+            return (hour, minute, second, ns));
         attempt
           (two_digit_nat_zero
-           >>= fun hour ->
-           optional (char ':')
-           >> two_digit_nat_zero
-           >>= fun minute ->
-           optional (char ':')
-           >> two_digit_nat_zero
-           >>= fun second -> return (hour, minute, second, 0));
+          >>= fun hour ->
+          optional (char ':')
+          >> two_digit_nat_zero
+          >>= fun minute ->
+          optional (char ':')
+          >> two_digit_nat_zero
+          >>= fun second -> return (hour, minute, second, 0));
         (hm_p |>> fun (hour, minute) -> (hour, minute, 0, 0));
       ]
   in
@@ -77,22 +77,22 @@ let time_p : (Time.t, unit) MParser.t =
   match Time.make ~hour ~minute ~second ~ns () with
   | Ok x -> return x
   | Error e ->
-    fail
-      (Printf.sprintf "Invalid time: %s"
-         (Date_time.Ymd_date_time.string_of_error
-            (e :> Date_time.Ymd_date_time.error)))
+      fail
+        (Printf.sprintf "Invalid time: %s"
+           (Date_time.Ymd_date_time.string_of_error
+              (e :> Date_time.Ymd_date_time.error)))
 
 let offset_p : (Span.t, unit) MParser.t =
   let open MParser in
   char 'Z'
   >>$ Span.zero
-      <|> (char '+'
-           >>$ `Pos
-               <|> (char '-' >>$ `Neg)
-           >>= fun sign ->
-           hm_p
-           |>> fun (hour, minute) ->
-           Span.For_human'.make_exn ~sign ~hours:hour ~minutes:minute ())
+  <|> (char '+'
+      >>$ `Pos
+      <|> (char '-' >>$ `Neg)
+      >>= fun sign ->
+      hm_p
+      |>> fun (hour, minute) ->
+      Span.For_human'.make_exn ~sign ~hours:hour ~minutes:minute ())
 
 type maybe_zoneless =
   [ `Zoned of Date_time.t
@@ -110,19 +110,19 @@ let to_maybe_zoneless s : (maybe_zoneless, string) result =
     >>= fun time ->
     attempt (offset_p << spaces << eof)
     >>= (fun offset ->
-        match
-          Date_time.Zoneless'.to_zoned_unambiguous ~offset_from_utc:offset
-            (Date_time.Zoneless'.make date time)
-        with
-        | Error e ->
-          fail
-            (Printf.sprintf "Invalid date time: %s"
-               (Date_time.Ymd_date_time.string_of_error
-                  (e :> Date_time.Ymd_date_time.error)))
-        | Ok x -> return (`Zoned x))
-        <|> (spaces
-             >> eof
-             >> return (`Zoneless (Date_time.Zoneless'.make date time)))
+          match
+            Date_time.Zoneless'.to_zoned_unambiguous ~offset_from_utc:offset
+              (Date_time.Zoneless'.make date time)
+          with
+          | Error e ->
+              fail
+                (Printf.sprintf "Invalid date time: %s"
+                   (Date_time.Ymd_date_time.string_of_error
+                      (e :> Date_time.Ymd_date_time.error)))
+          | Ok x -> return (`Zoned x))
+    <|> (spaces
+        >> eof
+        >> return (`Zoneless (Date_time.Zoneless'.make date time)))
   in
   parse_string p s () |> result_of_mparser_result
 

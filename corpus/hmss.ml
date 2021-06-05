@@ -12,11 +12,11 @@ let texts =
 let () =
   List.iteri
     (fun i text ->
-       Printf.printf "%d. %S\n" i text;
-       match Timere_parse.hms text with
-       | Ok hms -> Fmt.pr "  Ok %a\n\n%!" Timere.Hms.pp hms
-       | Error msg ->
-         Printf.printf "  Error %s\n" msg;
-         print_endline "  ^^^^^";
-         print_newline ())
+      Printf.printf "%d. %S\n" i text;
+      match Timere_parse.hms text with
+      | Ok hms -> Fmt.pr "  Ok %a\n\n%!" Timere.Hms.pp hms
+      | Error msg ->
+          Printf.printf "  Error %s\n" msg;
+          print_endline "  ^^^^^";
+          print_newline ())
     texts

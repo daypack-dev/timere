@@ -1,22 +1,22 @@
 module Int64_range = Time.Range.Make (struct
-    type t = int64
+  type t = int64
 
-    let modulo = None
+  let modulo = None
 
-    let to_int64 x = x
+  let to_int64 x = x
 
-    let of_int64 x = x
-  end)
+  let of_int64 x = x
+end)
 
 module Int_range = Time.Range_small.Make (struct
-    type t = int
+  type t = int
 
-    let modulo = None
+  let modulo = None
 
-    let to_int x = x
+  let to_int x = x
 
-    let of_int x = x
-  end)
+  let of_int x = x
+end)
 
 module Alco = struct
   let int64_range_flatten1 () =

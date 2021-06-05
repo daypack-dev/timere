@@ -2,17 +2,17 @@ open Span_set_utils
 open Timestamp_utils
 
 let do_chunk ~drop_partial (n : Timedesc.Span.t) (s : Time.Interval'.t Seq.t) :
-  Time.Interval'.t Seq.t =
+    Time.Interval'.t Seq.t =
   let open Timedesc.Span in
   let rec aux n s =
     match s () with
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((x, y), rest) ->
-      let size = y - x in
-      if size >= n then fun () ->
-        Seq.Cons ((x, n + x), aux n (fun () -> Seq.Cons ((n + x, y), rest)))
-      else if drop_partial then aux n rest
-      else fun () -> Seq.Cons ((x, y), aux n rest)
+        let size = y - x in
+        if size >= n then fun () ->
+          Seq.Cons ((x, n + x), aux n (fun () -> Seq.Cons ((n + x, y), rest)))
+        else if drop_partial then aux n rest
+        else fun () -> Seq.Cons ((x, y), aux n rest)
   in
   aux n s
 
@@ -37,83 +37,83 @@ let find_after (bound : Timedesc.Span.t) (start : Timedesc.Span.t)
   match s () with Seq.Nil -> None | Seq.Cons (x, _) -> Some x
 
 let do_chunk_at_year_boundary tz (s : Time.Interval'.t Seq.t) :
-  Time.Interval'.t Seq.t =
+    Time.Interval'.t Seq.t =
   let rec aux s =
     match s () with
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((t1, t2), rest) ->
-      let dt1 =
-        CCOpt.get_exn_or "Expected successful date time construction"
-        @@ Timedesc.of_timestamp ~tz_of_date_time:tz t1
-      in
-      let dt2 =
-        t2
-        |> Timedesc.Span.pred
-        |> Timedesc.of_timestamp ~tz_of_date_time:tz
-        |> CCOpt.get_exn_or "Expected successful date time construction"
-      in
-      if Timedesc.year dt1 = Timedesc.year dt2 then fun () ->
-        Seq.Cons ((t1, t2), aux rest)
-      else
-        let t' =
-          Timedesc.make_exn ~tz:(Timedesc.tz dt1) ~year:(Timedesc.year dt1)
-            ~month:12 ~day:31 ~hour:23 ~minute:59 ~second:59
-            ~ns:(Timedesc.Span.ns_count_in_s - 1)
-            ()
-          |> Timedesc.to_timestamp
-          |> Timedesc.max_of_local_result
-          |> Timedesc.Span.succ
+        let dt1 =
+          CCOpt.get_exn_or "Expected successful date time construction"
+          @@ Timedesc.of_timestamp ~tz_of_date_time:tz t1
         in
-        fun () ->
-          Seq.Cons ((t1, t'), aux (fun () -> Seq.Cons ((t', t2), rest)))
+        let dt2 =
+          t2
+          |> Timedesc.Span.pred
+          |> Timedesc.of_timestamp ~tz_of_date_time:tz
+          |> CCOpt.get_exn_or "Expected successful date time construction"
+        in
+        if Timedesc.year dt1 = Timedesc.year dt2 then fun () ->
+          Seq.Cons ((t1, t2), aux rest)
+        else
+          let t' =
+            Timedesc.make_exn ~tz:(Timedesc.tz dt1) ~year:(Timedesc.year dt1)
+              ~month:12 ~day:31 ~hour:23 ~minute:59 ~second:59
+              ~ns:(Timedesc.Span.ns_count_in_s - 1)
+              ()
+            |> Timedesc.to_timestamp
+            |> Timedesc.max_of_local_result
+            |> Timedesc.Span.succ
+          in
+          fun () ->
+            Seq.Cons ((t1, t'), aux (fun () -> Seq.Cons ((t', t2), rest)))
   in
   aux s
 
 let do_chunk_at_month_boundary tz (s : Time.Interval'.t Seq.t) :
-  Time.Interval'.t Seq.t =
+    Time.Interval'.t Seq.t =
   let rec aux s =
     match s () with
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((t1, t2), rest) ->
-      let dt1 =
-        CCOpt.get_exn_or "Expected successful date time construction"
-        @@ Timedesc.of_timestamp ~tz_of_date_time:tz t1
-      in
-      let dt2 =
-        t2
-        |> Timedesc.Span.pred
-        |> Timedesc.of_timestamp ~tz_of_date_time:tz
-        |> CCOpt.get_exn_or "Expected successful date time construction"
-      in
-      if
-        Timedesc.year dt1 = Timedesc.year dt2
-        && Timedesc.month dt1 = Timedesc.month dt2
-      then fun () -> Seq.Cons ((t1, t2), aux rest)
-      else
-        let t' =
-          Timedesc.make_exn ~tz:(Timedesc.tz dt1) ~year:(Timedesc.year dt1)
-            ~month:(Timedesc.month dt1)
-            ~day:
-              (Timedesc.Utils.day_count_of_month ~year:(Timedesc.year dt1)
-                 ~month:(Timedesc.month dt1))
-            ~hour:23 ~minute:59 ~second:59
-            ~ns:(Timedesc.Span.ns_count_in_s - 1)
-            ()
-          |> Timedesc.to_timestamp
-          |> Timedesc.max_of_local_result
-          |> Timedesc.Span.succ
+        let dt1 =
+          CCOpt.get_exn_or "Expected successful date time construction"
+          @@ Timedesc.of_timestamp ~tz_of_date_time:tz t1
         in
-        fun () ->
-          Seq.Cons ((t1, t'), aux (fun () -> Seq.Cons ((t', t2), rest)))
+        let dt2 =
+          t2
+          |> Timedesc.Span.pred
+          |> Timedesc.of_timestamp ~tz_of_date_time:tz
+          |> CCOpt.get_exn_or "Expected successful date time construction"
+        in
+        if
+          Timedesc.year dt1 = Timedesc.year dt2
+          && Timedesc.month dt1 = Timedesc.month dt2
+        then fun () -> Seq.Cons ((t1, t2), aux rest)
+        else
+          let t' =
+            Timedesc.make_exn ~tz:(Timedesc.tz dt1) ~year:(Timedesc.year dt1)
+              ~month:(Timedesc.month dt1)
+              ~day:
+                (Timedesc.Utils.day_count_of_month ~year:(Timedesc.year dt1)
+                   ~month:(Timedesc.month dt1))
+              ~hour:23 ~minute:59 ~second:59
+              ~ns:(Timedesc.Span.ns_count_in_s - 1)
+              ()
+            |> Timedesc.to_timestamp
+            |> Timedesc.max_of_local_result
+            |> Timedesc.Span.succ
+          in
+          fun () ->
+            Seq.Cons ((t1, t'), aux (fun () -> Seq.Cons ((t', t2), rest)))
   in
   aux s
 
 let aux_pattern_mem search_using_tz (pattern : Pattern.t) (timestamp : int64) :
-  bool =
+    bool =
   let dt =
     CCOpt.get_exn_or "Expected successful date time construction"
     @@ Timedesc.of_timestamp ~tz_of_date_time:search_using_tz
-      (Timedesc.Span.make ~s:timestamp ())
+         (Timedesc.Span.make ~s:timestamp ())
   in
   let weekday = Timedesc.weekday dt in
   let year_is_fine =
@@ -161,7 +161,7 @@ let aux_pattern_mem search_using_tz (pattern : Pattern.t) (timestamp : int64) :
   && second_is_fine
 
 let aux_pattern (search_start, search_end_exc) search_using_tz pattern :
-  Span_set.t =
+    Span_set.t =
   let search_space_set =
     span_set_of_intervals @@ Seq.return (search_start, search_end_exc)
   in
@@ -170,26 +170,26 @@ let aux_pattern (search_start, search_end_exc) search_using_tz pattern :
     ~b:Timedesc.Span.(search_end_exc.s)
   |> Seq.filter (aux_pattern_mem search_using_tz pattern)
   |> (fun s ->
-      if Diet.Int.is_empty pattern.ns then
-        s |> intervals_of_int64s |> span_set_of_intervals
-      else
-        let ns_inc_seq =
-          Diet.Int.fold
-            (fun interval acc ->
+       if Diet.Int.is_empty pattern.ns then
+         s |> intervals_of_int64s |> span_set_of_intervals
+       else
+         let ns_inc_seq =
+           Diet.Int.fold
+             (fun interval acc ->
                (Diet.Int.Interval.x interval, Diet.Int.Interval.y interval)
                :: acc)
-            pattern.ns []
-          |> List.rev
-          |> CCList.to_seq
-        in
-        s
-        |> Seq.flat_map (fun s ->
-            Seq.map
-              (fun (x, y) ->
-                 ( Timedesc.Span.make ~s ~ns:x (),
-                   Timedesc.Span.(succ @@ make ~s ~ns:y ()) ))
-              ns_inc_seq)
-        |> span_set_of_intervals)
+             pattern.ns []
+           |> List.rev
+           |> CCList.to_seq
+         in
+         s
+         |> Seq.flat_map (fun s ->
+                Seq.map
+                  (fun (x, y) ->
+                    ( Timedesc.Span.make ~s ~ns:x (),
+                      Timedesc.Span.(succ @@ make ~s ~ns:y ()) ))
+                  ns_inc_seq)
+         |> span_set_of_intervals)
   |> Span_set.inter search_space_set
 
 let aux_points_mem search_using_tz ({ pick; tz_info } : Points.t) timestamp =
@@ -203,7 +203,7 @@ let aux_points_mem search_using_tz ({ pick; tz_info } : Points.t) timestamp =
     timestamp
 
 let aux_points (search_start, search_end_exc) search_using_tz points :
-  Timedesc.Span.t Seq.t =
+    Timedesc.Span.t Seq.t =
   Seq_utils.a_to_b_inc_int64
     ~a:Timedesc.Span.(search_start.s)
     ~b:Timedesc.Span.(search_end_exc.s)
@@ -225,58 +225,58 @@ let resolve ?(search_using_tz = Timedesc.Time_zone.utc)
     | Unary_op (op, t) -> (
         match op with
         | Not ->
-          Span_set.diff span_set_full (aux search_space search_using_tz t)
+            Span_set.diff span_set_full (aux search_space search_using_tz t)
         | Shift n ->
-          let x, y = search_space in
-          aux
-            (timestamp_safe_sub x n, timestamp_safe_sub y n)
-            search_using_tz t
-          |> span_set_map (fun (x, y) ->
-              (timestamp_safe_add n x, timestamp_safe_add n y))
+            let x, y = search_space in
+            aux
+              (timestamp_safe_sub x n, timestamp_safe_sub y n)
+              search_using_tz t
+            |> span_set_map (fun (x, y) ->
+                   (timestamp_safe_add n x, timestamp_safe_add n y))
         | Lengthen n ->
-          let x, y = search_space in
-          aux (x, timestamp_safe_add y n) search_using_tz t
-          |> span_set_map (fun (x, y) -> (x, timestamp_safe_add n y))
+            let x, y = search_space in
+            aux (x, timestamp_safe_add y n) search_using_tz t
+            |> span_set_map (fun (x, y) -> (x, timestamp_safe_add n y))
         | With_tz tz -> aux search_space tz t)
     | Inter_seq s ->
-      Seq.fold_left
-        (fun acc t -> Span_set.inter acc (aux search_space search_using_tz t))
-        span_set_full s
+        Seq.fold_left
+          (fun acc t -> Span_set.inter acc (aux search_space search_using_tz t))
+          span_set_full s
     | Union_seq s ->
-      Seq.fold_left
-        (fun acc t -> Span_set.union acc (aux search_space search_using_tz t))
-        Span_set.empty s
+        Seq.fold_left
+          (fun acc t -> Span_set.union acc (aux search_space search_using_tz t))
+          Span_set.empty s
     | Bounded_intervals { mode; bound; start; end_ } ->
-      let x, y = search_space in
-      let search_space = (timestamp_safe_sub x bound, y) in
-      let s1 = aux_points search_space search_using_tz start in
-      let s2 = aux_points search_space search_using_tz end_ in
-      s1
-      |> Seq.filter_map (fun start ->
-          find_after bound start s2
-          |> CCOpt.map (fun x ->
-              match mode with
-              | `Whole_inc -> (start, Timedesc.Span.succ x)
-              | `Whole_exc -> (start, x)
-              | `Fst -> (start, Timedesc.Span.succ start)
-              | `Snd -> (x, Timedesc.Span.succ x)))
-      |> span_set_of_intervals
+        let x, y = search_space in
+        let search_space = (timestamp_safe_sub x bound, y) in
+        let s1 = aux_points search_space search_using_tz start in
+        let s2 = aux_points search_space search_using_tz end_ in
+        s1
+        |> Seq.filter_map (fun start ->
+               find_after bound start s2
+               |> CCOpt.map (fun x ->
+                      match mode with
+                      | `Whole_inc -> (start, Timedesc.Span.succ x)
+                      | `Whole_exc -> (start, x)
+                      | `Fst -> (start, Timedesc.Span.succ start)
+                      | `Snd -> (x, Timedesc.Span.succ x)))
+        |> span_set_of_intervals
     | Unchunk chunked ->
-      aux_chunked search_using_tz chunked |> span_set_of_intervals
+        aux_chunked search_using_tz chunked |> span_set_of_intervals
   and aux_chunked search_using_tz chunked =
     let chunk_based_on_op_on_t op s =
       match op with
       | Time_ast.Chunk_disjoint_interval -> normalize s
       | Chunk_by_duration { chunk_size; drop_partial } ->
-        do_chunk ~drop_partial chunk_size s
+          do_chunk ~drop_partial chunk_size s
       | Chunk_at_year_boundary -> do_chunk_at_year_boundary search_using_tz s
       | Chunk_at_month_boundary -> do_chunk_at_month_boundary search_using_tz s
     in
     match chunked with
     | Unary_op_on_t (op, t) ->
-      aux default_result_space search_using_tz t
-      |> intervals_of_span_set
-      |> chunk_based_on_op_on_t op
+        aux default_result_space search_using_tz t
+        |> intervals_of_span_set
+        |> chunk_based_on_op_on_t op
     | Unary_op_on_chunked (op, c) -> (
         let s = aux_chunked search_using_tz c in
         match op with

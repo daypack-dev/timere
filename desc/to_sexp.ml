@@ -16,7 +16,8 @@ let sexp_list_of_ints l = List.map sexp_of_int l
 let sexp_of_tz_name t = CCSexp.atom (Time_zone.name t)
 
 let sexp_of_span (x : Span.t) =
-  CCSexp.list [ sexp_of_int64 @@ Span.get_s x; sexp_of_int @@ Span.get_subsec_ns x ]
+  CCSexp.list
+    [ sexp_of_int64 @@ Span.get_s x; sexp_of_int @@ Span.get_subsec_ns x ]
 
 let sexp_of_tz_info ({ tz; fixed_offset_from_utc } : Time_zone_info.t) =
   let open CCSexp in
@@ -25,7 +26,8 @@ let sexp_of_tz_info ({ tz; fixed_offset_from_utc } : Time_zone_info.t) =
        [
          Some (sexp_of_tz_name tz);
          CCOpt.map
-           (fun tz_offset -> sexp_of_int (CCInt64.to_int @@ Span.get_s tz_offset))
+           (fun tz_offset ->
+             sexp_of_int (CCInt64.to_int @@ Span.get_s tz_offset))
            fixed_offset_from_utc;
        ])
 
@@ -48,15 +50,18 @@ let sexp_of_date_time (x : Date_time.t) =
       sexp_of_time x.time;
       sexp_of_tz_name x.tz;
       (match x.offset_from_utc with
-       | `Single offset ->
-         list [ `Atom "single"; sexp_of_int (CCInt64.to_int @@ Span.get_s offset) ]
-       | `Ambiguous (offset1, offset2) ->
-         list
-           [
-             `Atom "ambiguous";
-             sexp_of_int (CCInt64.to_int @@ Span.get_s offset1);
-             sexp_of_int (CCInt64.to_int @@ Span.get_s offset2);
-           ]);
+      | `Single offset ->
+          list
+            [
+              `Atom "single"; sexp_of_int (CCInt64.to_int @@ Span.get_s offset);
+            ]
+      | `Ambiguous (offset1, offset2) ->
+          list
+            [
+              `Atom "ambiguous";
+              sexp_of_int (CCInt64.to_int @@ Span.get_s offset1);
+              sexp_of_int (CCInt64.to_int @@ Span.get_s offset2);
+            ]);
     ]
 
 let sexp_of_zoneless (x : Date_time.Zoneless'.zoneless) =

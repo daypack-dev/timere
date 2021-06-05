@@ -9,7 +9,7 @@ let pp_hms formatter (hms : Time.Hms'.t) : unit =
 let string_of_hms hms = Fmt.str "%a" pp_hms hms
 
 let wrap_to_sexp_into_pp_sexp (f : 'a -> CCSexp.t) :
-  Format.formatter -> 'a -> unit =
-  fun formatter x -> CCSexp.pp formatter (f x)
+    Format.formatter -> 'a -> unit =
+ fun formatter x -> CCSexp.pp formatter (f x)
 
 let pp_sexp = wrap_to_sexp_into_pp_sexp To_sexp.to_sexp

@@ -299,7 +299,7 @@ module Points : sig
     ?ns:int ->
     unit ->
     t
-    (** @raise Error_exn if [make] fails *)
+  (** @raise Error_exn if [make] fails *)
 end
 
 type points = Points.t

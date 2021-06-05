@@ -17,13 +17,13 @@ let search_end_exc =
 let () =
   Crowbar.add_test ~name:"resolver_is_same_as_simple_resolver" [ time ]
     (fun t ->
-       let r =
-         OSeq.equal ~eq:Time.Interval'.equal
-           (CCResult.get_exn
-            @@ Resolver.resolve
-              Time.(inter [ t; intervals [ (search_start, search_end_exc) ] ])
-           )
-           (Simple_resolver.resolve ~search_start ~search_end_exc
-              ~search_using_tz:Timedesc.Time_zone.utc t)
-       in
-       if not r then Crowbar.fail (Fmt.str "%a\n" Printers.pp_sexp t))
+      let r =
+        OSeq.equal ~eq:Time.Interval'.equal
+          (CCResult.get_exn
+          @@ Resolver.resolve
+               Time.(inter [ t; intervals [ (search_start, search_end_exc) ] ])
+          )
+          (Simple_resolver.resolve ~search_start ~search_end_exc
+             ~search_using_tz:Timedesc.Time_zone.utc t)
+      in
+      if not r then Crowbar.fail (Fmt.str "%a\n" Printers.pp_sexp t))

@@ -9,8 +9,8 @@ let int_of_sexp (x : CCSexp.t) =
       with Failure _ ->
         invalid_data (Printf.sprintf "Failed to parse int: %s" s))
   | `List _ ->
-    invalid_data
-      (Printf.sprintf "Expected atom for int: %s" (CCSexp.to_string x))
+      invalid_data
+        (Printf.sprintf "Expected atom for int: %s" (CCSexp.to_string x))
 
 let int64_of_sexp (x : CCSexp.t) =
   match x with
@@ -19,18 +19,18 @@ let int64_of_sexp (x : CCSexp.t) =
       with Failure _ ->
         invalid_data (Printf.sprintf "Failed to parse int64: %s" s))
   | `List _ ->
-    invalid_data
-      (Printf.sprintf "Expected atom for int64: %s" (CCSexp.to_string x))
+      invalid_data
+        (Printf.sprintf "Expected atom for int64: %s" (CCSexp.to_string x))
 
 let wrap_of_sexp (f : CCSexp.t -> 'a) : CCSexp.t -> ('a, string) result =
-  fun x ->
+ fun x ->
   try Ok (f x) with
   | Invalid_data msg -> Error msg
   | Invalid_argument msg -> Error msg
 
 let wrap_of_sexp_into_of_sexp_string (f : CCSexp.t -> 'a) :
-  string -> ('a, string) result =
-  fun s ->
+    string -> ('a, string) result =
+ fun s ->
   let res =
     try CCSexp.parse_string s
     with _ -> Error "Failed to parse string into sexp"

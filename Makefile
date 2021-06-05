@@ -74,7 +74,6 @@ doc :
 .PHONY: format
 format :
 	$(OCAMLFORMAT)
-	$(OCPINDENT)
 
 .PHONY: gen
 gen :
@@ -95,7 +94,6 @@ export-js-tzdb-none :
 cinaps :
 	cinaps -i $(SRCFILES)
 	$(OCAMLFORMAT)
-	$(OCPINDENT)
 
 .PHONY : clean
 clean:

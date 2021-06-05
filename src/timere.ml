@@ -47,22 +47,22 @@ module Utils = struct
     with Range.Range_is_invalid -> None
 
   let flatten_month_day_ranges (month_days : int range Seq.t) : int Seq.t option
-    =
+      =
     try Some (Month_day_ranges.Flatten.flatten month_days)
     with Range.Range_is_invalid -> None
 
   let flatten_month_day_range_list (month_days : int range list) :
-    int list option =
+      int list option =
     try Some (Month_day_ranges.Flatten.flatten_list month_days)
     with Range.Range_is_invalid -> None
 
   let flatten_weekday_ranges (weekdays : Timedesc.weekday range Seq.t) :
-    Timedesc.weekday Seq.t option =
+      Timedesc.weekday Seq.t option =
     try Some (Weekday_ranges.Flatten.flatten weekdays)
     with Range.Range_is_invalid -> None
 
   let flatten_weekday_range_list (weekdays : Timedesc.weekday range list) :
-    Timedesc.weekday list option =
+      Timedesc.weekday list option =
     try Some (Weekday_ranges.Flatten.flatten_list weekdays)
     with Range.Range_is_invalid -> None
 end

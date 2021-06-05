@@ -14,7 +14,7 @@ type error =
 exception Error_exn of error
 
 let make ?(ns = 0) ?(s_frac = 0.0) ~hour ~minute ~second () : (t, error) result
-  =
+    =
   if hour < 0 || 24 < hour then Error (`Invalid_hour hour)
   else if minute < 0 || 59 < minute then Error (`Invalid_minute minute)
   else if second < 0 || 60 < second then Error (`Invalid_second second)
@@ -33,16 +33,16 @@ let make ?(ns = 0) ?(s_frac = 0.0) ~hour ~minute ~second () : (t, error) result
       with
       | Error e -> Error e
       | Ok (hour, minute, second, ns) ->
-        let is_leap_second = second = 60 in
-        let second = if is_leap_second then 59 else second in
-        let ns = if is_leap_second then ns + Span.ns_count_in_s else ns in
-        let s =
-          CCInt64.to_int
-          @@ Span.get_s @@
-            Span.For_human'.make_exn ~sign:`Pos ~hours:hour ~minutes:minute
-               ~seconds:second ()
-        in
-        Ok ({ s; ns })
+          let is_leap_second = second = 60 in
+          let second = if is_leap_second then 59 else second in
+          let ns = if is_leap_second then ns + Span.ns_count_in_s else ns in
+          let s =
+            CCInt64.to_int
+            @@ Span.get_s
+            @@ Span.For_human'.make_exn ~sign:`Pos ~hours:hour ~minutes:minute
+                 ~seconds:second ()
+          in
+          Ok { s; ns }
 
 let make_exn ?ns ?s_frac ~hour ~minute ~second () : t =
   match make ~hour ~minute ~second ?ns ?s_frac () with

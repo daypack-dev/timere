@@ -11,24 +11,24 @@ let pp_date_time ?frac_s () formatter (dt : Date_time.t) =
   else
     match Date_time.offset_from_utc dt with
     | `Ambiguous _ ->
-      raise (Printers.Date_time_cannot_deduce_offset_from_utc dt)
+        raise (Printers.Date_time_cannot_deduce_offset_from_utc dt)
     | `Single offset ->
-      let offset_view = Span.For_human'.view offset in
-      let tz_off =
-        if Span.(offset = zero) then "Z"
-        else
-          let sign =
-            match offset_view.sign with `Pos -> '+' | `Neg -> '-'
-          in
-          Printf.sprintf "%c%02d:%02d" sign offset_view.hours
-            offset_view.minutes
-      in
-      let second = if Date_time.is_leap_second dt then 60 else second in
-      let Date.Ymd_date.{ year; month; day } = Date_time.ymd_date dt in
-      Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d%s%s" year month day hour
-        minute second
-        (Printers.string_of_s_frac ~sep:'.' ~frac_s ~ns)
-        tz_off
+        let offset_view = Span.For_human'.view offset in
+        let tz_off =
+          if Span.(offset = zero) then "Z"
+          else
+            let sign =
+              match offset_view.sign with `Pos -> '+' | `Neg -> '-'
+            in
+            Printf.sprintf "%c%02d:%02d" sign offset_view.hours
+              offset_view.minutes
+        in
+        let second = if Date_time.is_leap_second dt then 60 else second in
+        let Date.Ymd_date.{ year; month; day } = Date_time.ymd_date dt in
+        Fmt.pf formatter "%04d-%02d-%02dT%02d:%02d:%02d%s%s" year month day hour
+          minute second
+          (Printers.string_of_s_frac ~sep:'.' ~frac_s ~ns)
+          tz_off
 
 let of_date_time ?frac_s (dt : Date_time.t) : string option =
   try Some (Fmt.str "%a" (pp_date_time ?frac_s ()) dt)

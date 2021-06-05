@@ -144,7 +144,7 @@ let jd_of_start_of_iso_week_year ~iso_week_year =
 
 let week_count_of_iso_week_year ~iso_week_year =
   (jd_of_start_of_iso_week_year ~iso_week_year:(succ iso_week_year)
-   - jd_of_start_of_iso_week_year ~iso_week_year)
+  - jd_of_start_of_iso_week_year ~iso_week_year)
   / 7
 
 let iso_int_of_weekday (weekday : weekday) =
@@ -204,10 +204,10 @@ let jd_of_iso_week_date ~iso_week_year ~iso_week ~weekday =
 
 module Weekday_set = struct
   include CCSet.Make (struct
-      type t = weekday
+    type t = weekday
 
-      let compare = compare_weekday
-    end)
+    let compare = compare_weekday
+  end)
 
   let to_seq x = x |> to_list |> CCList.to_seq
 end

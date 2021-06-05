@@ -16,11 +16,11 @@ let ident_string ~(reserved_words : string list) : (string, unit) t =
 
 let skip_non_num_string ~end_markers =
   skip_satisfy (function
-      | '0' .. '9' -> false
-      | c -> (
-          match end_markers with
-          | None -> true
-          | Some x -> not (String.contains x c)))
+    | '0' .. '9' -> false
+    | c -> (
+        match end_markers with
+        | None -> true
+        | Some x -> not (String.contains x c)))
 
 let num_string : (string, unit) t =
   many1_satisfy (function '0' .. '9' -> true | _ -> false)
@@ -146,25 +146,25 @@ let result_of_mparser_result (x : 'a result) : ('a, string) CCResult.t =
           match
             List.fold_left
               (fun res msg ->
-                 match res with
-                 | Some x -> Some x
-                 | None -> (
-                     match msg with
-                     | Unexpected_error s ->
-                       Some
-                         (Printf.sprintf "Unexpected: %s, pos: %s" s
-                            (string_of_pos pos))
-                     | Expected_error s ->
-                       Some
-                         (Printf.sprintf "Expected: %s, pos: %s" s
-                            (string_of_pos pos))
-                     | Message_error s -> Some s
-                     | Compound_error (s, _) -> Some s
-                     | Backtrack_error _ -> res
-                     | Unknown_error -> res))
+                match res with
+                | Some x -> Some x
+                | None -> (
+                    match msg with
+                    | Unexpected_error s ->
+                        Some
+                          (Printf.sprintf "Unexpected: %s, pos: %s" s
+                             (string_of_pos pos))
+                    | Expected_error s ->
+                        Some
+                          (Printf.sprintf "Expected: %s, pos: %s" s
+                             (string_of_pos pos))
+                    | Message_error s -> Some s
+                    | Compound_error (s, _) -> Some s
+                    | Backtrack_error _ -> res
+                    | Unknown_error -> res))
               None msgs
           with
           | None ->
-            Error
-              (Printf.sprintf "Unknown error, pos: %s" (string_of_pos pos))
+              Error
+                (Printf.sprintf "Unknown error, pos: %s" (string_of_pos pos))
           | Some s -> Error s))

@@ -17,7 +17,7 @@ let () =
       ("Time_zone_tests.Qc", Time_zone_tests.Qc.suite);
     ]
     |> List.map (fun (name, suite) ->
-        (name, List.map QCheck_alcotest.to_alcotest suite))
+           (name, List.map QCheck_alcotest.to_alcotest suite))
   in
   let suites = alco_suites @ qc_suites in
   Alcotest.run "timedesc" suites

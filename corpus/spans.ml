@@ -16,13 +16,13 @@ let texts =
 let () =
   List.iteri
     (fun i text ->
-       Printf.printf "%d. %S\n" i text;
-       match Timere_parse.span text with
-       | Ok duration ->
-         Printf.printf "  Ok %s\n\n"
-           (Timedesc.Span.For_human.to_string duration)
-       | Error msg ->
-         Printf.printf "  Error %s\n" msg;
-         print_endline "  ^^^^^";
-         print_newline ())
+      Printf.printf "%d. %S\n" i text;
+      match Timere_parse.span text with
+      | Ok duration ->
+          Printf.printf "  Ok %s\n\n"
+            (Timedesc.Span.For_human.to_string duration)
+      | Error msg ->
+          Printf.printf "  Error %s\n" msg;
+          print_endline "  ^^^^^";
+          print_newline ())
     texts

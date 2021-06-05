@@ -76,23 +76,23 @@ module Intervals = struct
         intervals
 
     let check_if_sorted_rev (intervals : Interval'.t Seq.t) : Interval'.t Seq.t
-      =
+        =
       Seq_utils.check_if_f_holds_for_immediate_neighbors ~f:Timedesc.Interval.ge
         ~f_exn:(fun _ _ -> Intervals_are_not_sorted)
         intervals
 
     let check_if_disjoint (intervals : Interval'.t Seq.t) :
-      Timedesc.Interval.t Seq.t =
+        Timedesc.Interval.t Seq.t =
       Seq_utils.check_if_f_holds_for_immediate_neighbors
         ~f:(fun x y ->
-            match Interval'.overlap_of_a_over_b ~a:y ~b:x with
-            | None, None, None | Some _, None, None | None, None, Some _ -> true
-            | _ -> false)
+          match Interval'.overlap_of_a_over_b ~a:y ~b:x with
+          | None, None, None | Some _, None, None | None, None, Some _ -> true
+          | _ -> false)
         ~f_exn:(fun _ _ -> Intervals_are_not_disjoint)
         intervals
 
     let check_if_normalized (intervals : Interval'.t Seq.t) : Interval'.t Seq.t
-      =
+        =
       intervals
       |> check_if_valid
       |> check_if_not_empty
@@ -116,19 +116,19 @@ module Intervals = struct
 
   module Sort = struct
     let sort_intervals_list ?(skip_check = false) (intervals : Interval'.t list)
-      : Interval'.t list =
+        : Interval'.t list =
       intervals
       |> (fun l ->
-          if skip_check then l
-          else l |> CCList.to_seq |> Check.check_if_valid |> CCList.of_seq)
+           if skip_check then l
+           else l |> CCList.to_seq |> Check.check_if_valid |> CCList.of_seq)
       |> List.sort Timedesc.Interval.compare
 
     let sort_uniq_intervals_list ?(skip_check = false)
         (intervals : Interval'.t list) : Interval'.t list =
       intervals
       |> (fun l ->
-          if skip_check then l
-          else l |> CCList.to_seq |> Check.check_if_valid |> CCList.of_seq)
+           if skip_check then l
+           else l |> CCList.to_seq |> Check.check_if_valid |> CCList.of_seq)
       |> List.sort_uniq Timedesc.Interval.compare
 
     let sort_uniq_intervals ?(skip_check = false)
@@ -140,7 +140,7 @@ module Intervals = struct
       |> CCList.to_seq
 
     let sort_intervals ?(skip_check = false) (intervals : Interval'.t Seq.t) :
-      Interval'.t Seq.t =
+        Interval'.t Seq.t =
       intervals
       |> (fun s -> if skip_check then s else Check.check_if_valid s)
       |> CCList.of_seq
@@ -157,8 +157,8 @@ module Intervals = struct
             match Interval'.join cur (start, end_exc) with
             | Some x -> aux x rest
             | None ->
-              (* cannot be merged, add time slot being carried to the sequence *)
-              fun () -> Seq.Cons (cur, aux (start, end_exc) rest))
+                (* cannot be merged, add time slot being carried to the sequence *)
+                fun () -> Seq.Cons (cur, aux (start, end_exc) rest))
       in
       let aux' intervals =
         match intervals () with
@@ -171,8 +171,8 @@ module Intervals = struct
   let join ?(skip_check = false) intervals =
     intervals
     |> (fun s ->
-        if skip_check then s
-        else s |> Check.check_if_valid |> Check.check_if_sorted)
+         if skip_check then s
+         else s |> Check.check_if_valid |> Check.check_if_sorted)
     |> Join_internal.join
 
   let normalize ?(skip_filter_invalid = false) ?(skip_filter_empty = false)
@@ -190,35 +190,35 @@ module Intervals = struct
         match intervals () with
         | Seq.Nil -> Seq.empty
         | Seq.Cons ((ts_start, ts_end_exc), rest) ->
-          if start <= ts_start then
-            (* entire time slot is follow start, do nothing *)
-            intervals
-          else if ts_start < start && start < ts_end_exc then
-            (* time slot spans across the start mark, split time slot *)
-            fun () -> Seq.Cons ((start, ts_end_exc), rest)
-          else
-            (* time slot is before start mark, move to next time slot *)
-            aux start rest
+            if start <= ts_start then
+              (* entire time slot is follow start, do nothing *)
+              intervals
+            else if ts_start < start && start < ts_end_exc then
+              (* time slot spans across the start mark, split time slot *)
+              fun () -> Seq.Cons ((start, ts_end_exc), rest)
+            else
+              (* time slot is before start mark, move to next time slot *)
+              aux start rest
       in
       aux start intervals
 
     let slice_end_exc ~end_exc (intervals : Interval'.t Seq.t) :
-      Interval'.t Seq.t =
+        Interval'.t Seq.t =
       let open Timedesc.Span in
       let rec aux end_exc intervals =
         match intervals () with
         | Seq.Nil -> Seq.empty
         | Seq.Cons ((ts_start, ts_end_exc), rest) ->
-          if end_exc <= ts_start then
-            (* entire time slot is follow end_exc mark, drop everything *)
-            aux end_exc Seq.empty
-          else if ts_start < end_exc && end_exc < ts_end_exc then
-            (* time slot spans across the end_exc mark, split time slot,
-               skip remaining slots *)
-            fun () -> Seq.Cons ((ts_start, end_exc), aux end_exc Seq.empty)
-          else
-            (* time slot is before end_exc, add to sequence and move to next time slot *)
-            fun () -> Seq.Cons ((ts_start, ts_end_exc), aux end_exc rest)
+            if end_exc <= ts_start then
+              (* entire time slot is follow end_exc mark, drop everything *)
+              aux end_exc Seq.empty
+            else if ts_start < end_exc && end_exc < ts_end_exc then
+              (* time slot spans across the end_exc mark, split time slot,
+                 skip remaining slots *)
+              fun () -> Seq.Cons ((ts_start, end_exc), aux end_exc Seq.empty)
+            else
+              (* time slot is before end_exc, add to sequence and move to next time slot *)
+              fun () -> Seq.Cons ((ts_start, ts_end_exc), aux end_exc rest)
       in
       aux end_exc intervals
   end
@@ -227,12 +227,12 @@ module Intervals = struct
     let slice ?(skip_check = false) ?start ?end_exc intervals =
       intervals
       |> (fun s ->
-          if skip_check then s
-          else s |> Check.check_if_valid |> Check.check_if_sorted)
+           if skip_check then s
+           else s |> Check.check_if_valid |> Check.check_if_sorted)
       |> (fun s ->
-          match start with
-          | None -> s
-          | Some start -> Slice_internal.slice_start ~start s)
+           match start with
+           | None -> s
+           | Some start -> Slice_internal.slice_start ~start s)
       |> fun s ->
       match end_exc with
       | None -> s
@@ -241,7 +241,7 @@ module Intervals = struct
 
   let relative_complement ?(skip_check = false)
       ~(not_mem_of : Interval'.t Seq.t) (mem_of : Interval'.t Seq.t) :
-    Interval'.t Seq.t =
+      Interval'.t Seq.t =
     let rec aux mem_of not_mem_of =
       match (mem_of (), not_mem_of ()) with
       | Seq.Nil, _ -> Seq.empty
@@ -252,24 +252,24 @@ module Intervals = struct
           let not_mem_of () = Seq.Cons (not_mem_of_ts, not_mem_of_rest) in
           match Interval'.overlap_of_a_over_b ~a:mem_of_ts ~b:not_mem_of_ts with
           | None, None, None ->
-            (* mem_of_ts is empty, drop mem_of_ts *)
-            aux mem_of_rest not_mem_of
+              (* mem_of_ts is empty, drop mem_of_ts *)
+              aux mem_of_rest not_mem_of
           | Some _, None, None ->
-            (* mem_of_ts is before not_mem_of_ts entirely, output mem_of *)
-            fun () -> Seq.Cons (mem_of_ts, aux mem_of_rest not_mem_of)
+              (* mem_of_ts is before not_mem_of_ts entirely, output mem_of *)
+              fun () -> Seq.Cons (mem_of_ts, aux mem_of_rest not_mem_of)
           | None, None, Some _ ->
-            (* not_mem_of_ts is before mem_of entirely, drop not_mem_of_ts *)
-            aux mem_of not_mem_of_rest
+              (* not_mem_of_ts is before mem_of entirely, drop not_mem_of_ts *)
+              aux mem_of not_mem_of_rest
           | Some (start, end_exc), Some _, None ->
-            fun () -> Seq.Cons ((start, end_exc), aux mem_of_rest not_mem_of)
+              fun () -> Seq.Cons ((start, end_exc), aux mem_of_rest not_mem_of)
           | None, Some _, None -> aux mem_of_rest not_mem_of
           | None, Some _, Some (start, end_exc) ->
-            let mem_of () = Seq.Cons ((start, end_exc), mem_of_rest) in
-            aux mem_of not_mem_of_rest
+              let mem_of () = Seq.Cons ((start, end_exc), mem_of_rest) in
+              aux mem_of not_mem_of_rest
           | Some (start1, end_exc1), _, Some (start2, end_exc2) ->
-            let mem_of () = Seq.Cons ((start2, end_exc2), mem_of_rest) in
-            fun () -> Seq.Cons ((start1, end_exc1), aux mem_of not_mem_of_rest)
-        )
+              let mem_of () = Seq.Cons ((start2, end_exc2), mem_of_rest) in
+              fun () -> Seq.Cons ((start1, end_exc1), aux mem_of not_mem_of_rest)
+          )
     in
     let mem_of =
       if skip_check then mem_of
@@ -296,26 +296,26 @@ module Intervals = struct
         | _, Seq.Nil -> Seq.empty
         | ( Seq.Cons ((start1, end_exc1), rest1),
             Seq.Cons ((start2, end_exc2), rest2) ) ->
-          if end_exc1 < start2 then
-            (* 1 is before 2 entirely, drop 1, keep 2 *)
-            aux rest1 intervals2
-          else if end_exc2 < start1 then
-            (* 2 is before 1 entirely, keep 1, drop 2 *)
-            aux intervals1 rest2
-          else
-            (* there is an overlap or touching *)
-            let overlap_start = max start1 start2 in
-            let overlap_end_exc = min end_exc1 end_exc2 in
-            let s1 =
-              if end_exc1 <= overlap_end_exc then rest1 else intervals1
-            in
-            let s2 =
-              if end_exc2 <= overlap_end_exc then rest2 else intervals2
-            in
-            if overlap_start < overlap_end_exc then
-              (* there is an overlap *)
-              fun () -> Seq.Cons ((overlap_start, overlap_end_exc), aux s1 s2)
-            else aux s1 s2
+            if end_exc1 < start2 then
+              (* 1 is before 2 entirely, drop 1, keep 2 *)
+              aux rest1 intervals2
+            else if end_exc2 < start1 then
+              (* 2 is before 1 entirely, keep 1, drop 2 *)
+              aux intervals1 rest2
+            else
+              (* there is an overlap or touching *)
+              let overlap_start = max start1 start2 in
+              let overlap_end_exc = min end_exc1 end_exc2 in
+              let s1 =
+                if end_exc1 <= overlap_end_exc then rest1 else intervals1
+              in
+              let s2 =
+                if end_exc2 <= overlap_end_exc then rest2 else intervals2
+              in
+              if overlap_start < overlap_end_exc then
+                (* there is an overlap *)
+                fun () -> Seq.Cons ((overlap_start, overlap_end_exc), aux s1 s2)
+              else aux s1 s2
       in
       let intervals1 =
         if skip_check then intervals1
@@ -332,9 +332,9 @@ module Intervals = struct
       match
         Seq.fold_left
           (fun acc intervals ->
-             match acc with
-             | None -> Some intervals
-             | Some acc -> Some (inter ~skip_check acc intervals))
+            match acc with
+            | None -> Some intervals
+            | Some acc -> Some (inter ~skip_check acc intervals))
           None interval_batches
       with
       | None -> Seq.empty
@@ -348,9 +348,9 @@ module Intervals = struct
         match (intervals1 (), intervals2 ()) with
         | Seq.Nil, s | s, Seq.Nil -> fun () -> s
         | Seq.Cons (x1, rest1), Seq.Cons (x2, rest2) ->
-          if Interval'.le x1 x2 then fun () ->
-            Seq.Cons (x1, aux rest1 intervals2)
-          else fun () -> Seq.Cons (x2, aux rest2 intervals1)
+            if Interval'.le x1 x2 then fun () ->
+              Seq.Cons (x1, aux rest1 intervals2)
+            else fun () -> Seq.Cons (x2, aux rest2 intervals1)
       in
       let intervals1 =
         if skip_check then intervals1
@@ -411,16 +411,16 @@ module Intervals = struct
       match intervals () with
       | Seq.Nil -> Seq.empty
       | Seq.Cons ((start, end_exc), rest) ->
-        let size = end_exc - start in
-        if size < chunk_size then
-          if drop_partial then aux rest
-          else fun () -> Seq.Cons ((start, end_exc), aux rest)
-        else if size = chunk_size then fun () ->
-          Seq.Cons ((start, end_exc), aux rest)
-        else
-          let chunk_end_exc = start + chunk_size in
-          let rest () = Seq.Cons ((chunk_end_exc, end_exc), rest) in
-          fun () -> Seq.Cons ((start, chunk_end_exc), aux rest)
+          let size = end_exc - start in
+          if size < chunk_size then
+            if drop_partial then aux rest
+            else fun () -> Seq.Cons ((start, end_exc), aux rest)
+          else if size = chunk_size then fun () ->
+            Seq.Cons ((start, end_exc), aux rest)
+          else
+            let chunk_end_exc = start + chunk_size in
+            let rest () = Seq.Cons ((chunk_end_exc, end_exc), rest) in
+            fun () -> Seq.Cons ((start, chunk_end_exc), aux rest)
     in
     if chunk_size <= zero then invalid_arg "chunk: chunk size is <= zero"
     else
@@ -443,25 +443,25 @@ module Range = struct
       (t : 'a range) : 'b range =
     match t with
     | `Range_inc (x, y) ->
-      let x, y = f_inc (x, y) in
-      `Range_inc (x, y)
+        let x, y = f_inc (x, y) in
+        `Range_inc (x, y)
     | `Range_exc (x, y) ->
-      let x, y = f_exc (x, y) in
-      `Range_exc (x, y)
+        let x, y = f_exc (x, y) in
+        `Range_exc (x, y)
 
   let int_range_of_range (type a) ~(to_int : a -> int) (x : a range) : int range
-    =
+      =
     let f (x, y) = (to_int x, to_int y) in
     map ~f_inc:f ~f_exc:f x
 
   let int_inc_range_of_range (type a) ~(to_int : a -> int) (x : a range) :
-    int * int =
+      int * int =
     match x with
     | `Range_inc (x, y) -> (to_int x, to_int y)
     | `Range_exc (x, y) -> (to_int x, y |> to_int |> pred)
 
   let int_exc_range_of_range (type a) ~(to_int : a -> int) (x : a range) :
-    int * int =
+      int * int =
     match x with
     | `Range_inc (x, y) -> (to_int x, y |> to_int |> succ)
     | `Range_exc (x, y) -> (to_int x, to_int y)
@@ -479,12 +479,12 @@ module Range = struct
     | `Range_exc (x, y) -> (x, y)
 
   let timestamp_pair_of_int_pair (x, y) :
-    Timedesc.timestamp * Timedesc.timestamp =
+      Timedesc.timestamp * Timedesc.timestamp =
     (Timedesc.Span.make ~ns:x (), Timedesc.Span.make ~ns:y ())
 
   let int_pair_of_timestamp_pair
       (({ s = _; ns = x }, { s = _; ns = y }) :
-         Timedesc.timestamp * Timedesc.timestamp) : int * int =
+        Timedesc.timestamp * Timedesc.timestamp) : int * int =
     (x, y)
 
   let join (type a) ~(to_int : a -> int) ~(of_int : int -> a) (x : a range)
@@ -493,8 +493,8 @@ module Range = struct
     let y = int_exc_range_of_range ~to_int y |> timestamp_pair_of_int_pair in
     Interval'.join x y
     |> CCOpt.map (fun (x, y) ->
-        let open Timedesc.Span in
-        `Range_exc (of_int x.ns, of_int y.ns))
+           let open Timedesc.Span in
+           `Range_exc (of_int x.ns, of_int y.ns))
 
   let is_valid (type a) ~(modulo : int option) ~(to_int : a -> int)
       (t : a range) : bool =
@@ -517,10 +517,10 @@ module Range = struct
             match modulo with
             | None -> raise Range_is_invalid
             | Some modulo ->
-              if modulo <= 0 then raise Modulo_is_invalid
-              else
-                OSeq.append OSeq.(start --^ modulo) OSeq.(0 -- end_inc)
-                |> Seq.map of_int)
+                if modulo <= 0 then raise Modulo_is_invalid
+                else
+                  OSeq.append OSeq.(start --^ modulo) OSeq.(0 -- end_inc)
+                  |> Seq.map of_int)
       | `Range_exc (start, end_exc) -> (
           let start = to_int start in
           let end_exc = to_int end_exc in
@@ -529,10 +529,10 @@ module Range = struct
             match modulo with
             | None -> raise Range_is_invalid
             | Some modulo ->
-              if modulo <= 0 then raise Modulo_is_invalid
-              else
-                OSeq.append OSeq.(start --^ modulo) OSeq.(0 --^ end_exc)
-                |> Seq.map of_int)
+                if modulo <= 0 then raise Modulo_is_invalid
+                else
+                  OSeq.append OSeq.(start --^ modulo) OSeq.(0 --^ end_exc)
+                  |> Seq.map of_int)
 
     let flatten_into_list (type a) ~(modulo : int option) ~(to_int : a -> int)
         ~(of_int : int -> a) (t : a range) : a list =
@@ -623,37 +623,37 @@ module Ranges = struct
   let normalize (type a) ?(skip_filter_invalid = false)
       ?(skip_filter_empty = false) ?(skip_sort = false) ~(modulo : int option)
       ~(to_int : a -> int) ~(of_int : int -> a) (s : a Range.range Seq.t) :
-    a Range.range Seq.t =
+      a Range.range Seq.t =
     match modulo with
     | None ->
-      s
-      |> Seq.map (Range.int_exc_range_of_range ~to_int)
-      |> Seq.map Range.timestamp_pair_of_int_pair
-      |> Intervals.normalize ~skip_filter_invalid ~skip_filter_empty
-        ~skip_sort
-      |> Seq.map Range.int_pair_of_timestamp_pair
-      |> Seq.map (fun (x, y) -> (of_int x, y |> pred |> of_int))
-      |> Seq.map (fun (x, y) -> `Range_inc (x, y))
+        s
+        |> Seq.map (Range.int_exc_range_of_range ~to_int)
+        |> Seq.map Range.timestamp_pair_of_int_pair
+        |> Intervals.normalize ~skip_filter_invalid ~skip_filter_empty
+             ~skip_sort
+        |> Seq.map Range.int_pair_of_timestamp_pair
+        |> Seq.map (fun (x, y) -> (of_int x, y |> pred |> of_int))
+        |> Seq.map (fun (x, y) -> `Range_inc (x, y))
     | Some _ ->
-      (* not sure what would be a reasonable normalization procedure when domain is a field *)
-      s
+        (* not sure what would be a reasonable normalization procedure when domain is a field *)
+        s
 
   let get_inc (type a) ~(to_int : a -> int) ~(of_int : int -> a)
       (s : a Range.range Seq.t) : (a * a) Seq.t =
     Seq.map
       (fun x ->
-         match x with
-         | `Range_inc (x, y) -> (x, y)
-         | `Range_exc (x, y) -> (x, y |> to_int |> pred |> of_int))
+        match x with
+        | `Range_inc (x, y) -> (x, y)
+        | `Range_exc (x, y) -> (x, y |> to_int |> pred |> of_int))
       s
 
   let get_exc (type a) ~(to_int : a -> int) ~(of_int : int -> a)
       (s : a Range.range Seq.t) : (a * a) Seq.t =
     Seq.map
       (fun x ->
-         match x with
-         | `Range_inc (x, y) -> (x, y |> to_int |> succ |> of_int)
-         | `Range_exc (x, y) -> (x, y))
+        match x with
+        | `Range_inc (x, y) -> (x, y |> to_int |> succ |> of_int)
+        | `Range_exc (x, y) -> (x, y))
       s
 
   module Check = struct
@@ -679,28 +679,28 @@ module Ranges = struct
   module Of_seq = struct
     let range_seq_of_seq (type a) ?(skip_sort = false) ~(modulo : int option)
         ~(to_int : a -> int) ~(of_int : int -> a) (s : a Seq.t) :
-      a Range.range Seq.t =
+        a Range.range Seq.t =
       s
       |> Seq.map (fun x -> `Range_inc (x, x))
       |> normalize ~skip_filter_invalid:true ~skip_filter_empty:true ~skip_sort
-        ~modulo ~to_int ~of_int
+           ~modulo ~to_int ~of_int
 
     let range_list_of_seq (type a) ?skip_sort ~(modulo : int option)
         ~(to_int : a -> int) ~(of_int : int -> a) (s : a Seq.t) :
-      a Range.range list =
+        a Range.range list =
       range_seq_of_seq ?skip_sort ~modulo ~to_int ~of_int s |> CCList.of_seq
   end
 
   module Of_list = struct
     let range_seq_of_list (type a) ?(skip_sort = false) ~(modulo : int option)
         ~(to_int : a -> int) ~(of_int : int -> a) (l : a list) :
-      a Range.range Seq.t =
+        a Range.range Seq.t =
       CCList.to_seq l
       |> Of_seq.range_seq_of_seq ~skip_sort ~modulo ~to_int ~of_int
 
     let range_list_of_list (type a) ?(skip_sort = false) ~(modulo : int option)
         ~(to_int : a -> int) ~(of_int : int -> a) (l : a list) :
-      a Range.range list =
+        a Range.range list =
       CCList.to_seq l
       |> Of_seq.range_seq_of_seq ~skip_sort ~modulo ~to_int ~of_int
       |> CCList.of_seq
@@ -773,11 +773,11 @@ module Ranges = struct
 
     module Of_seq = struct
       let range_seq_of_seq ?(skip_sort = false) (s : t Seq.t) :
-        t Range.range Seq.t =
+          t Range.range Seq.t =
         Of_seq.range_seq_of_seq ~skip_sort ~modulo ~to_int ~of_int s
 
       let range_list_of_seq ?(skip_sort = false) (s : t Seq.t) :
-        t Range.range list =
+          t Range.range list =
         Of_seq.range_list_of_seq ~skip_sort ~modulo ~to_int ~of_int s
     end
 
@@ -792,34 +792,34 @@ module Ranges = struct
 end
 
 module Second_ranges = Ranges.Make (struct
-    type t = int
+  type t = int
 
-    let modulo = None
+  let modulo = None
 
-    let to_int x = x
+  let to_int x = x
 
-    let of_int x = x
-  end)
+  let of_int x = x
+end)
 
 module Minute_ranges = Ranges.Make (struct
-    type t = int
+  type t = int
 
-    let modulo = None
+  let modulo = None
 
-    let to_int x = x
+  let to_int x = x
 
-    let of_int x = x
-  end)
+  let of_int x = x
+end)
 
 module Hour_ranges = Ranges.Make (struct
-    type t = int
+  type t = int
 
-    let modulo = None
+  let modulo = None
 
-    let to_int x = x
+  let to_int x = x
 
-    let of_int x = x
-  end)
+  let of_int x = x
+end)
 
 module Hms' = struct
   type t = {
@@ -868,68 +868,68 @@ module Hms' = struct
 end
 
 module Hms_ranges = Ranges.Make (struct
-    type t = Hms'.t
+  type t = Hms'.t
 
-    let modulo = None
+  let modulo = None
 
-    let to_int = Hms'.to_second_of_day
+  let to_int = Hms'.to_second_of_day
 
-    let of_int x =
-      CCOpt.get_exn_or "Expected valid second of day" (Hms'.of_second_of_day x)
-  end)
+  let of_int x =
+    CCOpt.get_exn_or "Expected valid second of day" (Hms'.of_second_of_day x)
+end)
 
 module Weekday_tm_int_ranges = Ranges.Make (struct
-    type t = int
+  type t = int
 
-    let modulo = Some 7
+  let modulo = Some 7
 
-    let to_int x = x
+  let to_int x = x
 
-    let of_int x = x
-  end)
+  let of_int x = x
+end)
 
 module Weekday_ranges = Ranges.Make (struct
-    type t = Timedesc.weekday
+  type t = Timedesc.weekday
 
-    let modulo = Some 7
+  let modulo = Some 7
 
-    let to_int = Timedesc.Utils.tm_int_of_weekday
+  let to_int = Timedesc.Utils.tm_int_of_weekday
 
-    let of_int x =
-      x
-      |> Timedesc.Utils.weekday_of_tm_int
-      |> CCOpt.get_exn_or "Expected successful construction of weekday"
-  end)
+  let of_int x =
+    x
+    |> Timedesc.Utils.weekday_of_tm_int
+    |> CCOpt.get_exn_or "Expected successful construction of weekday"
+end)
 
 module Month_day_ranges = Ranges.Make (struct
-    type t = int
+  type t = int
 
-    let modulo = None
+  let modulo = None
 
-    let to_int x = x
+  let to_int x = x
 
-    let of_int x = x
-  end)
+  let of_int x = x
+end)
 
 module Month_ranges = Ranges.Make (struct
-    type t = int
+  type t = int
 
-    let modulo = None
+  let modulo = None
 
-    let to_int x = x
+  let to_int x = x
 
-    let of_int x = x
-  end)
+  let of_int x = x
+end)
 
 module Year_ranges = Ranges.Make (struct
-    type t = int
+  type t = int
 
-    let modulo = None
+  let modulo = None
 
-    let to_int x = x
+  let to_int x = x
 
-    let of_int x = x
-  end)
+  let of_int x = x
+end)
 
 let slice_valid_interval s =
   Intervals.Slice.slice ~skip_check:true ~start:Timedesc.Timestamp.min_val
@@ -950,24 +950,24 @@ let equal t1 t2 =
     | Intervals s1, Intervals s2 -> OSeq.equal ~eq:( = ) s1 s2
     | Pattern p1, Pattern p2 -> Pattern.equal p1 p2
     | Unary_op (op1, t1), Unary_op (op2, t2) ->
-      equal_unary_op op1 op2 && aux t1 t2
+        equal_unary_op op1 op2 && aux t1 t2
     | ( Bounded_intervals
           { mode = mode1; bound = b1; start = start1; end_ = end_1 },
         Bounded_intervals
           { mode = mode2; bound = b2; start = start2; end_ = end_2 } ) ->
-      mode1 = mode2
-      && b1 = b2
-      && Points.equal start1 start2
-      && Points.equal end_1 end_2
+        mode1 = mode2
+        && b1 = b2
+        && Points.equal start1 start2
+        && Points.equal end_1 end_2
     | Inter_seq s1, Inter_seq s2 | Union_seq s1, Union_seq s2 ->
-      OSeq.for_all2 aux s1 s2
+        OSeq.for_all2 aux s1 s2
     | Unchunk c1, Unchunk c2 -> aux_chunked c1 c2
     | _, _ -> false
   and aux_chunked c1 c2 =
     match (c1, c2) with
     | Unary_op_on_t (op1, t1), Unary_op_on_t (op2, t2) -> op1 = op2 && aux t1 t2
     | Unary_op_on_chunked (op1, c1), Unary_op_on_chunked (op2, c2) ->
-      op1 = op2 && aux_chunked c1 c2
+        op1 = op2 && aux_chunked c1 c2
     | _, _ -> false
   in
   aux t1 t2
@@ -975,53 +975,53 @@ let equal t1 t2 =
 let chunk (chunking : chunking) (f : chunked -> chunked) t : t =
   match chunking with
   | `Disjoint_intervals ->
-    Unchunk (f (Unary_op_on_t (Chunk_disjoint_interval, t)))
+      Unchunk (f (Unary_op_on_t (Chunk_disjoint_interval, t)))
   | `By_duration chunk_size ->
-    if Timedesc.Span.(chunk_size < zero) then
-      invalid_arg "chunk: duration is negative";
-    if Timedesc.Span.(chunk_size = zero) then
-      invalid_arg "chunk: duration is zero"
-    else
-      Unchunk
-        (f
-           (Unary_op_on_t
-              (Chunk_by_duration { chunk_size; drop_partial = false }, t)))
+      if Timedesc.Span.(chunk_size < zero) then
+        invalid_arg "chunk: duration is negative";
+      if Timedesc.Span.(chunk_size = zero) then
+        invalid_arg "chunk: duration is zero"
+      else
+        Unchunk
+          (f
+             (Unary_op_on_t
+                (Chunk_by_duration { chunk_size; drop_partial = false }, t)))
   | `By_duration_drop_partial chunk_size ->
-    if Timedesc.Span.(chunk_size < zero) then
-      invalid_arg "chunk: duration is negative";
-    if Timedesc.Span.(chunk_size = zero) then
-      invalid_arg "chunk: duration is zero"
-    else
-      Unchunk
-        (f
-           (Unary_op_on_t
-              (Chunk_by_duration { chunk_size; drop_partial = true }, t)))
+      if Timedesc.Span.(chunk_size < zero) then
+        invalid_arg "chunk: duration is negative";
+      if Timedesc.Span.(chunk_size = zero) then
+        invalid_arg "chunk: duration is zero"
+      else
+        Unchunk
+          (f
+             (Unary_op_on_t
+                (Chunk_by_duration { chunk_size; drop_partial = true }, t)))
   | `At_year_boundary -> Unchunk (f (Unary_op_on_t (Chunk_at_year_boundary, t)))
   | `At_month_boundary ->
-    Unchunk (f (Unary_op_on_t (Chunk_at_month_boundary, t)))
+      Unchunk (f (Unary_op_on_t (Chunk_at_month_boundary, t)))
 
 let chunk_again (chunking : chunking) chunked : chunked =
   match chunking with
   | `Disjoint_intervals ->
-    Unary_op_on_chunked (Chunk_again Chunk_disjoint_interval, chunked)
+      Unary_op_on_chunked (Chunk_again Chunk_disjoint_interval, chunked)
   | `By_duration chunk_size ->
-    if Timedesc.Span.(chunk_size = zero) then
-      invalid_arg "chunk_again: duration is zero"
-    else
-      Unary_op_on_chunked
-        ( Chunk_again (Chunk_by_duration { chunk_size; drop_partial = false }),
-          chunked )
+      if Timedesc.Span.(chunk_size = zero) then
+        invalid_arg "chunk_again: duration is zero"
+      else
+        Unary_op_on_chunked
+          ( Chunk_again (Chunk_by_duration { chunk_size; drop_partial = false }),
+            chunked )
   | `By_duration_drop_partial chunk_size ->
-    if Timedesc.Span.(chunk_size = zero) then
-      invalid_arg "chunk_again: duration is zero"
-    else
-      Unary_op_on_chunked
-        ( Chunk_again (Chunk_by_duration { chunk_size; drop_partial = true }),
-          chunked )
+      if Timedesc.Span.(chunk_size = zero) then
+        invalid_arg "chunk_again: duration is zero"
+      else
+        Unary_op_on_chunked
+          ( Chunk_again (Chunk_by_duration { chunk_size; drop_partial = true }),
+            chunked )
   | `At_year_boundary ->
-    Unary_op_on_chunked (Chunk_again Chunk_at_year_boundary, chunked)
+      Unary_op_on_chunked (Chunk_again Chunk_at_year_boundary, chunked)
   | `At_month_boundary ->
-    Unary_op_on_chunked (Chunk_again Chunk_at_year_boundary, chunked)
+      Unary_op_on_chunked (Chunk_again Chunk_at_year_boundary, chunked)
 
 let shift (offset : Timedesc.Span.t) (t : t) : t = Unary_op (Shift offset, t)
 
@@ -1051,16 +1051,16 @@ let inter_seq (s : t Seq.t) : t =
     let pattern =
       Seq.fold_left
         (fun acc x ->
-           match x with
-           | Pattern pat -> (
-               match acc with
-               | Uninitialized -> Some' pat
-               | Unsatisfiable -> Unsatisfiable
-               | Some' acc -> (
-                   match Pattern.inter acc pat with
-                   | None -> Unsatisfiable
-                   | Some pat -> Some' pat))
-           | _ -> acc)
+          match x with
+          | Pattern pat -> (
+              match acc with
+              | Uninitialized -> Some' pat
+              | Unsatisfiable -> Unsatisfiable
+              | Some' acc -> (
+                  match Pattern.inter acc pat with
+                  | None -> Unsatisfiable
+                  | Some pat -> Some' pat))
+          | _ -> acc)
         Uninitialized patterns
     in
     match pattern with
@@ -1148,78 +1148,78 @@ let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
   with
   | [], [], [], [], [], [], [], [], [] -> All
   | _ ->
-    if
-      Stdlib.not
-        (List.for_all
-           (fun year ->
-              Timedesc.(year min_val) <= year
-              && year <= Timedesc.(year max_val))
-           years)
-    then invalid_arg "pattern: not all years are valid"
-    else if Stdlib.not (List.for_all (fun x -> 1 <= x && x <= 12) months) then
-      invalid_arg "pattern: not all months are valid"
-    else if
-      Stdlib.not
-        (List.for_all (fun x -> -31 <= x && x <= 31 && x <> 0) month_days)
-    then invalid_arg "pattern: not all days are valid"
-    else if Stdlib.not (List.for_all (fun x -> 0 <= x && x < 24) hours) then
-      invalid_arg "pattern: not all hours are valid"
-    else if Stdlib.not (List.for_all (fun x -> 0 <= x && x < 60) minutes) then
-      invalid_arg "pattern: not all minutes are valid"
-    else if Stdlib.not (List.for_all (fun x -> 0 <= x && x < 60) seconds) then
-      invalid_arg "pattern: not all seconds are valid"
-    else if
-      Stdlib.not
-        (List.for_all (fun x -> 0 <= x && x < Timedesc.Span.ns_count_in_s) ns)
-    then invalid_arg "pattern: invalid ns ranges"
-    else if
-      Stdlib.not
-        (List.for_all
-           (fun x ->
+      if
+        Stdlib.not
+          (List.for_all
+             (fun year ->
+               Timedesc.(year min_val) <= year
+               && year <= Timedesc.(year max_val))
+             years)
+      then invalid_arg "pattern: not all years are valid"
+      else if Stdlib.not (List.for_all (fun x -> 1 <= x && x <= 12) months) then
+        invalid_arg "pattern: not all months are valid"
+      else if
+        Stdlib.not
+          (List.for_all (fun x -> -31 <= x && x <= 31 && x <> 0) month_days)
+      then invalid_arg "pattern: not all days are valid"
+      else if Stdlib.not (List.for_all (fun x -> 0 <= x && x < 24) hours) then
+        invalid_arg "pattern: not all hours are valid"
+      else if Stdlib.not (List.for_all (fun x -> 0 <= x && x < 60) minutes) then
+        invalid_arg "pattern: not all minutes are valid"
+      else if Stdlib.not (List.for_all (fun x -> 0 <= x && x < 60) seconds) then
+        invalid_arg "pattern: not all seconds are valid"
+      else if
+        Stdlib.not
+          (List.for_all (fun x -> 0 <= x && x < Timedesc.Span.ns_count_in_s) ns)
+      then invalid_arg "pattern: invalid ns ranges"
+      else if
+        Stdlib.not
+          (List.for_all
+             (fun x ->
+               match x with
+               | `Range_inc (x, y) ->
+                   0 <= x && x <= y && y < Timedesc.Span.ns_count_in_s
+               | `Range_exc (x, y) ->
+                   0 <= x && x < y && y <= Timedesc.Span.ns_count_in_s)
+             ns_ranges)
+      then invalid_arg "pattern: invalid ns ranges"
+      else
+        let years = Int_set.of_list years in
+        let months = Int_set.of_list months in
+        let month_days = Int_set.of_list month_days in
+        let weekdays = Weekday_set.of_list weekdays in
+        let hours = Int_set.of_list hours in
+        let minutes = Int_set.of_list minutes in
+        let seconds = Int_set.of_list seconds in
+        let intervals_of_ns =
+          List.map (fun x -> Diet.Int.Interval.make x x) ns
+        in
+        let intervals_of_ns_ranges =
+          List.map
+            (fun x ->
               match x with
-              | `Range_inc (x, y) ->
-                0 <= x && x <= y && y < Timedesc.Span.ns_count_in_s
-              | `Range_exc (x, y) ->
-                0 <= x && x < y && y <= Timedesc.Span.ns_count_in_s)
-           ns_ranges)
-    then invalid_arg "pattern: invalid ns ranges"
-    else
-      let years = Int_set.of_list years in
-      let months = Int_set.of_list months in
-      let month_days = Int_set.of_list month_days in
-      let weekdays = Weekday_set.of_list weekdays in
-      let hours = Int_set.of_list hours in
-      let minutes = Int_set.of_list minutes in
-      let seconds = Int_set.of_list seconds in
-      let intervals_of_ns =
-        List.map (fun x -> Diet.Int.Interval.make x x) ns
-      in
-      let intervals_of_ns_ranges =
-        List.map
-          (fun x ->
-             match x with
-             | `Range_inc (x, y) -> Diet.Int.Interval.make x y
-             | `Range_exc (x, y) -> Diet.Int.Interval.make x (pred y))
-          ns_ranges
-      in
-      let add l acc =
-        List.fold_left (fun acc x -> Diet.Int.add x acc) acc l
-      in
-      Pattern
-        (Pattern.optimize
-           {
-             Pattern.years;
-             months;
-             month_days;
-             weekdays;
-             hours;
-             minutes;
-             seconds;
-             ns =
-               Diet.Int.empty
-               |> add intervals_of_ns
-               |> add intervals_of_ns_ranges;
-           })
+              | `Range_inc (x, y) -> Diet.Int.Interval.make x y
+              | `Range_exc (x, y) -> Diet.Int.Interval.make x (pred y))
+            ns_ranges
+        in
+        let add l acc =
+          List.fold_left (fun acc x -> Diet.Int.add x acc) acc l
+        in
+        Pattern
+          (Pattern.optimize
+             {
+               Pattern.years;
+               months;
+               month_days;
+               weekdays;
+               hours;
+               minutes;
+               seconds;
+               ns =
+                 Diet.Int.empty
+                 |> add intervals_of_ns
+                 |> add intervals_of_ns_ranges;
+             })
 
 let month_day_ranges_are_valid_strict ~safe_month_day_range_inc day_ranges =
   let safe_month_day_start, safe_month_day_end_inc = safe_month_day_range_inc in
@@ -1228,7 +1228,7 @@ let month_day_ranges_are_valid_strict ~safe_month_day_range_inc day_ranges =
   |> Month_day_ranges.Flatten.flatten
   |> Seq.filter (fun mday -> mday <> 0)
   |> OSeq.for_all (fun mday ->
-      safe_month_day_start <= mday && mday <= safe_month_day_end_inc)
+         safe_month_day_start <= mday && mday <= safe_month_day_end_inc)
 
 let month_day_ranges_are_valid_relaxed day_range =
   month_day_ranges_are_valid_strict ~safe_month_day_range_inc:(-31, 31)
@@ -1264,18 +1264,18 @@ let second_ranges second_ranges = pattern ~second_ranges ()
 
 let bounded_intervals ?(inc_exc : inc_exc = `Exc)
     ?(bound : Timedesc.Span.t option) mode (start : Points.t) (end_ : Points.t)
-  : t =
+    : t =
   let default_bound start end_ =
     let open Points in
     match (start.pick, end_.pick) with
     | YMDHMSN { year = x; _ }, YMDHMSN { year = y; _ } ->
-      Timedesc.Span.For_human.make_exn ~days:((y - x + 1) * 366) ()
+        Timedesc.Span.For_human.make_exn ~days:((y - x + 1) * 366) ()
     | _, MDHMSN _ -> Timedesc.Span.For_human.make_exn ~days:366 ()
     | YMDHMSN { month_day = x; _ }, DHMSN { month_day = y; _ }
     | MDHMSN { month_day = x; _ }, DHMSN { month_day = y; _ }
     | DHMSN { month_day = x; _ }, DHMSN { month_day = y; _ } ->
-      if x < y then Timedesc.Span.For_human.make_exn ~days:(31 - x) ()
-      else Timedesc.Span.For_human.make_exn ~days:31 ()
+        if x < y then Timedesc.Span.For_human.make_exn ~days:(31 - x) ()
+        else Timedesc.Span.For_human.make_exn ~days:31 ()
     | _, HMSN _ -> Timedesc.Span.For_human.make_exn ~hours:26 ()
     | _, MSN _ -> Timedesc.Span.For_human.make_exn ~hours:1 ()
     | _, SN _ -> Timedesc.Span.For_human.make_exn ~minutes:1 ()
@@ -1285,9 +1285,9 @@ let bounded_intervals ?(inc_exc : inc_exc = `Exc)
     match bound with
     | None -> default_bound start end_
     | Some bound ->
-      if Timedesc.Span.(bound < zero) then
-        invalid_arg "bounded_intervals: bound is negative"
-      else bound
+        if Timedesc.Span.(bound < zero) then
+          invalid_arg "bounded_intervals: bound is negative"
+        else bound
   in
   let mode =
     match (mode, inc_exc) with
@@ -1305,14 +1305,14 @@ let bounded_intervals ?(inc_exc : inc_exc = `Exc)
         ( SN { second = second_start; ns = ns_start },
           SN { second = second_end; ns = ns_end } ))
       when second_start = second_end && ns_start = ns_end ->
-      always
+        always
     | Points.(
         ( MSN { minute = minute_start; second = second_start; ns = ns_start },
           MSN { minute = minute_end_exc; second = second_end; ns = ns_end } ))
       when minute_start = minute_end_exc
-        && second_start = second_end
-        && ns_start = ns_end ->
-      always
+           && second_start = second_end
+           && ns_start = ns_end ->
+        always
     | Points.(
         ( HMSN
             {
@@ -1329,25 +1329,25 @@ let bounded_intervals ?(inc_exc : inc_exc = `Exc)
               ns = ns_end;
             } ))
       when hour_start = hour_end_exc
-        && minute_start = minute_end_exc
-        && second_start = second_end_exc
-        && ns_start = ns_end ->
-      always
+           && minute_start = minute_end_exc
+           && second_start = second_end_exc
+           && ns_start = ns_end ->
+        always
     | _, _ -> Bounded_intervals { mode; bound; start; end_ }
   else Bounded_intervals { mode; bound; start; end_ }
 
 let hms_intervals ?(inc_exc : inc_exc = `Exc) (hms_a : Hms'.t) (hms_b : Hms'.t)
-  : t =
+    : t =
   let hms_b =
     match inc_exc with
     | `Exc -> hms_b
     | `Inc ->
-      hms_b
-      |> Hms'.to_second_of_day
-      |> succ
-      |> Hms'.of_second_of_day
-      |> CCOpt.get_exn_or
-        "Expected successful construction of hms from second of day"
+        hms_b
+        |> Hms'.to_second_of_day
+        |> succ
+        |> Hms'.of_second_of_day
+        |> CCOpt.get_exn_or
+             "Expected successful construction of hms from second of day"
   in
   bounded_intervals ~inc_exc:`Exc `Whole
     (Points.make_exn ~hour:hms_a.hour ~minute:hms_a.minute ~second:hms_a.second
@@ -1356,20 +1356,20 @@ let hms_intervals ?(inc_exc : inc_exc = `Exc) (hms_a : Hms'.t) (hms_b : Hms'.t)
        ())
 
 let sorted_interval_seq ?(skip_invalid : bool = false) (s : Interval'.t Seq.t) :
-  t =
+    t =
   let s =
     s
     |> Intervals.Filter.filter_empty
     |> (if skip_invalid then Intervals.Filter.filter_invalid
-        else Intervals.Check.check_if_valid)
+       else Intervals.Check.check_if_valid)
     |> Seq.filter_map (fun (x, y) ->
-        match
-          ( Timedesc.of_timestamp ~tz_of_date_time:Timedesc.Time_zone.utc x,
-            Timedesc.of_timestamp ~tz_of_date_time:Timedesc.Time_zone.utc
-              (Timedesc.Span.pred y) )
-        with
-        | Some _, Some _ -> Some (x, y)
-        | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
+           match
+             ( Timedesc.of_timestamp ~tz_of_date_time:Timedesc.Time_zone.utc x,
+               Timedesc.of_timestamp ~tz_of_date_time:Timedesc.Time_zone.utc
+                 (Timedesc.Span.pred y) )
+           with
+           | Some _, Some _ -> Some (x, y)
+           | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
     |> Intervals.Check.check_if_sorted
     |> Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
     |> slice_valid_interval
@@ -1384,15 +1384,15 @@ let intervals ?(skip_invalid : bool = false) (l : Interval'.t list) : t =
     l
     |> Intervals.Filter.filter_empty_list
     |> (if skip_invalid then Intervals.Filter.filter_invalid_list
-        else Intervals.Check.check_if_valid_list)
+       else Intervals.Check.check_if_valid_list)
     |> CCList.filter_map (fun (x, y) ->
-        match
-          ( Timedesc.of_timestamp ~tz_of_date_time:Timedesc.Time_zone.utc x,
-            Timedesc.of_timestamp ~tz_of_date_time:Timedesc.Time_zone.utc
-              (Timedesc.Span.pred y) )
-        with
-        | Some _, Some _ -> Some (x, y)
-        | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
+           match
+             ( Timedesc.of_timestamp ~tz_of_date_time:Timedesc.Time_zone.utc x,
+               Timedesc.of_timestamp ~tz_of_date_time:Timedesc.Time_zone.utc
+                 (Timedesc.Span.pred y) )
+           with
+           | Some _, Some _ -> Some (x, y)
+           | _, _ -> if skip_invalid then None else raise Interval_is_invalid)
     |> Intervals.Sort.sort_uniq_intervals_list
     |> CCList.to_seq
     |> Intervals.normalize ~skip_filter_invalid:true ~skip_sort:true
