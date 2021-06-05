@@ -456,6 +456,8 @@ module Span : sig
 
     exception Error_f_exn of error_f
 
+    (** {1 Constructors} *)
+
     val make :
       ?sign:sign ->
       ?days:int ->
@@ -512,7 +514,11 @@ module Span : sig
       t
     (** @raise Error_exn if [make] fails *)
 
+    (** {1 Viewer} *)
+
     val view : t -> view
+
+    (** {1 Pretty printing} *)
 
     val pp : ?format:string -> unit -> Format.formatter -> t -> unit
     (** Pretty printing for span.
@@ -759,9 +765,11 @@ module Time : sig
 
   val equal : t -> t -> bool
 
-  (** {1 Accessors} *)
+  (** {1 Viewer} *)
 
   val view : t -> view
+
+  (** {1 Accessors} *)
 
   val hour : t -> int
 
