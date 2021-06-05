@@ -196,7 +196,7 @@ let aux_points_mem search_using_tz ({ pick; tz_info } : Points.t) timestamp =
   let search_using_tz =
     match tz_info with
     | None -> search_using_tz
-    | Some Timedesc.Time_zone_info.{ tz; _ } -> tz
+    | Some tz_info -> Timedesc.Time_zone_info.tz tz_info
   in
   aux_pattern_mem search_using_tz
     (Points.to_pattern { pick; tz_info })

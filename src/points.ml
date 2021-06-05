@@ -335,8 +335,8 @@ let to_date_time ~default_tz_info ({ pick; tz_info } : t) : Timedesc.t option =
   let tz_info = match tz_info with None -> default_tz_info | Some x -> x in
   match pick with
   | YMDHMSN { year; month; month_day; hour; minute; second; ns } -> (
-      let tz = tz_info.tz in
-      match tz_info.fixed_offset_from_utc with
+      let tz = Timedesc.Time_zone_info.tz tz_info in
+      match Timedesc.Time_zone_info.fixed_offset_from_utc tz_info with
       | Some offset_from_utc -> (
           match
             Timedesc.make_unambiguous ~tz ~offset_from_utc ~year ~month

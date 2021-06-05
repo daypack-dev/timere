@@ -402,7 +402,7 @@ let aux_points search_using_tz space (p : Points.t) : timestamp Seq.t =
   let search_using_tz =
     match p.tz_info with
     | None -> search_using_tz
-    | Some { Timedesc.Time_zone_info.tz; _ } -> tz
+    | Some tz_info -> Timedesc.Time_zone_info.tz tz_info
   in
   aux_pattern search_using_tz space (Points.to_pattern p)
   |> Seq.filter_map (fun (x, y) ->

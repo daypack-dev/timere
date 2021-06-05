@@ -1618,18 +1618,9 @@ module Time_zone_info : sig
   (** Time zone information that can be attached to date time like data
   *)
 
-  type t = private {
-    tz : Time_zone.t;
-    fixed_offset_from_utc : Span.t option;
-  }
+  type t
   (** Time zone information of date time.
 
-      [tz] is the time zone tied. This is always defined even if only an offset provided during construction -
-      if say only offset of 10 hours is provided, [tz] becomes "UTC+10".
-
-      [fixed_offset_from_utc] is the fixed offset from UTC. This is defined if it is provided by
-      user or if the time zone can be represented by a fixed offset, e.g. "UTC+1" can be represented by
-      fixed offset of 1 hour.
   *)
 
   type error =
@@ -1643,6 +1634,18 @@ module Time_zone_info : sig
     ?fixed_offset_from_utc:Span.t ->
     unit ->
     (t, error) result
+  (**
+   *  [tz] is the time zone tied. If only an offset provided during construction, then one a fixed offset one is constructed, e.g.
+   *  if say only offset of 10 hours is provided, [tz] becomes "UTC+10".
+   *
+   *  [fixed_offset_from_utc] is the fixed offset from UTC.
+   *  If an offset is not provided but the time zone can be represented by a fixed offset, then said offset is used,
+   *  e.g. "UTC+1" can be represented by fixed offset of 1 hour.
+   * *)
+
+  val tz : t -> Time_zone.t
+
+  val fixed_offset_from_utc : t -> Span.t option
 
   val equal : t -> t -> bool
 

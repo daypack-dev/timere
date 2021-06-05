@@ -32,6 +32,10 @@
 
 - Added accessors `get_s`, `get_subsec_ns` and conversion function `to_s_ns` to `Timedesc.Span` module
 
+- Made `Timedesc.Time_zone_info.t` abstract
+
+- Added accessors `tz` and `fixed_offset_from_utc` to `Timedesc.Time_zone_info` module
+
 ## Timedesc 0.4.0
 
 - Added following to `Timedesc.Utils`

@@ -3,6 +3,10 @@ type t = {
   fixed_offset_from_utc : Span.t option;
 }
 
+let tz (x : t) = x.tz
+
+let fixed_offset_from_utc (x : t) = x.fixed_offset_from_utc
+
 let equal (x : t) (y : t) =
   match (x, y) with
   | ( { tz = tz1; fixed_offset_from_utc = None },
