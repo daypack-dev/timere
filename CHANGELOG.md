@@ -36,6 +36,8 @@
 
 - Added accessors `tz` and `fixed_offset_from_utc` to `Timedesc.Time_zone_info` module
 
+- Added format string system to `Timedesc.Span.For_human.pp` and `to_string`
+
 ## Timedesc 0.4.0
 
 - Added following to `Timedesc.Utils`
