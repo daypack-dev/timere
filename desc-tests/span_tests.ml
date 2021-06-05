@@ -342,6 +342,13 @@ module Qc = struct
         let r = Timedesc.Span.round x in
         Timedesc.Span.(floor x <= r && r <= ceil x))
 
+  let accessors =
+    QCheck.Test.make ~count:100_000 ~name:"accessors" duration (fun duration ->
+        let s, ns = Timedesc.Span.to_s_ns duration in
+        let s' = Timedesc.Span.get_s duration in
+        let ns' = Timedesc.Span.get_ns_offset duration in
+        s = s' && ns = ns')
+
   let of_to_view =
     QCheck.Test.make ~count:100_000 ~name:"to_of_view" duration (fun duration ->
         let view = Timedesc.Span.For_human.view duration in
@@ -387,6 +394,7 @@ module Qc = struct
       ceil_result_is_ge_original;
       round_is_idempotent;
       round_result_is_bounded_by_ceil_and_floor;
+      accessors;
       of_to_view;
       to_of_sexp;
     ]
