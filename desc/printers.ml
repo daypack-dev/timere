@@ -187,6 +187,25 @@ module Format_string_parsers = struct
         (* string "unix"
          * >> return (Int64.to_string (Time.Date_time'.to_timestamp date_time)); *)
       ]
+
+  let span_inner (view : Span.For_human'.view) : (string, unit) t =
+    let smallest_lossless_frac_s = deduce_smallest_lossless_frac_s ~ns:view.ns in
+    choice
+      [
+        attempt (string "days") >> return (string_of_int view.days);
+        attempt (string "hours") >> return (string_of_int view.hours);
+        attempt (string "mins") >> return (string_of_int view.minutes);
+        attempt (string "secs") >> return (string_of_int view.seconds);
+        attempt (string "ns") >> return (string_of_int view.ns);
+        (attempt (string "sec-frac:")
+        >> any_char
+        >>= fun sep ->
+        opt smallest_lossless_frac_s nat_zero
+        >>= fun frac_s ->
+        if frac_s > 9 then
+          fail "Number of digits after decimal separator cannot be > 9"
+        else return (string_of_s_frac ~sep ~frac_s ~ns:view.ns));
+      ]
 end
 
 let default_date_time_format_string =
