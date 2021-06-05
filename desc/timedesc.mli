@@ -1211,7 +1211,15 @@ module Timestamp : sig
 
   (** {1 Re-export from Span} *)
 
+  (** {2 Accessors} *)
+
+  val get_s : t -> int64
+
+  val get_subsec_ns : t -> int
+
   (** {2 Conversion} *)
+
+  val to_s_ns : t -> int64 * int
 
   val to_float_s : t -> float
   (** Returns span in seconds, fraction represents subsecond span.
