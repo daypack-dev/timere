@@ -229,14 +229,14 @@ module Qc = struct
         Int64.add (Int64.mul s 1_000_000_000L) (Int64.of_int ns)
         = Int64.add
             (Int64.mul (Timedesc.Span.get_s span) 1_000_000_000L)
-            (Int64.of_int @@ Timedesc.Span.get_subsec_ns span))
+            (Int64.of_int @@ Timedesc.Span.get_ns_offset span))
 
   let make_result_ns_is_within_bound =
     QCheck.Test.make ~count:1_000_000 ~name:"make_result_ns_is_within_bound"
       QCheck.(pair int64 int)
       (fun (s, ns) ->
         let span = Timedesc.Span.make ~s ~ns () in
-        let ns = Timedesc.Span.get_subsec_ns span in
+        let ns = Timedesc.Span.get_ns_offset span in
         0 <= ns && ns < 1_000_000_000)
 
   let normalize_is_idempotent =

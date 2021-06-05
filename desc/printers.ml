@@ -189,7 +189,9 @@ module Format_string_parsers = struct
       ]
 
   let span_inner (view : Span.For_human'.view) : (string, unit) t =
-    let smallest_lossless_frac_s = deduce_smallest_lossless_frac_s ~ns:view.ns in
+    let smallest_lossless_frac_s =
+      deduce_smallest_lossless_frac_s ~ns:view.ns
+    in
     choice
       [
         attempt (string "days") >> return (string_of_int view.days);

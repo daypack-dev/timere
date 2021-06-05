@@ -86,7 +86,7 @@ val ns_count_in_s_float : float
 
 val get_s : t -> int64
 
-val get_subsec_ns : t -> int
+val get_ns_offset : t -> int
 
 val to_s_ns : t -> int64 * int
 

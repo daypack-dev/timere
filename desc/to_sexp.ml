@@ -17,7 +17,7 @@ let sexp_of_tz_name t = CCSexp.atom (Time_zone.name t)
 
 let sexp_of_span (x : Span.t) =
   CCSexp.list
-    [ sexp_of_int64 @@ Span.get_s x; sexp_of_int @@ Span.get_subsec_ns x ]
+    [ sexp_of_int64 @@ Span.get_s x; sexp_of_int @@ Span.get_ns_offset x ]
 
 let sexp_of_tz_info ({ tz; fixed_offset_from_utc } : Time_zone_info.t) =
   let open CCSexp in

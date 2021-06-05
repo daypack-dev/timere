@@ -484,7 +484,7 @@ module Range = struct
 
   let int_pair_of_timestamp_pair
       ((x, y) : Timedesc.timestamp * Timedesc.timestamp) : int * int =
-    (Timedesc.Span.get_subsec_ns x, Timedesc.Span.get_subsec_ns y)
+    (Timedesc.Span.get_ns_offset x, Timedesc.Span.get_ns_offset y)
 
   let join (type a) ~(to_int : a -> int) ~(of_int : int -> a) (x : a range)
       (y : a range) : a range option =
@@ -493,8 +493,8 @@ module Range = struct
     Interval'.join x y
     |> CCOpt.map (fun (x, y) ->
            `Range_exc
-             ( of_int @@ Timedesc.Span.get_subsec_ns x,
-               of_int @@ Timedesc.Span.get_subsec_ns @@ y ))
+             ( of_int @@ Timedesc.Span.get_ns_offset x,
+               of_int @@ Timedesc.Span.get_ns_offset @@ y ))
 
   let is_valid (type a) ~(modulo : int option) ~(to_int : a -> int)
       (t : a range) : bool =

@@ -7,7 +7,7 @@ type t = {
 
 let get_s (x : t) = x.s
 
-let get_subsec_ns (x : t) = x.ns
+let get_ns_offset (x : t) = x.ns
 
 let to_s_ns (x : t) = (x.s, x.ns)
 

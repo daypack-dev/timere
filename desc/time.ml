@@ -55,7 +55,7 @@ let to_span (x : t) : Span.t =
 let of_span (x : Span.t) : t option =
   if Span.(zero <= x && x < Constants.one_day) then
     let s = CCInt64.to_int @@ Span.get_s x in
-    let ns = Span.get_subsec_ns x in
+    let ns = Span.get_ns_offset x in
     Some { s; ns }
   else None
 

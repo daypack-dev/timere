@@ -307,12 +307,6 @@ module Span : sig
   val make_small : ?s:int -> ?ns:int -> unit -> t
   (** Wrapper around [make] *)
 
-  (** {1 Accessors} *)
-
-  val get_s : t -> int64
-
-  val get_subsec_ns : t -> int
-
   (** {1 Conversion} *)
 
   val to_s_ns : t -> int64 * int
@@ -322,6 +316,8 @@ module Span : sig
 
       The actual span represented is defined as [s * 10^9 + ns] in nanosecond,
       regardless of the sign of [s]
+
+      [ns] is always [>= 0] and [< 1_000_000_000]
   *)
 
   val to_float_s : t -> float
@@ -335,6 +331,14 @@ module Span : sig
 
       Representation is the same as result from [Unix.gettimeofday].
   *)
+
+  (** {1 Accessors} *)
+
+  val get_s : t -> int64
+  (** Yields signed second of span, same as [fst (to_s_ns _)] *)
+
+  val get_ns_offset : t -> int
+  (** Yields the unsigned nanosecond offset, same as [snd (to_s_ns _)] *)
 
   (** {1 Comparison} *)
 
@@ -1211,12 +1215,6 @@ module Timestamp : sig
 
   (** {1 Re-export from Span} *)
 
-  (** {2 Accessors} *)
-
-  val get_s : t -> int64
-
-  val get_subsec_ns : t -> int
-
   (** {2 Conversion} *)
 
   val to_s_ns : t -> int64 * int
@@ -1232,6 +1230,12 @@ module Timestamp : sig
 
       Representation is the same as result from [Unix.gettimeofday].
   *)
+
+  (** {2 Accessors} *)
+
+  val get_s : t -> int64
+
+  val get_ns_offset : t -> int
 
   (** {2 Comparison} *)
 
