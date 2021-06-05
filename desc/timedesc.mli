@@ -314,10 +314,10 @@ module Span : sig
       - [s] is the signed second of the span
       - [ns] is the unsigned nanosecond offset
 
-      The actual span represented is defined as [s * 10^9 + ns] in nanosecond,
-      regardless of the sign of [s]
+      The actual span represented is defined as [s * 10^9 + ns] in nanosecond
+      regardless of the sign of [s].
 
-      [ns] is always [>= 0] and [< 1_000_000_000]
+      [ns] is always [>= 0] and [< 1_000_000_000].
   *)
 
   val to_float_s : t -> float
