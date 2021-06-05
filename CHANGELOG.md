@@ -30,7 +30,7 @@
 
 - Made `Timedesc.Span.t` abstract
 
-- Added accessors `get_s`, `get_subsec_ns` and conversion function `to_s_ns` to `Timedesc.Span` module
+- Added accessors `get_s`, `get_ns_offset` and conversion function `to_s_ns` to `Timedesc.Span` module
 
 - Made `Timedesc.Time_zone_info.t` abstract
 
