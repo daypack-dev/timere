@@ -10,8 +10,8 @@ let time =
 let timestamp =
   Crowbar.map [ Crowbar.int64; Crowbar.int ] (fun s ns ->
       let s =
-        min Timedesc.Span.(Timedesc.Timestamp.max_val.s) s
-        |> max Timedesc.Span.(Timedesc.Timestamp.min_val.s)
+        min Timedesc.Timestamp.(get_s max_val) s
+        |> max Timedesc.Timestamp.(get_s min_val)
       in
       Timedesc.Span.make ~s ~ns:(ns mod 1_000_000_000) ())
 

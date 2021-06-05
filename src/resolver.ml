@@ -407,7 +407,7 @@ let aux_points search_using_tz space (p : Points.t) : timestamp Seq.t =
   aux_pattern search_using_tz space (Points.to_pattern p)
   |> Seq.filter_map (fun (x, y) ->
          assert (Timedesc.Span.(y - x <= one_s));
-         if x.ns = 0 then Some x else None)
+         if Timedesc.Span.get_subsec_ns x = 0 then Some x else None)
 
 let rec aux search_using_tz time =
   let open Time in

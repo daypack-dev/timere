@@ -483,9 +483,9 @@ module Range = struct
     (Timedesc.Span.make ~ns:x (), Timedesc.Span.make ~ns:y ())
 
   let int_pair_of_timestamp_pair
-      (({ s = _; ns = x }, { s = _; ns = y }) :
+      ((x, y) :
         Timedesc.timestamp * Timedesc.timestamp) : int * int =
-    (x, y)
+    (Timedesc.Span.get_subsec_ns x, Timedesc.Span.get_subsec_ns y)
 
   let join (type a) ~(to_int : a -> int) ~(of_int : int -> a) (x : a range)
       (y : a range) : a range option =
@@ -493,8 +493,7 @@ module Range = struct
     let y = int_exc_range_of_range ~to_int y |> timestamp_pair_of_int_pair in
     Interval'.join x y
     |> CCOpt.map (fun (x, y) ->
-           let open Timedesc.Span in
-           `Range_exc (of_int x.ns, of_int y.ns))
+           `Range_exc (of_int @@ Timedesc.Span.get_subsec_ns x, of_int @@ Timedesc.Span.get_subsec_ns @@ y))
 
   let is_valid (type a) ~(modulo : int option) ~(to_int : a -> int)
       (t : a range) : bool =
@@ -856,7 +855,8 @@ module Hms' = struct
   let to_second_of_day x =
     Timedesc.Span.For_human.make_exn ~hours:x.hour ~minutes:x.minute
       ~seconds:x.second ()
-    |> fun x -> Int64.to_int Timedesc.Span.(x.s)
+    |> Timedesc.Span.get_s
+    |> Int64.to_int
 
   let of_second_of_day s =
     let ({ hours; minutes; seconds; _ } : Timedesc.Span.For_human.view) =

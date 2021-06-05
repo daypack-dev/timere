@@ -94,7 +94,7 @@ let timestamp_bound_gen bound =
       in
       t)
     (triple bool
-       (int64_bound_gen (Int64.pred Timedesc.Timestamp.max_val.s))
+       (int64_bound_gen (Int64.pred @@ Timedesc.Span.get_s Timedesc.Timestamp.max_val))
        (int_bound 1_000_000_000))
 
 let pos_timestamp_bound_gen bound =
@@ -102,7 +102,7 @@ let pos_timestamp_bound_gen bound =
     map
       (fun (s, ns) -> Timedesc.Span.(make ~s ~ns () |> max zero |> min bound))
       (pair
-         (int64_bound_gen (Int64.pred Timedesc.Timestamp.max_val.s))
+         (int64_bound_gen (Int64.pred Timedesc.Timestamp.(get_s max_val)))
          (int_bound 1_000_000_000)))
 
 let nz_pos_timestamp_bound_gen bound =

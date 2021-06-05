@@ -350,18 +350,19 @@ let debug_fuzz_pattern () =
     | _ ->
         let s' =
           Seq_utils.a_to_b_exc_int64
-            ~a:Timedesc.Span.((fst (List.hd search_space)).s)
+            ~a:(Timedesc.Span.get_s (fst (List.hd search_space)))
             ~b:
+              (Timedesc.Span.get_s
               (snd
                  (CCOpt.get_exn_or
                     "Expected successful retrieval of last element of list"
                  @@ Misc_utils.last_element_of_list search_space))
-                .s
+              )
           |> OSeq.filter (fun timestamp ->
                  List.exists
                    (fun (x, y) ->
-                     Timedesc.Span.(x.s) <= timestamp
-                     && timestamp < Timedesc.Span.(y.s))
+                     Timedesc.Span.get_s x <= timestamp
+                     && timestamp < Timedesc.Span.get_s y)
                    search_space)
           |> OSeq.filter (fun timestamp ->
                  let dt =
@@ -421,7 +422,7 @@ let debug_fuzz_pattern () =
             if
               OSeq.exists
                 (fun (x, y) ->
-                  Timedesc.Span.(x.s) <= x' && x' < Timedesc.Span.(y.s))
+                  Timedesc.Span.get_s x <= x' && x' < Timedesc.Span.get_s y)
                 s
             then true
             else (

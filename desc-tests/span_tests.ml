@@ -136,8 +136,8 @@ module Alco = struct
   let edge_case0 () =
     Alcotest.(check bool)
       "same span"
-      (let Timedesc.Span.{ s; ns } =
-         Timedesc.Span.make ~s:(-10L) ~ns:CCInt.min_int ()
+      (let (s, ns) =
+         Timedesc.Span.(to_s_ns @@ make ~s:(-10L) ~ns:CCInt.min_int ())
        in
        0 <= ns
        && ns < 1_000_000_000
@@ -150,8 +150,8 @@ module Alco = struct
   let edge_case1 () =
     Alcotest.(check bool)
       "same span"
-      (let Timedesc.Span.{ s; ns } =
-         Timedesc.Span.make ~s:10L ~ns:CCInt.min_int ()
+      (let (s, ns) =
+         Timedesc.Span.(to_s_ns @@ make ~s:10L ~ns:CCInt.min_int ())
        in
        0 <= ns
        && ns < 1_000_000_000
@@ -162,8 +162,8 @@ module Alco = struct
   let edge_case2 () =
     Alcotest.(check bool)
       "same span"
-      (let Timedesc.Span.{ s; ns } =
-         Timedesc.Span.make ~s:10L ~ns:CCInt.max_int ()
+      (let (s, ns) =
+         Timedesc.Span.(to_s_ns @@ make ~s:10L ~ns:CCInt.max_int ())
        in
        0 <= ns
        && ns < 1_000_000_000
@@ -174,8 +174,8 @@ module Alco = struct
   let edge_case3 () =
     Alcotest.(check bool)
       "same span"
-      (let Timedesc.Span.{ s; ns } =
-         Timedesc.Span.make ~s:(-10L) ~ns:CCInt.max_int ()
+      (let (s, ns) =
+         Timedesc.Span.(to_s_ns @@ make ~s:(-10L) ~ns:CCInt.max_int ())
        in
        0 <= ns
        && ns < 1_000_000_000
@@ -216,7 +216,8 @@ module Alco = struct
     ]
 end
 
-let normalize ({ s; ns } : Timedesc.Span.t) : Timedesc.Span.t =
+let normalize (x : Timedesc.Span.t) : Timedesc.Span.t =
+  let (s, ns) = Timedesc.Span.to_s_ns x in
   Timedesc.Span.make ~s ~ns ()
 
 module Qc = struct
@@ -227,15 +228,16 @@ module Qc = struct
         let span = Timedesc.Span.make ~s ~ns () in
         Int64.add (Int64.mul s 1_000_000_000L) (Int64.of_int ns)
         = Int64.add
-            (Int64.mul Timedesc.Span.(span.s) 1_000_000_000L)
-            (Int64.of_int span.ns))
+            (Int64.mul (Timedesc.Span.get_s span) 1_000_000_000L)
+            (Int64.of_int @@ Timedesc.Span.get_subsec_ns span))
 
   let make_result_ns_is_within_bound =
     QCheck.Test.make ~count:1_000_000 ~name:"make_result_ns_is_within_bound"
       QCheck.(pair int64 int)
       (fun (s, ns) ->
         let span = Timedesc.Span.make ~s ~ns () in
-        0 <= span.ns && span.ns < 1_000_000_000)
+        let ns = Timedesc.Span.get_subsec_ns span in
+        0 <= ns && ns < 1_000_000_000)
 
   let normalize_is_idempotent =
     QCheck.Test.make ~count:100_000 ~name:"normalize_is_idempotent" timestamp

@@ -208,10 +208,10 @@ let transitions_of_zdump_lines (l : zdump_line list) : transition list =
   l |> preprocess |> fun (line_num, l) -> aux [] line_num l
 
 let min_timestamp =
-  Timedesc.Span.((Timedesc.Utils.timestamp_of_ptime Ptime.min).s)
+  Timedesc.Span.get_s (Timedesc.Utils.timestamp_of_ptime Ptime.min)
 
 let max_timestamp =
-  Timedesc.Span.((Timedesc.Utils.timestamp_of_ptime Ptime.max).s) |> Int64.pred
+  Timedesc.Span.get_s (Timedesc.Utils.timestamp_of_ptime Ptime.max) |> Int64.pred
 
 let timestamp_of_date_time_utc (x : date_time) : int64 =
   assert (x.tz = String "UT");
@@ -220,7 +220,7 @@ let timestamp_of_date_time_utc (x : date_time) : int64 =
     ((x.year, x.month, x.day), ((x.hour, x.minute, x.second), offset))
   |> CCOpt.get_exn_or "Expected successful construction of ptime"
   |> Timedesc.Utils.timestamp_of_ptime
-  |> fun x -> Timedesc.Span.(x.s)
+  |> Timedesc.Span.get_s
 
 let timestamp_of_date_time_local (x : date_time) : int64 =
   let offset = 0 in
@@ -228,7 +228,7 @@ let timestamp_of_date_time_local (x : date_time) : int64 =
     ((x.year, x.month, x.day), ((x.hour, x.minute, x.second), offset))
   |> CCOpt.get_exn_or "Expected successful construction of ptime"
   |> Timedesc.Utils.timestamp_of_ptime
-  |> fun x -> Timedesc.Span.(x.s)
+  |> Timedesc.Span.get_s
 
 let transition_record_indexed_by_utc_of_transition (x : transition) :
     transition_record =
