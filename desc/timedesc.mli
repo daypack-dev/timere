@@ -416,7 +416,7 @@ module Span : sig
 
   val pp_sexp : Format.formatter -> t -> unit
 
-  (** Human friendly APIs *)
+  (** {1 Human friendly APIs} *)
   module For_human : sig
     type sign =
       [ `Pos
