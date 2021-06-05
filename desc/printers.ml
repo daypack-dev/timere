@@ -188,25 +188,67 @@ module Format_string_parsers = struct
          * >> return (Int64.to_string (Time.Date_time'.to_timestamp date_time)); *)
       ]
 
-  let span_inner (view : Span.For_human'.view) : (string, unit) t =
+  let span_for_human_inner (view : Span.For_human'.view) : (string, unit) t =
     let smallest_lossless_frac_s =
       deduce_smallest_lossless_frac_s ~ns:view.ns
     in
+    let string_of_number_and_unit ~empty_on_zero ~padding (x : int)
+        (unit_str : string) =
+      if empty_on_zero && x = 0 then ""
+      else Printf.sprintf "%s%s" (pad_int padding x) unit_str
+    in
+    let single ~empty_on_zero ~handle_padding ~name ~number =
+      attempt
+        (string name >> if empty_on_zero then string "-nz:" else string ":")
+      >> (if handle_padding then padding else return None)
+      >>= fun padding ->
+      non_curly_bracket_string
+      >>= fun unit_str ->
+      return (string_of_number_and_unit ~empty_on_zero ~padding number unit_str)
+    in
+    let sec_frac ~empty_on_zero ~ns =
+      attempt
+        (string "sec-frac"
+        >> if empty_on_zero then string "-nz:" else string ":")
+      >> any_char
+      >>= fun sep ->
+      opt smallest_lossless_frac_s nat_zero
+      >>= fun frac_s ->
+      if frac_s > 9 then
+        fail "Number of digits after decimal separator cannot be > 9"
+      else
+        char 'X'
+        >> non_curly_bracket_string
+        >>= fun unit_str ->
+        if empty_on_zero && ns = 0 then return ""
+        else
+          return
+            (Printf.sprintf "%s%s" (string_of_s_frac ~sep ~frac_s ~ns) unit_str)
+    in
     choice
       [
-        attempt (string "days") >> return (string_of_int view.days);
-        attempt (string "hours") >> return (string_of_int view.hours);
-        attempt (string "mins") >> return (string_of_int view.minutes);
-        attempt (string "secs") >> return (string_of_int view.seconds);
-        attempt (string "ns") >> return (string_of_int view.ns);
-        (attempt (string "sec-frac:")
-        >> any_char
-        >>= fun sep ->
-        opt smallest_lossless_frac_s nat_zero
-        >>= fun frac_s ->
-        if frac_s > 9 then
-          fail "Number of digits after decimal separator cannot be > 9"
-        else return (string_of_s_frac ~sep ~frac_s ~ns:view.ns));
+        single ~empty_on_zero:false ~handle_padding:false ~name:"days"
+          ~number:view.days;
+        single ~empty_on_zero:true ~handle_padding:false ~name:"days"
+          ~number:view.days;
+        single ~empty_on_zero:false ~handle_padding:true ~name:"hours"
+          ~number:view.hours;
+        single ~empty_on_zero:true ~handle_padding:true ~name:"hours"
+          ~number:view.hours;
+        single ~empty_on_zero:false ~handle_padding:true ~name:"mins"
+          ~number:view.minutes;
+        single ~empty_on_zero:true ~handle_padding:true ~name:"mins"
+          ~number:view.minutes;
+        single ~empty_on_zero:false ~handle_padding:true ~name:"secs"
+          ~number:view.seconds;
+        single ~empty_on_zero:true ~handle_padding:true ~name:"secs"
+          ~number:view.seconds;
+        single ~empty_on_zero:false ~handle_padding:true ~name:"ns"
+          ~number:view.ns;
+        single ~empty_on_zero:true ~handle_padding:true ~name:"ns"
+          ~number:view.ns;
+        sec_frac ~empty_on_zero:false ~ns:view.ns;
+        sec_frac ~empty_on_zero:true ~ns:view.ns;
       ]
 end
 
@@ -219,6 +261,10 @@ let default_interval_format_string =
    {stzoff-sign}{stzoff-hour:0X}:{stzoff-min:0X}:{stzoff-sec:0X}, {eyear} \
    {emon:Xxx} {eday:0X} {ehour:0X}:{emin:0X}:{esec:0X}{esec-frac:.} \
    {etzoff-sign}{etzoff-hour:0X}:{etzoff-min:0X}:{etzoff-sec:0X})"
+
+let default_span_for_human_format_string =
+  "{days-nz: days }{hours-nz:X hours }{mins-nz:X mins }{secs:X}{sec-frac:.X} \
+   secs"
 
 exception Invalid_format_string of string
 
@@ -322,21 +368,33 @@ let pp_span formatter (x : Span.t) : unit =
 
 let string_of_span (x : Span.t) : string = Fmt.str "%a" pp_span x
 
-let pp_span_for_human formatter (x : Span.t) : unit =
-  let (Span.For_human'.{ days; hours; minutes; seconds } : Span.For_human'.view)
-      =
-    Span.For_human'.view x
+let pp_span_for_human ?(format : string = default_span_for_human_format_string)
+    () formatter (x : Span.t) : unit =
+  let open MParser in
+  let open Parser_components in
+  let single formatter (view : Span.For_human'.view) : (unit, unit) t =
+    choice
+      [
+        attempt (string "{{" |>> fun _ -> Fmt.pf formatter "{");
+        (attempt (char '{')
+        >> (Format_string_parsers.span_for_human_inner view << char '}')
+        |>> fun s -> Fmt.pf formatter "%s" s);
+        (many1_satisfy (function '{' -> false | _ -> true)
+        |>> fun s -> Fmt.pf formatter "%s" s);
+      ]
   in
-  if days > 0 then
-    Fmt.pf formatter "%d days %d hours %d mins %d secs" days hours minutes
-      seconds
-  else if hours > 0 then
-    Fmt.pf formatter "%d hours %d mins %d secs" hours minutes seconds
-  else if minutes > 0 then Fmt.pf formatter "%d mins %d secs" minutes seconds
-  else Fmt.pf formatter "%d secs" seconds
+  let p formatter (view : Span.For_human'.view) : (unit, unit) t =
+    many (single formatter view) >> return ()
+  in
+  match
+    result_of_mparser_result
+    @@ parse_string (p formatter (Span.For_human'.view x) << eof) format ()
+  with
+  | Error msg -> invalid_format_string msg
+  | Ok () -> ()
 
-let string_of_span_for_human (x : Span.t) : string =
-  Fmt.str "%a" pp_span_for_human x
+let string_of_span_for_human ?format (x : Span.t) : string =
+  Fmt.str "%a" (pp_span_for_human ?format ()) x
 
 let wrap_to_sexp_into_pp_sexp (f : 'a -> CCSexp.t) :
     Format.formatter -> 'a -> unit =

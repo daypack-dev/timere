@@ -514,9 +514,51 @@ module Span : sig
 
     val view : t -> view
 
-    val pp : Format.formatter -> t -> unit
+    val pp : ?format:string -> unit -> Format.formatter -> t -> unit
+    (** Pretty printing for span.
+     *
+     *  Default format string:
+        {v
+{days-nz: days }{hours-nz:X hours }{mins-nz:X mins }{secs:X}{sec-frac:.X} secs
+        v}
 
-    val to_string : t -> string
+        Format string specification:
+        {v
+        {{                      literal {
+        {days:unit}             number of days
+                                unit is the string used after the number to denote its unit
+        {days-nz:unit}          same as above, but does not display if number is zero
+
+        {hours:cXunit}          number of hour, sub-day
+                                character 'c' before 'X' is used for padding
+                                (leave out character for no padding)
+                                unit is the string used after the number to denote its unit
+        {hours-nz:cXunit}       same as above, but does not display if number is zero
+
+        {mins:cXunit}           number of minutes, sub-hour
+                                character 'c' before 'X' is used for padding
+                                (leave out character for no padding)
+                                unit is the string used after the number to denote its unit
+        {mins-nz:cXunit}        same as above, but does not display if number is zero
+
+        {secs:cXunit}           number of seconds, sub-minute
+                                character 'c' before 'X' is used for padding
+                                (leave out character for no padding)
+                                unit is the string used after the number to denote its unit
+        {secs-nz:cXunit}        same as above, but does not display if number is zero
+
+        {sec-frac:cNXunit}      fraction of second, sub-second
+                                N determines the number of digits to take after decimal separator
+                                if N is not specified, then the smallest number of digits required
+                                after decimal separator for a lossless representation is used
+                                character c is used as the decimal separator
+                                unit is the string used after the number to denote its unit
+        {secs-frac-nz:cNXunit}  same as above, but does not display if nanosecond count is
+                                zero
+        v}
+     * *)
+
+    val to_string : ?format:string -> t -> string
   end
 end
 
@@ -1120,12 +1162,11 @@ val pp : ?format:string -> unit -> Format.formatter -> t -> unit
 {sec:cX}         second, character 'c' before 'X' determines padding
                  (leave out character for no padding)
 {ns}             nanosecond
-{sec-frac:c}     fraction of second
-                 character c is used as the decimal separator
-                 the smallest number of digits required after decimal separator for a lossless representation is used
 {sec-frac:cN}    fraction of second
                  character c is used as the decimal separator
                  N determines the number of digits to take after decimal separator
+                 if N is not specified, then the smallest number of digits required
+                 after decimal separator for a lossless representation is used
                  result is truncated to said number of digits
 {tzoff-sign}     time zone offset sign ('+' or '-')
                  raises Date_time_cannot_deduce_offset_from_utc if time zone offset cannot be calculated
@@ -1302,7 +1343,7 @@ module Timestamp : sig
     unit
   (** Pretty printing for timestamp.
 
-      Follows same format string rules and default format string as {!val:Date_time.to_string}.
+      Follows same format string rules and default format string as {!val:pp}.
   *)
 
   val to_string :

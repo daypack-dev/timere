@@ -64,6 +64,9 @@ let hyphen : (char, unit) t = char '-'
 let non_square_bracket_string : (string, unit) t =
   many_satisfy (function '[' | ']' -> false | _ -> true)
 
+let non_curly_bracket_string : (string, unit) t =
+  many_satisfy (function '{' | '}' -> false | _ -> true)
+
 let non_parenthesis_string : (string, unit) t =
   many_satisfy (function '(' | ')' -> false | _ -> true)
 
