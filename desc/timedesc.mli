@@ -277,22 +277,12 @@ val equal_local_result :
 (** {1 Span} *)
 
 module Span : sig
-  type t = private {
-    s : int64;
-    ns : int;
-  }
-  (** Signed/directional span of time expressed as a tuple of [(s, ns)]
-      - [s] is the signed second of the span
-      - [ns] is the unsigned nanosecond offset
-
-      The actual span represented is defined as [s * 10^9 + ns] in nanosecond, regardless of the sign of [s]
-
-      Order is defined using lexicographic order, i.e.
-      [lt x y iff. x.s < y.s || (x.s = y.s && x.ns < y.ns)]
-  *)
+  type t
+  (** Signed/directional span of time with nanosecond precision *)
 
   exception Out_of_range
 
+  (** Human friendly APIs *)
   module For_human : sig
     type sign =
       [ `Pos
@@ -417,6 +407,15 @@ module Span : sig
   (** Wrapper around [make] *)
 
   (** {1 Conversion} *)
+
+  val to_s_ns : t -> int64 * int
+  (** Yields tuple [(s, ns)] where
+      - [s] is the signed second of the span
+      - [ns] is the unsigned nanosecond offset
+
+      The actual span represented is defined as [s * 10^9 + ns] in nanosecond,
+      regardless of the sign of [s]
+  *)
 
   val to_float_s : t -> float
   (** Returns span in seconds, fraction represents subsecond span.

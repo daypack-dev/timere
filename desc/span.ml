@@ -5,6 +5,12 @@ type t = {
   ns : int;
 }
 
+let get_s (x : t) = x.s
+
+let get_subsec_ns (x : t) = x.ns
+
+let to_s_ns (x : t) = (x.s, x.ns)
+
 let zero = { s = 0L; ns = 0 }
 
 let ns_count_in_s = 1_000_000_000

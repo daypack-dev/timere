@@ -1,9 +1,6 @@
 exception Out_of_range
 
-type t = private {
-  s : int64;
-  ns : int;
-}
+type t
 
 module For_human' : sig
   type sign =
@@ -86,6 +83,12 @@ end
 val ns_count_in_s : int
 
 val ns_count_in_s_float : float
+
+val get_s : t -> int64
+
+val get_subsec_ns : t -> int
+
+val to_s_ns : t -> int64 * int
 
 val zero : t
 

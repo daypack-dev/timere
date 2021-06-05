@@ -57,16 +57,16 @@ let process_table ((starts, entries) : table) : record =
     let starts, entries =
       let first_start = starts.{0} in
       let first_entry = entries.(0) in
-      if Constants.timestamp_min.s < first_start then (
+      if Span.get_s Constants.timestamp_min < first_start then (
         let starts' =
           Bigarray.Array1.create Bigarray.Int64 Bigarray.c_layout (size + 1)
         in
         let sub = Bigarray.Array1.sub starts' 1 size in
-        starts'.{0} <- Constants.timestamp_min.s;
+        starts'.{0} <- Span.get_s Constants.timestamp_min;
         Bigarray.Array1.blit starts sub;
         (starts', Array.append [| first_entry |] entries))
       else (
-        starts.{0} <- Constants.timestamp_min.s;
+        starts.{0} <- Span.get_s Constants.timestamp_min;
         (starts, entries))
     in
     let recorded_offsets =
@@ -137,7 +137,7 @@ let equal t1 t2 =
    | Offset_only s1, Offset_only s2 -> CCInt.equal s1 s2
    | Backed name, Offset_only offset | Offset_only offset, Backed name -> (
        match fixed_offset_of_name name with
-       | Some offset' -> offset = CCInt64.to_int Span.(offset'.s)
+       | Some offset' -> offset = CCInt64.to_int @@ Span.get_s offset'
        | None -> false))
   && Bigarray.Array1.dim (fst t1.record.table)
      = Bigarray.Array1.dim (fst t2.record.table)
@@ -151,14 +151,14 @@ let one_day = Span.For_human'.(make_exn ~days:1 ())
 let make_offset_only (offset : Span.t) =
   if Span.abs offset > one_day then None
   else
-    let offset = CCInt64.to_int offset.s in
+    let offset = CCInt64.to_int @@ Span.get_s offset in
     Some
       {
         typ = Offset_only offset;
         record =
           process_table
             ( Bigarray.Array1.of_array Bigarray.Int64 Bigarray.C_layout
-                [| Constants.timestamp_min.s |],
+                [| Span.get_s Constants.timestamp_min |],
               [| { is_dst = false; offset } |] );
       }
 
@@ -200,7 +200,7 @@ let local_interval_of_table ((starts, entries) : table) (i : int) =
   let start_utc = starts.{i} in
   let entry = entries.(i) in
   let end_exc_utc =
-    if i = size - 1 then Constants.timestamp_max.s else starts.{i + 1}
+    if i = size - 1 then Span.get_s Constants.timestamp_max else starts.{i + 1}
   in
   ( Int64.add start_utc (Int64.of_int entry.offset),
     Int64.add end_exc_utc (Int64.of_int entry.offset) )
@@ -262,7 +262,7 @@ module Raw = struct
           | Seq.Nil ->
             fun () ->
               Seq.Cons
-                (((k1, Constants.timestamp_max.s), entry1), aux Seq.empty)
+                (((k1, Span.get_s Constants.timestamp_max), entry1), aux Seq.empty)
           | Seq.Cons ((k2, entry2), rest) ->
             fun () ->
               Seq.Cons
@@ -301,7 +301,7 @@ module Raw = struct
 end
 
 let offset_is_recorded offset (t : t) =
-  Array.mem (CCInt64.to_int Span.(offset.s)) t.record.recorded_offsets
+  Array.mem (CCInt64.to_int @@ Span.get_s offset) t.record.recorded_offsets
 
 module Sexp = struct
   let of_sexp (x : CCSexp.t) : t option =

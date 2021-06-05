@@ -6,7 +6,8 @@ let ns_to_ps_mult = 1_000
 
 let seconds_in_day = 24L *^ 60L *^ 60L
 
-let ptime_span_of_span ({ s; ns } : Span.t) =
+let ptime_span_of_span (x : Span.t) =
+  let (s, ns) = Span.to_s_ns x in
   let d, s =
     if s >= 0L then
       ( s /^ seconds_in_day |> Int64.to_int,

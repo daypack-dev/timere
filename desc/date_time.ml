@@ -102,7 +102,7 @@ let of_timestamp ?(tz_of_date_time = Time_zone_utils.get_local_tz_for_arg ())
     (x : timestamp) : t option =
   if not Span.(timestamp_min <= x && x <= timestamp_max) then None
   else
-    match Time_zone.lookup_timestamp_utc tz_of_date_time x.s with
+    match Time_zone.lookup_timestamp_utc tz_of_date_time (Span.get_s x) with
     | None -> None
     | Some entry ->
       let timestamp_local = Span.(x + make_small ~s:entry.offset ()) in
@@ -213,7 +213,7 @@ module Zoneless' = struct
   let to_zoned ?(tz = Time_zone_utils.get_local_tz_for_arg ())
       ({ date; time } as zl : zoneless) : (t, error_when_zoned) result =
     let timestamp_local = to_timestamp_local zl in
-    match Time_zone.lookup_timestamp_local tz timestamp_local.s with
+    match Time_zone.lookup_timestamp_local tz (Span.get_s timestamp_local) with
     | `None -> Error `Does_not_exist
     | `Single e ->
       Ok
@@ -246,8 +246,8 @@ module Zoneless' = struct
      | Error (`Invalid_offset _) | Error (`Unrecorded_offset _) ->
        make_invalid_tz_info_error ?tz ~offset_from_utc ()
      | Ok ({ tz = tz'; fixed_offset_from_utc = _ } as tz_info) -> (
-         let Span.{ s = timestamp_local; ns = _ } = to_timestamp_local zl in
-         let offset_from_utc_s = Int64.to_int offset_from_utc.s in
+         let timestamp_local = Span.get_s @@ to_timestamp_local zl in
+         let offset_from_utc_s = Int64.to_int @@ Span.get_s offset_from_utc in
          match Time_zone.lookup_timestamp_local tz' timestamp_local with
          | `None -> Error `Does_not_exist
          | `Single e ->

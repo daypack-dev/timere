@@ -295,7 +295,8 @@ let pp_intervals ?display_using_tz ?format ?(sep = Fmt.cut) () formatter
     intervals =
   Fmt.seq ~sep (pp_interval ?display_using_tz ?format ()) formatter intervals
 
-let pp_span formatter ({ s; ns } : Span.t) : unit =
+let pp_span formatter (x : Span.t) : unit =
+  let (s, ns) = Span.to_s_ns x in
   Fmt.pf formatter "%Ld s + %d ns" s ns
 
 let string_of_span (x : Span.t) : string = Fmt.str "%a" pp_span x
