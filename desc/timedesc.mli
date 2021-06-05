@@ -310,7 +310,7 @@ module Span : sig
   (** {1 Conversion} *)
 
   val to_s_ns : t -> int64 * int
-  (** Yields tuple [(s, ns)] where
+  (** Yields pair [(s, ns)] where
       - [s] is the signed second of the span
       - [ns] is the unsigned nanosecond offset
 
