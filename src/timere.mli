@@ -326,14 +326,14 @@ end
 
 type points = Points.t
 
-val bounded_intervals :
+val pattern_intervals :
   ?inc_exc:inc_exc ->
   ?bound:Timedesc.Span.t ->
   [ `Whole | `Fst | `Snd ] ->
   points ->
   points ->
   t
-(** [bounded_intervals mode p1 p2] for each point [x] matched by [p1],
+(** [pattern_intervals mode p1 p2] for each point [x] matched by [p1],
     then for the earliest point [y] matched by [p2] such that [x < y && y - x <= bound]
     - if [mode = `Whole && inc_exc = `Exc], yields (x, y)
     - if [mode = `Whole && inc_exc = `Inc], yields (x, y + 1)
@@ -361,7 +361,7 @@ if p2 is      S then   1 minutes
     Examples:
 
     {[
-      bounded_intervals `Whole
+      pattern_intervals `Whole
         (Points.make ~hour:13 ~minute:0 ~second:0 ()) (* p1 *)
         (Points.make ~hour:14 ~minute:0 ~second:0 ()) (* p2 *)
     ]}
@@ -369,14 +369,14 @@ if p2 is      S then   1 minutes
     searching forward up to 24 hour period, we can find a "2pm" mark in [p2]
 
     {[
-      bounded_intervals `Whole
+      pattern_intervals `Whole
         (Points.make ~month:2 ~day:10 ~hour:13 ~minute:0 ~second:0 ()) (* p1 *)
         (Points.make                  ~hour:14 ~minute:0 ~second:0 ()) (* p2 *)
     ]}
     yields all the "Feb 10th 1pm to 2pm" intervals (or specifically "Feb 10th 1pm to Feb 10th 2pm")
 
     {[
-      bounded_intervals `Whole
+      pattern_intervals `Whole
         (Points.make ~month:`Feb ~day:10 ~hour:23 ~minute:0 ~second:0 ()) (* p1 *)
         (Points.make                     ~hour:3  ~minute:0 ~second:0 ()) (* p2 *)
     ]}
@@ -393,7 +393,7 @@ if p2 is      S then   1 minutes
 
 (** {2 Hour minute second intervals} *)
 
-(** Convenience wrappers around [points] and [bounded_intervals] *)
+(** Convenience wrappers around [points] and [pattern_intervals] *)
 
 module Hms : sig
   type t = private {
@@ -425,7 +425,7 @@ module Hms : sig
 end
 
 val hms_intervals : ?inc_exc:inc_exc -> Hms.t -> Hms.t -> t
-(** Same as [bounded_intervals ...] with bound fixed to [Span.For_human.make ~days:1 ()]
+(** Same as [pattern_intervals ...] with bound fixed to [Span.For_human.make ~days:1 ()]
 
     [inc_exc] defaults to [`Exc]
 *)

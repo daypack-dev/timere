@@ -952,9 +952,9 @@ let equal t1 t2 =
     | Pattern p1, Pattern p2 -> Pattern.equal p1 p2
     | Unary_op (op1, t1), Unary_op (op2, t2) ->
         equal_unary_op op1 op2 && aux t1 t2
-    | ( Bounded_intervals
+    | ( Pattern_intervals
           { mode = mode1; bound = b1; start = start1; end_ = end_1 },
-        Bounded_intervals
+        Pattern_intervals
           { mode = mode2; bound = b2; start = start2; end_ = end_2 } ) ->
         mode1 = mode2
         && b1 = b2
@@ -1267,7 +1267,7 @@ let second_ranges second_ranges = pattern ~second_ranges ()
 
 let ns_ranges ns_ranges = pattern ~ns_ranges ()
 
-let bounded_intervals ?(inc_exc : inc_exc = `Exc)
+let pattern_intervals ?(inc_exc : inc_exc = `Exc)
     ?(bound : Timedesc.Span.t option) mode (start : Points.t) (end_ : Points.t)
     : t =
   let default_bound start end_ =
@@ -1291,7 +1291,7 @@ let bounded_intervals ?(inc_exc : inc_exc = `Exc)
     | None -> default_bound start end_
     | Some bound ->
         if Timedesc.Span.(bound < zero) then
-          invalid_arg "bounded_intervals: bound is negative"
+          invalid_arg "pattern_intervals: bound is negative"
         else bound
   in
   let mode =
@@ -1302,7 +1302,7 @@ let bounded_intervals ?(inc_exc : inc_exc = `Exc)
     | `Snd, _ -> `Snd
   in
   if Points.precision start < Points.precision end_ then
-    invalid_arg "bounded_intervals: start is less precise than end_exc";
+    invalid_arg "pattern_intervals: start is less precise than end_exc";
   if CCOpt.equal Timedesc.Time_zone_info.equal start.tz_info end_.tz_info then
     match (start.pick, end_.pick) with
     | Points.(N ns_start, N ns_end) when ns_start = ns_end -> always
@@ -1338,8 +1338,8 @@ let bounded_intervals ?(inc_exc : inc_exc = `Exc)
            && second_start = second_end_exc
            && ns_start = ns_end ->
         always
-    | _, _ -> Bounded_intervals { mode; bound; start; end_ }
-  else Bounded_intervals { mode; bound; start; end_ }
+    | _, _ -> Pattern_intervals { mode; bound; start; end_ }
+  else Pattern_intervals { mode; bound; start; end_ }
 
 let hms_intervals ?(inc_exc : inc_exc = `Exc) (hms_a : Hms'.t) (hms_b : Hms'.t)
     : t =
@@ -1354,7 +1354,7 @@ let hms_intervals ?(inc_exc : inc_exc = `Exc) (hms_a : Hms'.t) (hms_b : Hms'.t)
         |> CCOpt.get_exn_or
              "Expected successful construction of hms from second of day"
   in
-  bounded_intervals ~inc_exc:`Exc `Whole
+  pattern_intervals ~inc_exc:`Exc `Whole
     (Points.make_exn ~hour:hms_a.hour ~minute:hms_a.minute ~second:hms_a.second
        ~lean_toward:`Earlier ())
     (Points.make_exn ~hour:hms_b.hour ~minute:hms_b.minute ~second:hms_b.second

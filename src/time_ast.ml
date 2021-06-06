@@ -36,7 +36,7 @@ type t =
   | Unary_op of unary_op * t
   | Inter_seq of t Seq.t
   | Union_seq of t Seq.t
-  | Bounded_intervals of {
+  | Pattern_intervals of {
       mode : [ `Whole_inc | `Whole_exc | `Fst | `Snd ];
       bound : Timedesc.Span.t;
       start : Points.t;

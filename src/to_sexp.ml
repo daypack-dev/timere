@@ -181,11 +181,11 @@ let to_sexp (t : Time_ast.t) : CCSexp.t =
         CCSexp.(list (atom "inter" :: (s |> Seq.map aux |> CCList.of_seq)))
     | Union_seq s ->
         CCSexp.(list (atom "union" :: (s |> Seq.map aux |> CCList.of_seq)))
-    | Bounded_intervals { mode; bound; start; end_ } ->
+    | Pattern_intervals { mode; bound; start; end_ } ->
         CCSexp.(
           list
             [
-              atom "bounded_intervals";
+              atom "pattern_intervals";
               (match mode with
               | `Whole_inc -> atom "whole_inc"
               | `Whole_exc -> atom "whole_exc"

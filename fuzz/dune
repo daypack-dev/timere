@@ -129,9 +129,9 @@
  (names     resolver_is_same_as_simple_resolver
             to_of_sexp
             of_sexp_string_does_not_crash
-            bounded_intervals_empty
-            bounded_intervals_is_sound
-            bounded_intervals_is_complete
+            pattern_intervals_empty
+            pattern_intervals_is_sound
+            pattern_intervals_is_complete
             union_is_sound_and_complete
             inter_is_sound_and_complete
             union_order_does_not_matter
