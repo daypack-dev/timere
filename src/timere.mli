@@ -259,11 +259,7 @@ module Points : sig
     lean_toward:lean_toward ->
     unit ->
     (t, error) result
-  (** [lean_toward] defaults to
-   *  - [`Earlier] if none of [hour], [minute], [second] and [ns] is specified
-   *  - [`Later] otherwise
-   *
-   *  Call must be exactly one of the following forms
+  (** Call must be exactly one of the following forms
    *  (ignoring [tz], [offset_from_utc] and [lean_toward] which are optional in all cases)
       {[
         make ~year:_                                                       ~lean_toward ()
