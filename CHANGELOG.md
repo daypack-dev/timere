@@ -26,6 +26,8 @@
 
 - Minor fixes of `resolve` for edge cases
 
+- Upgraded `Timere.Points.make` to do a lot more deduction of missing arguments
+
 ## Timedesc 0.5.0
 
 - Made `Timedesc.Span.t` abstract
