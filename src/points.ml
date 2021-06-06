@@ -81,8 +81,8 @@ let precision ({ pick; _ } : t) : int =
   | MDHMSN _ -> 6
   | YMDHMSN _ -> 7
 
-let make ?tz ?offset_from_utc ?(lean_toward : lean_toward option) ?year ?month ?day ?weekday ?hour ?minute ?second
-    ?ns () : (t, error) result =
+let make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ?second
+    ?ns ~(lean_toward : lean_toward) () : (t, error) result =
   let tz_info =
     match
       Timedesc.Time_zone_info.make ?tz ?fixed_offset_from_utc:offset_from_utc ()
@@ -132,14 +132,6 @@ let make ?tz ?offset_from_utc ?(lean_toward : lean_toward option) ?year ?month ?
           (`Invalid_second
             (CCOpt.get_exn_or "Expected second to be Some _" second))
       else
-        let lean_toward =
-          match lean_toward with
-          | Some lean_toward -> lean_toward
-          | None ->
-              match (hour, minute, second, ns) with
-              | None, None, None, None -> `Later
-              | _, _, _, _ -> `Earlier
-      in
         let default_month = match lean_toward with `Earlier -> 1 | `Later -> 12 in
         let default_month_day = match lean_toward with `Earlier -> 1 | `Later -> -1 in
         let default_hour = match lean_toward with `Earlier -> 0 | `Later -> 23 in
@@ -445,11 +437,11 @@ let make ?tz ?offset_from_utc ?(lean_toward : lean_toward option) ?year ?month ?
         in
             CCResult.map (fun pick -> { pick; tz_info }) pick)
 
-let make_exn ?tz ?offset_from_utc ?lean_toward ?year ?month ?day ?weekday ?hour ?minute
-    ?second ?ns () =
+let make_exn ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute
+    ?second ?ns ~lean_toward () =
   match
-    make ?tz ?offset_from_utc ?lean_toward ?year ?month ?day ?weekday ?hour ?minute ?second
-      ?ns ()
+    make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ?second
+      ?ns ~lean_toward ()
   with
   | Error e -> raise (Error_exn e)
   | Ok x -> x

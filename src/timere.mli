@@ -248,7 +248,6 @@ module Points : sig
   val make :
     ?tz:Timedesc.Time_zone.t ->
     ?offset_from_utc:Timedesc.Span.t ->
-    ?lean_toward:lean_toward ->
     ?year:int ->
     ?month:int ->
     ?day:int ->
@@ -257,6 +256,7 @@ module Points : sig
     ?minute:int ->
     ?second:int ->
     ?ns:int ->
+    lean_toward:lean_toward ->
       unit ->
     (t, error) result
   (** [lean_toward] defaults to
@@ -314,7 +314,6 @@ module Points : sig
   val make_exn :
     ?tz:Timedesc.Time_zone.t ->
     ?offset_from_utc:Timedesc.Span.t ->
-    ?lean_toward:lean_toward ->
     ?year:int ->
     ?month:int ->
     ?day:int ->
@@ -323,6 +322,7 @@ module Points : sig
     ?minute:int ->
     ?second:int ->
     ?ns:int ->
+    lean_toward:lean_toward ->
     unit ->
     t
   (** @raise Error_exn if [make] fails *)
