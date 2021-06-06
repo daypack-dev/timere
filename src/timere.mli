@@ -240,8 +240,8 @@ module Points : sig
 
   exception Error_exn of error
 
-  type lean_toward = [
-    | `Earlier
+  type lean_toward =
+    [ `Earlier
     | `Later
     ]
 
@@ -257,7 +257,7 @@ module Points : sig
     ?second:int ->
     ?ns:int ->
     lean_toward:lean_toward ->
-      unit ->
+    unit ->
     (t, error) result
   (** [lean_toward] defaults to
    *  - [`Earlier] if none of [hour], [minute], [second] and [ns] is specified
@@ -328,7 +328,7 @@ module Points : sig
   (** @raise Error_exn if [make] fails *)
 end
 
-  type points = Points.t
+type points = Points.t
 
 val bounded_intervals :
   ?inc_exc:inc_exc ->

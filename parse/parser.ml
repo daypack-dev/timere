@@ -916,26 +916,19 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.Hms.t option)
             (Timere.Points.make_exn ~year ~month ~day ~hour:hms.hour
                ~minute:hms.minute ~second:hms.second ~lean_toward ())
       | Some year, None, None, None, None ->
-          `Some
-            (Timere.Points.make_exn ~year ~lean_toward ())
+          `Some (Timere.Points.make_exn ~year ~lean_toward ())
       | Some year, Some month, None, None, None ->
-          `Some
-            (Timere.Points.make_exn ~year ~month ~lean_toward ())
+          `Some (Timere.Points.make_exn ~year ~month ~lean_toward ())
       | Some year, Some month, Some day, None, None ->
-          `Some
-            (Timere.Points.make_exn ~year ~month ~day ~lean_toward ())
+          `Some (Timere.Points.make_exn ~year ~month ~day ~lean_toward ())
       | None, Some month, None, None, None ->
-          `Some
-            (Timere.Points.make_exn ~month ~lean_toward ())
+          `Some (Timere.Points.make_exn ~month ~lean_toward ())
       | None, Some month, Some day, None, None ->
-          `Some
-            (Timere.Points.make_exn ~month ~day ~lean_toward ())
+          `Some (Timere.Points.make_exn ~month ~day ~lean_toward ())
       | None, None, Some day, None, None ->
-          `Some
-            (Timere.Points.make_exn ~day ~lean_toward ())
+          `Some (Timere.Points.make_exn ~day ~lean_toward ())
       | None, None, None, Some weekday, None ->
-          `Some
-            (Timere.Points.make_exn ~weekday ~lean_toward ())
+          `Some (Timere.Points.make_exn ~weekday ~lean_toward ())
       | _ -> invalid_arg "points")
 
 let t_of_hmss (hmss : Timere.Hms.t Timere.range list) =
@@ -951,7 +944,10 @@ let t_of_hmss (hmss : Timere.Hms.t Timere.range list) =
                     ~hours:[ Hms.(x.hour) ]
                     ~minutes:[ x.minute ] ~seconds:[ x.second ] ())
             else
-              match (points ~hms:x ~lean_toward:`Earlier (), points ~hms:y ~lean_toward:`Later ()) with
+              match
+                ( points ~hms:x ~lean_toward:`Earlier (),
+                  points ~hms:y ~lean_toward:`Later () )
+              with
               | `Some p1, `Some p2 ->
                   Ok Timere.(bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
               | _ -> Error ())
@@ -1108,7 +1104,7 @@ module Rules = struct
           ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
               ~hms:hms1 ~lean_toward:`Earlier (),
             points ~year:year2 ~month:month2 ~pos_day:pos_day2 ~day:day2
-              ~hms:hms2 ~lean_toward:`Earlier ())
+              ~hms:hms2 ~lean_toward:`Earlier () )
         with
         | `Some p1, `Some p2 ->
             `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
@@ -1136,7 +1132,8 @@ module Rules = struct
         match
           ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
               ~hms:hms1 ~lean_toward:`Earlier (),
-            points ~month:month2 ~pos_day:pos_day2 ~day:day2 ~hms:hms2 ~lean_toward:`Earlier () )
+            points ~month:month2 ~pos_day:pos_day2 ~day:day2 ~hms:hms2
+              ~lean_toward:`Earlier () )
         with
         | `Some p1, `Some p2 ->
             `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
@@ -1162,7 +1159,8 @@ module Rules = struct
         match
           ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
               ~hms:hms1 ~lean_toward:`Earlier (),
-            points ~pos_day:pos_day2 ~day:day2 ~hms:hms2 ~lean_toward:`Earlier () )
+            points ~pos_day:pos_day2 ~day:day2 ~hms:hms2 ~lean_toward:`Earlier
+              () )
         with
         | `Some p1, `Some p2 ->
             `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
@@ -1226,8 +1224,10 @@ module Rules = struct
         (_, _, Hms hms2);
       ] -> (
         match
-          ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1 ~lean_toward:`Earlier (),
-            points ~month:month2 ~pos_day:pos_day2 ~day:day2 ~hms:hms2 ~lean_toward:`Earlier () )
+          ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1
+              ~lean_toward:`Earlier (),
+            points ~month:month2 ~pos_day:pos_day2 ~day:day2 ~hms:hms2
+              ~lean_toward:`Earlier () )
         with
         | `Some p1, `Some p2 ->
             `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
@@ -1269,8 +1269,10 @@ module Rules = struct
         (_, _, Hms hms2);
       ] -> (
         match
-          ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1 ~lean_toward:`Earlier (),
-            points ~pos_day:pos_day2 ~day:day2 ~hms:hms2 ~lean_toward:`Earlier () )
+          ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1
+              ~lean_toward:`Earlier (),
+            points ~pos_day:pos_day2 ~day:day2 ~hms:hms2 ~lean_toward:`Earlier
+              () )
         with
         | `Some p1, `Some p2 ->
             `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
@@ -1294,7 +1296,8 @@ module Rules = struct
         (_, _, Hms hms2);
       ] -> (
         match
-          ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1 ~lean_toward:`Earlier (),
+          ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~hms:hms1
+              ~lean_toward:`Earlier (),
             points ~hms:hms2 ~lean_toward:`Earlier () )
         with
         | `Some p1, `Some p2 ->
@@ -1334,7 +1337,8 @@ module Rules = struct
       ] -> (
         match
           ( points ~pos_day:pos_day1 ~day:day1 ~hms:hms1 ~lean_toward:`Earlier (),
-            points ~pos_day:pos_day2 ~day:day2 ~hms:hms2 ~lean_toward:`Earlier () )
+            points ~pos_day:pos_day2 ~day:day2 ~hms:hms2 ~lean_toward:`Earlier
+              () )
         with
         | `Some p1, `Some p2 ->
             `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
@@ -1349,9 +1353,10 @@ module Rules = struct
      (_, _, Ymd ((_, year2), (_, month2), (pos_day2, day2)));
     ] -> (
         match
-          ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1 ~lean_toward:`Earlier (),
-            points ~year:year2 ~month:month2 ~pos_day:pos_day2 ~day:day2 ~lean_toward:`Later ()
-          )
+          ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
+              ~lean_toward:`Earlier (),
+            points ~year:year2 ~month:month2 ~pos_day:pos_day2 ~day:day2
+              ~lean_toward:`Later () )
         with
         | `Some p1, `Some p2 ->
             `Some (Timere.bounded_intervals ~inc_exc:`Inc `Whole p1 p2)
@@ -1373,8 +1378,10 @@ module Rules = struct
         (pos_day2, _, Month_day day2);
       ] -> (
         match
-          ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1 ~lean_toward:`Earlier (),
-            points ~month:month2 ~pos_day:pos_day2 ~day:day2 ~lean_toward:`Later () )
+          ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
+              ~lean_toward:`Earlier (),
+            points ~month:month2 ~pos_day:pos_day2 ~day:day2 ~lean_toward:`Later
+              () )
         with
         | `Some p1, `Some p2 ->
             `Some (Timere.bounded_intervals ~inc_exc:`Inc `Whole p1 p2)
@@ -1394,7 +1401,8 @@ module Rules = struct
         (pos_day2, _, Month_day day2);
       ] -> (
         match
-          ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1 ~lean_toward:`Earlier (),
+          ( points ~year:year1 ~month:month1 ~pos_day:pos_day1 ~day:day1
+              ~lean_toward:`Earlier (),
             points ~pos_day:pos_day2 ~day:day2 ~lean_toward:`Later () )
         with
         | `Some p1, `Some p2 ->
@@ -1433,8 +1441,10 @@ module Rules = struct
         (pos_day2, _, Month_day day2);
       ] -> (
         match
-          ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~lean_toward:`Earlier (),
-            points ~month:month2 ~pos_day:pos_day2 ~day:day2 ~lean_toward:`Later () )
+          ( points ~month:month1 ~pos_day:pos_day1 ~day:day1
+              ~lean_toward:`Earlier (),
+            points ~month:month2 ~pos_day:pos_day2 ~day:day2 ~lean_toward:`Later
+              () )
         with
         | `Some p1, `Some p2 ->
             `Some (Timere.bounded_intervals ~inc_exc:`Inc `Whole p1 p2)
@@ -1468,7 +1478,8 @@ module Rules = struct
         (pos_day2, _, Month_day day2);
       ] -> (
         match
-          ( points ~month:month1 ~pos_day:pos_day1 ~day:day1 ~lean_toward:`Earlier (),
+          ( points ~month:month1 ~pos_day:pos_day1 ~day:day1
+              ~lean_toward:`Earlier (),
             points ~pos_day:pos_day2 ~day:day2 ~lean_toward:`Later () )
         with
         | `Some p1, `Some p2 ->
@@ -1516,7 +1527,10 @@ module Rules = struct
   let rule_hms_to_hms l =
     match l with
     | [ (_, _, Hms hms1); (_, _, To); (_, _, Hms hms2) ] -> (
-        match (points ~hms:hms1 ~lean_toward:`Earlier (), points ~hms:hms2 ~lean_toward:`Earlier ()) with
+        match
+          ( points ~hms:hms1 ~lean_toward:`Earlier (),
+            points ~hms:hms2 ~lean_toward:`Earlier () )
+        with
         | `Some p1, `Some p2 ->
             `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
         | _, _ -> `None)

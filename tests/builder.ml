@@ -130,32 +130,28 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
   let day =
     if rng () mod 2 = 0 then 1 + (rng () mod 31) else -(1 + (rng () mod 31))
   in
-  let lean_toward =
-    if rng () mod 2 = 0 then `Earlier else `Later in
+  let lean_toward = if rng () mod 2 = 0 then `Earlier else `Later in
   let precision = min max_precision (rng () mod 8) in
   match precision with
-  | 0 -> Points.make_exn ~ns:(rng () mod 1_000_000_000)
-        ~lean_toward
-  ()
+  | 0 -> Points.make_exn ~ns:(rng () mod 1_000_000_000) ~lean_toward ()
   | 1 ->
-      Points.make_exn ~second:(rng () mod 60) ~ns:(rng () mod 1_000_000_000)
-        ~lean_toward
-      ()
+      Points.make_exn
+        ~second:(rng () mod 60)
+        ~ns:(rng () mod 1_000_000_000)
+        ~lean_toward ()
   | 2 ->
       Points.make_exn
         ~minute:(rng () mod 60)
         ~second:(rng () mod 60)
         ~ns:(rng () mod 1_000_000_000)
-        ~lean_toward
-        ()
+        ~lean_toward ()
   | 3 ->
       Points.make_exn
         ~hour:(rng () mod 24)
         ~minute:(rng () mod 60)
         ~second:(rng () mod 60)
         ~ns:(rng () mod 1_000_000_000)
-        ~lean_toward
-        ()
+        ~lean_toward ()
   | 4 ->
       Points.make_exn
         ~weekday:
@@ -167,16 +163,14 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
         ~minute:(rng () mod 60)
         ~second:(rng () mod 60)
         ~ns:(rng () mod 1_000_000_000)
-        ~lean_toward
-        ()
+        ~lean_toward ()
   | 5 ->
       Points.make_exn ~day
         ~hour:(rng () mod 24)
         ~minute:(rng () mod 60)
         ~second:(rng () mod 60)
         ~ns:(rng () mod 1_000_000_000)
-        ~lean_toward
-        ()
+        ~lean_toward ()
   | 6 ->
       Points.make_exn
         ~month:(succ (rng () mod 12))
@@ -185,8 +179,7 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
         ~minute:(rng () mod 60)
         ~second:(rng () mod 60)
         ~ns:(rng () mod 1_000_000_000)
-        ~lean_toward
-        ()
+        ~lean_toward ()
   | 7 ->
       Points.make_exn
         ~year:(min max_year_inc (min_year + rng ()))
@@ -196,8 +189,7 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
         ~minute:(rng () mod 60)
         ~second:(rng () mod 60)
         ~ns:(rng () mod 1_000_000_000)
-        ~lean_toward
-        ()
+        ~lean_toward ()
   | _ -> failwith "Unexpected case"
 
 let make_hms ~rng =

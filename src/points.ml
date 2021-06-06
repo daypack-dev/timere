@@ -52,10 +52,10 @@ type t = {
   tz_info : Timedesc.Time_zone_info.t option;
 }
 
-type lean_toward = [
-  | `Earlier
+type lean_toward =
+  [ `Earlier
   | `Later
-]
+  ]
 
 type error =
   [ `Invalid_year of int
@@ -96,7 +96,7 @@ let make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ?second
   in
   match tz_info with
   | Error e -> Error e
-  | Ok tz_info -> (
+  | Ok tz_info ->
       let year_is_fine =
         match year with
         | None -> true
@@ -132,310 +132,332 @@ let make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ?second
           (`Invalid_second
             (CCOpt.get_exn_or "Expected second to be Some _" second))
       else
-        let default_month = match lean_toward with `Earlier -> 1 | `Later -> 12 in
-        let default_month_day = match lean_toward with `Earlier -> 1 | `Later -> -1 in
-        let default_hour = match lean_toward with `Earlier -> 0 | `Later -> 23 in
-        let default_minute = match lean_toward with `Earlier -> 0 | `Later -> 59 in
-        let default_second = match lean_toward with `Earlier -> 0 | `Later -> 59 in
+        let default_month =
+          match lean_toward with `Earlier -> 1 | `Later -> 12
+        in
+        let default_month_day =
+          match lean_toward with `Earlier -> 1 | `Later -> -1
+        in
+        let default_hour =
+          match lean_toward with `Earlier -> 0 | `Later -> 23
+        in
+        let default_minute =
+          match lean_toward with `Earlier -> 0 | `Later -> 59
+        in
+        let default_second =
+          match lean_toward with `Earlier -> 0 | `Later -> 59
+        in
         let default_ns =
           match lean_toward with
-        | `Earlier -> 0
-        | `Later -> Timedesc.Span.ns_count_in_s - 1
+          | `Earlier -> 0
+          | `Later -> Timedesc.Span.ns_count_in_s - 1
         in
         let pick =
-        match (year, month, day, weekday, hour, minute, second, ns) with
-        | Some year, None, None, None, None, None, None, None ->
-            Ok
-                    (YMDHMSN
-                       { year; 
-                       month = default_month; 
-                       month_day = default_month_day; 
-                       hour = default_hour;
-                       minute = default_minute;
-                       second = default_second;
-                       ns = default_ns })
-        | Some year, Some month, None, None, None, None, None, None ->
-            Ok
-                    (YMDHMSN
-                       { year; 
-                       month; 
-                       month_day = default_month_day; 
-                       hour = default_hour;
-                       minute = default_minute;
-                       second = default_second;
-                       ns = default_ns })
-        | Some year, Some month, Some month_day, None, None, None, None, None ->
-            Ok
-                    (YMDHMSN
-                       { year;
-                       month;
-                       month_day;
-                       hour = default_hour;
-                       minute = default_minute;
-                       second = default_second;
-                       ns = default_ns })
-        | Some year, Some month, Some month_day, None, Some hour, None, None, None ->
-            Ok
-                    (YMDHMSN
-                       { year; 
-                       month; 
-                       month_day; 
-                       hour;
-                       minute = default_minute;
-                       second = default_second;
-                       ns = default_ns })
-        | Some year, Some month, Some month_day, None, Some hour, Some minute, None, None ->
-            Ok
-                    (YMDHMSN
-                       { year; 
-                       month; 
-                       month_day; 
-                       hour;
-                       minute;
-                       second = default_second;
-                       ns = default_ns })
-        | Some year, Some month, Some month_day, None, Some hour, Some minute, Some second, None ->
-            Ok
-                    (YMDHMSN
-                       { year;
-                       month;
-                       month_day; 
-                       hour;
-                       minute;
-                       second;
-                       ns = default_ns })
-        | Some year, Some month, Some month_day, None, Some hour, Some minute, Some second, Some ns ->
-            Ok
-                    (YMDHMSN
-                       { year;
-                       month;
-                       month_day;
-                       hour;
-                       minute;
-                       second;
-                       ns })
-        | None, Some month, None, None, None, None, None, None ->
-            Ok
-                    (MDHMSN
-                       {
-                       month; 
-                       month_day = default_month_day; 
-                       hour = default_hour;
-                       minute = default_minute;
-                       second = default_second;
-                       ns = default_ns })
-        | None, Some month, Some month_day, None, None, None, None, None ->
-            Ok
-                    (MDHMSN
-                       {
-                       month;
-                       month_day;
-                       hour = default_hour;
-                       minute = default_minute;
-                       second = default_second;
-                       ns = default_ns })
-        | None, Some month, Some month_day, None, Some hour, None, None, None ->
-            Ok
-                    (MDHMSN
-                       {
-                       month; 
-                       month_day; 
-                       hour;
-                       minute = default_minute;
-                       second = default_second;
-                       ns = default_ns })
-        | None, Some month, Some month_day, None, Some hour, Some minute, None, None ->
-            Ok
-                    (MDHMSN
-                       {
-                       month; 
-                       month_day; 
-                       hour;
-                       minute;
-                       second = default_second;
-                       ns = default_ns })
-        | None, Some month, Some month_day, None, Some hour, Some minute, Some second, None ->
-            Ok
-                    (MDHMSN
-                       {
-                       month;
-                       month_day; 
-                       hour;
-                       minute;
-                       second;
-                       ns = default_ns })
-        | None, Some month, Some month_day, None, Some hour, Some minute, Some second, Some ns ->
-            Ok
-                    (MDHMSN
-                       {
-                       month;
-                       month_day; 
-                       hour;
-                       minute;
-                       second;
-                       ns })
-        | None, None, Some month_day, None, None, None, None, None ->
-            Ok
-                    (DHMSN
-                       {
-                       month_day;
-                       hour = default_hour;
-                       minute = default_minute;
-                       second = default_second;
-                       ns = default_ns })
-        | None, None, Some month_day, None, Some hour, None, None, None ->
-            Ok
-                    (DHMSN
-                       {
-                       month_day; 
-                       hour;
-                       minute = default_minute;
-                       second = default_second;
-                       ns = default_ns })
-        | None, None, Some month_day, None, Some hour, Some minute, None, None ->
-            Ok
-                    (DHMSN
-                       {
-                       month_day; 
-                       hour;
-                       minute;
-                       second = default_second;
-                       ns = default_ns })
-        | None, None, Some month_day, None, Some hour, Some minute, Some second, None ->
-            Ok
-                    (DHMSN
-                       {
-                       month_day; 
-                       hour;
-                       minute;
-                       second;
-                       ns = default_ns })
-        | None, None, Some month_day, None, Some hour, Some minute, Some second, Some ns ->
-            Ok
-                    (DHMSN
-                       {
-                       month_day; 
-                       hour;
-                       minute;
-                       second;
-                       ns })
-        | None, None, None, Some weekday, None, None, None, None ->
-            Ok
-                    (WHMSN
-                       {
-                       weekday;
-                       hour = default_hour;
-                       minute = default_minute;
-                       second = default_second;
-                       ns = default_ns })
-        | None, None, None, Some weekday, Some hour, None, None, None ->
-            Ok
-                    (WHMSN
-                       {weekday;
-                       hour;
-                       minute = default_minute;
-                       second = default_second;
-                       ns = default_ns })
-        | None, None, None, Some weekday, Some hour, Some minute, None, None ->
-            Ok
-                    (WHMSN
-                       {
-                       weekday;
-                       hour;
-                       minute;
-                       second = default_second;
-                       ns = default_ns })
-        | None, None, None, Some weekday, Some hour, Some minute, Some second, None ->
-            Ok
-                    (WHMSN
-                       { 
-                       weekday; 
-                       hour;
-                       minute;
-                       second;
-                       ns = default_ns })
-        | None, None, None, Some weekday, Some hour, Some minute, Some second, Some ns ->
-            Ok
-                    (WHMSN
-                       { 
-                       weekday; 
-                       hour;
-                       minute;
-                       second;
-                       ns })
-        | None, None, None, None, Some hour, None, None, None ->
-            Ok
-                    (HMSN
-                       {
-                       hour;
-                       minute = default_minute;
-                       second = default_second;
-                       ns = default_ns })
-        | None, None, None, None, Some hour, Some minute, None, None ->
-            Ok
-                    (HMSN
-                       {
-                       hour;
-                       minute;
-                       second = default_second;
-                       ns = default_ns })
-        | None, None, None, None, Some hour, Some minute, Some second, None ->
-            Ok
-                    (HMSN
-                       {
-                       hour;
-                       minute;
-                       second;
-                       ns = default_ns })
-        | None, None, None, None, Some hour, Some minute, Some second, Some ns ->
-            Ok
-                    (HMSN
-                       {
-                         hour;
-                       minute;
-                       second;
-                       ns })
-        | None, None, None, None, None, Some minute, None, None ->
-            Ok
-                    (MSN
-                       {
-                       minute;
-                       second = default_second;
-                       ns = default_ns })
-        | None, None, None, None, None, Some minute, Some second, None ->
-            Ok
-                    (MSN
-                       {
-                       minute;
-                       second;
-                       ns = default_ns })
-        | None, None, None, None, None, Some minute, Some second, Some ns ->
-            Ok
-                    (MSN
-                       {
-                       minute;
-                       second;
-                       ns })
-        | None, None, None, None, None, None, Some second, None ->
-            Ok
-                    (SN
-                       {
-                       second;
-                       ns = default_ns })
-        | None, None, None, None, None, None, Some second, Some ns ->
-            Ok
-                    (SN
-                       {
-                       second;
-                       ns })
-        | None, None, None, None, None, None, None, Some ns ->
-            Ok
-                    (N
-                       ns )
-        | _, _, _, _, _, _, _, _ ->
-            Error `Invalid_pattern_combination
+          match (year, month, day, weekday, hour, minute, second, ns) with
+          | Some year, None, None, None, None, None, None, None ->
+              Ok
+                (YMDHMSN
+                   {
+                     year;
+                     month = default_month;
+                     month_day = default_month_day;
+                     hour = default_hour;
+                     minute = default_minute;
+                     second = default_second;
+                     ns = default_ns;
+                   })
+          | Some year, Some month, None, None, None, None, None, None ->
+              Ok
+                (YMDHMSN
+                   {
+                     year;
+                     month;
+                     month_day = default_month_day;
+                     hour = default_hour;
+                     minute = default_minute;
+                     second = default_second;
+                     ns = default_ns;
+                   })
+          | Some year, Some month, Some month_day, None, None, None, None, None
+            ->
+              Ok
+                (YMDHMSN
+                   {
+                     year;
+                     month;
+                     month_day;
+                     hour = default_hour;
+                     minute = default_minute;
+                     second = default_second;
+                     ns = default_ns;
+                   })
+          | ( Some year,
+              Some month,
+              Some month_day,
+              None,
+              Some hour,
+              None,
+              None,
+              None ) ->
+              Ok
+                (YMDHMSN
+                   {
+                     year;
+                     month;
+                     month_day;
+                     hour;
+                     minute = default_minute;
+                     second = default_second;
+                     ns = default_ns;
+                   })
+          | ( Some year,
+              Some month,
+              Some month_day,
+              None,
+              Some hour,
+              Some minute,
+              None,
+              None ) ->
+              Ok
+                (YMDHMSN
+                   {
+                     year;
+                     month;
+                     month_day;
+                     hour;
+                     minute;
+                     second = default_second;
+                     ns = default_ns;
+                   })
+          | ( Some year,
+              Some month,
+              Some month_day,
+              None,
+              Some hour,
+              Some minute,
+              Some second,
+              None ) ->
+              Ok
+                (YMDHMSN
+                   {
+                     year;
+                     month;
+                     month_day;
+                     hour;
+                     minute;
+                     second;
+                     ns = default_ns;
+                   })
+          | ( Some year,
+              Some month,
+              Some month_day,
+              None,
+              Some hour,
+              Some minute,
+              Some second,
+              Some ns ) ->
+              Ok (YMDHMSN { year; month; month_day; hour; minute; second; ns })
+          | None, Some month, None, None, None, None, None, None ->
+              Ok
+                (MDHMSN
+                   {
+                     month;
+                     month_day = default_month_day;
+                     hour = default_hour;
+                     minute = default_minute;
+                     second = default_second;
+                     ns = default_ns;
+                   })
+          | None, Some month, Some month_day, None, None, None, None, None ->
+              Ok
+                (MDHMSN
+                   {
+                     month;
+                     month_day;
+                     hour = default_hour;
+                     minute = default_minute;
+                     second = default_second;
+                     ns = default_ns;
+                   })
+          | None, Some month, Some month_day, None, Some hour, None, None, None
+            ->
+              Ok
+                (MDHMSN
+                   {
+                     month;
+                     month_day;
+                     hour;
+                     minute = default_minute;
+                     second = default_second;
+                     ns = default_ns;
+                   })
+          | ( None,
+              Some month,
+              Some month_day,
+              None,
+              Some hour,
+              Some minute,
+              None,
+              None ) ->
+              Ok
+                (MDHMSN
+                   {
+                     month;
+                     month_day;
+                     hour;
+                     minute;
+                     second = default_second;
+                     ns = default_ns;
+                   })
+          | ( None,
+              Some month,
+              Some month_day,
+              None,
+              Some hour,
+              Some minute,
+              Some second,
+              None ) ->
+              Ok
+                (MDHMSN
+                   { month; month_day; hour; minute; second; ns = default_ns })
+          | ( None,
+              Some month,
+              Some month_day,
+              None,
+              Some hour,
+              Some minute,
+              Some second,
+              Some ns ) ->
+              Ok (MDHMSN { month; month_day; hour; minute; second; ns })
+          | None, None, Some month_day, None, None, None, None, None ->
+              Ok
+                (DHMSN
+                   {
+                     month_day;
+                     hour = default_hour;
+                     minute = default_minute;
+                     second = default_second;
+                     ns = default_ns;
+                   })
+          | None, None, Some month_day, None, Some hour, None, None, None ->
+              Ok
+                (DHMSN
+                   {
+                     month_day;
+                     hour;
+                     minute = default_minute;
+                     second = default_second;
+                     ns = default_ns;
+                   })
+          | None, None, Some month_day, None, Some hour, Some minute, None, None
+            ->
+              Ok
+                (DHMSN
+                   {
+                     month_day;
+                     hour;
+                     minute;
+                     second = default_second;
+                     ns = default_ns;
+                   })
+          | ( None,
+              None,
+              Some month_day,
+              None,
+              Some hour,
+              Some minute,
+              Some second,
+              None ) ->
+              Ok (DHMSN { month_day; hour; minute; second; ns = default_ns })
+          | ( None,
+              None,
+              Some month_day,
+              None,
+              Some hour,
+              Some minute,
+              Some second,
+              Some ns ) ->
+              Ok (DHMSN { month_day; hour; minute; second; ns })
+          | None, None, None, Some weekday, None, None, None, None ->
+              Ok
+                (WHMSN
+                   {
+                     weekday;
+                     hour = default_hour;
+                     minute = default_minute;
+                     second = default_second;
+                     ns = default_ns;
+                   })
+          | None, None, None, Some weekday, Some hour, None, None, None ->
+              Ok
+                (WHMSN
+                   {
+                     weekday;
+                     hour;
+                     minute = default_minute;
+                     second = default_second;
+                     ns = default_ns;
+                   })
+          | None, None, None, Some weekday, Some hour, Some minute, None, None
+            ->
+              Ok
+                (WHMSN
+                   {
+                     weekday;
+                     hour;
+                     minute;
+                     second = default_second;
+                     ns = default_ns;
+                   })
+          | ( None,
+              None,
+              None,
+              Some weekday,
+              Some hour,
+              Some minute,
+              Some second,
+              None ) ->
+              Ok (WHMSN { weekday; hour; minute; second; ns = default_ns })
+          | ( None,
+              None,
+              None,
+              Some weekday,
+              Some hour,
+              Some minute,
+              Some second,
+              Some ns ) ->
+              Ok (WHMSN { weekday; hour; minute; second; ns })
+          | None, None, None, None, Some hour, None, None, None ->
+              Ok
+                (HMSN
+                   {
+                     hour;
+                     minute = default_minute;
+                     second = default_second;
+                     ns = default_ns;
+                   })
+          | None, None, None, None, Some hour, Some minute, None, None ->
+              Ok
+                (HMSN { hour; minute; second = default_second; ns = default_ns })
+          | None, None, None, None, Some hour, Some minute, Some second, None ->
+              Ok (HMSN { hour; minute; second; ns = default_ns })
+          | None, None, None, None, Some hour, Some minute, Some second, Some ns
+            ->
+              Ok (HMSN { hour; minute; second; ns })
+          | None, None, None, None, None, Some minute, None, None ->
+              Ok (MSN { minute; second = default_second; ns = default_ns })
+          | None, None, None, None, None, Some minute, Some second, None ->
+              Ok (MSN { minute; second; ns = default_ns })
+          | None, None, None, None, None, Some minute, Some second, Some ns ->
+              Ok (MSN { minute; second; ns })
+          | None, None, None, None, None, None, Some second, None ->
+              Ok (SN { second; ns = default_ns })
+          | None, None, None, None, None, None, Some second, Some ns ->
+              Ok (SN { second; ns })
+          | None, None, None, None, None, None, None, Some ns -> Ok (N ns)
+          | _, _, _, _, _, _, _, _ -> Error `Invalid_pattern_combination
         in
-            CCResult.map (fun pick -> { pick; tz_info }) pick)
+        CCResult.map (fun pick -> { pick; tz_info }) pick
 
 let make_exn ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute
     ?second ?ns ~lean_toward () =
