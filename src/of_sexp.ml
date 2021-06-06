@@ -37,18 +37,10 @@ let ints_of_sexp_list (x : CCSexp.t) =
         (Printf.sprintf "Expected list for ints: %s" (CCSexp.to_string x))
   | `List l -> List.map int_of_sexp l
 
-let span_of_sexp (x : CCSexp.t) =
-  match x with
-  | `Atom _ ->
-      invalid_data
-        (Printf.sprintf "Expected list for span: %s" (CCSexp.to_string x))
-  | `List [ s; ns ] ->
-      let s = int64_of_sexp s in
-      let ns = int_of_sexp ns in
-      Timedesc.Span.make ~s ~ns ()
-  | `List _ ->
-      invalid_data
-        (Printf.sprintf "List too long for span: %s" (CCSexp.to_string x))
+let span_of_sexp sexp =
+  match Timedesc.Span.of_sexp sexp with
+  | Ok x -> x
+  | Error msg -> invalid_data msg
 
 let tz_make_of_sexp (x : CCSexp.t) =
   match x with

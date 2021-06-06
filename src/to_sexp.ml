@@ -89,12 +89,7 @@ let sexp_of_points ({ pick; tz_info } : Points.t) =
 
 let sexp_of_date_time = Timedesc.to_sexp
 
-let sexp_of_timestamp x =
-  x
-  |> Timedesc.of_timestamp ~tz_of_date_time:Timedesc.Time_zone.utc
-  |> CCOpt.get_exn_or
-       "Expected successful construction of date time from timestamp"
-  |> sexp_of_date_time
+let sexp_of_timestamp = Timedesc.Timestamp.to_sexp
 
 let sexp_of_range ~(f : 'a -> CCSexp.t) (r : 'a Time.Range.range) =
   match r with
