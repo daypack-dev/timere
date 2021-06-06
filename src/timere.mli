@@ -355,7 +355,7 @@ if p2 is    HMS then  30 hours
 if p2 is     MS then   1 hours
 if p2 is      S then   1 minutes
     v}
-    where we say [p2 is YMDHMS] if [p2 = Points.make_exn ~year:_ ~month:_ ~day:_ ~hour:_ ~minute:_ ~second:_ ()]
+    where we say [p2 is YMDHMS] if [p2 = Points.make_exn ~year:_ ... ()]
     and so on.
 
     Examples:
