@@ -67,9 +67,3 @@ let sexp_of_date_time (x : Date_time.t) =
 let sexp_of_zoneless (x : Date_time.Zoneless'.zoneless) =
   let open CCSexp in
   list [ sexp_of_date x.date; sexp_of_time x.time ]
-
-(* let sexp_of_timestamp x =
- *   x
- *   |> Date_time.of_timestamp ~tz_of_date_time:Time_zone.utc
- *   |> CCOpt.get_exn_or "expected successful date time construction"
- *   |> sexp_of_date_time *)

@@ -143,18 +143,3 @@ let date_time_of_sexp (x : CCSexp.t) =
       in
       dt
   | _ -> invalid_data ()
-
-(* let timestamp_of_sexp x =
- *   let dt = date_time_of_sexp x in
- *   match dt.offset_from_utc with
- *   | `Ambiguous _ ->
- *     invalid_data "Expected time zone offset 0, but got `Ambiguous instead"
- *   | `Single offset ->
- *     let tz = dt.tz in
- *     let tz_name = Time_zone.name tz in
- *     if tz_name <> "UTC" then
- *       invalid_data
- *         (Printf.sprintf "Expected time zone UTC, but got %s instead" tz_name)
- *     else if not Span.(equal offset zero) then
- *       invalid_data "Expected time zone offset 0"
- *     else Date_time.to_timestamp_single dt *)
