@@ -510,7 +510,7 @@ val drop : int -> chunked -> chunked
 
 (** {1 Infix operators} *)
 
-val ( & ) : t -> t -> t
+val ( &&& ) : t -> t -> t
 (** {!val:inter} *)
 
 val ( ||| ) : t -> t -> t

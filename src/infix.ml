@@ -1,4 +1,4 @@
-let ( & ) a b = Time.inter [ a; b ]
+let ( &&& ) a b = Time.inter [ a; b ]
 
 let ( ||| ) a b = Time.union [ a; b ]
 

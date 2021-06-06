@@ -1052,7 +1052,7 @@ module Rules = struct
     match l with
     | [ (_, _, Hmss hmss) ] -> (
         match (pattern (), t_of_hmss hmss) with
-        | `Some t, `Some t' -> `Some Timere.(t & t')
+        | `Some t, `Some t' -> `Some Timere.(t &&& t')
         | `None, _ -> `None
         | _, `None -> `None
         | `Error msg, _ -> `Error msg
@@ -1069,7 +1069,7 @@ module Rules = struct
     match l with
     | [ (pos_days, _, Month_day day); (_, _, Hmss hmss) ] -> (
         match (pattern ~pos_days ~days:[ day ] (), t_of_hmss hmss) with
-        | `Some t, `Some t' -> `Some Timere.(t & t')
+        | `Some t, `Some t' -> `Some Timere.(t &&& t')
         | `None, _ -> `None
         | _, `None -> `None
         | `Error msg, _ -> `Error msg

@@ -28,6 +28,8 @@
 
 - Upgraded `Timere.Points.make` to do a lot more deduction of missing arguments
 
+- Renamed `&` to `&&&`
+
 ## Timedesc 0.5.0
 
 - Made `Timedesc.Span.t` abstract
