@@ -18,6 +18,8 @@
 
   - This fixes expressiveness issues caused by lack of an inclusive version
 
+- Renamed `bounded_intervals` to `pattern_intervals`
+
 - Swapped to using `inc_exc` for `hms_intervals` API
 
 - Added nanosecond support for `pattern` and `Points.t`
