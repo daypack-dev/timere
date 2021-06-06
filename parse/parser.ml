@@ -868,7 +868,7 @@ let flatten_month_days pos (l : int Timere.range list) : int list rule_result =
       `Error (Printf.sprintf "%s: Invalid month day ranges" (string_of_pos pos))
 
 let pattern ?(years = []) ?(months = []) ?pos_days ?(days = []) ?(weekdays = [])
-?(hms : Timedesc.Time.t option) () : Timere.t rule_result =
+    ?(hms : Timedesc.Time.t option) () : Timere.t rule_result =
   let module T = Timedesc.Time in
   if not (List.for_all (fun x -> 1 <= x && x <= 31) days) then
     `Error
@@ -882,8 +882,8 @@ let pattern ?(years = []) ?(months = []) ?pos_days ?(days = []) ?(weekdays = [])
     | None -> `Some (f ())
     | Some hms ->
         `Some
-          (f ~hours:[ T.hour hms ] ~minutes:[ T.minute hms ] ~seconds:[ T.second hms ]
-             ())
+          (f ~hours:[ T.hour hms ] ~minutes:[ T.minute hms ]
+             ~seconds:[ T.second hms ] ())
 
 let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timedesc.Time.t option)
     ~(lean_toward : Timere.Points.lean_toward) () : Timere.points rule_result =
@@ -903,12 +903,12 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timedesc.Time.t option)
                ~second:(T.second hms) ~lean_toward ())
       | None, None, None, Some weekday, Some hms ->
           `Some
-            (Timere.Points.make_exn ~weekday ~hour:(T.hour hms) ~minute:(T.minute hms)
-               ~second:(T.second hms) ~lean_toward ())
+            (Timere.Points.make_exn ~weekday ~hour:(T.hour hms)
+               ~minute:(T.minute hms) ~second:(T.second hms) ~lean_toward ())
       | None, None, Some day, None, Some hms ->
           `Some
-            (Timere.Points.make_exn ~day ~hour:(T.hour hms) ~minute:(T.minute hms)
-               ~second:(T.second hms) ~lean_toward ())
+            (Timere.Points.make_exn ~day ~hour:(T.hour hms)
+               ~minute:(T.minute hms) ~second:(T.second hms) ~lean_toward ())
       | None, Some month, Some day, None, Some hms ->
           `Some
             (Timere.Points.make_exn ~month ~day ~hour:(T.hour hms)
@@ -942,8 +942,7 @@ let t_of_hmss (hmss : Timedesc.Time.t Timere.range list) =
             if x = y then
               Ok
                 Timere.(
-                  pattern
-                    ~hours:[ Timedesc.Time.hour x ]
+                  pattern ~hours:[ Timedesc.Time.hour x ]
                     ~minutes:[ Timedesc.Time.minute x ]
                     ~seconds:[ Timedesc.Time.second x ] ())
             else
@@ -1635,9 +1634,8 @@ let date_time_t_of_ast ~tz (ast : ast) : (Timedesc.t, string) CCResult.t =
     | Tokens [ (_, _, Hms hms); (_, _, Ymd ((_, year), (_, month), (_, day))) ]
       -> (
         match
-          Timedesc.make ~year ~month ~day
-          ~hour:(Timedesc.Time.hour hms)
-          ~minute:(Timedesc.Time.minute hms)
+          Timedesc.make ~year ~month ~day ~hour:(Timedesc.Time.hour hms)
+            ~minute:(Timedesc.Time.minute hms)
             ~second:(Timedesc.Time.second hms) ~tz ()
         with
         | Ok x -> Ok x

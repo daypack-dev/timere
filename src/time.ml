@@ -1283,16 +1283,14 @@ let pattern_intervals ?(inc_exc : inc_exc = `Exc)
     | _, _ -> Pattern_intervals { mode; bound; start; end_ }
   else Pattern_intervals { mode; bound; start; end_ }
 
-let hms_intervals ?(inc_exc : inc_exc = `Exc) (a : Timedesc.Time.t) (b : Timedesc.Time.t)
-: t =
+let hms_intervals ?(inc_exc : inc_exc = `Exc) (a : Timedesc.Time.t)
+    (b : Timedesc.Time.t) : t =
   let module T = Timedesc.Time in
   pattern_intervals ~inc_exc `Whole
     (Points.make_exn ~hour:(T.hour a) ~minute:(T.minute a) ~second:(T.second a)
-~ns:(T.ns a) 
-       ~lean_toward:`Earlier ())
+       ~ns:(T.ns a) ~lean_toward:`Earlier ())
     (Points.make_exn ~hour:(T.hour b) ~minute:(T.minute b) ~second:(T.second b)
-~ns:(T.ns b) 
-       ~lean_toward:`Earlier ())
+       ~ns:(T.ns b) ~lean_toward:`Earlier ())
 
 let sorted_interval_seq ?(skip_invalid : bool = false) (s : Interval'.t Seq.t) :
     t =
