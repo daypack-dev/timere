@@ -240,9 +240,15 @@ module Points : sig
 
   exception Error_exn of error
 
+  type lean_toward = [
+    | `Earlier
+    | `Later
+    ]
+
   val make :
     ?tz:Timedesc.Time_zone.t ->
     ?offset_from_utc:Timedesc.Span.t ->
+    ?lean_toward:lean_toward ->
     ?year:int ->
     ?month:int ->
     ?day:int ->
@@ -251,17 +257,55 @@ module Points : sig
     ?minute:int ->
     ?second:int ->
     ?ns:int ->
-    unit ->
+      unit ->
     (t, error) result
-  (** Call must be exactly one of the following forms (ignoring [tz] and [tz_offset_s] which are optional in all cases)
+  (** [lean_toward] defaults to
+   *  - [`Earlier] if none of [hour], [minute], [second] and [ns] is specified
+   *  - [`Later] otherwise
+   *
+   *  Call must be exactly one of the following forms
+   *  (ignoring [tz], [offset_from_utc] and [lean_toward] which are optional in all cases)
       {[
-        make ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
-        make         ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
-        make                  ~day:_     ~hour:_ ~minute:_ ~second:_ ()
-        make                  ~weekday:_ ~hour:_ ~minute:_ ~second:_ ()
-        make                             ~hour:_ ~minute:_ ~second:_ ()
-        make                                     ~minute:_ ~second:_ ()
-        make                                               ~second:_ ()
+        make ~year:_                                                       ~lean_toward ()
+        make ~year:_ ~month:_                                              ~lean_toward ()
+        make ~year:_ ~month:_ ~day:_                                       ~lean_toward ()
+        make ~year:_ ~month:_ ~day:_     ~hour:_                           ~lean_toward ()
+        make ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_                 ~lean_toward ()
+        make ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_       ~lean_toward ()
+        make ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ~ns:_ ~lean_toward ()
+
+        make         ~month:_                                              ~lean_toward ()
+        make         ~month:_ ~day:_                                       ~lean_toward ()
+        make         ~month:_ ~day:_     ~hour:_                           ~lean_toward ()
+        make         ~month:_ ~day:_     ~hour:_ ~minute:_                 ~lean_toward ()
+        make         ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_       ~lean_toward ()
+        make         ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ~ns:_ ~lean_toward ()
+
+        make                  ~day:_                                       ~lean_toward ()
+        make                  ~day:_     ~hour:_                           ~lean_toward ()
+        make                  ~day:_     ~hour:_ ~minute:_                 ~lean_toward ()
+        make                  ~day:_     ~hour:_ ~minute:_ ~second:_       ~lean_toward ()
+        make                  ~day:_     ~hour:_ ~minute:_ ~second:_ ~ns:_ ~lean_toward ()
+
+        make                  ~weekday:_                                   ~lean_toward ()
+        make                  ~weekday:_ ~hour:_                           ~lean_toward ()
+        make                  ~weekday:_ ~hour:_ ~minute:_                 ~lean_toward ()
+        make                  ~weekday:_ ~hour:_ ~minute:_ ~second:_       ~lean_toward ()
+        make                  ~weekday:_ ~hour:_ ~minute:_ ~second:_ ~ns:_ ~lean_toward ()
+
+        make                             ~hour:_                           ~lean_toward ()
+        make                             ~hour:_ ~minute:_                 ~lean_toward ()
+        make                             ~hour:_ ~minute:_ ~second:_       ~lean_toward ()
+        make                             ~hour:_ ~minute:_ ~second:_ ~ns:_ ~lean_toward ()
+
+        make                                     ~minute:_                 ~lean_toward ()
+        make                                     ~minute:_ ~second:_       ~lean_toward ()
+        make                                     ~minute:_ ~second:_ ~ns:_ ~lean_toward ()
+
+        make                                               ~second:_       ~lean_toward ()
+        make                                               ~second:_ ~ns:_ ~lean_toward ()
+
+        make                                                         ~ns:_ ~lean_toward ()
       ]}
 
       returns [Error] otherwise
@@ -270,6 +314,7 @@ module Points : sig
   val make_exn :
     ?tz:Timedesc.Time_zone.t ->
     ?offset_from_utc:Timedesc.Span.t ->
+    ?lean_toward:lean_toward ->
     ?year:int ->
     ?month:int ->
     ?day:int ->
@@ -283,7 +328,7 @@ module Points : sig
   (** @raise Error_exn if [make] fails *)
 end
 
-type points = Points.t
+  type points = Points.t
 
 val bounded_intervals :
   ?inc_exc:inc_exc ->

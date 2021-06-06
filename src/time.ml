@@ -1356,9 +1356,9 @@ let hms_intervals ?(inc_exc : inc_exc = `Exc) (hms_a : Hms'.t) (hms_b : Hms'.t)
   in
   bounded_intervals ~inc_exc:`Exc `Whole
     (Points.make_exn ~hour:hms_a.hour ~minute:hms_a.minute ~second:hms_a.second
-       ())
+       ~lean_toward:`Earlier ())
     (Points.make_exn ~hour:hms_b.hour ~minute:hms_b.minute ~second:hms_b.second
-       ())
+       ~lean_toward:`Earlier ())
 
 let sorted_interval_seq ?(skip_invalid : bool = false) (s : Interval'.t Seq.t) :
     t =
