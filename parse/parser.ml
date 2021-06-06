@@ -949,7 +949,7 @@ let t_of_hmss (hmss : Timere.Hms.t Timere.range list) =
                   points ~hms:y ~lean_toward:`Later () )
               with
               | `Some p1, `Some p2 ->
-                  Ok Timere.(bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
+                  Ok Timere.(pattern_intervals ~inc_exc:`Exc `Whole p1 p2)
               | _ -> Error ())
         | _ -> failwith "unexpected case")
       hmss
@@ -1107,7 +1107,7 @@ module Rules = struct
               ~hms:hms2 ~lean_toward:`Earlier () )
         with
         | `Some p1, `Some p2 ->
-            `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
+            `Some (Timere.pattern_intervals ~inc_exc:`Exc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1136,7 +1136,7 @@ module Rules = struct
               ~lean_toward:`Earlier () )
         with
         | `Some p1, `Some p2 ->
-            `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
+            `Some (Timere.pattern_intervals ~inc_exc:`Exc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1163,7 +1163,7 @@ module Rules = struct
               () )
         with
         | `Some p1, `Some p2 ->
-            `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
+            `Some (Timere.pattern_intervals ~inc_exc:`Exc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1181,7 +1181,7 @@ module Rules = struct
             points ~hms:hms2 ~lean_toward:`Earlier () )
         with
         | `Some p1, `Some p2 ->
-            `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
+            `Some (Timere.pattern_intervals ~inc_exc:`Exc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1230,7 +1230,7 @@ module Rules = struct
               ~lean_toward:`Earlier () )
         with
         | `Some p1, `Some p2 ->
-            `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
+            `Some (Timere.pattern_intervals ~inc_exc:`Exc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1275,7 +1275,7 @@ module Rules = struct
               () )
         with
         | `Some p1, `Some p2 ->
-            `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
+            `Some (Timere.pattern_intervals ~inc_exc:`Exc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1301,7 +1301,7 @@ module Rules = struct
             points ~hms:hms2 ~lean_toward:`Earlier () )
         with
         | `Some p1, `Some p2 ->
-            `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
+            `Some (Timere.pattern_intervals ~inc_exc:`Exc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1341,7 +1341,7 @@ module Rules = struct
               () )
         with
         | `Some p1, `Some p2 ->
-            `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
+            `Some (Timere.pattern_intervals ~inc_exc:`Exc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1359,7 +1359,7 @@ module Rules = struct
               ~lean_toward:`Later () )
         with
         | `Some p1, `Some p2 ->
-            `Some (Timere.bounded_intervals ~inc_exc:`Inc `Whole p1 p2)
+            `Some (Timere.pattern_intervals ~inc_exc:`Inc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1384,7 +1384,7 @@ module Rules = struct
               () )
         with
         | `Some p1, `Some p2 ->
-            `Some (Timere.bounded_intervals ~inc_exc:`Inc `Whole p1 p2)
+            `Some (Timere.pattern_intervals ~inc_exc:`Inc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1406,7 +1406,7 @@ module Rules = struct
             points ~pos_day:pos_day2 ~day:day2 ~lean_toward:`Later () )
         with
         | `Some p1, `Some p2 ->
-            `Some (Timere.bounded_intervals ~inc_exc:`Inc `Whole p1 p2)
+            `Some (Timere.pattern_intervals ~inc_exc:`Inc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1447,7 +1447,7 @@ module Rules = struct
               () )
         with
         | `Some p1, `Some p2 ->
-            `Some (Timere.bounded_intervals ~inc_exc:`Inc `Whole p1 p2)
+            `Some (Timere.pattern_intervals ~inc_exc:`Inc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1483,7 +1483,7 @@ module Rules = struct
             points ~pos_day:pos_day2 ~day:day2 ~lean_toward:`Later () )
         with
         | `Some p1, `Some p2 ->
-            `Some (Timere.bounded_intervals ~inc_exc:`Inc `Whole p1 p2)
+            `Some (Timere.pattern_intervals ~inc_exc:`Inc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1500,7 +1500,7 @@ module Rules = struct
             points ~pos_day:pos_day2 ~day:day2 ~lean_toward:`Later () )
         with
         | `Some p1, `Some p2 ->
-            `Some (Timere.bounded_intervals ~inc_exc:`Inc `Whole p1 p2)
+            `Some (Timere.pattern_intervals ~inc_exc:`Inc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1520,7 +1520,7 @@ module Rules = struct
             points ~hms:hms2 ~lean_toward:`Earlier () )
         with
         | `Some p1, `Some p2 ->
-            `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
+            `Some (Timere.pattern_intervals ~inc_exc:`Exc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 
@@ -1532,7 +1532,7 @@ module Rules = struct
             points ~hms:hms2 ~lean_toward:`Earlier () )
         with
         | `Some p1, `Some p2 ->
-            `Some (Timere.bounded_intervals ~inc_exc:`Exc `Whole p1 p2)
+            `Some (Timere.pattern_intervals ~inc_exc:`Exc `Whole p1 p2)
         | _, _ -> `None)
     | _ -> `None
 

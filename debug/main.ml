@@ -164,7 +164,7 @@ let debug_example () =
          [
            CCResult.get_exn
            @@ Of_sexp.of_sexp_string
-                "(bounded_intervals whole (duration 366 0 0 0) (points (pick \
+                "(pattern_intervals whole (duration 366 0 0 0) (points (pick \
                  ymdhms 2020 Jun 16 10 0 0)) (points (pick dhms 17 12 0 0)))";
            after
              (Timedesc.make_exn ~tz ~year:2000 ~month:1 ~day:1 ~hour:0 ~minute:0
@@ -178,7 +178,7 @@ let debug_example () =
   | Error msg -> print_endline msg
   | Ok s -> display_intervals ~display_using_tz:tz s
 
-let debug_fuzz_bounded_intervals () =
+let debug_fuzz_pattern_intervals () =
   let tz_count = List.length Timedesc.Time_zone.available_time_zones in
   let tz =
     (fun n ->
@@ -209,12 +209,12 @@ let debug_fuzz_bounded_intervals () =
   let s2 = Resolver.aux_points tz Resolver.default_result_space p2 in
   let s =
     Resolver.(
-      aux_bounded_intervals ~search_space:Resolver.default_result_space tz
+      aux_pattern_intervals ~search_space:Resolver.default_result_space tz
         `Whole_exc bound p1 p2)
   in
   let s' =
     Resolver.(
-      aux_bounded_intervals ~search_space:Resolver.default_result_space tz `Snd
+      aux_pattern_intervals ~search_space:Resolver.default_result_space tz `Snd
         bound p1 p2)
   in
   Printf.printf "p1: %s\n" (To_sexp.sexp_of_points p1 |> CCSexp.to_string);
@@ -261,7 +261,7 @@ let debug_fuzz_union () =
   let t1 =
     let s =
       {|
-(with_tz UTC (bounded_intervals whole (duration 1 0 0 0) (points (pick hms 1 6 28)) (points (pick hms 23 25 7))))
+(with_tz UTC (pattern_intervals whole (duration 1 0 0 0) (points (pick hms 1 6 28)) (points (pick hms 23 25 7))))
       |}
     in
     CCResult.get_exn @@ Of_sexp.of_sexp_string s
@@ -435,7 +435,7 @@ let debug_fuzz_pattern () =
 
 (* let () = debug_parsing () *)
 
-(* let () = debug_fuzz_bounded_intervals () *)
+(* let () = debug_fuzz_pattern_intervals () *)
 
 let () = debug_resolver ()
 
