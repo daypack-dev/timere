@@ -26,9 +26,9 @@ let () =
   match
     resolve (
       since (Timedesc.now ())
-      & months [12]
-      & days [25]
-      & weekdays [`Wed]
+      &&& months [12]
+      &&& days [25]
+      &&& weekdays [`Wed]
     )
   with
   | Error msg -> failwith msg
