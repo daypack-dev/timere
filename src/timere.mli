@@ -395,36 +395,7 @@ if p2 is      S then   1 minutes
 
 (** Convenience wrappers around [points] and [pattern_intervals] *)
 
-module Hms : sig
-  type t = private {
-    hour : int;
-    minute : int;
-    second : int;
-  }
-
-  type error =
-    [ `Invalid_hour of int
-    | `Invalid_minute of int
-    | `Invalid_second of int
-    ]
-
-  exception Error_exn of error
-
-  val make : hour:int -> minute:int -> second:int -> (t, error) result
-
-  val make_exn : hour:int -> minute:int -> second:int -> t
-  (** @raise Error_exn if [make] fails *)
-
-  val pp : Format.formatter -> t -> unit
-
-  val to_string : t -> string
-
-  val to_second_of_day : t -> int
-
-  val of_second_of_day : int -> t option
-end
-
-val hms_intervals : ?inc_exc:inc_exc -> Hms.t -> Hms.t -> t
+val hms_intervals : ?inc_exc:inc_exc -> Timedesc.Time.t -> Timedesc.Time.t -> t
 (** Same as [pattern_intervals ...] with bound fixed to [Span.For_human.make ~days:1 ()]
 
     [inc_exc] defaults to [`Exc]

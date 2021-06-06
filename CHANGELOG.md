@@ -32,6 +32,8 @@
 
 - Renamed `&` to `&&&`
 
+- Removed `Timere.Hms` module, replaced use of `Timere.Hms.t` with `Timedesc.Time.t`
+
 ## Timedesc 0.5.0
 
 - Made `Timedesc.Span.t` abstract

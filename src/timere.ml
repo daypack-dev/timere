@@ -4,14 +4,6 @@ include Infix
 
 type timestamp = Timedesc.timestamp
 
-module Hms = struct
-  include Hms'
-
-  let pp = Printers.pp_hms
-
-  let to_string = Printers.string_of_hms
-end
-
 type 'a range = 'a Range.range
 
 module Points = Points

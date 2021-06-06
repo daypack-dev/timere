@@ -9,9 +9,9 @@ val date_time :
 
 val date_time_exn : ?tz:Timedesc.Time_zone.t -> string -> Timedesc.t
 
-val hms : string -> (Timere.Hms.t, string) result
+val hms : string -> (Timedesc.Time.t, string) result
 
-val hms_exn : string -> Timere.Hms.t
+val hms_exn : string -> Timedesc.Time.t
 
 val span : string -> (Timedesc.Span.t, string) result
 

@@ -25,8 +25,8 @@ let timere =
        ||| pattern ~months:[10] ~day_ranges:[`Range_inc (1, 6)] ()) (* or in Oct 1 to 6 *)
       &&&
       hms_intervals (* 11pm to 3am *)
-        (Hms.make_exn ~hour:23 ~minute:0 ~second:0)
-        (Hms.make_exn ~hour:3 ~minute:0 ~second:0)
+        (Timedesc.Time.make_exn ~hour:23 ~minute:0 ~second:0 ())
+        (Timedesc.Time.make_exn ~hour:3 ~minute:0 ~second:0 ())
     )
 
 let () =

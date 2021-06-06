@@ -821,64 +821,6 @@ module Hour_ranges = Ranges.Make (struct
   let of_int x = x
 end)
 
-module Hms' = struct
-  type t = {
-    hour : int;
-    minute : int;
-    second : int;
-  }
-
-  type error =
-    [ `Invalid_hour of int
-    | `Invalid_minute of int
-    | `Invalid_second of int
-    ]
-
-  exception Error_exn of error
-
-  let make ~hour ~minute ~second : (t, error) result =
-    if hour < 0 || 24 < hour then Error (`Invalid_hour hour)
-    else if minute < 0 || 59 < minute then Error (`Invalid_minute minute)
-    else if second < 0 || 60 < second then Error (`Invalid_second second)
-    else
-      let second = if second = 60 then 59 else second in
-      if hour = 24 then
-        if minute = 0 && second = 0 then
-          Ok { hour = 23; minute = 59; second = 59 }
-        else Error (`Invalid_hour hour)
-      else Ok { hour; minute; second }
-
-  let make_exn ~hour ~minute ~second =
-    match make ~hour ~minute ~second with
-    | Ok x -> x
-    | Error e -> raise (Error_exn e)
-
-  let to_second_of_day x =
-    Timedesc.Span.For_human.make_exn ~hours:x.hour ~minutes:x.minute
-      ~seconds:x.second ()
-    |> Timedesc.Span.get_s
-    |> Int64.to_int
-
-  let of_second_of_day s =
-    let ({ hours; minutes; seconds; _ } : Timedesc.Span.For_human.view) =
-      Timedesc.Span.(make_small ~s () |> For_human.view)
-    in
-    match make ~hour:hours ~minute:minutes ~second:seconds with
-    | Ok x -> Some x
-    | Error _ -> None
-end
-
-module Hms_ranges = Ranges.Make (struct
-  type t = Hms'.t
-
-  let modulo = None
-
-  let to_int = Hms'.to_second_of_day
-
-  let of_int x =
-    CCOpt.get_exn_or "Expected valid second of day" (Hms'.of_second_of_day x)
-end)
-
 module Weekday_tm_int_ranges = Ranges.Make (struct
   type t = int
 
@@ -1341,23 +1283,15 @@ let pattern_intervals ?(inc_exc : inc_exc = `Exc)
     | _, _ -> Pattern_intervals { mode; bound; start; end_ }
   else Pattern_intervals { mode; bound; start; end_ }
 
-let hms_intervals ?(inc_exc : inc_exc = `Exc) (hms_a : Hms'.t) (hms_b : Hms'.t)
-    : t =
-  let hms_b =
-    match inc_exc with
-    | `Exc -> hms_b
-    | `Inc ->
-        hms_b
-        |> Hms'.to_second_of_day
-        |> succ
-        |> Hms'.of_second_of_day
-        |> CCOpt.get_exn_or
-             "Expected successful construction of hms from second of day"
-  in
-  pattern_intervals ~inc_exc:`Exc `Whole
-    (Points.make_exn ~hour:hms_a.hour ~minute:hms_a.minute ~second:hms_a.second
+let hms_intervals ?(inc_exc : inc_exc = `Exc) (a : Timedesc.Time.t) (b : Timedesc.Time.t)
+: t =
+  let module T = Timedesc.Time in
+  pattern_intervals ~inc_exc `Whole
+    (Points.make_exn ~hour:(T.hour a) ~minute:(T.minute a) ~second:(T.second a)
+~ns:(T.ns a) 
        ~lean_toward:`Earlier ())
-    (Points.make_exn ~hour:hms_b.hour ~minute:hms_b.minute ~second:hms_b.second
+    (Points.make_exn ~hour:(T.hour b) ~minute:(T.minute b) ~second:(T.second b)
+~ns:(T.ns b) 
        ~lean_toward:`Earlier ())
 
 let sorted_interval_seq ?(skip_invalid : bool = false) (s : Interval'.t Seq.t) :

@@ -46,8 +46,8 @@ type guess =
   | Nat of int
   | Nats of int Timere.range list
   | Float of float
-  | Hms of Timere.Hms.t
-  | Hmss of Timere.Hms.t Timere.range list
+  | Hms of Timedesc.Time.t
+  | Hmss of Timedesc.Time.t Timere.range list
   | Weekday of Timedesc.weekday
   | Weekdays of Timedesc.weekday Timere.range list
   | Month_day of int
@@ -472,7 +472,7 @@ module Ast_normalize = struct
             if minute = 0 && second = 0 then
               ( pos_hour,
                 text_map_empty,
-                Hms (Timere.Hms.make_exn ~hour ~minute ~second) )
+                Hms (Timedesc.Time.make_exn ~hour ~minute ~second ()) )
             else
               invalid_data
                 (Printf.sprintf "%s: Invalid hms: %d:%d:%d"
@@ -480,7 +480,7 @@ module Ast_normalize = struct
           else
             ( pos_hour,
               text_map_empty,
-              Hms (Timere.Hms.make_exn ~hour ~minute ~second) )
+              Hms (Timedesc.Time.make_exn ~hour ~minute ~second ()) )
         else
           invalid_data
             (Printf.sprintf "%s: Invalid second: %d"
@@ -868,7 +868,8 @@ let flatten_month_days pos (l : int Timere.range list) : int list rule_result =
       `Error (Printf.sprintf "%s: Invalid month day ranges" (string_of_pos pos))
 
 let pattern ?(years = []) ?(months = []) ?pos_days ?(days = []) ?(weekdays = [])
-    ?(hms : Timere.Hms.t option) () : Timere.t rule_result =
+?(hms : Timedesc.Time.t option) () : Timere.t rule_result =
+  let module T = Timedesc.Time in
   if not (List.for_all (fun x -> 1 <= x && x <= 31) days) then
     `Error
       (Printf.sprintf "%s: Invalid month days"
@@ -881,11 +882,12 @@ let pattern ?(years = []) ?(months = []) ?pos_days ?(days = []) ?(weekdays = [])
     | None -> `Some (f ())
     | Some hms ->
         `Some
-          (f ~hours:[ hms.hour ] ~minutes:[ hms.minute ] ~seconds:[ hms.second ]
+          (f ~hours:[ T.hour hms ] ~minutes:[ T.minute hms ] ~seconds:[ T.second hms ]
              ())
 
-let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.Hms.t option)
+let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timedesc.Time.t option)
     ~(lean_toward : Timere.Points.lean_toward) () : Timere.points rule_result =
+  let module T = Timedesc.Time in
   match day with
   | Some day when not (1 <= day && day <= 31) ->
       `Error
@@ -897,24 +899,24 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.Hms.t option)
       match (year, month, day, weekday, hms) with
       | None, None, None, None, Some hms ->
           `Some
-            (Timere.Points.make_exn ~hour:hms.hour ~minute:hms.minute
-               ~second:hms.second ~lean_toward ())
+            (Timere.Points.make_exn ~hour:(T.hour hms) ~minute:(T.minute hms)
+               ~second:(T.second hms) ~lean_toward ())
       | None, None, None, Some weekday, Some hms ->
           `Some
-            (Timere.Points.make_exn ~weekday ~hour:hms.hour ~minute:hms.minute
-               ~second:hms.second ~lean_toward ())
+            (Timere.Points.make_exn ~weekday ~hour:(T.hour hms) ~minute:(T.minute hms)
+               ~second:(T.second hms) ~lean_toward ())
       | None, None, Some day, None, Some hms ->
           `Some
-            (Timere.Points.make_exn ~day ~hour:hms.hour ~minute:hms.minute
-               ~second:hms.second ~lean_toward ())
+            (Timere.Points.make_exn ~day ~hour:(T.hour hms) ~minute:(T.minute hms)
+               ~second:(T.second hms) ~lean_toward ())
       | None, Some month, Some day, None, Some hms ->
           `Some
-            (Timere.Points.make_exn ~month ~day ~hour:hms.hour
-               ~minute:hms.minute ~second:hms.second ~lean_toward ())
+            (Timere.Points.make_exn ~month ~day ~hour:(T.hour hms)
+               ~minute:(T.minute hms) ~second:(T.second hms) ~lean_toward ())
       | Some year, Some month, Some day, None, Some hms ->
           `Some
-            (Timere.Points.make_exn ~year ~month ~day ~hour:hms.hour
-               ~minute:hms.minute ~second:hms.second ~lean_toward ())
+            (Timere.Points.make_exn ~year ~month ~day ~hour:(T.hour hms)
+               ~minute:(T.minute hms) ~second:(T.second hms) ~lean_toward ())
       | Some year, None, None, None, None ->
           `Some (Timere.Points.make_exn ~year ~lean_toward ())
       | Some year, Some month, None, None, None ->
@@ -931,7 +933,7 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timere.Hms.t option)
           `Some (Timere.Points.make_exn ~weekday ~lean_toward ())
       | _ -> invalid_arg "points")
 
-let t_of_hmss (hmss : Timere.Hms.t Timere.range list) =
+let t_of_hmss (hmss : Timedesc.Time.t Timere.range list) =
   match
     List.map
       (fun hms_range ->
@@ -941,8 +943,9 @@ let t_of_hmss (hmss : Timere.Hms.t Timere.range list) =
               Ok
                 Timere.(
                   pattern
-                    ~hours:[ Hms.(x.hour) ]
-                    ~minutes:[ x.minute ] ~seconds:[ x.second ] ())
+                    ~hours:[ Timedesc.Time.hour x ]
+                    ~minutes:[ Timedesc.Time.minute x ]
+                    ~seconds:[ Timedesc.Time.second x ] ())
             else
               match
                 ( points ~hms:x ~lean_toward:`Earlier (),
@@ -1632,8 +1635,10 @@ let date_time_t_of_ast ~tz (ast : ast) : (Timedesc.t, string) CCResult.t =
     | Tokens [ (_, _, Hms hms); (_, _, Ymd ((_, year), (_, month), (_, day))) ]
       -> (
         match
-          Timedesc.make ~year ~month ~day ~hour:hms.hour ~minute:hms.minute
-            ~second:hms.second ~tz ()
+          Timedesc.make ~year ~month ~day
+          ~hour:(Timedesc.Time.hour hms)
+          ~minute:(Timedesc.Time.minute hms)
+            ~second:(Timedesc.Time.second hms) ~tz ()
         with
         | Ok x -> Ok x
         | Error _ -> Error "Invalid date time")
@@ -1648,7 +1653,7 @@ let date_time_t_of_ast ~tz (ast : ast) : (Timedesc.t, string) CCResult.t =
   in
   aux tz ast
 
-let hms_t_of_ast (ast : ast) : (Timere.Hms.t, string) CCResult.t =
+let hms_t_of_ast (ast : ast) : (Timedesc.Time.t, string) CCResult.t =
   match ast with
   | Tokens [ (_, _, Hms hms) ] -> Ok hms
   | _ -> Error "Unrecognized pattern"

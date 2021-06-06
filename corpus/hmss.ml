@@ -14,7 +14,10 @@ let () =
     (fun i text ->
       Printf.printf "%d. %S\n" i text;
       match Timere_parse.hms text with
-      | Ok hms -> Fmt.pr "  Ok %a\n\n%!" Timere.Hms.pp hms
+      | Ok hms ->
+          let {Timedesc.Time.hour; minute; second; _} =
+            Timedesc.Time.view hms in
+          Printf.printf "  Ok %d:%d:%d\n\n%!" hour minute second
       | Error msg ->
           Printf.printf "  Error %s\n" msg;
           print_endline "  ^^^^^";
