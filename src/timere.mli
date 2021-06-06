@@ -26,7 +26,7 @@ type 'a range =
   | `Range_exc of 'a * 'a
   ]
 
-(** {2 Basic constructors} *)
+(** {1 Basic constructors} *)
 
 val now : unit -> t
 (** Time right now *)
@@ -36,6 +36,54 @@ val always : t
 
 val empty : t
 (** Empty interval *)
+
+val before : Timedesc.t -> t
+
+val since : Timedesc.t -> t
+
+val after : Timedesc.t -> t
+
+val date_time : Timedesc.t -> t
+
+val date_times : Timedesc.t list -> t
+
+val date_time_seq : Timedesc.t Seq.t -> t
+
+val sorted_date_times : Timedesc.t list -> t
+
+val sorted_date_time_seq : Timedesc.t Seq.t -> t
+
+exception Invalid_timestamp
+
+val timestamp : Timedesc.timestamp -> t
+
+val before_timestamp : Timedesc.timestamp -> t
+
+val since_timestamp : Timedesc.timestamp -> t
+
+val after_timestamp : Timedesc.timestamp -> t
+
+val timestamps : ?skip_invalid:bool -> Timedesc.timestamp list -> t
+(** [timestamps l]
+
+    [skip_invalid] defaults to [false]
+
+    @raise Invalid_timestamp if [not skip_invalid] and [l] contains an invalid timestamp
+*)
+
+val timestamp_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
+(** [timestamps s]
+
+    [skip_invalid] defaults to [false]
+
+    @raise Invalid_timestamp if [not skip_invalid] and [s] contains an invalid timestamp
+*)
+
+val sorted_timestamps : ?skip_invalid:bool -> timestamp list -> t
+
+val sorted_timestamp_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
+
+(** {1 Pattern matching constructors} *)
 
 val pattern :
   ?years:int list ->
@@ -60,13 +108,14 @@ val pattern :
 
     A pattern [p] matches date time [dt] if
     {v
-(dt.year is in p.years or p.year_ranges)
-&& (dt.month is in p.months or p.month_ranges)
-&& (dt.month_day is in p.month_days or p.month_day_ranges)
-&& (dt.weekday is in p.weekdays or p.weekday_ranges)
-&& (dt.hour is in p.hours or p.hour_ranges)
-&& (dt.minute is in p.minutes or p.minute_ranges)
-&& (dt.second is in p.seconds or p.second_ranges)
+(year of dt is in p.years or p.year_ranges)
+&& (month of dt is in p.months or p.month_ranges)
+&& (month day of dt is in p.month_days or p.month_day_ranges)
+&& (weekday of dt is in p.weekdays or p.weekday_ranges)
+&& (hour of dt is in p.hours or p.hour_ranges)
+&& (minute of dt is in p.minutes or p.minute_ranges)
+&& (second of dt is in p.seconds or p.second_ranges)
+&& (ns of dt is in p.ns or p.ns_ranges)
     v}
 
     Empty pattern levels are treated as wildcard, e.g. if [p.years] and [p.year_ranges] are both empty,
@@ -115,89 +164,21 @@ val seconds : int list -> t
 val second_ranges : int range list -> t
 (** [second_ranges l] is a shorthand for [pattern ~second_ranges:l ()] *)
 
+val ns : int list -> t
+(** [ns l] is a shorthand for [pattern ~ns:l ()] *)
+
+val ns_ranges : int range list -> t
+(** [ns_ranges l] is a shorthand for [pattern ~ns_ranges:l ()] *)
+
 val nth_weekday_of_month : int -> Timedesc.weekday -> t
 (** [nth_weekday_of_month n wday] picks the nth weekday of all months, where [1 <= n && n <= 5]
 
     @raise Invalid_argument if [n] is out of range
 *)
 
-(** {2 Algebraic operations} *)
+(** {1 Intervals} *)
 
-val inter : t list -> t
-(** Intersection of list of timeres.
-
-    [inter []] is equivalent to [always].
-*)
-
-val union : t list -> t
-(** Union of list of timeres.
-
-    [union []] is equivalent to [empty].
-*)
-
-val not : t -> t
-(** Negation of timere.
-
-    [not t] is equivalent to all the intervals not included in [t].
-*)
-
-val shift : Timedesc.Span.t -> t -> t
-
-val lengthen : Timedesc.Span.t -> t -> t
-(** @raise Invalid_argument if duration is negative *)
-
-val with_tz : Timedesc.Time_zone.t -> t -> t
-(** [with_tz tz t] changes the time zone to evaluate [t] in to [tz] *)
-
-val date_time : Timedesc.t -> t
-
-val before : Timedesc.t -> t
-
-val since : Timedesc.t -> t
-
-val after : Timedesc.t -> t
-
-val date_times : Timedesc.t list -> t
-
-val date_time_seq : Timedesc.t Seq.t -> t
-
-val sorted_date_times : Timedesc.t list -> t
-
-val sorted_date_time_seq : Timedesc.t Seq.t -> t
-
-exception Invalid_timestamp
-
-val timestamp : Timedesc.timestamp -> t
-
-val before_timestamp : Timedesc.timestamp -> t
-
-val since_timestamp : Timedesc.timestamp -> t
-
-val after_timestamp : Timedesc.timestamp -> t
-
-val timestamps : ?skip_invalid:bool -> Timedesc.timestamp list -> t
-(** [timestamps l]
-
-    [skip_invalid] defaults to [false]
-
-    @raise Invalid_timestamp if [not skip_invalid] and [l] contains an invalid timestamp
-*)
-
-val timestamp_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
-(** [timestamps s]
-
-    [skip_invalid] defaults to [false]
-
-    @raise Invalid_timestamp if [not skip_invalid] and [s] contains an invalid timestamp
-*)
-
-val sorted_timestamps : ?skip_invalid:bool -> timestamp list -> t
-
-val sorted_timestamp_seq : ?skip_invalid:bool -> timestamp Seq.t -> t
-
-(** {2 Intervals} *)
-
-(** {3 Explicit} *)
+(** {2 Explicit intervals} *)
 
 exception Interval_is_invalid
 
@@ -237,10 +218,10 @@ val sorted_interval_seq : ?skip_invalid:bool -> Timedesc.Interval.t Seq.t -> t
     @raise Intervals_are_not_sorted if [s] is not sorted
 *)
 
-(** {2 Pattern matching} *)
+(** {2 Pattern matching intervals} *)
 
 (** Pattern matching intervals are designed to handle intervals where start and end points follow some pattern, but cannot be captured by [pattern] efficiently,
-    e.g. you cannot represent "5:30pm to 6:11pm" via a single [pattern]
+    e.g. you cannot represent "5:30pm to 6:11pm" via a single {!pattern}
 *)
 
 module Points : sig
@@ -275,12 +256,12 @@ module Points : sig
   (** Call must be exactly one of the following forms (ignoring [tz] and [tz_offset_s] which are optional in all cases)
       {[
         make ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
-          make         ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
-          make                  ~day:_     ~hour:_ ~minute:_ ~second:_ ()
-          make                  ~weekday:_ ~hour:_ ~minute:_ ~second:_ ()
-          make                             ~hour:_ ~minute:_ ~second:_ ()
-          make                                     ~minute:_ ~second:_ ()
-          make                                               ~second:_ ()
+        make         ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ()
+        make                  ~day:_     ~hour:_ ~minute:_ ~second:_ ()
+        make                  ~weekday:_ ~hour:_ ~minute:_ ~second:_ ()
+        make                             ~hour:_ ~minute:_ ~second:_ ()
+        make                                     ~minute:_ ~second:_ ()
+        make                                               ~second:_ ()
       ]}
 
       returns [Error] otherwise
@@ -322,6 +303,20 @@ val bounded_intervals :
 
     [inc_exc] defaults to [`Exc].
 
+    Default [bound] is inferred as follows, and should suffice in yielding desired results for most cases:
+    {v
+if p2 is YMDHMS then (year of p2 - year of p1 + 1) * 366 days
+if p2 is  MDHMS then 366 days
+if p2 is   DHMS then
+  if day of p1 < day of p2 then 31 - day of p2 days
+  else                                      31 days
+if p2 is    HMS then  30 hours
+if p2 is     MS then   1 hours
+if p2 is      S then   1 minutes
+    v}
+    where we say [p2 is YMDHMS] if [p2 = Points.make_exn ~year:_ ~month:_ ~day:_ ~hour:_ ~minute:_ ~second:_ ()]
+    and so on.
+
     Examples:
 
     {[
@@ -345,20 +340,6 @@ val bounded_intervals :
         (Points.make                     ~hour:3  ~minute:0 ~second:0 ()) (* p2 *)
     ]}
     yields all the "Feb 10th 11pm to 3am" intervals (or specifically "Feb 10th 11pm to Feb 11th 3am")
-
-    Default [bound] is inferred as follows, and should suffice in yielding desired results for most cases:
-    {v
-if p2 is YMDHMS then (year of p2 - year of p1 + 1) * 366 days
-if p2 is  MDHMS then 366 days
-if p2 is   DHMS then
-  if day of p1 < day of p2 then 31 - day of p2 days
-  else                                      31 days
-if p2 is    HMS then  30 hours
-if p2 is     MS then   1 hours
-if p2 is      S then   1 minutes
-    v}
-    where we say [p2 is YMDHMS] if [p2 = Points.make_exn ~year:_ ~month:_ ~day:_ ~hour:_ ~minute:_ ~second:_ ()]
-    and so on.
 
     @raise Invalid_argument if bound is negative
 
@@ -407,6 +388,34 @@ val hms_intervals : ?inc_exc:inc_exc -> Hms.t -> Hms.t -> t
 
     [inc_exc] defaults to [`Exc]
 *)
+
+(** {1 Algebraic operations} *)
+
+val inter : t list -> t
+(** Intersection of list of timeres.
+
+    [inter []] is equivalent to [always].
+*)
+
+val union : t list -> t
+(** Union of list of timeres.
+
+    [union []] is equivalent to [empty].
+*)
+
+val not : t -> t
+(** Negation of timere.
+
+    [not t] is equivalent to all the intervals not included in [t].
+*)
+
+val shift : Timedesc.Span.t -> t -> t
+
+val lengthen : Timedesc.Span.t -> t -> t
+(** @raise Invalid_argument if duration is negative *)
+
+val with_tz : Timedesc.Time_zone.t -> t -> t
+(** [with_tz tz t] changes the time zone to evaluate [t] in to [tz] *)
 
 (** {2 Chunking} *)
 
@@ -458,7 +467,7 @@ val take_nth : int -> chunked -> chunked
 val drop : int -> chunked -> chunked
 (** Discard n chunks *)
 
-(** {2 Infix operators} *)
+(** {1 Infix operators} *)
 
 val ( & ) : t -> t -> t
 (** {!val:inter} *)
@@ -472,7 +481,7 @@ val ( %> ) : ('a -> 'b) -> ('b -> 'c) -> 'a -> 'c
     [f1 %> f2] is equivalent to [fun x -> x |> f1 |> f2].
 *)
 
-(** {2 Resolution} *)
+(** {1 Resolution} *)
 
 val resolve :
   ?search_using_tz:Timedesc.Time_zone.t ->

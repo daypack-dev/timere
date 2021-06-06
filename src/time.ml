@@ -1249,6 +1249,8 @@ let minutes minutes = pattern ~minutes ()
 
 let seconds seconds = pattern ~seconds ()
 
+let ns ns = pattern ~ns ()
+
 let year_ranges year_ranges = pattern ~year_ranges ()
 
 let month_ranges month_ranges = pattern ~month_ranges ()
@@ -1262,6 +1264,8 @@ let hour_ranges hour_ranges = pattern ~hour_ranges ()
 let minute_ranges minute_ranges = pattern ~minute_ranges ()
 
 let second_ranges second_ranges = pattern ~second_ranges ()
+
+let ns_ranges ns_ranges = pattern ~ns_ranges ()
 
 let bounded_intervals ?(inc_exc : inc_exc = `Exc)
     ?(bound : Timedesc.Span.t option) mode (start : Points.t) (end_ : Points.t)
