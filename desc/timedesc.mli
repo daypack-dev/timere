@@ -589,7 +589,7 @@ module Date : sig
 
   val year : t -> int
 
-  (** {2 Accessors} *)
+  (** {1 Accessors} *)
 
   val month : t -> int
 
@@ -602,6 +602,12 @@ module Date : sig
   val iso_week : t -> int
 
   val day_of_year : t -> int
+
+  (** {1 Parsing} *)
+
+  val of_iso8601 : string -> (t, string) result
+
+  (** {1 Gregorian calendar} *)
 
   module Ymd_date : sig
     type view = private {
@@ -632,7 +638,11 @@ module Date : sig
     val make_exn : year:int -> month:int -> day:int -> t
 
     val view : t -> view
+
+    val of_iso8601 : string -> (t, string) result
   end
+
+  (** {1 ISO week date calendar} *)
 
   module ISO_week_date : sig
     type view = private {
@@ -661,7 +671,11 @@ module Date : sig
     val make_exn : iso_week_year:int -> iso_week:int -> weekday:weekday -> t
 
     val view : t -> view
+
+    val of_iso8601 : string -> (t, string) result
   end
+
+  (** {1 ISO ord date calendar} *)
 
   module ISO_ord_date : sig
     type view = private {
@@ -688,6 +702,8 @@ module Date : sig
     val make_exn : year:int -> day_of_year:int -> t
 
     val view : t -> view
+
+    val of_iso8601 : string -> (t, string) result
   end
 end
 

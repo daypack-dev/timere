@@ -1,8 +1,40 @@
 include Date_time_utils
 include Date_time
 module Time_zone = Time_zone
-module Date = Date
 module Time = Time
+
+module Date = struct
+  include Date
+  
+  let of_iso8601' p s =
+    let open MParser in
+    let open Parser_components in
+    parse_string p s () |> result_of_mparser_result
+
+  let of_iso8601 s =
+    of_iso8601' ISO8601.date_p s
+
+  module Ymd_date = struct
+    include Ymd_date'
+
+    let of_iso8601 s =
+      of_iso8601' ISO8601.ymd_date_p s
+  end
+
+  module ISO_week_date = struct
+    include ISO_week_date'
+
+    let of_iso8601 s =
+      of_iso8601' ISO8601.iso_week_date_p s
+  end
+
+  module ISO_ord_date = struct
+    include ISO_ord_date'
+
+    let of_iso8601 s =
+      of_iso8601' ISO8601.iso_ord_date_p s
+  end
+end
 
 exception Invalid_format_string = Printers.Invalid_format_string
 

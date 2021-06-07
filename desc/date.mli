@@ -18,7 +18,7 @@ val iso_week : t -> int
 
 val day_of_year : t -> int
 
-module ISO_week_date : sig
+module ISO_week_date' : sig
   type view = private {
     iso_week_year : int;
     iso_week : int;
@@ -41,7 +41,7 @@ module ISO_week_date : sig
   val view : t -> view
 end
 
-module Ymd_date : sig
+module Ymd_date' : sig
   type view = private {
     year : int;
     month : int;
@@ -64,7 +64,7 @@ module Ymd_date : sig
   val view : t -> view
 end
 
-module ISO_ord_date : sig
+module ISO_ord_date' : sig
   type view = private {
     year : int;
     day_of_year : int;

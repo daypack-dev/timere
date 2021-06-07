@@ -12,6 +12,12 @@
 
 - Renamed `Timere_parse.duration` to `Timere_parse.span`
 
+## Timedesc 0.6.0
+
+- Added ISO week date and ISO ordinal date parsing support
+
+- Added date parsers
+
 ## Timere 0.6.0
 
 - Added `inc_exc` argument to `bounded_intervals`

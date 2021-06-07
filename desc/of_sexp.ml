@@ -69,7 +69,7 @@ let date_of_sexp (x : CCSexp.t) =
       let year = int_of_sexp year in
       let month = int_of_sexp month in
       let day = int_of_sexp day in
-      match Date.Ymd_date.make ~year ~month ~day with
+      match Date.Ymd_date'.make ~year ~month ~day with
       | Ok x -> x
       | Error _ -> invalid_data ())
   | _ -> invalid_data ()
