@@ -4,11 +4,6 @@ module Time_zone = Time_zone
 
 exception ISO8601_parse_exn of string
 
-let of_iso8601' p s =
-  let open MParser in
-  let open Parser_components in
-  parse_string p s () |> result_of_mparser_result
-
 let of_iso8601_exn' of_iso8601 s =
   match of_iso8601 s with
   | Ok x -> x
@@ -17,7 +12,7 @@ let of_iso8601_exn' of_iso8601 s =
 module Date = struct
   include Date
 
-  let of_iso8601 s = of_iso8601' ISO8601.date_p s
+  let of_iso8601 = ISO8601.to_date
 
   let of_iso8601_exn s = of_iso8601_exn' of_iso8601 s
 
@@ -29,7 +24,7 @@ end
 module Time = struct
   include Time
 
-  let of_iso8601 s = of_iso8601' ISO8601.time_p s
+  let of_iso8601 = ISO8601.to_time
 
   let of_iso8601_exn s = of_iso8601_exn' of_iso8601 s
 end

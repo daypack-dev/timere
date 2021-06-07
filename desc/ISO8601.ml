@@ -182,6 +182,15 @@ let to_date_time s : (Date_time.t, string) result =
   | Ok (`Zoned x) -> Ok x
   | Error msg -> Error msg
 
+let to' p s =
+  let open MParser in
+  let open Parser_components in
+  parse_string p s () |> result_of_mparser_result
+
+let to_date s = to' date_p s
+
+let to_time s = to' time_p s
+
 let to_timestamp s =
   match to_date_time s with
   | Ok dt -> Ok (Date_time.to_timestamp_single dt)
