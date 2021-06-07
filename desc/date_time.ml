@@ -391,16 +391,9 @@ module ISO_ord_date_time = struct
   let string_of_error (e : error) =
     match e with
     | `Invalid_day_of_year x -> Printf.sprintf "Invalid day of year: %d" x
-    | `Does_not_exist
-    | `Invalid_year _
-    | `Invalid_hour _
-    | `Invalid_minute _
-    | `Invalid_second _
-    | `Invalid_s_frac _
-    | `Invalid_ns _
-    | `Invalid_tz_info _
-    as e
-    ->
+    | ( `Does_not_exist | `Invalid_year _ | `Invalid_hour _ | `Invalid_minute _
+      | `Invalid_second _ | `Invalid_s_frac _ | `Invalid_ns _
+      | `Invalid_tz_info _ ) as e ->
         Ymd_date_time.string_of_error (e :> Ymd_date_time.error)
 
   let make ?tz ?ns ?s_frac ~year ~day_of_year ~hour ~minute ~second () :
@@ -463,15 +456,9 @@ module ISO_week_date_time = struct
     match e with
     | `Invalid_iso_week_year x -> Printf.sprintf "Invalid iso week year: %d" x
     | `Invalid_iso_week x -> Printf.sprintf "Invalid iso week: %d" x
-    | `Does_not_exist
-    | `Invalid_hour _
-    | `Invalid_minute _
-    | `Invalid_second _
-    | `Invalid_s_frac _
-    | `Invalid_ns _
-    | `Invalid_tz_info _
-    as e
-    ->
+    | ( `Does_not_exist | `Invalid_hour _ | `Invalid_minute _
+      | `Invalid_second _ | `Invalid_s_frac _ | `Invalid_ns _
+      | `Invalid_tz_info _ ) as e ->
         Ymd_date_time.string_of_error (e :> Ymd_date_time.error)
 
   let make ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday ~hour ~minute

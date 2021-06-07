@@ -27,18 +27,19 @@ let iso_week_date_p : (Date.t, unit) MParser.t =
   >> char 'W'
   >> max_two_digit_nat_zero
   >>= fun iso_week ->
-  char '-' >> one_digit_nat_zero >>= fun weekday ->
-    match weekday_of_iso_int weekday with
-    | None -> fail "Invalid weekday"
-    | Some weekday ->
-        match Date.ISO_week_date'.make ~iso_week_year
-        ~iso_week ~weekday with
-  | Ok x -> return x
-  | Error e ->
-      fail
-        (Printf.sprintf "Invalid date: %s"
-           (Date_time.ISO_week_date_time.string_of_error
-              (e :> Date_time.ISO_week_date_time.error)))
+  char '-'
+  >> one_digit_nat_zero
+  >>= fun weekday ->
+  match weekday_of_iso_int weekday with
+  | None -> fail "Invalid weekday"
+  | Some weekday -> (
+      match Date.ISO_week_date'.make ~iso_week_year ~iso_week ~weekday with
+      | Ok x -> return x
+      | Error e ->
+          fail
+            (Printf.sprintf "Invalid date: %s"
+               (Date_time.ISO_week_date_time.string_of_error
+                  (e :> Date_time.ISO_week_date_time.error))))
 
 let iso_ord_date_p : (Date.t, unit) MParser.t =
   let open MParser in
@@ -48,8 +49,7 @@ let iso_ord_date_p : (Date.t, unit) MParser.t =
   char '-'
   >> nat_zero
   >>= fun day_of_year ->
-    match Date.ISO_ord_date'.make ~year
-        ~day_of_year with
+  match Date.ISO_ord_date'.make ~year ~day_of_year with
   | Ok x -> return x
   | Error e ->
       fail
@@ -59,11 +59,7 @@ let iso_ord_date_p : (Date.t, unit) MParser.t =
 
 let date_p : (Date.t, unit) MParser.t =
   let open MParser in
-  choice
-  [attempt ymd_date_p;
-  attempt iso_ord_date_p;
-  iso_week_date_p;
-  ]
+  choice [ attempt ymd_date_p; attempt iso_ord_date_p; iso_week_date_p ]
 
 let hm_p : (int * int, unit) MParser.t =
   let open MParser in

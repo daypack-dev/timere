@@ -38,8 +38,7 @@ let nat_zero_w_original_str : (int * string, unit) t =
   with _ -> fail (Printf.sprintf "Integer %s is out of range" s)
 
 let one_digit_nat_zero : (int, unit) t =
-  digit >>= fun c ->
-    return (int_of_string (Printf.sprintf "%c" c))
+  digit >>= fun c -> return (int_of_string (Printf.sprintf "%c" c))
 
 let two_digit_nat_zero : (int, unit) t =
   pair digit digit
