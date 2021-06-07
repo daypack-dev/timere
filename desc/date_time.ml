@@ -297,62 +297,6 @@ let compare_struct (x : t) (y : t) : int =
   let eq = tz_eq && Span.equal x_timestamp_local y_timestamp_local in
   if lt then -1 else if eq then 0 else 1
 
-module ISO_ord_date_time = struct
-  type error =
-    [ `Does_not_exist
-    | `Invalid_year of int
-    | `Invalid_day_of_year of int
-    | `Invalid_hour of int
-    | `Invalid_minute of int
-    | `Invalid_second of int
-    | `Invalid_s_frac of float
-    | `Invalid_ns of int
-    | `Invalid_tz_info of string option * Span.t
-    ]
-
-  exception Error_exn of error
-
-  let make ?tz ?ns ?s_frac ~year ~day_of_year ~hour ~minute ~second () :
-      (t, error) result =
-    match Date.ISO_ord_date.make ~year ~day_of_year with
-    | Error e -> Error (e :> error)
-    | Ok date -> (
-        match Time.make ~hour ~minute ~second ?ns ?s_frac () with
-        | Error e -> Error (e :> error)
-        | Ok time -> (
-            match Zoneless'.to_zoned ?tz { date; time } with
-            | Error e -> Error (e :> error)
-            | Ok dt -> Ok dt))
-
-  let make_exn ?tz ?ns ?s_frac ~year ~day_of_year ~hour ~minute ~second () =
-    match make ?tz ~year ~day_of_year ~hour ~minute ~second ?ns ?s_frac () with
-    | Ok x -> x
-    | Error e -> raise (Error_exn e)
-
-  let make_unambiguous ?tz ?ns ?s_frac ~year ~day_of_year ~hour ~minute ~second
-      ~offset_from_utc () =
-    match Date.ISO_ord_date.make ~year ~day_of_year with
-    | Error e -> Error (e :> error)
-    | Ok date -> (
-        match Time.make ~hour ~minute ~second ?ns ?s_frac () with
-        | Error e -> Error (e :> error)
-        | Ok time -> (
-            match
-              Zoneless'.to_zoned_unambiguous ?tz ~offset_from_utc { date; time }
-            with
-            | Ok dt -> Ok dt
-            | Error e -> Error (e :> error)))
-
-  let make_unambiguous_exn ?tz ?ns ?s_frac ~year ~day_of_year ~hour ~minute
-      ~second ~offset_from_utc () =
-    match
-      make_unambiguous ?tz ?ns ?s_frac ~year ~day_of_year ~hour ~minute ~second
-        ~offset_from_utc ()
-    with
-    | Ok x -> x
-    | Error e -> raise (Error_exn e)
-end
-
 module Ymd_date_time = struct
   type error =
     [ `Does_not_exist
@@ -429,6 +373,77 @@ module Ymd_date_time = struct
     | Error e -> raise (Error_exn e)
 end
 
+module ISO_ord_date_time = struct
+  type error =
+    [ `Does_not_exist
+    | `Invalid_year of int
+    | `Invalid_day_of_year of int
+    | `Invalid_hour of int
+    | `Invalid_minute of int
+    | `Invalid_second of int
+    | `Invalid_s_frac of float
+    | `Invalid_ns of int
+    | `Invalid_tz_info of string option * Span.t
+    ]
+
+  exception Error_exn of error
+
+  let string_of_error (e : error) =
+    match e with
+    | `Invalid_day_of_year x -> Printf.sprintf "Invalid day of year: %d" x
+    | `Does_not_exist
+    | `Invalid_year _
+    | `Invalid_hour _
+    | `Invalid_minute _
+    | `Invalid_second _
+    | `Invalid_s_frac _
+    | `Invalid_ns _
+    | `Invalid_tz_info _
+    as e
+    ->
+        Ymd_date_time.string_of_error (e :> Ymd_date_time.error)
+
+  let make ?tz ?ns ?s_frac ~year ~day_of_year ~hour ~minute ~second () :
+      (t, error) result =
+    match Date.ISO_ord_date.make ~year ~day_of_year with
+    | Error e -> Error (e :> error)
+    | Ok date -> (
+        match Time.make ~hour ~minute ~second ?ns ?s_frac () with
+        | Error e -> Error (e :> error)
+        | Ok time -> (
+            match Zoneless'.to_zoned ?tz { date; time } with
+            | Error e -> Error (e :> error)
+            | Ok dt -> Ok dt))
+
+  let make_exn ?tz ?ns ?s_frac ~year ~day_of_year ~hour ~minute ~second () =
+    match make ?tz ~year ~day_of_year ~hour ~minute ~second ?ns ?s_frac () with
+    | Ok x -> x
+    | Error e -> raise (Error_exn e)
+
+  let make_unambiguous ?tz ?ns ?s_frac ~year ~day_of_year ~hour ~minute ~second
+      ~offset_from_utc () =
+    match Date.ISO_ord_date.make ~year ~day_of_year with
+    | Error e -> Error (e :> error)
+    | Ok date -> (
+        match Time.make ~hour ~minute ~second ?ns ?s_frac () with
+        | Error e -> Error (e :> error)
+        | Ok time -> (
+            match
+              Zoneless'.to_zoned_unambiguous ?tz ~offset_from_utc { date; time }
+            with
+            | Ok dt -> Ok dt
+            | Error e -> Error (e :> error)))
+
+  let make_unambiguous_exn ?tz ?ns ?s_frac ~year ~day_of_year ~hour ~minute
+      ~second ~offset_from_utc () =
+    match
+      make_unambiguous ?tz ?ns ?s_frac ~year ~day_of_year ~hour ~minute ~second
+        ~offset_from_utc ()
+    with
+    | Ok x -> x
+    | Error e -> raise (Error_exn e)
+end
+
 module ISO_week_date_time = struct
   type error =
     [ `Does_not_exist
@@ -443,6 +458,21 @@ module ISO_week_date_time = struct
     ]
 
   exception Error_exn of error
+
+  let string_of_error (e : error) =
+    match e with
+    | `Invalid_iso_week_year x -> Printf.sprintf "Invalid iso week year: %d" x
+    | `Invalid_iso_week x -> Printf.sprintf "Invalid iso week: %d" x
+    | `Does_not_exist
+    | `Invalid_hour _
+    | `Invalid_minute _
+    | `Invalid_second _
+    | `Invalid_s_frac _
+    | `Invalid_ns _
+    | `Invalid_tz_info _
+    as e
+    ->
+        Ymd_date_time.string_of_error (e :> Ymd_date_time.error)
 
   let make ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday ~hour ~minute
       ~second () : (t, error) result =

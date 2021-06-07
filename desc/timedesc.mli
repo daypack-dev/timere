@@ -1544,6 +1544,8 @@ module ISO_week_date_time : sig
 
   exception Error_exn of error
 
+  val string_of_error : error -> string
+
   val make :
     ?tz:Time_zone.t ->
     ?ns:int ->
@@ -1613,6 +1615,8 @@ module ISO_ord_date_time : sig
     ]
 
   exception Error_exn of error
+
+  val string_of_error : error -> string
 
   val make :
     ?tz:Time_zone.t ->
