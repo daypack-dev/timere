@@ -801,6 +801,13 @@ module Time : sig
   val to_span : t -> Span.t
 
   val of_span : Span.t -> t option
+
+  (** {1 Parsing} *)
+
+  val of_iso8601 : string -> (t, string) result
+
+  val of_iso8601_exn : string -> t
+  (** @raise ISO8601_parse_exn if [of_iso8601] fails *)
 end
 
 (** {2 Time zone}

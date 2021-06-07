@@ -1,9 +1,13 @@
 include Date_time_utils
 include Date_time
 module Time_zone = Time_zone
-module Time = Time
 
 exception ISO8601_parse_exn of string
+
+let of_iso8601' p s =
+  let open MParser in
+  let open Parser_components in
+  parse_string p s () |> result_of_mparser_result
 
 let of_iso8601_exn' of_iso8601 s =
   match of_iso8601 s with
@@ -13,16 +17,21 @@ let of_iso8601_exn' of_iso8601 s =
 module Date = struct
   include Date
 
-  let of_iso8601 s =
-    let open MParser in
-    let open Parser_components in
-    parse_string ISO8601.date_p s () |> result_of_mparser_result
+  let of_iso8601 s = of_iso8601' ISO8601.date_p s
 
   let of_iso8601_exn s = of_iso8601_exn' of_iso8601 s
 
   module Ymd_date = Ymd_date'
   module ISO_week_date = ISO_week_date'
   module ISO_ord_date = ISO_ord_date'
+end
+
+module Time = struct
+  include Time
+
+  let of_iso8601 s = of_iso8601' ISO8601.time_p s
+
+  let of_iso8601_exn s = of_iso8601_exn' of_iso8601 s
 end
 
 exception Invalid_format_string = Printers.Invalid_format_string

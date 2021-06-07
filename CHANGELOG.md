@@ -18,6 +18,8 @@
 
 - Added `Timedesc.Date.of_iso8601`
 
+- Added `Timedesc.Time.of_iso8601`
+
 - Added `_exn` variants of ISO8601 parsing functions
 
 ## Timere 0.6.0
