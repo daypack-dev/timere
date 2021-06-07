@@ -234,6 +234,8 @@ v}
 exception Invalid_format_string of string
 (** Printing exception *)
 
+exception ISO8601_parse_exn of string
+
 (** {1 Basic types} *)
 
 type weekday =
@@ -607,6 +609,9 @@ module Date : sig
 
   val of_iso8601 : string -> (t, string) result
 
+  val of_iso8601_exn : string -> t
+  (** @raise ISO8601_parse_exn if [of_iso8601] fails *)
+
   (** {1 Gregorian calendar} *)
 
   module Ymd_date : sig
@@ -638,8 +643,6 @@ module Date : sig
     val make_exn : year:int -> month:int -> day:int -> t
 
     val view : t -> view
-
-    val of_iso8601 : string -> (t, string) result
   end
 
   (** {1 ISO week date calendar} *)
@@ -671,8 +674,6 @@ module Date : sig
     val make_exn : iso_week_year:int -> iso_week:int -> weekday:weekday -> t
 
     val view : t -> view
-
-    val of_iso8601 : string -> (t, string) result
   end
 
   (** {1 ISO ord date calendar} *)
@@ -702,8 +703,6 @@ module Date : sig
     val make_exn : year:int -> day_of_year:int -> t
 
     val view : t -> view
-
-    val of_iso8601 : string -> (t, string) result
   end
 end
 
@@ -1248,6 +1247,9 @@ val of_iso8601 : string -> (t, string) result
      If more than 9 fractional digits are provided, then only the first 9 digits are used, i.e. no rounding.
 *)
 
+val of_iso8601_exn : string -> t
+(** @raise ISO8601_parse_exn if [of_iso8601] fails *)
+
 (** {2 Sexp} *)
 
 val to_sexp : t -> CCSexp.t
@@ -1405,6 +1407,9 @@ module Timestamp : sig
      If more than 9 fractional digits are provided, then only the first 9 digits are used, i.e. no rounding.
   *)
 
+  val of_iso8601_exn : string -> t
+  (** @raise ISO8601_parse_exn if [of_iso8601] fails *)
+
   (** {1 Sexp} *)
 
   val of_sexp : CCSexp.t -> (t, string) result
@@ -1533,8 +1538,15 @@ module Zoneless : sig
        If more than 9 fractional digits are provided, then only the first 9 digits are used, i.e. no rounding.
   *)
 
+  val of_iso8601_exn : string -> zoneless
+  (** @raise ISO8601_parse_exn if [of_iso8601] fails *)
+
   val maybe_zoneless_of_iso8601 :
     string -> ([ `Zoned of t | `Zoneless of zoneless ], string) result
+
+  val maybe_zoneless_of_iso8601_exn :
+    string -> [ `Zoned of t | `Zoneless of zoneless ]
+  (** @raise ISO8601_parse_exn if [maybe_zoneless_of_iso8601] fails *)
 
   (** {1 Sexp} *)
 

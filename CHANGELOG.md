@@ -16,7 +16,9 @@
 
 - Added ISO week date and ISO ordinal date parsing support
 
-- Added date parsers
+- Added `Timedesc.Date.of_iso8601`
+
+- Added `_exn` variants of ISO8601 parsing functions
 
 ## Timere 0.6.0
 

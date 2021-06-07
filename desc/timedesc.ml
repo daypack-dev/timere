@@ -3,33 +3,26 @@ include Date_time
 module Time_zone = Time_zone
 module Time = Time
 
+exception ISO8601_parse_exn of string
+
+let of_iso8601_exn' of_iso8601 s =
+  match of_iso8601 s with
+  | Ok x -> x
+  | Error msg -> raise (ISO8601_parse_exn msg)
+
 module Date = struct
   include Date
 
-  let of_iso8601' p s =
+  let of_iso8601 s =
     let open MParser in
     let open Parser_components in
-    parse_string p s () |> result_of_mparser_result
+    parse_string ISO8601.date_p s () |> result_of_mparser_result
 
-  let of_iso8601 s = of_iso8601' ISO8601.date_p s
+  let of_iso8601_exn s = of_iso8601_exn' of_iso8601 s
 
-  module Ymd_date = struct
-    include Ymd_date'
-
-    let of_iso8601 s = of_iso8601' ISO8601.ymd_date_p s
-  end
-
-  module ISO_week_date = struct
-    include ISO_week_date'
-
-    let of_iso8601 s = of_iso8601' ISO8601.iso_week_date_p s
-  end
-
-  module ISO_ord_date = struct
-    include ISO_ord_date'
-
-    let of_iso8601 s = of_iso8601' ISO8601.iso_ord_date_p s
-  end
+  module Ymd_date = Ymd_date'
+  module ISO_week_date = ISO_week_date'
+  module ISO_ord_date = ISO_ord_date'
 end
 
 exception Invalid_format_string = Printers.Invalid_format_string
@@ -92,6 +85,8 @@ module Timestamp = struct
 
   let of_iso8601 = ISO8601.to_timestamp
 
+  let of_iso8601_exn = of_iso8601_exn' ISO8601.to_timestamp
+
   let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.span_of_sexp
 
   let to_sexp = To_sexp.sexp_of_span
@@ -122,6 +117,8 @@ let to_rfc3339_micro = RFC3339.of_date_time ~frac_s:6
 let to_rfc3339_nano = RFC3339.of_date_time ~frac_s:9
 
 let of_iso8601 = ISO8601.to_date_time
+
+let of_iso8601_exn = of_iso8601_exn' of_iso8601
 
 let to_sexp = To_sexp.sexp_of_date_time
 
@@ -169,7 +166,11 @@ module Zoneless = struct
 
   let of_iso8601 = ISO8601.to_zoneless
 
+  let of_iso8601_exn = of_iso8601_exn' ISO8601.to_zoneless
+
   let maybe_zoneless_of_iso8601 = ISO8601.to_maybe_zoneless
+
+  let maybe_zoneless_of_iso8601_exn = of_iso8601_exn' ISO8601.to_maybe_zoneless
 
   let to_sexp = To_sexp.sexp_of_zoneless
 
