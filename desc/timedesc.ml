@@ -12,6 +12,10 @@ let of_iso8601_exn' of_iso8601 s =
 module Date = struct
   include Date
 
+  let pp_rfc3339 = RFC3339.pp_date
+
+  let to_rfc3339 = RFC3339.of_date
+
   let of_iso8601 = ISO8601.to_date
 
   let of_iso8601_exn s = of_iso8601_exn' of_iso8601 s
@@ -23,6 +27,10 @@ end
 
 module Time = struct
   include Time
+
+  let pp_rfc3339 = RFC3339.pp_time
+
+  let to_rfc3339 = RFC3339.of_time
 
   let of_iso8601 = ISO8601.to_time
 

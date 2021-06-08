@@ -24,6 +24,8 @@
 
 - Small tuning of ISO8601 parsing behaviour
 
+- Added `pp_rfc3339` and `to_rfc3339` to `Timedesc.Date` and `Timedesc.Time` modules
+
 ## Timere 0.6.0
 
 - Added `inc_exc` argument to `bounded_intervals`

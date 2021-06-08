@@ -605,6 +605,12 @@ module Date : sig
 
   val day_of_year : t -> int
 
+  (** {1 Pretty printing} *)
+
+  val pp_rfc3339 : Format.formatter -> t -> unit
+
+  val to_rfc3339 : t -> string
+
   (** {1 Parsing} *)
 
   val of_iso8601 : string -> (t, string) result
@@ -801,6 +807,12 @@ module Time : sig
   val to_span : t -> Span.t
 
   val of_span : Span.t -> t option
+
+  (** {1 Pretty printing} *)
+
+  val pp_rfc3339 : ?frac_s:int -> unit -> Format.formatter -> t -> unit
+
+  val to_rfc3339 : ?frac_s:int -> t -> string
 
   (** {1 Parsing} *)
 
