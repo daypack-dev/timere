@@ -1,5 +1,74 @@
 open Test_utils
 
+module Alco = struct
+  let week_date0 () =
+    Alcotest.(check date_testable)
+      "same date"
+      (Timedesc.Date.Ymd_date.make_exn ~year:1977 ~month:12 ~day:31)
+      (Timedesc.Date.ISO_week_date.make_exn ~iso_week_year:1997 ~iso_week:52
+         ~weekday:`Sat)
+
+  let week_date1 () =
+    Alcotest.(check date_testable)
+      "same date"
+      (Timedesc.Date.Ymd_date.make_exn ~year:1978 ~month:01 ~day:02)
+      (Timedesc.Date.ISO_week_date.make_exn ~iso_week_year:1978 ~iso_week:1
+         ~weekday:`Mon)
+
+  let week_date2 () =
+    Alcotest.(check date_testable)
+      "same date"
+      (Timedesc.Date.Ymd_date.make_exn ~year:1979 ~month:01 ~day:01)
+      (Timedesc.Date.ISO_week_date.make_exn ~iso_week_year:1978 ~iso_week:1
+         ~weekday:`Mon)
+
+  let week_date3 () =
+    Alcotest.(check date_testable)
+      "same date"
+      (Timedesc.Date.Ymd_date.make_exn ~year:1979 ~month:12 ~day:31)
+      (Timedesc.Date.ISO_week_date.make_exn ~iso_week_year:1980 ~iso_week:1
+         ~weekday:`Mon)
+
+  let week_date4 () =
+    Alcotest.(check date_testable)
+      "same date"
+      (Timedesc.Date.Ymd_date.make_exn ~year:1980 ~month:12 ~day:28)
+      (Timedesc.Date.ISO_week_date.make_exn ~iso_week_year:1980 ~iso_week:52
+         ~weekday:`Sun)
+
+  let week_date5 () =
+    Alcotest.(check date_testable)
+      "same date"
+      (Timedesc.Date.Ymd_date.make_exn ~year:1969 ~month:12 ~day:31)
+      (Timedesc.Date.ISO_week_date.make_exn ~iso_week_year:1970 ~iso_week:1
+         ~weekday:`Wed)
+
+  let of_iso8601_case0 () =
+    Alcotest.(check date_testable)
+      "same date"
+      (Timedesc.Date.of_iso8601_exn "1977-W52-6")
+      (Timedesc.Date.ISO_week_date.make_exn ~iso_week_year:1977 ~iso_week:52
+         ~weekday:`Sat)
+
+  let of_iso8601_case1 () =
+    Alcotest.(check date_testable)
+      "same date"
+      (Timedesc.Date.of_iso8601_exn "1969-W1-3")
+      (Timedesc.Date.ISO_week_date.make_exn ~iso_week_year:1970 ~iso_week:1
+         ~weekday:`Wed)
+
+  let suite =
+    [
+      Alcotest.test_case "week_date0" `Quick week_date0;
+      Alcotest.test_case "week_date1" `Quick week_date1;
+      Alcotest.test_case "week_date2" `Quick week_date2;
+      Alcotest.test_case "week_date3" `Quick week_date3;
+      Alcotest.test_case "week_date4" `Quick week_date4;
+      Alcotest.test_case "of_iso8601_case0" `Quick of_iso8601_case0;
+      Alcotest.test_case "of_iso8601_case1" `Quick of_iso8601_case1;
+    ]
+end
+
 module Qc = struct
   let view_is_same_as_original_iso_ord_date =
     QCheck.Test.make ~count:100_000

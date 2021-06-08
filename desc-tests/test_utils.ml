@@ -311,6 +311,24 @@ let date_time_testable : (module Alcotest.TESTABLE with type t = Timedesc.t) =
     let equal = Timedesc.equal
   end)
 
+let date_testable : (module Alcotest.TESTABLE with type t = Timedesc.Date.t) =
+  (module struct
+    type t = Timedesc.Date.t
+
+    let pp formatter t = Timedesc.Date.pp_rfc3339 formatter t
+
+    let equal = Timedesc.Date.equal
+  end)
+
+let time_testable : (module Alcotest.TESTABLE with type t = Timedesc.Time.t) =
+  (module struct
+    type t = Timedesc.Time.t
+
+    let pp formatter t = Timedesc.Time.pp_rfc3339 () formatter t
+
+    let equal = Timedesc.Time.equal
+  end)
+
 let maybe_zoneless_testable :
     (module Alcotest.TESTABLE
        with type t = [ `Zoned of Timedesc.t
