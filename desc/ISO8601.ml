@@ -59,7 +59,7 @@ let iso_ord_date_p : (Date.t, unit) MParser.t =
 
 let date_p : (Date.t, unit) MParser.t =
   let open MParser in
-  choice [ attempt ymd_date_p; attempt iso_ord_date_p; iso_week_date_p ]
+  choice [ attempt ymd_date_p; attempt iso_week_date_p; iso_ord_date_p ]
 
 let hm_p : (int * int, unit) MParser.t =
   let open MParser in
