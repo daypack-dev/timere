@@ -5,7 +5,7 @@ module Alco = struct
     Alcotest.(check date_testable)
       "same date"
       (Timedesc.Date.Ymd_date.make_exn ~year:1977 ~month:12 ~day:31)
-      (Timedesc.Date.ISO_week_date.make_exn ~iso_week_year:1997 ~iso_week:52
+      (Timedesc.Date.ISO_week_date.make_exn ~iso_week_year:1977 ~iso_week:52
          ~weekday:`Sat)
 
   let week_date1 () =
@@ -19,7 +19,7 @@ module Alco = struct
     Alcotest.(check date_testable)
       "same date"
       (Timedesc.Date.Ymd_date.make_exn ~year:1979 ~month:01 ~day:01)
-      (Timedesc.Date.ISO_week_date.make_exn ~iso_week_year:1978 ~iso_week:1
+      (Timedesc.Date.ISO_week_date.make_exn ~iso_week_year:1979 ~iso_week:1
          ~weekday:`Mon)
 
   let week_date3 () =
@@ -53,7 +53,7 @@ module Alco = struct
   let of_iso8601_case1 () =
     Alcotest.(check date_testable)
       "same date"
-      (Timedesc.Date.of_iso8601_exn "1969-W1-3")
+      (Timedesc.Date.of_iso8601_exn "1970-W1-3")
       (Timedesc.Date.ISO_week_date.make_exn ~iso_week_year:1970 ~iso_week:1
          ~weekday:`Wed)
 
