@@ -14,7 +14,7 @@
 
 ## Timedesc 0.5.1
 
-- Added ISO week date and ISO ordinal date parsing support
+- Added ISO week date and ISO ordinal date parsing support in ISO8601 date and date time parsers
 
 - Added `Timedesc.Date.of_iso8601`
 
@@ -25,6 +25,8 @@
 - Small tuning of ISO8601 parsing behaviour
 
 - Added `pp_rfc3339` and `to_rfc3339` to `Timedesc.Date` and `Timedesc.Time` modules
+
+- Added sexp serialisation/deserialisation functions to `Timedesc.Date` and `Timedesc.Time`
 
 ## Timere 0.6.0
 

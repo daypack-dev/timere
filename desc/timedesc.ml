@@ -4,6 +4,12 @@ module Time_zone = Time_zone
 
 exception ISO8601_parse_exn of string
 
+let frac_s_milli = 3
+
+let frac_s_micro = 6
+
+let frac_s_nano = 9
+
 let of_iso8601_exn' of_iso8601 s =
   match of_iso8601 s with
   | Ok x -> x
@@ -20,6 +26,17 @@ module Date = struct
 
   let of_iso8601_exn s = of_iso8601_exn' of_iso8601 s
 
+  let to_sexp = To_sexp.sexp_of_date
+
+  let to_sexp_string x = CCSexp.to_string (To_sexp.sexp_of_date x)
+
+  let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.date_of_sexp
+
+  let of_sexp_string =
+    Of_sexp_utils.wrap_of_sexp_into_of_sexp_string Of_sexp.date_of_sexp
+
+  let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_date
+
   module Ymd_date = Ymd_date'
   module ISO_week_date = ISO_week_date'
   module ISO_ord_date = ISO_ord_date'
@@ -30,11 +47,34 @@ module Time = struct
 
   let pp_rfc3339 = RFC3339.pp_time
 
+  let pp_rfc3339_milli = pp_rfc3339 ~frac_s:frac_s_milli ()
+
+  let pp_rfc3339_micro = pp_rfc3339 ~frac_s:frac_s_micro ()
+
+  let pp_rfc3339_nano = pp_rfc3339 ~frac_s:frac_s_nano ()
+
   let to_rfc3339 = RFC3339.of_time
+
+  let to_rfc3339_milli = to_rfc3339 ~frac_s:frac_s_milli
+
+  let to_rfc3339_micro = to_rfc3339 ~frac_s:frac_s_micro
+
+  let to_rfc3339_nano = to_rfc3339 ~frac_s:frac_s_nano
 
   let of_iso8601 = ISO8601.to_time
 
   let of_iso8601_exn s = of_iso8601_exn' of_iso8601 s
+
+  let to_sexp = To_sexp.sexp_of_time
+
+  let to_sexp_string x = CCSexp.to_string (To_sexp.sexp_of_time x)
+
+  let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.time_of_sexp
+
+  let of_sexp_string =
+    Of_sexp_utils.wrap_of_sexp_into_of_sexp_string Of_sexp.time_of_sexp
+
+  let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_time
 end
 
 exception Invalid_format_string = Printers.Invalid_format_string
@@ -81,19 +121,19 @@ module Timestamp = struct
 
   let pp_rfc3339 = RFC3339.pp_timestamp
 
-  let pp_rfc3339_milli = RFC3339.pp_timestamp ~frac_s:3 ()
+  let pp_rfc3339_milli = pp_rfc3339 ~frac_s:frac_s_milli ()
 
-  let pp_rfc3339_micro = RFC3339.pp_timestamp ~frac_s:6 ()
+  let pp_rfc3339_micro = pp_rfc3339 ~frac_s:frac_s_micro ()
 
-  let pp_rfc3339_nano = RFC3339.pp_timestamp ~frac_s:9 ()
+  let pp_rfc3339_nano = pp_rfc3339 ~frac_s:frac_s_nano ()
 
   let to_rfc3339 = RFC3339.of_timestamp
 
-  let to_rfc3339_milli = RFC3339.of_timestamp ~frac_s:3
+  let to_rfc3339_milli = to_rfc3339 ~frac_s:frac_s_milli
 
-  let to_rfc3339_micro = RFC3339.of_timestamp ~frac_s:6
+  let to_rfc3339_micro = to_rfc3339 ~frac_s:frac_s_micro
 
-  let to_rfc3339_nano = RFC3339.of_timestamp ~frac_s:9
+  let to_rfc3339_nano = to_rfc3339 ~frac_s:frac_s_nano
 
   let of_iso8601 = ISO8601.to_timestamp
 
@@ -114,19 +154,19 @@ let pp = Printers.pp_date_time
 
 let pp_rfc3339 = RFC3339.pp_date_time
 
-let pp_rfc3339_milli = RFC3339.pp_date_time ~frac_s:3 ()
+let pp_rfc3339_milli = pp_rfc3339 ~frac_s:frac_s_milli ()
 
-let pp_rfc3339_micro = RFC3339.pp_date_time ~frac_s:6 ()
+let pp_rfc3339_micro = pp_rfc3339 ~frac_s:frac_s_micro ()
 
-let pp_rfc3339_nano = RFC3339.pp_date_time ~frac_s:9 ()
+let pp_rfc3339_nano = pp_rfc3339 ~frac_s:frac_s_nano ()
 
 let to_rfc3339 = RFC3339.of_date_time
 
-let to_rfc3339_milli = RFC3339.of_date_time ~frac_s:3
+let to_rfc3339_milli = to_rfc3339 ~frac_s:frac_s_milli
 
-let to_rfc3339_micro = RFC3339.of_date_time ~frac_s:6
+let to_rfc3339_micro = to_rfc3339 ~frac_s:frac_s_micro
 
-let to_rfc3339_nano = RFC3339.of_date_time ~frac_s:9
+let to_rfc3339_nano = to_rfc3339 ~frac_s:frac_s_nano
 
 let of_iso8601 = ISO8601.to_date_time
 

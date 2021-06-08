@@ -618,6 +618,18 @@ module Date : sig
   val of_iso8601_exn : string -> t
   (** @raise ISO8601_parse_exn if [of_iso8601] fails *)
 
+  (** {1 Sexp} *)
+
+  val to_sexp : t -> CCSexp.t
+
+  val to_sexp_string : t -> string
+
+  val of_sexp : CCSexp.t -> (t, string) result
+
+  val of_sexp_string : string -> (t, string) result
+
+  val pp_sexp : Format.formatter -> t -> unit
+
   (** {1 Gregorian calendar} *)
 
   module Ymd_date : sig
@@ -812,7 +824,19 @@ module Time : sig
 
   val pp_rfc3339 : ?frac_s:int -> unit -> Format.formatter -> t -> unit
 
+  val pp_rfc3339_milli : Format.formatter -> t -> unit
+
+  val pp_rfc3339_micro : Format.formatter -> t -> unit
+
+  val pp_rfc3339_nano : Format.formatter -> t -> unit
+
   val to_rfc3339 : ?frac_s:int -> t -> string
+
+  val to_rfc3339_milli : t -> string
+
+  val to_rfc3339_micro : t -> string
+
+  val to_rfc3339_nano : t -> string
 
   (** {1 Parsing} *)
 
@@ -820,6 +844,18 @@ module Time : sig
 
   val of_iso8601_exn : string -> t
   (** @raise ISO8601_parse_exn if [of_iso8601] fails *)
+
+  (** {1 Sexp} *)
+
+  val to_sexp : t -> CCSexp.t
+
+  val to_sexp_string : t -> string
+
+  val of_sexp : CCSexp.t -> (t, string) result
+
+  val of_sexp_string : string -> (t, string) result
+
+  val pp_sexp : Format.formatter -> t -> unit
 end
 
 (** {2 Time zone}
