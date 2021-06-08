@@ -84,6 +84,30 @@ module Alco = struct
 end
 
 module Qc = struct
+  let to_rfc3339_of_iso8601 =
+    QCheck.Test.make ~count:100_000 ~name:"to_rfc3339_of_iso8601" ymd_date
+      (fun (year, month, day) ->
+        let d = Timedesc.Date.Ymd_date.make_exn ~year ~month ~day in
+        let d' =
+          d
+          |> Timedesc.Date.to_rfc3339
+          |> Timedesc.Date.of_iso8601
+          |> CCResult.get_exn
+        in
+        Timedesc.Date.equal d d')
+
+  let to_of_sexp =
+    QCheck.Test.make ~count:100_000 ~name:"to_of_sexp" ymd_date
+      (fun (year, month, day) ->
+        let d = Timedesc.Date.Ymd_date.make_exn ~year ~month ~day in
+        let d' =
+          d
+          |> Timedesc.Date.to_sexp
+          |> Timedesc.Date.of_sexp
+          |> CCResult.get_exn
+        in
+        Timedesc.Date.equal d d')
+
   let view_is_same_as_original_iso_ord_date =
     QCheck.Test.make ~count:100_000
       ~name:"view_is_same_as_original_iso_ord_date" iso_ord_date
@@ -161,6 +185,8 @@ module Qc = struct
 
   let suite =
     [
+      to_rfc3339_of_iso8601;
+      to_of_sexp;
       view_is_same_as_original_iso_ord_date;
       view_is_same_as_original_iso_week_date;
       view_is_same_as_original_ymd_date;

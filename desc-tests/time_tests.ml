@@ -14,6 +14,60 @@ module Alco = struct
 end
 
 module Qc = struct
+  let to_rfc3339_nano_of_iso8601_is_lossless =
+    QCheck.Test.make ~count:100_000
+      ~name:"to_rfc3339_nano_of_iso8601_is_lossless" time
+      (fun (hour, minute, second, ns) ->
+        let t = Timedesc.Time.make_exn ~hour ~minute ~second ~ns () in
+        let r =
+          CCResult.get_exn
+          @@ Timedesc.Time.of_iso8601
+          @@ Timedesc.Time.to_rfc3339 ~frac_s:9 t
+        in
+        Timedesc.Time.equal r t)
+
+  let to_rfc3339_w_default_frac_s_of_iso8601_is_lossless =
+    QCheck.Test.make ~count:100_000
+      ~name:"to_rfc3339_w_default_frac_s_of_iso8601_is_lossless" time
+      (fun (hour, minute, second, ns) ->
+        let t = Timedesc.Time.make_exn ~hour ~minute ~second ~ns () in
+        let r =
+          CCResult.get_exn
+          @@ Timedesc.Time.of_iso8601
+          @@ Timedesc.Time.to_rfc3339 t
+        in
+        Timedesc.Time.equal r t)
+
+  let to_rfc3339_of_iso8601_is_accurate =
+    QCheck.Test.make ~count:100_000 ~name:"to_rfc3339_of_iso8601_is_accurate"
+      QCheck.(pair (int_bound 9) time)
+      (fun (frac_s, (hour, minute, second, ns)) ->
+        let t = Timedesc.Time.make_exn ~hour ~minute ~second ~ns () in
+        let r =
+          CCResult.get_exn
+          @@ Timedesc.Time.of_iso8601
+          @@ Timedesc.Time.to_rfc3339 ~frac_s t
+        in
+        let t_s = Timedesc.Time.to_span t in
+        let r_s = Timedesc.Time.to_span r in
+        Timedesc.Span.(
+          abs (r_s - t_s)
+          < make ~s:0L
+              ~ns:(int_of_float (10. ** float_of_int (CCInt.sub 9 frac_s)))
+              ()))
+
+  let to_of_sexp =
+    QCheck.Test.make ~count:100_000 ~name:"to_of_sexp" time
+      (fun (hour, minute, second, ns) ->
+        let t = Timedesc.Time.make_exn ~hour ~minute ~second ~ns () in
+        let t' =
+          t
+          |> Timedesc.Time.to_sexp
+          |> Timedesc.Time.of_sexp
+          |> CCResult.get_exn
+        in
+        Timedesc.Time.equal t t')
+
   let accessors =
     QCheck.Test.make ~count:100_000 ~name:"accessors" time
       (fun (hour, minute, second, ns) ->
@@ -24,5 +78,12 @@ module Qc = struct
         let ns' = Timedesc.Time.ns time in
         hour = hour' && minute = minute' && second = second' && ns = ns')
 
-  let suite = [ accessors ]
+  let suite =
+    [
+      to_rfc3339_nano_of_iso8601_is_lossless;
+      to_rfc3339_w_default_frac_s_of_iso8601_is_lossless;
+      to_rfc3339_of_iso8601_is_accurate;
+      to_of_sexp;
+      accessors;
+    ]
 end
