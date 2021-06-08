@@ -1,6 +1,30 @@
 open Test_utils
 
 module Alco = struct
+  let of_iso8601_case0 () =
+    Alcotest.(check time_testable)
+      "same date"
+      (Timedesc.Time.of_iso8601_exn "12:34")
+      (Timedesc.Time.make_exn ~hour:12 ~minute:34 ~second:0 ())
+
+  let of_iso8601_case1 () =
+    Alcotest.(check time_testable)
+      "same date"
+      (Timedesc.Time.of_iso8601_exn "12:34:21")
+      (Timedesc.Time.make_exn ~hour:12 ~minute:34 ~second:21 ())
+
+  let of_iso8601_case2 () =
+    Alcotest.(check time_testable)
+      "same date"
+      (Timedesc.Time.of_iso8601_exn "12:34:21.0001")
+      (Timedesc.Time.make_exn ~hour:12 ~minute:34 ~second:21 ~ns:000_100_000 ())
+
+  let of_iso8601_case3 () =
+    Alcotest.(check time_testable)
+      "same date"
+      (Timedesc.Time.of_iso8601_exn "12:34:21.00010002")
+      (Timedesc.Time.make_exn ~hour:12 ~minute:34 ~second:21 ~ns:000_100_020 ())
+
   let end_of_day_24_00_00 () =
     Alcotest.(check span_testable)
       "same span"
@@ -10,7 +34,13 @@ module Alco = struct
       |> Timedesc.Time.to_span)
 
   let suite =
-    [ Alcotest.test_case "end_of_day_24_00_00" `Quick end_of_day_24_00_00 ]
+    [
+      Alcotest.test_case "of_iso8601_case0" `Quick of_iso8601_case0;
+      Alcotest.test_case "of_iso8601_case1" `Quick of_iso8601_case1;
+      Alcotest.test_case "of_iso8601_case2" `Quick of_iso8601_case2;
+      Alcotest.test_case "of_iso8601_case3" `Quick of_iso8601_case3;
+      Alcotest.test_case "end_of_day_24_00_00" `Quick end_of_day_24_00_00;
+    ]
 end
 
 module Qc = struct
