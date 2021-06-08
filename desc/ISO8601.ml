@@ -168,7 +168,7 @@ let to_maybe_zoneless s : (maybe_zoneless, string) result =
         >> eof
         >> return (`Zoneless (Date_time.Zoneless'.make date time)))
   in
-  parse_string p s () |> result_of_mparser_result
+  parse_string (p << spaces << eof) s () |> result_of_mparser_result
 
 let to_zoneless s : (Date_time.Zoneless'.zoneless, string) result =
   match to_maybe_zoneless s with
@@ -185,7 +185,7 @@ let to_date_time s : (Date_time.t, string) result =
 let to' p s =
   let open MParser in
   let open Parser_components in
-  parse_string p s () |> result_of_mparser_result
+  parse_string (p << spaces << eof) s () |> result_of_mparser_result
 
 let to_date s = to' date_p s
 

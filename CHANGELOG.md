@@ -12,7 +12,7 @@
 
 - Renamed `Timere_parse.duration` to `Timere_parse.span`
 
-## Timedesc 0.6.0
+## Timedesc 0.5.1
 
 - Added ISO week date and ISO ordinal date parsing support
 
@@ -21,6 +21,8 @@
 - Added `Timedesc.Time.of_iso8601`
 
 - Added `_exn` variants of ISO8601 parsing functions
+
+- Small tuning of ISO8601 parsing behaviour
 
 ## Timere 0.6.0
 
