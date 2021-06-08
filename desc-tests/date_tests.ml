@@ -57,6 +57,18 @@ module Alco = struct
       (Timedesc.Date.ISO_week_date.make_exn ~iso_week_year:1970 ~iso_week:1
          ~weekday:`Wed)
 
+  let of_iso8601_case2 () =
+    Alcotest.(check date_testable)
+      "same date"
+      (Timedesc.Date.of_iso8601_exn "1977-101")
+      (Timedesc.Date.ISO_ord_date.make_exn ~year:1977 ~day_of_year:101)
+
+  let of_iso8601_case3 () =
+    Alcotest.(check date_testable)
+      "same date"
+      (Timedesc.Date.of_iso8601_exn "1969-132")
+      (Timedesc.Date.ISO_ord_date.make_exn ~year:1969 ~day_of_year:132)
+
   let suite =
     [
       Alcotest.test_case "week_date0" `Quick week_date0;
@@ -66,6 +78,8 @@ module Alco = struct
       Alcotest.test_case "week_date4" `Quick week_date4;
       Alcotest.test_case "of_iso8601_case0" `Quick of_iso8601_case0;
       Alcotest.test_case "of_iso8601_case1" `Quick of_iso8601_case1;
+      Alcotest.test_case "of_iso8601_case2" `Quick of_iso8601_case2;
+      Alcotest.test_case "of_iso8601_case3" `Quick of_iso8601_case3;
     ]
 end
 
