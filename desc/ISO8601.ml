@@ -97,12 +97,7 @@ let time_p : (Time.t, unit) MParser.t =
           let len = String.length s in
           if len = 9 then return (hour, minute, second, int_of_string s)
           else
-            let diff = 9 - len in
-            let ns =
-              int_of_float
-              @@ CCFloat.round
-              @@ (float_of_int (int_of_string s) *. (10. ** float_of_int diff))
-            in
+            let ns = int_of_string s * Printers.get_divisor len in
             return (hour, minute, second, ns));
         attempt
           (two_digit_nat_zero
