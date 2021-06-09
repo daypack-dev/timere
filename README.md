@@ -8,7 +8,7 @@ This repo houses:
 
 - Timere - date time reasoning library
 
-- Timere-parse - natural language parsing library
+- Timere-parse - date time and duration natural language parsing library
 
 [API documentation](https://daypack-dev.github.io/timere/)
 
