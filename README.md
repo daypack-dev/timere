@@ -139,7 +139,7 @@ then `Timedesc` should be accessible in utop
 
 #### Building a custom Tzdb backend
 
-Timedesc itself can help build a time zone data source backend.
+Timedesc itself can help build a time zone data source backend
 
 TODO
 
