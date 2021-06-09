@@ -2,7 +2,7 @@
 
 ## Timere-parse 0.0.5
 
-- Updated use of Timere API
+- Updated use of Timedesc, Timere API
 
 - Added support for parsing "24:00" and "24:00:00"
 
