@@ -26,7 +26,7 @@ desc-test : desc
 
 .PHONY: test
 test : lib
-	OCAMLRUNPARAM=b dune runtest --force tests/
+	OCAMLRUNPARAM=b dune runtest --force src/
 
 .PHONY: cov-desc-test
 cov-desc-test : desc
