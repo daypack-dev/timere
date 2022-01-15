@@ -16,6 +16,8 @@
 
 - Added ISO8601 printing facilities for all three calendar systems
 
+- Tzdb refresh
+
 ## Timere-parse 0.0.5
 
 - Updated use of Timedesc, Timere API
