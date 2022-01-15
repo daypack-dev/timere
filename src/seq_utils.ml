@@ -53,7 +53,7 @@ let collect_round_robin (type a) ~(f_le : a -> a -> bool)
           | Seq.Cons (x, rest) -> (Some x, Some x :: acc, rest :: new_batches))
         (cur, [], []) batches
     in
-    if List.exists CCOpt.is_some acc then
+    if List.exists CCOption.is_some acc then
       let acc = List.rev acc in
       let new_batches = List.rev new_batches in
       fun () -> Seq.Cons (acc, aux cur new_batches)

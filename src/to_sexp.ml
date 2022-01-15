@@ -1,6 +1,6 @@
 let sexp_of_month x =
   CCSexp.atom
-  @@ CCOpt.get_exn_or "Expected valid month"
+  @@ CCOption.get_exn_or "Expected valid month"
   @@ Time.abbr_string_of_month x
 
 let sexp_of_weekday x = CCSexp.atom @@ Time.abbr_string_of_weekday x
@@ -84,7 +84,7 @@ let sexp_of_points ({ pick; tz_info } : Points.t) =
                      sexp_of_int second;
                      sexp_of_int ns;
                    ])));
-         CCOpt.map Timedesc.Time_zone_info.to_sexp tz_info;
+         CCOption.map Timedesc.Time_zone_info.to_sexp tz_info;
        ])
 
 let sexp_of_date_time = Timedesc.to_sexp
