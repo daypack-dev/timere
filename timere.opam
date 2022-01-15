@@ -25,7 +25,7 @@ depends: [
   "dune" {>= "2.7.0"}
   "oseq" {>= "0.3"}
   "seq"
-  "containers" {>= "3.4"}
+  "containers" {>= "3.6"}
   "fmt"
   "timedesc" {>= "0.5.0"}
   "diet" {>= "0.4"}
