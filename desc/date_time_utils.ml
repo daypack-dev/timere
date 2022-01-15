@@ -296,7 +296,7 @@ let month_of_full_string s : int option =
   | _ -> None
 
 let abbr_string_of_month (month : int) : string option =
-  CCOpt.map (fun s -> String.sub s 0 3) (full_string_of_month month)
+  CCOption.map (fun s -> String.sub s 0 3) (full_string_of_month month)
 
 let month_of_abbr_string s : int option =
   match s with

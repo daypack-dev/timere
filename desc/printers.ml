@@ -123,7 +123,7 @@ module Format_string_parsers = struct
            >>= (fun x ->
                  return
                    (map_string_to_size_and_casing x
-                      (CCOpt.get_exn_or "Expected valid month"
+                      (CCOption.get_exn_or "Expected valid month"
                       @@ full_string_of_month month)))
            <|> (padding >>= fun padding -> return (pad_int padding month)));
         (attempt (string "day:")

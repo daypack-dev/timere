@@ -135,14 +135,14 @@ let equal (x : t) (y : t) =
 let now ?tz_of_date_time () : t =
   timestamp_now ()
   |> of_timestamp ?tz_of_date_time
-  |> CCOpt.get_exn_or "Expected successful date time construction for now"
+  |> CCOption.get_exn_or "Expected successful date time construction for now"
 
 let min_val =
-  CCOpt.get_exn_or "Expected successful date time construction for min_val"
+  CCOption.get_exn_or "Expected successful date time construction for min_val"
   @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_min
 
 let max_val =
-  CCOpt.get_exn_or "Expected successful date time construction for max_val"
+  CCOption.get_exn_or "Expected successful date time construction for max_val"
   @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_max
 
 let is_leap_second (dt : t) = Time.is_leap_second dt.time
@@ -236,7 +236,7 @@ module Zoneless' = struct
   let to_zoned_unambiguous ?tz ~offset_from_utc
       ({ date; time } as zl : zoneless) : (t, error_when_zoned) result =
     let make_invalid_tz_info_error ?tz ~offset_from_utc () =
-      Error (`Invalid_tz_info (CCOpt.map Time_zone.name tz, offset_from_utc))
+      Error (`Invalid_tz_info (CCOption.map Time_zone.name tz, offset_from_utc))
     in
     (match
        Time_zone_info.make ?tz ~fixed_offset_from_utc:offset_from_utc ()
@@ -264,7 +264,7 @@ module Zoneless' = struct
              tz;
              offset_from_utc =
                `Single
-                 (CCOpt.get_exn_or
+                 (CCOption.get_exn_or
                     "Expected fixed_offset_from_utc in tz_info to be Some _"
                     fixed_offset_from_utc);
            })
