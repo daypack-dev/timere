@@ -482,7 +482,7 @@ let date_time =
     ~print:(fun dt ->
       dt
       |> Timedesc.to_string
-      |> CCOpt.get_exn_or
+      |> CCOption.get_exn_or
            "Expected successful construction of string from timedesc object")
     date_time_gen
 
@@ -492,7 +492,7 @@ let ptime_gen : Ptime.t QCheck.Gen.t =
   let open QCheck.Gen in
   map2
     (fun (year, month, day) (hour, minute, second, _ns) ->
-      CCOpt.get_exn_or "Expected successful construction of ptime"
+      CCOption.get_exn_or "Expected successful construction of ptime"
       @@ Ptime.of_date_time ((year, month, day), ((hour, minute, second), 0)))
     ymd_date_gen time_gen
 

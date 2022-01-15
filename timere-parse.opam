@@ -25,6 +25,7 @@ depends: [
   "timedesc" {>= "0.5.0"}
   "timere" {>= "0.6.0"}
   "mparser" {>= "1.2.3"}
+  "containers" {>= "3.6"}
 ]
 build: [
   ["dune" "build" "-p" name "-j" jobs]

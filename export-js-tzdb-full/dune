@@ -1,5 +1,5 @@
 (executables
- (flags     (-w "+a-4-9-29-37-40-42-44-48-50-32-30@8"))
+ (flags     (-w "+a-4-9-29-37-40-42-44-48-50-70@8" -g))
  (names export export_all)
  (libraries js_of_ocaml js_of_ocaml-lwt timere timedesc.tzdb.full timere-parse yojson)
  (preprocess (pps js_of_ocaml-ppx lwt_ppx))

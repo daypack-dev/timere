@@ -485,14 +485,14 @@ module Ast_normalize = struct
           invalid_data
             (Printf.sprintf "%s: Invalid second: %d"
                (string_of_pos
-               @@ CCOpt.get_exn_or "Expected pos_second to be Some _"
+               @@ CCOption.get_exn_or "Expected pos_second to be Some _"
                @@ pos_second)
                minute)
       else
         invalid_data
           (Printf.sprintf "%s: Invalid minute: %d"
              (string_of_pos
-             @@ CCOpt.get_exn_or "Expected pos_minute to be Some _"
+             @@ CCOption.get_exn_or "Expected pos_minute to be Some _"
              @@ pos_minute)
              minute)
     in
@@ -565,13 +565,13 @@ module Ast_normalize = struct
 
   let recognize_span (l : token list) : token list =
     let make_span ~pos ~days ~hours ~minutes ~seconds =
-      ( CCOpt.get_exn_or "Expected pos to be Some _" pos,
+      ( CCOption.get_exn_or "Expected pos to be Some _" pos,
         text_map_empty,
         Span
           (Timedesc.Span.For_human.make_frac_exn
-             ~days:(CCOpt.value ~default:0.0 days)
-             ~hours:(CCOpt.value ~default:0.0 hours)
-             ~minutes:(CCOpt.value ~default:0.0 minutes)
+             ~days:(CCOption.value ~default:0.0 days)
+             ~hours:(CCOption.value ~default:0.0 hours)
+             ~minutes:(CCOption.value ~default:0.0 minutes)
              ~seconds ()) )
     in
     let rec aux_start_with_days acc l =
@@ -587,50 +587,50 @@ module Ast_normalize = struct
       match l with
       | (pos_hours, _, Nat hours) :: (_, _, Hours) :: rest ->
           aux_start_with_minutes
-            ~pos:(Some (CCOpt.value ~default:pos_hours pos))
+            ~pos:(Some (CCOption.value ~default:pos_hours pos))
             ~days
             ~hours:(Some (float_of_int hours))
             acc rest
       | (pos_hours, _, Float hours) :: (_, _, Hours) :: rest ->
           aux_start_with_minutes
-            ~pos:(Some (CCOpt.value ~default:pos_hours pos))
+            ~pos:(Some (CCOption.value ~default:pos_hours pos))
             ~days ~hours:(Some hours) acc rest
       | _ -> aux_start_with_minutes ~pos ~days ~hours:None acc l
     and aux_start_with_minutes ~pos ~days ~hours acc l =
       match l with
       | (pos_minutes, _, Nat minutes) :: (_, _, Minutes) :: rest ->
           aux_start_with_seconds
-            ~pos:(Some (CCOpt.value ~default:pos_minutes pos))
+            ~pos:(Some (CCOption.value ~default:pos_minutes pos))
             ~days ~hours
             ~minutes:(Some (float_of_int minutes))
             acc rest
       | (pos_minutes, _, Float minutes) :: (_, _, Minutes) :: rest ->
           aux_start_with_seconds
-            ~pos:(Some (CCOpt.value ~default:pos_minutes pos))
+            ~pos:(Some (CCOption.value ~default:pos_minutes pos))
             ~days ~hours ~minutes:(Some minutes) acc rest
       | _ -> aux_start_with_seconds ~pos ~days ~hours ~minutes:None acc l
     and aux_start_with_seconds ~pos ~days ~hours ~minutes acc l =
       match l with
       | (pos_seconds, _, Nat seconds) :: (_, _, Seconds) :: rest ->
           let token =
-            ( CCOpt.value ~default:pos_seconds pos,
+            ( CCOption.value ~default:pos_seconds pos,
               text_map_empty,
               Span
                 (Timedesc.Span.For_human.make_frac_exn
-                   ~days:(CCOpt.value ~default:0.0 days)
-                   ~hours:(CCOpt.value ~default:0.0 hours)
-                   ~minutes:(CCOpt.value ~default:0.0 minutes)
+                   ~days:(CCOption.value ~default:0.0 days)
+                   ~hours:(CCOption.value ~default:0.0 hours)
+                   ~minutes:(CCOption.value ~default:0.0 minutes)
                    ~seconds:(float_of_int seconds) ()) )
           in
           aux_start_with_days (token :: acc) rest
       | [] ->
-          if CCOpt.is_some days || CCOpt.is_some hours || CCOpt.is_some minutes
+          if CCOption.is_some days || CCOption.is_some hours || CCOption.is_some minutes
           then
             let new_token = make_span ~pos ~days ~hours ~minutes ~seconds:0.0 in
             List.rev (new_token :: acc)
           else List.rev acc
       | token :: rest ->
-          if CCOpt.is_some days || CCOpt.is_some hours || CCOpt.is_some minutes
+          if CCOption.is_some days || CCOption.is_some hours || CCOption.is_some minutes
           then
             let new_token = make_span ~pos ~days ~hours ~minutes ~seconds:0.0 in
             aux_start_with_days (token :: new_token :: acc) rest
@@ -874,7 +874,7 @@ let pattern ?(years = []) ?(months = []) ?pos_days ?(days = []) ?(weekdays = [])
     `Error
       (Printf.sprintf "%s: Invalid month days"
          (string_of_pos
-         @@ CCOpt.get_exn_or "Expected pos_days to be Some _"
+         @@ CCOption.get_exn_or "Expected pos_days to be Some _"
          @@ pos_days))
   else
     let f = Timere.pattern ~years ~months ~days ~weekdays in
@@ -893,7 +893,7 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timedesc.Time.t option)
       `Error
         (Printf.sprintf "%s: Invalid month days"
            (string_of_pos
-           @@ CCOpt.get_exn_or "Expected pos_day to be Some _"
+           @@ CCOption.get_exn_or "Expected pos_day to be Some _"
            @@ pos_day))
   | _ -> (
       match (year, month, day, weekday, hms) with

@@ -35,7 +35,7 @@ module Alco = struct
       (Timedesc.of_iso8601 "2020-01-01T00:00:60Z"
       |> CCResult.get_exn
       |> Timedesc.to_rfc3339
-      |> CCOpt.get_exn_or "Expected successful RFC3339 construction")
+      |> CCOption.get_exn_or "Expected successful RFC3339 construction")
 
   let of_iso8601_leap_second_to_rfc3339_case1 () =
     Alcotest.(check string)
@@ -43,7 +43,7 @@ module Alco = struct
       (Timedesc.of_iso8601 "2020-01-01T00:00:60.12305Z"
       |> CCResult.get_exn
       |> Timedesc.to_rfc3339
-      |> CCOpt.get_exn_or "Expected successful RFC3339 construction")
+      |> CCOption.get_exn_or "Expected successful RFC3339 construction")
 
   let of_iso8601_case0 () =
     Alcotest.(check span_testable)
@@ -314,7 +314,7 @@ module Qc = struct
       (fun (tz, timestamp) ->
         let r =
           Timedesc.to_timestamp_single
-          @@ CCOpt.get_exn_or "Expected successful construction of date time"
+          @@ CCOption.get_exn_or "Expected successful construction of date time"
           @@ Timedesc.of_timestamp ~tz_of_date_time:tz timestamp
         in
         Timedesc.Span.equal r timestamp)
@@ -353,7 +353,7 @@ module Qc = struct
       QCheck.(pair ymd_date time)
       (fun ((year, month, day), (hour, minute, second, _ns)) ->
         let ptime =
-          CCOpt.get_exn_or "Expected successful ptime construction"
+          CCOption.get_exn_or "Expected successful ptime construction"
           @@ Ptime.of_date_time ((year, month, day), ((hour, minute, second), 0))
         in
         let dt =

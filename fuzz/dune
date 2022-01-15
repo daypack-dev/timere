@@ -125,7 +125,7 @@
 )
 
 (executables
- (flags     (-w "+a-4-9-29-37-40-42-44-48-50-32" -g))
+ (flags     (-w "+a-4-9-29-37-40-42-44-48-50-70@8"))
  (names     resolver_is_same_as_simple_resolver
             to_of_sexp
             of_sexp_string_does_not_crash

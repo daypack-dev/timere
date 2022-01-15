@@ -4,7 +4,7 @@ open Span_set_utils
 let timestamp_is_okay (tz : Timedesc.Time_zone.t) (pattern : Pattern.t)
     timestamp =
   let dt =
-    CCOpt.get_exn_or "Expected successful construction of date time"
+    CCOption.get_exn_or "Expected successful construction of date time"
     @@ Timedesc.of_timestamp ~tz_of_date_time:tz timestamp
   in
   let weekday = Timedesc.weekday dt in

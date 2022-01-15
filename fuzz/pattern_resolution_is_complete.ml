@@ -8,7 +8,7 @@ let () =
       let search_start = fst (List.hd search_space) in
       let search_end_exc =
         snd
-          (CCOpt.get_exn_or
+          (CCOption.get_exn_or
              "Expected successful retrieval of last element of list"
           @@ Misc_utils.last_element_of_list search_space)
       in

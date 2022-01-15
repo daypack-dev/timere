@@ -54,7 +54,7 @@ let () =
                    s1
                in
                let xr =
-                 CCOpt.get_exn_or
+                 CCOption.get_exn_or
                    "Expected successful retrieval of last element of seq"
                  @@ Seq_utils.last_element_of_seq r
                in

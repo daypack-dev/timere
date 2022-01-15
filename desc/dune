@@ -9,7 +9,7 @@
  (action (run ../desc-tests/main.exe)))
 
 (library
- (flags     (-w "+a-4-9-29-40-42-44-48@8"))
+ (flags     (-w "+a-4-9-29-37-40-42-44-48-50-70@8"))
  (name timedesc)
  (public_name timedesc)
  (instrumentation (backend bisect_ppx))
