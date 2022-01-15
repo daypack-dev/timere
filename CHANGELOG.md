@@ -1,5 +1,21 @@
 # Changelog
 
+## Timere 0.6.1
+
+- Replaced `CCOpt` with `CCOption` (this bumps dependency of Containers to >= 3.6)
+
+## Timedesc 0.6.0
+
+- Replaced `CCOpt` with `CCOption` (this bumps dependency of Containers to >= 3.6)
+
+- Added `Partial_date`, which includes the following modules
+
+  - `ISO_week`
+
+  - `Ym`
+
+- Added ISO8601 printing facilities for all three calendar systems
+
 ## Timere-parse 0.0.5
 
 - Updated use of Timedesc, Timere API
