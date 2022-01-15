@@ -173,7 +173,7 @@ let transitions_of_zdump_lines (l : zdump_line list) : transition list =
         if x.date_time_local.tz <> y.date_time_local.tz then
           failwith
             (Printf.sprintf
-               "line: %d, local date times do not match in time_zone" line_num)
+               "line: %d, local date times do not match in time zone" line_num)
         else (
           assert (x.is_dst = y.is_dst);
           assert (x.offset = y.offset);
@@ -328,7 +328,7 @@ let () =
     List.combine all_time_zones transitions
     |> CCList.to_seq
     |> Seq.map (fun (s, l) ->
-           Printf.printf "Constructing transition table for time_zone: %s\n%!" s;
+           Printf.printf "Constructing transition table for time zone: %s\n%!" s;
            let l =
              l
              |> List.map transition_record_indexed_by_utc_of_transition
@@ -385,7 +385,7 @@ let () =
     |> CCList.of_seq
   in
   print_newline ();
-  Printf.printf "Number of time_zones: %d\n" (List.length all_time_zones);
+  Printf.printf "Number of time zones: %d\n" (List.length all_time_zones);
   print_newline ();
   Printf.printf "Maximum number of records: %d\n"
     (CCList.fold_left (fun x (_, l) -> max (List.length l) x) 0 tables_utc);
