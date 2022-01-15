@@ -16,6 +16,8 @@
 
 - Added ISO8601 printing facilities for all three calendar systems
 
+- Added additional Julian day conversion functions to `Utils`
+
 - Tzdb refresh
 
 ## Timere-parse 0.0.5
