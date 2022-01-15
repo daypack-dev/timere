@@ -26,8 +26,9 @@
     [ "1569679200", { "is_dst": true, "offset": 50400 } ],
     [ "1586008800", { "is_dst": false, "offset": 46800 } ],
     [ "1601128800", { "is_dst": true, "offset": 50400 } ],
-    [ "1617458400", { "is_dst": false, "offset": 46800 } ],
-    [ "1632578400", { "is_dst": true, "offset": 50400 } ],
+    [ "1617458400", { "is_dst": false, "offset": 46800 } ]
+  ]
+}[ "1632578400", { "is_dst": true, "offset": 50400 } ],
     [ "1648908000", { "is_dst": false, "offset": 46800 } ],
     [ "1664028000", { "is_dst": true, "offset": 50400 } ],
     [ "1680357600", { "is_dst": false, "offset": 46800 } ],
