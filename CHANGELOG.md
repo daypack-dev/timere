@@ -8,7 +8,7 @@
 
 - Replaced `CCOpt` with `CCOption` (this bumps dependency of Containers to >= 3.6)
 
-- Added "partial date" modules
+- Added "partial date" modules with ISO8601 parsing and printing facilities
 
   - `ISO_week`
 
@@ -16,21 +16,21 @@
 
 - Added additional ISO8601 printing facilities for all three calendar systems
 
-  - `Ym.pp/to_iso8601`
-
   - `Ymd_date.pp/to_iso8601` (these are just aliases to the RFC3339 printers)
-
-  - `ISO_week.pp/to_iso8601`
 
   - `ISO_week_date.pp/to_iso8601`
 
   - `ISO_ord_date.pp/to_iso8601`
 
-- Added additional Julian day conversion functions to `Utils`
+- Added additional date conversion functions to `Utils`
 
   - `ymd_of_jd`
 
   - `weekday_of_jd`
+
+  - `doy_of_ymd`
+
+  - `jd_of_ydoy`
 
 - Tzdb refresh
 

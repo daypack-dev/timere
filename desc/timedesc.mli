@@ -1972,6 +1972,8 @@ module Utils : sig
 
   val jd_of_ymd : year:int -> month:int -> day:int -> int
 
+  val jd_of_ydoy : year:int -> day_of_year:int -> int
+
   val jd_of_date : Date.t -> int
 
   val jd_of_unix_epoch : int
@@ -1981,4 +1983,6 @@ module Utils : sig
   val ymd_of_jd : int -> int * int * int
 
   val weekday_of_jd : int -> weekday
+
+  val doy_of_ymd : year:int -> month:int -> day:int -> int
 end

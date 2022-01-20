@@ -365,6 +365,8 @@ module Utils = struct
 
   let jd_of_ymd = jd_of_ymd
 
+  let jd_of_ydoy = jd_of_ydoy
+
   let jd_of_date (x : Date.t) = x.jd
 
   let jd_of_unix_epoch = jd_of_unix_epoch
@@ -374,4 +376,6 @@ module Utils = struct
   let ymd_of_jd = ymd_of_jd
 
   let weekday_of_jd = weekday_of_jd
+
+  let doy_of_ymd = doy_of_ymd
 end
