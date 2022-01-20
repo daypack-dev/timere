@@ -167,7 +167,7 @@ let transitions_of_zdump_lines (l : zdump_line list) : transition list =
              is_dst = x.is_dst;
              offset = x.offset;
            }
-           :: acc)
+          :: acc)
           (succ line_num) []
     | x :: y :: rest ->
         if x.date_time_local.tz <> y.date_time_local.tz then
@@ -187,7 +187,7 @@ let transitions_of_zdump_lines (l : zdump_line list) : transition list =
                is_dst = x.is_dst;
                offset = x.offset;
              }
-             :: acc)
+            :: acc)
             (succ line_num) rest)
   in
   let preprocess l =

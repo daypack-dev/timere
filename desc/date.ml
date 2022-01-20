@@ -22,12 +22,9 @@ module ISO_week_date' = struct
   exception Error_exn of error
 
   let make ~iso_week_year ~iso_week ~weekday : (t, error) result =
-    if iso_week_year < Constants.min_year || Constants.max_year < iso_week_year
-    then Error (`Invalid_iso_week_year iso_week_year)
-    else if
-      iso_week < 1 || week_count_of_iso_week_year ~iso_week_year < iso_week
-    then Error (`Invalid_iso_week iso_week)
-    else Ok { jd = jd_of_iso_week_date ~iso_week_year ~iso_week ~weekday }
+    match ISO_week.make ~iso_week_year ~iso_week with
+    | Error e -> Error (e :> error)
+    | Ok _ -> Ok { jd = jd_of_iso_week_date ~iso_week_year ~iso_week ~weekday }
 
   let make_exn ~iso_week_year ~iso_week ~weekday : t =
     match make ~iso_week_year ~iso_week ~weekday with
@@ -56,12 +53,12 @@ module Ymd_date' = struct
   exception Error_exn of error
 
   let make ~year ~month ~day : (t, error) result =
-    if year < Constants.min_year || Constants.max_year < year then
-      Error (`Invalid_year year)
-    else if month < 1 || 12 < month then Error (`Invalid_month month)
-    else if day < 1 || day_count_of_month ~year ~month < day then
-      Error (`Invalid_day day)
-    else Ok { jd = jd_of_ymd ~year ~month ~day }
+    match Ym.make ~year ~month with
+    | Error e -> Error (e :> error)
+    | Ok _ ->
+        if day < 1 || day_count_of_month ~year ~month < day then
+          Error (`Invalid_day day)
+        else Ok { jd = jd_of_ymd ~year ~month ~day }
 
   let make_exn ~year ~month ~day : t =
     match make ~year ~month ~day with

@@ -1245,7 +1245,8 @@ let pattern_intervals ?(inc_exc : inc_exc = `Exc)
   in
   if Points.precision start < Points.precision end_ then
     invalid_arg "pattern_intervals: start is less precise than end_exc";
-  if CCOption.equal Timedesc.Time_zone_info.equal start.tz_info end_.tz_info then
+  if CCOption.equal Timedesc.Time_zone_info.equal start.tz_info end_.tz_info
+  then
     match (start.pick, end_.pick) with
     | Points.(N ns_start, N ns_end) when ns_start = ns_end -> always
     | Points.(

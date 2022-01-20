@@ -337,21 +337,19 @@ module Sexp = struct
     CCSexp.(
       list
         (atom "tz"
-         ::
-         atom (name t)
-         ::
-         List.map
-           (fun ((start, _), entry) ->
-             list
-               [
-                 sexp_of_int64 start;
-                 list
-                   [
-                     (if entry.is_dst then atom "t" else atom "f");
-                     sexp_of_int entry.offset;
-                   ];
-               ])
-           (Raw.to_transitions t)))
+        :: atom (name t)
+        :: List.map
+             (fun ((start, _), entry) ->
+               list
+                 [
+                   sexp_of_int64 start;
+                   list
+                     [
+                       (if entry.is_dst then atom "t" else atom "f");
+                       sexp_of_int entry.offset;
+                     ];
+                 ])
+             (Raw.to_transitions t)))
 
   let of_string s =
     let res =

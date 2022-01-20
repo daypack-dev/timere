@@ -92,7 +92,8 @@ let make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ?second
     | Error (`Invalid_offset tz_offset) | Error (`Unrecorded_offset tz_offset)
       ->
         Error
-          (`Invalid_tz_info (CCOption.map Timedesc.Time_zone.name tz, tz_offset))
+          (`Invalid_tz_info
+            (CCOption.map Timedesc.Time_zone.name tz, tz_offset))
   in
   match tz_info with
   | Error e -> Error e
@@ -117,12 +118,15 @@ let make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ?second
       in
       if not year_is_fine then
         Error
-          (`Invalid_year (CCOption.get_exn_or "Expected year to be Some _" year))
+          (`Invalid_year
+            (CCOption.get_exn_or "Expected year to be Some _" year))
       else if not month_day_is_fine then
-        Error (`Invalid_day (CCOption.get_exn_or "Expected day to be Some _" day))
+        Error
+          (`Invalid_day (CCOption.get_exn_or "Expected day to be Some _" day))
       else if not hour_is_fine then
         Error
-          (`Invalid_hour (CCOption.get_exn_or "Expected hour to be Some _" hour))
+          (`Invalid_hour
+            (CCOption.get_exn_or "Expected hour to be Some _" hour))
       else if not minute_is_fine then
         Error
           (`Invalid_minute

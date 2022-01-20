@@ -15,6 +15,9 @@ let of_iso8601_exn' of_iso8601 s =
   | Ok x -> x
   | Error msg -> raise (ISO8601_parse_exn msg)
 
+module ISO_week = ISO_week
+module Ym = Ym
+
 module Date = struct
   include Date
 

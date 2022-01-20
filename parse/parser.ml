@@ -290,9 +290,8 @@ module Ast_normalize = struct
           match extract_single x with
           | Some x ->
               (pos_x, m, constr_grouped [ `Range_inc (x, x) ])
-              ::
-              recognize_single_interval
-                ((pos_comma, text_map_empty, Comma) :: rest)
+              :: recognize_single_interval
+                   ((pos_comma, text_map_empty, Comma) :: rest)
           | _ -> recognize_fallback tokens)
       | (pos_x, m_x, x)
         :: (_, _, To) :: (_, m_y, y) :: (pos_comma, _, Comma) :: rest -> (
@@ -301,19 +300,17 @@ module Ast_normalize = struct
               ( pos_x,
                 text_map_union m_x m_y,
                 constr_grouped [ `Range_inc (x, y) ] )
-              ::
-              recognize_single_interval
-                ((pos_comma, text_map_empty, Comma) :: rest)
+              :: recognize_single_interval
+                   ((pos_comma, text_map_empty, Comma) :: rest)
           | _, _ -> recognize_fallback tokens)
       | (pos_comma, _, Comma)
         :: (pos_x, m_x, x) :: (_, _, To) :: (_, m_y, y) :: rest -> (
           match (extract_single x, extract_single y) with
           | Some x, Some y ->
               (pos_comma, text_map_empty, Comma)
-              ::
-              ( pos_x,
-                text_map_union m_x m_y,
-                constr_grouped [ `Range_inc (x, y) ] )
+              :: ( pos_x,
+                   text_map_union m_x m_y,
+                   constr_grouped [ `Range_inc (x, y) ] )
               :: recognize_single_interval rest
           | _, _ -> recognize_fallback tokens)
       | _ -> recognize_fallback tokens
@@ -329,7 +326,7 @@ module Ast_normalize = struct
           | Some l1, Some l2 ->
               merge_intervals
                 ((pos_x, text_map_union m_x m_y, constr_grouped (l1 @ l2))
-                 :: rest)
+                :: rest)
           | _, _ -> merge_fallback tokens)
       | _ -> merge_fallback tokens
     and merge_fallback l =
@@ -405,14 +402,12 @@ module Ast_normalize = struct
       | (pos_x, _, Month_day x)
         :: (pos_comma, _, Comma) :: (pos_y, _, Nat y) :: rest ->
           (pos_x, text_map_empty, Month_day x)
-          ::
-          (pos_comma, text_map_empty, Comma)
+          :: (pos_comma, text_map_empty, Comma)
           :: propagate_guesses ((pos_y, text_map_empty, Month_day y) :: rest)
       | (pos_x, _, Month_day x) :: (pos_to, _, To) :: (pos_y, _, Nat y) :: rest
         ->
           (pos_x, text_map_empty, Month_day x)
-          ::
-          (pos_to, text_map_empty, To)
+          :: (pos_to, text_map_empty, To)
           :: propagate_guesses ((pos_y, text_map_empty, Month_day y) :: rest)
       | [] -> []
       | x :: xs -> x :: propagate_guesses xs
@@ -624,13 +619,19 @@ module Ast_normalize = struct
           in
           aux_start_with_days (token :: acc) rest
       | [] ->
-          if CCOption.is_some days || CCOption.is_some hours || CCOption.is_some minutes
+          if
+            CCOption.is_some days
+            || CCOption.is_some hours
+            || CCOption.is_some minutes
           then
             let new_token = make_span ~pos ~days ~hours ~minutes ~seconds:0.0 in
             List.rev (new_token :: acc)
           else List.rev acc
       | token :: rest ->
-          if CCOption.is_some days || CCOption.is_some hours || CCOption.is_some minutes
+          if
+            CCOption.is_some days
+            || CCOption.is_some hours
+            || CCOption.is_some minutes
           then
             let new_token = make_span ~pos ~days ~hours ~minutes ~seconds:0.0 in
             aux_start_with_days (token :: new_token :: acc) rest

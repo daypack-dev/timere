@@ -577,6 +577,79 @@ type timestamp = Span.t
 
 (** {1 Date time components} *)
 
+(** {2 Partial date}
+
+    Implementation of:
+    - Gregorian year month ({!Ym})
+    - ISO week ({!ISO_week})
+*)
+
+module Ym : sig
+  type t
+
+  type error =
+    [ `Does_not_exist
+    | `Invalid_year of int
+    | `Invalid_month of int
+    ]
+
+  exception Error_exn of error
+
+  (** {1 Constructors} *)
+
+  val make : year:int -> month:int -> (t, error) result
+
+  val make_exn : year:int -> month:int -> t
+
+  (** {1 Accessors} *)
+
+  val year : t -> int
+
+  val month : t -> int
+
+  val year_month : t -> int * int
+
+  (** {1 Arithmetic} *)
+
+  val add : ?year:int -> ?month:int -> t -> t
+
+  val sub : ?year:int -> ?month:int -> t -> t
+
+  val diff_month : t -> t -> int
+end
+
+module ISO_week : sig
+  type t
+
+  type error =
+    [ `Does_not_exist
+    | `Invalid_iso_week_year of int
+    | `Invalid_iso_week of int
+    ]
+
+  (** {1 Constructors} *)
+
+  val make : iso_week_year:int -> iso_week:int -> (t, error) result
+
+  val make_exn : iso_week_year:int -> iso_week:int -> t
+
+  (** {1 Accessors} *)
+
+  val iso_week_year : t -> int
+
+  val iso_week : t -> int
+
+  val iso_week_year_and_week : t -> int * int
+
+  (** {1 Arithmetic} *)
+
+  val add_week : t -> int -> t
+
+  val sub_week : t -> int -> t
+
+  val diff_week : t -> t -> int
+end
+
 (** {2 Date}
 
     Implementation of date in:
