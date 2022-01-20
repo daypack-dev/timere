@@ -1,4 +1,4 @@
-let ymd_date_p : (Date.t, unit) MParser.t =
+let ym_p : (Ym.t, unit) MParser.t =
   let open MParser in
   let open Parser_components in
   nat_zero
@@ -6,9 +6,23 @@ let ymd_date_p : (Date.t, unit) MParser.t =
   char '-'
   >> max_two_digit_nat_zero
   >>= fun month ->
+  match Ym.make ~year ~month with
+  | Ok x -> return x
+  | Error e ->
+      fail
+        (Printf.sprintf "Invalid date: %s"
+           (Date_time.Ymd_date_time.string_of_error
+              (e :> Date_time.Ymd_date_time.error)))
+
+let ymd_date_p : (Date.t, unit) MParser.t =
+  let open MParser in
+  let open Parser_components in
+  ym_p
+  >>= fun ym ->
   char '-'
   >> max_two_digit_nat_zero
   >>= fun day ->
+  let year, month = Ym.year_month ym in
   match Date.Ymd_date'.make ~year ~month ~day with
   | Ok x -> return x
   | Error e ->
@@ -195,6 +209,8 @@ let to' p s =
   let open MParser in
   let open Parser_components in
   parse_string (p << spaces << eof) s () |> result_of_mparser_result
+
+let to_ym s = to' ym_p s
 
 let to_date s = to' date_p s
 

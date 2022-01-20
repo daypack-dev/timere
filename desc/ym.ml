@@ -3,8 +3,8 @@ type t = { month_count : int }
 let month_count_of_ym ~year ~month = (year * 12) + (month - 1)
 
 let ym_of_month_count month_count =
-  if month_count >= 0 then (month_count / 12, month_count mod 12)
-  else ((month_count - 11) / 12, ((month_count mod 12) + 12) mod 12)
+  if month_count >= 0 then (month_count / 12, (month_count mod 12) + 1)
+  else ((month_count - 11) / 12, (((month_count mod 12) + 12) mod 12) + 1)
 
 type error =
   [ `Does_not_exist

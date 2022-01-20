@@ -36,8 +36,6 @@ let of_date_time ?frac_s (dt : Date_time.t) : string option =
   try Some (Fmt.str "%a" (pp_date_time ?frac_s ()) dt)
   with Printers.Date_time_cannot_deduce_offset_from_utc _ -> None
 
-let of_date (date : Date.t) : string = Fmt.str "%a" pp_date date
-
 let of_time ?frac_s (time : Time.t) : string =
   Fmt.str "%a" (pp_time ?frac_s ()) time
 

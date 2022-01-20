@@ -15,14 +15,28 @@ let of_iso8601_exn' of_iso8601 s =
   | Ok x -> x
   | Error msg -> raise (ISO8601_parse_exn msg)
 
+let str_of_pp pp x = Fmt.str "%a" pp x
+
 module Ym = struct
   include Ym
+
+  let pp_iso8601 = ISO8601_printers.pp_ym
+
+  let to_iso8601 x = str_of_pp pp_iso8601 x
+
+  let of_iso8601 = ISO8601_parsers.to_ym
+
+  let of_iso8601_exn s = of_iso8601_exn' of_iso8601 s
 end
 
 module ISO_week = struct
   include ISO_week
 
-  let of_iso8601 = ISO8601.to_iso_week
+  let pp_iso8601 = ISO8601_printers.pp_iso_week
+
+  let to_iso8601 x = str_of_pp pp_iso8601 x
+
+  let of_iso8601 = ISO8601_parsers.to_iso_week
 
   let of_iso8601_exn s = of_iso8601_exn' of_iso8601 s
 end
@@ -32,9 +46,9 @@ module Date = struct
 
   let pp_rfc3339 = RFC3339.pp_date
 
-  let to_rfc3339 = RFC3339.of_date
+  let to_rfc3339 x = str_of_pp pp_rfc3339 x
 
-  let of_iso8601 = ISO8601.to_date
+  let of_iso8601 = ISO8601_parsers.to_date
 
   let of_iso8601_exn s = of_iso8601_exn' of_iso8601 s
 
@@ -73,7 +87,7 @@ module Time = struct
 
   let to_rfc3339_nano = to_rfc3339 ~frac_s:frac_s_nano
 
-  let of_iso8601 = ISO8601.to_time
+  let of_iso8601 = ISO8601_parsers.to_time
 
   let of_iso8601_exn s = of_iso8601_exn' of_iso8601 s
 
@@ -147,9 +161,9 @@ module Timestamp = struct
 
   let to_rfc3339_nano = to_rfc3339 ~frac_s:frac_s_nano
 
-  let of_iso8601 = ISO8601.to_timestamp
+  let of_iso8601 = ISO8601_parsers.to_timestamp
 
-  let of_iso8601_exn = of_iso8601_exn' ISO8601.to_timestamp
+  let of_iso8601_exn = of_iso8601_exn' ISO8601_parsers.to_timestamp
 
   let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.span_of_sexp
 
@@ -180,7 +194,7 @@ let to_rfc3339_micro = to_rfc3339 ~frac_s:frac_s_micro
 
 let to_rfc3339_nano = to_rfc3339 ~frac_s:frac_s_nano
 
-let of_iso8601 = ISO8601.to_date_time
+let of_iso8601 = ISO8601_parsers.to_date_time
 
 let of_iso8601_exn = of_iso8601_exn' of_iso8601
 
@@ -228,13 +242,14 @@ end
 module Zoneless = struct
   include Zoneless'
 
-  let of_iso8601 = ISO8601.to_zoneless
+  let of_iso8601 = ISO8601_parsers.to_zoneless
 
-  let of_iso8601_exn = of_iso8601_exn' ISO8601.to_zoneless
+  let of_iso8601_exn = of_iso8601_exn' ISO8601_parsers.to_zoneless
 
-  let maybe_zoneless_of_iso8601 = ISO8601.to_maybe_zoneless
+  let maybe_zoneless_of_iso8601 = ISO8601_parsers.to_maybe_zoneless
 
-  let maybe_zoneless_of_iso8601_exn = of_iso8601_exn' ISO8601.to_maybe_zoneless
+  let maybe_zoneless_of_iso8601_exn =
+    of_iso8601_exn' ISO8601_parsers.to_maybe_zoneless
 
   let to_sexp = To_sexp.sexp_of_zoneless
 

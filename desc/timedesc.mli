@@ -616,6 +616,18 @@ module Ym : sig
   val sub : ?year:int -> ?month:int -> t -> t
 
   val diff_month : t -> t -> int
+
+  (** {1 Pretty printing} *)
+
+  val pp_iso8601 : Format.formatter -> t -> unit
+
+  val to_iso8601 : t -> string
+
+  (** {1 Parsing} *)
+
+  val of_iso8601 : string -> (t, string) result
+
+  val of_iso8601_exn : string -> t
 end
 
 module ISO_week : sig
@@ -650,6 +662,10 @@ module ISO_week : sig
   val diff_week : t -> t -> int
 
   (** {1 Pretty printing} *)
+
+  val pp_iso8601 : Format.formatter -> t -> unit
+
+  val to_iso8601 : t -> string
 
   (** {1 Parsing} *)
 
