@@ -335,4 +335,8 @@ module Utils = struct
   let jd_of_unix_epoch = jd_of_unix_epoch
 
   let jd_span_of_unix_epoch = jd_span_of_unix_epoch
+
+  let ymd_of_jd = ymd_of_jd
+
+  let weekday_of_jd = weekday_of_jd
 end

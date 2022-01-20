@@ -1943,4 +1943,8 @@ module Utils : sig
   val jd_of_unix_epoch : int
 
   val jd_span_of_unix_epoch : Span.t
+
+  val ymd_of_jd : int -> int * int * int
+
+  val weekday_of_jd : int -> weekday
 end
