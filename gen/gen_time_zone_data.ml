@@ -392,7 +392,7 @@ let () =
   print_newline ();
   FileUtil.mkdir ~parent:true output_dir;
   Printf.printf "Generating %s\n" output_list_file_name;
-  CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
+  CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_text ]
     output_list_file_name (fun oc -> CCIO.write_lines_l oc all_time_zones);
 
   Printf.printf "Generating %s\n" data_output_file_name;
@@ -412,14 +412,14 @@ let () =
       tables_utc
   in
   let db = Timedesc.Time_zone.Db.of_seq @@ CCList.to_seq time_zones in
-  CCIO.with_out ~flags:[ Open_wronly; Open_creat ] data_output_file_name
-    (fun oc ->
+  CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_text ]
+    data_output_file_name (fun oc ->
       Format.fprintf (CCFormat.of_chan oc) "%a@." CCSexp.pp
         (Timedesc.Time_zone.Db.Sexp.to_sexp db));
 
   Printf.printf "Generating %s\n" tz_constants_file_name;
-  CCIO.with_out ~flags:[ Open_wronly; Open_creat ] tz_constants_file_name
-    (fun oc ->
+  CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_text ]
+    tz_constants_file_name (fun oc ->
       let walk f start =
         List.fold_left
           (fun pick (_, transitions) ->
@@ -454,7 +454,7 @@ let greatest_pos_tz_offset_s = %d
          let output_file_name =
            Filename.concat dir (List.nth time_zone_parts (len - 1) ^ ".json")
          in
-         CCIO.with_out ~flags:[ Open_wronly; Open_creat ] output_file_name
-           (fun oc ->
+         CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_text ]
+           output_file_name (fun oc ->
              Yojson.Basic.pretty_to_channel oc
                (Timedesc.Time_zone.JSON.to_json tz)))
