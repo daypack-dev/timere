@@ -1,3 +1,5 @@
+let pp_ymd_date = RFC3339.pp_date
+
 let pp_ym formatter (x : Ym.t) =
   let year, month = Ym.year_month x in
   Fmt.pf formatter "%04d-%02d" year month

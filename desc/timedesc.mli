@@ -759,6 +759,12 @@ module Date : sig
     val make_exn : year:int -> month:int -> day:int -> t
 
     val view : t -> view
+
+    (** {1 Pretty printing} *)
+
+    val pp_iso8601 : Format.formatter -> t -> unit
+
+    val to_iso8601 : t -> string
   end
 
   (** {1 ISO week date calendar} *)
@@ -790,6 +796,12 @@ module Date : sig
     val make_exn : iso_week_year:int -> iso_week:int -> weekday:weekday -> t
 
     val view : t -> view
+
+    (** {1 Pretty printing} *)
+
+    val pp_iso8601 : Format.formatter -> t -> unit
+
+    val to_iso8601 : t -> string
   end
 
   (** {1 ISO ord date calendar} *)
@@ -819,6 +831,12 @@ module Date : sig
     val make_exn : year:int -> day_of_year:int -> t
 
     val view : t -> view
+
+    (** {1 Pretty printing} *)
+
+    val pp_iso8601 : Format.formatter -> t -> unit
+
+    val to_iso8601 : t -> string
   end
 end
 

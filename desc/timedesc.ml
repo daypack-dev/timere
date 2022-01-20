@@ -63,9 +63,29 @@ module Date = struct
 
   let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_date
 
-  module Ymd_date = Ymd_date'
-  module ISO_week_date = ISO_week_date'
-  module ISO_ord_date = ISO_ord_date'
+  module Ymd_date = struct
+    include Ymd_date'
+
+    let pp_iso8601 = ISO8601_printers.pp_ymd_date
+
+    let to_iso8601 x = str_of_pp pp_iso8601 x
+  end
+
+  module ISO_week_date = struct
+    include ISO_week_date'
+
+    let pp_iso8601 = ISO8601_printers.pp_iso_week_date
+
+    let to_iso8601 x = str_of_pp pp_iso8601 x
+  end
+
+  module ISO_ord_date = struct
+    include ISO_ord_date'
+
+    let pp_iso8601 = ISO8601_printers.pp_iso_ord_date
+
+    let to_iso8601 x = str_of_pp pp_iso8601 x
+  end
 end
 
 module Time = struct
