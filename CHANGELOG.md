@@ -18,6 +18,10 @@
 
 - Added additional Julian day conversion functions to `Utils`
 
+  - `ymd_of_jd`
+
+  - `weekday_of_jd`
+
 - Tzdb refresh
 
 ## Timere-parse 0.0.5
