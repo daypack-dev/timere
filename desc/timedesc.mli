@@ -648,6 +648,14 @@ module ISO_week : sig
   val sub_week : t -> int -> t
 
   val diff_week : t -> t -> int
+
+  (** {1 Pretty printing} *)
+
+  (** {1 Parsing} *)
+
+  val of_iso8601 : string -> (t, string) result
+
+  val of_iso8601_exn : string -> t
 end
 
 (** {2 Date}

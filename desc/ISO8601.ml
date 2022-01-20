@@ -17,22 +17,36 @@ let ymd_date_p : (Date.t, unit) MParser.t =
            (Date_time.Ymd_date_time.string_of_error
               (e :> Date_time.Ymd_date_time.error)))
 
-let iso_week_date_p : (Date.t, unit) MParser.t =
+let iso_week_p : (ISO_week.t, unit) MParser.t =
   let open MParser in
   let open Parser_components in
-  let open Date_time_utils in
   nat_zero
   >>= fun iso_week_year ->
   char '-'
   >> char 'W'
   >> max_two_digit_nat_zero
   >>= fun iso_week ->
+  match ISO_week.make ~iso_week_year ~iso_week with
+  | Ok x -> return x
+  | Error e ->
+      fail
+        (Printf.sprintf "Invalid date: %s"
+           (Date_time.ISO_week_date_time.string_of_error
+              (e :> Date_time.ISO_week_date_time.error)))
+
+let iso_week_date_p : (Date.t, unit) MParser.t =
+  let open MParser in
+  let open Parser_components in
+  let open Date_time_utils in
+  iso_week_p
+  >>= fun iso_week' ->
   char '-'
   >> one_digit_nat_zero
   >>= fun weekday ->
   match weekday_of_iso_int weekday with
   | None -> fail "Invalid weekday"
   | Some weekday -> (
+      let iso_week_year, iso_week = ISO_week.iso_week_year_and_week iso_week' in
       match Date.ISO_week_date'.make ~iso_week_year ~iso_week ~weekday with
       | Ok x -> return x
       | Error e ->
@@ -190,3 +204,5 @@ let to_timestamp s =
   match to_date_time s with
   | Ok dt -> Ok (Date_time.to_timestamp_single dt)
   | Error msg -> Error msg
+
+let to_iso_week = to' iso_week_p
