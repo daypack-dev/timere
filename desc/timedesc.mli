@@ -295,13 +295,13 @@ module Span : sig
   (** {1 Constructors} *)
 
   val make : ?s:int64 -> ?ns:int -> unit -> t
-  (** [s] defaults to [0L], [ns] defaults to [0]
+  (** [s] defaults to [0L], [ns] defaults to [0].
 
-      [ns] may be negative, and is normalized during construction
+      [ns] may be negative, and is normalized during construction.
 
       Interpretation of provided input is still [s + ns], i.e. if you wish to
       represent "negative (1 second and 500 nanosecond)", then the call could look like
-      [make ~s:(-1L) ~ns:(-500)]
+      [make ~s:(-1L) ~ns:(-500)].
 
       @raise Out_of_range if the value cannot be represented even after normalization
   *)
@@ -1967,6 +1967,12 @@ module Utils : sig
   val get_local_tz_for_arg : unit -> Time_zone.t
 
   val abbr_string_of_weekday : weekday -> string
+
+  (** {b Warning}: Following functions are direct applications of the relevant formulas with little to no error checking.
+
+      You are advised to read the source code of the following functions in {v date_time_utils.ml} if you intend to use them
+      to ensure they behave as you expect.
+   *)
 
   val is_leap_year : year:int -> bool
 
