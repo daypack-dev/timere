@@ -378,17 +378,18 @@ module Qc = struct
   let iso_week_date_accessors =
     QCheck.Test.make ~count:100_000 ~name:"iso_week_date_accessors"
       QCheck.(pair iso_week_date time)
-      (fun ((iso_week_year', iso_week', weekday'), (hour, minute, second, ns)) ->
+      (fun ((year', week', weekday'), (hour, minute, second, ns)) ->
         let d =
           Timedesc.ISO_week_date_time.make_exn ~tz:Timedesc.Time_zone.utc
-            ~iso_week_year:iso_week_year' ~iso_week:iso_week' ~weekday:weekday'
+            ~year:year' ~week:week' ~weekday:weekday'
             ~hour ~minute ~second ~ns ()
         in
-        let iso_week_year = Timedesc.iso_week_year d in
-        let iso_week = Timedesc.iso_week d in
+        let year = Timedesc.iso_year d in
+        let (year'', week) = Timedesc.ISO_week.year_week @@ Timedesc.iso_week d in
         let weekday = Timedesc.weekday d in
-        iso_week_year = iso_week_year'
-        && iso_week = iso_week'
+        year = year'
+        && year = year''
+        && week = week'
         && weekday = weekday')
 
   let ymd_date_accessors =

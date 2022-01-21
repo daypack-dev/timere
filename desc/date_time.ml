@@ -159,6 +159,8 @@ let iso_week_date dt = Date.ISO_week_date'.view dt.date
 
 let iso_week dt = Date.iso_week dt.date
 
+let iso_year dt = Date.iso_year dt.date
+
 let iso_ord_date dt = Date.ISO_ord_date'.view dt.date
 
 let year dt = Date.year dt.date

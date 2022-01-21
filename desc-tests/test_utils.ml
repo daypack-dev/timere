@@ -423,19 +423,19 @@ let iso_ord_date =
 let iso_week_date_gen : (int * int * Timedesc.weekday) QCheck.Gen.t =
   let open QCheck.Gen in
   map3
-    (fun iso_week_year week weekday ->
+    (fun year week weekday ->
       let week =
         Int64.to_int week
-        mod Timedesc.Utils.week_count_of_iso_week_year ~year
+        mod Timedesc.Utils.week_count_of_iso_year ~year
         + 1
       in
-      (iso_week_year, week, weekday))
+      (year, week, weekday))
     (int_range 1 9998) (pos_int64_bound_gen 53L) weekday_gen
 
 let iso_week_date =
   QCheck.make
-    ~print:(fun (iso_week_year, week, weekday) ->
-      Printf.sprintf "%d-%02d-%s" iso_week_year week
+    ~print:(fun (year, week, weekday) ->
+      Printf.sprintf "%d-%02d-%s" year week
         (Timedesc.Utils.abbr_string_of_weekday weekday))
     iso_week_date_gen
 

@@ -691,19 +691,19 @@ module Date : sig
 
   (** {1 Accessors} *)
 
+  val ym : t -> Ym.t
+
   val year : t -> int
 
   val month : t -> int
 
   val day : t -> int
 
-  val ym : t -> Ym.t
-
-  val weekday : t -> weekday
+  val iso_week : t -> ISO_week.t
 
   val iso_year : t -> int
 
-  val iso_week : t -> ISO_week.t
+  val weekday : t -> weekday
 
   val day_of_year : t -> int
 
@@ -1240,19 +1240,21 @@ val date : t -> Date.t
 
 val ymd_date : t -> Date.Ymd_date.view
 
-val ym : t -> Ym.t
-
 val iso_week_date : t -> Date.ISO_week_date.view
 
-val iso_week : t -> ISO_week.t
-
 val iso_ord_date : t -> Date.ISO_ord_date.view
+
+val ym : t -> Ym.t
 
 val year : t -> int
 
 val month : t -> int
 
 val day : t -> int
+
+val iso_week : t -> ISO_week.t
+
+val iso_year : t -> int
 
 val weekday : t -> weekday
 
