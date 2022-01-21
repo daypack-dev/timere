@@ -21,9 +21,9 @@ module ISO_week_date' = struct
 
   exception Error_exn of error
 
-let of_iso_week (x : ISO_week.t) ~weekday : t =
-  let (year, week) = ISO_week.year_week x in
-  { jd = jd_of_iso_week_date ~year ~week ~weekday }
+  let of_iso_week (x : ISO_week.t) ~weekday : t =
+    let year, week = ISO_week.year_week x in
+    { jd = jd_of_iso_week_date ~year ~week ~weekday }
 
   let make ~year ~week ~weekday : (t, error) result =
     match ISO_week.make ~year ~week with
@@ -56,22 +56,19 @@ module Ymd_date' = struct
 
   exception Error_exn of error
 
-let of_ym (x : Ym.t) ~day : (t, error) result =
-  let (year, month) = Ym.year_month x in
-  if day < 1 || day_count_of_month ~year ~month < day then
-    Error (`Invalid_day day)
-  else Ok { jd = jd_of_ymd ~year ~month ~day }
+  let of_ym (x : Ym.t) ~day : (t, error) result =
+    let year, month = Ym.year_month x in
+    if day < 1 || day_count_of_month ~year ~month < day then
+      Error (`Invalid_day day)
+    else Ok { jd = jd_of_ymd ~year ~month ~day }
 
-let of_ym_exn x ~day =
-  match of_ym x ~day with
-  | Error e -> raise (Error_exn e)
-  | Ok x -> x
+  let of_ym_exn x ~day =
+    match of_ym x ~day with Error e -> raise (Error_exn e) | Ok x -> x
 
   let make ~year ~month ~day : (t, error) result =
     match Ym.make ~year ~month with
     | Error e -> Error (e :> error)
-    | Ok x ->
-        of_ym x ~day
+    | Ok x -> of_ym x ~day
 
   let make_exn ~year ~month ~day : t =
     match make ~year ~month ~day with
@@ -122,19 +119,15 @@ let month d = (Ymd_date'.view d).month
 let day d = (Ymd_date'.view d).day
 
 let ym d =
-  let Ymd_date'.{ year; month; _} = Ymd_date'.view d in
+  let Ymd_date'.{ year; month; _ } = Ymd_date'.view d in
   Ym.make_exn ~year ~month
 
 let iso_year d =
-  let ISO_week_date'.{ year; _ } =
-  ISO_week_date'.view d
-  in
+  let ISO_week_date'.{ year; _ } = ISO_week_date'.view d in
   year
 
 let iso_week d =
-  let ISO_week_date'.{ year; week; _ } =
-  ISO_week_date'.view d
-  in
+  let ISO_week_date'.{ year; week; _ } = ISO_week_date'.view d in
   ISO_week.make_exn ~year ~week
 
 let day_of_year d = (ISO_ord_date'.view d).day_of_year

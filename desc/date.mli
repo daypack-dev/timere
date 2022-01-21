@@ -35,10 +35,9 @@ module ISO_week_date' : sig
 
   exception Error_exn of error
 
-val of_iso_week : ISO_week.t -> weekday:weekday -> t
+  val of_iso_week : ISO_week.t -> weekday:weekday -> t
 
-  val make :
-    year:int -> week:int -> weekday:weekday -> (t, error) result
+  val make : year:int -> week:int -> weekday:weekday -> (t, error) result
 
   val make_exn : year:int -> week:int -> weekday:weekday -> t
 
@@ -61,9 +60,9 @@ module Ymd_date' : sig
 
   exception Error_exn of error
 
-val of_ym : Ym.t -> day:int -> (t, error) result
+  val of_ym : Ym.t -> day:int -> (t, error) result
 
-val of_ym_exn : Ym.t -> day:int -> t
+  val of_ym_exn : Ym.t -> day:int -> t
 
   val make : year:int -> month:int -> day:int -> (t, error) result
 

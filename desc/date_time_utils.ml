@@ -143,8 +143,7 @@ let jd_of_start_of_iso_year ~year =
   | `Sun -> jd_of_ymd ~year:(pred year) ~month:12 ~day:29
 
 let week_count_of_iso_year ~year =
-  (jd_of_start_of_iso_year ~year:(succ year)
-  - jd_of_start_of_iso_year ~year)
+  (jd_of_start_of_iso_year ~year:(succ year) - jd_of_start_of_iso_year ~year)
   / 7
 
 let iso_int_of_weekday (weekday : weekday) =
@@ -178,9 +177,8 @@ let iso_week_date_of_jd (jd : int) : int * int * weekday =
   let year, week =
     if week_of_year = 0 then
       (pred year, week_count_of_iso_year ~year:(pred year))
-    else if
-      week_of_year = 53 && week_count_of_iso_year ~year < 53
-    then (succ year, 1)
+    else if week_of_year = 53 && week_count_of_iso_year ~year < 53 then
+      (succ year, 1)
     else (year, week_of_year)
   in
   (year, week, weekday)
@@ -194,8 +192,7 @@ let jd_of_iso_week_date ~year ~week ~weekday =
   let day_count_of_prev_year = day_count_of_year ~year:(pred year) in
   let day_count_of_cur_year = day_count_of_year ~year in
   let year, day_of_year =
-    if day_of_year < 1 then
-      (pred year, day_count_of_prev_year + day_of_year)
+    if day_of_year < 1 then (pred year, day_count_of_prev_year + day_of_year)
     else if day_of_year > day_count_of_cur_year then
       (succ year, day_of_year - day_count_of_cur_year)
     else (year, day_of_year)

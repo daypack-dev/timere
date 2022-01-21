@@ -792,12 +792,9 @@ module Date : sig
 
     exception Error_exn of error
 
-    val of_iso_week :
-      ISO_week.t ->
-      weekday:weekday -> t
+    val of_iso_week : ISO_week.t -> weekday:weekday -> t
 
-    val make :
-      year:int -> week:int -> weekday:weekday -> (t, error) result
+    val make : year:int -> week:int -> weekday:weekday -> (t, error) result
     (** Constructs a date in the ISO week calendar.
 
         Returns [Error `Invalid_iso_year] if [year < 0 || 9999 < year].

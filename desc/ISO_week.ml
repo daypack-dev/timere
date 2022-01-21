@@ -13,21 +13,14 @@ type error =
 exception Error_exn of error
 
 let make ~year ~week : (t, error) result =
-  if year < Constants.min_year || Constants.max_year < year
-  then Error (`Invalid_iso_year year)
-  else if week < 1 || week_count_of_iso_year ~year < week
-  then Error (`Invalid_iso_week week)
-  else
-    Ok
-      {
-        jd =
-          jd_of_iso_week_date ~year ~week ~weekday:fixed_to_weekday;
-      }
+  if year < Constants.min_year || Constants.max_year < year then
+    Error (`Invalid_iso_year year)
+  else if week < 1 || week_count_of_iso_year ~year < week then
+    Error (`Invalid_iso_week week)
+  else Ok { jd = jd_of_iso_week_date ~year ~week ~weekday:fixed_to_weekday }
 
 let make_exn ~year ~week : t =
-  match make ~year ~week with
-  | Error e -> raise (Error_exn e)
-  | Ok x -> x
+  match make ~year ~week with Error e -> raise (Error_exn e) | Ok x -> x
 
 let year_week t : int * int =
   let year, week, _ = iso_week_date_of_jd t.jd in
