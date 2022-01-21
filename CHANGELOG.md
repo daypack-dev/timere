@@ -6,6 +6,8 @@
 
 ## Timedesc 0.6.0
 
+- Breaking changes in ISO week date functions (shorting label for arguments, quality of life changes)
+
 - Replaced `CCOpt` with `CCOption` (this bumps dependency of Containers to >= 3.6)
 
 - Added "partial date" modules with ISO8601 parsing and printing facilities
