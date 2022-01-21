@@ -611,11 +611,11 @@ module Ym : sig
 
   (** {1 Arithmetic} *)
 
-  val add : ?year:int -> ?month:int -> t -> t
+  val add : ?years:int -> ?months:int -> t -> t
 
-  val sub : ?year:int -> ?month:int -> t -> t
+  val sub : ?years:int -> ?months:int -> t -> t
 
-  val diff_month : t -> t -> int
+  val diff_months : t -> t -> int
 
   (** {1 Pretty printing} *)
 
@@ -655,9 +655,9 @@ module ISO_week : sig
 
   (** {1 Arithmetic} *)
 
-  val add : week:int -> t -> t
+  val add : weeks:int -> t -> t
 
-  val sub : week:int -> t -> t
+  val sub : weeks:int -> t -> t
 
   val diff_weeks : t -> t -> int
 

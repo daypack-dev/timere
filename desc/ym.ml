@@ -23,15 +23,15 @@ let make ~year ~month : (t, error) result =
 let make_exn ~year ~month : t =
   match make ~year ~month with Error e -> raise (Error_exn e) | Ok x -> x
 
-let sub_month (t : t) n : t = { month_count = t.month_count - n }
+let sub_month_count (t : t) n : t = { month_count = t.month_count - n }
 
-let sub ?(year = 0) ?(month = 0) t : t = sub_month t ((year * 12) + month)
+let sub ?(years = 0) ?(months = 0) t : t = sub_month_count t ((years * 12) + months)
 
-let add_month (t : t) n : t = { month_count = t.month_count + n }
+let add_month_count (t : t) n : t = { month_count = t.month_count + n }
 
-let add ?(year = 0) ?(month = 0) t : t = add_month t ((year * 12) + month)
+let add ?(years = 0) ?(months = 0) t : t = add_month_count t ((years * 12) + months)
 
-let diff_month t1 t2 = t1.month_count - t2.month_count
+let diff_months t1 t2 = t1.month_count - t2.month_count
 
 let year_month (t : t) : int * int = ym_of_month_count t.month_count
 
