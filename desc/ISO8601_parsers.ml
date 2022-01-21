@@ -36,7 +36,7 @@ let iso_week_p : (ISO_week.t, unit) MParser.t =
   let open Parser_components in
   nat_zero
   >>= fun year ->
-  char '-'
+  optional (char '-')
   >> char 'W'
   >> max_two_digit_nat_zero
   >>= fun week ->
