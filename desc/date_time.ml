@@ -163,8 +163,6 @@ let month dt = Date.month dt.date
 
 let day dt = Date.day dt.date
 
-let iso_week_year dt = Date.iso_week_year dt.date
-
 let iso_week dt = Date.iso_week dt.date
 
 let day_of_year dt = Date.day_of_year dt.date

@@ -41,4 +41,4 @@ let sub ~week (t : t) : t = { jd = t.jd - (week * 7) }
 
 let add ~week (t : t) : t = { jd = t.jd + (week * 7) }
 
-let diff_week t1 t2 = (t1.jd - t2.jd) / 7
+let diff_weeks t1 t2 = (t1.jd - t2.jd) / 7

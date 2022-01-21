@@ -659,7 +659,7 @@ module ISO_week : sig
 
   val sub_week : t -> int -> t
 
-  val diff_week : t -> t -> int
+  val diff_weeks : t -> t -> int
 
   (** {1 Pretty printing} *)
 
@@ -685,11 +685,13 @@ end
 module Date : sig
   type t
 
+  (** {1 Comparison} *)
+
   val equal : t -> t -> bool
 
-  val year : t -> int
-
   (** {1 Accessors} *)
+
+  val year : t -> int
 
   val month : t -> int
 
@@ -697,9 +699,7 @@ module Date : sig
 
   val weekday : t -> weekday
 
-  val iso_week_year : t -> int
-
-  val iso_week : t -> int
+  val iso_week : t -> ISO_week.t
 
   val day_of_year : t -> int
 
@@ -746,6 +746,10 @@ module Date : sig
 
     exception Error_exn of error
 
+    val of_ym : Ym.t -> day:int -> (t, error) result
+
+    val of_ym_exn : Ym.t -> day:int -> t
+
     val make : year:int -> month:int -> day:int -> (t, error) result
     (** Constructs a date in the Gregorian calendar.
 
@@ -771,8 +775,8 @@ module Date : sig
 
   module ISO_week_date : sig
     type view = private {
-      iso_week_year : int;
-      iso_week : int;
+      year : int;
+      week : int;
       weekday : weekday;
     }
 
@@ -784,16 +788,20 @@ module Date : sig
 
     exception Error_exn of error
 
+    val of_iso_week :
+      ISO_week.t ->
+      weekday:weekday -> t
+
     val make :
-      iso_week_year:int -> iso_week:int -> weekday:weekday -> (t, error) result
+      year:int -> week:int -> weekday:weekday -> (t, error) result
     (** Constructs a date in the ISO week calendar.
 
-        Returns [Error `Invalid_iso_week_year] if [iso_week_year < 0 || 9999 < iso_week_year].
+        Returns [Error `Invalid_iso_week_year] if [year < 0 || 9999 < year].
 
-        Returns [Error `Invalid_iso_week] if [iso_week < 1 || week count of iso_week_year < iso_week].
+        Returns [Error `Invalid_iso_week] if [week < 1 || week count of year < week].
     *)
 
-    val make_exn : iso_week_year:int -> iso_week:int -> weekday:weekday -> t
+    val make_exn : year:int -> week:int -> weekday:weekday -> t
 
     val view : t -> view
 
@@ -1240,9 +1248,7 @@ val day : t -> int
 
 val weekday : t -> weekday
 
-val iso_week_year : t -> int
-
-val iso_week : t -> int
+val iso_week : t -> ISO_week.t
 
 val day_of_year : t -> int
 
