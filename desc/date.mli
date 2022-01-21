@@ -14,6 +14,8 @@ val weekday : t -> weekday
 
 val ym : t -> Ym.t
 
+val iso_year : t -> int
+
 val iso_week : t -> ISO_week.t
 
 val day_of_year : t -> int
@@ -32,10 +34,6 @@ module ISO_week_date' : sig
     ]
 
   exception Error_exn of error
-
-    val of_iso_week :
-      ISO_week.t ->
-      weekday:weekday -> t
 
 val of_iso_week : ISO_week.t -> weekday:weekday -> t
 

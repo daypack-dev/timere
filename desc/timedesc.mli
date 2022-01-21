@@ -701,6 +701,8 @@ module Date : sig
 
   val weekday : t -> weekday
 
+  val iso_year : t -> int
+
   val iso_week : t -> ISO_week.t
 
   val day_of_year : t -> int

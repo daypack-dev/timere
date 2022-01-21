@@ -125,6 +125,12 @@ let ym d =
   let Ymd_date'.{ year; month; _} = Ymd_date'.view d in
   Ym.make_exn ~year ~month
 
+let iso_year d =
+  let ISO_week_date'.{ year; _ } =
+  ISO_week_date'.view d
+  in
+  year
+
 let iso_week d =
   let ISO_week_date'.{ year; week; _ } =
   ISO_week_date'.view d
