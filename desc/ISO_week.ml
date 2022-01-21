@@ -23,7 +23,8 @@ let make_exn ~year ~week : t =
   match make ~year ~week with Error e -> raise (Error_exn e) | Ok x -> x
 
 let year_week t : int * int =
-  let year, week, _ = iso_week_date_of_jd t.jd in
+  let year, week, weekday = iso_week_date_of_jd t.jd in
+  assert (weekday = fixed_to_weekday);
   (year, week)
 
 let year t : int = fst @@ year_week t
