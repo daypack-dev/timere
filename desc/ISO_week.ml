@@ -6,7 +6,7 @@ type t = { jd : int }
 
 type error =
   [ `Does_not_exist
-  | `Invalid_iso_week_year of int
+  | `Invalid_iso_year of int
   | `Invalid_iso_week of int
   ]
 
@@ -14,8 +14,8 @@ exception Error_exn of error
 
 let make ~year ~week : (t, error) result =
   if year < Constants.min_year || Constants.max_year < year
-  then Error (`Invalid_iso_week_year year)
-  else if week < 1 || week_count_of_iso_week_year ~year < week
+  then Error (`Invalid_iso_year year)
+  else if week < 1 || week_count_of_iso_year ~year < week
   then Error (`Invalid_iso_week week)
   else
     Ok

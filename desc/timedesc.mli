@@ -635,7 +635,7 @@ module ISO_week : sig
 
   type error =
     [ `Does_not_exist
-    | `Invalid_iso_week_year of int
+    | `Invalid_iso_year of int
     | `Invalid_iso_week of int
     ]
 
@@ -786,7 +786,7 @@ module Date : sig
 
     type error =
       [ `Does_not_exist
-      | `Invalid_iso_week_year of int
+      | `Invalid_iso_year of int
       | `Invalid_iso_week of int
       ]
 
@@ -800,7 +800,7 @@ module Date : sig
       year:int -> week:int -> weekday:weekday -> (t, error) result
     (** Constructs a date in the ISO week calendar.
 
-        Returns [Error `Invalid_iso_week_year] if [year < 0 || 9999 < year].
+        Returns [Error `Invalid_iso_year] if [year < 0 || 9999 < year].
 
         Returns [Error `Invalid_iso_week] if [week < 1 || week count of year < week].
     *)
@@ -1743,7 +1743,7 @@ end
 module ISO_week_date_time : sig
   type error =
     [ `Does_not_exist
-    | `Invalid_iso_week_year of int
+    | `Invalid_iso_year of int
     | `Invalid_iso_week of int
     | `Invalid_hour of int
     | `Invalid_minute of int
@@ -1939,7 +1939,7 @@ module Utils : sig
 
   val day_count_of_month : year:int -> month:int -> int
 
-  val week_count_of_iso_week_year : year:int -> int
+  val week_count_of_iso_year : year:int -> int
 
   (** {1 Month utils} *)
 

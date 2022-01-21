@@ -297,7 +297,7 @@ module Utils = struct
 
   let day_count_of_month = day_count_of_month
 
-  let week_count_of_iso_week_year = week_count_of_iso_week_year
+  let week_count_of_iso_year = week_count_of_iso_year
 
   type month =
     [ `Jan

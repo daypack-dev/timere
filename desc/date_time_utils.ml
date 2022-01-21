@@ -126,7 +126,7 @@ let jd_of_ydoy ~year ~day_of_year =
   let month, day = md_of_ydoy ~year ~day_of_year in
   jd_of_ymd ~year ~month ~day
 
-let jd_of_start_of_iso_week_year ~year =
+let jd_of_start_of_iso_year ~year =
   (* we use the fact that
      - Jan 4th is always in week 1 of the year
      - and week starts on Monday
@@ -142,9 +142,9 @@ let jd_of_start_of_iso_week_year ~year =
   | `Sat -> jd_of_ymd ~year:(pred year) ~month:12 ~day:30
   | `Sun -> jd_of_ymd ~year:(pred year) ~month:12 ~day:29
 
-let week_count_of_iso_week_year ~year =
-  (jd_of_start_of_iso_week_year ~year:(succ year)
-  - jd_of_start_of_iso_week_year ~year)
+let week_count_of_iso_year ~year =
+  (jd_of_start_of_iso_year ~year:(succ year)
+  - jd_of_start_of_iso_year ~year)
   / 7
 
 let iso_int_of_weekday (weekday : weekday) =
@@ -177,9 +177,9 @@ let iso_week_date_of_jd (jd : int) : int * int * weekday =
   assert (week_of_year <= 53);
   let year, week =
     if week_of_year = 0 then
-      (pred year, week_count_of_iso_week_year ~year:(pred year))
+      (pred year, week_count_of_iso_year ~year:(pred year))
     else if
-      week_of_year = 53 && week_count_of_iso_week_year ~year < 53
+      week_of_year = 53 && week_count_of_iso_year ~year < 53
     then (succ year, 1)
     else (year, week_of_year)
   in

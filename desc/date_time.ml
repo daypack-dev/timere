@@ -440,7 +440,7 @@ end
 module ISO_week_date_time = struct
   type error =
     [ `Does_not_exist
-    | `Invalid_iso_week_year of int
+    | `Invalid_iso_year of int
     | `Invalid_iso_week of int
     | `Invalid_hour of int
     | `Invalid_minute of int
@@ -454,7 +454,7 @@ module ISO_week_date_time = struct
 
   let string_of_error (e : error) =
     match e with
-    | `Invalid_iso_week_year x -> Printf.sprintf "Invalid iso week year: %d" x
+    | `Invalid_iso_year x -> Printf.sprintf "Invalid iso week year: %d" x
     | `Invalid_iso_week x -> Printf.sprintf "Invalid iso week: %d" x
     | ( `Does_not_exist | `Invalid_hour _ | `Invalid_minute _
       | `Invalid_second _ | `Invalid_s_frac _ | `Invalid_ns _

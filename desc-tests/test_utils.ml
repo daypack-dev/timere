@@ -426,7 +426,7 @@ let iso_week_date_gen : (int * int * Timedesc.weekday) QCheck.Gen.t =
     (fun iso_week_year week weekday ->
       let week =
         Int64.to_int week
-        mod Timedesc.Utils.week_count_of_iso_week_year ~iso_week_year
+        mod Timedesc.Utils.week_count_of_iso_week_year ~year
         + 1
       in
       (iso_week_year, week, weekday))

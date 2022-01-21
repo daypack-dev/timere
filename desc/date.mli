@@ -29,7 +29,7 @@ module ISO_week_date' : sig
 
   type error =
     [ `Does_not_exist
-    | `Invalid_iso_week_year of int
+    | `Invalid_iso_year of int
     | `Invalid_iso_week of int
     ]
 
