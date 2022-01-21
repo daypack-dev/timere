@@ -21,7 +21,8 @@ module ISO_week_date' = struct
 
   exception Error_exn of error
 
-let of_iso_week ({ year; week} : ISO_week.t) ~weekday : t =
+let of_iso_week (x : ISO_week.t) ~weekday : t =
+  let (year, week) = ISO_week.year_week x in
   { jd = jd_of_iso_week_date ~year ~week ~weekday }
 
   let make ~year ~week ~weekday : (t, error) result =
@@ -55,7 +56,8 @@ module Ymd_date' = struct
 
   exception Error_exn of error
 
-let of_ym ({year; month} : Ym.t) ~day : (t, error) result =
+let of_ym (x : Ym.t) ~day : (t, error) result =
+  let (year, month) = Ym.year_month x in
   if day < 1 || day_count_of_month ~year ~month < day then
     Error (`Invalid_day day)
   else Ok { jd = jd_of_ymd ~year ~month ~day }
@@ -118,6 +120,10 @@ let year d = (Ymd_date'.view d).year
 let month d = (Ymd_date'.view d).month
 
 let day d = (Ymd_date'.view d).day
+
+let ym d =
+  let Ymd_date'.{ year; month; _} = Ymd_date'.view d in
+  Ym.make_exn ~year ~month
 
 let iso_week d =
   let ISO_week_date'.{ year; week; _ } =

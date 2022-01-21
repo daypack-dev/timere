@@ -29,13 +29,13 @@ let make_exn ~year ~week : t =
   | Error e -> raise (Error_exn e)
   | Ok x -> x
 
-let iso_year_and_week t : int * int =
+let year_week t : int * int =
   let year, week, _ = iso_week_date_of_jd t.jd in
   (year, week)
 
-let year t : int = fst @@ iso_year_and_week t
+let year t : int = fst @@ year_week t
 
-let week t : int = snd @@ iso_year_and_week t
+let week t : int = snd @@ year_week t
 
 let sub ~week (t : t) : t = { jd = t.jd - (week * 7) }
 

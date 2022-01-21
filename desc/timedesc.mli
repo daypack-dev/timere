@@ -109,7 +109,7 @@
     {!ISO_week_date_time.make} and {!ISO_ord_date_time.make}.
 
     Then to access the representation in the alternative date systems, we can use accessors
-    such as {!iso_week_year}, {!iso_week}, and {!day_of_year}.
+    such as {!iso_week}, and {!day_of_year}.
 
     {2 Using date by itself}
 
@@ -121,7 +121,7 @@
     respectively.
 
     We have similar set of accessors for accessing values of {!Date.t}, such as {!Date.year},
-    {!Date.iso_week_year}, {!Date.day_of_year}.
+    {!Date.iso_week}, {!Date.day_of_year}.
 
     To obtain a "view" (in a manner similar to the human-friendly "view" from {!Span.For_human}), we can
     use {!Date.ISO_week_date.view} and {!Date.ISO_ord_date.view}.
@@ -641,23 +641,23 @@ module ISO_week : sig
 
   (** {1 Constructors} *)
 
-  val make : iso_week_year:int -> iso_week:int -> (t, error) result
+  val make : year:int -> week:int -> (t, error) result
 
-  val make_exn : iso_week_year:int -> iso_week:int -> t
+  val make_exn : year:int -> week:int -> t
 
   (** {1 Accessors} *)
 
-  val iso_week_year : t -> int
+  val year_week : t -> int * int
 
-  val iso_week : t -> int
+  val year : t -> int
 
-  val iso_week_year_and_week : t -> int * int
+  val week : t -> int
 
   (** {1 Arithmetic} *)
 
-  val add_week : t -> int -> t
+  val add : week:int -> t -> t
 
-  val sub_week : t -> int -> t
+  val sub : week:int -> t -> t
 
   val diff_weeks : t -> t -> int
 
@@ -696,6 +696,8 @@ module Date : sig
   val month : t -> int
 
   val day : t -> int
+
+  val ym : t -> Ym.t
 
   val weekday : t -> weekday
 
@@ -1236,7 +1238,11 @@ val date : t -> Date.t
 
 val ymd_date : t -> Date.Ymd_date.view
 
+val ym : t -> Ym.t
+
 val iso_week_date : t -> Date.ISO_week_date.view
+
+val iso_week : t -> ISO_week.t
 
 val iso_ord_date : t -> Date.ISO_ord_date.view
 
@@ -1247,8 +1253,6 @@ val month : t -> int
 val day : t -> int
 
 val weekday : t -> weekday
-
-val iso_week : t -> ISO_week.t
 
 val day_of_year : t -> int
 
@@ -1755,8 +1759,8 @@ module ISO_week_date_time : sig
     ?tz:Time_zone.t ->
     ?ns:int ->
     ?s_frac:float ->
-    iso_week_year:int ->
-    iso_week:int ->
+    year:int ->
+    week:int ->
     weekday:weekday ->
     hour:int ->
     minute:int ->
@@ -1768,8 +1772,8 @@ module ISO_week_date_time : sig
     ?tz:Time_zone.t ->
     ?ns:int ->
     ?s_frac:float ->
-    iso_week_year:int ->
-    iso_week:int ->
+    year:int ->
+    week:int ->
     weekday:weekday ->
     hour:int ->
     minute:int ->
@@ -1781,8 +1785,8 @@ module ISO_week_date_time : sig
     ?tz:Time_zone.t ->
     ?ns:int ->
     ?s_frac:float ->
-    iso_week_year:int ->
-    iso_week:int ->
+    year:int ->
+    week:int ->
     weekday:weekday ->
     hour:int ->
     minute:int ->
@@ -1795,8 +1799,8 @@ module ISO_week_date_time : sig
     ?tz:Time_zone.t ->
     ?ns:int ->
     ?s_frac:float ->
-    iso_week_year:int ->
-    iso_week:int ->
+    year:int ->
+    week:int ->
     weekday:weekday ->
     hour:int ->
     minute:int ->
@@ -1933,7 +1937,7 @@ module Utils : sig
 
   val day_count_of_month : year:int -> month:int -> int
 
-  val week_count_of_iso_week_year : iso_week_year:int -> int
+  val week_count_of_iso_week_year : year:int -> int
 
   (** {1 Month utils} *)
 

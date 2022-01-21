@@ -35,12 +35,12 @@ let iso_week_p : (ISO_week.t, unit) MParser.t =
   let open MParser in
   let open Parser_components in
   nat_zero
-  >>= fun iso_week_year ->
+  >>= fun year ->
   char '-'
   >> char 'W'
   >> max_two_digit_nat_zero
-  >>= fun iso_week ->
-  match ISO_week.make ~iso_week_year ~iso_week with
+  >>= fun week ->
+  match ISO_week.make ~year ~week with
   | Ok x -> return x
   | Error e ->
       fail
@@ -60,8 +60,8 @@ let iso_week_date_p : (Date.t, unit) MParser.t =
   match weekday_of_iso_int weekday with
   | None -> fail "Invalid weekday"
   | Some weekday -> (
-      let iso_week_year, iso_week = ISO_week.iso_year_and_week iso_week' in
-      match Date.ISO_week_date'.make ~iso_week_year ~iso_week ~weekday with
+      let year, week = ISO_week.year_week iso_week' in
+      match Date.ISO_week_date'.make ~year ~week ~weekday with
       | Ok x -> return x
       | Error e ->
           fail

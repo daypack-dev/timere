@@ -5,14 +5,14 @@ let pp_ym formatter (x : Ym.t) =
   Fmt.pf formatter "%04d-%02d" year month
 
 let pp_iso_week formatter (x : ISO_week.t) =
-  let iso_week_year, iso_week = ISO_week.iso_week_year_and_week x in
-  Fmt.pf formatter "%04d-W%02d" iso_week_year iso_week
+  let year, week = ISO_week.year_week x in
+  Fmt.pf formatter "%04d-W%02d" year week
 
 let pp_iso_week_date formatter (x : Date.t) =
-  let Date.ISO_week_date'.{ iso_week_year; iso_week; weekday } =
+  let Date.ISO_week_date'.{ year; week; weekday } =
     Date.ISO_week_date'.view x
   in
-  Fmt.pf formatter "%04d-W%02d-%d" iso_week_year iso_week
+  Fmt.pf formatter "%04d-W%02d-%d" year week
     (Date_time_utils.iso_int_of_weekday weekday)
 
 let pp_iso_ord_date formatter (x : Date.t) =

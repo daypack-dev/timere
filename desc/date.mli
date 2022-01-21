@@ -12,6 +12,8 @@ val day : t -> int
 
 val weekday : t -> weekday
 
+val ym : t -> Ym.t
+
 val iso_week : t -> ISO_week.t
 
 val day_of_year : t -> int

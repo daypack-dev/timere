@@ -153,7 +153,11 @@ let date dt = dt.date
 
 let ymd_date dt = Date.Ymd_date'.view dt.date
 
+let ym dt = Date.ym dt.date
+
 let iso_week_date dt = Date.ISO_week_date'.view dt.date
+
+let iso_week dt = Date.iso_week dt.date
 
 let iso_ord_date dt = Date.ISO_ord_date'.view dt.date
 
@@ -162,8 +166,6 @@ let year dt = Date.year dt.date
 let month dt = Date.month dt.date
 
 let day dt = Date.day dt.date
-
-let iso_week dt = Date.iso_week dt.date
 
 let day_of_year dt = Date.day_of_year dt.date
 
@@ -459,9 +461,9 @@ module ISO_week_date_time = struct
       | `Invalid_tz_info _ ) as e ->
         Ymd_date_time.string_of_error (e :> Ymd_date_time.error)
 
-  let make ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday ~hour ~minute
+  let make ?tz ?ns ?s_frac ~year ~week ~weekday ~hour ~minute
       ~second () : (t, error) result =
-    match Date.ISO_week_date'.make ~iso_week_year ~iso_week ~weekday with
+    match Date.ISO_week_date'.make ~year ~week ~weekday with
     | Error e -> Error (e :> error)
     | Ok date -> (
         match Time.make ~hour ~minute ~second ?ns ?s_frac () with
@@ -471,18 +473,18 @@ module ISO_week_date_time = struct
             | Error e -> Error (e :> error)
             | Ok dt -> Ok dt))
 
-  let make_exn ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday ~hour ~minute
+  let make_exn ?tz ?ns ?s_frac ~year ~week ~weekday ~hour ~minute
       ~second () =
     match
-      make ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday ~hour ~minute
+      make ?tz ?ns ?s_frac ~year ~week ~weekday ~hour ~minute
         ~second ()
     with
     | Ok x -> x
     | Error e -> raise (Error_exn e)
 
-  let make_unambiguous ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday ~hour
+  let make_unambiguous ?tz ?ns ?s_frac ~year ~week ~weekday ~hour
       ~minute ~second ~offset_from_utc () : (t, error) result =
-    match Date.ISO_week_date'.make ~iso_week_year ~iso_week ~weekday with
+    match Date.ISO_week_date'.make ~year ~week ~weekday with
     | Error e -> Error (e :> error)
     | Ok date -> (
         match Time.make ~hour ~minute ~second ?ns ?s_frac () with
@@ -494,10 +496,10 @@ module ISO_week_date_time = struct
             | Error e -> Error (e :> error)
             | Ok dt -> Ok dt))
 
-  let make_unambiguous_exn ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday
+  let make_unambiguous_exn ?tz ?ns ?s_frac ~year ~week ~weekday
       ~hour ~minute ~second ~offset_from_utc () =
     match
-      make_unambiguous ?tz ?ns ?s_frac ~iso_week_year ~iso_week ~weekday ~hour
+      make_unambiguous ?tz ?ns ?s_frac ~year ~week ~weekday ~hour
         ~minute ~second ~offset_from_utc ()
     with
     | Ok x -> x
