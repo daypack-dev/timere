@@ -60,7 +60,7 @@ let iso_week_date_p : (Date.t, unit) MParser.t =
   match weekday_of_iso_int weekday with
   | None -> fail "Invalid weekday"
   | Some weekday -> (
-      let iso_week_year, iso_week = ISO_week.iso_week_year_and_week iso_week' in
+      let iso_week_year, iso_week = ISO_week.iso_year_and_week iso_week' in
       match Date.ISO_week_date'.make ~iso_week_year ~iso_week ~weekday with
       | Ok x -> return x
       | Error e ->

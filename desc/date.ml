@@ -8,8 +8,8 @@ let weekday (x : t) = weekday_of_jd x.jd
 
 module ISO_week_date' = struct
   type view = {
-    iso_week_year : int;
-    iso_week : int;
+    year : int;
+    week : int;
     weekday : weekday;
   }
 
@@ -21,19 +21,19 @@ module ISO_week_date' = struct
 
   exception Error_exn of error
 
-  let make ~iso_week_year ~iso_week ~weekday : (t, error) result =
-    match ISO_week.make ~iso_week_year ~iso_week with
+  let make ~year ~week ~weekday : (t, error) result =
+    match ISO_week.make ~year ~week with
     | Error e -> Error (e :> error)
-    | Ok _ -> Ok { jd = jd_of_iso_week_date ~iso_week_year ~iso_week ~weekday }
+    | Ok _ -> Ok { jd = jd_of_iso_week_date ~year ~week ~weekday }
 
-  let make_exn ~iso_week_year ~iso_week ~weekday : t =
-    match make ~iso_week_year ~iso_week ~weekday with
+  let make_exn ~year ~week ~weekday : t =
+    match make ~year ~week ~weekday with
     | Error e -> raise (Error_exn e)
     | Ok x -> x
 
   let view (x : t) : view =
-    let iso_week_year, iso_week, weekday = iso_week_date_of_jd x.jd in
-    { iso_week_year; iso_week; weekday }
+    let year, week, weekday = iso_week_date_of_jd x.jd in
+    { year; week; weekday }
 end
 
 module Ymd_date' = struct
