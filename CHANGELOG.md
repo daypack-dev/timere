@@ -6,9 +6,11 @@
 
 ## Timedesc 0.6.0
 
-- Breaking changes in ISO week date functions (shorting label for arguments, quality of life changes)
+- Main breaking changes:
 
-- Removed `_date` suffix in names of `Date` submodules
+  - Changes in ISO week date functions (shorting label for arguments, quality of life changes)
+
+  - Removed `_date` suffix in names of `Date` submodules
 
 - Replaced `CCOpt` with `CCOption` (this bumps dependency of Containers to >= 3.6)
 
