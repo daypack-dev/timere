@@ -40,7 +40,7 @@ module ISO_week_date' = struct
     { year; week; weekday }
 end
 
-  let of_iso_week = ISO_week_date'.of_iso_week
+let of_iso_week = ISO_week_date'.of_iso_week
 
 module Ymd' = struct
   type view = {
@@ -82,9 +82,9 @@ module Ymd' = struct
     { year; month; day }
 end
 
-  let of_ym = Ymd'.of_ym
+let of_ym = Ymd'.of_ym
 
-  let of_ym_exn = Ymd'.of_ym_exn
+let of_ym_exn = Ymd'.of_ym_exn
 
 module ISO_ord' = struct
   type view = {
