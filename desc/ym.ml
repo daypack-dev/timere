@@ -25,11 +25,13 @@ let make_exn ~year ~month : t =
 
 let sub_month_count (t : t) n : t = { month_count = t.month_count - n }
 
-let sub ?(years = 0) ?(months = 0) t : t = sub_month_count t ((years * 12) + months)
+let sub ?(years = 0) ?(months = 0) t : t =
+  sub_month_count t ((years * 12) + months)
 
 let add_month_count (t : t) n : t = { month_count = t.month_count + n }
 
-let add ?(years = 0) ?(months = 0) t : t = add_month_count t ((years * 12) + months)
+let add ?(years = 0) ?(months = 0) t : t =
+  add_month_count t ((years * 12) + months)
 
 let diff_months t1 t2 = t1.month_count - t2.month_count
 

@@ -105,8 +105,7 @@ module Qc = struct
       ~name:"view_is_same_as_original_iso_ord_date" iso_ord_date
       (fun (year', day_of_year') ->
         let d =
-          Timedesc.Date.ISO_ord.make_exn ~year:year'
-            ~day_of_year:day_of_year'
+          Timedesc.Date.ISO_ord.make_exn ~year:year' ~day_of_year:day_of_year'
         in
         let { Timedesc.Date.ISO_ord.year; day_of_year } =
           Timedesc.Date.ISO_ord.view d
@@ -132,17 +131,14 @@ module Qc = struct
         let d =
           Timedesc.Date.Ymd.make_exn ~year:year' ~month:month' ~day:day'
         in
-        let { Timedesc.Date.Ymd.year; month; day } =
-          Timedesc.Date.Ymd.view d
-        in
+        let { Timedesc.Date.Ymd.year; month; day } = Timedesc.Date.Ymd.view d in
         year = year' && month = month' && day = day')
 
   let iso_ord_date_accessors =
     QCheck.Test.make ~count:100_000 ~name:"iso_ord_date_accessors" iso_ord_date
       (fun (year', day_of_year') ->
         let d =
-          Timedesc.Date.ISO_ord.make_exn ~year:year'
-            ~day_of_year:day_of_year'
+          Timedesc.Date.ISO_ord.make_exn ~year:year' ~day_of_year:day_of_year'
         in
         let year = Timedesc.Date.year d in
         let day_of_year = Timedesc.Date.day_of_year d in
