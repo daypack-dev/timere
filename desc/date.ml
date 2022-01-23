@@ -6,7 +6,7 @@ let equal (x : t) (y : t) : bool = x.jd = y.jd
 
 let weekday (x : t) = weekday_of_jd x.jd
 
-module ISO_week_date' = struct
+module ISO_week' = struct
   type view = {
     year : int;
     week : int;
@@ -40,7 +40,7 @@ module ISO_week_date' = struct
     { year; week; weekday }
 end
 
-module Ymd_date' = struct
+module Ymd' = struct
   type view = {
     year : int;
     month : int;
@@ -80,7 +80,7 @@ module Ymd_date' = struct
     { year; month; day }
 end
 
-module ISO_ord_date' = struct
+module ISO_ord' = struct
   type view = {
     year : int;
     day_of_year : int;
@@ -112,22 +112,22 @@ module ISO_ord_date' = struct
     { year; day_of_year }
 end
 
-let year d = (Ymd_date'.view d).year
+let year d = (Ymd'.view d).year
 
-let month d = (Ymd_date'.view d).month
+let month d = (Ymd'.view d).month
 
-let day d = (Ymd_date'.view d).day
+let day d = (Ymd'.view d).day
 
 let ym d =
-  let Ymd_date'.{ year; month; _ } = Ymd_date'.view d in
+  let Ymd'.{ year; month; _ } = Ymd'.view d in
   Ym.make_exn ~year ~month
 
 let iso_year d =
-  let ISO_week_date'.{ year; _ } = ISO_week_date'.view d in
+  let ISO_week'.{ year; _ } = ISO_week'.view d in
   year
 
 let iso_week d =
-  let ISO_week_date'.{ year; week; _ } = ISO_week_date'.view d in
+  let ISO_week'.{ year; week; _ } = ISO_week'.view d in
   ISO_week.make_exn ~year ~week
 
-let day_of_year d = (ISO_ord_date'.view d).day_of_year
+let day_of_year d = (ISO_ord'.view d).day_of_year

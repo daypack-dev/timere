@@ -33,7 +33,7 @@ let sexp_of_tz_info ({ tz; fixed_offset_from_utc } : Time_zone_info.t) =
 
 let sexp_of_date (x : Date.t) =
   let open CCSexp in
-  let { Date.Ymd_date'.year; month; day } = Date.Ymd_date'.view x in
+  let { Date.Ymd'.year; month; day } = Date.Ymd'.view x in
   list [ sexp_of_int year; sexp_of_int month; sexp_of_int day ]
 
 let sexp_of_time (x : Time.t) =

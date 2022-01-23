@@ -1,5 +1,5 @@
 let pp_date formatter (date : Date.t) =
-  let Date.Ymd_date'.{ year; month; day } = Date.Ymd_date'.view date in
+  let Date.Ymd'.{ year; month; day } = Date.Ymd'.view date in
   Fmt.pf formatter "%04d-%02d-%02d" year month day
 
 let pp_time ?frac_s () formatter (time : Time.t) =

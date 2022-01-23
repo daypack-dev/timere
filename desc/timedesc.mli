@@ -734,7 +734,7 @@ module Date : sig
 
   (** {1 Gregorian calendar} *)
 
-  module Ymd_date : sig
+  module Ymd : sig
     type view = private {
       year : int;
       month : int;
@@ -777,7 +777,7 @@ module Date : sig
 
   (** {1 ISO week date calendar} *)
 
-  module ISO_week_date : sig
+  module ISO_week : sig
     type view = private {
       year : int;
       week : int;
@@ -815,7 +815,7 @@ module Date : sig
 
   (** {1 ISO ord date calendar} *)
 
-  module ISO_ord_date : sig
+  module ISO_ord : sig
     type view = private {
       year : int;
       day_of_year : int;
@@ -1235,11 +1235,11 @@ val make_unambiguous_exn :
 
 val date : t -> Date.t
 
-val ymd_date : t -> Date.Ymd_date.view
+val ymd_date : t -> Date.Ymd.view
 
-val iso_week_date : t -> Date.ISO_week_date.view
+val iso_week_date : t -> Date.ISO_week.view
 
-val iso_ord_date : t -> Date.ISO_ord_date.view
+val iso_ord_date : t -> Date.ISO_ord.view
 
 val ym : t -> Ym.t
 

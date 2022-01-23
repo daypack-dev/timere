@@ -23,7 +23,7 @@ let ymd_date_p : (Date.t, unit) MParser.t =
   >> max_two_digit_nat_zero
   >>= fun day ->
   let year, month = Ym.year_month ym in
-  match Date.Ymd_date'.make ~year ~month ~day with
+  match Date.Ymd'.make ~year ~month ~day with
   | Ok x -> return x
   | Error e ->
       fail
@@ -61,7 +61,7 @@ let iso_week_date_p : (Date.t, unit) MParser.t =
   | None -> fail "Invalid weekday"
   | Some weekday -> (
       let year, week = ISO_week.year_week iso_week' in
-      match Date.ISO_week_date'.make ~year ~week ~weekday with
+      match Date.ISO_week'.make ~year ~week ~weekday with
       | Ok x -> return x
       | Error e ->
           fail
@@ -77,7 +77,7 @@ let iso_ord_date_p : (Date.t, unit) MParser.t =
   char '-'
   >> nat_zero
   >>= fun day_of_year ->
-  match Date.ISO_ord_date'.make ~year ~day_of_year with
+  match Date.ISO_ord'.make ~year ~day_of_year with
   | Ok x -> return x
   | Error e ->
       fail

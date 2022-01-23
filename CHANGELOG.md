@@ -8,6 +8,8 @@
 
 - Breaking changes in ISO week date functions (shorting label for arguments, quality of life changes)
 
+- Removed `_date` suffix in names of `Date` submodules
+
 - Replaced `CCOpt` with `CCOption` (this bumps dependency of Containers to >= 3.6)
 
 - Added "partial date" modules with ISO8601 parsing and printing facilities
@@ -18,11 +20,11 @@
 
 - Added additional ISO8601 printing facilities for all three calendar systems
 
-  - `Ymd_date.pp/to_iso8601` (these are just aliases to the RFC3339 printers)
+  - `Ymd.pp/to_iso8601` (these are just aliases to the RFC3339 printers)
 
-  - `ISO_week_date.pp/to_iso8601`
+  - `ISO_week.pp/to_iso8601`
 
-  - `ISO_ord_date.pp/to_iso8601`
+  - `ISO_ord.pp/to_iso8601`
 
 - Added additional date conversion functions to `Utils`
 
