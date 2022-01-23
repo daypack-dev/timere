@@ -117,14 +117,14 @@
     We can use {!Date} module in this case.
 
     To construct a Gregorian calendar date, we can use {!Date.Ymd_date.make}. To construct
-    ISO week date and ISO ordinal date, we can use {!Date.ISO_week_date.make} and {!Date.ISO_ord_date}
+    ISO week date and ISO ordinal date, we can use {!Date.ISO_week_date.make} and {!Date.ISO_ord}
     respectively.
 
     We have similar set of accessors for accessing values of {!Date.t}, such as {!Date.year},
     {!Date.iso_week}, {!Date.day_of_year}.
 
     To obtain a "view" (in a manner similar to the human-friendly "view" from {!Span.For_human}), we can
-    use {!Date.ISO_week_date.view} and {!Date.ISO_ord_date.view}.
+    use {!Date.ISO_week_date.view} and {!Date.ISO_ord.view}.
 
     {1 Further reading}
 
@@ -677,9 +677,9 @@ end
 (** {2 Date}
 
     Implementation of date in:
-    - Gregorian calendar ({!Date.Ymd_date})
+    - Gregorian calendar ({!Date.Ymd})
     - ISO week date calendar ({!Date.ISO_week_date})
-    - ISO ordinal date calendar ({!Date.ISO_ord_date})
+    - ISO ordinal date calendar ({!Date.ISO_ord})
 *)
 
 module Date : sig
@@ -777,7 +777,7 @@ module Date : sig
 
   (** {1 ISO week date calendar} *)
 
-  module ISO_week : sig
+  module ISO_week_date : sig
     type view = private {
       year : int;
       week : int;
@@ -1237,7 +1237,7 @@ val date : t -> Date.t
 
 val ymd_date : t -> Date.Ymd.view
 
-val iso_week_date : t -> Date.ISO_week.view
+val iso_week_date : t -> Date.ISO_week_date.view
 
 val iso_ord_date : t -> Date.ISO_ord.view
 

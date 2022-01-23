@@ -155,7 +155,7 @@ let ymd_date dt = Date.Ymd'.view dt.date
 
 let ym dt = Date.ym dt.date
 
-let iso_week_date dt = Date.ISO_week'.view dt.date
+let iso_week_date dt = Date.ISO_week_date'.view dt.date
 
 let iso_week dt = Date.iso_week dt.date
 
@@ -465,7 +465,7 @@ module ISO_week_date_time = struct
 
   let make ?tz ?ns ?s_frac ~year ~week ~weekday ~hour ~minute ~second () :
       (t, error) result =
-    match Date.ISO_week'.make ~year ~week ~weekday with
+    match Date.ISO_week_date'.make ~year ~week ~weekday with
     | Error e -> Error (e :> error)
     | Ok date -> (
         match Time.make ~hour ~minute ~second ?ns ?s_frac () with
@@ -484,7 +484,7 @@ module ISO_week_date_time = struct
 
   let make_unambiguous ?tz ?ns ?s_frac ~year ~week ~weekday ~hour ~minute
       ~second ~offset_from_utc () : (t, error) result =
-    match Date.ISO_week'.make ~year ~week ~weekday with
+    match Date.ISO_week_date'.make ~year ~week ~weekday with
     | Error e -> Error (e :> error)
     | Ok date -> (
         match Time.make ~hour ~minute ~second ?ns ?s_frac () with

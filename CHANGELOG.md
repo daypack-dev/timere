@@ -16,7 +16,7 @@
 
   - Changes in ISO week date functions (shorting label for arguments, quality of life changes)
 
-  - Removed `_date` suffix in names of `Date` submodules
+  - Removed `_date` suffix in names of `Date.Ymd_date` and `Date.ISO_ord_date`
 
 - Replaced `CCOpt` with `CCOption` (this bumps dependency of Containers to >= 3.6)
 
@@ -30,7 +30,7 @@
 
   - `Ymd.pp/to_iso8601` (these are just aliases to the RFC3339 printers)
 
-  - `ISO_week.pp/to_iso8601`
+  - `ISO_week_date.pp/to_iso8601`
 
   - `ISO_ord.pp/to_iso8601`
 

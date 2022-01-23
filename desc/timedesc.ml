@@ -71,8 +71,8 @@ module Date = struct
     let to_iso8601 x = str_of_pp pp_iso8601 x
   end
 
-  module ISO_week = struct
-    include ISO_week'
+  module ISO_week_date = struct
+    include ISO_week_date'
 
     let pp_iso8601 = ISO8601_printers.pp_iso_week_date
 
