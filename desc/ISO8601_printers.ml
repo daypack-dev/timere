@@ -9,7 +9,9 @@ let pp_iso_week formatter (x : ISO_week.t) =
   Fmt.pf formatter "%04d-W%02d" year week
 
 let pp_iso_week_date formatter (x : Date.t) =
-  let Date.ISO_week_date'.{ year; week; weekday } = Date.ISO_week_date'.view x in
+  let Date.ISO_week_date'.{ year; week; weekday } =
+    Date.ISO_week_date'.view x
+  in
   Fmt.pf formatter "%04d-W%02d-%d" year week
     (Date_time_utils.iso_int_of_weekday weekday)
 
