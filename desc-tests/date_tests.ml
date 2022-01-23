@@ -4,62 +4,62 @@ module Alco = struct
   let week_date0 () =
     Alcotest.(check date_testable)
       "same date"
-      (Timedesc.Date.Ymd_date.make_exn ~year:1977 ~month:12 ~day:31)
-      (Timedesc.Date.ISO_week_date.make_exn ~year:1977 ~week:52 ~weekday:`Sat)
+      (Timedesc.Date.Ymd.make_exn ~year:1977 ~month:12 ~day:31)
+      (Timedesc.Date.ISO_week.make_exn ~year:1977 ~week:52 ~weekday:`Sat)
 
   let week_date1 () =
     Alcotest.(check date_testable)
       "same date"
-      (Timedesc.Date.Ymd_date.make_exn ~year:1978 ~month:01 ~day:02)
-      (Timedesc.Date.ISO_week_date.make_exn ~year:1978 ~week:1 ~weekday:`Mon)
+      (Timedesc.Date.Ymd.make_exn ~year:1978 ~month:01 ~day:02)
+      (Timedesc.Date.ISO_week.make_exn ~year:1978 ~week:1 ~weekday:`Mon)
 
   let week_date2 () =
     Alcotest.(check date_testable)
       "same date"
-      (Timedesc.Date.Ymd_date.make_exn ~year:1979 ~month:01 ~day:01)
-      (Timedesc.Date.ISO_week_date.make_exn ~year:1979 ~week:1 ~weekday:`Mon)
+      (Timedesc.Date.Ymd.make_exn ~year:1979 ~month:01 ~day:01)
+      (Timedesc.Date.ISO_week.make_exn ~year:1979 ~week:1 ~weekday:`Mon)
 
   let week_date3 () =
     Alcotest.(check date_testable)
       "same date"
-      (Timedesc.Date.Ymd_date.make_exn ~year:1979 ~month:12 ~day:31)
-      (Timedesc.Date.ISO_week_date.make_exn ~year:1980 ~week:1 ~weekday:`Mon)
+      (Timedesc.Date.Ymd.make_exn ~year:1979 ~month:12 ~day:31)
+      (Timedesc.Date.ISO_week.make_exn ~year:1980 ~week:1 ~weekday:`Mon)
 
   let week_date4 () =
     Alcotest.(check date_testable)
       "same date"
-      (Timedesc.Date.Ymd_date.make_exn ~year:1980 ~month:12 ~day:28)
-      (Timedesc.Date.ISO_week_date.make_exn ~year:1980 ~week:52 ~weekday:`Sun)
+      (Timedesc.Date.Ymd.make_exn ~year:1980 ~month:12 ~day:28)
+      (Timedesc.Date.ISO_week.make_exn ~year:1980 ~week:52 ~weekday:`Sun)
 
   let week_date5 () =
     Alcotest.(check date_testable)
       "same date"
-      (Timedesc.Date.Ymd_date.make_exn ~year:1969 ~month:12 ~day:31)
-      (Timedesc.Date.ISO_week_date.make_exn ~year:1970 ~week:1 ~weekday:`Wed)
+      (Timedesc.Date.Ymd.make_exn ~year:1969 ~month:12 ~day:31)
+      (Timedesc.Date.ISO_week.make_exn ~year:1970 ~week:1 ~weekday:`Wed)
 
   let of_iso8601_case0 () =
     Alcotest.(check date_testable)
       "same date"
       (Timedesc.Date.of_iso8601_exn "1977-W52-6")
-      (Timedesc.Date.ISO_week_date.make_exn ~year:1977 ~week:52 ~weekday:`Sat)
+      (Timedesc.Date.ISO_week.make_exn ~year:1977 ~week:52 ~weekday:`Sat)
 
   let of_iso8601_case1 () =
     Alcotest.(check date_testable)
       "same date"
       (Timedesc.Date.of_iso8601_exn "1970-W1-3")
-      (Timedesc.Date.ISO_week_date.make_exn ~year:1970 ~week:1 ~weekday:`Wed)
+      (Timedesc.Date.ISO_week.make_exn ~year:1970 ~week:1 ~weekday:`Wed)
 
   let of_iso8601_case2 () =
     Alcotest.(check date_testable)
       "same date"
       (Timedesc.Date.of_iso8601_exn "1977-101")
-      (Timedesc.Date.ISO_ord_date.make_exn ~year:1977 ~day_of_year:101)
+      (Timedesc.Date.ISO_ord.make_exn ~year:1977 ~day_of_year:101)
 
   let of_iso8601_case3 () =
     Alcotest.(check date_testable)
       "same date"
       (Timedesc.Date.of_iso8601_exn "1969-132")
-      (Timedesc.Date.ISO_ord_date.make_exn ~year:1969 ~day_of_year:132)
+      (Timedesc.Date.ISO_ord.make_exn ~year:1969 ~day_of_year:132)
 
   let suite =
     [
@@ -79,7 +79,7 @@ module Qc = struct
   let to_rfc3339_of_iso8601 =
     QCheck.Test.make ~count:100_000 ~name:"to_rfc3339_of_iso8601" ymd_date
       (fun (year, month, day) ->
-        let d = Timedesc.Date.Ymd_date.make_exn ~year ~month ~day in
+        let d = Timedesc.Date.Ymd.make_exn ~year ~month ~day in
         let d' =
           d
           |> Timedesc.Date.to_rfc3339
@@ -91,7 +91,7 @@ module Qc = struct
   let to_of_sexp =
     QCheck.Test.make ~count:100_000 ~name:"to_of_sexp" ymd_date
       (fun (year, month, day) ->
-        let d = Timedesc.Date.Ymd_date.make_exn ~year ~month ~day in
+        let d = Timedesc.Date.Ymd.make_exn ~year ~month ~day in
         let d' =
           d
           |> Timedesc.Date.to_sexp
@@ -105,11 +105,11 @@ module Qc = struct
       ~name:"view_is_same_as_original_iso_ord_date" iso_ord_date
       (fun (year', day_of_year') ->
         let d =
-          Timedesc.Date.ISO_ord_date.make_exn ~year:year'
+          Timedesc.Date.ISO_ord.make_exn ~year:year'
             ~day_of_year:day_of_year'
         in
-        let { Timedesc.Date.ISO_ord_date.year; day_of_year } =
-          Timedesc.Date.ISO_ord_date.view d
+        let { Timedesc.Date.ISO_ord.year; day_of_year } =
+          Timedesc.Date.ISO_ord.view d
         in
         year = year' && day_of_year = day_of_year')
 
@@ -118,11 +118,11 @@ module Qc = struct
       ~name:"view_is_same_as_original_iso_week_date" iso_week_date
       (fun (year', week', weekday') ->
         let d =
-          Timedesc.Date.ISO_week_date.make_exn ~year:year' ~week:week'
+          Timedesc.Date.ISO_week.make_exn ~year:year' ~week:week'
             ~weekday:weekday'
         in
-        let { Timedesc.Date.ISO_week_date.year; week; weekday } =
-          Timedesc.Date.ISO_week_date.view d
+        let { Timedesc.Date.ISO_week.year; week; weekday } =
+          Timedesc.Date.ISO_week.view d
         in
         year = year' && week = week' && weekday = weekday')
 
@@ -130,10 +130,10 @@ module Qc = struct
     QCheck.Test.make ~count:100_000 ~name:"view_is_same_as_original_ymd_date"
       ymd_date (fun (year', month', day') ->
         let d =
-          Timedesc.Date.Ymd_date.make_exn ~year:year' ~month:month' ~day:day'
+          Timedesc.Date.Ymd.make_exn ~year:year' ~month:month' ~day:day'
         in
-        let { Timedesc.Date.Ymd_date.year; month; day } =
-          Timedesc.Date.Ymd_date.view d
+        let { Timedesc.Date.Ymd.year; month; day } =
+          Timedesc.Date.Ymd.view d
         in
         year = year' && month = month' && day = day')
 
@@ -141,7 +141,7 @@ module Qc = struct
     QCheck.Test.make ~count:100_000 ~name:"iso_ord_date_accessors" iso_ord_date
       (fun (year', day_of_year') ->
         let d =
-          Timedesc.Date.ISO_ord_date.make_exn ~year:year'
+          Timedesc.Date.ISO_ord.make_exn ~year:year'
             ~day_of_year:day_of_year'
         in
         let year = Timedesc.Date.year d in
@@ -152,7 +152,7 @@ module Qc = struct
     QCheck.Test.make ~count:100_000 ~name:"iso_week_date_accessors"
       iso_week_date (fun (year', week', weekday') ->
         let d =
-          Timedesc.Date.ISO_week_date.make_exn ~year:year' ~week:week'
+          Timedesc.Date.ISO_week.make_exn ~year:year' ~week:week'
             ~weekday:weekday'
         in
         let year = Timedesc.Date.iso_year d in
@@ -166,7 +166,7 @@ module Qc = struct
     QCheck.Test.make ~count:100_000 ~name:"ymd_date_accessors" ymd_date
       (fun (year', month', day') ->
         let d =
-          Timedesc.Date.Ymd_date.make_exn ~year:year' ~month:month' ~day:day'
+          Timedesc.Date.Ymd.make_exn ~year:year' ~month:month' ~day:day'
         in
         let year = Timedesc.Date.year d in
         let month = Timedesc.Date.month d in

@@ -11,7 +11,7 @@ module Branch = struct
 
   let to_timestamp_local t =
     Timedesc.Zoneless.make
-      (Timedesc.Date.Ymd_date.make_exn ~year:t.year ~month:t.month ~day:t.day)
+      (Timedesc.Date.Ymd.make_exn ~year:t.year ~month:t.month ~day:t.day)
       (Timedesc.Time.make_exn ~hour:t.hour ~minute:t.minute ~second:t.second
          ~ns:t.ns ())
     |> Timedesc.Zoneless.to_timestamp_local
@@ -26,7 +26,7 @@ module Branch = struct
     | Error _ -> failwith "Unexpected case"
 
   let of_date_time (x : Timedesc.t) : t =
-    let { Timedesc.Date.Ymd_date.year; month; day } = Timedesc.ymd_date x in
+    let { Timedesc.Date.Ymd.year; month; day } = Timedesc.ymd_date x in
     let { Timedesc.Time.hour; minute; second; ns } = Timedesc.time_view x in
     { year; month; day; hour; minute; second; ns }
 
@@ -268,7 +268,7 @@ module Matching_days = struct
       OSeq.(day_start -- day_end_inc)
       |> Seq.filter (fun day ->
              let wday =
-               Timedesc.Date.Ymd_date.make_exn ~year:cur_branch.year
+               Timedesc.Date.Ymd.make_exn ~year:cur_branch.year
                  ~month:cur_branch.month ~day
                |> Timedesc.Date.weekday
              in

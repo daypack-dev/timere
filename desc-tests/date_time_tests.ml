@@ -160,7 +160,7 @@ module Alco = struct
       @@ Timedesc.Zoneless.maybe_zoneless_of_iso8601 "2020-01-01T24:00:00")
       (`Zoneless
         (Timedesc.Zoneless.make
-           (Timedesc.Date.Ymd_date.make_exn ~year:2020 ~month:1 ~day:1)
+           (Timedesc.Date.Ymd.make_exn ~year:2020 ~month:1 ~day:1)
            (Timedesc.Time.make_exn ~hour:23 ~minute:59 ~second:59
               ~ns:999_999_999 ())))
 
@@ -171,7 +171,7 @@ module Alco = struct
       @@ Timedesc.Zoneless.maybe_zoneless_of_iso8601 "1910-05-27T07:32:00")
       (`Zoneless
         (Timedesc.Zoneless.make
-           (Timedesc.Date.Ymd_date.make_exn ~year:1910 ~month:5 ~day:27)
+           (Timedesc.Date.Ymd.make_exn ~year:1910 ~month:5 ~day:27)
            (Timedesc.Time.make_exn ~hour:7 ~minute:32 ~second:0 ())))
 
   let zoneless_of_iso8601_case0 () =
@@ -179,7 +179,7 @@ module Alco = struct
       "same timestamp"
       (CCResult.get_exn @@ Timedesc.Zoneless.of_iso8601 "2020-01-01T24:00:00")
       (Timedesc.Zoneless.make
-         (Timedesc.Date.Ymd_date.make_exn ~year:2020 ~month:1 ~day:1)
+         (Timedesc.Date.Ymd.make_exn ~year:2020 ~month:1 ~day:1)
          (Timedesc.Time.make_exn ~hour:23 ~minute:59 ~second:59 ~ns:999_999_999
             ()))
 
@@ -188,7 +188,7 @@ module Alco = struct
       "same timestamp"
       (CCResult.get_exn @@ Timedesc.Zoneless.of_iso8601 "1910-05-27T07:32:00")
       (Timedesc.Zoneless.make
-         (Timedesc.Date.Ymd_date.make_exn ~year:1910 ~month:5 ~day:27)
+         (Timedesc.Date.Ymd.make_exn ~year:1910 ~month:5 ~day:27)
          (Timedesc.Time.make_exn ~hour:7 ~minute:32 ~second:0 ()))
 
   let to_rfc3339_case0 () =
