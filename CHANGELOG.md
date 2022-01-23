@@ -1,8 +1,14 @@
 # Changelog
 
+## Timere-parse 0.0.6
+
+- Bumped dependency of Timedesc to >= 0.6.0
+
 ## Timere 0.6.1
 
 - Replaced `CCOpt` with `CCOption` (this bumps dependency of Containers to >= 3.6)
+
+- Bumped dependency of Timedesc to >= 0.6.0
 
 ## Timedesc 0.6.0
 
