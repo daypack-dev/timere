@@ -750,10 +750,6 @@ module Date : sig
 
     exception Error_exn of error
 
-    val of_ym : Ym.t -> day:int -> (t, error) result
-
-    val of_ym_exn : Ym.t -> day:int -> t
-
     val make : year:int -> month:int -> day:int -> (t, error) result
     (** Constructs a date in the Gregorian calendar.
 
@@ -775,6 +771,10 @@ module Date : sig
     val to_iso8601 : t -> string
   end
 
+  val of_ym : Ym.t -> day:int -> (t, Ymd.error) result
+
+  val of_ym_exn : Ym.t -> day:int -> t
+
   (** {1 ISO week date calendar} *)
 
   module ISO_week_date : sig
@@ -791,8 +791,6 @@ module Date : sig
       ]
 
     exception Error_exn of error
-
-    val of_iso_week : ISO_week.t -> weekday:weekday -> t
 
     val make : year:int -> week:int -> weekday:weekday -> (t, error) result
     (** Constructs a date in the ISO week calendar.
@@ -812,6 +810,8 @@ module Date : sig
 
     val to_iso8601 : t -> string
   end
+
+  val of_iso_week : ISO_week.t -> weekday:weekday -> t
 
   (** {1 ISO ord date calendar} *)
 
