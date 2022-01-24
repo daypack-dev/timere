@@ -328,8 +328,7 @@ module Zoneless = struct
 
   let maybe_zoneless_of_iso8601 = ISO8601_parsers.maybe_zoneless_of_str
 
-  let maybe_zoneless_of_iso8601_exn =
-    of_iso8601_exn' maybe_zoneless_of_iso8601
+  let maybe_zoneless_of_iso8601_exn = of_iso8601_exn' maybe_zoneless_of_iso8601
 
   let to_sexp = To_sexp.sexp_of_zoneless
 

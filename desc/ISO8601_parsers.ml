@@ -196,10 +196,12 @@ let maybe_zoneless_of_str' date_p s : (maybe_zoneless, string) result =
 let maybe_zoneless_of_str s : (maybe_zoneless, string) result =
   maybe_zoneless_of_str' date_p s
 
-let iso_week_date_time_maybe_zoneless_of_str s : (maybe_zoneless, string) result =
+let iso_week_date_time_maybe_zoneless_of_str s : (maybe_zoneless, string) result
+    =
   maybe_zoneless_of_str' iso_week_date_p s
 
-let iso_ord_date_time_maybe_zoneless_of_str s : (maybe_zoneless, string) result =
+let iso_ord_date_time_maybe_zoneless_of_str s : (maybe_zoneless, string) result
+    =
   maybe_zoneless_of_str' iso_ord_p s
 
 let zoneless_of_str s : (Date_time.Zoneless'.zoneless, string) result =
@@ -214,8 +216,7 @@ let date_time_of_str' maybe_zoneless_of_str s : (Date_time.t, string) result =
   | Ok (`Zoned x) -> Ok x
   | Error msg -> Error msg
 
-let date_time_of_str s =
-  date_time_of_str' maybe_zoneless_of_str s
+let date_time_of_str s = date_time_of_str' maybe_zoneless_of_str s
 
 let iso_week_date_time_of_str s =
   date_time_of_str' iso_week_date_time_maybe_zoneless_of_str s
