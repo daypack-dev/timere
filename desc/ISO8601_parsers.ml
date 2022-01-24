@@ -166,7 +166,7 @@ type maybe_zoneless =
   | `Zoneless of Date_time.Zoneless'.zoneless
   ]
 
-let maybe_zoneless_of_str s : (maybe_zoneless, string) result =
+let maybe_zoneless_of_str' date_p s : (maybe_zoneless, string) result =
   let open MParser in
   let open Parser_components in
   let p =
@@ -193,17 +193,35 @@ let maybe_zoneless_of_str s : (maybe_zoneless, string) result =
   in
   parse_string (p << spaces << eof) s () |> result_of_mparser_result
 
+let maybe_zoneless_of_str s : (maybe_zoneless, string) result =
+  maybe_zoneless_of_str' date_p s
+
+let iso_week_date_time_maybe_zoneless_of_str s : (maybe_zoneless, string) result =
+  maybe_zoneless_of_str' iso_week_date_p s
+
+let iso_ord_date_time_maybe_zoneless_of_str s : (maybe_zoneless, string) result =
+  maybe_zoneless_of_str' iso_ord_p s
+
 let zoneless_of_str s : (Date_time.Zoneless'.zoneless, string) result =
   match maybe_zoneless_of_str s with
   | Ok (`Zoneless x) -> Ok x
   | Ok (`Zoned _) -> Error "Extraneous offset from utc"
   | Error msg -> Error msg
 
-let date_time_of_str s : (Date_time.t, string) result =
+let date_time_of_str' maybe_zoneless_of_str s : (Date_time.t, string) result =
   match maybe_zoneless_of_str s with
   | Ok (`Zoneless _) -> Error "Missing offset from utc"
   | Ok (`Zoned x) -> Ok x
   | Error msg -> Error msg
+
+let date_time_of_str s =
+  date_time_of_str' maybe_zoneless_of_str s
+
+let iso_week_date_time_of_str s =
+  date_time_of_str' iso_week_date_time_maybe_zoneless_of_str s
+
+let iso_ord_date_time_of_str s =
+  date_time_of_str' iso_ord_date_time_maybe_zoneless_of_str s
 
 let of_str' p s =
   let open MParser in

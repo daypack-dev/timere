@@ -90,7 +90,7 @@ module Date = struct
   module ISO_ord = struct
     include ISO_ord'
 
-    let pp_iso8601 = ISO8601_printers.pp_iso_ord_date
+    let pp_iso8601 = ISO8601_printers.pp_iso_ord
 
     let to_iso8601 x = str_of_pp pp_iso8601 x
 
@@ -249,10 +249,50 @@ include Ymd_date_time
 
 module ISO_week_date_time = struct
   include ISO_week_date_time'
+
+  let pp_iso8601 = ISO8601_printers.pp_iso_week_date_time
+
+  let pp_iso8601_milli = pp_iso8601 ~frac_s:frac_s_milli ()
+
+  let pp_iso8601_micro = pp_iso8601 ~frac_s:frac_s_micro ()
+
+  let pp_iso8601_nano = pp_iso8601 ~frac_s:frac_s_nano ()
+
+  let to_iso8601 = ISO8601_printers.str_of_iso_week_date_time
+
+  let to_iso8601_milli = to_iso8601 ~frac_s:frac_s_milli
+
+  let to_iso8601_micro = to_iso8601 ~frac_s:frac_s_micro
+
+  let to_iso8601_nano = to_iso8601 ~frac_s:frac_s_nano
+
+  let of_iso8601 = ISO8601_parsers.iso_week_date_time_of_str
+
+  let of_iso8601_exn = of_iso8601_exn' of_iso8601
 end
 
 module ISO_ord_date_time = struct
   include ISO_ord_date_time'
+
+  let pp_iso8601 = ISO8601_printers.pp_iso_ord_date_time
+
+  let pp_iso8601_milli = pp_iso8601 ~frac_s:frac_s_milli ()
+
+  let pp_iso8601_micro = pp_iso8601 ~frac_s:frac_s_micro ()
+
+  let pp_iso8601_nano = pp_iso8601 ~frac_s:frac_s_nano ()
+
+  let to_iso8601 = ISO8601_printers.str_of_iso_ord_date_time
+
+  let to_iso8601_milli = to_iso8601 ~frac_s:frac_s_milli
+
+  let to_iso8601_micro = to_iso8601 ~frac_s:frac_s_micro
+
+  let to_iso8601_nano = to_iso8601 ~frac_s:frac_s_nano
+
+  let of_iso8601 = ISO8601_parsers.iso_ord_date_time_of_str
+
+  let of_iso8601_exn = of_iso8601_exn' of_iso8601
 end
 
 module Interval = struct

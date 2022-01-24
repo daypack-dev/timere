@@ -1827,6 +1827,36 @@ module ISO_week_date_time : sig
     offset_from_utc:Span.t ->
     unit ->
     t
+
+  (** {1 Pretty printing} *)
+
+  val pp_iso8601 : ?frac_s:int -> unit -> Format.formatter -> t -> unit
+
+  val pp_iso8601_milli : Format.formatter -> t -> unit
+
+  val pp_iso8601_micro : Format.formatter -> t -> unit
+
+  val pp_iso8601_nano : Format.formatter -> t -> unit
+
+  val to_iso8601 : ?frac_s:int -> t -> string option
+
+  val to_iso8601_milli : t -> string option
+
+  val to_iso8601_micro : t -> string option
+
+  val to_iso8601_nano : t -> string option
+
+  (** {2 Parsing} *)
+
+  val of_iso8601 : string -> (t, string) result
+  (**
+       Parses a subset of ISO8601, up to 9 fractional digits for second (nanosecond precision).
+
+       If more than 9 fractional digits are provided, then only the first 9 digits are used, i.e. no rounding.
+  *)
+
+  val of_iso8601_exn : string -> t
+  (** @raise ISO8601_parse_exn if [of_iso8601] fails *)
 end
 
 module ISO_ord_date_time : sig
@@ -1895,6 +1925,36 @@ module ISO_ord_date_time : sig
     offset_from_utc:Span.t ->
     unit ->
     t
+
+  (** {1 Pretty printing} *)
+
+  val pp_iso8601 : ?frac_s:int -> unit -> Format.formatter -> t -> unit
+
+  val pp_iso8601_milli : Format.formatter -> t -> unit
+
+  val pp_iso8601_micro : Format.formatter -> t -> unit
+
+  val pp_iso8601_nano : Format.formatter -> t -> unit
+
+  val to_iso8601 : ?frac_s:int -> t -> string option
+
+  val to_iso8601_milli : t -> string option
+
+  val to_iso8601_micro : t -> string option
+
+  val to_iso8601_nano : t -> string option
+
+  (** {2 Parsing} *)
+
+  val of_iso8601 : string -> (t, string) result
+  (**
+       Parses a subset of ISO8601, up to 9 fractional digits for second (nanosecond precision).
+
+       If more than 9 fractional digits are provided, then only the first 9 digits are used, i.e. no rounding.
+  *)
+
+  val of_iso8601_exn : string -> t
+  (** @raise ISO8601_parse_exn if [of_iso8601] fails *)
 end
 
 (** {1 Misc} *)

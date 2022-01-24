@@ -17,7 +17,7 @@ let pp_time ?frac_s () formatter (time : Time.t) =
     Fmt.pf formatter "%02d:%02d:%02d%s" hour minute second
       (Printers.string_of_s_frac ~sep:'.' ~frac_s ~ns)
 
-let pp_date_time ?frac_s () formatter (dt : Date_time.t) =
+let pp_date_time' ?frac_s pp_date () formatter (dt : Date_time.t) =
   match Date_time.offset_from_utc dt with
   | `Ambiguous _ -> raise (Printers.Date_time_cannot_deduce_offset_from_utc dt)
   | `Single offset ->
@@ -31,6 +31,9 @@ let pp_date_time ?frac_s () formatter (dt : Date_time.t) =
       in
       Fmt.pf formatter "%aT%a%s" pp_date (Date_time.date dt)
         (pp_time ?frac_s ()) (Date_time.time dt) tz_off
+
+let pp_date_time ?frac_s () formatter (dt : Date_time.t) =
+  pp_date_time' ?frac_s pp_date () formatter dt
 
 let of_date_time ?frac_s (dt : Date_time.t) : string option =
   try Some (Fmt.str "%a" (pp_date_time ?frac_s ()) dt)
