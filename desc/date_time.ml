@@ -375,7 +375,7 @@ module Ymd_date_time = struct
     | Error e -> raise (Error_exn e)
 end
 
-module ISO_ord_date_time = struct
+module ISO_ord_date_time' = struct
   type error =
     [ `Does_not_exist
     | `Invalid_year of int
@@ -439,7 +439,7 @@ module ISO_ord_date_time = struct
     | Error e -> raise (Error_exn e)
 end
 
-module ISO_week_date_time = struct
+module ISO_week_date_time' = struct
   type error =
     [ `Does_not_exist
     | `Invalid_iso_year of int

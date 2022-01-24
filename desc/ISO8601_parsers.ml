@@ -45,8 +45,8 @@ let iso_week_p : (ISO_week.t, unit) MParser.t =
   | Error e ->
       fail
         (Printf.sprintf "Invalid date: %s"
-           (Date_time.ISO_week_date_time.string_of_error
-              (e :> Date_time.ISO_week_date_time.error)))
+           (Date_time.ISO_week_date_time'.string_of_error
+              (e :> Date_time.ISO_week_date_time'.error)))
 
 let iso_week_date_p : (Date.t, unit) MParser.t =
   let open MParser in
@@ -66,8 +66,8 @@ let iso_week_date_p : (Date.t, unit) MParser.t =
       | Error e ->
           fail
             (Printf.sprintf "Invalid date: %s"
-               (Date_time.ISO_week_date_time.string_of_error
-                  (e :> Date_time.ISO_week_date_time.error))))
+               (Date_time.ISO_week_date_time'.string_of_error
+                  (e :> Date_time.ISO_week_date_time'.error))))
 
 let iso_ord_p : (Date.t, unit) MParser.t =
   let open MParser in
@@ -82,8 +82,8 @@ let iso_ord_p : (Date.t, unit) MParser.t =
   | Error e ->
       fail
         (Printf.sprintf "Invalid date: %s"
-           (Date_time.ISO_ord_date_time.string_of_error
-              (e :> Date_time.ISO_ord_date_time.error)))
+           (Date_time.ISO_ord_date_time'.string_of_error
+              (e :> Date_time.ISO_ord_date_time'.error)))
 
 let date_p : (Date.t, unit) MParser.t =
   let open MParser in

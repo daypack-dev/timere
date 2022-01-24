@@ -247,6 +247,14 @@ let max_of_local_result = max_of_local_result
 
 include Ymd_date_time
 
+module ISO_week_date_time = struct
+  include ISO_week_date_time'
+end
+
+module ISO_ord_date_time = struct
+  include ISO_ord_date_time'
+end
+
 module Interval = struct
   type t = timestamp * timestamp
 
