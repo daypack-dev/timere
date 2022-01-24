@@ -92,7 +92,8 @@ let make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ?second
     | Error (`Invalid_offset tz_offset) | Error (`Unrecorded_offset tz_offset)
       ->
         Error
-          (`Invalid_tz_info (CCOpt.map Timedesc.Time_zone.name tz, tz_offset))
+          (`Invalid_tz_info
+            (CCOption.map Timedesc.Time_zone.name tz, tz_offset))
   in
   match tz_info with
   | Error e -> Error e
@@ -117,20 +118,23 @@ let make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ?second
       in
       if not year_is_fine then
         Error
-          (`Invalid_year (CCOpt.get_exn_or "Expected year to be Some _" year))
+          (`Invalid_year
+            (CCOption.get_exn_or "Expected year to be Some _" year))
       else if not month_day_is_fine then
-        Error (`Invalid_day (CCOpt.get_exn_or "Expected day to be Some _" day))
+        Error
+          (`Invalid_day (CCOption.get_exn_or "Expected day to be Some _" day))
       else if not hour_is_fine then
         Error
-          (`Invalid_hour (CCOpt.get_exn_or "Expected hour to be Some _" hour))
+          (`Invalid_hour
+            (CCOption.get_exn_or "Expected hour to be Some _" hour))
       else if not minute_is_fine then
         Error
           (`Invalid_minute
-            (CCOpt.get_exn_or "Expected minute to be Some _" minute))
+            (CCOption.get_exn_or "Expected minute to be Some _" minute))
       else if not second_is_fine then
         Error
           (`Invalid_second
-            (CCOpt.get_exn_or "Expected second to be Some _" second))
+            (CCOption.get_exn_or "Expected second to be Some _" second))
       else
         let default_month =
           match lean_toward with `Earlier -> 1 | `Later -> 12
@@ -537,7 +541,7 @@ let equal_pick t1 t2 =
 
 let equal x y =
   equal_pick x.pick y.pick
-  && CCOpt.equal Timedesc.Time_zone_info.equal x.tz_info y.tz_info
+  && CCOption.equal Timedesc.Time_zone_info.equal x.tz_info y.tz_info
 
 let to_pattern ({ pick; tz_info = _ } : t) =
   let years =

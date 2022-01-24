@@ -11,7 +11,7 @@ module Branch = struct
 
   let to_timestamp_local t =
     Timedesc.Zoneless.make
-      (Timedesc.Date.Ymd_date.make_exn ~year:t.year ~month:t.month ~day:t.day)
+      (Timedesc.Date.Ymd.make_exn ~year:t.year ~month:t.month ~day:t.day)
       (Timedesc.Time.make_exn ~hour:t.hour ~minute:t.minute ~second:t.second
          ~ns:t.ns ())
     |> Timedesc.Zoneless.to_timestamp_local
@@ -26,7 +26,7 @@ module Branch = struct
     | Error _ -> failwith "Unexpected case"
 
   let of_date_time (x : Timedesc.t) : t =
-    let { Timedesc.Date.Ymd_date.year; month; day } = Timedesc.ymd_date x in
+    let { Timedesc.Date.Ymd.year; month; day } = Timedesc.ymd_date x in
     let { Timedesc.Time.hour; minute; second; ns } = Timedesc.time_view x in
     { year; month; day; hour; minute; second; ns }
 
@@ -86,12 +86,12 @@ module Search_param = struct
       Timedesc.Time_zone.make_offset_only_exn search_using_offset_from_utc
     in
     let start_dt =
-      CCOpt.get_exn_or
+      CCOption.get_exn_or
         "Expected successful date time construction from timestamp"
       @@ Timedesc.of_timestamp ~tz_of_date_time start
     in
     let end_inc_dt =
-      CCOpt.get_exn_or
+      CCOption.get_exn_or
         "Expected successful date time construction from timestamp"
       @@ Timedesc.of_timestamp ~tz_of_date_time (Timedesc.Span.pred end_exc)
     in
@@ -268,7 +268,7 @@ module Matching_days = struct
       OSeq.(day_start -- day_end_inc)
       |> Seq.filter (fun day ->
              let wday =
-               Timedesc.Date.Ymd_date.make_exn ~year:cur_branch.year
+               Timedesc.Date.Ymd.make_exn ~year:cur_branch.year
                  ~month:cur_branch.month ~day
                |> Timedesc.Date.weekday
              in
@@ -523,13 +523,13 @@ let resolve (search_param : Search_param.t) (t : Pattern.t) :
       x'
       |> Branch.to_date_time
            ~offset_from_utc:search_param.search_using_offset_from_utc
-      |> CCOpt.map Timedesc.to_timestamp_single
+      |> CCOption.map Timedesc.to_timestamp_single
     in
     let y =
       y'
       |> Branch.to_date_time
            ~offset_from_utc:search_param.search_using_offset_from_utc
-      |> CCOpt.map Timedesc.to_timestamp_single
+      |> CCOption.map Timedesc.to_timestamp_single
     in
     match (x, y) with
     | Some x, Some y -> Some (x, y)

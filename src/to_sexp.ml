@@ -1,6 +1,6 @@
 let sexp_of_month x =
   CCSexp.atom
-  @@ CCOpt.get_exn_or "Expected valid month"
+  @@ CCOption.get_exn_or "Expected valid month"
   @@ Time.abbr_string_of_month x
 
 let sexp_of_weekday x = CCSexp.atom @@ Time.abbr_string_of_weekday x
@@ -25,66 +25,66 @@ let sexp_of_points ({ pick; tz_info } : Points.t) =
          Some
            (list
               (atom "pick"
-               ::
-               (match pick with
-               | N ns -> [ atom "n"; sexp_of_int ns ]
-               | SN { second; ns } ->
-                   [ atom "sn"; sexp_of_int second; sexp_of_int ns ]
-               | MSN { minute; second; ns } ->
-                   [
-                     atom "msn";
-                     sexp_of_int minute;
-                     sexp_of_int second;
-                     sexp_of_int ns;
-                   ]
-               | HMSN { hour; minute; second; ns } ->
-                   [
-                     atom "hmsn";
-                     sexp_of_int hour;
-                     sexp_of_int minute;
-                     sexp_of_int second;
-                     sexp_of_int ns;
-                   ]
-               | WHMSN { weekday; hour; minute; second; ns } ->
-                   [
-                     atom "whmsn";
-                     sexp_of_weekday weekday;
-                     sexp_of_int hour;
-                     sexp_of_int minute;
-                     sexp_of_int second;
-                     sexp_of_int ns;
-                   ]
-               | DHMSN { month_day; hour; minute; second; ns } ->
-                   [
-                     atom "dhmsn";
-                     sexp_of_int month_day;
-                     sexp_of_int hour;
-                     sexp_of_int minute;
-                     sexp_of_int second;
-                     sexp_of_int ns;
-                   ]
-               | MDHMSN { month; month_day; hour; minute; second; ns } ->
-                   [
-                     atom "mdhmsn";
-                     sexp_of_month month;
-                     sexp_of_int month_day;
-                     sexp_of_int hour;
-                     sexp_of_int minute;
-                     sexp_of_int second;
-                     sexp_of_int ns;
-                   ]
-               | YMDHMSN { year; month; month_day; hour; minute; second; ns } ->
-                   [
-                     atom "ymdhmsn";
-                     sexp_of_int year;
-                     sexp_of_month month;
-                     sexp_of_int month_day;
-                     sexp_of_int hour;
-                     sexp_of_int minute;
-                     sexp_of_int second;
-                     sexp_of_int ns;
-                   ])));
-         CCOpt.map Timedesc.Time_zone_info.to_sexp tz_info;
+              ::
+              (match pick with
+              | N ns -> [ atom "n"; sexp_of_int ns ]
+              | SN { second; ns } ->
+                  [ atom "sn"; sexp_of_int second; sexp_of_int ns ]
+              | MSN { minute; second; ns } ->
+                  [
+                    atom "msn";
+                    sexp_of_int minute;
+                    sexp_of_int second;
+                    sexp_of_int ns;
+                  ]
+              | HMSN { hour; minute; second; ns } ->
+                  [
+                    atom "hmsn";
+                    sexp_of_int hour;
+                    sexp_of_int minute;
+                    sexp_of_int second;
+                    sexp_of_int ns;
+                  ]
+              | WHMSN { weekday; hour; minute; second; ns } ->
+                  [
+                    atom "whmsn";
+                    sexp_of_weekday weekday;
+                    sexp_of_int hour;
+                    sexp_of_int minute;
+                    sexp_of_int second;
+                    sexp_of_int ns;
+                  ]
+              | DHMSN { month_day; hour; minute; second; ns } ->
+                  [
+                    atom "dhmsn";
+                    sexp_of_int month_day;
+                    sexp_of_int hour;
+                    sexp_of_int minute;
+                    sexp_of_int second;
+                    sexp_of_int ns;
+                  ]
+              | MDHMSN { month; month_day; hour; minute; second; ns } ->
+                  [
+                    atom "mdhmsn";
+                    sexp_of_month month;
+                    sexp_of_int month_day;
+                    sexp_of_int hour;
+                    sexp_of_int minute;
+                    sexp_of_int second;
+                    sexp_of_int ns;
+                  ]
+              | YMDHMSN { year; month; month_day; hour; minute; second; ns } ->
+                  [
+                    atom "ymdhmsn";
+                    sexp_of_int year;
+                    sexp_of_month month;
+                    sexp_of_int month_day;
+                    sexp_of_int hour;
+                    sexp_of_int minute;
+                    sexp_of_int second;
+                    sexp_of_int ns;
+                  ])));
+         CCOption.map Timedesc.Time_zone_info.to_sexp tz_info;
        ])
 
 let sexp_of_date_time = Timedesc.to_sexp

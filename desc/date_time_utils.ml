@@ -126,25 +126,24 @@ let jd_of_ydoy ~year ~day_of_year =
   let month, day = md_of_ydoy ~year ~day_of_year in
   jd_of_ymd ~year ~month ~day
 
-let jd_of_start_of_iso_week_year ~iso_week_year =
+let jd_of_start_of_iso_year ~year =
   (* we use the fact that
      - Jan 4th is always in week 1 of the year
      - and week starts on Monday
 
      to find the start date of week 1
   *)
-  match weekday_of_ymd ~year:iso_week_year ~month:1 ~day:4 with
-  | `Mon -> jd_of_ymd ~year:iso_week_year ~month:1 ~day:4
-  | `Tue -> jd_of_ymd ~year:iso_week_year ~month:1 ~day:3
-  | `Wed -> jd_of_ymd ~year:iso_week_year ~month:1 ~day:2
-  | `Thu -> jd_of_ymd ~year:iso_week_year ~month:1 ~day:1
-  | `Fri -> jd_of_ymd ~year:(pred iso_week_year) ~month:12 ~day:31
-  | `Sat -> jd_of_ymd ~year:(pred iso_week_year) ~month:12 ~day:30
-  | `Sun -> jd_of_ymd ~year:(pred iso_week_year) ~month:12 ~day:29
+  match weekday_of_ymd ~year ~month:1 ~day:4 with
+  | `Mon -> jd_of_ymd ~year ~month:1 ~day:4
+  | `Tue -> jd_of_ymd ~year ~month:1 ~day:3
+  | `Wed -> jd_of_ymd ~year ~month:1 ~day:2
+  | `Thu -> jd_of_ymd ~year ~month:1 ~day:1
+  | `Fri -> jd_of_ymd ~year:(pred year) ~month:12 ~day:31
+  | `Sat -> jd_of_ymd ~year:(pred year) ~month:12 ~day:30
+  | `Sun -> jd_of_ymd ~year:(pred year) ~month:12 ~day:29
 
-let week_count_of_iso_week_year ~iso_week_year =
-  (jd_of_start_of_iso_week_year ~iso_week_year:(succ iso_week_year)
-  - jd_of_start_of_iso_week_year ~iso_week_year)
+let week_count_of_iso_year ~year =
+  (jd_of_start_of_iso_year ~year:(succ year) - jd_of_start_of_iso_year ~year)
   / 7
 
 let iso_int_of_weekday (weekday : weekday) =
@@ -175,30 +174,28 @@ let iso_week_date_of_jd (jd : int) : int * int * weekday =
   let week_of_year = (10 + day_of_year - iso_int_of_weekday weekday) / 7 in
   assert (week_of_year >= 0);
   assert (week_of_year <= 53);
-  let iso_week_year, week =
+  let year, week =
     if week_of_year = 0 then
-      (pred year, week_count_of_iso_week_year ~iso_week_year:(pred year))
-    else if
-      week_of_year = 53 && week_count_of_iso_week_year ~iso_week_year:year < 53
-    then (succ year, 1)
+      (pred year, week_count_of_iso_year ~year:(pred year))
+    else if week_of_year = 53 && week_count_of_iso_year ~year < 53 then
+      (succ year, 1)
     else (year, week_of_year)
   in
-  (iso_week_year, week, weekday)
+  (year, week, weekday)
 
-let jd_of_iso_week_date ~iso_week_year ~iso_week ~weekday =
+let jd_of_iso_week_date ~year ~week ~weekday =
   let weekday_int = iso_int_of_weekday weekday in
   let jan_4_weekday_int =
-    iso_int_of_weekday (weekday_of_ymd ~year:iso_week_year ~month:1 ~day:4)
+    iso_int_of_weekday (weekday_of_ymd ~year ~month:1 ~day:4)
   in
-  let day_of_year = (iso_week * 7) + weekday_int - (jan_4_weekday_int + 3) in
-  let day_count_of_prev_year = day_count_of_year ~year:(pred iso_week_year) in
-  let day_count_of_cur_year = day_count_of_year ~year:iso_week_year in
+  let day_of_year = (week * 7) + weekday_int - (jan_4_weekday_int + 3) in
+  let day_count_of_prev_year = day_count_of_year ~year:(pred year) in
+  let day_count_of_cur_year = day_count_of_year ~year in
   let year, day_of_year =
-    if day_of_year < 1 then
-      (pred iso_week_year, day_count_of_prev_year + day_of_year)
+    if day_of_year < 1 then (pred year, day_count_of_prev_year + day_of_year)
     else if day_of_year > day_count_of_cur_year then
-      (succ iso_week_year, day_of_year - day_count_of_cur_year)
-    else (iso_week_year, day_of_year)
+      (succ year, day_of_year - day_count_of_cur_year)
+    else (year, day_of_year)
   in
   jd_of_ydoy ~year ~day_of_year
 
@@ -296,7 +293,7 @@ let month_of_full_string s : int option =
   | _ -> None
 
 let abbr_string_of_month (month : int) : string option =
-  CCOpt.map (fun s -> String.sub s 0 3) (full_string_of_month month)
+  CCOption.map (fun s -> String.sub s 0 3) (full_string_of_month month)
 
 let month_of_abbr_string s : int option =
   match s with

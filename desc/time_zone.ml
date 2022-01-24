@@ -80,7 +80,7 @@ let process_table ((starts, entries) : table) : record =
 
 let lookup_record name : record option =
   M.find_opt name db
-  |> CCOpt.map (fun table ->
+  |> CCOption.map (fun table ->
          assert (check_table table);
          process_table table)
 
@@ -168,7 +168,7 @@ let make_offset_only_exn offset =
   | Some x -> x
 
 let utc : t =
-  CCOpt.get_exn_or "Expected successful construction of UTC"
+  CCOption.get_exn_or "Expected successful construction of UTC"
     (make_offset_only Span.zero)
 
 let make name : t option =
@@ -297,7 +297,7 @@ module Raw = struct
     | Some offset -> make_offset_only offset
     | None ->
         table_of_transitions l
-        |> CCOpt.map (fun table ->
+        |> CCOption.map (fun table ->
                { typ = Backed name; record = process_table table })
 end
 
@@ -337,21 +337,19 @@ module Sexp = struct
     CCSexp.(
       list
         (atom "tz"
-         ::
-         atom (name t)
-         ::
-         List.map
-           (fun ((start, _), entry) ->
-             list
-               [
-                 sexp_of_int64 start;
-                 list
-                   [
-                     (if entry.is_dst then atom "t" else atom "f");
-                     sexp_of_int entry.offset;
-                   ];
-               ])
-           (Raw.to_transitions t)))
+        :: atom (name t)
+        :: List.map
+             (fun ((start, _), entry) ->
+               list
+                 [
+                   sexp_of_int64 start;
+                   list
+                     [
+                       (if entry.is_dst then atom "t" else atom "f");
+                       sexp_of_int entry.offset;
+                     ];
+                 ])
+             (Raw.to_transitions t)))
 
   let of_string s =
     let res =
@@ -430,7 +428,7 @@ module Db = struct
   let add tz db = M.add (name tz) tz.record.table db
 
   let find_opt name db =
-    M.find_opt name db |> CCOpt.map (fun table -> Raw.of_table ~name table)
+    M.find_opt name db |> CCOption.map (fun table -> Raw.of_table ~name table)
 
   let remove name db = M.remove name db
 

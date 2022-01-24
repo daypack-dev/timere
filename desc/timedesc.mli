@@ -109,7 +109,7 @@
     {!ISO_week_date_time.make} and {!ISO_ord_date_time.make}.
 
     Then to access the representation in the alternative date systems, we can use accessors
-    such as {!iso_week_year}, {!iso_week}, and {!day_of_year}.
+    such as {!iso_week}, and {!day_of_year}.
 
     {2 Using date by itself}
 
@@ -117,14 +117,14 @@
     We can use {!Date} module in this case.
 
     To construct a Gregorian calendar date, we can use {!Date.Ymd_date.make}. To construct
-    ISO week date and ISO ordinal date, we can use {!Date.ISO_week_date.make} and {!Date.ISO_ord_date}
+    ISO week date and ISO ordinal date, we can use {!Date.ISO_week_date.make} and {!Date.ISO_ord}
     respectively.
 
     We have similar set of accessors for accessing values of {!Date.t}, such as {!Date.year},
-    {!Date.iso_week_year}, {!Date.day_of_year}.
+    {!Date.iso_week}, {!Date.day_of_year}.
 
     To obtain a "view" (in a manner similar to the human-friendly "view" from {!Span.For_human}), we can
-    use {!Date.ISO_week_date.view} and {!Date.ISO_ord_date.view}.
+    use {!Date.ISO_week_date.view} and {!Date.ISO_ord.view}.
 
     {1 Further reading}
 
@@ -295,13 +295,13 @@ module Span : sig
   (** {1 Constructors} *)
 
   val make : ?s:int64 -> ?ns:int -> unit -> t
-  (** [s] defaults to [0L], [ns] defaults to [0]
+  (** [s] defaults to [0L], [ns] defaults to [0].
 
-      [ns] may be negative, and is normalized during construction
+      [ns] may be negative, and is normalized during construction.
 
       Interpretation of provided input is still [s + ns], i.e. if you wish to
       represent "negative (1 second and 500 nanosecond)", then the call could look like
-      [make ~s:(-1L) ~ns:(-500)]
+      [make ~s:(-1L) ~ns:(-500)].
 
       @raise Out_of_range if the value cannot be represented even after normalization
   *)
@@ -577,32 +577,133 @@ type timestamp = Span.t
 
 (** {1 Date time components} *)
 
+(** {2 Partial date}
+
+    Implementation of:
+    - Gregorian year month ({!Ym})
+    - ISO week ({!ISO_week})
+*)
+
+module Ym : sig
+  type t
+
+  type error =
+    [ `Does_not_exist
+    | `Invalid_year of int
+    | `Invalid_month of int
+    ]
+
+  exception Error_exn of error
+
+  (** {1 Constructors} *)
+
+  val make : year:int -> month:int -> (t, error) result
+
+  val make_exn : year:int -> month:int -> t
+
+  (** {1 Accessors} *)
+
+  val year : t -> int
+
+  val month : t -> int
+
+  val year_month : t -> int * int
+
+  (** {1 Arithmetic} *)
+
+  val add : ?years:int -> ?months:int -> t -> t
+
+  val sub : ?years:int -> ?months:int -> t -> t
+
+  val diff_months : t -> t -> int
+
+  (** {1 Pretty printing} *)
+
+  val pp_iso8601 : Format.formatter -> t -> unit
+
+  val to_iso8601 : t -> string
+
+  (** {1 Parsing} *)
+
+  val of_iso8601 : string -> (t, string) result
+
+  val of_iso8601_exn : string -> t
+end
+
+module ISO_week : sig
+  type t
+
+  type error =
+    [ `Does_not_exist
+    | `Invalid_iso_year of int
+    | `Invalid_iso_week of int
+    ]
+
+  (** {1 Constructors} *)
+
+  val make : year:int -> week:int -> (t, error) result
+
+  val make_exn : year:int -> week:int -> t
+
+  (** {1 Accessors} *)
+
+  val year_week : t -> int * int
+
+  val year : t -> int
+
+  val week : t -> int
+
+  (** {1 Arithmetic} *)
+
+  val add : weeks:int -> t -> t
+
+  val sub : weeks:int -> t -> t
+
+  val diff_weeks : t -> t -> int
+
+  (** {1 Pretty printing} *)
+
+  val pp_iso8601 : Format.formatter -> t -> unit
+
+  val to_iso8601 : t -> string
+
+  (** {1 Parsing} *)
+
+  val of_iso8601 : string -> (t, string) result
+
+  val of_iso8601_exn : string -> t
+end
+
 (** {2 Date}
 
     Implementation of date in:
-    - Gregorian calendar ({!Date.Ymd_date})
+    - Gregorian calendar ({!Date.Ymd})
     - ISO week date calendar ({!Date.ISO_week_date})
-    - ISO ordinal date calendar ({!Date.ISO_ord_date})
+    - ISO ordinal date calendar ({!Date.ISO_ord})
 *)
 
 module Date : sig
   type t
 
+  (** {1 Comparison} *)
+
   val equal : t -> t -> bool
 
-  val year : t -> int
-
   (** {1 Accessors} *)
+
+  val ym : t -> Ym.t
+
+  val year : t -> int
 
   val month : t -> int
 
   val day : t -> int
 
+  val iso_week : t -> ISO_week.t
+
+  val iso_year : t -> int
+
   val weekday : t -> weekday
-
-  val iso_week_year : t -> int
-
-  val iso_week : t -> int
 
   val day_of_year : t -> int
 
@@ -633,7 +734,7 @@ module Date : sig
 
   (** {1 Gregorian calendar} *)
 
-  module Ymd_date : sig
+  module Ymd : sig
     type view = private {
       year : int;
       month : int;
@@ -662,42 +763,71 @@ module Date : sig
     val make_exn : year:int -> month:int -> day:int -> t
 
     val view : t -> view
+
+    (** {1 Pretty printing} *)
+
+    val pp_iso8601 : Format.formatter -> t -> unit
+
+    val to_iso8601 : t -> string
+
+    (** {1 Parsing} *)
+
+    val of_iso8601 : string -> (t, string) result
+
+    val of_iso8601_exn : string -> t
   end
+
+  val of_ym : Ym.t -> day:int -> (t, Ymd.error) result
+
+  val of_ym_exn : Ym.t -> day:int -> t
 
   (** {1 ISO week date calendar} *)
 
   module ISO_week_date : sig
     type view = private {
-      iso_week_year : int;
-      iso_week : int;
+      year : int;
+      week : int;
       weekday : weekday;
     }
 
     type error =
       [ `Does_not_exist
-      | `Invalid_iso_week_year of int
+      | `Invalid_iso_year of int
       | `Invalid_iso_week of int
       ]
 
     exception Error_exn of error
 
-    val make :
-      iso_week_year:int -> iso_week:int -> weekday:weekday -> (t, error) result
+    val make : year:int -> week:int -> weekday:weekday -> (t, error) result
     (** Constructs a date in the ISO week calendar.
 
-        Returns [Error `Invalid_iso_week_year] if [iso_week_year < 0 || 9999 < iso_week_year].
+        Returns [Error `Invalid_iso_year] if [year < 0 || 9999 < year].
 
-        Returns [Error `Invalid_iso_week] if [iso_week < 1 || week count of iso_week_year < iso_week].
+        Returns [Error `Invalid_iso_week] if [week < 1 || week count of year < week].
     *)
 
-    val make_exn : iso_week_year:int -> iso_week:int -> weekday:weekday -> t
+    val make_exn : year:int -> week:int -> weekday:weekday -> t
 
     val view : t -> view
+
+    (** {1 Pretty printing} *)
+
+    val pp_iso8601 : Format.formatter -> t -> unit
+
+    val to_iso8601 : t -> string
+
+    (** {1 Parsing} *)
+
+    val of_iso8601 : string -> (t, string) result
+
+    val of_iso8601_exn : string -> t
   end
+
+  val of_iso_week : ISO_week.t -> weekday:weekday -> t
 
   (** {1 ISO ord date calendar} *)
 
-  module ISO_ord_date : sig
+  module ISO_ord : sig
     type view = private {
       year : int;
       day_of_year : int;
@@ -722,6 +852,18 @@ module Date : sig
     val make_exn : year:int -> day_of_year:int -> t
 
     val view : t -> view
+
+    (** {1 Pretty printing} *)
+
+    val pp_iso8601 : Format.formatter -> t -> unit
+
+    val to_iso8601 : t -> string
+
+    (** {1 Parsing} *)
+
+    val of_iso8601 : string -> (t, string) result
+
+    val of_iso8601_exn : string -> t
   end
 end
 
@@ -1111,11 +1253,13 @@ val make_unambiguous_exn :
 
 val date : t -> Date.t
 
-val ymd_date : t -> Date.Ymd_date.view
+val ymd_date : t -> Date.Ymd.view
 
 val iso_week_date : t -> Date.ISO_week_date.view
 
-val iso_ord_date : t -> Date.ISO_ord_date.view
+val iso_ord_date : t -> Date.ISO_ord.view
+
+val ym : t -> Ym.t
 
 val year : t -> int
 
@@ -1123,11 +1267,11 @@ val month : t -> int
 
 val day : t -> int
 
+val iso_week : t -> ISO_week.t
+
+val iso_year : t -> int
+
 val weekday : t -> weekday
-
-val iso_week_year : t -> int
-
-val iso_week : t -> int
 
 val day_of_year : t -> int
 
@@ -1616,7 +1760,7 @@ end
 module ISO_week_date_time : sig
   type error =
     [ `Does_not_exist
-    | `Invalid_iso_week_year of int
+    | `Invalid_iso_year of int
     | `Invalid_iso_week of int
     | `Invalid_hour of int
     | `Invalid_minute of int
@@ -1634,8 +1778,8 @@ module ISO_week_date_time : sig
     ?tz:Time_zone.t ->
     ?ns:int ->
     ?s_frac:float ->
-    iso_week_year:int ->
-    iso_week:int ->
+    year:int ->
+    week:int ->
     weekday:weekday ->
     hour:int ->
     minute:int ->
@@ -1647,8 +1791,8 @@ module ISO_week_date_time : sig
     ?tz:Time_zone.t ->
     ?ns:int ->
     ?s_frac:float ->
-    iso_week_year:int ->
-    iso_week:int ->
+    year:int ->
+    week:int ->
     weekday:weekday ->
     hour:int ->
     minute:int ->
@@ -1660,8 +1804,8 @@ module ISO_week_date_time : sig
     ?tz:Time_zone.t ->
     ?ns:int ->
     ?s_frac:float ->
-    iso_week_year:int ->
-    iso_week:int ->
+    year:int ->
+    week:int ->
     weekday:weekday ->
     hour:int ->
     minute:int ->
@@ -1674,8 +1818,8 @@ module ISO_week_date_time : sig
     ?tz:Time_zone.t ->
     ?ns:int ->
     ?s_frac:float ->
-    iso_week_year:int ->
-    iso_week:int ->
+    year:int ->
+    week:int ->
     weekday:weekday ->
     hour:int ->
     minute:int ->
@@ -1683,6 +1827,36 @@ module ISO_week_date_time : sig
     offset_from_utc:Span.t ->
     unit ->
     t
+
+  (** {1 Pretty printing} *)
+
+  val pp_iso8601 : ?frac_s:int -> unit -> Format.formatter -> t -> unit
+
+  val pp_iso8601_milli : Format.formatter -> t -> unit
+
+  val pp_iso8601_micro : Format.formatter -> t -> unit
+
+  val pp_iso8601_nano : Format.formatter -> t -> unit
+
+  val to_iso8601 : ?frac_s:int -> t -> string option
+
+  val to_iso8601_milli : t -> string option
+
+  val to_iso8601_micro : t -> string option
+
+  val to_iso8601_nano : t -> string option
+
+  (** {2 Parsing} *)
+
+  val of_iso8601 : string -> (t, string) result
+  (**
+       Parses a subset of ISO8601, up to 9 fractional digits for second (nanosecond precision).
+
+       If more than 9 fractional digits are provided, then only the first 9 digits are used, i.e. no rounding.
+  *)
+
+  val of_iso8601_exn : string -> t
+  (** @raise ISO8601_parse_exn if [of_iso8601] fails *)
 end
 
 module ISO_ord_date_time : sig
@@ -1751,6 +1925,36 @@ module ISO_ord_date_time : sig
     offset_from_utc:Span.t ->
     unit ->
     t
+
+  (** {1 Pretty printing} *)
+
+  val pp_iso8601 : ?frac_s:int -> unit -> Format.formatter -> t -> unit
+
+  val pp_iso8601_milli : Format.formatter -> t -> unit
+
+  val pp_iso8601_micro : Format.formatter -> t -> unit
+
+  val pp_iso8601_nano : Format.formatter -> t -> unit
+
+  val to_iso8601 : ?frac_s:int -> t -> string option
+
+  val to_iso8601_milli : t -> string option
+
+  val to_iso8601_micro : t -> string option
+
+  val to_iso8601_nano : t -> string option
+
+  (** {2 Parsing} *)
+
+  val of_iso8601 : string -> (t, string) result
+  (**
+       Parses a subset of ISO8601, up to 9 fractional digits for second (nanosecond precision).
+
+       If more than 9 fractional digits are provided, then only the first 9 digits are used, i.e. no rounding.
+  *)
+
+  val of_iso8601_exn : string -> t
+  (** @raise ISO8601_parse_exn if [of_iso8601] fails *)
 end
 
 (** {1 Misc} *)
@@ -1812,7 +2016,7 @@ module Utils : sig
 
   val day_count_of_month : year:int -> month:int -> int
 
-  val week_count_of_iso_week_year : iso_week_year:int -> int
+  val week_count_of_iso_year : year:int -> int
 
   (** {1 Month utils} *)
 
@@ -1853,13 +2057,27 @@ module Utils : sig
 
   val abbr_string_of_weekday : weekday -> string
 
+  (** {b Warning}: Following functions are direct applications of the relevant formulas with little to no error checking.
+
+      You are advised to read the source code of the following functions in {v date_time_utils.ml} if you intend to use them
+      to ensure they behave as you expect.
+   *)
+
   val is_leap_year : year:int -> bool
 
   val jd_of_ymd : year:int -> month:int -> day:int -> int
+
+  val jd_of_ydoy : year:int -> day_of_year:int -> int
 
   val jd_of_date : Date.t -> int
 
   val jd_of_unix_epoch : int
 
   val jd_span_of_unix_epoch : Span.t
+
+  val ymd_of_jd : int -> int * int * int
+
+  val weekday_of_jd : int -> weekday
+
+  val doy_of_ymd : year:int -> month:int -> day:int -> int
 end

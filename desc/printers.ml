@@ -111,7 +111,7 @@ module Format_string_parsers = struct
       | `Single offset -> Some (Span.For_human'.view offset)
       | `Ambiguous _ -> None
     in
-    let Date.Ymd_date'.{ year; month; day } = Date_time.ymd_date date_time in
+    let Date.Ymd'.{ year; month; day } = Date_time.ymd_date date_time in
     let weekday = Date_time.weekday date_time in
     let Time.{ hour; minute; second; ns } = Date_time.time_view date_time in
     let smallest_lossless_frac_s = deduce_smallest_lossless_frac_s ~ns in
@@ -123,7 +123,7 @@ module Format_string_parsers = struct
            >>= (fun x ->
                  return
                    (map_string_to_size_and_casing x
-                      (CCOpt.get_exn_or "Expected valid month"
+                      (CCOption.get_exn_or "Expected valid month"
                       @@ full_string_of_month month)))
            <|> (padding >>= fun padding -> return (pad_int padding month)));
         (attempt (string "day:")

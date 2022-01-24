@@ -11,7 +11,7 @@
 )
 
 (executables
- (flags     (-w "+a-4-9-29-37-40-42-44-48-50-32-30@8"))
+ (flags     (-w "+a-4-9-29-37-40-42-44-48-50-70@8"))
  (names gen_time_zone_data
  )
  (libraries oseq

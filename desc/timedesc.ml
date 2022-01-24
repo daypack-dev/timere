@@ -15,14 +15,40 @@ let of_iso8601_exn' of_iso8601 s =
   | Ok x -> x
   | Error msg -> raise (ISO8601_parse_exn msg)
 
+let str_of_pp pp x = Fmt.str "%a" pp x
+
+module Ym = struct
+  include Ym
+
+  let pp_iso8601 = ISO8601_printers.pp_ym
+
+  let to_iso8601 x = str_of_pp pp_iso8601 x
+
+  let of_iso8601 = ISO8601_parsers.ym_of_str
+
+  let of_iso8601_exn s = of_iso8601_exn' of_iso8601 s
+end
+
+module ISO_week = struct
+  include ISO_week
+
+  let pp_iso8601 = ISO8601_printers.pp_iso_week
+
+  let to_iso8601 x = str_of_pp pp_iso8601 x
+
+  let of_iso8601 = ISO8601_parsers.iso_week_of_str
+
+  let of_iso8601_exn s = of_iso8601_exn' of_iso8601 s
+end
+
 module Date = struct
   include Date
 
   let pp_rfc3339 = RFC3339.pp_date
 
-  let to_rfc3339 = RFC3339.of_date
+  let to_rfc3339 x = str_of_pp pp_rfc3339 x
 
-  let of_iso8601 = ISO8601.to_date
+  let of_iso8601 = ISO8601_parsers.date_of_str
 
   let of_iso8601_exn s = of_iso8601_exn' of_iso8601 s
 
@@ -37,9 +63,41 @@ module Date = struct
 
   let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_date
 
-  module Ymd_date = Ymd_date'
-  module ISO_week_date = ISO_week_date'
-  module ISO_ord_date = ISO_ord_date'
+  module Ymd = struct
+    include Ymd'
+
+    let pp_iso8601 = ISO8601_printers.pp_ymd_date
+
+    let to_iso8601 x = str_of_pp pp_iso8601 x
+
+    let of_iso8601 = ISO8601_parsers.ymd_of_str
+
+    let of_iso8601_exn = of_iso8601_exn' of_iso8601
+  end
+
+  module ISO_week_date = struct
+    include ISO_week_date'
+
+    let pp_iso8601 = ISO8601_printers.pp_iso_week_date
+
+    let to_iso8601 x = str_of_pp pp_iso8601 x
+
+    let of_iso8601 = ISO8601_parsers.iso_week_date_of_str
+
+    let of_iso8601_exn = of_iso8601_exn' of_iso8601
+  end
+
+  module ISO_ord = struct
+    include ISO_ord'
+
+    let pp_iso8601 = ISO8601_printers.pp_iso_ord
+
+    let to_iso8601 x = str_of_pp pp_iso8601 x
+
+    let of_iso8601 = ISO8601_parsers.iso_ord_of_str
+
+    let of_iso8601_exn = of_iso8601_exn' of_iso8601
+  end
 end
 
 module Time = struct
@@ -61,7 +119,7 @@ module Time = struct
 
   let to_rfc3339_nano = to_rfc3339 ~frac_s:frac_s_nano
 
-  let of_iso8601 = ISO8601.to_time
+  let of_iso8601 = ISO8601_parsers.time_of_str
 
   let of_iso8601_exn s = of_iso8601_exn' of_iso8601 s
 
@@ -135,9 +193,9 @@ module Timestamp = struct
 
   let to_rfc3339_nano = to_rfc3339 ~frac_s:frac_s_nano
 
-  let of_iso8601 = ISO8601.to_timestamp
+  let of_iso8601 = ISO8601_parsers.timestamp_of_str
 
-  let of_iso8601_exn = of_iso8601_exn' ISO8601.to_timestamp
+  let of_iso8601_exn = of_iso8601_exn' of_iso8601
 
   let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.span_of_sexp
 
@@ -168,7 +226,7 @@ let to_rfc3339_micro = to_rfc3339 ~frac_s:frac_s_micro
 
 let to_rfc3339_nano = to_rfc3339 ~frac_s:frac_s_nano
 
-let of_iso8601 = ISO8601.to_date_time
+let of_iso8601 = ISO8601_parsers.date_time_of_str
 
 let of_iso8601_exn = of_iso8601_exn' of_iso8601
 
@@ -188,6 +246,54 @@ let min_of_local_result = min_of_local_result
 let max_of_local_result = max_of_local_result
 
 include Ymd_date_time
+
+module ISO_week_date_time = struct
+  include ISO_week_date_time'
+
+  let pp_iso8601 = ISO8601_printers.pp_iso_week_date_time
+
+  let pp_iso8601_milli = pp_iso8601 ~frac_s:frac_s_milli ()
+
+  let pp_iso8601_micro = pp_iso8601 ~frac_s:frac_s_micro ()
+
+  let pp_iso8601_nano = pp_iso8601 ~frac_s:frac_s_nano ()
+
+  let to_iso8601 = ISO8601_printers.str_of_iso_week_date_time
+
+  let to_iso8601_milli = to_iso8601 ~frac_s:frac_s_milli
+
+  let to_iso8601_micro = to_iso8601 ~frac_s:frac_s_micro
+
+  let to_iso8601_nano = to_iso8601 ~frac_s:frac_s_nano
+
+  let of_iso8601 = ISO8601_parsers.iso_week_date_time_of_str
+
+  let of_iso8601_exn = of_iso8601_exn' of_iso8601
+end
+
+module ISO_ord_date_time = struct
+  include ISO_ord_date_time'
+
+  let pp_iso8601 = ISO8601_printers.pp_iso_ord_date_time
+
+  let pp_iso8601_milli = pp_iso8601 ~frac_s:frac_s_milli ()
+
+  let pp_iso8601_micro = pp_iso8601 ~frac_s:frac_s_micro ()
+
+  let pp_iso8601_nano = pp_iso8601 ~frac_s:frac_s_nano ()
+
+  let to_iso8601 = ISO8601_printers.str_of_iso_ord_date_time
+
+  let to_iso8601_milli = to_iso8601 ~frac_s:frac_s_milli
+
+  let to_iso8601_micro = to_iso8601 ~frac_s:frac_s_micro
+
+  let to_iso8601_nano = to_iso8601 ~frac_s:frac_s_nano
+
+  let of_iso8601 = ISO8601_parsers.iso_ord_date_time_of_str
+
+  let of_iso8601_exn = of_iso8601_exn' of_iso8601
+end
 
 module Interval = struct
   type t = timestamp * timestamp
@@ -216,13 +322,13 @@ end
 module Zoneless = struct
   include Zoneless'
 
-  let of_iso8601 = ISO8601.to_zoneless
+  let of_iso8601 = ISO8601_parsers.zoneless_of_str
 
-  let of_iso8601_exn = of_iso8601_exn' ISO8601.to_zoneless
+  let of_iso8601_exn = of_iso8601_exn' of_iso8601
 
-  let maybe_zoneless_of_iso8601 = ISO8601.to_maybe_zoneless
+  let maybe_zoneless_of_iso8601 = ISO8601_parsers.maybe_zoneless_of_str
 
-  let maybe_zoneless_of_iso8601_exn = of_iso8601_exn' ISO8601.to_maybe_zoneless
+  let maybe_zoneless_of_iso8601_exn = of_iso8601_exn' maybe_zoneless_of_iso8601
 
   let to_sexp = To_sexp.sexp_of_zoneless
 
@@ -250,7 +356,7 @@ module Utils = struct
 
   let day_count_of_month = day_count_of_month
 
-  let week_count_of_iso_week_year = week_count_of_iso_week_year
+  let week_count_of_iso_year = week_count_of_iso_year
 
   type month =
     [ `Jan
@@ -318,9 +424,17 @@ module Utils = struct
 
   let jd_of_ymd = jd_of_ymd
 
+  let jd_of_ydoy = jd_of_ydoy
+
   let jd_of_date (x : Date.t) = x.jd
 
   let jd_of_unix_epoch = jd_of_unix_epoch
 
   let jd_span_of_unix_epoch = jd_span_of_unix_epoch
+
+  let ymd_of_jd = ymd_of_jd
+
+  let weekday_of_jd = weekday_of_jd
+
+  let doy_of_ymd = doy_of_ymd
 end

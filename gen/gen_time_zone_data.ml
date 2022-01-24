@@ -49,6 +49,8 @@ let self_dir = "gen/"
 
 let output_dir = "gen-artifacts/"
 
+let output_flags = [ Open_wronly; Open_creat; Open_trunc; Open_text ]
+
 let output_list_file_name = output_dir ^ "available-time-zones.txt"
 
 let data_output_file_name = output_dir ^ "time_zone_db.sexp"
@@ -167,13 +169,13 @@ let transitions_of_zdump_lines (l : zdump_line list) : transition list =
              is_dst = x.is_dst;
              offset = x.offset;
            }
-           :: acc)
+          :: acc)
           (succ line_num) []
     | x :: y :: rest ->
         if x.date_time_local.tz <> y.date_time_local.tz then
           failwith
             (Printf.sprintf
-               "line: %d, local date times do not match in time_zone" line_num)
+               "line: %d, local date times do not match in time zone" line_num)
         else (
           assert (x.is_dst = y.is_dst);
           assert (x.offset = y.offset);
@@ -187,7 +189,7 @@ let transitions_of_zdump_lines (l : zdump_line list) : transition list =
                is_dst = x.is_dst;
                offset = x.offset;
              }
-             :: acc)
+            :: acc)
             (succ line_num) rest)
   in
   let preprocess l =
@@ -219,7 +221,7 @@ let timestamp_of_date_time_utc (x : date_time) : int64 =
   let offset = 0 in
   Ptime.of_date_time
     ((x.year, x.month, x.day), ((x.hour, x.minute, x.second), offset))
-  |> CCOpt.get_exn_or "Expected successful construction of ptime"
+  |> CCOption.get_exn_or "Expected successful construction of ptime"
   |> Timedesc.Utils.timestamp_of_ptime
   |> Timedesc.Span.get_s
 
@@ -227,7 +229,7 @@ let timestamp_of_date_time_local (x : date_time) : int64 =
   let offset = 0 in
   Ptime.of_date_time
     ((x.year, x.month, x.day), ((x.hour, x.minute, x.second), offset))
-  |> CCOpt.get_exn_or "Expected successful construction of ptime"
+  |> CCOption.get_exn_or "Expected successful construction of ptime"
   |> Timedesc.Utils.timestamp_of_ptime
   |> Timedesc.Span.get_s
 
@@ -328,7 +330,7 @@ let () =
     List.combine all_time_zones transitions
     |> CCList.to_seq
     |> Seq.map (fun (s, l) ->
-           Printf.printf "Constructing transition table for time_zone: %s\n%!" s;
+           Printf.printf "Constructing transition table for time zone: %s\n%!" s;
            let l =
              l
              |> List.map transition_record_indexed_by_utc_of_transition
@@ -385,15 +387,15 @@ let () =
     |> CCList.of_seq
   in
   print_newline ();
-  Printf.printf "Number of time_zones: %d\n" (List.length all_time_zones);
+  Printf.printf "Number of time zones: %d\n" (List.length all_time_zones);
   print_newline ();
   Printf.printf "Maximum number of records: %d\n"
     (CCList.fold_left (fun x (_, l) -> max (List.length l) x) 0 tables_utc);
   print_newline ();
   FileUtil.mkdir ~parent:true output_dir;
   Printf.printf "Generating %s\n" output_list_file_name;
-  CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc; Open_binary ]
-    output_list_file_name (fun oc -> CCIO.write_lines_l oc all_time_zones);
+  CCIO.with_out ~flags:output_flags output_list_file_name (fun oc ->
+      CCIO.write_lines_l oc all_time_zones);
 
   Printf.printf "Generating %s\n" data_output_file_name;
   let time_zones : Timedesc.Time_zone.t list =
@@ -406,20 +408,18 @@ let () =
                 { Timedesc.Time_zone.is_dst = r.is_dst; offset = r.offset } ))
             l
         in
-        CCOpt.get_exn_or
+        CCOption.get_exn_or
           "Expected successful construction of time zone from transitions"
         @@ Timedesc.Time_zone.Raw.of_transitions ~name transitions)
       tables_utc
   in
   let db = Timedesc.Time_zone.Db.of_seq @@ CCList.to_seq time_zones in
-  CCIO.with_out ~flags:[ Open_wronly; Open_creat ] data_output_file_name
-    (fun oc ->
+  CCIO.with_out ~flags:output_flags data_output_file_name (fun oc ->
       Format.fprintf (CCFormat.of_chan oc) "%a@." CCSexp.pp
         (Timedesc.Time_zone.Db.Sexp.to_sexp db));
 
   Printf.printf "Generating %s\n" tz_constants_file_name;
-  CCIO.with_out ~flags:[ Open_wronly; Open_creat ] tz_constants_file_name
-    (fun oc ->
+  CCIO.with_out ~flags:output_flags tz_constants_file_name (fun oc ->
       let walk f start =
         List.fold_left
           (fun pick (_, transitions) ->
@@ -454,7 +454,6 @@ let greatest_pos_tz_offset_s = %d
          let output_file_name =
            Filename.concat dir (List.nth time_zone_parts (len - 1) ^ ".json")
          in
-         CCIO.with_out ~flags:[ Open_wronly; Open_creat ] output_file_name
-           (fun oc ->
+         CCIO.with_out ~flags:output_flags output_file_name (fun oc ->
              Yojson.Basic.pretty_to_channel oc
                (Timedesc.Time_zone.JSON.to_json tz)))

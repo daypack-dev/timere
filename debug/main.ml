@@ -354,7 +354,7 @@ let debug_fuzz_pattern () =
             ~b:
               (Timedesc.Span.get_s
                  (snd
-                    (CCOpt.get_exn_or
+                    (CCOption.get_exn_or
                        "Expected successful retrieval of last element of list"
                     @@ Misc_utils.last_element_of_list search_space)))
           |> OSeq.filter (fun timestamp ->
@@ -365,7 +365,7 @@ let debug_fuzz_pattern () =
                    search_space)
           |> OSeq.filter (fun timestamp ->
                  let dt =
-                   CCOpt.get_exn_or
+                   CCOption.get_exn_or
                      "Expected successful construction of date time"
                    @@ Timedesc.of_timestamp ~tz_of_date_time:tz
                         (Timedesc.Span.make ~s:timestamp ())

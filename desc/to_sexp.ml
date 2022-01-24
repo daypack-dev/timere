@@ -2,7 +2,7 @@ open Date_time_utils
 
 let sexp_of_month x =
   CCSexp.atom
-  @@ CCOpt.get_exn_or "Expected valid month"
+  @@ CCOption.get_exn_or "Expected valid month"
   @@ abbr_string_of_month x
 
 let sexp_of_weekday x = CCSexp.atom @@ abbr_string_of_weekday x
@@ -25,7 +25,7 @@ let sexp_of_tz_info ({ tz; fixed_offset_from_utc } : Time_zone_info.t) =
     (CCList.filter_map CCFun.id
        [
          Some (sexp_of_tz_name tz);
-         CCOpt.map
+         CCOption.map
            (fun tz_offset ->
              sexp_of_int (CCInt64.to_int @@ Span.get_s tz_offset))
            fixed_offset_from_utc;
@@ -33,7 +33,7 @@ let sexp_of_tz_info ({ tz; fixed_offset_from_utc } : Time_zone_info.t) =
 
 let sexp_of_date (x : Date.t) =
   let open CCSexp in
-  let { Date.Ymd_date'.year; month; day } = Date.Ymd_date'.view x in
+  let { Date.Ymd'.year; month; day } = Date.Ymd'.view x in
   list [ sexp_of_int year; sexp_of_int month; sexp_of_int day ]
 
 let sexp_of_time (x : Time.t) =

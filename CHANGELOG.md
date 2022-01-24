@@ -1,5 +1,59 @@
 # Changelog
 
+## Timere-parse 0.0.6
+
+- Bumped dependency of Timedesc to >= 0.6.0
+
+## Timere 0.6.1
+
+- Replaced `CCOpt` with `CCOption` (this bumps dependency of Containers to >= 3.6)
+
+- Bumped dependency of Timedesc to >= 0.6.0
+
+## Timedesc 0.6.0
+
+- Main breaking changes:
+
+  - Changes in ISO week date functions (shorting label for arguments, quality of life changes)
+
+  - Removed `_date` suffix in names of `Date.Ymd_date` and `Date.ISO_ord_date`
+
+- Replaced `CCOpt` with `CCOption` (this bumps dependency of Containers to >= 3.6)
+
+- Added "partial date" modules with ISO8601 parsing and printing facilities
+
+  - `ISO_week`
+
+  - `Ym`
+
+- Added additional ISO8601 printing facilities for all three calendar systems
+
+  - `Date.Ymd.pp/to_iso8601` (these are just aliases to the RFC3339 printers)
+
+  - `Date.ISO_week_date.pp/to_iso8601`
+
+  - `Date.ISO_ord.pp/to_iso8601`
+
+- Added additional ISO8601 parsing facilities for all three calendar systems
+
+  - `Date.Ymd.of_iso8601[_exn]`
+
+  - `Date.ISO_week_date.of_iso8601[_exn]`
+
+  - `Date.ISO_ord.of_iso8601[_exn]`
+
+- Added additional date conversion functions to `Utils`
+
+  - `ymd_of_jd`
+
+  - `weekday_of_jd`
+
+  - `doy_of_ymd`
+
+  - `jd_of_ydoy`
+
+- Tzdb refresh
+
 ## Timere-parse 0.0.5
 
 - Updated use of Timedesc, Timere API

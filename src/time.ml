@@ -491,7 +491,7 @@ module Range = struct
     let x = int_exc_range_of_range ~to_int x |> timestamp_pair_of_int_pair in
     let y = int_exc_range_of_range ~to_int y |> timestamp_pair_of_int_pair in
     Interval'.join x y
-    |> CCOpt.map (fun (x, y) ->
+    |> CCOption.map (fun (x, y) ->
            `Range_exc
              ( of_int @@ Timedesc.Span.get_ns_offset x,
                of_int @@ Timedesc.Span.get_ns_offset @@ y ))
@@ -841,7 +841,7 @@ module Weekday_ranges = Ranges.Make (struct
   let of_int x =
     x
     |> Timedesc.Utils.weekday_of_tm_int
-    |> CCOpt.get_exn_or "Expected successful construction of weekday"
+    |> CCOption.get_exn_or "Expected successful construction of weekday"
 end)
 
 module Month_day_ranges = Ranges.Make (struct
@@ -1245,7 +1245,8 @@ let pattern_intervals ?(inc_exc : inc_exc = `Exc)
   in
   if Points.precision start < Points.precision end_ then
     invalid_arg "pattern_intervals: start is less precise than end_exc";
-  if CCOpt.equal Timedesc.Time_zone_info.equal start.tz_info end_.tz_info then
+  if CCOption.equal Timedesc.Time_zone_info.equal start.tz_info end_.tz_info
+  then
     match (start.pick, end_.pick) with
     | Points.(N ns_start, N ns_end) when ns_start = ns_end -> always
     | Points.(
@@ -1495,7 +1496,7 @@ let month_of_full_string s : int option =
   | _ -> None
 
 let abbr_string_of_month (month : int) : string option =
-  CCOpt.map (fun s -> String.sub s 0 3) (full_string_of_month month)
+  CCOption.map (fun s -> String.sub s 0 3) (full_string_of_month month)
 
 let month_of_abbr_string s : int option =
   match s with

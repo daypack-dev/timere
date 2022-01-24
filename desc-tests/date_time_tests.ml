@@ -35,7 +35,7 @@ module Alco = struct
       (Timedesc.of_iso8601 "2020-01-01T00:00:60Z"
       |> CCResult.get_exn
       |> Timedesc.to_rfc3339
-      |> CCOpt.get_exn_or "Expected successful RFC3339 construction")
+      |> CCOption.get_exn_or "Expected successful RFC3339 construction")
 
   let of_iso8601_leap_second_to_rfc3339_case1 () =
     Alcotest.(check string)
@@ -43,7 +43,7 @@ module Alco = struct
       (Timedesc.of_iso8601 "2020-01-01T00:00:60.12305Z"
       |> CCResult.get_exn
       |> Timedesc.to_rfc3339
-      |> CCOpt.get_exn_or "Expected successful RFC3339 construction")
+      |> CCOption.get_exn_or "Expected successful RFC3339 construction")
 
   let of_iso8601_case0 () =
     Alcotest.(check span_testable)
@@ -160,7 +160,7 @@ module Alco = struct
       @@ Timedesc.Zoneless.maybe_zoneless_of_iso8601 "2020-01-01T24:00:00")
       (`Zoneless
         (Timedesc.Zoneless.make
-           (Timedesc.Date.Ymd_date.make_exn ~year:2020 ~month:1 ~day:1)
+           (Timedesc.Date.Ymd.make_exn ~year:2020 ~month:1 ~day:1)
            (Timedesc.Time.make_exn ~hour:23 ~minute:59 ~second:59
               ~ns:999_999_999 ())))
 
@@ -171,7 +171,7 @@ module Alco = struct
       @@ Timedesc.Zoneless.maybe_zoneless_of_iso8601 "1910-05-27T07:32:00")
       (`Zoneless
         (Timedesc.Zoneless.make
-           (Timedesc.Date.Ymd_date.make_exn ~year:1910 ~month:5 ~day:27)
+           (Timedesc.Date.Ymd.make_exn ~year:1910 ~month:5 ~day:27)
            (Timedesc.Time.make_exn ~hour:7 ~minute:32 ~second:0 ())))
 
   let zoneless_of_iso8601_case0 () =
@@ -179,7 +179,7 @@ module Alco = struct
       "same timestamp"
       (CCResult.get_exn @@ Timedesc.Zoneless.of_iso8601 "2020-01-01T24:00:00")
       (Timedesc.Zoneless.make
-         (Timedesc.Date.Ymd_date.make_exn ~year:2020 ~month:1 ~day:1)
+         (Timedesc.Date.Ymd.make_exn ~year:2020 ~month:1 ~day:1)
          (Timedesc.Time.make_exn ~hour:23 ~minute:59 ~second:59 ~ns:999_999_999
             ()))
 
@@ -188,7 +188,7 @@ module Alco = struct
       "same timestamp"
       (CCResult.get_exn @@ Timedesc.Zoneless.of_iso8601 "1910-05-27T07:32:00")
       (Timedesc.Zoneless.make
-         (Timedesc.Date.Ymd_date.make_exn ~year:1910 ~month:5 ~day:27)
+         (Timedesc.Date.Ymd.make_exn ~year:1910 ~month:5 ~day:27)
          (Timedesc.Time.make_exn ~hour:7 ~minute:32 ~second:0 ()))
 
   let to_rfc3339_case0 () =
@@ -314,7 +314,7 @@ module Qc = struct
       (fun (tz, timestamp) ->
         let r =
           Timedesc.to_timestamp_single
-          @@ CCOpt.get_exn_or "Expected successful construction of date time"
+          @@ CCOption.get_exn_or "Expected successful construction of date time"
           @@ Timedesc.of_timestamp ~tz_of_date_time:tz timestamp
         in
         Timedesc.Span.equal r timestamp)
@@ -353,7 +353,7 @@ module Qc = struct
       QCheck.(pair ymd_date time)
       (fun ((year, month, day), (hour, minute, second, _ns)) ->
         let ptime =
-          CCOpt.get_exn_or "Expected successful ptime construction"
+          CCOption.get_exn_or "Expected successful ptime construction"
           @@ Ptime.of_date_time ((year, month, day), ((hour, minute, second), 0))
         in
         let dt =
@@ -378,18 +378,16 @@ module Qc = struct
   let iso_week_date_accessors =
     QCheck.Test.make ~count:100_000 ~name:"iso_week_date_accessors"
       QCheck.(pair iso_week_date time)
-      (fun ((iso_week_year', iso_week', weekday'), (hour, minute, second, ns)) ->
+      (fun ((year', week', weekday'), (hour, minute, second, ns)) ->
         let d =
           Timedesc.ISO_week_date_time.make_exn ~tz:Timedesc.Time_zone.utc
-            ~iso_week_year:iso_week_year' ~iso_week:iso_week' ~weekday:weekday'
-            ~hour ~minute ~second ~ns ()
+            ~year:year' ~week:week' ~weekday:weekday' ~hour ~minute ~second ~ns
+            ()
         in
-        let iso_week_year = Timedesc.iso_week_year d in
-        let iso_week = Timedesc.iso_week d in
+        let year = Timedesc.iso_year d in
+        let year'', week = Timedesc.ISO_week.year_week @@ Timedesc.iso_week d in
         let weekday = Timedesc.weekday d in
-        iso_week_year = iso_week_year'
-        && iso_week = iso_week'
-        && weekday = weekday')
+        year = year' && year = year'' && week = week' && weekday = weekday')
 
   let ymd_date_accessors =
     QCheck.Test.make ~count:100_000 ~name:"ymd_date_accessors"

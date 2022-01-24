@@ -1,5 +1,5 @@
 let pp_date formatter (date : Date.t) =
-  let Date.Ymd_date'.{ year; month; day } = Date.Ymd_date'.view date in
+  let Date.Ymd'.{ year; month; day } = Date.Ymd'.view date in
   Fmt.pf formatter "%04d-%02d-%02d" year month day
 
 let pp_time ?frac_s () formatter (time : Time.t) =
@@ -17,7 +17,7 @@ let pp_time ?frac_s () formatter (time : Time.t) =
     Fmt.pf formatter "%02d:%02d:%02d%s" hour minute second
       (Printers.string_of_s_frac ~sep:'.' ~frac_s ~ns)
 
-let pp_date_time ?frac_s () formatter (dt : Date_time.t) =
+let pp_date_time' ?frac_s pp_date () formatter (dt : Date_time.t) =
   match Date_time.offset_from_utc dt with
   | `Ambiguous _ -> raise (Printers.Date_time_cannot_deduce_offset_from_utc dt)
   | `Single offset ->
@@ -32,11 +32,12 @@ let pp_date_time ?frac_s () formatter (dt : Date_time.t) =
       Fmt.pf formatter "%aT%a%s" pp_date (Date_time.date dt)
         (pp_time ?frac_s ()) (Date_time.time dt) tz_off
 
+let pp_date_time ?frac_s () formatter (dt : Date_time.t) =
+  pp_date_time' ?frac_s pp_date () formatter dt
+
 let of_date_time ?frac_s (dt : Date_time.t) : string option =
   try Some (Fmt.str "%a" (pp_date_time ?frac_s ()) dt)
   with Printers.Date_time_cannot_deduce_offset_from_utc _ -> None
-
-let of_date (date : Date.t) : string = Fmt.str "%a" pp_date date
 
 let of_time ?frac_s (time : Time.t) : string =
   Fmt.str "%a" (pp_time ?frac_s ()) time

@@ -8,38 +8,41 @@ let weekday (x : t) = weekday_of_jd x.jd
 
 module ISO_week_date' = struct
   type view = {
-    iso_week_year : int;
-    iso_week : int;
+    year : int;
+    week : int;
     weekday : weekday;
   }
 
   type error =
     [ `Does_not_exist
-    | `Invalid_iso_week_year of int
+    | `Invalid_iso_year of int
     | `Invalid_iso_week of int
     ]
 
   exception Error_exn of error
 
-  let make ~iso_week_year ~iso_week ~weekday : (t, error) result =
-    if iso_week_year < Constants.min_year || Constants.max_year < iso_week_year
-    then Error (`Invalid_iso_week_year iso_week_year)
-    else if
-      iso_week < 1 || week_count_of_iso_week_year ~iso_week_year < iso_week
-    then Error (`Invalid_iso_week iso_week)
-    else Ok { jd = jd_of_iso_week_date ~iso_week_year ~iso_week ~weekday }
+  let of_iso_week (x : ISO_week.t) ~weekday : t =
+    let year, week = ISO_week.year_week x in
+    { jd = jd_of_iso_week_date ~year ~week ~weekday }
 
-  let make_exn ~iso_week_year ~iso_week ~weekday : t =
-    match make ~iso_week_year ~iso_week ~weekday with
+  let make ~year ~week ~weekday : (t, error) result =
+    match ISO_week.make ~year ~week with
+    | Error e -> Error (e :> error)
+    | Ok x -> Ok (of_iso_week x ~weekday)
+
+  let make_exn ~year ~week ~weekday : t =
+    match make ~year ~week ~weekday with
     | Error e -> raise (Error_exn e)
     | Ok x -> x
 
   let view (x : t) : view =
-    let iso_week_year, iso_week, weekday = iso_week_date_of_jd x.jd in
-    { iso_week_year; iso_week; weekday }
+    let year, week, weekday = iso_week_date_of_jd x.jd in
+    { year; week; weekday }
 end
 
-module Ymd_date' = struct
+let of_iso_week = ISO_week_date'.of_iso_week
+
+module Ymd' = struct
   type view = {
     year : int;
     month : int;
@@ -55,13 +58,19 @@ module Ymd_date' = struct
 
   exception Error_exn of error
 
-  let make ~year ~month ~day : (t, error) result =
-    if year < Constants.min_year || Constants.max_year < year then
-      Error (`Invalid_year year)
-    else if month < 1 || 12 < month then Error (`Invalid_month month)
-    else if day < 1 || day_count_of_month ~year ~month < day then
+  let of_ym (x : Ym.t) ~day : (t, error) result =
+    let year, month = Ym.year_month x in
+    if day < 1 || day_count_of_month ~year ~month < day then
       Error (`Invalid_day day)
     else Ok { jd = jd_of_ymd ~year ~month ~day }
+
+  let of_ym_exn x ~day =
+    match of_ym x ~day with Error e -> raise (Error_exn e) | Ok x -> x
+
+  let make ~year ~month ~day : (t, error) result =
+    match Ym.make ~year ~month with
+    | Error e -> Error (e :> error)
+    | Ok x -> of_ym x ~day
 
   let make_exn ~year ~month ~day : t =
     match make ~year ~month ~day with
@@ -73,7 +82,11 @@ module Ymd_date' = struct
     { year; month; day }
 end
 
-module ISO_ord_date' = struct
+let of_ym = Ymd'.of_ym
+
+let of_ym_exn = Ymd'.of_ym_exn
+
+module ISO_ord' = struct
   type view = {
     year : int;
     day_of_year : int;
@@ -105,14 +118,22 @@ module ISO_ord_date' = struct
     { year; day_of_year }
 end
 
-let year d = (Ymd_date'.view d).year
+let year d = (Ymd'.view d).year
 
-let month d = (Ymd_date'.view d).month
+let month d = (Ymd'.view d).month
 
-let day d = (Ymd_date'.view d).day
+let day d = (Ymd'.view d).day
 
-let iso_week_year d = (ISO_week_date'.view d).iso_week_year
+let ym d =
+  let Ymd'.{ year; month; _ } = Ymd'.view d in
+  Ym.make_exn ~year ~month
 
-let iso_week d = (ISO_week_date'.view d).iso_week
+let iso_year d =
+  let ISO_week_date'.{ year; _ } = ISO_week_date'.view d in
+  year
 
-let day_of_year d = (ISO_ord_date'.view d).day_of_year
+let iso_week d =
+  let ISO_week_date'.{ year; week; _ } = ISO_week_date'.view d in
+  ISO_week.make_exn ~year ~week
+
+let day_of_year d = (ISO_ord'.view d).day_of_year

@@ -12,36 +12,39 @@ val day : t -> int
 
 val weekday : t -> weekday
 
-val iso_week_year : t -> int
+val ym : t -> Ym.t
 
-val iso_week : t -> int
+val iso_year : t -> int
+
+val iso_week : t -> ISO_week.t
 
 val day_of_year : t -> int
 
 module ISO_week_date' : sig
   type view = private {
-    iso_week_year : int;
-    iso_week : int;
+    year : int;
+    week : int;
     weekday : weekday;
   }
 
   type error =
     [ `Does_not_exist
-    | `Invalid_iso_week_year of int
+    | `Invalid_iso_year of int
     | `Invalid_iso_week of int
     ]
 
   exception Error_exn of error
 
-  val make :
-    iso_week_year:int -> iso_week:int -> weekday:weekday -> (t, error) result
+  val make : year:int -> week:int -> weekday:weekday -> (t, error) result
 
-  val make_exn : iso_week_year:int -> iso_week:int -> weekday:weekday -> t
+  val make_exn : year:int -> week:int -> weekday:weekday -> t
 
   val view : t -> view
 end
 
-module Ymd_date' : sig
+val of_iso_week : ISO_week.t -> weekday:weekday -> t
+
+module Ymd' : sig
   type view = private {
     year : int;
     month : int;
@@ -64,7 +67,11 @@ module Ymd_date' : sig
   val view : t -> view
 end
 
-module ISO_ord_date' : sig
+val of_ym : Ym.t -> day:int -> (t, Ymd'.error) result
+
+val of_ym_exn : Ym.t -> day:int -> t
+
+module ISO_ord' : sig
   type view = private {
     year : int;
     day_of_year : int;

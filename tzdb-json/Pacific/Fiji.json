@@ -31,8 +31,6 @@
     [ "1578751200", { "is_dst": false, "offset": 43200 } ],
     [ "1608386400", { "is_dst": true, "offset": 46800 } ],
     [ "1610805600", { "is_dst": false, "offset": 43200 } ],
-    [ "1636812000", { "is_dst": true, "offset": 46800 } ],
-    [ "1642255200", { "is_dst": false, "offset": 43200 } ],
     [ "1668261600", { "is_dst": true, "offset": 46800 } ],
     [ "1673704800", { "is_dst": false, "offset": 43200 } ],
     [ "1699711200", { "is_dst": true, "offset": 46800 } ],
