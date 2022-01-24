@@ -28,11 +28,19 @@
 
 - Added additional ISO8601 printing facilities for all three calendar systems
 
-  - `Ymd.pp/to_iso8601` (these are just aliases to the RFC3339 printers)
+  - `Date.Ymd.pp/to_iso8601` (these are just aliases to the RFC3339 printers)
 
-  - `ISO_week_date.pp/to_iso8601`
+  - `Date.ISO_week_date.pp/to_iso8601`
 
-  - `ISO_ord.pp/to_iso8601`
+  - `Date.ISO_ord.pp/to_iso8601`
+
+- Added additional ISO8601 parsing facilities for all three calendar systems
+
+  - `Date.Ymd.of_iso8601[_exn]`
+
+  - `Date.ISO_week_date.of_iso8601[_exn]`
+
+  - `Date.ISO_ord.of_iso8601[_exn]`
 
 - Added additional date conversion functions to `Utils`
 

@@ -69,6 +69,10 @@ module Date = struct
     let pp_iso8601 = ISO8601_printers.pp_ymd_date
 
     let to_iso8601 x = str_of_pp pp_iso8601 x
+
+    let of_iso8601 = ISO8601_parsers.ymd_of_str
+
+    let of_iso8601_exn = of_iso8601_exn' of_iso8601
   end
 
   module ISO_week_date = struct
@@ -77,6 +81,10 @@ module Date = struct
     let pp_iso8601 = ISO8601_printers.pp_iso_week_date
 
     let to_iso8601 x = str_of_pp pp_iso8601 x
+
+    let of_iso8601 = ISO8601_parsers.iso_week_date_of_str
+
+    let of_iso8601_exn = of_iso8601_exn' of_iso8601
   end
 
   module ISO_ord = struct
@@ -85,6 +93,10 @@ module Date = struct
     let pp_iso8601 = ISO8601_printers.pp_iso_ord_date
 
     let to_iso8601 x = str_of_pp pp_iso8601 x
+
+    let of_iso8601 = ISO8601_parsers.iso_ord_of_str
+
+    let of_iso8601_exn = of_iso8601_exn' of_iso8601
   end
 end
 

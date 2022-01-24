@@ -769,6 +769,12 @@ module Date : sig
     val pp_iso8601 : Format.formatter -> t -> unit
 
     val to_iso8601 : t -> string
+
+    (** {1 Parsing} *)
+
+    val of_iso8601 : string -> (t, string) result
+
+    val of_iso8601_exn : string -> t
   end
 
   val of_ym : Ym.t -> day:int -> (t, Ymd.error) result
@@ -809,6 +815,12 @@ module Date : sig
     val pp_iso8601 : Format.formatter -> t -> unit
 
     val to_iso8601 : t -> string
+
+    (** {1 Parsing} *)
+
+    val of_iso8601 : string -> (t, string) result
+
+    val of_iso8601_exn : string -> t
   end
 
   val of_iso_week : ISO_week.t -> weekday:weekday -> t
@@ -846,6 +858,12 @@ module Date : sig
     val pp_iso8601 : Format.formatter -> t -> unit
 
     val to_iso8601 : t -> string
+
+    (** {1 Parsing} *)
+
+    val of_iso8601 : string -> (t, string) result
+
+    val of_iso8601_exn : string -> t
   end
 end
 

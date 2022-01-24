@@ -214,6 +214,12 @@ let ym_of_str s = of_str' ym_p s
 
 let date_of_str s = of_str' date_p s
 
+let ymd_of_str s = of_str' ymd_p s
+
+let iso_week_date_of_str s = of_str' iso_week_date_p s
+
+let iso_ord_of_str s = of_str' iso_ord_p s
+
 let time_of_str s = of_str' time_p s
 
 let timestamp_of_str s =
