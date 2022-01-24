@@ -14,7 +14,7 @@ let ym_p : (Ym.t, unit) MParser.t =
            (Date_time.Ymd_date_time.string_of_error
               (e :> Date_time.Ymd_date_time.error)))
 
-let ymd_date_p : (Date.t, unit) MParser.t =
+let ymd_p : (Date.t, unit) MParser.t =
   let open MParser in
   let open Parser_components in
   ym_p
@@ -69,7 +69,7 @@ let iso_week_date_p : (Date.t, unit) MParser.t =
                (Date_time.ISO_week_date_time.string_of_error
                   (e :> Date_time.ISO_week_date_time.error))))
 
-let iso_ord_date_p : (Date.t, unit) MParser.t =
+let iso_ord_p : (Date.t, unit) MParser.t =
   let open MParser in
   let open Parser_components in
   nat_zero
@@ -87,7 +87,7 @@ let iso_ord_date_p : (Date.t, unit) MParser.t =
 
 let date_p : (Date.t, unit) MParser.t =
   let open MParser in
-  choice [ attempt ymd_date_p; attempt iso_week_date_p; iso_ord_date_p ]
+  choice [ attempt ymd_p; attempt iso_week_date_p; iso_ord_p ]
 
 let hm_p : (int * int, unit) MParser.t =
   let open MParser in
@@ -166,7 +166,7 @@ type maybe_zoneless =
   | `Zoneless of Date_time.Zoneless'.zoneless
   ]
 
-let to_maybe_zoneless s : (maybe_zoneless, string) result =
+let maybe_zoneless_of_str s : (maybe_zoneless, string) result =
   let open MParser in
   let open Parser_components in
   let p =
@@ -193,32 +193,32 @@ let to_maybe_zoneless s : (maybe_zoneless, string) result =
   in
   parse_string (p << spaces << eof) s () |> result_of_mparser_result
 
-let to_zoneless s : (Date_time.Zoneless'.zoneless, string) result =
-  match to_maybe_zoneless s with
+let zoneless_of_str s : (Date_time.Zoneless'.zoneless, string) result =
+  match maybe_zoneless_of_str s with
   | Ok (`Zoneless x) -> Ok x
   | Ok (`Zoned _) -> Error "Extraneous offset from utc"
   | Error msg -> Error msg
 
-let to_date_time s : (Date_time.t, string) result =
-  match to_maybe_zoneless s with
+let date_time_of_str s : (Date_time.t, string) result =
+  match maybe_zoneless_of_str s with
   | Ok (`Zoneless _) -> Error "Missing offset from utc"
   | Ok (`Zoned x) -> Ok x
   | Error msg -> Error msg
 
-let to' p s =
+let of_str' p s =
   let open MParser in
   let open Parser_components in
   parse_string (p << spaces << eof) s () |> result_of_mparser_result
 
-let to_ym s = to' ym_p s
+let ym_of_str s = of_str' ym_p s
 
-let to_date s = to' date_p s
+let date_of_str s = of_str' date_p s
 
-let to_time s = to' time_p s
+let time_of_str s = of_str' time_p s
 
-let to_timestamp s =
-  match to_date_time s with
+let timestamp_of_str s =
+  match date_time_of_str s with
   | Ok dt -> Ok (Date_time.to_timestamp_single dt)
   | Error msg -> Error msg
 
-let to_iso_week = to' iso_week_p
+let iso_week_of_str = of_str' iso_week_p
