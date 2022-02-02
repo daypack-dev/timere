@@ -12,7 +12,7 @@ This repo houses:
 
 [API documentation](https://daypack-dev.github.io/timere/)
 
-__Note__: The project core is largely complete, but still undergoing testing - you're welcome to use it in prototypes, but avoid using it in production for now. The NLP component is WIP.
+__Note__: The NLP component is WIP.
 
 __Disclaimer__: Timere is not designed to handle prehistoric events. For prehistoric planning and booking software, please consult [appropriate experts](https://en.wikipedia.org/wiki/The_Flintstones).
 
