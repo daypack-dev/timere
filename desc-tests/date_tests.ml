@@ -3,7 +3,7 @@ open Test_utils
 module Alco = struct
   let lt_case0 () =
     Alcotest.(check bool)
-    "lt date"
+    "lt case0"
     true
     (Timedesc.Date.(lt
     (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
@@ -13,7 +13,7 @@ module Alco = struct
 
   let le_case0 () =
     Alcotest.(check bool)
-    "lt date"
+    "le case0"
     true
     (Timedesc.Date.(le
     (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
@@ -23,7 +23,7 @@ module Alco = struct
 
   let le_case1 () =
     Alcotest.(check bool)
-    "lt date"
+    "le case1"
     true
     (Timedesc.Date.(le
     (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
@@ -33,7 +33,7 @@ module Alco = struct
 
   let gt_case0 () =
     Alcotest.(check bool)
-    "lt date"
+    "gt case0"
     true
     (Timedesc.Date.(lt
     (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
@@ -43,7 +43,7 @@ module Alco = struct
 
   let ge_case0 () =
     Alcotest.(check bool)
-    "lt date"
+    "ge case0"
     true
     (Timedesc.Date.(le
     (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
@@ -53,7 +53,7 @@ module Alco = struct
 
   let ge_case1 () =
     Alcotest.(check bool)
-    "lt date"
+    "ge case1"
     true
     (Timedesc.Date.(le
     (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
