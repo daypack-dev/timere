@@ -11,7 +11,7 @@ module Alco = struct
 
   let lt_case1 () =
     Alcotest.(check bool)
-      "less than" true
+      "less than" false
       Timedesc.Span.(
         lt
           (Timedesc.Span.make ~ns:1 ())
