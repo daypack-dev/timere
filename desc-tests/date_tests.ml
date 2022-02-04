@@ -29,7 +29,7 @@ module Alco = struct
     Alcotest.(check bool)
       "gt case0" true
       Timedesc.Date.(
-        lt
+        gt
           (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
           (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
 
@@ -37,7 +37,7 @@ module Alco = struct
     Alcotest.(check bool)
       "ge case0" true
       Timedesc.Date.(
-        le
+        ge
           (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
           (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
 
@@ -45,7 +45,7 @@ module Alco = struct
     Alcotest.(check bool)
       "ge case1" true
       Timedesc.Date.(
-        le
+        ge
           (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
           (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
 
