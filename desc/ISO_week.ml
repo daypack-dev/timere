@@ -4,6 +4,24 @@ let fixed_to_weekday = `Mon
 
 type t = { jd : int }
 
+let equal (x : t) (y : t) =
+  x.jd = y.jd
+
+let lt (x : t) (y : t) =
+  x.jd < y.jd
+
+let le (x : t) (y : t) =
+  x.jd <= y.jd
+
+let gt (x : t) (y : t) =
+  x.jd > y.jd
+
+let ge (x : t) (y : t) =
+  x.jd >= y.jd
+
+let compare (x : t) (y : t) =
+  compare x.jd y.jd
+
 type error =
   [ `Does_not_exist
   | `Invalid_iso_year of int

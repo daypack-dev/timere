@@ -4,6 +4,16 @@ type t = private { jd : int }
 
 val equal : t -> t -> bool
 
+val lt : t -> t -> bool
+
+val le : t -> t -> bool
+
+val gt : t -> t -> bool
+
+val ge : t -> t -> bool
+
+val compare : t -> t -> int
+
 val year : t -> int
 
 val month : t -> int
