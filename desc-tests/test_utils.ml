@@ -320,6 +320,24 @@ let date_testable : (module Alcotest.TESTABLE with type t = Timedesc.Date.t) =
     let equal = Timedesc.Date.equal
   end)
 
+let ym_testable : (module Alcotest.TESTABLE with type t = Timedesc.Ym.t) =
+  (module struct
+    type t = Timedesc.Ym.t
+
+    let pp formatter t = Timedesc.Ym.pp_iso8601 formatter t
+
+    let equal = Timedesc.Ym.equal
+  end)
+
+let iso_week_testable : (module Alcotest.TESTABLE with type t = Timedesc.ISO_week.t) =
+  (module struct
+    type t = Timedesc.ISO_week.t
+
+    let pp formatter t = Timedesc.ISO_week.pp_iso8601 formatter t
+
+    let equal = Timedesc.ISO_week.equal
+  end)
+
 let time_testable : (module Alcotest.TESTABLE with type t = Timedesc.Time.t) =
   (module struct
     type t = Timedesc.Time.t
