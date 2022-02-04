@@ -1,6 +1,66 @@
 open Test_utils
 
 module Alco = struct
+  let lt_case0 () =
+    Alcotest.(check bool)
+    "lt date"
+    true
+    (Timedesc.Date.(lt
+    (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+    (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
+    )
+    )
+
+  let le_case0 () =
+    Alcotest.(check bool)
+    "lt date"
+    true
+    (Timedesc.Date.(le
+    (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+    (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
+    )
+    )
+
+  let le_case1 () =
+    Alcotest.(check bool)
+    "lt date"
+    true
+    (Timedesc.Date.(le
+    (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+    (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+    )
+    )
+
+  let gt_case0 () =
+    Alcotest.(check bool)
+    "lt date"
+    true
+    (Timedesc.Date.(lt
+    (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
+    (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+    )
+    )
+
+  let ge_case0 () =
+    Alcotest.(check bool)
+    "lt date"
+    true
+    (Timedesc.Date.(le
+    (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
+    (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+    )
+    )
+
+  let ge_case1 () =
+    Alcotest.(check bool)
+    "lt date"
+    true
+    (Timedesc.Date.(le
+    (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+    (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+    )
+    )
+
   let week_date0 () =
     Alcotest.(check date_testable)
       "same date"
@@ -63,6 +123,12 @@ module Alco = struct
 
   let suite =
     [
+      Alcotest.test_case "lt_case0" `Quick lt_case0;
+      Alcotest.test_case "le_case0" `Quick le_case0;
+      Alcotest.test_case "le_case1" `Quick le_case1;
+      Alcotest.test_case "gt_case0" `Quick gt_case0;
+      Alcotest.test_case "ge_case0" `Quick ge_case0;
+      Alcotest.test_case "ge_case1" `Quick ge_case1;
       Alcotest.test_case "week_date0" `Quick week_date0;
       Alcotest.test_case "week_date1" `Quick week_date1;
       Alcotest.test_case "week_date2" `Quick week_date2;
