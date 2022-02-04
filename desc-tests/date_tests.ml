@@ -3,15 +3,31 @@ open Test_utils
 module Alco = struct
   let lt_case0 () =
     Alcotest.(check bool)
-      "lt case0" true
+      "less than" true
       Timedesc.Date.(
         lt
           (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
           (Ymd.make_exn ~year:2000 ~month:1 ~day:2))
 
+  let lt_case1 () =
+    Alcotest.(check bool)
+      "less than" false
+      Timedesc.Date.(
+        lt
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
+
+  let lt_case2 () =
+    Alcotest.(check bool)
+      "less than" false
+      Timedesc.Date.(
+        lt
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
+
   let le_case0 () =
     Alcotest.(check bool)
-      "le case0" true
+      "less than or equal to" true
       Timedesc.Date.(
         le
           (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
@@ -19,23 +35,47 @@ module Alco = struct
 
   let le_case1 () =
     Alcotest.(check bool)
-      "le case1" true
+      "less than or equal to" true
       Timedesc.Date.(
         le
           (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
           (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
 
+  let le_case2 () =
+    Alcotest.(check bool)
+      "less than or equal to" false
+      Timedesc.Date.(
+        le
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
+
   let gt_case0 () =
     Alcotest.(check bool)
-      "gt case0" true
+      "greater than" true
       Timedesc.Date.(
         gt
           (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
           (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
 
+  let gt_case1 () =
+    Alcotest.(check bool)
+      "greater than" false
+      Timedesc.Date.(
+        gt
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
+
+  let gt_case2 () =
+    Alcotest.(check bool)
+      "greater than" false
+      Timedesc.Date.(
+        gt
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:2))
+
   let ge_case0 () =
     Alcotest.(check bool)
-      "ge case0" true
+      "greater than or equal to" true
       Timedesc.Date.(
         ge
           (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
@@ -43,11 +83,19 @@ module Alco = struct
 
   let ge_case1 () =
     Alcotest.(check bool)
-      "ge case1" true
+      "greater than or equal to" true
       Timedesc.Date.(
         ge
           (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
           (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
+
+  let ge_case2 () =
+    Alcotest.(check bool)
+      "greater than or equal to" false
+      Timedesc.Date.(
+        ge
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:2))
 
   let week_date0 () =
     Alcotest.(check date_testable)
@@ -112,11 +160,17 @@ module Alco = struct
   let suite =
     [
       Alcotest.test_case "lt_case0" `Quick lt_case0;
+      Alcotest.test_case "lt_case1" `Quick lt_case1;
+      Alcotest.test_case "lt_case2" `Quick lt_case2;
       Alcotest.test_case "le_case0" `Quick le_case0;
       Alcotest.test_case "le_case1" `Quick le_case1;
+      Alcotest.test_case "le_case2" `Quick le_case2;
       Alcotest.test_case "gt_case0" `Quick gt_case0;
+      Alcotest.test_case "gt_case1" `Quick gt_case1;
+      Alcotest.test_case "gt_case2" `Quick gt_case2;
       Alcotest.test_case "ge_case0" `Quick ge_case0;
       Alcotest.test_case "ge_case1" `Quick ge_case1;
+      Alcotest.test_case "ge_case2" `Quick ge_case2;
       Alcotest.test_case "week_date0" `Quick week_date0;
       Alcotest.test_case "week_date1" `Quick week_date1;
       Alcotest.test_case "week_date2" `Quick week_date2;
