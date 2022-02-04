@@ -1,22 +1,16 @@
 type t = { month_count : int }
 
-let equal (x : t) (y : t) =
-  x.month_count = y.month_count
+let equal (x : t) (y : t) = x.month_count = y.month_count
 
-let lt (x : t) (y : t) =
-  x.month_count < y.month_count
+let lt (x : t) (y : t) = x.month_count < y.month_count
 
-let le (x : t) (y : t) =
-  x.month_count <= y.month_count
+let le (x : t) (y : t) = x.month_count <= y.month_count
 
-let gt (x : t) (y : t) =
-  x.month_count > y.month_count
+let gt (x : t) (y : t) = x.month_count > y.month_count
 
-let ge (x : t) (y : t) =
-  x.month_count >= y.month_count
+let ge (x : t) (y : t) = x.month_count >= y.month_count
 
-let compare (x : t) (y : t) =
-  compare x.month_count y.month_count
+let compare (x : t) (y : t) = compare x.month_count y.month_count
 
 let month_count_of_ym ~year ~month = (year * 12) + (month - 1)
 

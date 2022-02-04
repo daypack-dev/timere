@@ -3,63 +3,51 @@ open Test_utils
 module Alco = struct
   let lt_case0 () =
     Alcotest.(check bool)
-    "lt case0"
-    true
-    (Timedesc.Date.(lt
-    (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
-    (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
-    )
-    )
+      "lt case0" true
+      Timedesc.Date.(
+        lt
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:2))
 
   let le_case0 () =
     Alcotest.(check bool)
-    "le case0"
-    true
-    (Timedesc.Date.(le
-    (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
-    (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
-    )
-    )
+      "le case0" true
+      Timedesc.Date.(
+        le
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:2))
 
   let le_case1 () =
     Alcotest.(check bool)
-    "le case1"
-    true
-    (Timedesc.Date.(le
-    (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
-    (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
-    )
-    )
+      "le case1" true
+      Timedesc.Date.(
+        le
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
 
   let gt_case0 () =
     Alcotest.(check bool)
-    "gt case0"
-    true
-    (Timedesc.Date.(lt
-    (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
-    (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
-    )
-    )
+      "gt case0" true
+      Timedesc.Date.(
+        lt
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
 
   let ge_case0 () =
     Alcotest.(check bool)
-    "ge case0"
-    true
-    (Timedesc.Date.(le
-    (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
-    (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
-    )
-    )
+      "ge case0" true
+      Timedesc.Date.(
+        le
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
 
   let ge_case1 () =
     Alcotest.(check bool)
-    "ge case1"
-    true
-    (Timedesc.Date.(le
-    (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
-    (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
-    )
-    )
+      "ge case1" true
+      Timedesc.Date.(
+        le
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
 
   let week_date0 () =
     Alcotest.(check date_testable)

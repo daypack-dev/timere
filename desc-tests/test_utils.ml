@@ -329,7 +329,8 @@ let ym_testable : (module Alcotest.TESTABLE with type t = Timedesc.Ym.t) =
     let equal = Timedesc.Ym.equal
   end)
 
-let iso_week_testable : (module Alcotest.TESTABLE with type t = Timedesc.ISO_week.t) =
+let iso_week_testable :
+    (module Alcotest.TESTABLE with type t = Timedesc.ISO_week.t) =
   (module struct
     type t = Timedesc.ISO_week.t
 
