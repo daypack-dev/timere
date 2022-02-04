@@ -208,9 +208,9 @@ module Qc = struct
   let suite =
     [
       to_rfc3339_of_iso8601;
-      ymd_to_iso8601_of_iso8601;
       iso_week_date_to_iso8601_of_iso8601;
       iso_ord_to_iso8601_of_iso8601;
+      ymd_to_iso8601_of_iso8601;
       to_of_sexp;
       view_is_same_as_original_iso_ord_date;
       view_is_same_as_original_iso_week_date;
