@@ -47,13 +47,13 @@ module Alco = struct
     Alcotest.(check bool)
       "greater than" false
       Timedesc.Span.(
-        gt (Timedesc.Span.make ~ns:2 ()) (Timedesc.Span.make ~ns:1 ()))
+        gt (Timedesc.Span.make ~ns:1 ()) (Timedesc.Span.make ~ns:1 ()))
 
   let gt_case2 () =
     Alcotest.(check bool)
       "greater than" false
       Timedesc.Span.(
-        gt (Timedesc.Span.make ~ns:2 ()) (Timedesc.Span.make ~ns:1 ()))
+        gt (Timedesc.Span.make ~ns:1 ()) (Timedesc.Span.make ~ns:2 ()))
 
   let ge_case0 () =
     Alcotest.(check bool)
