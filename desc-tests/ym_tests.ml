@@ -134,6 +134,18 @@ module Alco = struct
 end
 
 module Qc = struct
+  let to_iso8601_of_iso8601 =
+    QCheck.Test.make ~count:100_000 ~name:"to_iso8601_of_iso8601" ym
+      (fun (year, month) ->
+         let d = Timedesc.Ym.make_exn ~year ~month in
+         let d' =
+           d
+           |> Timedesc.Ym.to_iso8601
+           |> Timedesc.Ym.of_iso8601
+           |> CCResult.get_exn
+         in
+         Timedesc.Ym.equal d d')
+
   let add_identity =
     QCheck.Test.make ~count:100_000 ~name:"add_identity" ym (fun (year, month) ->
         let x = Timedesc.Ym.make_exn ~year ~month in
@@ -178,6 +190,7 @@ module Qc = struct
 
   let suite =
     [
+      to_iso8601_of_iso8601;
       add_identity;
       sub_identity;
       add_sub;

@@ -141,6 +141,18 @@ module Alco = struct
 end
 
 module Qc = struct
+  let to_iso8601_of_iso8601 =
+    QCheck.Test.make ~count:100_000 ~name:"to_iso8601_of_iso8601" iso_week
+      (fun (year, week) ->
+         let d = Timedesc.ISO_week.make_exn ~year ~week in
+         let d' =
+           d
+           |> Timedesc.ISO_week.to_iso8601
+           |> Timedesc.ISO_week.of_iso8601
+           |> CCResult.get_exn
+         in
+         Timedesc.ISO_week.equal d d')
+
   let add_identity =
     QCheck.Test.make ~count:100_000 ~name:"add_identity" iso_week (fun (year, week) ->
         let x = Timedesc.ISO_week.make_exn ~year ~week in
@@ -185,6 +197,7 @@ module Qc = struct
 
   let suite =
     [
+      to_iso8601_of_iso8601;
       add_identity;
       sub_identity;
       add_sub;
