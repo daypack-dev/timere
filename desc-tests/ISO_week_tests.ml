@@ -74,10 +74,42 @@ module Alco = struct
         ge (make_exn ~year:2000 ~week:1) (make_exn ~year:2000 ~week:2))
 
   let of_iso8601_case0 () =
-    Alcotest.(check ym_testable)
+    Alcotest.(check iso_week_testable)
       "same date"
-      (Timedesc.Ym.of_iso8601_exn "1977-06")
-      (Timedesc.Ym.make_exn ~year:1977 ~month:6)
+      (Timedesc.ISO_week.of_iso8601_exn "1977W06")
+      (Timedesc.ISO_week.make_exn ~year:1977 ~week:6)
+
+  let wrap_around_case0 () =
+    let y = Timedesc.ISO_week.add ~weeks:1 (Timedesc.ISO_week.make_exn ~year:1977 ~week:52)
+    in
+    Alcotest.(check iso_week_testable)
+      "same date"
+      (Timedesc.ISO_week.make_exn ~year:1978 ~week:1)
+      y
+
+  let wrap_around_case1 () =
+    let y = Timedesc.ISO_week.add ~weeks:53 (Timedesc.ISO_week.make_exn ~year:1977 ~week:52)
+    in
+    Alcotest.(check iso_week_testable)
+      "same date"
+      (Timedesc.ISO_week.make_exn ~year:1979 ~week:1)
+      y
+
+  let wrap_around_case2 () =
+    let y = Timedesc.ISO_week.sub ~weeks:1 (Timedesc.ISO_week.make_exn ~year:1977 ~week:1)
+    in
+    Alcotest.(check iso_week_testable)
+      "same date"
+      (Timedesc.ISO_week.make_exn ~year:1976 ~week:53)
+      y
+
+  let wrap_around_case3 () =
+    let y = Timedesc.ISO_week.sub ~weeks:53 (Timedesc.ISO_week.make_exn ~year:1977 ~week:1)
+    in
+    Alcotest.(check iso_week_testable)
+      "same date"
+      (Timedesc.ISO_week.make_exn ~year:1976 ~week:1)
+      y
 
   let suite =
     [
@@ -94,6 +126,10 @@ module Alco = struct
       Alcotest.test_case "ge_case1" `Quick ge_case1;
       Alcotest.test_case "ge_case2" `Quick ge_case2;
       Alcotest.test_case "of_iso8601_case0" `Quick of_iso8601_case0;
+      Alcotest.test_case "wrap_around_case0" `Quick wrap_around_case0;
+      Alcotest.test_case "wrap_around_case1" `Quick wrap_around_case1;
+      Alcotest.test_case "wrap_around_case2" `Quick wrap_around_case2;
+      Alcotest.test_case "wrap_around_case3" `Quick wrap_around_case3;
     ]
 end
 
