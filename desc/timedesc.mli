@@ -2098,8 +2098,8 @@ module Utils : sig
   (** {b Warning}: Following functions are direct applications of the relevant formulas with little to no error checking.
 
       You are advised to read the source code of the following functions in {v date_time_utils.ml} if you intend to use them
-      to ensure they behave as you expect.
-   *)
+                                                                               to ensure they behave as you expect.
+                                                                            *)
 
   val is_leap_year : year:int -> bool
 

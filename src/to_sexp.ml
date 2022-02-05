@@ -25,19 +25,19 @@ let sexp_of_points ({ pick; tz_info } : Points.t) =
          Some
            (list
               (atom "pick"
-              ::
-              (match pick with
-              | N ns -> [ atom "n"; sexp_of_int ns ]
-              | SN { second; ns } ->
+               ::
+               (match pick with
+                | N ns -> [ atom "n"; sexp_of_int ns ]
+                | SN { second; ns } ->
                   [ atom "sn"; sexp_of_int second; sexp_of_int ns ]
-              | MSN { minute; second; ns } ->
+                | MSN { minute; second; ns } ->
                   [
                     atom "msn";
                     sexp_of_int minute;
                     sexp_of_int second;
                     sexp_of_int ns;
                   ]
-              | HMSN { hour; minute; second; ns } ->
+                | HMSN { hour; minute; second; ns } ->
                   [
                     atom "hmsn";
                     sexp_of_int hour;
@@ -45,7 +45,7 @@ let sexp_of_points ({ pick; tz_info } : Points.t) =
                     sexp_of_int second;
                     sexp_of_int ns;
                   ]
-              | WHMSN { weekday; hour; minute; second; ns } ->
+                | WHMSN { weekday; hour; minute; second; ns } ->
                   [
                     atom "whmsn";
                     sexp_of_weekday weekday;
@@ -54,7 +54,7 @@ let sexp_of_points ({ pick; tz_info } : Points.t) =
                     sexp_of_int second;
                     sexp_of_int ns;
                   ]
-              | DHMSN { month_day; hour; minute; second; ns } ->
+                | DHMSN { month_day; hour; minute; second; ns } ->
                   [
                     atom "dhmsn";
                     sexp_of_int month_day;
@@ -63,7 +63,7 @@ let sexp_of_points ({ pick; tz_info } : Points.t) =
                     sexp_of_int second;
                     sexp_of_int ns;
                   ]
-              | MDHMSN { month; month_day; hour; minute; second; ns } ->
+                | MDHMSN { month; month_day; hour; minute; second; ns } ->
                   [
                     atom "mdhmsn";
                     sexp_of_month month;
@@ -73,7 +73,7 @@ let sexp_of_points ({ pick; tz_info } : Points.t) =
                     sexp_of_int second;
                     sexp_of_int ns;
                   ]
-              | YMDHMSN { year; month; month_day; hour; minute; second; ns } ->
+                | YMDHMSN { year; month; month_day; hour; minute; second; ns } ->
                   [
                     atom "ymdhmsn";
                     sexp_of_int year;
@@ -124,7 +124,7 @@ let sexp_of_pattern (pat : Pattern.t) : CCSexp.t =
   let ns =
     Diet.Int.fold
       (fun interval acc ->
-        (Diet.Int.Interval.x interval, Diet.Int.Interval.y interval) :: acc)
+         (Diet.Int.Interval.x interval, Diet.Int.Interval.y interval) :: acc)
       pat.ns []
     |> List.rev
     |> List.map (fun (x, y) -> `List [ sexp_of_int x; sexp_of_int y ])
@@ -134,21 +134,21 @@ let sexp_of_pattern (pat : Pattern.t) : CCSexp.t =
     Some (atom "pattern");
     (match years with [] -> None | _ -> Some (list (atom "years" :: years)));
     (match months with
-    | [] -> None
-    | _ -> Some (list (atom "months" :: months)));
+     | [] -> None
+     | _ -> Some (list (atom "months" :: months)));
     (match month_days with
-    | [] -> None
-    | _ -> Some (list (atom "month_days" :: month_days)));
+     | [] -> None
+     | _ -> Some (list (atom "month_days" :: month_days)));
     (match weekdays with
-    | [] -> None
-    | _ -> Some (list (atom "weekdays" :: weekdays)));
+     | [] -> None
+     | _ -> Some (list (atom "weekdays" :: weekdays)));
     (match hours with [] -> None | _ -> Some (list (atom "hours" :: hours)));
     (match minutes with
-    | [] -> None
-    | _ -> Some (list (atom "minutes" :: minutes)));
+     | [] -> None
+     | _ -> Some (list (atom "minutes" :: minutes)));
     (match seconds with
-    | [] -> None
-    | _ -> Some (list (atom "seconds" :: seconds)));
+     | [] -> None
+     | _ -> Some (list (atom "seconds" :: seconds)));
     (match ns with [] -> None | _ -> Some (list (atom "ns" :: ns)));
   ]
   |> CCList.filter_map CCFun.id
@@ -160,7 +160,7 @@ let sexp_list_of_unary_op (op : Time_ast.unary_op) =
   | Shift n -> [ CCSexp.atom "shift"; sexp_of_span n ]
   | Lengthen n -> [ CCSexp.atom "lengthen"; sexp_of_span n ]
   | With_tz tz ->
-      [ CCSexp.atom "with_tz"; CCSexp.atom (Timedesc.Time_zone.name tz) ]
+    [ CCSexp.atom "with_tz"; CCSexp.atom (Timedesc.Time_zone.name tz) ]
 
 let to_sexp (t : Time_ast.t) : CCSexp.t =
   let rec aux (t : Time_ast.t) =
@@ -168,33 +168,33 @@ let to_sexp (t : Time_ast.t) : CCSexp.t =
     | All -> CCSexp.(list [ atom "all" ])
     | Empty -> CCSexp.(list [ atom "empty" ])
     | Intervals s ->
-        let l =
-          s
-          |> CCList.of_seq
-          |> List.map (fun (x, y) ->
-                 CCSexp.list [ sexp_of_timestamp x; sexp_of_timestamp y ])
-        in
-        CCSexp.list (CCSexp.atom "intervals" :: l)
+      let l =
+        s
+        |> CCList.of_seq
+        |> List.map (fun (x, y) ->
+            CCSexp.list [ sexp_of_timestamp x; sexp_of_timestamp y ])
+      in
+      CCSexp.list (CCSexp.atom "intervals" :: l)
     | Pattern pat -> sexp_of_pattern pat
     | Unary_op (op, t) -> CCSexp.list (sexp_list_of_unary_op op @ [ aux t ])
     | Inter_seq s ->
-        CCSexp.(list (atom "inter" :: (s |> Seq.map aux |> CCList.of_seq)))
+      CCSexp.(list (atom "inter" :: (s |> Seq.map aux |> CCList.of_seq)))
     | Union_seq s ->
-        CCSexp.(list (atom "union" :: (s |> Seq.map aux |> CCList.of_seq)))
+      CCSexp.(list (atom "union" :: (s |> Seq.map aux |> CCList.of_seq)))
     | Pattern_intervals { mode; bound; start; end_ } ->
-        CCSexp.(
-          list
-            [
-              atom "pattern_intervals";
-              (match mode with
-              | `Whole_inc -> atom "whole_inc"
-              | `Whole_exc -> atom "whole_exc"
-              | `Fst -> atom "fst"
-              | `Snd -> atom "snd");
-              sexp_of_span bound;
-              sexp_of_points start;
-              sexp_of_points end_;
-            ])
+      CCSexp.(
+        list
+          [
+            atom "pattern_intervals";
+            (match mode with
+             | `Whole_inc -> atom "whole_inc"
+             | `Whole_exc -> atom "whole_exc"
+             | `Fst -> atom "fst"
+             | `Snd -> atom "snd");
+            sexp_of_span bound;
+            sexp_of_points start;
+            sexp_of_points end_;
+          ])
     | Unchunk chunked -> CCSexp.(list [ atom "unchunk"; aux_chunked chunked ])
   and aux_chunked chunked =
     let sexp_list_of_unary_op_on_t op =
@@ -204,30 +204,30 @@ let to_sexp (t : Time_ast.t) : CCSexp.t =
       | Chunk_at_year_boundary -> [ atom "chunk_at_year_boundary" ]
       | Chunk_at_month_boundary -> [ atom "chunk_at_month_boundary" ]
       | Chunk_by_duration { chunk_size; drop_partial } ->
-          [
-            Some (atom "chunk_by_duration");
-            Some (sexp_of_span chunk_size);
-            (if drop_partial then Some (atom "drop_partial") else None);
-          ]
-          |> CCList.filter_map CCFun.id
+        [
+          Some (atom "chunk_by_duration");
+          Some (sexp_of_span chunk_size);
+          (if drop_partial then Some (atom "drop_partial") else None);
+        ]
+        |> CCList.filter_map CCFun.id
     in
     match chunked with
     | Unary_op_on_t (op, t) ->
-        CCSexp.(list (sexp_list_of_unary_op_on_t op @ [ aux t ]))
+      CCSexp.(list (sexp_list_of_unary_op_on_t op @ [ aux t ]))
     | Unary_op_on_chunked (op, chunked) ->
-        CCSexp.(
-          list
-            (match op with
-            | Drop n -> [ atom "drop"; sexp_of_int n; aux_chunked chunked ]
-            | Take n -> [ atom "take"; sexp_of_int n; aux_chunked chunked ]
-            | Take_nth n ->
-                [ atom "take_nth"; sexp_of_int n; aux_chunked chunked ]
-            | Nth n -> [ atom "nth"; sexp_of_int n; aux_chunked chunked ]
-            | Chunk_again op ->
-                [
-                  atom "chunk_again";
-                  list (sexp_list_of_unary_op_on_t op @ [ aux_chunked chunked ]);
-                ]))
+      CCSexp.(
+        list
+          (match op with
+           | Drop n -> [ atom "drop"; sexp_of_int n; aux_chunked chunked ]
+           | Take n -> [ atom "take"; sexp_of_int n; aux_chunked chunked ]
+           | Take_nth n ->
+             [ atom "take_nth"; sexp_of_int n; aux_chunked chunked ]
+           | Nth n -> [ atom "nth"; sexp_of_int n; aux_chunked chunked ]
+           | Chunk_again op ->
+             [
+               atom "chunk_again";
+               list (sexp_list_of_unary_op_on_t op @ [ aux_chunked chunked ]);
+             ]))
   in
   aux t
 

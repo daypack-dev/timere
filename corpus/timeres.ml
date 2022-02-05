@@ -34,11 +34,11 @@ let texts =
 let () =
   List.iteri
     (fun i text ->
-      Printf.printf "%d. %S\n" i text;
-      match Timere_parse.timere text with
-      | Ok timere -> Printf.printf "  Ok %s\n\n" (Timere.to_sexp_string timere)
-      | Error msg ->
-          Printf.printf "  Error %s\n" msg;
-          print_endline "  ^^^^^";
-          print_newline ())
+       Printf.printf "%d. %S\n" i text;
+       match Timere_parse.timere text with
+       | Ok timere -> Printf.printf "  Ok %s\n\n" (Timere.to_sexp_string timere)
+       | Error msg ->
+         Printf.printf "  Error %s\n" msg;
+         print_endline "  ^^^^^";
+         print_newline ())
     texts

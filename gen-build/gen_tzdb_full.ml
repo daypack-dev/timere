@@ -11,4 +11,4 @@ let () =
   in
   CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc ] file_output
     (fun oc ->
-      Printf.fprintf oc "let s = %S" (Timedesc.Time_zone.Db.Raw.dump db))
+       Printf.fprintf oc "let s = %S" (Timedesc.Time_zone.Db.Raw.dump db))

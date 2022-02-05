@@ -201,10 +201,10 @@ let jd_of_iso_week_date ~year ~week ~weekday =
 
 module Weekday_set = struct
   include CCSet.Make (struct
-    type t = weekday
+      type t = weekday
 
-    let compare = compare_weekday
-  end)
+      let compare = compare_weekday
+    end)
 
   let to_seq x = x |> to_list |> CCList.to_seq
 end

@@ -59,26 +59,26 @@ let timestamp_is_okay (tz : Timedesc.Time_zone.t) (pattern : Pattern.t)
 let () =
   Crowbar.add_test ~name:"pattern_resolution_is_sound"
     [ time_zone; search_space; pattern ] (fun tz search_space pattern ->
-      let search_space_set =
-        span_set_of_intervals @@ CCList.to_seq search_space
-      in
-      let s =
-        Resolver.aux_pattern tz search_space pattern |> Resolver.normalize
-      in
-      let r =
-        OSeq.for_all
-          (fun (x, y) ->
-            timestamp_is_okay tz pattern x
-            && timestamp_is_okay tz pattern (Timedesc.Span.pred y)
-            && not
+        let search_space_set =
+          span_set_of_intervals @@ CCList.to_seq search_space
+        in
+        let s =
+          Resolver.aux_pattern tz search_space pattern |> Resolver.normalize
+        in
+        let r =
+          OSeq.for_all
+            (fun (x, y) ->
+               timestamp_is_okay tz pattern x
+               && timestamp_is_okay tz pattern (Timedesc.Span.pred y)
+               && not
                  (Span_set.mem y search_space_set
-                 && timestamp_is_okay tz pattern y))
-          s
-      in
-      if not r then
-        Crowbar.fail
-          (Fmt.str "tz: %s\nsearch_space: %a\npattern: %a\n"
-             (Timedesc.Time_zone.name tz)
-             (Fmt.list (Timedesc.Interval.pp ()))
-             search_space CCSexp.pp
-             (To_sexp.sexp_of_pattern pattern)))
+                  && timestamp_is_okay tz pattern y))
+            s
+        in
+        if not r then
+          Crowbar.fail
+            (Fmt.str "tz: %s\nsearch_space: %a\npattern: %a\n"
+               (Timedesc.Time_zone.name tz)
+               (Fmt.list (Timedesc.Interval.pp ()))
+               search_space CCSexp.pp
+               (To_sexp.sexp_of_pattern pattern)))

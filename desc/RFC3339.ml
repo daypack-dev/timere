@@ -21,16 +21,16 @@ let pp_date_time' ?frac_s pp_date () formatter (dt : Date_time.t) =
   match Date_time.offset_from_utc dt with
   | `Ambiguous _ -> raise (Printers.Date_time_cannot_deduce_offset_from_utc dt)
   | `Single offset ->
-      let offset_view = Span.For_human'.view offset in
-      let tz_off =
-        if Span.(offset = zero) then "Z"
-        else
-          let sign = match offset_view.sign with `Pos -> '+' | `Neg -> '-' in
-          Printf.sprintf "%c%02d:%02d" sign offset_view.hours
-            offset_view.minutes
-      in
-      Fmt.pf formatter "%aT%a%s" pp_date (Date_time.date dt)
-        (pp_time ?frac_s ()) (Date_time.time dt) tz_off
+    let offset_view = Span.For_human'.view offset in
+    let tz_off =
+      if Span.(offset = zero) then "Z"
+      else
+        let sign = match offset_view.sign with `Pos -> '+' | `Neg -> '-' in
+        Printf.sprintf "%c%02d:%02d" sign offset_view.hours
+          offset_view.minutes
+    in
+    Fmt.pf formatter "%aT%a%s" pp_date (Date_time.date dt)
+      (pp_time ?frac_s ()) (Date_time.time dt) tz_off
 
 let pp_date_time ?frac_s () formatter (dt : Date_time.t) =
   pp_date_time' ?frac_s pp_date () formatter dt

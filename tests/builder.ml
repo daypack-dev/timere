@@ -26,23 +26,23 @@ let make_date_time ~rng ~min_year ~max_year_inc =
   in
   match Timedesc.make ~year ~month ~day ~hour ~minute ~second ~ns ~tz () with
   | Error _ ->
-      Timedesc.make_exn ~year ~month ~day ~hour ~minute ~second ~ns
-        ~tz:Timedesc.Time_zone.utc ()
+    Timedesc.make_exn ~year ~month ~day ~hour ~minute ~second ~ns
+      ~tz:Timedesc.Time_zone.utc ()
   | Ok x -> x
 
 let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
   let len = min 5 (rng ()) in
   OSeq.(0 -- len)
   |> Seq.map (fun _ ->
-         let start =
-           make_date_time ~rng ~min_year ~max_year_inc
-           |> Timedesc.to_timestamp
-           |> Timedesc.min_of_local_result
-         in
-         let end_exc =
-           Timedesc.Span.add start (Timedesc.Span.make ~ns:(rng ()) ())
-         in
-         (start, end_exc))
+      let start =
+        make_date_time ~rng ~min_year ~max_year_inc
+        |> Timedesc.to_timestamp
+        |> Timedesc.min_of_local_result
+      in
+      let end_exc =
+        Timedesc.Span.add start (Timedesc.Span.make ~ns:(rng ()) ())
+      in
+      (start, end_exc))
   |> CCList.of_seq
   |> List.sort_uniq Time.Interval'.compare
   |> CCList.to_seq
@@ -71,8 +71,8 @@ let make_pattern ~rng ~min_year ~max_year_inc : Pattern.t =
       let end_inc = min 5 (rng ()) in
       OSeq.(0 -- end_inc)
       |> Seq.map (fun _ ->
-             if rng () mod 2 = 0 then 1 + (rng () mod 31)
-             else -(1 + (rng () mod 31)))
+          if rng () mod 2 = 0 then 1 + (rng () mod 31)
+          else -(1 + (rng () mod 31)))
       |> CCList.of_seq
   in
   let weekdays =
@@ -81,9 +81,9 @@ let make_pattern ~rng ~min_year ~max_year_inc : Pattern.t =
       let end_inc = min 5 (rng ()) in
       OSeq.(0 -- end_inc)
       |> Seq.map (fun _ ->
-             CCOption.get_exn_or
-               "Expected successful weekday construction from tm_int"
-             @@ Timedesc.Utils.weekday_of_tm_int (rng () mod 7))
+          CCOption.get_exn_or
+            "Expected successful weekday construction from tm_int"
+          @@ Timedesc.Utils.weekday_of_tm_int (rng () mod 7))
       |> CCList.of_seq
   in
   let hours =
@@ -111,8 +111,8 @@ let make_pattern ~rng ~min_year ~max_year_inc : Pattern.t =
       OSeq.(0 -- end_inc)
       |> Seq.map (fun _ -> rng () mod 1_000_000_000)
       |> Seq.fold_left
-           (fun acc ns -> Diet.Int.add (Diet.Int.Interval.make ns ns) acc)
-           Diet.Int.empty
+        (fun acc ns -> Diet.Int.add (Diet.Int.Interval.make ns ns) acc)
+        Diet.Int.empty
   in
   Pattern.
     {
@@ -135,61 +135,61 @@ let make_points ~rng ~min_year ~max_year_inc ~max_precision =
   match precision with
   | 0 -> Points.make_exn ~ns:(rng () mod 1_000_000_000) ~lean_toward ()
   | 1 ->
-      Points.make_exn
-        ~second:(rng () mod 60)
-        ~ns:(rng () mod 1_000_000_000)
-        ~lean_toward ()
+    Points.make_exn
+      ~second:(rng () mod 60)
+      ~ns:(rng () mod 1_000_000_000)
+      ~lean_toward ()
   | 2 ->
-      Points.make_exn
-        ~minute:(rng () mod 60)
-        ~second:(rng () mod 60)
-        ~ns:(rng () mod 1_000_000_000)
-        ~lean_toward ()
+    Points.make_exn
+      ~minute:(rng () mod 60)
+      ~second:(rng () mod 60)
+      ~ns:(rng () mod 1_000_000_000)
+      ~lean_toward ()
   | 3 ->
-      Points.make_exn
-        ~hour:(rng () mod 24)
-        ~minute:(rng () mod 60)
-        ~second:(rng () mod 60)
-        ~ns:(rng () mod 1_000_000_000)
-        ~lean_toward ()
+    Points.make_exn
+      ~hour:(rng () mod 24)
+      ~minute:(rng () mod 60)
+      ~second:(rng () mod 60)
+      ~ns:(rng () mod 1_000_000_000)
+      ~lean_toward ()
   | 4 ->
-      Points.make_exn
-        ~weekday:
-          (rng () mod 7
-          |> Timedesc.Utils.weekday_of_tm_int
-          |> CCOption.get_exn_or
-               "Expected successful weekday construction from tm_int")
-        ~hour:(rng () mod 24)
-        ~minute:(rng () mod 60)
-        ~second:(rng () mod 60)
-        ~ns:(rng () mod 1_000_000_000)
-        ~lean_toward ()
+    Points.make_exn
+      ~weekday:
+        (rng () mod 7
+         |> Timedesc.Utils.weekday_of_tm_int
+         |> CCOption.get_exn_or
+           "Expected successful weekday construction from tm_int")
+      ~hour:(rng () mod 24)
+      ~minute:(rng () mod 60)
+      ~second:(rng () mod 60)
+      ~ns:(rng () mod 1_000_000_000)
+      ~lean_toward ()
   | 5 ->
-      Points.make_exn ~day
-        ~hour:(rng () mod 24)
-        ~minute:(rng () mod 60)
-        ~second:(rng () mod 60)
-        ~ns:(rng () mod 1_000_000_000)
-        ~lean_toward ()
+    Points.make_exn ~day
+      ~hour:(rng () mod 24)
+      ~minute:(rng () mod 60)
+      ~second:(rng () mod 60)
+      ~ns:(rng () mod 1_000_000_000)
+      ~lean_toward ()
   | 6 ->
-      Points.make_exn
-        ~month:(succ (rng () mod 12))
-        ~day
-        ~hour:(rng () mod 24)
-        ~minute:(rng () mod 60)
-        ~second:(rng () mod 60)
-        ~ns:(rng () mod 1_000_000_000)
-        ~lean_toward ()
+    Points.make_exn
+      ~month:(succ (rng () mod 12))
+      ~day
+      ~hour:(rng () mod 24)
+      ~minute:(rng () mod 60)
+      ~second:(rng () mod 60)
+      ~ns:(rng () mod 1_000_000_000)
+      ~lean_toward ()
   | 7 ->
-      Points.make_exn
-        ~year:(min max_year_inc (min_year + rng ()))
-        ~month:(succ (rng () mod 12))
-        ~day
-        ~hour:(rng () mod 24)
-        ~minute:(rng () mod 60)
-        ~second:(rng () mod 60)
-        ~ns:(rng () mod 1_000_000_000)
-        ~lean_toward ()
+    Points.make_exn
+      ~year:(min max_year_inc (min_year + rng ()))
+      ~month:(succ (rng () mod 12))
+      ~day
+      ~hour:(rng () mod 24)
+      ~minute:(rng () mod 60)
+      ~second:(rng () mod 60)
+      ~ns:(rng () mod 1_000_000_000)
+      ~lean_toward ()
   | _ -> failwith "Unexpected case"
 
 let make_hms ~rng =
@@ -265,15 +265,15 @@ let make_unary_op ~min_year:_ ~max_year_inc:_ ~rng t =
   | 1 -> Time.shift (make_duration ~rng) t
   | 2 -> Time.lengthen (make_pos_duration ~rng) t
   | 3 ->
-      let available_time_zone_count =
-        List.length Timedesc.Time_zone.available_time_zones
-      in
-      let tz =
-        List.nth Timedesc.Time_zone.available_time_zones
-          (rng () mod available_time_zone_count)
-        |> Timedesc.Time_zone.make_exn
-      in
-      Time.with_tz tz t
+    let available_time_zone_count =
+      List.length Timedesc.Time_zone.available_time_zones
+    in
+    let tz =
+      List.nth Timedesc.Time_zone.available_time_zones
+        (rng () mod available_time_zone_count)
+      |> Timedesc.Time_zone.make_exn
+    in
+    Time.with_tz tz t
   | _ -> failwith "Unexpected case"
 
 let build ~enable_extra_restrictions:_ ~min_year ~max_year_inc ~max_height
@@ -286,53 +286,53 @@ let build ~enable_extra_restrictions:_ ~min_year ~max_year_inc ~max_height
       | 1 -> Time.always
       | 2 -> make_timestamp_intervals ~rng ~min_year ~max_year_inc
       | 3 ->
-          let pat = make_pattern ~rng ~min_year ~max_year_inc in
-          Time.pattern
-            ~years:(Int_set.to_list pat.years)
-            ~months:(Int_set.to_list pat.months)
-            ~days:(Int_set.to_list pat.month_days)
-            ~weekdays:(Weekday_set.to_list pat.weekdays)
-            ~hours:(Int_set.to_list pat.hours)
-            ~minutes:(Int_set.to_list pat.minutes)
-            ~seconds:(Int_set.to_list pat.seconds)
-            ()
+        let pat = make_pattern ~rng ~min_year ~max_year_inc in
+        Time.pattern
+          ~years:(Int_set.to_list pat.years)
+          ~months:(Int_set.to_list pat.months)
+          ~days:(Int_set.to_list pat.month_days)
+          ~weekdays:(Weekday_set.to_list pat.weekdays)
+          ~hours:(Int_set.to_list pat.hours)
+          ~minutes:(Int_set.to_list pat.minutes)
+          ~seconds:(Int_set.to_list pat.seconds)
+          ()
       | 4 -> make_hms_intervals_inc ~rng
       | 5 -> make_hms_intervals_exc ~rng
       | _ -> failwith "Unexpected case"
     else
       match rng () mod 5 with
       | 0 ->
-          make_unary_op ~min_year ~max_year_inc ~rng
-            (aux (new_height ~rng height))
+        make_unary_op ~min_year ~max_year_inc ~rng
+          (aux (new_height ~rng height))
       | 1 ->
-          let end_inc = min max_branching (rng ()) in
-          OSeq.(0 -- end_inc)
-          |> Seq.map (fun _ -> aux (new_height ~rng height))
-          |> CCList.of_seq
-          |> Time.inter
+        let end_inc = min max_branching (rng ()) in
+        OSeq.(0 -- end_inc)
+        |> Seq.map (fun _ -> aux (new_height ~rng height))
+        |> CCList.of_seq
+        |> Time.inter
       | 2 ->
-          let end_inc = min max_branching (rng ()) in
-          OSeq.(0 -- end_inc)
-          |> Seq.map (fun _ -> aux (new_height ~rng height))
-          |> CCList.of_seq
-          |> Time.union
+        let end_inc = min max_branching (rng ()) in
+        OSeq.(0 -- end_inc)
+        |> Seq.map (fun _ -> aux (new_height ~rng height))
+        |> CCList.of_seq
+        |> Time.union
       | 3 ->
-          let pick = if rng () mod 2 = 0 then `Whole else `Snd in
-          let p1 = make_points ~rng ~min_year ~max_year_inc ~max_precision:6 in
-          let p2 =
-            make_points ~rng ~min_year ~max_year_inc
-              ~max_precision:(Points.precision p1)
-          in
-          Time.pattern_intervals ~bound:(make_pos_duration ~rng) pick p1 p2
+        let pick = if rng () mod 2 = 0 then `Whole else `Snd in
+        let p1 = make_points ~rng ~min_year ~max_year_inc ~max_precision:6 in
+        let p2 =
+          make_points ~rng ~min_year ~max_year_inc
+            ~max_precision:(Points.precision p1)
+        in
+        Time.pattern_intervals ~bound:(make_pos_duration ~rng) pick p1 p2
       | 4 ->
-          Time.chunk (make_chunking ~rng) (make_chunk_selector ~rng)
-            (aux (new_height ~rng height))
+        Time.chunk (make_chunking ~rng) (make_chunk_selector ~rng)
+          (aux (new_height ~rng height))
       | _ -> failwith "Unexpected case"
-    (* and aux_restricted height =
-     *   if enable_extra_restrictions then
-     *     Time.chunk `Disjoint_intervals
-     *       Time.(take 100)
-     *       (aux (new_height ~rng height))
-     *   else aux (new_height ~rng height) *)
+      (* and aux_restricted height =
+       *   if enable_extra_restrictions then
+       *     Time.chunk `Disjoint_intervals
+       *       Time.(take 100)
+       *       (aux (new_height ~rng height))
+       *   else aux (new_height ~rng height) *)
   in
   aux max_height

@@ -37,20 +37,20 @@ let collect_round_robin (type a) ~(f_le : a -> a -> bool)
     match seq () with
     | Seq.Nil -> Seq.empty
     | Seq.Cons (x, rest) as s ->
-        if f_le cur x then fun () -> s else get_usable_part cur rest
+      if f_le cur x then fun () -> s else get_usable_part cur rest
   in
   let rec aux (cur : a option) (batches : a Seq.t list) : a option list Seq.t =
     let cur, acc, new_batches =
       List.fold_left
         (fun (cur, acc, new_batches) seq ->
-          let usable =
-            match cur with
-            | None -> seq
-            | Some cur_start -> get_usable_part cur_start seq
-          in
-          match usable () with
-          | Seq.Nil -> (cur, None :: acc, new_batches)
-          | Seq.Cons (x, rest) -> (Some x, Some x :: acc, rest :: new_batches))
+           let usable =
+             match cur with
+             | None -> seq
+             | Some cur_start -> get_usable_part cur_start seq
+           in
+           match usable () with
+           | Seq.Nil -> (cur, None :: acc, new_batches)
+           | Seq.Cons (x, rest) -> (Some x, Some x :: acc, rest :: new_batches))
         (cur, [], []) batches
     in
     if List.exists CCOption.is_some acc then
@@ -70,8 +70,8 @@ let check_if_f_holds_for_immediate_neighbors (type a) ~(f : a -> a -> bool)
         match cur with
         | None -> aux f f_exn (Some x) rest
         | Some cur ->
-            if f cur x then fun () -> Seq.Cons (cur, aux f f_exn (Some x) rest)
-            else raise (f_exn cur x))
+          if f cur x then fun () -> Seq.Cons (cur, aux f f_exn (Some x) rest)
+          else raise (f_exn cur x))
   in
   aux f f_exn None s
 

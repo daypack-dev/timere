@@ -95,7 +95,7 @@ let of_float_s (x : float) : t =
   let ns = max 0 (int_of_float (frac *. ns_count_in_s_float)) in
   normalize
     (if x >= 0.0 then { s; ns }
-    else { s = Int64.pred s; ns = ns_count_in_s - ns })
+     else { s = Int64.pred s; ns = ns_count_in_s - ns })
 
 let max x y = if ge x y then x else y
 
@@ -207,9 +207,9 @@ module For_human' = struct
       add
         (of_float_s
            ((r.days *. Float_multipliers.day_to_seconds)
-           +. (r.hours *. Float_multipliers.hour_to_seconds)
-           +. (r.minutes *. Float_multipliers.minute_to_seconds)
-           +. r.seconds))
+            +. (r.hours *. Float_multipliers.hour_to_seconds)
+            +. (r.minutes *. Float_multipliers.minute_to_seconds)
+            +. r.seconds))
         (make ~ns:r.ns ())
     in
     match r.sign with `Pos -> span | `Neg -> neg span
