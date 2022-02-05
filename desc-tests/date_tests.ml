@@ -344,16 +344,16 @@ module Qc = struct
          let x = Timedesc.Date.Ymd.make_exn ~year:year_x ~month:month_x ~day:day_x in
          let y = Timedesc.Date.Ymd.make_exn ~year:year_y ~month:month_y ~day:day_y in
          let diff = Timedesc.Date.diff_days x y in
-         Timedesc.Date.(equal y (add ~days:diff x)))
+         Timedesc.Date.(equal x (add ~days:diff y)))
 
   let sub_diff =
-    QCheck.Test.make ~count:100_000 ~name:"add_diff"
+    QCheck.Test.make ~count:100_000 ~name:"sub_diff"
       QCheck.(pair ymd_date ymd_date)
       (fun ((year_x, month_x, day_x), (year_y, month_y, day_y)) ->
          let x = Timedesc.Date.Ymd.make_exn ~year:year_x ~month:month_x ~day:day_x in
          let y = Timedesc.Date.Ymd.make_exn ~year:year_y ~month:month_y ~day:day_y in
          let diff = Timedesc.Date.diff_days x y in
-         Timedesc.Date.(equal x (sub ~days:diff y)))
+         Timedesc.Date.(equal y (sub ~days:diff x)))
 
   let suite =
     [

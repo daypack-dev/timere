@@ -172,16 +172,16 @@ module Qc = struct
          let x = Timedesc.ISO_week.make_exn ~year:year_x ~week:week_x in
          let y = Timedesc.ISO_week.make_exn ~year:year_y ~week:week_y in
          let diff = Timedesc.ISO_week.diff_weeks x y in
-         Timedesc.ISO_week.(equal y (add ~weeks:diff x)))
+         Timedesc.ISO_week.(equal x (add ~weeks:diff y)))
 
   let sub_diff =
-    QCheck.Test.make ~count:100_000 ~name:"add_diff"
+    QCheck.Test.make ~count:100_000 ~name:"sub_diff"
       QCheck.(pair iso_week iso_week)
       (fun ((year_x, week_x), (year_y, week_y)) ->
          let x = Timedesc.ISO_week.make_exn ~year:year_x ~week:week_x in
          let y = Timedesc.ISO_week.make_exn ~year:year_y ~week:week_y in
          let diff = Timedesc.ISO_week.diff_weeks x y in
-         Timedesc.ISO_week.(equal x (sub ~weeks:diff y)))
+         Timedesc.ISO_week.(equal y (sub ~weeks:diff x)))
 
   let suite =
     [
