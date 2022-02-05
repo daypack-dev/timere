@@ -26,8 +26,10 @@ let pp_date_time' ?frac_s pp_date () formatter (dt : Date_time.t) =
       if Span.(offset = zero) then "Z"
       else
         let sign = match offset_view.sign with `Pos -> '+' | `Neg -> '-' in
-        Printf.sprintf "%c%02d:%02d" sign offset_view.hours
+        Printf.sprintf "%c%02d:%02d:%02d" sign
+        offset_view.hours
           offset_view.minutes
+          offset_view.seconds
     in
     Fmt.pf formatter "%aT%a%s" pp_date (Date_time.date dt)
       (pp_time ?frac_s ()) (Date_time.time dt) tz_off
