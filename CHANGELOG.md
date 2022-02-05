@@ -50,6 +50,10 @@
 
 - Added `pp/to_iso8601` functions as aliases to the rfc3339 functions to `Timedesc`
 
+- Patched ISO8601 parsers to handle second level time zone offset
+
+  - Rare occurrence in tzdb but picked up by the new test suite
+
 - Added additional date conversion functions to `Utils`
 
   - `ymd_of_jd`
