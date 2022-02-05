@@ -274,7 +274,50 @@ end
 module Qc = struct
   let to_rfc3339_nano_of_iso8601_is_lossless =
     QCheck.Test.make ~count:100_000
-      ~name:"to_rfc3339_nano_of_iso8601_is_lossless" timestamp (fun timestamp ->
+      ~name:"to_rfc3339_nano_of_iso8601_is_lossless" date_time (fun dt ->
+          let r =
+            CCResult.get_exn
+            @@ Timedesc.of_iso8601
+            @@ CCOption.get_exn_or "expected successful RFC3339 construction"
+            @@ Timedesc.to_rfc3339 ~frac_s:9 dt
+          in
+          Timedesc.(Span.equal (to_timestamp_single r) (to_timestamp_single dt))
+        )
+
+  let to_rfc3339_w_default_frac_s_of_iso8601_is_lossless =
+    QCheck.Test.make ~count:100_000
+      ~name:"to_rfc3339_w_default_frac_s_of_iso8601_is_lossless" date_time
+      (fun dt ->
+         let r =
+           CCResult.get_exn
+           @@ Timedesc.of_iso8601
+           @@ CCOption.get_exn_or "expected successful RFC3339 construction"
+           @@ Timedesc.to_rfc3339 dt
+         in
+         Timedesc.(Span.equal (to_timestamp_single r) (to_timestamp_single dt))
+      )
+
+  let to_rfc3339_of_iso8601_is_accurate =
+    QCheck.Test.make ~count:100_000 ~name:"to_rfc3339_of_iso8601_is_accurate"
+      QCheck.(pair (int_bound 9) date_time)
+      (fun (frac_s, dt) ->
+         let r =
+           CCResult.get_exn
+           @@ Timedesc.of_iso8601
+           @@ CCOption.get_exn_or "expected successful RFC3339 construction"
+           @@ Timedesc.to_rfc3339 ~frac_s dt
+         in
+         let r = Timedesc.to_timestamp_single r in
+         let timestamp = Timedesc.to_timestamp_single dt in
+         Timedesc.Span.(
+           abs (r - timestamp)
+           < make ~s:0L
+             ~ns:(int_of_float (10. ** float_of_int (CCInt.sub 9 frac_s)))
+             ()))
+
+  let timestamp_to_rfc3339_nano_of_iso8601_is_lossless =
+    QCheck.Test.make ~count:100_000
+      ~name:"timestamp_to_rfc3339_nano_of_iso8601_is_lossless" timestamp (fun timestamp ->
           let r =
             CCResult.get_exn
             @@ Timedesc.Timestamp.of_iso8601
@@ -282,9 +325,9 @@ module Qc = struct
           in
           Timedesc.Span.equal r timestamp)
 
-  let to_rfc3339_w_default_frac_s_of_iso8601_is_lossless =
+  let timestamp_to_rfc3339_w_default_frac_s_of_iso8601_is_lossless =
     QCheck.Test.make ~count:100_000
-      ~name:"to_rfc3339_w_default_frac_s_of_iso8601_is_lossless" timestamp
+      ~name:"timestamp_to_rfc3339_w_default_frac_s_of_iso8601_is_lossless" timestamp
       (fun timestamp ->
          let r =
            CCResult.get_exn
@@ -293,8 +336,8 @@ module Qc = struct
          in
          Timedesc.Span.equal r timestamp)
 
-  let to_rfc3339_of_iso8601_is_accurate =
-    QCheck.Test.make ~count:100_000 ~name:"to_rfc3339_of_iso8601_is_accurate"
+  let timestamp_to_rfc3339_of_iso8601_is_accurate =
+    QCheck.Test.make ~count:100_000 ~name:"timestamp_to_rfc3339_of_iso8601_is_accurate"
       QCheck.(pair (int_bound 9) timestamp)
       (fun (frac_s, timestamp) ->
          let r =
@@ -302,6 +345,98 @@ module Qc = struct
            @@ Timedesc.Timestamp.of_iso8601
            @@ Timedesc.Timestamp.to_rfc3339 ~frac_s timestamp
          in
+         Timedesc.Span.(
+           abs (r - timestamp)
+           < make ~s:0L
+             ~ns:(int_of_float (10. ** float_of_int (CCInt.sub 9 frac_s)))
+             ()))
+
+  let iso_week_date_time_to_iso8601_nano_of_iso8601_is_lossless =
+    QCheck.Test.make ~count:100_000
+      ~name:"iso_week_date_time_to_iso8601_nano_of_iso8601_is_lossless" date_time (fun dt ->
+          let ymd = Timedesc.ymd_date dt in
+          QCheck.assume (ymd.year > 0 || (ymd.year =0 && ymd.day >= 3));
+          let r =
+            CCResult.get_exn
+            @@ Timedesc.ISO_week_date_time.of_iso8601
+            @@ CCOption.get_exn_or "expected successful RFC3339 construction"
+            @@ Timedesc.ISO_week_date_time.to_iso8601 ~frac_s:9 dt
+          in
+          Timedesc.(Span.equal (to_timestamp_single r) (to_timestamp_single dt))
+        )
+
+  let iso_week_date_time_to_iso8601_w_default_frac_s_of_iso8601_is_lossless =
+    QCheck.Test.make ~count:100_000
+      ~name:"iso_week_date_time_to_iso8601_w_default_frac_s_of_iso8601_is_lossless" date_time
+      (fun dt ->
+         let ymd = Timedesc.ymd_date dt in
+         QCheck.assume (ymd.year > 0 || (ymd.year =0 && ymd.day >= 3));
+         let r =
+           CCResult.get_exn
+           @@ Timedesc.ISO_week_date_time.of_iso8601
+           @@ CCOption.get_exn_or "expected successful RFC3339 construction"
+           @@ Timedesc.ISO_week_date_time.to_iso8601 dt
+         in
+         Timedesc.(Span.equal (to_timestamp_single r) (to_timestamp_single dt))
+      )
+
+  let iso_week_date_time_to_iso8601_of_iso8601_is_accurate =
+    QCheck.Test.make ~count:100_000 ~name:"iso_week_date_time_to_iso8601_of_iso8601_is_accurate"
+      QCheck.(pair (int_bound 9) date_time)
+      (fun (frac_s, dt) ->
+         let ymd = Timedesc.ymd_date dt in
+         QCheck.assume (ymd.year > 0 || (ymd.year =0 && ymd.day >= 3));
+         let r =
+           CCResult.get_exn
+           @@ Timedesc.ISO_week_date_time.of_iso8601
+           @@ CCOption.get_exn_or "expected successful RFC3339 construction"
+           @@ Timedesc.ISO_week_date_time.to_iso8601 ~frac_s dt
+         in
+         let r = Timedesc.to_timestamp_single r in
+         let timestamp = Timedesc.to_timestamp_single dt in
+         Timedesc.Span.(
+           abs (r - timestamp)
+           < make ~s:0L
+             ~ns:(int_of_float (10. ** float_of_int (CCInt.sub 9 frac_s)))
+             ()))
+
+  let iso_ord_date_time_to_iso8601_nano_of_iso8601_is_lossless =
+    QCheck.Test.make ~count:100_000
+      ~name:"iso_ord_date_time_to_iso8601_nano_of_iso8601_is_lossless" date_time (fun dt ->
+          let r =
+            CCResult.get_exn
+            @@ Timedesc.ISO_ord_date_time.of_iso8601
+            @@ CCOption.get_exn_or "expected successful RFC3339 construction"
+            @@ Timedesc.ISO_ord_date_time.to_iso8601 ~frac_s:9 dt
+          in
+          Timedesc.(Span.equal (to_timestamp_single r) (to_timestamp_single dt))
+        )
+
+  let iso_ord_date_time_to_iso8601_w_default_frac_s_of_iso8601_is_lossless =
+    QCheck.Test.make ~count:100_000
+      ~name:"iso_ord_date_time_to_iso8601_w_default_frac_s_of_iso8601_is_lossless" date_time
+      (fun dt ->
+         let r =
+           CCResult.get_exn
+           @@ Timedesc.ISO_ord_date_time.of_iso8601
+           @@ CCOption.get_exn_or "expected successful RFC3339 construction"
+           @@ Timedesc.ISO_ord_date_time.to_iso8601 dt
+         in
+         Timedesc.(Span.equal (to_timestamp_single r) (to_timestamp_single dt))
+      )
+
+  let iso_ord_date_time_to_iso8601_of_iso8601_is_accurate =
+    QCheck.Test.make ~count:100_000 ~name:"iso_ord_date_time_to_iso8601_of_iso8601_is_accurate"
+      QCheck.(pair (int_bound 9) date_time)
+      (fun (frac_s, dt) ->
+         let r =
+           CCResult.get_exn
+           @@ Timedesc.ISO_ord_date_time.of_iso8601
+           @@ CCOption.get_exn_or "expected successful RFC3339 construction"
+           @@ Timedesc.ISO_ord_date_time.to_iso8601 ~frac_s dt
+         in
+         let r = Timedesc.to_timestamp_single r in
+         let timestamp = Timedesc.to_timestamp_single dt in
          Timedesc.Span.(
            abs (r - timestamp)
            < make ~s:0L
@@ -421,6 +556,15 @@ module Qc = struct
       to_rfc3339_nano_of_iso8601_is_lossless;
       to_rfc3339_w_default_frac_s_of_iso8601_is_lossless;
       to_rfc3339_of_iso8601_is_accurate;
+      timestamp_to_rfc3339_nano_of_iso8601_is_lossless;
+      timestamp_to_rfc3339_w_default_frac_s_of_iso8601_is_lossless;
+      timestamp_to_rfc3339_of_iso8601_is_accurate;
+      iso_week_date_time_to_iso8601_nano_of_iso8601_is_lossless;
+      iso_week_date_time_to_iso8601_w_default_frac_s_of_iso8601_is_lossless;
+      iso_week_date_time_to_iso8601_of_iso8601_is_accurate;
+      iso_ord_date_time_to_iso8601_nano_of_iso8601_is_lossless;
+      iso_ord_date_time_to_iso8601_w_default_frac_s_of_iso8601_is_lossless;
+      iso_ord_date_time_to_iso8601_of_iso8601_is_accurate;
       of_to_timestamp;
       to_of_sexp;
       zoneless_to_of_sexp;

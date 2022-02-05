@@ -103,42 +103,43 @@ let hm_p : (int * int, unit) MParser.t =
       (two_digit_nat_zero >>= fun hour -> return (hour, 0));
     ]
 
-let time_p : (Time.t, unit) MParser.t =
+let hms_p =
   let open MParser in
   let open Parser_components in
-  let hms_p =
-    choice
-      [
-        attempt
-          (two_digit_nat_zero
-           >>= fun hour ->
-           optional (char ':')
-           >> two_digit_nat_zero
-           >>= fun minute ->
-           optional (char ':')
-           >> two_digit_nat_zero
-           >>= fun second ->
-           choice [ char '.'; char ',' ]
-           >> num_string
-           >>= fun s ->
-           let s = if String.length s > 9 then String.sub s 0 9 else s in
-           let len = String.length s in
-           if len = 9 then return (hour, minute, second, int_of_string s)
-           else
-             let ns = int_of_string s * Printers.get_divisor len in
-             return (hour, minute, second, ns));
-        attempt
-          (two_digit_nat_zero
-           >>= fun hour ->
-           optional (char ':')
-           >> two_digit_nat_zero
-           >>= fun minute ->
-           optional (char ':')
-           >> two_digit_nat_zero
-           >>= fun second -> return (hour, minute, second, 0));
-        (hm_p |>> fun (hour, minute) -> (hour, minute, 0, 0));
-      ]
-  in
+  choice
+    [
+      attempt
+        (two_digit_nat_zero
+         >>= fun hour ->
+         optional (char ':')
+         >> two_digit_nat_zero
+         >>= fun minute ->
+         optional (char ':')
+         >> two_digit_nat_zero
+         >>= fun second ->
+         choice [ char '.'; char ',' ]
+         >> num_string
+         >>= fun s ->
+         let s = if String.length s > 9 then String.sub s 0 9 else s in
+         let len = String.length s in
+         if len = 9 then return (hour, minute, second, int_of_string s)
+         else
+           let ns = int_of_string s * Printers.get_divisor len in
+           return (hour, minute, second, ns));
+      attempt
+        (two_digit_nat_zero
+         >>= fun hour ->
+         optional (char ':')
+         >> two_digit_nat_zero
+         >>= fun minute ->
+         optional (char ':')
+         >> two_digit_nat_zero
+         >>= fun second -> return (hour, minute, second, 0));
+      (hm_p |>> fun (hour, minute) -> (hour, minute, 0, 0));
+    ]
+
+let time_p : (Time.t, unit) MParser.t =
+  let open MParser in
   hms_p
   >>= fun (hour, minute, second, ns) ->
   match Time.make ~hour ~minute ~second ~ns () with
@@ -157,9 +158,9 @@ let offset_p : (Span.t, unit) MParser.t =
            >>$ `Pos
                <|> (char '-' >>$ `Neg)
            >>= fun sign ->
-           hm_p
-           |>> fun (hour, minute) ->
-           Span.For_human'.make_exn ~sign ~hours:hour ~minutes:minute ())
+           hms_p
+           |>> fun (hour, minute, second, _ns) ->
+           Span.For_human'.make_exn ~sign ~hours:hour ~minutes:minute ~seconds:second ())
 
 type maybe_zoneless =
   [ `Zoned of Date_time.t

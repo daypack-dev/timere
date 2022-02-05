@@ -46,6 +46,14 @@
 
   - `lt`, `le`, `gt`, `ge`, `compare`
 
+- Added arithemtic functions to `Date`
+
+- Added `pp/to_iso8601` functions as aliases to the rfc3339 functions to `Timedesc`
+
+- Patched ISO8601 parsers and RFC3339/ISO8601 printers to handle second level time zone offset
+
+  - Rare occurrence in tzdb but picked up by some new tests
+
 - Added additional date conversion functions to `Utils`
 
   - `ymd_of_jd`

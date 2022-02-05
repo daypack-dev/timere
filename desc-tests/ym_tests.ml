@@ -134,5 +134,68 @@ module Alco = struct
 end
 
 module Qc = struct
-  let suite = []
+  let to_iso8601_of_iso8601 =
+    QCheck.Test.make ~count:100_000 ~name:"to_iso8601_of_iso8601" ym
+      (fun (year, month) ->
+         let d = Timedesc.Ym.make_exn ~year ~month in
+         let d' =
+           d
+           |> Timedesc.Ym.to_iso8601
+           |> Timedesc.Ym.of_iso8601
+           |> CCResult.get_exn
+         in
+         Timedesc.Ym.equal d d')
+
+  let add_identity =
+    QCheck.Test.make ~count:100_000 ~name:"add_identity" ym (fun (year, month) ->
+        let x = Timedesc.Ym.make_exn ~year ~month in
+        Timedesc.Ym.(equal (add ~months:0 x) x))
+
+  let sub_identity =
+    QCheck.Test.make ~count:100_000 ~name:"sub_identity" ym (fun (year, month) ->
+        let x = Timedesc.Ym.make_exn ~year ~month in
+        Timedesc.Ym.(equal (sub ~months:0 x) x))
+
+  let add_sub =
+    QCheck.Test.make ~count:100_000 ~name:"add_sub"
+      QCheck.(pair ym small_int)
+      (fun ((year, month), y) ->
+         let x = Timedesc.Ym.make_exn ~year ~month in
+         Timedesc.Ym.(equal x (sub ~months:y (add ~months:y x))))
+
+  let sub_add =
+    QCheck.Test.make ~count:100_000 ~name:"sub_add"
+      QCheck.(pair ym small_int)
+      (fun ((year, month), y) ->
+         let x = Timedesc.Ym.make_exn ~year ~month in
+         Timedesc.Ym.(equal x (add ~months:y (sub ~months:y x))))
+
+  let add_diff =
+    QCheck.Test.make ~count:100_000 ~name:"add_diff"
+      QCheck.(pair ym iso_week)
+      (fun ((year_x, month_x), (year_y, month_y)) ->
+         let x = Timedesc.Ym.make_exn ~year:year_x ~month:month_x in
+         let y = Timedesc.Ym.make_exn ~year:year_y ~month:month_y in
+         let diff = Timedesc.Ym.diff_months x y in
+         Timedesc.Ym.(equal x (add ~months:diff y)))
+
+  let sub_diff =
+    QCheck.Test.make ~count:100_000 ~name:"sub_diff"
+      QCheck.(pair ym iso_week)
+      (fun ((year_x, month_x), (year_y, month_y)) ->
+         let x = Timedesc.Ym.make_exn ~year:year_x ~month:month_x in
+         let y = Timedesc.Ym.make_exn ~year:year_y ~month:month_y in
+         let diff = Timedesc.Ym.diff_months x y in
+         Timedesc.Ym.(equal y (sub ~months:diff x)))
+
+  let suite =
+    [
+      to_iso8601_of_iso8601;
+      add_identity;
+      sub_identity;
+      add_sub;
+      sub_add;
+      add_diff;
+      sub_diff;
+    ]
 end

@@ -313,6 +313,48 @@ module Qc = struct
          let day = Timedesc.Date.day d in
          year = year' && month = month' && day = day')
 
+  let add_identity =
+    QCheck.Test.make ~count:100_000 ~name:"add_identity" ymd_date (fun (year, month, day) ->
+        let x = Timedesc.Date.Ymd.make_exn ~year ~month ~day in
+        Timedesc.Date.(equal (add ~days:0 x) x))
+
+  let sub_identity =
+    QCheck.Test.make ~count:100_000 ~name:"sub_identity" ymd_date (fun (year, month, day) ->
+        let x = Timedesc.Date.Ymd.make_exn ~year ~month ~day in
+        Timedesc.Date.(equal (sub ~days:0 x) x))
+
+  let add_sub =
+    QCheck.Test.make ~count:100_000 ~name:"add_sub"
+      QCheck.(pair ymd_date small_int)
+      (fun ((year, month, day), y) ->
+         let x = Timedesc.Date.Ymd.make_exn ~year ~month ~day in
+         Timedesc.Date.(equal x (sub ~days:y (add ~days:y x))))
+
+  let sub_add =
+    QCheck.Test.make ~count:100_000 ~name:"sub_add"
+      QCheck.(pair ymd_date small_int)
+      (fun ((year, month, day), y) ->
+         let x = Timedesc.Date.Ymd.make_exn ~year ~month ~day in
+         Timedesc.Date.(equal x (add ~days:y (sub ~days:y x))))
+
+  let add_diff =
+    QCheck.Test.make ~count:100_000 ~name:"add_diff"
+      QCheck.(pair ymd_date ymd_date)
+      (fun ((year_x, month_x, day_x), (year_y, month_y, day_y)) ->
+         let x = Timedesc.Date.Ymd.make_exn ~year:year_x ~month:month_x ~day:day_x in
+         let y = Timedesc.Date.Ymd.make_exn ~year:year_y ~month:month_y ~day:day_y in
+         let diff = Timedesc.Date.diff_days x y in
+         Timedesc.Date.(equal x (add ~days:diff y)))
+
+  let sub_diff =
+    QCheck.Test.make ~count:100_000 ~name:"sub_diff"
+      QCheck.(pair ymd_date ymd_date)
+      (fun ((year_x, month_x, day_x), (year_y, month_y, day_y)) ->
+         let x = Timedesc.Date.Ymd.make_exn ~year:year_x ~month:month_x ~day:day_x in
+         let y = Timedesc.Date.Ymd.make_exn ~year:year_y ~month:month_y ~day:day_y in
+         let diff = Timedesc.Date.diff_days x y in
+         Timedesc.Date.(equal y (sub ~days:diff x)))
+
   let suite =
     [
       to_rfc3339_of_iso8601;
@@ -326,5 +368,11 @@ module Qc = struct
       iso_ord_date_accessors;
       iso_week_date_accessors;
       ymd_date_accessors;
+      add_identity;
+      sub_identity;
+      add_sub;
+      sub_add;
+      add_diff;
+      sub_diff;
     ]
 end

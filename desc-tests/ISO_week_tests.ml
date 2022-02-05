@@ -141,5 +141,68 @@ module Alco = struct
 end
 
 module Qc = struct
-  let suite = []
+  let to_iso8601_of_iso8601 =
+    QCheck.Test.make ~count:100_000 ~name:"to_iso8601_of_iso8601" iso_week
+      (fun (year, week) ->
+         let d = Timedesc.ISO_week.make_exn ~year ~week in
+         let d' =
+           d
+           |> Timedesc.ISO_week.to_iso8601
+           |> Timedesc.ISO_week.of_iso8601
+           |> CCResult.get_exn
+         in
+         Timedesc.ISO_week.equal d d')
+
+  let add_identity =
+    QCheck.Test.make ~count:100_000 ~name:"add_identity" iso_week (fun (year, week) ->
+        let x = Timedesc.ISO_week.make_exn ~year ~week in
+        Timedesc.ISO_week.(equal (add ~weeks:0 x) x))
+
+  let sub_identity =
+    QCheck.Test.make ~count:100_000 ~name:"sub_identity" iso_week (fun (year, week) ->
+        let x = Timedesc.ISO_week.make_exn ~year ~week in
+        Timedesc.ISO_week.(equal (sub ~weeks:0 x) x))
+
+  let add_sub =
+    QCheck.Test.make ~count:100_000 ~name:"add_sub"
+      QCheck.(pair iso_week small_int)
+      (fun ((year, week), y) ->
+         let x = Timedesc.ISO_week.make_exn ~year ~week in
+         Timedesc.ISO_week.(equal x (sub ~weeks:y (add ~weeks:y x))))
+
+  let sub_add =
+    QCheck.Test.make ~count:100_000 ~name:"sub_add"
+      QCheck.(pair iso_week small_int)
+      (fun ((year, week), y) ->
+         let x = Timedesc.ISO_week.make_exn ~year ~week in
+         Timedesc.ISO_week.(equal x (add ~weeks:y (sub ~weeks:y x))))
+
+  let add_diff =
+    QCheck.Test.make ~count:100_000 ~name:"add_diff"
+      QCheck.(pair iso_week iso_week)
+      (fun ((year_x, week_x), (year_y, week_y)) ->
+         let x = Timedesc.ISO_week.make_exn ~year:year_x ~week:week_x in
+         let y = Timedesc.ISO_week.make_exn ~year:year_y ~week:week_y in
+         let diff = Timedesc.ISO_week.diff_weeks x y in
+         Timedesc.ISO_week.(equal x (add ~weeks:diff y)))
+
+  let sub_diff =
+    QCheck.Test.make ~count:100_000 ~name:"sub_diff"
+      QCheck.(pair iso_week iso_week)
+      (fun ((year_x, week_x), (year_y, week_y)) ->
+         let x = Timedesc.ISO_week.make_exn ~year:year_x ~week:week_x in
+         let y = Timedesc.ISO_week.make_exn ~year:year_y ~week:week_y in
+         let diff = Timedesc.ISO_week.diff_weeks x y in
+         Timedesc.ISO_week.(equal y (sub ~weeks:diff x)))
+
+  let suite =
+    [
+      to_iso8601_of_iso8601;
+      add_identity;
+      sub_identity;
+      add_sub;
+      sub_add;
+      add_diff;
+      sub_diff;
+    ]
 end

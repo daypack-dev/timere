@@ -713,20 +713,6 @@ end
 module Date : sig
   type t
 
-  (** {1 Comparison} *)
-
-  val equal : t -> t -> bool
-
-  val lt : t -> t -> bool
-
-  val le : t -> t -> bool
-
-  val gt : t -> t -> bool
-
-  val ge : t -> t -> bool
-
-  val compare : t -> t -> int
-
   (** {1 Accessors} *)
 
   val ym : t -> Ym.t
@@ -744,6 +730,28 @@ module Date : sig
   val weekday : t -> weekday
 
   val day_of_year : t -> int
+
+  (** {1 Comparison} *)
+
+  val equal : t -> t -> bool
+
+  val lt : t -> t -> bool
+
+  val le : t -> t -> bool
+
+  val gt : t -> t -> bool
+
+  val ge : t -> t -> bool
+
+  val compare : t -> t -> int
+
+  (** {1 Arithmetic} *)
+
+  val add : days:int -> t -> t
+
+  val sub : days:int -> t -> t
+
+  val diff_days : t -> t -> int
 
   (** {1 Pretty printing} *)
 
@@ -1475,6 +1483,26 @@ val to_rfc3339_milli : t -> string option
 val to_rfc3339_micro : t -> string option
 
 val to_rfc3339_nano : t -> string option
+
+val pp_iso8601 : ?frac_s:int -> unit -> Format.formatter -> t -> unit
+(** Alias to [pp_rfc3339]
+*)
+
+val pp_iso8601_milli : Format.formatter -> t -> unit
+
+val pp_iso8601_micro : Format.formatter -> t -> unit
+
+val pp_iso8601_nano : Format.formatter -> t -> unit
+
+val to_iso8601 : ?frac_s:int -> t -> string option
+(** Alias to [to_rfc3339]
+*)
+
+val to_iso8601_milli : t -> string option
+
+val to_iso8601_micro : t -> string option
+
+val to_iso8601_nano : t -> string option
 
 (** {2 Parsing} *)
 
