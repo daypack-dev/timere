@@ -713,20 +713,6 @@ end
 module Date : sig
   type t
 
-  (** {1 Comparison} *)
-
-  val equal : t -> t -> bool
-
-  val lt : t -> t -> bool
-
-  val le : t -> t -> bool
-
-  val gt : t -> t -> bool
-
-  val ge : t -> t -> bool
-
-  val compare : t -> t -> int
-
   (** {1 Accessors} *)
 
   val ym : t -> Ym.t
@@ -744,6 +730,28 @@ module Date : sig
   val weekday : t -> weekday
 
   val day_of_year : t -> int
+
+  (** {1 Comparison} *)
+
+  val equal : t -> t -> bool
+
+  val lt : t -> t -> bool
+
+  val le : t -> t -> bool
+
+  val gt : t -> t -> bool
+
+  val ge : t -> t -> bool
+
+  val compare : t -> t -> int
+
+  (** {1 Arithmetic} *)
+
+  val add : days:int -> t -> t
+
+  val sub : days:int -> t -> t
+
+  val diff_days : t -> t -> int
 
   (** {1 Pretty printing} *)
 

@@ -14,6 +14,15 @@ let ge (x : t) (y : t) = x.jd >= y.jd
 
 let compare (x : t) (y : t) = compare x.jd y.jd
 
+let add ~days (t : t) =
+  { jd = t.jd + days }
+
+let sub ~days (t : t) =
+  { jd = t.jd - days }
+
+let diff_days (x : t) (y : t) =
+  x.jd - y.jd
+
 let weekday (x : t) = weekday_of_jd x.jd
 
 module ISO_week_date' = struct

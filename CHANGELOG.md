@@ -46,6 +46,8 @@
 
   - `lt`, `le`, `gt`, `ge`, `compare`
 
+- Added arithemtic functions to `Date`
+
 - Added additional date conversion functions to `Utils`
 
   - `ymd_of_jd`

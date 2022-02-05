@@ -14,6 +14,12 @@ val ge : t -> t -> bool
 
 val compare : t -> t -> int
 
+val add : days:int -> t -> t
+
+val sub : days:int -> t -> t
+
+val diff_days : t -> t -> int
+
 val year : t -> int
 
 val month : t -> int
