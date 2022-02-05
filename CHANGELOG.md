@@ -42,6 +42,10 @@
 
   - `Date.ISO_ord.of_iso8601[_exn]`
 
+- Added additional comparison functions to `Date`
+
+  - `lt`, `le`, `gt`, `ge`, `compare`
+
 - Added additional date conversion functions to `Utils`
 
   - `ymd_of_jd`
