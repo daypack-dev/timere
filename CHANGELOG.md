@@ -52,7 +52,7 @@
 
 - Patched ISO8601 parsers and RFC3339/ISO8601 printers to handle second level time zone offset
 
-  - Rare occurrence in tzdb but picked up by the new test suite
+  - Rare occurrence in tzdb but picked up by some new tests
 
 - Added additional date conversion functions to `Utils`
 
