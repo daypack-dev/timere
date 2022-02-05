@@ -218,6 +218,14 @@ let pp_rfc3339_micro = pp_rfc3339 ~frac_s:frac_s_micro ()
 
 let pp_rfc3339_nano = pp_rfc3339 ~frac_s:frac_s_nano ()
 
+let pp_iso8601 = pp_rfc3339
+
+let pp_iso8601_milli = pp_rfc3339_milli
+
+let pp_iso8601_micro = pp_rfc3339_micro
+
+let pp_iso8601_nano = pp_rfc3339_nano
+
 let to_rfc3339 = RFC3339.of_date_time
 
 let to_rfc3339_milli = to_rfc3339 ~frac_s:frac_s_milli
@@ -225,6 +233,14 @@ let to_rfc3339_milli = to_rfc3339 ~frac_s:frac_s_milli
 let to_rfc3339_micro = to_rfc3339 ~frac_s:frac_s_micro
 
 let to_rfc3339_nano = to_rfc3339 ~frac_s:frac_s_nano
+
+let to_iso8601 = to_rfc3339
+
+let to_iso8601_milli = to_rfc3339_milli
+
+let to_iso8601_micro = to_rfc3339_micro
+
+let to_iso8601_nano = to_rfc3339_nano
 
 let of_iso8601 = ISO8601_parsers.date_time_of_str
 

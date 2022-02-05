@@ -1484,6 +1484,26 @@ val to_rfc3339_micro : t -> string option
 
 val to_rfc3339_nano : t -> string option
 
+val pp_iso8601 : ?frac_s:int -> unit -> Format.formatter -> t -> unit
+(** Alias to [pp_rfc3339]
+*)
+
+val pp_iso8601_milli : Format.formatter -> t -> unit
+
+val pp_iso8601_micro : Format.formatter -> t -> unit
+
+val pp_iso8601_nano : Format.formatter -> t -> unit
+
+val to_iso8601 : ?frac_s:int -> t -> string option
+(** Alias to [to_rfc3339]
+*)
+
+val to_iso8601_milli : t -> string option
+
+val to_iso8601_micro : t -> string option
+
+val to_iso8601_nano : t -> string option
+
 (** {2 Parsing} *)
 
 val of_iso8601 : string -> (t, string) result

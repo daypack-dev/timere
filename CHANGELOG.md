@@ -48,6 +48,8 @@
 
 - Added arithemtic functions to `Date`
 
+- Added `pp/to_iso8601` functions as aliases to the rfc3339 functions to `Timedesc`
+
 - Added additional date conversion functions to `Utils`
 
   - `ymd_of_jd`
