@@ -290,7 +290,7 @@ module Qc = struct
          let r =
            CCResult.get_exn
            @@ Timedesc.of_iso8601
-          @@ CCOption.get_exn_or "expected successful RFC3339 construction"
+           @@ CCOption.get_exn_or "expected successful RFC3339 construction"
            @@ Timedesc.to_rfc3339 dt
          in
          Timedesc.equal r dt)
@@ -302,7 +302,7 @@ module Qc = struct
          let r =
            CCResult.get_exn
            @@ Timedesc.of_iso8601
-          @@ CCOption.get_exn_or "expected successful RFC3339 construction"
+           @@ CCOption.get_exn_or "expected successful RFC3339 construction"
            @@ Timedesc.to_rfc3339 ~frac_s dt
          in
          let r = Timedesc.to_timestamp_single r in
@@ -367,7 +367,7 @@ module Qc = struct
          let r =
            CCResult.get_exn
            @@ Timedesc.ISO_week_date_time.of_iso8601
-          @@ CCOption.get_exn_or "expected successful RFC3339 construction"
+           @@ CCOption.get_exn_or "expected successful RFC3339 construction"
            @@ Timedesc.ISO_week_date_time.to_iso8601 dt
          in
          Timedesc.equal r dt)
@@ -379,7 +379,7 @@ module Qc = struct
          let r =
            CCResult.get_exn
            @@ Timedesc.ISO_week_date_time.of_iso8601
-          @@ CCOption.get_exn_or "expected successful RFC3339 construction"
+           @@ CCOption.get_exn_or "expected successful RFC3339 construction"
            @@ Timedesc.ISO_week_date_time.to_iso8601 ~frac_s dt
          in
          let r = Timedesc.to_timestamp_single r in
@@ -408,7 +408,7 @@ module Qc = struct
          let r =
            CCResult.get_exn
            @@ Timedesc.ISO_ord_date_time.of_iso8601
-          @@ CCOption.get_exn_or "expected successful RFC3339 construction"
+           @@ CCOption.get_exn_or "expected successful RFC3339 construction"
            @@ Timedesc.ISO_ord_date_time.to_iso8601 dt
          in
          Timedesc.equal r dt)
@@ -420,7 +420,7 @@ module Qc = struct
          let r =
            CCResult.get_exn
            @@ Timedesc.ISO_ord_date_time.of_iso8601
-          @@ CCOption.get_exn_or "expected successful RFC3339 construction"
+           @@ CCOption.get_exn_or "expected successful RFC3339 construction"
            @@ Timedesc.ISO_ord_date_time.to_iso8601 ~frac_s dt
          in
          let r = Timedesc.to_timestamp_single r in
