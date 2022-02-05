@@ -107,45 +107,45 @@ let hms_p =
   let open MParser in
   let open Parser_components in
   choice
-      [
-        attempt
-          (two_digit_nat_zero
-           >>= fun hour ->
-             optional (char ':')
-             >> two_digit_nat_zero
-           >>= fun minute ->
-             optional (char ':')
-             >> two_digit_nat_zero
-           >>= fun second ->
-             choice [ char '.'; char ',' ]
-             >> num_string
-           >>= fun s ->
-             let s = if String.length s > 9 then String.sub s 0 9 else s in
-             let len = String.length s in
-             if len = 9 then return (hour, minute, second, int_of_string s)
-             else
-               let ns = int_of_string s * Printers.get_divisor len in
-               return (hour, minute, second, ns));
-        attempt
-          (two_digit_nat_zero
-           >>= fun hour ->
-             optional (char ':')
-             >> two_digit_nat_zero
-           >>= fun minute ->
-             optional (char ':')
-             >> two_digit_nat_zero
-           >>= fun second -> return (hour, minute, second, 0));
-        (hm_p |>> fun (hour, minute) -> (hour, minute, 0, 0));
-             ]
+    [
+      attempt
+        (two_digit_nat_zero
+         >>= fun hour ->
+         optional (char ':')
+         >> two_digit_nat_zero
+         >>= fun minute ->
+         optional (char ':')
+         >> two_digit_nat_zero
+         >>= fun second ->
+         choice [ char '.'; char ',' ]
+         >> num_string
+         >>= fun s ->
+         let s = if String.length s > 9 then String.sub s 0 9 else s in
+         let len = String.length s in
+         if len = 9 then return (hour, minute, second, int_of_string s)
+         else
+           let ns = int_of_string s * Printers.get_divisor len in
+           return (hour, minute, second, ns));
+      attempt
+        (two_digit_nat_zero
+         >>= fun hour ->
+         optional (char ':')
+         >> two_digit_nat_zero
+         >>= fun minute ->
+         optional (char ':')
+         >> two_digit_nat_zero
+         >>= fun second -> return (hour, minute, second, 0));
+      (hm_p |>> fun (hour, minute) -> (hour, minute, 0, 0));
+    ]
 
 let time_p : (Time.t, unit) MParser.t =
   let open MParser in
   hms_p
   >>= fun (hour, minute, second, ns) ->
-    match Time.make ~hour ~minute ~second ~ns () with
+  match Time.make ~hour ~minute ~second ~ns () with
   | Ok x -> return x
   | Error e ->
-      fail
+    fail
       (Printf.sprintf "Invalid time: %s"
          (Date_time.Ymd_date_time.string_of_error
             (e :> Date_time.Ymd_date_time.error)))
