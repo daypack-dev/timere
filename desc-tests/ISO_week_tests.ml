@@ -79,6 +79,12 @@ module Alco = struct
       (Timedesc.ISO_week.of_iso8601_exn "1977W06")
       (Timedesc.ISO_week.make_exn ~year:1977 ~week:6)
 
+  let of_iso8601_case1 () =
+    Alcotest.(check iso_week_testable)
+      "same date"
+      (Timedesc.ISO_week.of_iso8601_exn "1977-W06")
+      (Timedesc.ISO_week.make_exn ~year:1977 ~week:6)
+
   let wrap_around_case0 () =
     let y = Timedesc.ISO_week.add ~weeks:1 (Timedesc.ISO_week.make_exn ~year:1977 ~week:52)
     in
@@ -126,6 +132,7 @@ module Alco = struct
       Alcotest.test_case "ge_case1" `Quick ge_case1;
       Alcotest.test_case "ge_case2" `Quick ge_case2;
       Alcotest.test_case "of_iso8601_case0" `Quick of_iso8601_case0;
+      Alcotest.test_case "of_iso8601_case1" `Quick of_iso8601_case1;
       Alcotest.test_case "wrap_around_case0" `Quick wrap_around_case0;
       Alcotest.test_case "wrap_around_case1" `Quick wrap_around_case1;
       Alcotest.test_case "wrap_around_case2" `Quick wrap_around_case2;
