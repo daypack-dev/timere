@@ -59,15 +59,15 @@ let map_char_to_case (case : case) (c : char) =
 let map_string_to_size_and_casing (x : size_and_casing) (s : string) : string =
   match x with
   | Abbreviated (case1, case2, case3) ->
-      let c1 = map_char_to_case case1 s.[0] in
-      let c2 = map_char_to_case case2 s.[1] in
-      let c3 = map_char_to_case case3 s.[2] in
-      Printf.sprintf "%c%c%c" c1 c2 c3
+    let c1 = map_char_to_case case1 s.[0] in
+    let c2 = map_char_to_case case2 s.[1] in
+    let c3 = map_char_to_case case3 s.[2] in
+    Printf.sprintf "%c%c%c" c1 c2 c3
   | Full (case1, case2) ->
-      String.mapi
-        (fun i c ->
-          if i = 0 then map_char_to_case case1 c else map_char_to_case case2 c)
-        s
+    String.mapi
+      (fun i c ->
+         if i = 0 then map_char_to_case case1 c else map_char_to_case case2 c)
+      s
 
 let pad_int (c : char option) (x : int) : string =
   match c with
@@ -102,7 +102,7 @@ module Format_string_parsers = struct
   let padding : (char option, unit) t =
     attempt
       (satisfy (fun _ -> true)
-      >>= fun padding -> char 'X' >> return (Some padding))
+       >>= fun padding -> char 'X' >> return (Some padding))
     <|> (char 'X' >> return None)
 
   let date_time_inner (date_time : Date_time.t) : (string, unit) t =
@@ -120,70 +120,70 @@ module Format_string_parsers = struct
         attempt (string "year") >> return (Printf.sprintf "%04d" year);
         attempt (string "mon:")
         >> (attempt size_and_casing
-           >>= (fun x ->
-                 return
-                   (map_string_to_size_and_casing x
-                      (CCOption.get_exn_or "Expected valid month"
+            >>= (fun x ->
+                return
+                  (map_string_to_size_and_casing x
+                     (CCOption.get_exn_or "Expected valid month"
                       @@ full_string_of_month month)))
-           <|> (padding >>= fun padding -> return (pad_int padding month)));
+                <|> (padding >>= fun padding -> return (pad_int padding month)));
         (attempt (string "day:")
-        >> padding
-        >>= fun padding -> return (pad_int padding day));
+         >> padding
+         >>= fun padding -> return (pad_int padding day));
         (attempt (string "wday:")
-        >> size_and_casing
-        >>= fun x ->
-        return
-          (map_string_to_size_and_casing x (full_string_of_weekday weekday)));
+         >> size_and_casing
+         >>= fun x ->
+         return
+           (map_string_to_size_and_casing x (full_string_of_weekday weekday)));
         (attempt (string "hour:")
-        >> padding
-        >>= fun padding -> return (pad_int padding hour));
+         >> padding
+         >>= fun padding -> return (pad_int padding hour));
         (attempt (string "12hour:")
-        >> padding
-        >>= fun padding ->
-        let hour = if hour = 0 then 12 else hour mod 12 in
-        return (pad_int padding hour));
+         >> padding
+         >>= fun padding ->
+         let hour = if hour = 0 then 12 else hour mod 12 in
+         return (pad_int padding hour));
         (attempt (string "min:")
-        >> padding
-        >>= fun padding -> return (pad_int padding minute));
+         >> padding
+         >>= fun padding -> return (pad_int padding minute));
         (attempt (string "sec:")
-        >> padding
-        >>= fun padding -> return (pad_int padding second));
+         >> padding
+         >>= fun padding -> return (pad_int padding second));
         attempt (string "ns") >> return (string_of_int ns);
         (attempt (string "sec-frac:")
-        >> any_char
-        >>= fun sep ->
-        opt smallest_lossless_frac_s nat_zero
-        >>= fun frac_s ->
-        if frac_s > 9 then
-          fail "Number of digits after decimal separator cannot be > 9"
-        else return (string_of_s_frac ~sep ~frac_s ~ns));
+         >> any_char
+         >>= fun sep ->
+         opt smallest_lossless_frac_s nat_zero
+         >>= fun frac_s ->
+         if frac_s > 9 then
+           fail "Number of digits after decimal separator cannot be > 9"
+         else return (string_of_s_frac ~sep ~frac_s ~ns));
         (attempt (string "tzoff-sign")
-        >>= fun _ ->
-        match single_offset with
-        | None -> raise (Date_time_cannot_deduce_offset_from_utc date_time)
-        | Some offset -> (
-            match offset.sign with `Pos -> return "+" | `Neg -> return "-"));
+         >>= fun _ ->
+         match single_offset with
+         | None -> raise (Date_time_cannot_deduce_offset_from_utc date_time)
+         | Some offset -> (
+             match offset.sign with `Pos -> return "+" | `Neg -> return "-"));
         (attempt (string "tzoff-hour:")
-        >> padding
-        >>= fun padding ->
-        match single_offset with
-        | None -> raise (Date_time_cannot_deduce_offset_from_utc date_time)
-        | Some offset -> return (pad_int padding Span.For_human'.(offset.hours))
+         >> padding
+         >>= fun padding ->
+         match single_offset with
+         | None -> raise (Date_time_cannot_deduce_offset_from_utc date_time)
+         | Some offset -> return (pad_int padding Span.For_human'.(offset.hours))
         );
         (attempt (string "tzoff-min:")
-        >> padding
-        >>= fun padding ->
-        match single_offset with
-        | None -> raise (Date_time_cannot_deduce_offset_from_utc date_time)
-        | Some offset ->
-            return (pad_int padding Span.For_human'.(offset.minutes)));
+         >> padding
+         >>= fun padding ->
+         match single_offset with
+         | None -> raise (Date_time_cannot_deduce_offset_from_utc date_time)
+         | Some offset ->
+           return (pad_int padding Span.For_human'.(offset.minutes)));
         (attempt (string "tzoff-sec:")
-        >> padding
-        >>= fun padding ->
-        match single_offset with
-        | None -> raise (Date_time_cannot_deduce_offset_from_utc date_time)
-        | Some offset ->
-            return (pad_int padding Span.For_human'.(offset.seconds)));
+         >> padding
+         >>= fun padding ->
+         match single_offset with
+         | None -> raise (Date_time_cannot_deduce_offset_from_utc date_time)
+         | Some offset ->
+           return (pad_int padding Span.For_human'.(offset.seconds)));
         (* string "unix"
          * >> return (Int64.to_string (Time.Date_time'.to_timestamp date_time)); *)
       ]
@@ -209,7 +209,7 @@ module Format_string_parsers = struct
     let sec_frac ~empty_on_zero ~ns =
       attempt
         (string "sec-frac"
-        >> if empty_on_zero then string "-nz:" else string ":")
+         >> if empty_on_zero then string "-nz:" else string ":")
       >> any_char
       >>= fun sep ->
       opt smallest_lossless_frac_s nat_zero
@@ -279,10 +279,10 @@ let pp_date_time ?(format : string = default_date_time_format_string) ()
       [
         attempt (string "{{" |>> fun _ -> Fmt.pf formatter "{");
         (attempt (char '{')
-        >> (Format_string_parsers.date_time_inner date_time << char '}')
-        |>> fun s -> Fmt.pf formatter "%s" s);
+         >> (Format_string_parsers.date_time_inner date_time << char '}')
+         |>> fun s -> Fmt.pf formatter "%s" s);
         (many1_satisfy (function '{' -> false | _ -> true)
-        |>> fun s -> Fmt.pf formatter "%s" s);
+         |>> fun s -> Fmt.pf formatter "%s" s);
       ]
   in
   let p formatter (date_time : Date_time.t) : (unit, unit) t =
@@ -312,23 +312,23 @@ let pp_interval ?(display_using_tz = Time_zone.utc)
   let open MParser in
   let open Parser_components in
   let single (start_date_time : Date_time.t) (end_date_time : Date_time.t) :
-      (unit, unit) t =
+    (unit, unit) t =
     choice
       [
         attempt (string "{{" |>> fun _ -> Fmt.pf formatter "{");
         (attempt (char '{')
-        >> (attempt (char 's' >> return start_date_time)
-           <|> (char 'e' >> return end_date_time))
-        >>= fun date_time ->
-        Format_string_parsers.date_time_inner date_time
-        << char '}'
-        |>> fun s -> Fmt.pf formatter "%s" s);
+         >> (attempt (char 's' >> return start_date_time)
+             <|> (char 'e' >> return end_date_time))
+         >>= fun date_time ->
+         Format_string_parsers.date_time_inner date_time
+         << char '}'
+         |>> fun s -> Fmt.pf formatter "%s" s);
         (many1_satisfy (function '{' -> false | _ -> true)
-        |>> fun s -> Fmt.pf formatter "%s" s);
+         |>> fun s -> Fmt.pf formatter "%s" s);
       ]
   in
   let p (start_date_time : Date_time.t) (end_date_time : Date_time.t) :
-      (unit, unit) t =
+    (unit, unit) t =
     many (single start_date_time end_date_time) >> return ()
   in
   match Date_time.of_timestamp ~tz_of_date_time:display_using_tz s with
@@ -340,22 +340,22 @@ let pp_interval ?(display_using_tz = Time_zone.utc)
           match
             result_of_mparser_result
             @@ parse_string
-                 (p s e
-                 >>= fun s ->
-                 get_pos
-                 >>= fun pos ->
-                 attempt eof
-                 >> return s
-                 <|> fail
-                       (Printf.sprintf "Expected EOI, pos: %s"
-                          (string_of_pos pos)))
-                 format ()
+              (p s e
+               >>= fun s ->
+               get_pos
+               >>= fun pos ->
+               attempt eof
+               >> return s
+                  <|> fail
+                    (Printf.sprintf "Expected EOI, pos: %s"
+                       (string_of_pos pos)))
+              format ()
           with
           | Error msg -> invalid_format_string msg
           | Ok () -> ()))
 
 let string_of_interval ?display_using_tz ?format (interval : Date_time.interval)
-    : string =
+  : string =
   Fmt.str "%a" (pp_interval ?display_using_tz ?format ()) interval
 
 let pp_intervals ?display_using_tz ?format ?(sep = Fmt.cut) () formatter
@@ -377,10 +377,10 @@ let pp_span_for_human ?(format : string = default_span_for_human_format_string)
       [
         attempt (string "{{" |>> fun _ -> Fmt.pf formatter "{");
         (attempt (char '{')
-        >> (Format_string_parsers.span_for_human_inner view << char '}')
-        |>> fun s -> Fmt.pf formatter "%s" s);
+         >> (Format_string_parsers.span_for_human_inner view << char '}')
+         |>> fun s -> Fmt.pf formatter "%s" s);
         (many1_satisfy (function '{' -> false | _ -> true)
-        |>> fun s -> Fmt.pf formatter "%s" s);
+         |>> fun s -> Fmt.pf formatter "%s" s);
       ]
   in
   let p formatter (view : Span.For_human'.view) : (unit, unit) t =
@@ -397,5 +397,5 @@ let string_of_span_for_human ?format (x : Span.t) : string =
   Fmt.str "%a" (pp_span_for_human ?format ()) x
 
 let wrap_to_sexp_into_pp_sexp (f : 'a -> CCSexp.t) :
-    Format.formatter -> 'a -> unit =
- fun formatter x -> CCSexp.pp formatter (f x)
+  Format.formatter -> 'a -> unit =
+  fun formatter x -> CCSexp.pp formatter (f x)

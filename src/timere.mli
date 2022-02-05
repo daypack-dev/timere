@@ -263,45 +263,45 @@ module Points : sig
    *  (ignoring [tz], [offset_from_utc] and [lean_toward] which are optional in all cases)
       {[
         make ~year:_                                                       ~lean_toward ()
-        make ~year:_ ~month:_                                              ~lean_toward ()
-        make ~year:_ ~month:_ ~day:_                                       ~lean_toward ()
-        make ~year:_ ~month:_ ~day:_     ~hour:_                           ~lean_toward ()
-        make ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_                 ~lean_toward ()
-        make ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_       ~lean_toward ()
-        make ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ~ns:_ ~lean_toward ()
+          make ~year:_ ~month:_                                              ~lean_toward ()
+          make ~year:_ ~month:_ ~day:_                                       ~lean_toward ()
+          make ~year:_ ~month:_ ~day:_     ~hour:_                           ~lean_toward ()
+          make ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_                 ~lean_toward ()
+          make ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_       ~lean_toward ()
+          make ~year:_ ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ~ns:_ ~lean_toward ()
 
-        make         ~month:_                                              ~lean_toward ()
-        make         ~month:_ ~day:_                                       ~lean_toward ()
-        make         ~month:_ ~day:_     ~hour:_                           ~lean_toward ()
-        make         ~month:_ ~day:_     ~hour:_ ~minute:_                 ~lean_toward ()
-        make         ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_       ~lean_toward ()
-        make         ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ~ns:_ ~lean_toward ()
+          make         ~month:_                                              ~lean_toward ()
+          make         ~month:_ ~day:_                                       ~lean_toward ()
+          make         ~month:_ ~day:_     ~hour:_                           ~lean_toward ()
+          make         ~month:_ ~day:_     ~hour:_ ~minute:_                 ~lean_toward ()
+          make         ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_       ~lean_toward ()
+          make         ~month:_ ~day:_     ~hour:_ ~minute:_ ~second:_ ~ns:_ ~lean_toward ()
 
-        make                  ~day:_                                       ~lean_toward ()
-        make                  ~day:_     ~hour:_                           ~lean_toward ()
-        make                  ~day:_     ~hour:_ ~minute:_                 ~lean_toward ()
-        make                  ~day:_     ~hour:_ ~minute:_ ~second:_       ~lean_toward ()
-        make                  ~day:_     ~hour:_ ~minute:_ ~second:_ ~ns:_ ~lean_toward ()
+          make                  ~day:_                                       ~lean_toward ()
+          make                  ~day:_     ~hour:_                           ~lean_toward ()
+          make                  ~day:_     ~hour:_ ~minute:_                 ~lean_toward ()
+          make                  ~day:_     ~hour:_ ~minute:_ ~second:_       ~lean_toward ()
+          make                  ~day:_     ~hour:_ ~minute:_ ~second:_ ~ns:_ ~lean_toward ()
 
-        make                  ~weekday:_                                   ~lean_toward ()
-        make                  ~weekday:_ ~hour:_                           ~lean_toward ()
-        make                  ~weekday:_ ~hour:_ ~minute:_                 ~lean_toward ()
-        make                  ~weekday:_ ~hour:_ ~minute:_ ~second:_       ~lean_toward ()
-        make                  ~weekday:_ ~hour:_ ~minute:_ ~second:_ ~ns:_ ~lean_toward ()
+          make                  ~weekday:_                                   ~lean_toward ()
+          make                  ~weekday:_ ~hour:_                           ~lean_toward ()
+          make                  ~weekday:_ ~hour:_ ~minute:_                 ~lean_toward ()
+          make                  ~weekday:_ ~hour:_ ~minute:_ ~second:_       ~lean_toward ()
+          make                  ~weekday:_ ~hour:_ ~minute:_ ~second:_ ~ns:_ ~lean_toward ()
 
-        make                             ~hour:_                           ~lean_toward ()
-        make                             ~hour:_ ~minute:_                 ~lean_toward ()
-        make                             ~hour:_ ~minute:_ ~second:_       ~lean_toward ()
-        make                             ~hour:_ ~minute:_ ~second:_ ~ns:_ ~lean_toward ()
+          make                             ~hour:_                           ~lean_toward ()
+          make                             ~hour:_ ~minute:_                 ~lean_toward ()
+          make                             ~hour:_ ~minute:_ ~second:_       ~lean_toward ()
+          make                             ~hour:_ ~minute:_ ~second:_ ~ns:_ ~lean_toward ()
 
-        make                                     ~minute:_                 ~lean_toward ()
-        make                                     ~minute:_ ~second:_       ~lean_toward ()
-        make                                     ~minute:_ ~second:_ ~ns:_ ~lean_toward ()
+          make                                     ~minute:_                 ~lean_toward ()
+          make                                     ~minute:_ ~second:_       ~lean_toward ()
+          make                                     ~minute:_ ~second:_ ~ns:_ ~lean_toward ()
 
-        make                                               ~second:_       ~lean_toward ()
-        make                                               ~second:_ ~ns:_ ~lean_toward ()
+          make                                               ~second:_       ~lean_toward ()
+          make                                               ~second:_ ~ns:_ ~lean_toward ()
 
-        make                                                         ~ns:_ ~lean_toward ()
+          make                                                         ~ns:_ ~lean_toward ()
       ]}
 
       returns [Error] otherwise
@@ -321,7 +321,7 @@ module Points : sig
     lean_toward:lean_toward ->
     unit ->
     t
-  (** @raise Error_exn if [make] fails *)
+    (** @raise Error_exn if [make] fails *)
 end
 
 type points = Points.t

@@ -16,32 +16,32 @@ let local () : string list =
         let try1 =
           List.fold_left
             (fun tz file ->
-              match tz with
-              | Some tz -> Some tz
-              | None -> (
-                  try
-                    CCIO.with_in ~flags:[ Open_rdonly ] file (fun ic ->
-                        let lines = CCIO.read_lines_l ic in
-                        match lines with
-                        | [] -> None
-                        | x :: _ ->
-                            if CCString.sub x 0 5 = "TZif2" then None
-                            else
-                              List.fold_left
-                                (fun tz line ->
+               match tz with
+               | Some tz -> Some tz
+               | None -> (
+                   try
+                     CCIO.with_in ~flags:[ Open_rdonly ] file (fun ic ->
+                         let lines = CCIO.read_lines_l ic in
+                         match lines with
+                         | [] -> None
+                         | x :: _ ->
+                           if CCString.sub x 0 5 = "TZif2" then None
+                           else
+                             List.fold_left
+                               (fun tz line ->
                                   match tz with
                                   | Some tz -> Some tz
                                   | None ->
-                                      let name =
-                                        line
-                                        |> String.split_on_char ' '
-                                        |> List.hd
-                                        |> String.split_on_char '#'
-                                        |> List.hd
-                                      in
-                                      Some name)
-                                None lines)
-                  with _ -> None))
+                                    let name =
+                                      line
+                                      |> String.split_on_char ' '
+                                      |> List.hd
+                                      |> String.split_on_char '#'
+                                      |> List.hd
+                                    in
+                                    Some name)
+                               None lines)
+                   with _ -> None))
             None
             [ "/etc/timezone"; "/var/db/zoneinfo" ]
         in
@@ -56,54 +56,54 @@ let local () : string list =
             let try2 =
               List.fold_left
                 (fun tz file ->
-                  match tz with
-                  | Some tz -> Some tz
-                  | None -> (
-                      try
-                        CCIO.with_in ~flags:[ Open_rdonly ] file (fun ic ->
-                            let lines = CCIO.read_lines_l ic in
-                            List.fold_left
-                              (fun tz line ->
-                                match tz with
-                                | Some tz -> Some tz
-                                | None -> (
-                                    let name =
-                                      try
-                                        Some
-                                          (Scanf.sscanf line {| ZONE = "%[^"]"|}
-                                             CCFun.id)
-                                      with _ -> (
+                   match tz with
+                   | Some tz -> Some tz
+                   | None -> (
+                       try
+                         CCIO.with_in ~flags:[ Open_rdonly ] file (fun ic ->
+                             let lines = CCIO.read_lines_l ic in
+                             List.fold_left
+                               (fun tz line ->
+                                  match tz with
+                                  | Some tz -> Some tz
+                                  | None -> (
+                                      let name =
                                         try
                                           Some
-                                            (Scanf.sscanf line
-                                               {| TIMEZONE = "%[^"]"|} CCFun.id)
-                                        with _ -> None)
-                                    in
-                                    match name with
-                                    | None -> None
-                                    | Some s ->
+                                            (Scanf.sscanf line {| ZONE = "%[^"]"|}
+                                               CCFun.id)
+                                        with _ -> (
+                                            try
+                                              Some
+                                                (Scanf.sscanf line
+                                                   {| TIMEZONE = "%[^"]"|} CCFun.id)
+                                            with _ -> None)
+                                      in
+                                      match name with
+                                      | None -> None
+                                      | Some s ->
                                         Some
                                           (CCString.replace ~sub:" " ~by:"_" s)))
-                              None lines)
-                      with _ -> None))
+                               None lines)
+                       with _ -> None))
                 None
                 [ "/etc/sysconfig/clock"; "/etc/conf.d/clock" ]
             in
             match try2 with
             | Some name -> [ name ]
             | None ->
-                (* systemd distributions use symlinks that include the zone name *)
-                let try3 =
-                  let file = "/etc/localtime" in
-                  if FileUtil.(test Is_link file) then
-                    let real_path = FileUtil.readlink file in
-                    let parts = String.split_on_char '/' real_path in
-                    let combinations, _ =
-                      List.fold_left
-                        (fun (acc, parts) _ -> (parts :: acc, List.tl parts))
-                        ([], parts) parts
-                    in
-                    List.map (String.concat "/") combinations
-                  else []
-                in
-                try3))
+              (* systemd distributions use symlinks that include the zone name *)
+              let try3 =
+                let file = "/etc/localtime" in
+                if FileUtil.(test Is_link file) then
+                  let real_path = FileUtil.readlink file in
+                  let parts = String.split_on_char '/' real_path in
+                  let combinations, _ =
+                    List.fold_left
+                      (fun (acc, parts) _ -> (parts :: acc, List.tl parts))
+                      ([], parts) parts
+                  in
+                  List.map (String.concat "/") combinations
+                else []
+              in
+              try3))

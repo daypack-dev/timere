@@ -1,5 +1,5 @@
 include CCMap.Make (struct
-  type t = string
+    type t = string
 
-  let compare = String.compare
-end)
+    let compare = String.compare
+  end)

@@ -214,8 +214,8 @@ module Alco = struct
        0 <= ns
        && ns < 1_000_000_000
        && Int64.add
-            (Int64.mul (-10L) 1_000_000_000L)
-            (Int64.of_int CCInt.min_int)
+         (Int64.mul (-10L) 1_000_000_000L)
+         (Int64.of_int CCInt.min_int)
           = Int64.add (Int64.mul s 1_000_000_000L) (Int64.of_int ns))
       true
 
@@ -252,8 +252,8 @@ module Alco = struct
        0 <= ns
        && ns < 1_000_000_000
        && Int64.add
-            (Int64.mul (-10L) 1_000_000_000L)
-            (Int64.of_int CCInt.max_int)
+         (Int64.mul (-10L) 1_000_000_000L)
+         (Int64.of_int CCInt.max_int)
           = Int64.add (Int64.mul s 1_000_000_000L) (Int64.of_int ns))
       true
 
@@ -309,19 +309,19 @@ module Qc = struct
     QCheck.Test.make ~count:100_000 ~name:"make_is_lossless"
       QCheck.(pair int64 int)
       (fun (s, ns) ->
-        let span = Timedesc.Span.make ~s ~ns () in
-        Int64.add (Int64.mul s 1_000_000_000L) (Int64.of_int ns)
-        = Int64.add
-            (Int64.mul (Timedesc.Span.get_s span) 1_000_000_000L)
-            (Int64.of_int @@ Timedesc.Span.get_ns_offset span))
+         let span = Timedesc.Span.make ~s ~ns () in
+         Int64.add (Int64.mul s 1_000_000_000L) (Int64.of_int ns)
+         = Int64.add
+           (Int64.mul (Timedesc.Span.get_s span) 1_000_000_000L)
+           (Int64.of_int @@ Timedesc.Span.get_ns_offset span))
 
   let make_result_ns_is_within_bound =
     QCheck.Test.make ~count:1_000_000 ~name:"make_result_ns_is_within_bound"
       QCheck.(pair int64 int)
       (fun (s, ns) ->
-        let span = Timedesc.Span.make ~s ~ns () in
-        let ns = Timedesc.Span.get_ns_offset span in
-        0 <= ns && ns < 1_000_000_000)
+         let span = Timedesc.Span.make ~s ~ns () in
+         let ns = Timedesc.Span.get_ns_offset span in
+         0 <= ns && ns < 1_000_000_000)
 
   let normalize_is_idempotent =
     QCheck.Test.make ~count:100_000 ~name:"normalize_is_idempotent" timestamp
@@ -397,8 +397,8 @@ module Qc = struct
   let to_of_float_s_is_accurate =
     QCheck.Test.make ~count:100_000 ~name:"to_of_float_is_accurate" timestamp
       (fun x ->
-        let x' = Timedesc.Span.of_float_s @@ Timedesc.Span.to_float_s x in
-        Timedesc.Span.(abs (x - x') < make ~s:1L ~ns:1000 ()))
+         let x' = Timedesc.Span.of_float_s @@ Timedesc.Span.to_float_s x in
+         Timedesc.Span.(abs (x - x') < make ~s:1L ~ns:1000 ()))
 
   let floor_is_idempotent =
     QCheck.Test.make ~count:100_000 ~name:"floor_is_idempotent" timestamp
@@ -423,8 +423,8 @@ module Qc = struct
   let round_result_is_bounded_by_ceil_and_floor =
     QCheck.Test.make ~count:100_000
       ~name:"round_result_is_bounded_by_ceil_and_floor" timestamp (fun x ->
-        let r = Timedesc.Span.round x in
-        Timedesc.Span.(floor x <= r && r <= ceil x))
+          let r = Timedesc.Span.round x in
+          Timedesc.Span.(floor x <= r && r <= ceil x))
 
   let accessors =
     QCheck.Test.make ~count:100_000 ~name:"accessors" duration (fun duration ->

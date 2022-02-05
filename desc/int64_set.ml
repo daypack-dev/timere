@@ -1,5 +1,5 @@
 include CCSet.Make (struct
-  type t = int64
+    type t = int64
 
-  let compare = compare
-end)
+    let compare = compare
+  end)
