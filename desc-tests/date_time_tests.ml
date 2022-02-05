@@ -354,8 +354,8 @@ module Qc = struct
   let iso_week_date_time_to_iso8601_nano_of_iso8601_is_lossless =
     QCheck.Test.make ~count:100_000
       ~name:"iso_week_date_time_to_iso8601_nano_of_iso8601_is_lossless" date_time (fun dt ->
-        let ymd = Timedesc.ymd_date dt in
-        QCheck.assume (ymd.year > 0 || (ymd.year =0 && ymd.day >= 3));
+          let ymd = Timedesc.ymd_date dt in
+          QCheck.assume (ymd.year > 0 || (ymd.year =0 && ymd.day >= 3));
           let r =
             CCResult.get_exn
             @@ Timedesc.ISO_week_date_time.of_iso8601
@@ -369,8 +369,8 @@ module Qc = struct
     QCheck.Test.make ~count:100_000
       ~name:"iso_week_date_time_to_iso8601_w_default_frac_s_of_iso8601_is_lossless" date_time
       (fun dt ->
-        let ymd = Timedesc.ymd_date dt in
-        QCheck.assume (ymd.year > 0 || (ymd.year =0 && ymd.day >= 3));
+         let ymd = Timedesc.ymd_date dt in
+         QCheck.assume (ymd.year > 0 || (ymd.year =0 && ymd.day >= 3));
          let r =
            CCResult.get_exn
            @@ Timedesc.ISO_week_date_time.of_iso8601
@@ -384,8 +384,8 @@ module Qc = struct
     QCheck.Test.make ~count:100_000 ~name:"iso_week_date_time_to_iso8601_of_iso8601_is_accurate"
       QCheck.(pair (int_bound 9) date_time)
       (fun (frac_s, dt) ->
-        let ymd = Timedesc.ymd_date dt in
-        QCheck.assume (ymd.year > 0 || (ymd.year =0 && ymd.day >= 3));
+         let ymd = Timedesc.ymd_date dt in
+         QCheck.assume (ymd.year > 0 || (ymd.year =0 && ymd.day >= 3));
          let r =
            CCResult.get_exn
            @@ Timedesc.ISO_week_date_time.of_iso8601
