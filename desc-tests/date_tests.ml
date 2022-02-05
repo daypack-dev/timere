@@ -1,6 +1,102 @@
 open Test_utils
 
 module Alco = struct
+  let lt_case0 () =
+    Alcotest.(check bool)
+      "less than" true
+      Timedesc.Date.(
+        lt
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:2))
+
+  let lt_case1 () =
+    Alcotest.(check bool)
+      "less than" false
+      Timedesc.Date.(
+        lt
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
+
+  let lt_case2 () =
+    Alcotest.(check bool)
+      "less than" false
+      Timedesc.Date.(
+        lt
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
+
+  let le_case0 () =
+    Alcotest.(check bool)
+      "less than or equal to" true
+      Timedesc.Date.(
+        le
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:2))
+
+  let le_case1 () =
+    Alcotest.(check bool)
+      "less than or equal to" true
+      Timedesc.Date.(
+        le
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
+
+  let le_case2 () =
+    Alcotest.(check bool)
+      "less than or equal to" false
+      Timedesc.Date.(
+        le
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
+
+  let gt_case0 () =
+    Alcotest.(check bool)
+      "greater than" true
+      Timedesc.Date.(
+        gt
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
+
+  let gt_case1 () =
+    Alcotest.(check bool)
+      "greater than" false
+      Timedesc.Date.(
+        gt
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
+
+  let gt_case2 () =
+    Alcotest.(check bool)
+      "greater than" false
+      Timedesc.Date.(
+        gt
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:2))
+
+  let ge_case0 () =
+    Alcotest.(check bool)
+      "greater than or equal to" true
+      Timedesc.Date.(
+        ge
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:2)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
+
+  let ge_case1 () =
+    Alcotest.(check bool)
+      "greater than or equal to" true
+      Timedesc.Date.(
+        ge
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1))
+
+  let ge_case2 () =
+    Alcotest.(check bool)
+      "greater than or equal to" false
+      Timedesc.Date.(
+        ge
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:1)
+          (Ymd.make_exn ~year:2000 ~month:1 ~day:2))
+
   let week_date0 () =
     Alcotest.(check date_testable)
       "same date"
@@ -63,6 +159,18 @@ module Alco = struct
 
   let suite =
     [
+      Alcotest.test_case "lt_case0" `Quick lt_case0;
+      Alcotest.test_case "lt_case1" `Quick lt_case1;
+      Alcotest.test_case "lt_case2" `Quick lt_case2;
+      Alcotest.test_case "le_case0" `Quick le_case0;
+      Alcotest.test_case "le_case1" `Quick le_case1;
+      Alcotest.test_case "le_case2" `Quick le_case2;
+      Alcotest.test_case "gt_case0" `Quick gt_case0;
+      Alcotest.test_case "gt_case1" `Quick gt_case1;
+      Alcotest.test_case "gt_case2" `Quick gt_case2;
+      Alcotest.test_case "ge_case0" `Quick ge_case0;
+      Alcotest.test_case "ge_case1" `Quick ge_case1;
+      Alcotest.test_case "ge_case2" `Quick ge_case2;
       Alcotest.test_case "week_date0" `Quick week_date0;
       Alcotest.test_case "week_date1" `Quick week_date1;
       Alcotest.test_case "week_date2" `Quick week_date2;
@@ -84,6 +192,42 @@ module Qc = struct
           d
           |> Timedesc.Date.to_rfc3339
           |> Timedesc.Date.of_iso8601
+          |> CCResult.get_exn
+        in
+        Timedesc.Date.equal d d')
+
+  let ymd_to_iso8601_of_iso8601 =
+    QCheck.Test.make ~count:100_000 ~name:"ymd_to_iso8601_of_iso8601" ymd_date
+      (fun (year, month, day) ->
+        let d = Timedesc.Date.Ymd.make_exn ~year ~month ~day in
+        let d' =
+          d
+          |> Timedesc.Date.Ymd.to_iso8601
+          |> Timedesc.Date.Ymd.of_iso8601
+          |> CCResult.get_exn
+        in
+        Timedesc.Date.equal d d')
+
+  let iso_week_date_to_iso8601_of_iso8601 =
+    QCheck.Test.make ~count:100_000 ~name:"iso_week_date_to_iso8601_of_iso8601"
+      iso_week_date (fun (year, week, weekday) ->
+        let d = Timedesc.Date.ISO_week_date.make_exn ~year ~week ~weekday in
+        let d' =
+          d
+          |> Timedesc.Date.ISO_week_date.to_iso8601
+          |> Timedesc.Date.ISO_week_date.of_iso8601
+          |> CCResult.get_exn
+        in
+        Timedesc.Date.equal d d')
+
+  let iso_ord_to_iso8601_of_iso8601 =
+    QCheck.Test.make ~count:100_000 ~name:"iso_ord_to_iso8601_of_iso8601"
+      iso_ord_date (fun (year, day_of_year) ->
+        let d = Timedesc.Date.ISO_ord.make_exn ~year ~day_of_year in
+        let d' =
+          d
+          |> Timedesc.Date.ISO_ord.to_iso8601
+          |> Timedesc.Date.ISO_ord.of_iso8601
           |> CCResult.get_exn
         in
         Timedesc.Date.equal d d')
@@ -172,6 +316,9 @@ module Qc = struct
   let suite =
     [
       to_rfc3339_of_iso8601;
+      iso_week_date_to_iso8601_of_iso8601;
+      iso_ord_to_iso8601_of_iso8601;
+      ymd_to_iso8601_of_iso8601;
       to_of_sexp;
       view_is_same_as_original_iso_ord_date;
       view_is_same_as_original_iso_week_date;

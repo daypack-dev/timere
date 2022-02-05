@@ -1,6 +1,78 @@
 open Test_utils
 
 module Alco = struct
+  let lt_case0 () =
+    Alcotest.(check bool)
+      "less than" true
+      Timedesc.Span.(
+        lt (Timedesc.Span.make ~ns:1 ()) (Timedesc.Span.make ~ns:2 ()))
+
+  let lt_case1 () =
+    Alcotest.(check bool)
+      "less than" false
+      Timedesc.Span.(
+        lt (Timedesc.Span.make ~ns:1 ()) (Timedesc.Span.make ~ns:1 ()))
+
+  let lt_case2 () =
+    Alcotest.(check bool)
+      "less than" false
+      Timedesc.Span.(
+        lt (Timedesc.Span.make ~ns:2 ()) (Timedesc.Span.make ~ns:1 ()))
+
+  let le_case0 () =
+    Alcotest.(check bool)
+      "less than or equal to" true
+      Timedesc.Span.(
+        le (Timedesc.Span.make ~ns:1 ()) (Timedesc.Span.make ~ns:2 ()))
+
+  let le_case1 () =
+    Alcotest.(check bool)
+      "less than or equal to" true
+      Timedesc.Span.(
+        le (Timedesc.Span.make ~ns:1 ()) (Timedesc.Span.make ~ns:1 ()))
+
+  let le_case2 () =
+    Alcotest.(check bool)
+      "less than or equal to" false
+      Timedesc.Span.(
+        le (Timedesc.Span.make ~ns:2 ()) (Timedesc.Span.make ~ns:1 ()))
+
+  let gt_case0 () =
+    Alcotest.(check bool)
+      "greater than" true
+      Timedesc.Span.(
+        gt (Timedesc.Span.make ~ns:2 ()) (Timedesc.Span.make ~ns:1 ()))
+
+  let gt_case1 () =
+    Alcotest.(check bool)
+      "greater than" false
+      Timedesc.Span.(
+        gt (Timedesc.Span.make ~ns:1 ()) (Timedesc.Span.make ~ns:1 ()))
+
+  let gt_case2 () =
+    Alcotest.(check bool)
+      "greater than" false
+      Timedesc.Span.(
+        gt (Timedesc.Span.make ~ns:1 ()) (Timedesc.Span.make ~ns:2 ()))
+
+  let ge_case0 () =
+    Alcotest.(check bool)
+      "greater than or equal to" true
+      Timedesc.Span.(
+        ge (Timedesc.Span.make ~ns:2 ()) (Timedesc.Span.make ~ns:1 ()))
+
+  let ge_case1 () =
+    Alcotest.(check bool)
+      "greater than or equal to" true
+      Timedesc.Span.(
+        ge (Timedesc.Span.make ~ns:1 ()) (Timedesc.Span.make ~ns:1 ()))
+
+  let ge_case2 () =
+    Alcotest.(check bool)
+      "greater than or equal to" false
+      Timedesc.Span.(
+        ge (Timedesc.Span.make ~ns:1 ()) (Timedesc.Span.make ~ns:2 ()))
+
   let floor_case0 () =
     Alcotest.(check span_testable)
       "same span"
@@ -187,6 +259,18 @@ module Alco = struct
 
   let suite =
     [
+      Alcotest.test_case "lt_case0" `Quick lt_case0;
+      Alcotest.test_case "lt_case1" `Quick lt_case1;
+      Alcotest.test_case "lt_case2" `Quick lt_case2;
+      Alcotest.test_case "le_case0" `Quick le_case0;
+      Alcotest.test_case "le_case1" `Quick le_case1;
+      Alcotest.test_case "le_case2" `Quick le_case2;
+      Alcotest.test_case "gt_case0" `Quick gt_case0;
+      Alcotest.test_case "gt_case1" `Quick gt_case1;
+      Alcotest.test_case "gt_case2" `Quick gt_case2;
+      Alcotest.test_case "ge_case0" `Quick ge_case0;
+      Alcotest.test_case "ge_case1" `Quick ge_case1;
+      Alcotest.test_case "ge_case2" `Quick ge_case2;
       Alcotest.test_case "floor_case0" `Quick floor_case0;
       Alcotest.test_case "floor_case1" `Quick floor_case1;
       Alcotest.test_case "floor_case2" `Quick floor_case2;

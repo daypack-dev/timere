@@ -609,6 +609,20 @@ module Ym : sig
 
   val year_month : t -> int * int
 
+  (** {1 Comparison} *)
+
+  val equal : t -> t -> bool
+
+  val lt : t -> t -> bool
+
+  val le : t -> t -> bool
+
+  val gt : t -> t -> bool
+
+  val ge : t -> t -> bool
+
+  val compare : t -> t -> int
+
   (** {1 Arithmetic} *)
 
   val add : ?years:int -> ?months:int -> t -> t
@@ -653,6 +667,20 @@ module ISO_week : sig
 
   val week : t -> int
 
+  (** {1 Comparison} *)
+
+  val equal : t -> t -> bool
+
+  val lt : t -> t -> bool
+
+  val le : t -> t -> bool
+
+  val gt : t -> t -> bool
+
+  val ge : t -> t -> bool
+
+  val compare : t -> t -> int
+
   (** {1 Arithmetic} *)
 
   val add : weeks:int -> t -> t
@@ -688,6 +716,16 @@ module Date : sig
   (** {1 Comparison} *)
 
   val equal : t -> t -> bool
+
+  val lt : t -> t -> bool
+
+  val le : t -> t -> bool
+
+  val gt : t -> t -> bool
+
+  val ge : t -> t -> bool
+
+  val compare : t -> t -> int
 
   (** {1 Accessors} *)
 

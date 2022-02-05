@@ -4,6 +4,16 @@ type t = { jd : int }
 
 let equal (x : t) (y : t) : bool = x.jd = y.jd
 
+let lt (x : t) (y : t) = x.jd < y.jd
+
+let le (x : t) (y : t) = x.jd <= y.jd
+
+let gt (x : t) (y : t) = x.jd > y.jd
+
+let ge (x : t) (y : t) = x.jd >= y.jd
+
+let compare (x : t) (y : t) = compare x.jd y.jd
+
 let weekday (x : t) = weekday_of_jd x.jd
 
 module ISO_week_date' = struct
