@@ -281,7 +281,8 @@ module Qc = struct
             @@ CCOption.get_exn_or "expected successful RFC3339 construction"
             @@ Timedesc.to_rfc3339 ~frac_s:9 dt
           in
-          Timedesc.equal r dt)
+          Timedesc.(Span.equal (to_timestamp_single r) (to_timestamp_single dt))
+        )
 
   let to_rfc3339_w_default_frac_s_of_iso8601_is_lossless =
     QCheck.Test.make ~count:100_000
@@ -293,7 +294,8 @@ module Qc = struct
            @@ CCOption.get_exn_or "expected successful RFC3339 construction"
            @@ Timedesc.to_rfc3339 dt
          in
-         Timedesc.equal r dt)
+         Timedesc.(Span.equal (to_timestamp_single r) (to_timestamp_single dt))
+      )
 
   let to_rfc3339_of_iso8601_is_accurate =
     QCheck.Test.make ~count:100_000 ~name:"to_rfc3339_of_iso8601_is_accurate"
@@ -358,7 +360,8 @@ module Qc = struct
             @@ CCOption.get_exn_or "expected successful RFC3339 construction"
             @@ Timedesc.ISO_week_date_time.to_iso8601 ~frac_s:9 dt
           in
-          Timedesc.equal r dt)
+          Timedesc.(Span.equal (to_timestamp_single r) (to_timestamp_single dt))
+        )
 
   let iso_week_date_time_to_iso8601_w_default_frac_s_of_iso8601_is_lossless =
     QCheck.Test.make ~count:100_000
@@ -370,7 +373,8 @@ module Qc = struct
            @@ CCOption.get_exn_or "expected successful RFC3339 construction"
            @@ Timedesc.ISO_week_date_time.to_iso8601 dt
          in
-         Timedesc.equal r dt)
+         Timedesc.(Span.equal (to_timestamp_single r) (to_timestamp_single dt))
+      )
 
   let iso_week_date_time_to_iso8601_of_iso8601_is_accurate =
     QCheck.Test.make ~count:100_000 ~name:"iso_week_date_time_to_iso8601_of_iso8601_is_accurate"
@@ -399,7 +403,8 @@ module Qc = struct
             @@ CCOption.get_exn_or "expected successful RFC3339 construction"
             @@ Timedesc.ISO_ord_date_time.to_iso8601 ~frac_s:9 dt
           in
-          Timedesc.equal r dt)
+          Timedesc.(Span.equal (to_timestamp_single r) (to_timestamp_single dt))
+        )
 
   let iso_ord_date_time_to_iso8601_w_default_frac_s_of_iso8601_is_lossless =
     QCheck.Test.make ~count:100_000
@@ -411,7 +416,8 @@ module Qc = struct
            @@ CCOption.get_exn_or "expected successful RFC3339 construction"
            @@ Timedesc.ISO_ord_date_time.to_iso8601 dt
          in
-         Timedesc.equal r dt)
+         Timedesc.(Span.equal (to_timestamp_single r) (to_timestamp_single dt))
+      )
 
   let iso_ord_date_time_to_iso8601_of_iso8601_is_accurate =
     QCheck.Test.make ~count:100_000 ~name:"iso_ord_date_time_to_iso8601_of_iso8601_is_accurate"
