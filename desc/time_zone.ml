@@ -22,7 +22,7 @@ type 'a local_result =
 
 let recorded_offsets (t : t) : int list =
   Array.to_list t.record.recorded_offsets
-  |> List.sort_unique compare
+  |> List.sort_uniq compare
 
 let check_table ((starts, entries) : table) : bool =
   let size = Bigarray.Array1.dim starts in
