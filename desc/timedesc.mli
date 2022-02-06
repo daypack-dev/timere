@@ -1090,6 +1090,10 @@ module Time_zone : sig
 
   val equal : t -> t -> bool
 
+  val recorded_offsets : t -> int list
+  (** Returns the recorded offsets of a time zone in ascending order
+  *)
+
   val available_time_zones : string list
 
   val make_offset_only : Span.t -> t option

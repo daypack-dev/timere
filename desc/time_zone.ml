@@ -20,6 +20,10 @@ type 'a local_result =
   | `Ambiguous of 'a * 'a
   ]
 
+let recorded_offsets (t : t) : int list =
+  Array.to_list t.record.recorded_offsets
+  |> List.sort_uniq compare
+
 let check_table ((starts, entries) : table) : bool =
   let size = Bigarray.Array1.dim starts in
   assert (size = Array.length entries);
