@@ -64,6 +64,8 @@
 
   - `jd_of_ydoy`
 
+- Added `Time_zone.recorded_offsets`
+
 - Tzdb refresh
 
 ## Timere-parse 0.0.5

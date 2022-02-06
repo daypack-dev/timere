@@ -27,6 +27,8 @@ val make : string -> t option
 
 val make_exn : string -> t
 
+val recorded_offsets : t -> int list
+
 val available_time_zones : string list
 
 val lookup_timestamp_utc : t -> int64 -> entry option
