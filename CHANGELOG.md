@@ -4,7 +4,7 @@
 
 - Bumped dependency of Timedesc to >= 0.6.0
 
-## Timere 0.6.1
+## Timere 0.7.0
 
 - Replaced `CCOpt` with `CCOption` (this bumps dependency of Containers to >= 3.6)
 
