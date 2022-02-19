@@ -955,13 +955,6 @@ module Rules = struct
       flatten_weekdays pos l |> map_rule_result (fun l -> Timere.weekdays l)
     | _ -> `None
 
-  (* let rule_month_day l =
-   *   match l with
-   *   | [ (_, Month_day x) ] -> Ok (Timere.days [ x ])
-   *   | [ (pos, Month_days l) ] ->
-   *     flatten_month_days pos l |> CCResult.map (fun l -> Timere.days l)
-   *   | _ -> Error None *)
-
   let rule_month_days l =
     match l with
     | [ (pos_days, _, Month_day day) ] -> pattern ~pos_days ~days:[ day ] ()
