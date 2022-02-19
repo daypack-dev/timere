@@ -381,20 +381,26 @@ let normalize s =
   |> Time.slice_valid_interval
 
 let aux_iso_week_pattern search_using_tz space years weeks =
-  let open Time in
   match space with
   | [] -> Seq.empty
   | _ ->
     let space_start = fst @@ List.hd space in
+    let space_end = Timedesc.Timestamp.pred @@ snd @@ List.hd @@ List.rev space in
     let start_year =
       max 1
-        (Timedesc.year @@ Timedesc.of_timestamp_exn ~tz:search_using_tz space_start)
+        (Timedesc.year @@ Timedesc.of_timestamp_exn ~tz_of_date_time:search_using_tz space_start)
+    in
+    let end_year =
+      min 9998
+        (Timedesc.year @@ Timedesc.of_timestamp_exn ~tz_of_date_time:search_using_tz space_end)
     in
     let years =
       if Int_set.is_empty years then
-        OSeq.(1 -- 9998)
+        OSeq.(start_year -- end_year)
       else
         Int_set.to_seq years
+        |> Seq.filter (fun x ->
+            start_year <= x && x <= end_year)
     in
     let weeks =
       Int_set.to_seq weeks
@@ -406,18 +412,20 @@ let aux_iso_week_pattern search_using_tz space years weeks =
                 ~tz:search_using_tz
                 ~year ~week ~weekday:`Mon
                 ~hour:0 ~minute:0 ~second:0
+                ()
                     |> Timedesc.to_timestamp
                     |> Timedesc.min_of_local_result
             in
-            let year_y, week_y =
+            let year, week =
               Timedesc.ISO_week.make_exn ~year ~week
               |> Timedesc.ISO_week.add ~weeks:1
               |> Timedesc.ISO_week.year_week
             in
             let y = Timedesc.ISO_week_date_time.make_exn
                 ~tz:search_using_tz
-                ~year:year_y ~week:week_y ~weekday:`Mon
+                ~year ~week ~weekday:`Mon
                 ~hour:0 ~minute:0 ~second:0
+                ()
                     |> Timedesc.to_timestamp
                     |> Timedesc.max_of_local_result
             in
