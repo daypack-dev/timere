@@ -50,6 +50,7 @@ type guess =
   | Hmss of Timedesc.Time.t Timere.range list
   | Weekday of Timedesc.weekday
   | Weekdays of Timedesc.weekday Timere.range list
+  | Week
   | Month_day of int
   | Month_days of int Timere.range list
   | Month of int
@@ -104,6 +105,7 @@ let string_of_token (_, _, guess) =
   | Hmss _ -> "hmss"
   | Weekday _ -> "weekday"
   | Weekdays _ -> "weekdays"
+  | Week -> "week"
   | Month_day _ -> "month_day"
   | Month_days _ -> "month_days"
   | Month _ -> "month"
@@ -213,6 +215,7 @@ let token_p : (token, unit) MParser.t =
       attempt (string "nd") >>$ (Int_map.empty, Nd);
       attempt (string "rd") >>$ (Int_map.empty, Rd);
       attempt (string "th") >>$ (Int_map.empty, Th);
+      attempt (string "week") >>$ (Int_map.empty, Week);
       attempt (string "days") >>$ (Int_map.empty, Days);
       attempt (string "day") >>$ (Int_map.empty, Days);
       attempt (string "d") >>$ (Int_map.empty, Days);
