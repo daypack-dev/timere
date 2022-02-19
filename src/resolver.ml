@@ -18,6 +18,7 @@ type t =
   | Empty
   | All
   | Intervals of result_space * Time.Interval'.t Seq.t
+  | ISO_week_pattern of result_space * Int_set.t * Int_set.t
   | Pattern of result_space * Pattern.t
   | Pattern_intervals of {
       result_space : result_space;
@@ -40,6 +41,7 @@ let rec t_of_ast (ast : Time_ast.t) : t =
   | Empty -> Empty
   | All -> All
   | Intervals s -> Intervals (default_result_space, s)
+  | ISO_week_pattern (years, weeks) -> ISO_week_pattern (default_result_space, years, weeks)
   | Pattern p -> Pattern (default_result_space, p)
   | Unary_op (op, t) -> Unary_op (default_result_space, op, t_of_ast t)
   | Inter_seq s -> Inter_seq (default_result_space, Seq.map t_of_ast s)
@@ -377,6 +379,51 @@ let normalize s =
   |> Time.Intervals.normalize ~skip_filter_empty:false ~skip_filter_invalid:true
     ~skip_sort:true
   |> Time.slice_valid_interval
+
+let aux_iso_week_pattern search_using_tz space years weeks =
+  let open Time in
+  match space with
+  | [] -> Seq.empty
+  | _ ->
+    let space_start = fst @@ List.hd space in
+    let start_year =
+      max 1
+        (Timedesc.year @@ Timedesc.of_timestamp_exn ~tz:search_using_tz space_start)
+    in
+    let years =
+      if Int_set.is_empty years then
+        OSeq.(1 -- 9998)
+      else
+        Int_set.to_seq years
+    in
+    let weeks =
+      Int_set.to_seq weeks
+    in
+    years
+    |> Seq.flat_map (fun year ->
+        Seq.map (fun week ->
+            let x = Timedesc.ISO_week_date_time.make_exn
+                ~tz:search_using_tz
+                ~year ~week ~weekday:`Mon
+                ~hour:0 ~minute:0 ~second:0
+                    |> Timedesc.to_timestamp
+                    |> Timedesc.min_of_local_result
+            in
+            let year_y, week_y =
+              Timedesc.ISO_week.make_exn ~year ~week
+              |> Timedesc.ISO_week.add ~weeks:1
+              |> Timedesc.ISO_week.year_week
+            in
+            let y = Timedesc.ISO_week_date_time.make_exn
+                ~tz:search_using_tz
+                ~year:year_y ~week:week_y ~weekday:`Mon
+                ~hour:0 ~minute:0 ~second:0
+                    |> Timedesc.to_timestamp
+                    |> Timedesc.max_of_local_result
+            in
+            (x, y)
+          ) weeks
+      )
 
 let aux_pattern search_using_tz space pat =
   let open Time in
