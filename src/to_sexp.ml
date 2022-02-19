@@ -98,28 +98,27 @@ let sexp_of_range ~(f : 'a -> CCSexp.t) (r : 'a Time.Range.range) =
 
 let sexp_of_pattern (pat : Pattern.t) : CCSexp.t =
   let years =
-    pat.years |> Int_set.to_seq |> CCList.of_seq |> sexp_list_of_ints
+    pat.years |> Int_set.to_list |> sexp_list_of_ints
   in
   let months =
-    pat.months |> Int_set.to_seq |> CCList.of_seq |> List.map sexp_of_month
+    pat.months |> Int_set.to_list |> List.map sexp_of_month
   in
   let month_days =
-    pat.month_days |> Int_set.to_seq |> CCList.of_seq |> sexp_list_of_ints
+    pat.month_days |> Int_set.to_list |> sexp_list_of_ints
   in
   let weekdays =
     pat.weekdays
-    |> Weekday_set.to_seq
-    |> CCList.of_seq
+    |> Weekday_set.to_list
     |> List.map sexp_of_weekday
   in
   let hours =
-    pat.hours |> Int_set.to_seq |> CCList.of_seq |> sexp_list_of_ints
+    pat.hours |> Int_set.to_list |> sexp_list_of_ints
   in
   let minutes =
-    pat.minutes |> Int_set.to_seq |> CCList.of_seq |> sexp_list_of_ints
+    pat.minutes |> Int_set.to_list |> sexp_list_of_ints
   in
   let seconds =
-    pat.seconds |> Int_set.to_seq |> CCList.of_seq |> sexp_list_of_ints
+    pat.seconds |> Int_set.to_list |> sexp_list_of_ints
   in
   let ns =
     Diet.Int.fold
@@ -175,6 +174,10 @@ let to_sexp (t : Time_ast.t) : CCSexp.t =
             CCSexp.list [ sexp_of_timestamp x; sexp_of_timestamp y ])
       in
       CCSexp.list (CCSexp.atom "intervals" :: l)
+    | ISO_week_pattern (years, weeks) ->
+      let years = Int_set.to_list years |> sexp_list_of_ints in
+      let weeks = Int_set.to_list weeks |> sexp_list_of_ints in
+      CCSexp.(list [atom "iso_week_pattern"; list years; list weeks])
     | Pattern pat -> sexp_of_pattern pat
     | Unary_op (op, t) -> CCSexp.list (sexp_list_of_unary_op op @ [ aux t ])
     | Inter_seq s ->
