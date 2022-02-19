@@ -39,6 +39,7 @@ type guess =
   | Nd
   | Rd
   | Th
+  | Week
   | Days
   | Hours
   | Minutes
@@ -50,11 +51,12 @@ type guess =
   | Hmss of Timedesc.Time.t Timere.range list
   | Weekday of Timedesc.weekday
   | Weekdays of Timedesc.weekday Timere.range list
-  | Week
   | Month_day of int
   | Month_days of int Timere.range list
   | Month of int
   | Months of int Timere.range list
+  | ISO_week of int
+  | ISO_weeks of int Timere.range list
   | Ymd of (MParser.pos * int) * (MParser.pos * int) * (MParser.pos * int)
   | Span of Timedesc.Span.t
   | Time_zone of Timedesc.Time_zone.t
@@ -435,6 +437,52 @@ module Ast_normalize = struct
       ~constr_single:(fun x -> Month_day x)
       l
 
+  let recognize_iso_week (l : token list) : token list =
+    let rec recognize_single tokens =
+      match tokens with
+      | (pos_x, _, Nat x) :: (_, _, St) :: rest
+      | (pos_x, _, Nat x) :: (_, _, Nd) :: rest
+      | (pos_x, _, Nat x) :: (_, _, Rd) :: rest
+      | (pos_x, _, Nat x) :: (_, _, Th) :: rest ->
+        (pos_x, text_map_empty, Month_day x) :: recognize_single rest
+      | [] -> []
+      | x :: xs -> x :: recognize_single xs
+    in
+    let rec propagate_guesses tokens =
+      match tokens with
+      | (pos_x, _, ISO_week x)
+        :: (pos_comma, _, Comma) :: (pos_y, _, Nat y) :: rest ->
+        (pos_x, text_map_empty, Month_day x)
+        :: (pos_comma, text_map_empty, Comma)
+        :: propagate_guesses ((pos_y, text_map_empty, Month_day y) :: rest)
+      | (pos_x, _, Month_day x) :: (pos_to, _, To) :: (pos_y, _, Nat y) :: rest
+        ->
+        (pos_x, text_map_empty, Month_day x)
+        :: (pos_to, text_map_empty, To)
+        :: propagate_guesses ((pos_y, text_map_empty, Month_day y) :: rest)
+      | [] -> []
+      | x :: xs -> x :: propagate_guesses xs
+    in
+    l
+    |> recognize_single
+    |> propagate_guesses
+    |> List.rev
+    |> propagate_guesses
+    |> List.rev
+
+  let group_iso_weeks (l : token list) : token list =
+    group
+      ~extract_single:(function ISO_week x -> Some x | _ -> None)
+      ~extract_grouped:(function ISO_weeks l -> Some l | _ -> None)
+      ~constr_grouped:(fun x -> ISO_weeks x)
+      l
+
+  let ungroup_iso_weeks l =
+    ungroup
+      ~extract_grouped:(function ISO_weeks l -> Some l | _ -> None)
+      ~constr_single:(fun x -> ISO_week x)
+      l
+
   type hms_mode =
     | Hms_24
     | Hms_am
@@ -772,14 +820,17 @@ module Ast_normalize = struct
             |> recognize_hms
             |> recognize_float
             |> recognize_span
+            |> recognize_iso_week
             |> recognize_month_day
             |> group_nats
             |> group_month_days
+            |> group_iso_weeks
             |> group_weekdays
             |> group_months
             |> group_hms
             |> ungroup_nats
             |> ungroup_month_days
+            |> ungroup_iso_weeks
             |> ungroup_weekdays
             |> ungroup_months
             |> ungroup_hms
