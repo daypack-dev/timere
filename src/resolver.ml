@@ -63,6 +63,7 @@ let result_space_of_t (time : t) : result_space =
   | All -> default_result_space
   | Empty -> empty_result_space
   | Intervals (s, _) -> s
+  | ISO_week_pattern (s, _, _) -> s
   | Pattern (s, _) -> s
   | Pattern_intervals { result_space; _ } -> result_space
   | Unary_op (s, _, _) -> s
@@ -74,7 +75,8 @@ let deduce_child_result_space_bound_from_parent ~(parent : t) : result_space =
   let open Timedesc.Span in
   let space = result_space_of_t parent in
   match parent with
-  | All | Empty | Intervals _ | Pattern _ | Pattern_intervals _ ->
+  | All | Empty | Intervals _ | ISO_week_pattern _
+  | Pattern _ | Pattern_intervals _ ->
     failwith "Unexpected case"
   | Unary_op (_, op, _) -> (
       match op with
@@ -110,6 +112,7 @@ let set_result_space space (t : t) : t =
   | All -> All
   | Empty -> Empty
   | Intervals (_, x) -> Intervals (space, x)
+  | ISO_week_pattern (_, x, y) -> ISO_week_pattern (space, x, y)
   | Pattern (_, x) -> Pattern (space, x)
   | Unary_op (_, op, x) -> Unary_op (space, op, x)
   | Inter_seq (_, x) -> Inter_seq (space, x)
@@ -172,14 +175,22 @@ let overapproximate_result_space_bottom_up default_tz (t : t) : t =
         | Seq.Nil -> t
         | Seq.Cons ((start, _), _) ->
           Intervals ([ (start, default_result_space_end_exc) ], s))
+    | ISO_week_pattern (_, years, weeks) ->
+      if Int_set.is_empty years then ISO_week_pattern (default_result_space, years, weeks)
+      else
+        let space =
+          years
+          |> Int_set.to_list
+          |> List.map (result_space_of_year tz)
+        in
+        ISO_week_pattern (space, years, weeks)
     | Pattern (_, pat) ->
       if Int_set.is_empty pat.years then Pattern (default_result_space, pat)
       else
         let space =
           pat.years
-          |> Int_set.to_seq
-          |> Seq.map (result_space_of_year tz)
-          |> CCList.of_seq
+          |> Int_set.to_list
+          |> List.map (result_space_of_year tz)
         in
         Pattern (space, pat)
     | Pattern_intervals { result_space = _; mode; bound; start; end_ } ->
@@ -261,7 +272,8 @@ let restrict_result_space_top_down (t : t) : t =
   let rec aux bound (t : t) : t =
     let t = restrict_result_space ~bound t in
     match t with
-    | All | Empty | Intervals _ | Pattern _ | Pattern_intervals _ -> t
+    | All | Empty | Intervals _ | ISO_week_pattern _
+    | Pattern _ | Pattern_intervals _ -> t
     | Unary_op (cur, op, t') ->
       Unary_op
         ( cur,
@@ -473,6 +485,8 @@ let rec aux search_using_tz time =
        | Empty -> Seq.empty
        | All -> CCList.to_seq default_result_space
        | Intervals (_, s) -> s
+       | ISO_week_pattern (space, years, weeks) ->
+         aux_iso_week_pattern search_using_tz space years weeks
        | Pattern (space, pat) -> aux_pattern search_using_tz space pat
        | Unary_op (space, op, t) -> (
            let search_using_tz =
