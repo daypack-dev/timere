@@ -1217,6 +1217,10 @@ let month_day_ranges_are_valid_relaxed day_range =
 
 let years years = pattern ~years ()
 
+let iso_years years = iso_week_pattern ~years ()
+
+let iso_weeks weeks = iso_week_pattern ~weeks ()
+
 let months months = pattern ~months ()
 
 let days days = pattern ~days ()
@@ -1232,6 +1236,10 @@ let seconds seconds = pattern ~seconds ()
 let ns ns = pattern ~ns ()
 
 let year_ranges year_ranges = pattern ~year_ranges ()
+
+let iso_year_ranges year_ranges = iso_week_pattern ~year_ranges ()
+
+let iso_week_ranges week_ranges = iso_week_pattern ~week_ranges ()
 
 let month_ranges month_ranges = pattern ~month_ranges ()
 

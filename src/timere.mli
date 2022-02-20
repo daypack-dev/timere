@@ -147,6 +147,18 @@ val years : int list -> t
 val year_ranges : int range list -> t
 (** [year_ranges l] is a shorthand for [pattern ~year_ranges:l ()] *)
 
+val iso_years : int list -> t
+(** [iso_years l] is a shorthand for [iso_week_pattern ~years:l ()] *)
+
+val iso_year_ranges : int range list -> t
+(** [iso_year_ranges l] is a shorthand for [iso_week_pattern ~year_ranges:l ()] *)
+
+val iso_weeks : int list -> t
+(** [iso_weeks l] is a shorthand for [iso_week_pattern ~weeks:l ()] *)
+
+val iso_week_ranges : int range list -> t
+(** [iso_week_ranges l] is a shorthand for [iso_week_pattern ~week_ranges:l ()] *)
+
 val months : int list -> t
 (** [months l] is a shorthand for [pattern ~months:l ()] *)
 
