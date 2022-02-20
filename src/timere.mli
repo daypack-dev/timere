@@ -141,18 +141,6 @@ val iso_week_pattern :
     then [(dt.year is in p.years or p.year_ranges)] is [true].
 *)
 
-val iso_years : int list -> t
-(** [iso_years l] is a shorthand for [iso_week_pattern ~years:l ()] *)
-
-val iso_year_ranges : int range list -> t
-(** [iso_year_ranges l] is a shorthand for [iso_week_pattern ~year_ranges:l ()] *)
-
-val iso_weeks : int list -> t
-(** [iso_weeks l] is a shorthand for [iso_week_pattern ~weeks:l ()] *)
-
-val iso_week_ranges : int range list -> t
-(** [iso_week_ranges l] is a shorthand for [iso_week_pattern ~week_ranges:l ()] *)
-
 val years : int list -> t
 (** [years l] is a shorthand for [pattern ~years:l ()] *)
 
@@ -176,6 +164,18 @@ val weekdays : Timedesc.weekday list -> t
 
 val weekday_ranges : Timedesc.weekday range list -> t
 (** [weekday_ranges l] is a shorthand for [pattern ~weekday_ranges:l ()] *)
+
+val iso_years : int list -> t
+(** [iso_years l] is a shorthand for [iso_week_pattern ~years:l ()] *)
+
+val iso_year_ranges : int range list -> t
+(** [iso_year_ranges l] is a shorthand for [iso_week_pattern ~year_ranges:l ()] *)
+
+val iso_weeks : int list -> t
+(** [iso_weeks l] is a shorthand for [iso_week_pattern ~weeks:l ()] *)
+
+val iso_week_ranges : int range list -> t
+(** [iso_week_ranges l] is a shorthand for [iso_week_pattern ~week_ranges:l ()] *)
 
 val hours : int list -> t
 (** [hours l] is a shorthand for [pattern ~hours:l ()] *)
