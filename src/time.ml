@@ -382,28 +382,6 @@ module Intervals = struct
         Seq.empty interval_batches
   end
 
-  (* module Round_robin = struct
-   *   let collect_round_robin_non_decreasing ?(skip_check = false)
-   *       (batches : Interval'.t Seq.t list) : Interval'.t option list Seq.t =
-   *     batches
-   *     |> List.map (fun s ->
-   *         if skip_check then s
-   *         else s |> Check.check_if_valid |> Check.check_if_sorted)
-   *     |> Seq_utils.collect_round_robin ~f_le:Interval'.le
-   * 
-   *   let merge_multi_list_round_robin_non_decreasing ?(skip_check = false)
-   *       (batches : Interval'.t Seq.t list) : Interval'.t Seq.t =
-   *     collect_round_robin_non_decreasing ~skip_check batches
-   *     |> Seq.flat_map (fun l -> CCList.to_seq l |> Seq.filter_map CCFun.id)
-   *     |> normalize ~skip_filter_invalid:true ~skip_sort:true
-   * 
-   *   let merge_multi_seq_round_robin_non_decreasing ?(skip_check = false)
-   *       (batches : Interval'.t Seq.t Seq.t) : Interval'.t Seq.t =
-   *     batches
-   *     |> CCList.of_seq
-   *     |> merge_multi_list_round_robin_non_decreasing ~skip_check
-   * end *)
-
   let chunk ?(skip_check = false) ?(drop_partial = false) ~chunk_size
       (intervals : Interval'.t Seq.t) : Interval'.t Seq.t =
     let open Timedesc.Span in
