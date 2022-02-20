@@ -38,6 +38,14 @@ module Utils = struct
     try Some (Month_ranges.Flatten.flatten_list months)
     with Range.Range_is_invalid -> None
 
+  let flatten_iso_week_ranges (months : int range Seq.t) : int Seq.t option =
+    try Some (ISO_week_ranges.Flatten.flatten months)
+    with Range.Range_is_invalid -> None
+
+  let flatten_iso_week_range_list (months : int range list) : int list option =
+    try Some (ISO_week_ranges.Flatten.flatten_list months)
+    with Range.Range_is_invalid -> None
+
   let flatten_month_day_ranges (month_days : int range Seq.t) : int Seq.t option
     =
     try Some (Month_day_ranges.Flatten.flatten month_days)
