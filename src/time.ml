@@ -864,6 +864,16 @@ module Month_ranges = Ranges.Make (struct
     let of_int x = x
   end)
 
+module Week_ranges = Ranges.Make (struct
+    type t = int
+
+    let modulo = None
+
+    let to_int x = x
+
+    let of_int x = x
+  end)
+
 module Year_ranges = Ranges.Make (struct
     type t = int
 
@@ -1051,6 +1061,34 @@ let drop (n : int) (c : chunked) : chunked =
 let not (a : t) : t = Unary_op (Not, a)
 
 let with_tz tz t = Unary_op (With_tz tz, t)
+
+let iso_week_pattern ?(years = []) ?(year_ranges = [])
+    ?(weeks = []) ?(week_ranges = []) () : t =
+  let years =
+    try years @ Year_ranges.Flatten.flatten_list year_ranges
+    with Range.Range_is_invalid -> invalid_arg "iso_week_pattern: invalid year range"
+  in
+  let weeks =
+    try weeks @ Week_ranges.Flatten.flatten_list week_ranges
+    with Range.Range_is_invalid -> invalid_arg "iso_week_pattern: invalid week range"
+  in
+  match years, weeks with
+  | [], [] -> All
+  | _ ->
+    if
+      Stdlib.not
+        (List.for_all
+           (fun year ->
+              Timedesc.(year min_val) <= year
+              && year <= Timedesc.(year max_val))
+           years)
+    then invalid_arg "iso_week_pattern: not all years are valid"
+    else if Stdlib.not (List.for_all (fun x -> 1 <= x && x <= 53) weeks) then
+      invalid_arg "iso_week_pattern: not all weeks are valid"
+    else
+      let years = Int_set.of_list years in
+      let weeks = Int_set.of_list weeks in
+      ISO_week_pattern (years, weeks)
 
 let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
     ?(month_ranges = []) ?(days = []) ?(day_ranges = []) ?(weekdays = [])

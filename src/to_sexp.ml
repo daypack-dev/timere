@@ -96,6 +96,11 @@ let sexp_of_range ~(f : 'a -> CCSexp.t) (r : 'a Time.Range.range) =
   | `Range_inc (x, y) -> CCSexp.(list [ atom "range_inc"; f x; f y ])
   | `Range_exc (x, y) -> CCSexp.(list [ atom "range_exc"; f x; f y ])
 
+let sexp_of_iso_week_pattern (years : Int_set.t) (weeks : Int_set.t) : CCSexp.t =
+  let years = Int_set.to_list years |> sexp_list_of_ints in
+  let weeks = Int_set.to_list weeks |> sexp_list_of_ints in
+  CCSexp.(list [atom "iso_week_pattern"; list years; list weeks])
+
 let sexp_of_pattern (pat : Pattern.t) : CCSexp.t =
   let years =
     pat.years |> Int_set.to_list |> sexp_list_of_ints
@@ -175,9 +180,7 @@ let to_sexp (t : Time_ast.t) : CCSexp.t =
       in
       CCSexp.list (CCSexp.atom "intervals" :: l)
     | ISO_week_pattern (years, weeks) ->
-      let years = Int_set.to_list years |> sexp_list_of_ints in
-      let weeks = Int_set.to_list weeks |> sexp_list_of_ints in
-      CCSexp.(list [atom "iso_week_pattern"; list years; list weeks])
+      sexp_of_iso_week_pattern years weeks
     | Pattern pat -> sexp_of_pattern pat
     | Unary_op (op, t) -> CCSexp.list (sexp_list_of_unary_op op @ [ aux t ])
     | Inter_seq s ->
