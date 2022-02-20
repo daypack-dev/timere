@@ -264,9 +264,6 @@ let inter : (ast -> ast -> ast, unit) t =
 let union : (ast -> ast -> ast, unit) t =
   spaces >> string "or" >> spaces >> return (fun a b -> Binary_op (Union, a, b))
 
-(* let round_robin_pick : (ast -> ast -> ast, unit) t =
- *   spaces >> string ">>" >> return (fun a b -> Round_robin_pick [ a; b ]) *)
-
 let expr =
   let rec expr mparser_state =
     let inter_part =
@@ -274,7 +271,6 @@ let expr =
       >> (spaces >> expr << spaces << char ')')
          <|> (tokens_p |>> fun l -> Tokens l)
     in
-    (* let ordered_select_part = chain_left1 inter_part round_robin_pick in *)
     let union_part = chain_left1 inter_part inter in
     chain_left1 union_part union mparser_state
   in
