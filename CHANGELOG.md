@@ -4,6 +4,8 @@
 
 - Added ISO week pattern
 
+  - `iso_week_pattern`, `iso_years`, `iso_year_ranges`, `iso_weeks`, `iso_week_ranges`
+
 ## Timere-parse 0.0.6
 
 - Bumped dependency of Timedesc to >= 0.6.0, Timere to >= 0.7.0
