@@ -389,6 +389,49 @@ module Ast_normalize = struct
       ~constr_single:(fun x -> Weekday x)
       l
 
+  let recognize_iso_week (l : token list) : token list =
+    let rec recognize_single tokens =
+      match tokens with
+      | (pos_x, _, ISO_week_word) :: (_, _, Nat x) :: rest ->
+        (pos_x, text_map_empty, ISO_week x) :: recognize_single rest
+      | [] -> []
+      | x :: xs -> x :: recognize_single xs
+    in
+    let rec propagate_guesses tokens =
+      match tokens with
+      | (pos_x, _, ISO_week x)
+        :: (pos_comma, _, Comma) :: (pos_y, _, Nat y) :: rest ->
+        (pos_x, text_map_empty, ISO_week x)
+        :: (pos_comma, text_map_empty, Comma)
+        :: propagate_guesses ((pos_y, text_map_empty, ISO_week y) :: rest)
+      | (pos_x, _, ISO_week x) :: (pos_to, _, To) :: (pos_y, _, Nat y) :: rest
+        ->
+        (pos_x, text_map_empty, ISO_week x)
+        :: (pos_to, text_map_empty, To)
+        :: propagate_guesses ((pos_y, text_map_empty, ISO_week y) :: rest)
+      | [] -> []
+      | x :: xs -> x :: propagate_guesses xs
+    in
+    l
+    |> recognize_single
+    |> propagate_guesses
+    |> List.rev
+    |> propagate_guesses
+    |> List.rev
+
+  let group_iso_weeks (l : token list) : token list =
+    group
+      ~extract_single:(function ISO_week x -> Some x | _ -> None)
+      ~extract_grouped:(function ISO_weeks l -> Some l | _ -> None)
+      ~constr_grouped:(fun x -> ISO_weeks x)
+      l
+
+  let ungroup_iso_weeks l =
+    ungroup
+      ~extract_grouped:(function ISO_weeks l -> Some l | _ -> None)
+      ~constr_single:(fun x -> ISO_week x)
+      l
+
   let recognize_month_day (l : token list) : token list =
     let rec recognize_single tokens =
       match tokens with
@@ -433,52 +476,6 @@ module Ast_normalize = struct
     ungroup
       ~extract_grouped:(function Month_days l -> Some l | _ -> None)
       ~constr_single:(fun x -> Month_day x)
-      l
-
-  let recognize_iso_week (l : token list) : token list =
-    let rec recognize_single tokens =
-      match tokens with
-      | (pos_x, _, Nat x) :: (_, _, St) :: rest
-      | (pos_x, _, Nat x) :: (_, _, Nd) :: rest
-      | (pos_x, _, Nat x) :: (_, _, Rd) :: rest
-      | (pos_x, _, Nat x) :: (_, _, Th) :: rest ->
-        (pos_x, text_map_empty, Month_day x) :: recognize_single rest
-      | [] -> []
-      | x :: xs -> x :: recognize_single xs
-    in
-    let rec propagate_guesses tokens =
-      match tokens with
-      | (pos_x, _, ISO_week x)
-        :: (pos_comma, _, Comma) :: (pos_y, _, Nat y) :: rest ->
-        (pos_x, text_map_empty, Month_day x)
-        :: (pos_comma, text_map_empty, Comma)
-        :: propagate_guesses ((pos_y, text_map_empty, Month_day y) :: rest)
-      | (pos_x, _, Month_day x) :: (pos_to, _, To) :: (pos_y, _, Nat y) :: rest
-        ->
-        (pos_x, text_map_empty, Month_day x)
-        :: (pos_to, text_map_empty, To)
-        :: propagate_guesses ((pos_y, text_map_empty, Month_day y) :: rest)
-      | [] -> []
-      | x :: xs -> x :: propagate_guesses xs
-    in
-    l
-    |> recognize_single
-    |> propagate_guesses
-    |> List.rev
-    |> propagate_guesses
-    |> List.rev
-
-  let group_iso_weeks (l : token list) : token list =
-    group
-      ~extract_single:(function ISO_week x -> Some x | _ -> None)
-      ~extract_grouped:(function ISO_weeks l -> Some l | _ -> None)
-      ~constr_grouped:(fun x -> ISO_weeks x)
-      l
-
-  let ungroup_iso_weeks l =
-    ungroup
-      ~extract_grouped:(function ISO_weeks l -> Some l | _ -> None)
-      ~constr_single:(fun x -> ISO_week x)
       l
 
   type hms_mode =
@@ -887,6 +884,12 @@ let flatten_months pos (l : int Timere.range list) : int list rule_result =
   | None ->
     `Error (Printf.sprintf "%s: Invalid month ranges" (string_of_pos pos))
 
+let flatten_iso_weeks pos (l : int Timere.range list) : int list rule_result =
+  match Timere.Utils.flatten_iso_week_range_list l with
+  | Some x -> `Some x
+  | None ->
+    `Error (Printf.sprintf "%s: Invalid iso week ranges" (string_of_pos pos))
+
 let flatten_weekdays pos (l : Timedesc.weekday Timere.range list) :
   Timedesc.weekday list rule_result =
   match Timere.Utils.flatten_weekday_range_list l with
@@ -1029,6 +1032,13 @@ module Rules = struct
           else `None
         | `None -> `None
         | `Error msg -> `Error msg)
+    | _ -> `None
+
+  let rule_iso_week l =
+    match l with
+    | [ (_, _, ISO_week x) ] -> `Some (Timere.iso_weeks [x])
+    | [ (pos, _, ISO_weeks l) ] ->
+      flatten_iso_weeks pos l |> map_rule_result (fun l -> Timere.iso_weeks l)
     | _ -> `None
 
   let rule_month l =
@@ -1571,6 +1581,7 @@ module Rules = struct
       rule_month_days;
       rule_month_and_days;
       rule_month;
+      rule_iso_week;
       rule_ymd;
       rule_ym;
       rule_md;
