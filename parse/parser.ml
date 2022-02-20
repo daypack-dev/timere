@@ -39,7 +39,7 @@ type guess =
   | Nd
   | Rd
   | Th
-  | Week
+  | ISO_week_word
   | Days
   | Hours
   | Minutes
@@ -107,7 +107,7 @@ let string_of_token (_, _, guess) =
   | Hmss _ -> "hmss"
   | Weekday _ -> "weekday"
   | Weekdays _ -> "weekdays"
-  | Week -> "week"
+  | ISO_week_word -> "iso-week"
   | Month_day _ -> "month_day"
   | Month_days _ -> "month_days"
   | Month _ -> "month"
@@ -219,7 +219,7 @@ let token_p : (token, unit) MParser.t =
       attempt (string "nd") >>$ (Int_map.empty, Nd);
       attempt (string "rd") >>$ (Int_map.empty, Rd);
       attempt (string "th") >>$ (Int_map.empty, Th);
-      attempt (string "week") >>$ (Int_map.empty, Week);
+      attempt (string "iso-week") >>$ (Int_map.empty, ISO_week_word);
       attempt (string "days") >>$ (Int_map.empty, Days);
       attempt (string "day") >>$ (Int_map.empty, Days);
       attempt (string "d") >>$ (Int_map.empty, Days);
