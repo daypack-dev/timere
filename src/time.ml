@@ -842,7 +842,7 @@ module Month_ranges = Ranges.Make (struct
     let of_int x = x
   end)
 
-module Week_ranges = Ranges.Make (struct
+module ISO_week_ranges = Ranges.Make (struct
     type t = int
 
     let modulo = None
@@ -1047,7 +1047,7 @@ let iso_week_pattern ?(years = []) ?(year_ranges = [])
     with Range.Range_is_invalid -> invalid_arg "iso_week_pattern: invalid year range"
   in
   let weeks =
-    try weeks @ Week_ranges.Flatten.flatten_list week_ranges
+    try weeks @ ISO_week_ranges.Flatten.flatten_list week_ranges
     with Range.Range_is_invalid -> invalid_arg "iso_week_pattern: invalid week range"
   in
   match years, weeks with
