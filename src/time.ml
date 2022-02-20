@@ -1061,7 +1061,7 @@ let iso_week_pattern ?(years = []) ?(year_ranges = [])
               && year <= Timedesc.(year max_val))
            years)
     then invalid_arg "iso_week_pattern: not all years are valid"
-    else if Stdlib.not (List.for_all (fun x -> -53 <= x && x <= 53) weeks) then
+    else if Stdlib.not (List.for_all (fun x -> -53 <= x && x <= 53 && x <> 0) weeks) then
       invalid_arg "iso_week_pattern: not all weeks are valid"
     else
       let years = Int_set.of_list years in
