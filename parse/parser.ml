@@ -1036,9 +1036,18 @@ module Rules = struct
 
   let rule_iso_week l =
     match l with
-    | [ (_, _, ISO_week x) ] -> `Some (Timere.iso_weeks [x])
-    | [ (pos, _, ISO_weeks l) ] ->
-      flatten_iso_weeks pos l |> map_rule_result (fun l -> Timere.iso_weeks l)
+    | [ (_, _, ISO_week x) ] when 1 <= x && x <= 53 ->
+      `Some (Timere.iso_weeks [x])
+    | [ (pos, _, ISO_weeks weeks) ] -> (
+        match flatten_iso_weeks pos weeks with
+        | `Some weeks ->
+          if List.for_all (fun week -> 1 <= week && week <= 53) weeks then
+            `Some (Timere.iso_weeks weeks)
+          else
+            `None
+        | `None -> `None
+        | `Error msg -> `Error msg
+      )
     | _ -> `None
 
   let rule_month l =
