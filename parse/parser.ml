@@ -112,6 +112,8 @@ let string_of_token (_, _, guess) =
   | Month_days _ -> "month_days"
   | Month _ -> "month"
   | Months _ -> "months"
+  | ISO_week _ -> "iso_week"
+  | ISO_weeks _ -> "iso_weeks"
   | Ymd _ -> "ymd"
   | Span _ -> "span"
   | Time_zone tz -> Timedesc.Time_zone.name tz
