@@ -127,8 +127,8 @@ val iso_week_pattern :
   ?year_ranges:int range list ->
   ?weeks:int list ->
   ?week_ranges:int range list ->
-    unit ->
-      t
+  unit ->
+  t
 (** Pattern matches over ISO week date times.
 
     A pattern [p] matches ISO week date time [dt] if
