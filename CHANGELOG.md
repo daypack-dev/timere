@@ -1,5 +1,9 @@
 # Changelog
 
+## Timedesc NEXT
+
+- Added `tzlocal.js` backend for js_of_ocaml 
+
 ## Timere-parse 0.0.6
 
 - Bumped dependency of Timedesc to >= 0.6.0, Timere to >= 0.7.0
