@@ -109,6 +109,10 @@ You can optionally pick one of the following three concrete implementations of l
 
   - This is the default implementation which tries to look up info of OS for local time zone name. Should work for common Linux distros.
 
+- `timedesc.tzlocal.js`
+
+  - This is an implementation for `js_of_ocaml` which uses `Intl.DateTimeFormat` to get the local time zone name. Should work in all modern browsers, as well as node.js.
+
 - `timedesc.tzlocal.none`
 
   - This simply returns no time zone guesses
