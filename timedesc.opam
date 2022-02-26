@@ -35,6 +35,8 @@ depends: [
   "alcotest" {with-test}
   "qcheck-alcotest" {with-test}
   "qcheck" {with-test}
+]
+depopts: [
   "js_of_ocaml" {>= "4.0.0"}
 ]
 build: [

@@ -1,5 +1,5 @@
 let local () : string list =
-  (* Approached copied from Python package tzlocal:
+  (* Approach copied from Python package tzlocal:
      https://github.com/regebro/tzlocal
   *)
   match Sys.getenv_opt "TZ" with
