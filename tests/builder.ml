@@ -48,6 +48,25 @@ let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
   |> CCList.to_seq
   |> Time.interval_seq
 
+let make_iso_week_pattern ~rng ~min_year ~max_year_inc : int list * int list =
+  let years =
+    if rng () mod 2 = 0 then []
+    else
+      let end_inc = min 5 (rng ()) in
+      OSeq.(0 -- end_inc)
+      |> Seq.map (fun _ -> min max_year_inc (min_year + rng ()))
+      |> CCList.of_seq
+  in
+  let weeks =
+    if rng () mod 2 = 0 then []
+    else
+      let end_inc = min 5 (rng ()) in
+      OSeq.(0 -- end_inc)
+      |> Seq.map (fun _ -> succ (rng () mod 53))
+      |> CCList.of_seq
+  in
+  (years, weeks)
+
 let make_pattern ~rng ~min_year ~max_year_inc : Pattern.t =
   let years =
     if rng () mod 2 = 0 then []
@@ -281,11 +300,14 @@ let build ~enable_extra_restrictions:_ ~min_year ~max_year_inc ~max_height
   let rng = make_rng ~randomness in
   let rec aux height =
     if height <= 1 then
-      match rng () mod 6 with
+      match rng () mod 7 with
       | 0 -> Time.empty
       | 1 -> Time.always
       | 2 -> make_timestamp_intervals ~rng ~min_year ~max_year_inc
       | 3 ->
+        let years, weeks = make_iso_week_pattern ~rng ~min_year ~max_year_inc in
+        Time.iso_week_pattern ~years ~weeks ()
+      | 4 ->
         let pat = make_pattern ~rng ~min_year ~max_year_inc in
         Time.pattern
           ~years:(Int_set.to_list pat.years)
@@ -296,8 +318,8 @@ let build ~enable_extra_restrictions:_ ~min_year ~max_year_inc ~max_height
           ~minutes:(Int_set.to_list pat.minutes)
           ~seconds:(Int_set.to_list pat.seconds)
           ()
-      | 4 -> make_hms_intervals_inc ~rng
-      | 5 -> make_hms_intervals_exc ~rng
+      | 5 -> make_hms_intervals_inc ~rng
+      | 6 -> make_hms_intervals_exc ~rng
       | _ -> failwith "Unexpected case"
     else
       match rng () mod 5 with

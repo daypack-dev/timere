@@ -18,6 +18,7 @@ type t =
   | Empty
   | All
   | Intervals of result_space * Time.Interval'.t Seq.t
+  | ISO_week_pattern of result_space * Int_set.t * Int_set.t
   | Pattern of result_space * Pattern.t
   | Pattern_intervals of {
       result_space : result_space;
@@ -40,6 +41,7 @@ let rec t_of_ast (ast : Time_ast.t) : t =
   | Empty -> Empty
   | All -> All
   | Intervals s -> Intervals (default_result_space, s)
+  | ISO_week_pattern (years, weeks) -> ISO_week_pattern (default_result_space, years, weeks)
   | Pattern p -> Pattern (default_result_space, p)
   | Unary_op (op, t) -> Unary_op (default_result_space, op, t_of_ast t)
   | Inter_seq s -> Inter_seq (default_result_space, Seq.map t_of_ast s)
@@ -61,6 +63,7 @@ let result_space_of_t (time : t) : result_space =
   | All -> default_result_space
   | Empty -> empty_result_space
   | Intervals (s, _) -> s
+  | ISO_week_pattern (s, _, _) -> s
   | Pattern (s, _) -> s
   | Pattern_intervals { result_space; _ } -> result_space
   | Unary_op (s, _, _) -> s
@@ -72,7 +75,8 @@ let deduce_child_result_space_bound_from_parent ~(parent : t) : result_space =
   let open Timedesc.Span in
   let space = result_space_of_t parent in
   match parent with
-  | All | Empty | Intervals _ | Pattern _ | Pattern_intervals _ ->
+  | All | Empty | Intervals _ | ISO_week_pattern _
+  | Pattern _ | Pattern_intervals _ ->
     failwith "Unexpected case"
   | Unary_op (_, op, _) -> (
       match op with
@@ -108,6 +112,7 @@ let set_result_space space (t : t) : t =
   | All -> All
   | Empty -> Empty
   | Intervals (_, x) -> Intervals (space, x)
+  | ISO_week_pattern (_, x, y) -> ISO_week_pattern (space, x, y)
   | Pattern (_, x) -> Pattern (space, x)
   | Unary_op (_, op, x) -> Unary_op (space, op, x)
   | Inter_seq (_, x) -> Inter_seq (space, x)
@@ -170,14 +175,22 @@ let overapproximate_result_space_bottom_up default_tz (t : t) : t =
         | Seq.Nil -> t
         | Seq.Cons ((start, _), _) ->
           Intervals ([ (start, default_result_space_end_exc) ], s))
+    | ISO_week_pattern (_, years, weeks) ->
+      if Int_set.is_empty years then ISO_week_pattern (default_result_space, years, weeks)
+      else
+        let space =
+          years
+          |> Int_set.to_list
+          |> List.map (result_space_of_year tz)
+        in
+        ISO_week_pattern (space, years, weeks)
     | Pattern (_, pat) ->
       if Int_set.is_empty pat.years then Pattern (default_result_space, pat)
       else
         let space =
           pat.years
-          |> Int_set.to_seq
-          |> Seq.map (result_space_of_year tz)
-          |> CCList.of_seq
+          |> Int_set.to_list
+          |> List.map (result_space_of_year tz)
         in
         Pattern (space, pat)
     | Pattern_intervals { result_space = _; mode; bound; start; end_ } ->
@@ -259,7 +272,8 @@ let restrict_result_space_top_down (t : t) : t =
   let rec aux bound (t : t) : t =
     let t = restrict_result_space ~bound t in
     match t with
-    | All | Empty | Intervals _ | Pattern _ | Pattern_intervals _ -> t
+    | All | Empty | Intervals _ | ISO_week_pattern _
+    | Pattern _ | Pattern_intervals _ -> t
     | Unary_op (cur, op, t') ->
       Unary_op
         ( cur,
@@ -378,6 +392,68 @@ let normalize s =
     ~skip_sort:true
   |> Time.slice_valid_interval
 
+let aux_iso_week_pattern search_using_tz space years weeks =
+  match space with
+  | [] -> Seq.empty
+  | _ ->
+    let space_start = fst @@ List.hd space in
+    let space_end = Timedesc.Timestamp.pred @@ snd @@ List.hd @@ List.rev space in
+    let start_year =
+      max 1
+        (Timedesc.year @@ Timedesc.of_timestamp_exn ~tz_of_date_time:search_using_tz space_start)
+    in
+    let end_year =
+      min 9998
+        (Timedesc.year @@ Timedesc.of_timestamp_exn ~tz_of_date_time:search_using_tz space_end)
+    in
+    let years =
+      if Int_set.is_empty years then
+        OSeq.(start_year -- end_year)
+      else
+        Int_set.to_seq years
+        |> Seq.filter (fun x ->
+            start_year <= x && x <= end_year)
+    in
+    let weeks =
+      Int_set.to_seq weeks
+    in
+    years
+    |> Seq.flat_map (fun year ->
+        let week_count =
+          Timedesc.Utils.week_count_of_iso_year ~year
+        in
+        let weeks =
+          Seq.map (fun week ->
+              if week < 0 then week_count + week + 1 else week
+            )
+            weeks
+        in
+        Seq.map (fun week ->
+            let x = Timedesc.ISO_week_date_time.make_exn
+                ~tz:search_using_tz
+                ~year ~week ~weekday:`Mon
+                ~hour:0 ~minute:0 ~second:0
+                ()
+                    |> Timedesc.to_timestamp
+                    |> Timedesc.min_of_local_result
+            in
+            let year, week =
+              Timedesc.ISO_week.make_exn ~year ~week
+              |> Timedesc.ISO_week.add ~weeks:1
+              |> Timedesc.ISO_week.year_week
+            in
+            let y = Timedesc.ISO_week_date_time.make_exn
+                ~tz:search_using_tz
+                ~year ~week ~weekday:`Mon
+                ~hour:0 ~minute:0 ~second:0
+                ()
+                    |> Timedesc.to_timestamp
+                    |> Timedesc.max_of_local_result
+            in
+            (x, y)
+          ) weeks
+      )
+
 let aux_pattern search_using_tz space pat =
   let open Time in
   let space = CCList.to_seq space in
@@ -418,6 +494,8 @@ let rec aux search_using_tz time =
        | Empty -> Seq.empty
        | All -> CCList.to_seq default_result_space
        | Intervals (_, s) -> s
+       | ISO_week_pattern (space, years, weeks) ->
+         aux_iso_week_pattern search_using_tz space years weeks
        | Pattern (space, pat) -> aux_pattern search_using_tz space pat
        | Unary_op (space, op, t) -> (
            let search_using_tz =

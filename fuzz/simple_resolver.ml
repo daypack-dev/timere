@@ -108,6 +108,39 @@ let do_chunk_at_month_boundary tz (s : Time.Interval'.t Seq.t) :
   in
   aux s
 
+let aux_iso_week_pattern_mem search_using_tz (years : Int_set.t)
+    (weeks : Int_set.t) (timestamp : int64) :
+  bool =
+  let dt =
+    CCOption.get_exn_or "Expected successful date time construction"
+    @@ Timedesc.of_timestamp ~tz_of_date_time:search_using_tz
+      (Timedesc.Span.make ~s:timestamp ())
+  in
+  let iso_week = Timedesc.iso_week dt in
+  let year_is_fine =
+    Int_set.is_empty years
+    || Int_set.mem (Timedesc.ISO_week.year iso_week) years
+  in
+  let week_is_fine =
+    Int_set.is_empty weeks
+    || Int_set.mem (Timedesc.ISO_week.week iso_week) weeks
+  in
+  year_is_fine
+  && week_is_fine
+
+let aux_iso_week_pattern (search_start, search_end_exc) search_using_tz years weeks :
+  Span_set.t =
+  let search_space_set =
+    span_set_of_intervals @@ Seq.return (search_start, search_end_exc)
+  in
+  Seq_utils.a_to_b_inc_int64
+    ~a:(Timedesc.Span.get_s search_start)
+    ~b:(Timedesc.Span.get_s search_end_exc)
+  |> Seq.filter (aux_iso_week_pattern_mem search_using_tz years weeks)
+  |> intervals_of_int64s
+  |> span_set_of_intervals
+  |> Span_set.inter search_space_set
+
 let aux_pattern_mem search_using_tz (pattern : Pattern.t) (timestamp : int64) :
   bool =
   let dt =
@@ -221,6 +254,8 @@ let resolve ?(search_using_tz = Timedesc.Time_zone.utc)
     | Time_ast.Empty -> Span_set.empty
     | All -> span_set_full
     | Intervals s -> span_set_of_intervals s
+    | ISO_week_pattern (years, weeks) ->
+      aux_iso_week_pattern search_space search_using_tz years weeks
     | Pattern p -> aux_pattern search_space search_using_tz p
     | Unary_op (op, t) -> (
         match op with

@@ -382,28 +382,6 @@ module Intervals = struct
         Seq.empty interval_batches
   end
 
-  (* module Round_robin = struct
-   *   let collect_round_robin_non_decreasing ?(skip_check = false)
-   *       (batches : Interval'.t Seq.t list) : Interval'.t option list Seq.t =
-   *     batches
-   *     |> List.map (fun s ->
-   *         if skip_check then s
-   *         else s |> Check.check_if_valid |> Check.check_if_sorted)
-   *     |> Seq_utils.collect_round_robin ~f_le:Interval'.le
-   * 
-   *   let merge_multi_list_round_robin_non_decreasing ?(skip_check = false)
-   *       (batches : Interval'.t Seq.t list) : Interval'.t Seq.t =
-   *     collect_round_robin_non_decreasing ~skip_check batches
-   *     |> Seq.flat_map (fun l -> CCList.to_seq l |> Seq.filter_map CCFun.id)
-   *     |> normalize ~skip_filter_invalid:true ~skip_sort:true
-   * 
-   *   let merge_multi_seq_round_robin_non_decreasing ?(skip_check = false)
-   *       (batches : Interval'.t Seq.t Seq.t) : Interval'.t Seq.t =
-   *     batches
-   *     |> CCList.of_seq
-   *     |> merge_multi_list_round_robin_non_decreasing ~skip_check
-   * end *)
-
   let chunk ?(skip_check = false) ?(drop_partial = false) ~chunk_size
       (intervals : Interval'.t Seq.t) : Interval'.t Seq.t =
     let open Timedesc.Span in
@@ -864,6 +842,16 @@ module Month_ranges = Ranges.Make (struct
     let of_int x = x
   end)
 
+module ISO_week_ranges = Ranges.Make (struct
+    type t = int
+
+    let modulo = None
+
+    let to_int x = x
+
+    let of_int x = x
+  end)
+
 module Year_ranges = Ranges.Make (struct
     type t = int
 
@@ -1052,6 +1040,34 @@ let not (a : t) : t = Unary_op (Not, a)
 
 let with_tz tz t = Unary_op (With_tz tz, t)
 
+let iso_week_pattern ?(years = []) ?(year_ranges = [])
+    ?(weeks = []) ?(week_ranges = []) () : t =
+  let years =
+    try years @ Year_ranges.Flatten.flatten_list year_ranges
+    with Range.Range_is_invalid -> invalid_arg "iso_week_pattern: invalid year range"
+  in
+  let weeks =
+    try weeks @ ISO_week_ranges.Flatten.flatten_list week_ranges
+    with Range.Range_is_invalid -> invalid_arg "iso_week_pattern: invalid week range"
+  in
+  match years, weeks with
+  | [], [] -> All
+  | _ ->
+    if
+      Stdlib.not
+        (List.for_all
+           (fun year ->
+              Timedesc.(year min_val) <= year
+              && year <= Timedesc.(year max_val))
+           years)
+    then invalid_arg "iso_week_pattern: not all years are valid"
+    else if Stdlib.not (List.for_all (fun x -> -53 <= x && x <= 53 && x <> 0) weeks) then
+      invalid_arg "iso_week_pattern: not all weeks are valid"
+    else
+      let years = Int_set.of_list years in
+      let weeks = Int_set.of_list weeks in
+      ISO_week_pattern (years, weeks)
+
 let pattern ?(years = []) ?(year_ranges = []) ?(months = [])
     ?(month_ranges = []) ?(days = []) ?(day_ranges = []) ?(weekdays = [])
     ?(weekday_ranges = []) ?(hours = []) ?(hour_ranges = []) ?(minutes = [])
@@ -1179,6 +1195,10 @@ let month_day_ranges_are_valid_relaxed day_range =
 
 let years years = pattern ~years ()
 
+let iso_years years = iso_week_pattern ~years ()
+
+let iso_weeks weeks = iso_week_pattern ~weeks ()
+
 let months months = pattern ~months ()
 
 let days days = pattern ~days ()
@@ -1194,6 +1214,10 @@ let seconds seconds = pattern ~seconds ()
 let ns ns = pattern ~ns ()
 
 let year_ranges year_ranges = pattern ~year_ranges ()
+
+let iso_year_ranges year_ranges = iso_week_pattern ~year_ranges ()
+
+let iso_week_ranges week_ranges = iso_week_pattern ~week_ranges ()
 
 let month_ranges month_ranges = pattern ~month_ranges ()
 

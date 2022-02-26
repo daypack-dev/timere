@@ -32,6 +32,7 @@ type t =
   | Empty
   | All
   | Intervals of (Timedesc.Span.t * Timedesc.Span.t) Seq.t
+  | ISO_week_pattern of Int_set.t * Int_set.t
   | Pattern of Pattern.t
   | Unary_op of unary_op * t
   | Inter_seq of t Seq.t

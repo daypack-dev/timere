@@ -122,17 +122,48 @@ val pattern :
     then [(dt.year is in p.years or p.year_ranges)] is [true].
 *)
 
+val iso_week_pattern :
+  ?years:int list ->
+  ?year_ranges:int range list ->
+  ?weeks:int list ->
+  ?week_ranges:int range list ->
+  unit ->
+  t
+(** Pattern matches over ISO week date times.
+
+    A pattern [p] matches ISO week date time [dt] if
+    {v
+(year of dt is in p.years or p.year_ranges)
+&& (week of dt is in p.weeks or p.week_ranges)
+    v}
+
+    Empty pattern levels are treated as wildcard, e.g. if [p.years] and [p.year_ranges] are both empty,
+    then [(dt.year is in p.years or p.year_ranges)] is [true].
+*)
+
 val years : int list -> t
 (** [years l] is a shorthand for [pattern ~years:l ()] *)
 
 val year_ranges : int range list -> t
 (** [year_ranges l] is a shorthand for [pattern ~year_ranges:l ()] *)
 
+val iso_years : int list -> t
+(** [iso_years l] is a shorthand for [iso_week_pattern ~years:l ()] *)
+
+val iso_year_ranges : int range list -> t
+(** [iso_year_ranges l] is a shorthand for [iso_week_pattern ~year_ranges:l ()] *)
+
 val months : int list -> t
 (** [months l] is a shorthand for [pattern ~months:l ()] *)
 
 val month_ranges : int range list -> t
 (** [month_ranges l] is a shorthand for [pattern ~month_ranges:l ()] *)
+
+val iso_weeks : int list -> t
+(** [iso_weeks l] is a shorthand for [iso_week_pattern ~weeks:l ()] *)
+
+val iso_week_ranges : int range list -> t
+(** [iso_week_ranges l] is a shorthand for [iso_week_pattern ~week_ranges:l ()] *)
 
 val days : int list -> t
 (** [days l] is a shorthand for [pattern ~month_days:l ()] *)
@@ -537,12 +568,16 @@ module Utils : sig
 
   val flatten_month_ranges : int range Seq.t -> int Seq.t option
 
+  val flatten_iso_week_ranges : int range Seq.t -> int Seq.t option
+
   val flatten_month_day_ranges : int range Seq.t -> int Seq.t option
 
   val flatten_weekday_ranges :
     Timedesc.weekday range Seq.t -> Timedesc.weekday Seq.t option
 
   val flatten_month_range_list : int range list -> int list option
+
+  val flatten_iso_week_range_list : int range list -> int list option
 
   val flatten_month_day_range_list : int range list -> int list option
 

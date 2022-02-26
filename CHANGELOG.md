@@ -1,6 +1,16 @@
 # Changelog
 
-## Timedesc NEXT
+## Timere-parse 0.0.7
+
+- Added ISO week recognition rule with keyword `iso-week`
+
+## Timere 0.8.0
+
+- Added ISO week pattern
+
+  - `iso_week_pattern`, `iso_years`, `iso_year_ranges`, `iso_weeks`, `iso_week_ranges`
+
+## Timedesc 0.6.1
 
 - Added `tzlocal.js` backend for js_of_ocaml 
 

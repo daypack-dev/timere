@@ -71,6 +71,23 @@ let range_of_sexp ~(f : CCSexp.t -> 'a) (x : CCSexp.t) =
   | `List [ `Atom "range_exc"; x; y ] -> `Range_exc (f x, f y)
   | _ -> invalid_data (Printf.sprintf "Invalid range: %s" (CCSexp.to_string x))
 
+let iso_week_pattern_of_sexp (x : CCSexp.t) =
+  match x with
+  | `Atom _ ->
+    invalid_data
+      (Printf.sprintf "Expected list for ISO week pattern: %s" (CCSexp.to_string x))
+  | `List l -> (
+      match l with
+      | [ `Atom "iso_week_pattern"; `List years; `List weeks ]-> (
+          let years = List.map int_of_sexp years in
+          let weeks = List.map int_of_sexp weeks in
+          Time.iso_week_pattern ~years ~weeks ()
+        )
+      | _ ->
+        invalid_data
+          (Printf.sprintf "Invalid pattern: %s" (CCSexp.to_string x))
+    )
+
 let pattern_of_sexp (x : CCSexp.t) =
   match x with
   | `Atom _ ->
@@ -246,6 +263,7 @@ let of_sexp (x : CCSexp.t) =
                   (Printf.sprintf "Expected list for interval: %s"
                      (CCSexp.to_string x)))
           |> sorted_intervals ~skip_invalid:false
+        | `Atom "iso_week_pattern" :: _ -> iso_week_pattern_of_sexp x
         | `Atom "pattern" :: _ -> pattern_of_sexp x
         | [ `Atom "not"; x ] -> not (aux x)
         | [ `Atom "shift"; n; x ] ->
