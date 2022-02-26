@@ -5,7 +5,7 @@ let list_of_js_array arr = arr |> Js.to_array |> Array.to_list
 let js_array_of_list l = l |> Array.of_list |> Js.array
 
 let raise_with_msg msg =
-  Js.raise_js_error (new%js Js.error_constr (Js.string msg))
+  Js_error.raise_ (Js_error.of_error (new%js Js.error_constr (Js.string msg)))
 
 let wrap f = try f () with Invalid_argument msg -> raise_with_msg msg
 
