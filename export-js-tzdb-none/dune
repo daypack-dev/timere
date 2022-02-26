@@ -21,5 +21,5 @@
  (names export export_all)
  (libraries js_of_ocaml js_of_ocaml-lwt timere timedesc.tzdb.none timere-parse)
  (preprocess (pps js_of_ocaml-ppx lwt_ppx))
- (js_of_ocaml (flags --source-map --debug-info))
+ ; (js_of_ocaml (flags --source-map --debug-info))
  (modes js))
