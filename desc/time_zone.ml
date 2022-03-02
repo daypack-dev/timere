@@ -308,17 +308,11 @@ end
 let offset_is_recorded offset (t : t) =
   Array.mem (CCInt64.to_int @@ Span.get_s offset) t.record.recorded_offsets
 
-module Compressed = struct
+module Compressed_table = struct
   type relative_entry = {
     delta : int64;
     is_dst : bool;
     offset : int;
-  }
-
-  let dummy_relative_entry = {
-    delta = 0L;
-    is_dst = false;
-    offset = 0;
   }
 
   let lt_relative_entry (x : relative_entry) (y : relative_entry) =
@@ -344,8 +338,7 @@ module Compressed = struct
         else 1
     end)
 
-  let to_relative_entries (t : t) : relative_entry array * int array =
-    let (starts, entries) = t.record.table in
+  let to_relative_entries ((starts, entries) : table) : relative_entry array * int array =
     let count = Array.length entries in
     let relative_entries =
       Array.init count (fun i ->
@@ -381,7 +374,7 @@ module Compressed = struct
     in
     (uniq_relative_entries, indices)
 
-  let add_to_buffer (buffer : Buffer.t) (t : t) : unit =
+  let add_to_buffer (buffer : Buffer.t) (t : table) : unit =
     let (uniq_relative_entries, indices) = to_relative_entries t in
     let uniq_relative_entry_count =
       Array.length uniq_relative_entries
@@ -411,7 +404,7 @@ module Compressed = struct
         Buffer.add_uint16_be buffer i
       ) indices
 
-  let to_string (t : t) : string =
+  let to_string (t : table) : string =
     let buffer = Buffer.create 512 in
     add_to_buffer buffer t;
     Buffer.contents buffer
@@ -554,7 +547,10 @@ module Db = struct
   module Raw' = Raw
 
   module Raw = struct
-    let dump (db : db) : string = Marshal.to_string db []
+    let dump (db : db) : string =
+      Marshal.to_string
+      (M.map Compressed_table.to_string db)
+      []
 
     let load s : db = Marshal.from_string s 0
   end
