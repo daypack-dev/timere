@@ -379,8 +379,8 @@ module Compressed_table = struct
     let uniq_relative_entry_count =
       Array.length uniq_relative_entries
     in
-    assert (uniq_relative_entry_count < 0x1000);
-    Buffer.add_uint16_be buffer uniq_relative_entry_count;
+    assert (uniq_relative_entry_count <= 0xFF);
+    Buffer.add_uint8 buffer uniq_relative_entry_count;
     Array.iter (fun (entry : relative_entry) ->
         Buffer.add_int64_be buffer entry.delta;
         let offset = Span.make_small ~s:entry.offset () in
@@ -401,7 +401,7 @@ module Compressed_table = struct
         |     _,     _,     _ -> Buffer.add_int32_be buffer (Int64.to_int32 @@ Span.get_s offset)
       ) uniq_relative_entries;
     Array.iter (fun i ->
-        Buffer.add_uint16_be buffer i
+        Buffer.add_int8 buffer i
       ) indices
 
   let to_string (t : table) : string =
@@ -549,8 +549,8 @@ module Db = struct
   module Raw = struct
     let dump (db : db) : string =
       Marshal.to_string
-      (M.map Compressed_table.to_string db)
-      []
+        (M.map Compressed_table.to_string db)
+        []
 
     let load s : db = Marshal.from_string s 0
   end
