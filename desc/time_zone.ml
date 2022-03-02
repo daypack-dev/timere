@@ -368,7 +368,7 @@ module Compressed = struct
       |> Relative_entry_set.to_seq
       |> Array.of_seq
     in
-    let indicies =
+    let indices =
       Array.init count (fun i ->
           let (index_to_relative_entry, _) =
             CCOption.get_exn_or "Unexpected failure in relative entry lookup" @@
@@ -379,7 +379,42 @@ module Compressed = struct
           index_to_relative_entry
         )
     in
-    (uniq_relative_entries, indicies)
+    (uniq_relative_entries, indices)
+
+  let add_to_buffer (buffer : Buffer.t) (t : t) : unit =
+    let (uniq_relative_entries, indices) = to_relative_entries t in
+    let uniq_relative_entry_count =
+      Array.length uniq_relative_entries
+    in
+    assert (uniq_relative_entry_count < 0x1000);
+    Buffer.add_uint16_be buffer uniq_relative_entry_count;
+    Array.iter (fun (entry : relative_entry) ->
+        Buffer.add_int64_be buffer entry.delta;
+        let offset = Span.make_small ~s:entry.offset () in
+        let view = Span.For_human'.view offset in
+        let offset = Span.abs offset in
+        let flags = 0b0000_0000
+                    lor (if entry.is_dst     then 0b0001_0000 else 0x00)
+                    lor (if view.sign = `Pos then 0b0000_1000 else 0x00)
+                    lor (if view.hours > 0   then 0b0000_0100 else 0x00)
+                    lor (if view.minutes > 0 then 0b0000_0010 else 0x00)
+                    lor (if view.seconds > 0 then 0b0000_0001 else 0x00)
+        in
+        Buffer.add_uint8 buffer flags;
+        match (view.hours > 0, view.minutes > 0, view.seconds > 0) with
+        |  true, false, false -> Buffer.add_int8 buffer view.hours
+        | false,  true, false -> Buffer.add_int8 buffer view.minutes
+        | false, false,  true -> Buffer.add_int8 buffer view.seconds
+        |     _,     _,     _ -> Buffer.add_int32_be buffer (Int64.to_int32 @@ Span.get_s offset)
+      ) uniq_relative_entries;
+    Array.iter (fun i ->
+        Buffer.add_uint16_be buffer i
+      ) indices
+
+  let to_string (t : t) : string =
+    let buffer = Buffer.create 512 in
+    add_to_buffer buffer t;
+    Buffer.contents buffer
 end
 
 module Sexp = struct
