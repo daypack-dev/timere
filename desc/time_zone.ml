@@ -308,6 +308,80 @@ end
 let offset_is_recorded offset (t : t) =
   Array.mem (CCInt64.to_int @@ Span.get_s offset) t.record.recorded_offsets
 
+module Compressed = struct
+  type relative_entry = {
+    delta : int64;
+    is_dst : bool;
+    offset : int;
+  }
+
+  let dummy_relative_entry = {
+    delta = 0L;
+    is_dst = false;
+    offset = 0;
+  }
+
+  let lt_relative_entry (x : relative_entry) (y : relative_entry) =
+    if x.delta < y.delta then
+      true
+    else
+    if x.is_dst && not y.is_dst then
+      true
+    else
+      x.offset < y.offset
+
+  let equal_relative_entry (x : relative_entry) (y : relative_entry) =
+    x.delta = y.delta
+    && x.is_dst = y.is_dst
+    && x.offset = y.offset
+
+  module Relative_entry_set = CCSet.Make (struct
+      type t = relative_entry
+
+      let compare x y =
+        if lt_relative_entry x y then -1
+        else if equal_relative_entry x y then 0
+        else 1
+    end)
+
+  let to_relative_entries (t : t) : relative_entry array * int array =
+    let (starts, entries) = t.record.table in
+    let count = Array.length entries in
+    let relative_entries =
+      Array.init count (fun i ->
+          if i = 0 then
+            { delta = starts.{i};
+              is_dst = entries.(i).is_dst;
+              offset = entries.(i).offset;
+            }
+          else
+            { delta = Int64.sub starts.{i} starts.{i - 1};
+              is_dst = entries.(i).is_dst;
+              offset = entries.(i).offset;
+            }
+        )
+    in
+    let uniq_relative_entries =
+      Array.fold_left (fun acc x ->
+          Relative_entry_set.add x acc
+        ) Relative_entry_set.empty relative_entries
+      |> Relative_entry_set.to_seq
+      |> Array.of_seq
+    in
+    let indicies =
+      Array.init count (fun i ->
+          let (index_to_relative_entry, _) =
+            CCOption.get_exn_or "Unexpected failure in relative entry lookup" @@
+            CCArray.find_idx
+              (fun x -> equal_relative_entry relative_entries.(i) x)
+              uniq_relative_entries
+          in
+          index_to_relative_entry
+        )
+    in
+    (uniq_relative_entries, indicies)
+end
+
 module Sexp = struct
   let of_sexp (x : CCSexp.t) : t option =
     let open Of_sexp_utils in
