@@ -398,6 +398,7 @@ module Compressed_table = struct
         |  true, false, false -> Buffer.add_int8 buffer view.hours
         | false,  true, false -> Buffer.add_int8 buffer view.minutes
         | false, false,  true -> Buffer.add_int8 buffer view.seconds
+        |  true,  true, false -> Buffer.add_int16_be buffer (Int64.to_int @@ Span.get_s offset)
         |     _,     _,     _ -> Buffer.add_int32_be buffer (Int64.to_int32 @@ Span.get_s offset)
       ) uniq_relative_entries;
     Array.iter (fun i ->
