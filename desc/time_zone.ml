@@ -338,12 +338,14 @@ module Compressed_table = struct
         else 1
     end)
 
-  let to_relative_entries ((starts, entries) : table) : relative_entry array * int array =
+  let to_relative_entries ((starts, entries) : table)
+    : int64 * relative_entry array * int array =
+    let base_start = starts.{0} in
     let count = Array.length entries in
     let relative_entries =
       Array.init count (fun i ->
           if i = 0 then
-            { delta = starts.{i};
+            { delta = 0L;
               is_dst = entries.(i).is_dst;
               offset = entries.(i).offset;
             }
@@ -372,28 +374,36 @@ module Compressed_table = struct
           index_to_relative_entry
         )
     in
-    (uniq_relative_entries, indices)
+    (base_start, uniq_relative_entries, indices)
 
   let add_to_buffer (buffer : Buffer.t) (t : table) : unit =
-    let (uniq_relative_entries, indices) = to_relative_entries t in
+    let (base_start, uniq_relative_entries, indices) =
+      to_relative_entries t
+    in
     let uniq_relative_entry_count =
       Array.length uniq_relative_entries
     in
     assert (uniq_relative_entry_count <= 0xFF);
+    Buffer.add_int64_be buffer base_start;
     Buffer.add_uint8 buffer uniq_relative_entry_count;
     Array.iter (fun (entry : relative_entry) ->
-        Buffer.add_int64_be buffer entry.delta;
         let offset = Span.make_small ~s:entry.offset () in
         let view = Span.For_human'.view offset in
         let offset = Span.abs offset in
         let flags = 0b0000_0000
-                    lor (if entry.is_dst     then 0b0001_0000 else 0x00)
-                    lor (if view.sign = `Pos then 0b0000_1000 else 0x00)
-                    lor (if view.hours > 0   then 0b0000_0100 else 0x00)
-                    lor (if view.minutes > 0 then 0b0000_0010 else 0x00)
-                    lor (if view.seconds > 0 then 0b0000_0001 else 0x00)
+                    lor (if entry.delta <= 0xFFFF_FFFFL then 0b0010_0000 else 0x00)
+                    lor (if entry.is_dst                then 0b0001_0000 else 0x00)
+                    lor (if view.sign = `Pos            then 0b0000_1000 else 0x00)
+                    lor (if view.hours > 0              then 0b0000_0100 else 0x00)
+                    lor (if view.minutes > 0            then 0b0000_0010 else 0x00)
+                    lor (if view.seconds > 0            then 0b0000_0001 else 0x00)
         in
         Buffer.add_uint8 buffer flags;
+        if entry.delta <= 0xFFFF_FFFFL then
+          Buffer.add_int32_be buffer (Int64.to_int32 entry.delta)
+        else (
+          Buffer.add_int64_be buffer entry.delta
+        );
         match (view.hours > 0, view.minutes > 0, view.seconds > 0) with
         |  true, false, false -> Buffer.add_int8 buffer view.hours
         | false,  true, false -> Buffer.add_int8 buffer view.minutes
