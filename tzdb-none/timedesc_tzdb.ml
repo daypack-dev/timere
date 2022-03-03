@@ -8,4 +8,6 @@ type entry = {
 type table =
   (int64, Bigarray.int64_elt, Bigarray.c_layout) Bigarray.Array1.t * entry array
 
-let db = M.empty
+let db = None
+
+let compressed = None

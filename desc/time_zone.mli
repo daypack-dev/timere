@@ -49,6 +49,14 @@ val make_offset_only : Span.t -> t option
 
 val make_offset_only_exn : Span.t -> t
 
+module Compressed : sig
+  val to_string : t -> string
+
+  val of_string : string -> t option
+
+  val of_string_exn : string -> t
+end
+
 module Sexp : sig
   val to_sexp : t -> CCSexp.t
 
@@ -82,7 +90,7 @@ module Db : sig
 
   val names : db -> string list
 
-  module Raw : sig
+  module Compressed : sig
     val dump : db -> string
 
     val load : string -> db

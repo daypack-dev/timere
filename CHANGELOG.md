@@ -10,9 +10,15 @@
 
   - `iso_week_pattern`, `iso_years`, `iso_year_ranges`, `iso_weeks`, `iso_week_ranges`
 
-## Timedesc 0.6.1
+## Timedesc 0.7.0
 
-- Added `tzlocal.js` backend for js_of_ocaml 
+- Added `tzlocal.js` backend for `js_of_ocaml`
+
+- Added compressed binary encoding of time zone
+
+  - Replaced `Time_zone.Db.Raw` with `Time_zone.Db.Compressed`
+
+  - Overall reduces tzdb storage usage by roughly 82%
 
 ## Timere-parse 0.0.6
 

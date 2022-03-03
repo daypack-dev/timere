@@ -80,13 +80,9 @@ let process_table ((starts, entries) : table) : record =
       |> Int_set.to_list
       |> CCArray.of_list
     in
-    { recorded_offsets; table = (starts, entries) }
-
-let lookup_record name : record option =
-  M.find_opt name db
-  |> CCOption.map (fun table ->
-      assert (check_table table);
-      process_table table)
+    let table = (starts, entries) in
+    assert (check_table table);
+    { recorded_offsets; table }
 
 let name t =
   match t.typ with
@@ -174,17 +170,6 @@ let make_offset_only_exn offset =
 let utc : t =
   CCOption.get_exn_or "Expected successful construction of UTC"
     (make_offset_only Span.zero)
-
-let make name : t option =
-  match fixed_offset_of_name name with
-  | Some fixed -> make_offset_only fixed
-  | None -> (
-      match lookup_record name with
-      | Some record -> Some { typ = Backed name; record }
-      | None -> None)
-
-let make_exn name : t =
-  match make name with Some x -> x | None -> invalid_arg "make_exn"
 
 let bsearch_table timestamp ((starts, _) : table) =
   Bigarray_utils.bsearch ~cmp:Int64.compare timestamp starts
@@ -294,19 +279,309 @@ module Raw = struct
     in
     if check_table table then Some table else None
 
-  let of_table ~name table = { typ = Backed name; record = process_table table }
-
-  let of_transitions ~name (l : (int64 * entry) list) : t option =
+  let of_table ~name table =
     match fixed_offset_of_name name with
     | Some offset -> make_offset_only offset
     | None ->
-      table_of_transitions l
-      |> CCOption.map (fun table ->
-          { typ = Backed name; record = process_table table })
+      Some { typ = Backed name; record = process_table table }
+
+  let of_table_exn ~name table =
+    CCOption.get_exn_or "Failed to construct time zone from table"
+      (of_table ~name table)
+
+  let of_transitions ~name (l : (int64 * entry) list) : t option =
+    match table_of_transitions l with
+    | None -> None
+    | Some table ->
+      of_table ~name table
 end
 
 let offset_is_recorded offset (t : t) =
   Array.mem (CCInt64.to_int @@ Span.get_s offset) t.record.recorded_offsets
+
+module Compressed_table = struct
+  type relative_entry = {
+    value : int64;
+    is_abs : bool;
+    is_dst : bool;
+    offset : int;
+  }
+
+  let lt_relative_entry (x : relative_entry) (y : relative_entry) =
+    if x.value < y.value then
+      true
+    else
+    if x.is_abs && not y.is_abs then
+      true
+    else
+    if x.is_dst && not y.is_dst then
+      true
+    else
+      x.offset < y.offset
+
+  let equal_relative_entry (x : relative_entry) (y : relative_entry) =
+    x.value = y.value
+    && x.is_abs = y.is_abs
+    && x.is_dst = y.is_dst
+    && x.offset = y.offset
+
+  module Relative_entry_set = CCSet.Make (struct
+      type t = relative_entry
+
+      let compare x y =
+        if lt_relative_entry x y then -1
+        else if equal_relative_entry x y then 0
+        else 1
+    end)
+
+  let to_relative_entries ((starts, entries) : table)
+    : relative_entry array * int array =
+    let count = Array.length entries in
+    let relative_entries =
+      Array.init count (fun i ->
+          if i = 0 then
+            { value = starts.{i};
+              is_abs = true;
+              is_dst = entries.(i).is_dst;
+              offset = entries.(i).offset;
+            }
+          else
+            let a = starts.{i} in
+            let b = starts.{i - 1} in
+            let would_overflow =
+              b < 0L && a > Int64.(add max_int b)
+            in
+            let would_underflow =
+              b > 0L && a < Int64.(add min_int b)
+            in
+            if would_overflow || would_underflow then
+              { value = a;
+                is_abs = true;
+                is_dst = entries.(i).is_dst;
+                offset = entries.(i).offset;
+              }
+            else
+              { value = Int64.sub a b;
+                is_abs = false;
+                is_dst = entries.(i).is_dst;
+                offset = entries.(i).offset;
+              }
+        )
+    in
+    let uniq_relative_entries =
+      Array.fold_left (fun acc x ->
+          Relative_entry_set.add x acc
+        ) Relative_entry_set.empty relative_entries
+      |> Relative_entry_set.to_seq
+      |> Array.of_seq
+    in
+    let indices =
+      Array.init count (fun i ->
+          let (index_to_relative_entry, _) =
+            CCOption.get_exn_or "Unexpected failure in relative entry lookup" @@
+            CCArray.find_idx
+              (fun x -> equal_relative_entry relative_entries.(i) x)
+              uniq_relative_entries
+          in
+          index_to_relative_entry
+        )
+    in
+    (uniq_relative_entries, indices)
+
+  let add_to_buffer (buffer : Buffer.t) (t : table) : unit =
+    let (uniq_relative_entries, indices) =
+      to_relative_entries t
+    in
+    let uniq_relative_entry_count =
+      Array.length uniq_relative_entries
+    in
+    assert (uniq_relative_entry_count <= 0xFF);
+    Buffer.add_uint8 buffer uniq_relative_entry_count;
+    Array.iter (fun (entry : relative_entry) ->
+        let offset = Span.make_small ~s:entry.offset () in
+        let view = Span.For_human'.view offset in
+        let value_is_64bit = Int64.logand entry.value 0xFFFF_FFFF_0000_0000L <> 0L in
+        let flags = 0b0000_0000
+                    lor (if entry.is_abs      then 0b0100_0000 else 0x00)
+                    lor (if value_is_64bit    then 0b0010_0000 else 0x00)
+                    lor (if entry.is_dst      then 0b0001_0000 else 0x00)
+                    lor (if view.sign = `Pos  then 0b0000_1000 else 0x00)
+                    lor (if view.hours > 0    then 0b0000_0100 else 0x00)
+                    lor (if view.minutes > 0  then 0b0000_0010 else 0x00)
+                    lor (if view.seconds > 0  then 0b0000_0001 else 0x00)
+        in
+        Buffer.add_uint8 buffer flags;
+        if value_is_64bit then
+          Buffer.add_int64_be buffer entry.value
+        else (
+          Buffer.add_int32_be buffer (Int64.to_int32 entry.value)
+        );
+        if view.hours > 0 then (
+          Buffer.add_int8 buffer view.hours
+        );
+        if view.minutes > 0 then (
+          Buffer.add_int8 buffer view.minutes
+        );
+        if view.seconds > 0 then (
+          Buffer.add_int8 buffer view.seconds
+        );
+      ) uniq_relative_entries;
+    let index_count = Array.length indices in
+    assert (index_count <= 0xFFFF);
+    Buffer.add_uint16_be buffer index_count;
+    Array.iter (fun i ->
+        Buffer.add_int8 buffer i
+      ) indices
+
+  let to_string (t : table) : string =
+    let buffer = Buffer.create 512 in
+    add_to_buffer buffer t;
+    Buffer.contents buffer
+
+  module Parsers = struct
+    open Angstrom
+
+    let offset_p ~is_pos ~hour_nz ~minute_nz ~second_nz =
+      let sign = if is_pos then `Pos else `Neg in
+      (if hour_nz then any_int8 else return 0)
+      >>= (fun hours ->
+          (if minute_nz then any_int8 else return 0)
+          >>= (fun minutes ->
+              (if second_nz then any_int8 else return 0)
+              >>| (fun seconds ->
+                  Span.For_human'.make_exn ~sign ~hours ~minutes ~seconds ()
+                  |> Span.get_s
+                  |> Int64.to_int
+                )
+            )
+        )
+
+    let relative_entry_p =
+      any_uint8 >>= (fun flags ->
+          let is_abs         = flags land 0b0100_0000 <> 0 in
+          let value_is_64bit = flags land 0b0010_0000 <> 0 in
+          let is_dst         = flags land 0b0001_0000 <> 0 in
+          let is_pos         = flags land 0b0000_1000 <> 0 in
+          let hour_nz        = flags land 0b0000_0100 <> 0 in
+          let minute_nz      = flags land 0b0000_0010 <> 0 in
+          let second_nz      = flags land 0b0000_0001 <> 0 in
+          (if value_is_64bit then
+             BE.any_int64
+           else
+             lift (fun x ->
+                 Int64.(logand (of_int32 x) 0xFFFF_FFFFL)
+               )
+               BE.any_int32)
+          >>= (fun value ->
+              offset_p ~is_pos ~hour_nz ~minute_nz ~second_nz
+              >>| (fun offset -> { value; is_abs; is_dst; offset })
+            )
+        )
+
+    let relative_table : (relative_entry array * int array) Angstrom.t =
+      any_uint8 >>=
+      (fun uniq_relative_entry_count ->
+         count uniq_relative_entry_count relative_entry_p
+         >>= (fun uniq_relative_entries ->
+             BE.any_uint16 >>=
+             (fun index_count ->
+                count index_count any_int8 >>| (fun indices ->
+                    (Array.of_list uniq_relative_entries, Array.of_list indices)
+                  )
+             )
+           )
+      )
+
+    let table : table option Angstrom.t =
+      relative_table >>=
+      (fun (uniq_relative_entries, indices) ->
+         let size = Array.length indices in
+         let starts =
+           Bigarray.Array1.create Bigarray.Int64 Bigarray.c_layout size
+         in
+         let entries =
+           Array.make size { is_dst = false; offset = 0 }
+         in
+         Array.iteri (fun i index ->
+             let entry =
+               uniq_relative_entries.(index)
+             in
+             (if entry.is_abs then
+                starts.{i} <- entry.value
+              else
+                starts.{i} <- Int64.add starts.{i - 1} entry.value);
+             entries.(i) <- { is_dst = entry.is_dst; offset = entry.offset };
+           ) indices;
+         let table = (starts, entries) in
+         if check_table table then
+           return (Some table)
+         else
+           return None
+      )
+  end
+
+  let of_string (s : string) : table option =
+    let open Angstrom in
+    match
+      parse_string ~consume:Consume.All Parsers.table s
+    with
+    | Ok x -> x
+    | Error _ -> None
+
+  let of_string_exn s =
+    match of_string s with
+    | Some x -> x
+    | None -> failwith "Failed to deserialize compressed table"
+end
+
+module Compressed = struct
+  let add_to_buffer
+      (buffer : Buffer.t)
+      (t : t)
+    : unit =
+    let name = name t in
+    let name_len = String.length name in
+    assert (name_len <= 0xFF);
+    Buffer.add_uint8 buffer name_len;
+    Buffer.add_string buffer name;
+    Compressed_table.add_to_buffer buffer t.record.table
+
+  let to_string (t : t) : string =
+    let buffer = Buffer.create 512 in
+    add_to_buffer buffer t;
+    Buffer.contents buffer
+
+  module Parsers = struct
+    let p : t option Angstrom.t =
+      let open Angstrom in
+      any_uint8 >>=
+      (fun name_len ->
+         take name_len >>=
+         (fun name ->
+            Compressed_table.Parsers.table >>|
+            (fun table ->
+               match table with
+               | None -> None
+               | Some table ->
+                 Raw.of_table ~name table
+            )
+         )
+      )
+  end
+
+  let of_string (s : string) : t option =
+    let open Angstrom in
+    match
+      parse_string ~consume:Consume.All Parsers.p s
+    with
+    | Ok x -> x
+    | Error _ -> None
+
+  let of_string_exn s =
+    match of_string s with
+    | Some x -> x
+    | None -> failwith "Failed to deserialize compressed time zone"
+end
 
 module Sexp = struct
   let of_sexp (x : CCSexp.t) : t option =
@@ -432,7 +707,7 @@ module Db = struct
   let add tz db = M.add (name tz) tz.record.table db
 
   let find_opt name db =
-    M.find_opt name db |> CCOption.map (fun table -> Raw.of_table ~name table)
+    M.find_opt name db |> CCOption.map (fun table -> Raw.of_table_exn ~name table)
 
   let remove name db = M.remove name db
 
@@ -442,12 +717,15 @@ module Db = struct
 
   let names db = List.map fst (M.bindings db)
 
-  module Raw' = Raw
+  module Compressed = struct
+    let dump (db : db) =
+      Marshal.to_string
+        (M.map Compressed_table.to_string db)
+        []
 
-  module Raw = struct
-    let dump (db : db) : string = Marshal.to_string db []
-
-    let load s : db = Marshal.from_string s 0
+    let load (s : string) : db =
+      M.map Compressed_table.of_string_exn
+        (Marshal.from_string s 0)
   end
 
   module Sexp = struct
@@ -469,7 +747,7 @@ module Db = struct
 
     let to_sexp db =
       M.bindings db
-      |> List.map (fun (name, table) -> Raw'.of_table ~name table)
+      |> List.map (fun (name, table) -> Raw.of_table_exn ~name table)
       |> List.map Sexp.to_sexp
       |> CCSexp.list
 
@@ -481,6 +759,32 @@ module Db = struct
       match res with Error _ -> None | Ok x -> of_sexp x
   end
 end
+
+let db =
+  match db with
+  | Some db -> db
+  | None ->
+    match compressed with
+    | Some compressed ->
+      Db.Compressed.load compressed
+    | None -> M.empty
+
+let lookup_record name : record option =
+  M.find_opt name db
+  |> CCOption.map (fun table ->
+      assert (check_table table);
+      process_table table)
+
+let make name : t option =
+  match fixed_offset_of_name name with
+  | Some fixed -> make_offset_only fixed
+  | None -> (
+      match lookup_record name with
+      | Some record -> Some { typ = Backed name; record }
+      | None -> None)
+
+let make_exn name : t =
+  match make name with Some x -> x | None -> invalid_arg "make_exn"
 
 let available_time_zones = Db.names db
 
