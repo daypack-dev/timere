@@ -479,22 +479,18 @@ module Compressed_table = struct
          let starts =
            Bigarray.Array1.create Bigarray.Int64 Bigarray.c_layout size
          in
+         let entries =
+           Array.make size { is_dst = false; offset = 0 }
+         in
          starts.{0} <- base_start;
          Array.iteri (fun i index ->
-             if i > 0 then
-               let entry =
-                 uniq_relative_entries.(index)
-               in
-               starts.{i} <- Int64.add starts.{i - 1} entry.delta
+             let entry =
+               uniq_relative_entries.(index)
+             in
+             (if i > 0 then
+                starts.{i} <- Int64.add starts.{i - 1} entry.delta);
+             entries.(i) <- { is_dst = entry.is_dst; offset = entry.offset };
            ) indices;
-         let entries : entry array =
-           Array.init size (fun index ->
-               let entry =
-                 uniq_relative_entries.(index)
-               in
-               { is_dst = entry.is_dst; offset = entry.offset }
-             )
-         in
          let table = (starts, entries) in
          if check_table table then
            return (Some table)
@@ -708,12 +704,13 @@ module Db = struct
   module Raw = struct
     let dump (db : db) : string =
       Marshal.to_string
-        (M.map Compressed_table.to_string db)
+        db
+        (* (M.map Compressed_table.to_string db) *)
         []
 
     let load s : db =
-      M.map Compressed_table.of_string_exn
-        (Marshal.from_string s 0)
+      (* M.map Compressed_table.of_string_exn *)
+      (Marshal.from_string s 0)
   end
 
   module Sexp = struct

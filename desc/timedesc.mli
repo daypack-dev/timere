@@ -1124,6 +1124,14 @@ module Time_zone : sig
     val to_transition_seq : t -> ((int64 * int64) * entry) Seq.t
   end
 
+  module Compressed : sig
+    val to_string : t -> string
+
+    val of_string : string -> t option
+
+    val of_string_exn : string -> t
+  end
+
   module Sexp : sig
     val to_sexp : t -> CCSexp.t
 
