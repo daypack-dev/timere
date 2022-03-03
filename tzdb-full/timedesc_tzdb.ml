@@ -8,4 +8,6 @@ type entry = {
 type table =
   (int64, Bigarray.int64_elt, Bigarray.c_layout) Bigarray.Array1.t * entry array
 
-let db : table M.t = Marshal.from_string Tzdb_marshalled.s 0
+let db = None
+
+let compressed = Some Tzdb_compressed.s
