@@ -389,7 +389,6 @@ module Compressed_table = struct
     Array.iter (fun (entry : relative_entry) ->
         let offset = Span.make_small ~s:entry.offset () in
         let view = Span.For_human'.view offset in
-        let offset = Span.abs offset in
         let delta_is_64bit = entry.delta > 0xFFFF_FFFFL in
         let flags = 0b0000_0000
                     lor (if delta_is_64bit    then 0b0010_0000 else 0x00)
@@ -466,12 +465,47 @@ module Compressed_table = struct
          (fun uniq_relative_entry_count ->
             count uniq_relative_entry_count relative_entry_p
             >>= (fun uniq_relative_entries ->
-                return uniq_relative_entries
+                many any_int8 >>| (fun indices ->
+                    (base_start, Array.of_list uniq_relative_entries, Array.of_list indices)
+                  )
               )
          )
       )
   end
 
+  let of_string (s : string) : table option =
+    let open Angstrom in
+    match
+      parse_string ~consume:Consume.All Parsers.p s
+    with
+    | Ok (base_start, uniq_relative_entries, indices) ->
+      let size = Array.length indices in
+      let starts =
+        Bigarray.Array1.create Bigarray.Int64 Bigarray.c_layout size
+      in
+      starts.{0} <- base_start;
+      Array.iteri (fun i index ->
+          if i > 0 then
+            let entry =
+              uniq_relative_entries.(index)
+            in
+            starts.{i} <- Int64.add starts.{i - 1} entry.delta
+        ) indices;
+      let entries : entry array =
+        Array.init size (fun index ->
+            let entry =
+              uniq_relative_entries.(index)
+            in
+            { is_dst = entry.is_dst; offset = entry.offset }
+          )
+      in
+      Some (starts, entries)
+    | Error _ -> None
+
+  let of_string_exn s =
+    match of_string s with
+    | Some x -> x
+    | None -> failwith "Failed to deserialize compressed table"
 end
 
 module Sexp = struct
@@ -616,7 +650,9 @@ module Db = struct
         (M.map Compressed_table.to_string db)
         []
 
-    let load s : db = Marshal.from_string s 0
+    let load s : db =
+      M.map Compressed_table.of_string_exn
+        (Marshal.from_string s 0)
   end
 
   module Sexp = struct
