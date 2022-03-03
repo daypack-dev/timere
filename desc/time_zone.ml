@@ -310,13 +310,17 @@ let offset_is_recorded offset (t : t) =
 
 module Compressed_table = struct
   type relative_entry = {
-    delta : int64;
+    value : int64;
+    is_abs : bool;
     is_dst : bool;
     offset : int;
   }
 
   let lt_relative_entry (x : relative_entry) (y : relative_entry) =
-    if x.delta < y.delta then
+    if x.value < y.value then
+      true
+    else
+    if x.is_abs && not y.is_abs then
       true
     else
     if x.is_dst && not y.is_dst then
@@ -325,7 +329,8 @@ module Compressed_table = struct
       x.offset < y.offset
 
   let equal_relative_entry (x : relative_entry) (y : relative_entry) =
-    x.delta = y.delta
+    x.value = y.value
+    && x.is_abs = y.is_abs
     && x.is_dst = y.is_dst
     && x.offset = y.offset
 
@@ -339,21 +344,37 @@ module Compressed_table = struct
     end)
 
   let to_relative_entries ((starts, entries) : table)
-    : int64 * relative_entry array * int array =
-    let base_start = starts.{0} in
+    : relative_entry array * int array =
     let count = Array.length entries in
     let relative_entries =
       Array.init count (fun i ->
           if i = 0 then
-            { delta = 0L;
+            { value = starts.{i};
+              is_abs = true;
               is_dst = entries.(i).is_dst;
               offset = entries.(i).offset;
             }
           else
-            { delta = Int64.sub starts.{i} starts.{i - 1};
-              is_dst = entries.(i).is_dst;
-              offset = entries.(i).offset;
-            }
+            let a = starts.{i} in
+            let b = starts.{i - 1} in
+            let would_overflow =
+              b < 0L && a > Int64.(add max_int b)
+            in
+            let would_underflow =
+              b > 0L && a < Int64.(add min_int b)
+            in
+            if would_overflow || would_underflow then
+              { value = a;
+                is_abs = true;
+                is_dst = entries.(i).is_dst;
+                offset = entries.(i).offset;
+              }
+            else
+              { value = Int64.sub a b;
+                is_abs = false;
+                is_dst = entries.(i).is_dst;
+                offset = entries.(i).offset;
+              }
         )
     in
     let uniq_relative_entries =
@@ -374,24 +395,24 @@ module Compressed_table = struct
           index_to_relative_entry
         )
     in
-    (base_start, uniq_relative_entries, indices)
+    (uniq_relative_entries, indices)
 
   let add_to_buffer (buffer : Buffer.t) (t : table) : unit =
-    let (base_start, uniq_relative_entries, indices) =
+    let (uniq_relative_entries, indices) =
       to_relative_entries t
     in
     let uniq_relative_entry_count =
       Array.length uniq_relative_entries
     in
     assert (uniq_relative_entry_count <= 0xFF);
-    Buffer.add_int64_be buffer base_start;
     Buffer.add_uint8 buffer uniq_relative_entry_count;
     Array.iter (fun (entry : relative_entry) ->
         let offset = Span.make_small ~s:entry.offset () in
         let view = Span.For_human'.view offset in
-        let delta_is_64bit = entry.delta > 0xFFFF_FFFFL in
+        let value_is_64bit = Int64.logand entry.value 0xFFFF_FFFF_0000_0000L <> 0L in
         let flags = 0b0000_0000
-                    lor (if delta_is_64bit    then 0b0010_0000 else 0x00)
+                    lor (if entry.is_abs      then 0b0100_0000 else 0x00)
+                    lor (if value_is_64bit    then 0b0010_0000 else 0x00)
                     lor (if entry.is_dst      then 0b0001_0000 else 0x00)
                     lor (if view.sign = `Pos  then 0b0000_1000 else 0x00)
                     lor (if view.hours > 0    then 0b0000_0100 else 0x00)
@@ -399,10 +420,10 @@ module Compressed_table = struct
                     lor (if view.seconds > 0  then 0b0000_0001 else 0x00)
         in
         Buffer.add_uint8 buffer flags;
-        if delta_is_64bit then
-          Buffer.add_int64_be buffer entry.delta
+        if value_is_64bit then
+          Buffer.add_int64_be buffer entry.value
         else (
-          Buffer.add_int32_be buffer (Int64.to_int32 entry.delta)
+          Buffer.add_int32_be buffer (Int64.to_int32 entry.value)
         );
         if view.hours > 0 then (
           Buffer.add_int8 buffer view.hours
@@ -442,39 +463,40 @@ module Compressed_table = struct
 
     let relative_entry_p =
       any_uint8 >>= (fun flags ->
-          let delta_is_64bit = flags land 0b0010_0000 > 0 in
-          let is_dst         = flags land 0b0001_0000 > 0 in
-          let is_pos         = flags land 0b0000_1000 > 0 in
-          let hour_nz        = flags land 0b0000_0100 > 0 in
-          let minute_nz      = flags land 0b0000_0010 > 0 in
-          let second_nz      = flags land 0b0000_0001 > 0 in
-          (if delta_is_64bit then
+          let is_abs         = flags land 0b0100_0000 <> 0 in
+          let value_is_64bit = flags land 0b0010_0000 <> 0 in
+          let is_dst         = flags land 0b0001_0000 <> 0 in
+          let is_pos         = flags land 0b0000_1000 <> 0 in
+          let hour_nz        = flags land 0b0000_0100 <> 0 in
+          let minute_nz      = flags land 0b0000_0010 <> 0 in
+          let second_nz      = flags land 0b0000_0001 <> 0 in
+          (if value_is_64bit then
              BE.any_int64
            else
-             lift Int64.of_int32 BE.any_int32)
-          >>= (fun delta ->
+             lift (fun x ->
+                 Int64.(logand (of_int32 x) 0xFFFF_FFFFL)
+               )
+               BE.any_int32)
+          >>= (fun value ->
               offset_p ~is_pos ~hour_nz ~minute_nz ~second_nz
-              >>| (fun offset -> { delta; is_dst; offset })
+              >>| (fun offset -> { value; is_abs; is_dst; offset })
             )
         )
 
-    let relative_table : (int64 * relative_entry array * int array) Angstrom.t =
-      BE.any_int64 >>=
-      (fun base_start ->
-         any_uint8 >>=
-         (fun uniq_relative_entry_count ->
-            count uniq_relative_entry_count relative_entry_p
-            >>= (fun uniq_relative_entries ->
-                many any_int8 >>| (fun indices ->
-                    (base_start, Array.of_list uniq_relative_entries, Array.of_list indices)
-                  )
-              )
-         )
+    let relative_table : (relative_entry array * int array) Angstrom.t =
+      any_uint8 >>=
+      (fun uniq_relative_entry_count ->
+         count uniq_relative_entry_count relative_entry_p
+         >>= (fun uniq_relative_entries ->
+             many any_int8 >>| (fun indices ->
+                 (Array.of_list uniq_relative_entries, Array.of_list indices)
+               )
+           )
       )
 
     let table : table option Angstrom.t =
       relative_table >>=
-      (fun (base_start, uniq_relative_entries, indices) ->
+      (fun (uniq_relative_entries, indices) ->
          let size = Array.length indices in
          let starts =
            Bigarray.Array1.create Bigarray.Int64 Bigarray.c_layout size
@@ -482,13 +504,14 @@ module Compressed_table = struct
          let entries =
            Array.make size { is_dst = false; offset = 0 }
          in
-         starts.{0} <- base_start;
          Array.iteri (fun i index ->
              let entry =
                uniq_relative_entries.(index)
              in
-             (if i > 0 then
-                starts.{i} <- Int64.add starts.{i - 1} entry.delta);
+             (if entry.is_abs then
+                starts.{i} <- entry.value
+              else
+                starts.{i} <- Int64.add starts.{i - 1} entry.value);
              entries.(i) <- { is_dst = entry.is_dst; offset = entry.offset };
            ) indices;
          let table = (starts, entries) in
