@@ -499,7 +499,11 @@ module Compressed_table = struct
             { is_dst = entry.is_dst; offset = entry.offset }
           )
       in
-      Some (starts, entries)
+      let table = (starts, entries) in
+      if check_table table then
+        Some table
+      else
+        None
     | Error _ -> None
 
   let of_string_exn s =
