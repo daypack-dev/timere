@@ -82,12 +82,6 @@ let process_table ((starts, entries) : table) : record =
     in
     { recorded_offsets; table = (starts, entries) }
 
-let lookup_record name : record option =
-  M.find_opt name db
-  |> CCOption.map (fun table ->
-      assert (check_table table);
-      process_table table)
-
 let name t =
   match t.typ with
   | Backed name -> name
@@ -174,17 +168,6 @@ let make_offset_only_exn offset =
 let utc : t =
   CCOption.get_exn_or "Expected successful construction of UTC"
     (make_offset_only Span.zero)
-
-let make name : t option =
-  match fixed_offset_of_name name with
-  | Some fixed -> make_offset_only fixed
-  | None -> (
-      match lookup_record name with
-      | Some record -> Some { typ = Backed name; record }
-      | None -> None)
-
-let make_exn name : t =
-  match make name with Some x -> x | None -> invalid_arg "make_exn"
 
 let bsearch_table timestamp ((starts, _) : table) =
   Bigarray_utils.bsearch ~cmp:Int64.compare timestamp starts
@@ -774,6 +757,32 @@ module Db = struct
       match res with Error _ -> None | Ok x -> of_sexp x
   end
 end
+
+let db =
+  match db with
+  | Some db -> db
+  | None ->
+    match compressed with
+    | Some compressed ->
+      Db.Compressed.load compressed
+    | None -> M.empty
+
+let lookup_record name : record option =
+  M.find_opt name db
+  |> CCOption.map (fun table ->
+      assert (check_table table);
+      process_table table)
+
+let make name : t option =
+  match fixed_offset_of_name name with
+  | Some fixed -> make_offset_only fixed
+  | None -> (
+      match lookup_record name with
+      | Some record -> Some { typ = Backed name; record }
+      | None -> None)
+
+let make_exn name : t =
+  match make name with Some x -> x | None -> invalid_arg "make_exn"
 
 let available_time_zones = Db.names db
 
