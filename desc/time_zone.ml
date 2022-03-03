@@ -80,7 +80,9 @@ let process_table ((starts, entries) : table) : record =
       |> Int_set.to_list
       |> CCArray.of_list
     in
-    { recorded_offsets; table = (starts, entries) }
+    let table = (starts, entries) in
+    assert (check_table table);
+    { recorded_offsets; table }
 
 let name t =
   match t.typ with
