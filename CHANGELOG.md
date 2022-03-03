@@ -18,7 +18,7 @@
 
   - Replaced `Time_zone.Db.Raw` with `Time_zone.Db.Compressed`
 
-  - Overall reduces tzdb space usage significantly
+  - Overall reduces tzdb storage usage by roughly 82%
 
 ## Timere-parse 0.0.6
 
