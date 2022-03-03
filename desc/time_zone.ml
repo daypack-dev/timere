@@ -734,41 +734,13 @@ module Db = struct
 
   module Compressed = struct
     let dump (db : db) =
-      let buffer = Buffer.create 4096 in
-      Buffer.add_uint16_be buffer (M.cardinal db);
-      M.iter (fun name table ->
-          Compressed.add_to_buffer buffer
-            (Raw.of_table_exn ~name table)
-        ) db;
-      Buffer.contents buffer
-
-    module Parsers = struct
-      open Angstrom
-
-      let p : db Angstrom.t =
-        BE.any_uint16
-        >>= (fun tz_count ->
-            count tz_count Compressed.Parsers.p
-            >>| (fun time_zones ->
-                time_zones
-                |> CCList.to_seq
-                |> Seq.map
-                  (CCOption.get_exn_or "Expected successful deserialization of table")
-                |> Seq.map  (fun tz ->
-                    (name tz, tz.record.table)
-                  )
-                |> M.of_seq
-              )
-          )
-    end
+      Marshal.to_string
+        (M.map Compressed_table.to_string db)
+        []
 
     let load (s : string) : db =
-      let open Angstrom in
-      match
-        parse_string ~consume:Consume.All Parsers.p s
-      with
-      | Ok x -> x
-      | Error _ -> failwith "Failed to load db"
+      M.map Compressed_table.of_string_exn
+        (Marshal.from_string s 0)
   end
 
   module Sexp = struct
