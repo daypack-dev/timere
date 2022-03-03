@@ -458,7 +458,7 @@ module Compressed_table = struct
             )
         )
 
-    let p : (int64 * relative_entry array * int array) Angstrom.t =
+    let relative_table : (int64 * relative_entry array * int array) Angstrom.t =
       BE.any_int64 >>=
       (fun base_start ->
          any_uint8 >>=
@@ -471,45 +471,102 @@ module Compressed_table = struct
               )
          )
       )
+
+    let table : table option Angstrom.t =
+      relative_table >>=
+      (fun (base_start, uniq_relative_entries, indices) ->
+         let size = Array.length indices in
+         let starts =
+           Bigarray.Array1.create Bigarray.Int64 Bigarray.c_layout size
+         in
+         starts.{0} <- base_start;
+         Array.iteri (fun i index ->
+             if i > 0 then
+               let entry =
+                 uniq_relative_entries.(index)
+               in
+               starts.{i} <- Int64.add starts.{i - 1} entry.delta
+           ) indices;
+         let entries : entry array =
+           Array.init size (fun index ->
+               let entry =
+                 uniq_relative_entries.(index)
+               in
+               { is_dst = entry.is_dst; offset = entry.offset }
+             )
+         in
+         let table = (starts, entries) in
+         if check_table table then
+           return (Some table)
+         else
+           return None
+      )
   end
 
   let of_string (s : string) : table option =
     let open Angstrom in
     match
-      parse_string ~consume:Consume.All Parsers.p s
+      parse_string ~consume:Consume.All Parsers.table s
     with
-    | Ok (base_start, uniq_relative_entries, indices) ->
-      let size = Array.length indices in
-      let starts =
-        Bigarray.Array1.create Bigarray.Int64 Bigarray.c_layout size
-      in
-      starts.{0} <- base_start;
-      Array.iteri (fun i index ->
-          if i > 0 then
-            let entry =
-              uniq_relative_entries.(index)
-            in
-            starts.{i} <- Int64.add starts.{i - 1} entry.delta
-        ) indices;
-      let entries : entry array =
-        Array.init size (fun index ->
-            let entry =
-              uniq_relative_entries.(index)
-            in
-            { is_dst = entry.is_dst; offset = entry.offset }
-          )
-      in
-      let table = (starts, entries) in
-      if check_table table then
-        Some table
-      else
-        None
+    | Ok x -> x
     | Error _ -> None
 
   let of_string_exn s =
     match of_string s with
     | Some x -> x
     | None -> failwith "Failed to deserialize compressed table"
+end
+
+module Compressed = struct
+  let add_to_buffer
+      (buffer : Buffer.t)
+      (t : t)
+    : unit =
+    let name = name t in
+    let name_len = String.length name in
+    assert (name_len <= 0xFF);
+    Buffer.add_uint8 buffer name_len;
+    Buffer.add_string buffer name;
+    Compressed_table.add_to_buffer buffer t.record.table
+
+  let to_string (t : t) : string =
+    let buffer = Buffer.create 512 in
+    add_to_buffer buffer t;
+    Buffer.contents buffer
+
+  module Parsers = struct
+    let p : t option Angstrom.t =
+      let open Angstrom in
+      any_uint8 >>=
+      (fun name_len ->
+         take name_len >>=
+         (fun name ->
+            Compressed_table.Parsers.table >>|
+            (fun table ->
+               match table with
+               | None -> None
+               | Some table ->
+                 match fixed_offset_of_name name with
+                 | Some offset -> make_offset_only offset
+                 | None ->
+                   Some { typ = Backed name; record = process_table table }
+            )
+         )
+      )
+  end
+
+  let of_string (s : string) : t option =
+    let open Angstrom in
+    match
+      parse_string ~consume:Consume.All Parsers.p s
+    with
+    | Ok x -> x
+    | Error _ -> None
+
+  let of_string_exn s =
+    match of_string s with
+    | Some x -> x
+    | None -> failwith "Failed to deserialize compressed time zone"
 end
 
 module Sexp = struct
