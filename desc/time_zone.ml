@@ -390,26 +390,30 @@ module Compressed_table = struct
         let offset = Span.make_small ~s:entry.offset () in
         let view = Span.For_human'.view offset in
         let offset = Span.abs offset in
+        let delta_is_64bit = entry.delta > 0xFFFF_FFFFL in
         let flags = 0b0000_0000
-                    lor (if entry.delta <= 0xFFFF_FFFFL then 0b0010_0000 else 0x00)
-                    lor (if entry.is_dst                then 0b0001_0000 else 0x00)
-                    lor (if view.sign = `Pos            then 0b0000_1000 else 0x00)
-                    lor (if view.hours > 0              then 0b0000_0100 else 0x00)
-                    lor (if view.minutes > 0            then 0b0000_0010 else 0x00)
-                    lor (if view.seconds > 0            then 0b0000_0001 else 0x00)
+                    lor (if delta_is_64bit    then 0b0010_0000 else 0x00)
+                    lor (if entry.is_dst      then 0b0001_0000 else 0x00)
+                    lor (if view.sign = `Pos  then 0b0000_1000 else 0x00)
+                    lor (if view.hours > 0    then 0b0000_0100 else 0x00)
+                    lor (if view.minutes > 0  then 0b0000_0010 else 0x00)
+                    lor (if view.seconds > 0  then 0b0000_0001 else 0x00)
         in
         Buffer.add_uint8 buffer flags;
-        if entry.delta <= 0xFFFF_FFFFL then
-          Buffer.add_int32_be buffer (Int64.to_int32 entry.delta)
-        else (
+        if delta_is_64bit then
           Buffer.add_int64_be buffer entry.delta
+        else (
+          Buffer.add_int32_be buffer (Int64.to_int32 entry.delta)
         );
-        match (view.hours > 0, view.minutes > 0, view.seconds > 0) with
-        |  true, false, false -> Buffer.add_int8 buffer view.hours
-        | false,  true, false -> Buffer.add_int8 buffer view.minutes
-        | false, false,  true -> Buffer.add_int8 buffer view.seconds
-        |  true,  true, false -> Buffer.add_int16_be buffer (Int64.to_int @@ Span.get_s offset)
-        |     _,     _,     _ -> Buffer.add_int32_be buffer (Int64.to_int32 @@ Span.get_s offset)
+        if view.hours > 0 then (
+          Buffer.add_int8 buffer view.hours
+        );
+        if view.minutes > 0 then (
+          Buffer.add_int8 buffer view.minutes
+        );
+        if view.seconds > 0 then (
+          Buffer.add_int8 buffer view.seconds
+        );
       ) uniq_relative_entries;
     Array.iter (fun i ->
         Buffer.add_int8 buffer i
@@ -419,6 +423,55 @@ module Compressed_table = struct
     let buffer = Buffer.create 512 in
     add_to_buffer buffer t;
     Buffer.contents buffer
+
+  module Parsers = struct
+    open Angstrom
+
+    let offset_p ~is_pos ~hour_nz ~minute_nz ~second_nz =
+      let sign = if is_pos then `Pos else `Neg in
+      (if hour_nz then any_int8 else return 0)
+      >>= (fun hours ->
+          (if minute_nz then any_int8 else return 0)
+          >>= (fun minutes ->
+              (if second_nz then any_int8 else return 0) >>| (fun seconds ->
+                  Span.For_human'.make_exn ~sign ~hours ~minutes ~seconds ()
+                  |> Span.get_s
+                  |> Int64.to_int
+                )
+            )
+        )
+
+    let relative_entry_p =
+      any_uint8 >>= (fun flags ->
+          let delta_is_64bit = flags land 0b0010_0000 > 0 in
+          let is_dst         = flags land 0b0001_0000 > 0 in
+          let is_pos         = flags land 0b0000_1000 > 0 in
+          let hour_nz        = flags land 0b0000_0100 > 0 in
+          let minute_nz      = flags land 0b0000_0010 > 0 in
+          let second_nz      = flags land 0b0000_0001 > 0 in
+          (if delta_is_64bit then
+             BE.any_int64
+           else
+             lift Int64.of_int32 BE.any_int32)
+          >>= (fun delta ->
+              offset_p ~is_pos ~hour_nz ~minute_nz ~second_nz
+              >>| (fun offset -> { delta; is_dst; offset })
+            )
+        )
+
+    let p : (int64 * relative_entry array * int array) Angstrom.t =
+      BE.any_int64 >>=
+      (fun base_start ->
+         any_uint8 >>=
+         (fun uniq_relative_entry_count ->
+            count uniq_relative_entry_count relative_entry_p
+            >>= (fun uniq_relative_entries ->
+                return uniq_relative_entries
+              )
+         )
+      )
+  end
+
 end
 
 module Sexp = struct
