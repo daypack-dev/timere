@@ -37,7 +37,7 @@ module Qc = struct
   let suite =
     [
       to_of_compressed;
-      (* to_of_sexp;
-         to_of_json;  *)
+      to_of_sexp;
+      to_of_json;
     ]
 end
