@@ -294,15 +294,21 @@ module Raw = struct
     in
     if check_table table then Some table else None
 
-  let of_table ~name table = { typ = Backed name; record = process_table table }
-
-  let of_transitions ~name (l : (int64 * entry) list) : t option =
+  let of_table ~name table =
     match fixed_offset_of_name name with
     | Some offset -> make_offset_only offset
     | None ->
-      table_of_transitions l
-      |> CCOption.map (fun table ->
-          { typ = Backed name; record = process_table table })
+      Some { typ = Backed name; record = process_table table }
+
+  let of_table_exn ~name table =
+    CCOption.get_exn_or "Failed to construct time zone from table"
+      (of_table ~name table)
+
+  let of_transitions ~name (l : (int64 * entry) list) : t option =
+    match table_of_transitions l with
+    | None -> None
+    | Some table ->
+      of_table ~name table
 end
 
 let offset_is_recorded offset (t : t) =
@@ -435,6 +441,9 @@ module Compressed_table = struct
           Buffer.add_int8 buffer view.seconds
         );
       ) uniq_relative_entries;
+    let index_count = Array.length indices in
+    assert (index_count <= 0xFFFF);
+    Buffer.add_uint16_be buffer index_count;
     Array.iter (fun i ->
         Buffer.add_int8 buffer i
       ) indices
@@ -453,7 +462,8 @@ module Compressed_table = struct
       >>= (fun hours ->
           (if minute_nz then any_int8 else return 0)
           >>= (fun minutes ->
-              (if second_nz then any_int8 else return 0) >>| (fun seconds ->
+              (if second_nz then any_int8 else return 0)
+              >>| (fun seconds ->
                   Span.For_human'.make_exn ~sign ~hours ~minutes ~seconds ()
                   |> Span.get_s
                   |> Int64.to_int
@@ -488,9 +498,12 @@ module Compressed_table = struct
       (fun uniq_relative_entry_count ->
          count uniq_relative_entry_count relative_entry_p
          >>= (fun uniq_relative_entries ->
-             many any_int8 >>| (fun indices ->
-                 (Array.of_list uniq_relative_entries, Array.of_list indices)
-               )
+             BE.any_uint16 >>=
+             (fun index_count ->
+                count index_count any_int8 >>| (fun indices ->
+                    (Array.of_list uniq_relative_entries, Array.of_list indices)
+                  )
+             )
            )
       )
 
@@ -565,10 +578,7 @@ module Compressed = struct
                match table with
                | None -> None
                | Some table ->
-                 match fixed_offset_of_name name with
-                 | Some offset -> make_offset_only offset
-                 | None ->
-                   Some { typ = Backed name; record = process_table table }
+                 Raw.of_table ~name table
             )
          )
       )
@@ -712,7 +722,7 @@ module Db = struct
   let add tz db = M.add (name tz) tz.record.table db
 
   let find_opt name db =
-    M.find_opt name db |> CCOption.map (fun table -> Raw.of_table ~name table)
+    M.find_opt name db |> CCOption.map (fun table -> Raw.of_table_exn ~name table)
 
   let remove name db = M.remove name db
 
@@ -722,18 +732,43 @@ module Db = struct
 
   let names db = List.map fst (M.bindings db)
 
-  module Raw' = Raw
+  module Compressed = struct
+    let dump (db : db) =
+      let buffer = Buffer.create 4096 in
+      Buffer.add_uint16_be buffer (M.cardinal db);
+      M.iter (fun name table ->
+          Compressed.add_to_buffer buffer
+            (Raw.of_table_exn ~name table)
+        ) db;
+      Buffer.contents buffer
 
-  module Raw = struct
-    let dump (db : db) : string =
-      Marshal.to_string
-        db
-        (* (M.map Compressed_table.to_string db) *)
-        []
+    module Parsers = struct
+      open Angstrom
 
-    let load s : db =
-      (* M.map Compressed_table.of_string_exn *)
-      (Marshal.from_string s 0)
+      let p : db Angstrom.t =
+        BE.any_uint16
+        >>= (fun tz_count ->
+            count tz_count Compressed.Parsers.p
+            >>| (fun time_zones ->
+                time_zones
+                |> CCList.to_seq
+                |> Seq.map
+                  (CCOption.get_exn_or "Expected successful deserialization of table")
+                |> Seq.map  (fun tz ->
+                    (name tz, tz.record.table)
+                  )
+                |> M.of_seq
+              )
+          )
+    end
+
+    let load (s : string) : db =
+      let open Angstrom in
+      match
+        parse_string ~consume:Consume.All Parsers.p s
+      with
+      | Ok x -> x
+      | Error _ -> failwith "Failed to load db"
   end
 
   module Sexp = struct
@@ -755,7 +790,7 @@ module Db = struct
 
     let to_sexp db =
       M.bindings db
-      |> List.map (fun (name, table) -> Raw'.of_table ~name table)
+      |> List.map (fun (name, table) -> Raw.of_table_exn ~name table)
       |> List.map Sexp.to_sexp
       |> CCSexp.list
 

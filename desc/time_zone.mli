@@ -90,7 +90,7 @@ module Db : sig
 
   val names : db -> string list
 
-  module Raw : sig
+  module Compressed : sig
     val dump : db -> string
 
     val load : string -> db
