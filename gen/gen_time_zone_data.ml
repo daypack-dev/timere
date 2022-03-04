@@ -43,6 +43,12 @@ type transition_record = {
 
 type transition_table = string * transition_record list
 
+let year_start = int_of_string Sys.argv.(1)
+
+let year_end_exc = int_of_string Sys.argv.(2)
+
+let output_name_suffix = Sys.argv.(3)
+
 let array_literal_max_size = 200
 
 let self_dir = "gen/"
@@ -53,17 +59,12 @@ let output_flags = [ Open_wronly; Open_creat; Open_trunc; Open_text ]
 
 let output_list_file_name = output_dir ^ "available-time-zones.txt"
 
-let data_output_file_name = output_dir ^ "time_zone_db.sexp"
-
-let output_file_name = "timere_tzdb.ml"
+let data_output_file_name =
+  Printf.sprintf "%stzdb_%s.sexp" output_dir output_name_suffix
 
 let tz_constants_file_name = output_dir ^ "time_zone_constants.ml"
 
 let tzdb_json_output_dir = "tzdb-json/"
-
-let year_start = 1850
-
-let year_end_exc = 2100
 
 let human_int_of_month s =
   match s with
@@ -304,7 +305,6 @@ let () =
         let ic =
           Unix.open_process_in
             (Printf.sprintf "zdump -V -c %d,%d %s" year_start year_end_exc s)
-            (* (Printf.sprintf "zdump -V %s" s) *)
         in
         let lines = CCIO.read_lines_l ic in
         close_in ic;

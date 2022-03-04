@@ -78,7 +78,7 @@ format :
 .PHONY: gen
 gen :
 	cd gen/ && dune build gen_time_zone_data.exe
-	dune exec gen/gen_time_zone_data.exe
+	dune exec gen/gen_time_zone_data.exe -- 1850 2030 full
 
 .PHONY: export-js-tzdb-full
 export-js-tzdb-full :
