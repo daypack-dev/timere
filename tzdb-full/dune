@@ -1,6 +1,6 @@
 (rule
  (targets tzdb_compressed.ml)
- (deps    (:gen ../gen-build/gen_tzdb.exe)
+ (deps    (:gen ../gen-build/gen_tzdb_compressed.exe)
           (:tzdb_sexp ../gen-artifacts/tzdb_full.sexp))
  (action  (run %{gen} %{tzdb_sexp} %{targets}))
 )
