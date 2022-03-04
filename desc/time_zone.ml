@@ -760,20 +760,31 @@ module Db = struct
   end
 end
 
-let db =
+let db : table M.t ref =
   match db with
-  | Some db -> db
-  | None ->
-    match compressed with
-    | Some compressed ->
-      Db.Compressed.load compressed
-    | None -> M.empty
+  | Some db -> ref db
+  | None -> ref M.empty
+
+let compressed : string M.t =
+  match compressed with
+  | Some s -> Marshal.from_string s 0
+  | None -> M.empty
 
 let lookup_record name : record option =
-  M.find_opt name db
-  |> CCOption.map (fun table ->
+  match M.find_opt name !db with
+  | Some table ->
+    assert (check_table table);
+    Some (process_table table)
+  | None ->
+    match M.find_opt name compressed with
+    | Some compressed_table ->
+      let table =
+        Compressed_table.of_string_exn compressed_table
+      in
       assert (check_table table);
-      process_table table)
+      db := M.add name table !db;
+      Some (process_table table)
+    | None -> None
 
 let make name : t option =
   match fixed_offset_of_name name with
@@ -786,7 +797,18 @@ let make name : t option =
 let make_exn name : t =
   match make name with Some x -> x | None -> invalid_arg "make_exn"
 
-let available_time_zones = Db.names db
+let available_time_zones =
+  let s0 =
+    M.to_seq !db
+    |> Seq.map fst
+    |> String_set.of_seq
+  in
+  let s1 =
+    M.to_seq compressed
+    |> Seq.map fst
+    |> String_set.of_seq
+  in
+  String_set.(union s0 s1 |> to_list)
 
 let local () : t option =
   match Timedesc_tzlocal.local () with
