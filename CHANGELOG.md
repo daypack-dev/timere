@@ -20,6 +20,8 @@
 
   - Overall reduces tzdb storage usage by roughly 82%
 
+- `tzdb-full` now only considers 1990 to 2040 to further cut down size
+
 ## Timere-parse 0.0.6
 
 - Bumped dependency of Timedesc to >= 0.6.0, Timere to >= 0.7.0

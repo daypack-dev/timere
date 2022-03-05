@@ -1,7 +1,8 @@
 (rule
  (targets tzdb_compressed.ml)
- (deps    (:gen ../gen-build/gen_tzdb_full.exe ) ../gen-artifacts/time_zone_db.sexp)
- (action  (run %{gen} ../gen-artifacts/time_zone_db.sexp %{targets}))
+ (deps    (:gen ../gen-build/gen_tzdb_compressed.exe)
+          (:tzdb_sexp ../gen-artifacts/tzdb_full.sexp))
+ (action  (run %{gen} %{tzdb_sexp} %{targets}))
 )
 
 (library

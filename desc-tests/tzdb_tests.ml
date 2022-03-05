@@ -15,7 +15,7 @@ module Alco = struct
             let json_file_path = Filename.concat "../tzdb-json" (s ^ ".json") in
             print_endline json_file_path;
             flush stdout;
-            CCIO.with_in ~flags:[ Open_rdonly; Open_binary ] json_file_path
+            CCIO.with_in ~flags:[ Open_rdonly; Open_text ] json_file_path
               (fun ic ->
                  let json_string = CCIO.read_all ic in
                  let tz_in_memory = Timedesc.Time_zone.make_exn s in

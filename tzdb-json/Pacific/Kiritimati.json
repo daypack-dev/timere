@@ -1,9 +1,7 @@
 {
   "name": "Pacific/Kiritimati",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": -38400 } ],
-    [ "-2177415040", { "is_dst": false, "offset": -38400 } ],
-    [ "307622400", { "is_dst": false, "offset": -36000 } ],
+    [ "-62167168800", { "is_dst": false, "offset": 50400 } ],
     [ "788868000", { "is_dst": false, "offset": 50400 } ]
   ]
 }
