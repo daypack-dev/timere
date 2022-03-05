@@ -43,6 +43,8 @@ type transition_record = {
 
 type transition_table = string * transition_record list
 
+let year_start_fallback = 1850
+
 let year_start = int_of_string Sys.argv.(1)
 
 let year_end_exc = int_of_string Sys.argv.(2)
@@ -306,8 +308,20 @@ let () =
           Unix.open_process_in
             (Printf.sprintf "zdump -V -c %d,%d %s" year_start year_end_exc s)
         in
-        let lines = CCIO.read_lines_l ic in
+        let lines_first_try = CCIO.read_lines_l ic in
         close_in ic;
+        let lines =
+          match lines_first_try with
+          | [] ->
+            let ic =
+              Unix.open_process_in
+                (Printf.sprintf "zdump -V -c %d,%d %s" year_start_fallback year_end_exc s)
+            in
+            let lines = CCIO.read_lines_l ic in
+            close_in ic;
+            lines
+          | l -> l
+        in
         List.map
           (fun s ->
              match parse_zdump_line s with
