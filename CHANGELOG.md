@@ -20,9 +20,7 @@
 
   - Overall reduces tzdb storage usage by roughly 82%
 
-- Moved old `tzdb-full` to `tzdb-historical`
-
-- `tzdb-full` now only considers 1990 to 2040
+- `tzdb-full` now only considers 1990 to 2040 to further cut down size
 
 ## Timere-parse 0.0.6
 
