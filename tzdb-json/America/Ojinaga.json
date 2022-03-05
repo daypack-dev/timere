@@ -1,13 +1,7 @@
 {
   "name": "America/Ojinaga",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": -25200 } ],
-    [ "-1514739600", { "is_dst": false, "offset": -25200 } ],
-    [ "-1343066400", { "is_dst": false, "offset": -21600 } ],
-    [ "-1234807200", { "is_dst": false, "offset": -25200 } ],
-    [ "-1220292000", { "is_dst": false, "offset": -21600 } ],
-    [ "-1207159200", { "is_dst": false, "offset": -25200 } ],
-    [ "-1191344400", { "is_dst": false, "offset": -21600 } ],
+    [ "-62167168800", { "is_dst": true, "offset": -18000 } ],
     [ "828864000", { "is_dst": true, "offset": -18000 } ],
     [ "846399600", { "is_dst": false, "offset": -21600 } ],
     [ "860313600", { "is_dst": true, "offset": -18000 } ],
@@ -75,6 +69,26 @@
     [ "1836464400", { "is_dst": true, "offset": -21600 } ],
     [ "1857024000", { "is_dst": false, "offset": -25200 } ],
     [ "1867914000", { "is_dst": true, "offset": -21600 } ],
-    [ "1888473600", { "is_dst": false, "offset": -25200 } ]
+    [ "1888473600", { "is_dst": false, "offset": -25200 } ],
+    [ "1899363600", { "is_dst": true, "offset": -21600 } ],
+    [ "1919923200", { "is_dst": false, "offset": -25200 } ],
+    [ "1930813200", { "is_dst": true, "offset": -21600 } ],
+    [ "1951372800", { "is_dst": false, "offset": -25200 } ],
+    [ "1962867600", { "is_dst": true, "offset": -21600 } ],
+    [ "1983427200", { "is_dst": false, "offset": -25200 } ],
+    [ "1994317200", { "is_dst": true, "offset": -21600 } ],
+    [ "2014876800", { "is_dst": false, "offset": -25200 } ],
+    [ "2025766800", { "is_dst": true, "offset": -21600 } ],
+    [ "2046326400", { "is_dst": false, "offset": -25200 } ],
+    [ "2057216400", { "is_dst": true, "offset": -21600 } ],
+    [ "2077776000", { "is_dst": false, "offset": -25200 } ],
+    [ "2088666000", { "is_dst": true, "offset": -21600 } ],
+    [ "2109225600", { "is_dst": false, "offset": -25200 } ],
+    [ "2120115600", { "is_dst": true, "offset": -21600 } ],
+    [ "2140675200", { "is_dst": false, "offset": -25200 } ],
+    [ "2152170000", { "is_dst": true, "offset": -21600 } ],
+    [ "2172729600", { "is_dst": false, "offset": -25200 } ],
+    [ "2183619600", { "is_dst": true, "offset": -21600 } ],
+    [ "2204179200", { "is_dst": false, "offset": -25200 } ]
   ]
 }

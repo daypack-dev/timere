@@ -52,6 +52,26 @@
     [ "1837645200", { "is_dst": true, "offset": 7200 } ],
     [ "1856394000", { "is_dst": false, "offset": 0 } ],
     [ "1869094800", { "is_dst": true, "offset": 7200 } ],
-    [ "1887843600", { "is_dst": false, "offset": 0 } ]
+    [ "1887843600", { "is_dst": false, "offset": 0 } ],
+    [ "1901149200", { "is_dst": true, "offset": 7200 } ],
+    [ "1919293200", { "is_dst": false, "offset": 0 } ],
+    [ "1932598800", { "is_dst": true, "offset": 7200 } ],
+    [ "1950742800", { "is_dst": false, "offset": 0 } ],
+    [ "1964048400", { "is_dst": true, "offset": 7200 } ],
+    [ "1982797200", { "is_dst": false, "offset": 0 } ],
+    [ "1995498000", { "is_dst": true, "offset": 7200 } ],
+    [ "2014246800", { "is_dst": false, "offset": 0 } ],
+    [ "2026947600", { "is_dst": true, "offset": 7200 } ],
+    [ "2045696400", { "is_dst": false, "offset": 0 } ],
+    [ "2058397200", { "is_dst": true, "offset": 7200 } ],
+    [ "2077146000", { "is_dst": false, "offset": 0 } ],
+    [ "2090451600", { "is_dst": true, "offset": 7200 } ],
+    [ "2108595600", { "is_dst": false, "offset": 0 } ],
+    [ "2121901200", { "is_dst": true, "offset": 7200 } ],
+    [ "2140045200", { "is_dst": false, "offset": 0 } ],
+    [ "2153350800", { "is_dst": true, "offset": 7200 } ],
+    [ "2172099600", { "is_dst": false, "offset": 0 } ],
+    [ "2184800400", { "is_dst": true, "offset": 7200 } ],
+    [ "2203549200", { "is_dst": false, "offset": 0 } ]
   ]
 }

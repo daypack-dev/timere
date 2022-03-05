@@ -1,8 +1,7 @@
 {
   "name": "Africa/Sao_Tome",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": 0 } ],
-    [ "-1830384000", { "is_dst": false, "offset": 0 } ],
+    [ "-62167168800", { "is_dst": false, "offset": 3600 } ],
     [ "1514768400", { "is_dst": false, "offset": 3600 } ],
     [ "1546304400", { "is_dst": false, "offset": 0 } ]
   ]

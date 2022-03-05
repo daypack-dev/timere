@@ -1,8 +1,7 @@
 {
   "name": "Indian/Chagos",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": 18000 } ],
-    [ "-1988167780", { "is_dst": false, "offset": 18000 } ],
+    [ "-62167168800", { "is_dst": false, "offset": 21600 } ],
     [ "820436400", { "is_dst": false, "offset": 21600 } ]
   ]
 }
