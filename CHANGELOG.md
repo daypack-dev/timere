@@ -22,6 +22,14 @@
 
 - `tzdb-full` now only considers 1990 to 2040 to further cut down size
 
+- Updated string conversion functions based on pretty printers which raise `Date_time_cannot_deduce_offset_from_utc`
+  to raise the exception instead of returning `None`
+
+  - This simplifies the handling as return type is now simply just `string`.
+
+  - And for serious stuff users are expected to use only unambiguous date times anyway,
+    which would not trigger this exception
+
 ## Timere-parse 0.0.6
 
 - Bumped dependency of Timedesc to >= 0.6.0, Timere to >= 0.7.0
