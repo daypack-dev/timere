@@ -25,10 +25,8 @@ let pp_iso_week_date_time ?frac_s () formatter (x : Date_time.t) =
 let pp_iso_ord_date_time ?frac_s () formatter (x : Date_time.t) =
   RFC3339.pp_date_time' ?frac_s pp_iso_ord () formatter x
 
-let str_of_iso_week_date_time ?frac_s dt : string option =
-  try Some (Fmt.str "%a" (pp_iso_week_date_time ?frac_s ()) dt)
-  with Printers.Date_time_cannot_deduce_offset_from_utc _ -> None
+let str_of_iso_week_date_time ?frac_s dt : string =
+  Fmt.str "%a" (pp_iso_week_date_time ?frac_s ()) dt
 
-let str_of_iso_ord_date_time ?frac_s dt : string option =
-  try Some (Fmt.str "%a" (pp_iso_ord_date_time ?frac_s ()) dt)
-  with Printers.Date_time_cannot_deduce_offset_from_utc _ -> None
+let str_of_iso_ord_date_time ?frac_s dt : string =
+  Fmt.str "%a" (pp_iso_ord_date_time ?frac_s ()) dt

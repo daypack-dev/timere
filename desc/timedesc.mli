@@ -1460,11 +1460,11 @@ val pp : ?format:string -> unit -> Format.formatter -> t -> unit
      v}
 *)
 
-val to_string : ?format:string -> t -> string option
+val to_string : ?format:string -> t -> string
 (**
      String conversion using [pp].
 
-     Returns [None] instead of raising exception when time zone offset cannot be deduced but required by the format string
+     @raise Date_time_cannot_deduce_offset_from_utc if time zone offset cannot be calculated
 *)
 
 val pp_rfc3339 : ?frac_s:int -> unit -> Format.formatter -> t -> unit
@@ -1484,17 +1484,17 @@ val pp_rfc3339_micro : Format.formatter -> t -> unit
 
 val pp_rfc3339_nano : Format.formatter -> t -> unit
 
-val to_rfc3339 : ?frac_s:int -> t -> string option
+val to_rfc3339 : ?frac_s:int -> t -> string
 (** String conversion using [pp_rfc3339].
 
-      Returns [None] if time zone offset cannot be deduced instead of raising exception.
+    @raise Date_time_cannot_deduce_offset_from_utc if time zone offset cannot be calculated
 *)
 
-val to_rfc3339_milli : t -> string option
+val to_rfc3339_milli : t -> string
 
-val to_rfc3339_micro : t -> string option
+val to_rfc3339_micro : t -> string
 
-val to_rfc3339_nano : t -> string option
+val to_rfc3339_nano : t -> string
 
 val pp_iso8601 : ?frac_s:int -> unit -> Format.formatter -> t -> unit
 (** Alias to [pp_rfc3339]
@@ -1506,15 +1506,15 @@ val pp_iso8601_micro : Format.formatter -> t -> unit
 
 val pp_iso8601_nano : Format.formatter -> t -> unit
 
-val to_iso8601 : ?frac_s:int -> t -> string option
+val to_iso8601 : ?frac_s:int -> t -> string
 (** Alias to [to_rfc3339]
 *)
 
-val to_iso8601_milli : t -> string option
+val to_iso8601_milli : t -> string
 
-val to_iso8601_micro : t -> string option
+val to_iso8601_micro : t -> string
 
-val to_iso8601_nano : t -> string option
+val to_iso8601_nano : t -> string
 
 (** {2 Parsing} *)
 
@@ -1916,13 +1916,13 @@ module ISO_week_date_time : sig
 
   val pp_iso8601_nano : Format.formatter -> t -> unit
 
-  val to_iso8601 : ?frac_s:int -> t -> string option
+  val to_iso8601 : ?frac_s:int -> t -> string
 
-  val to_iso8601_milli : t -> string option
+  val to_iso8601_milli : t -> string
 
-  val to_iso8601_micro : t -> string option
+  val to_iso8601_micro : t -> string
 
-  val to_iso8601_nano : t -> string option
+  val to_iso8601_nano : t -> string
 
   (** {2 Parsing} *)
 
@@ -2014,13 +2014,13 @@ module ISO_ord_date_time : sig
 
   val pp_iso8601_nano : Format.formatter -> t -> unit
 
-  val to_iso8601 : ?frac_s:int -> t -> string option
+  val to_iso8601 : ?frac_s:int -> t -> string
 
-  val to_iso8601_milli : t -> string option
+  val to_iso8601_milli : t -> string
 
-  val to_iso8601_micro : t -> string option
+  val to_iso8601_micro : t -> string
 
-  val to_iso8601_nano : t -> string option
+  val to_iso8601_nano : t -> string
 
   (** {2 Parsing} *)
 
