@@ -34,16 +34,14 @@ module Alco = struct
       "same timestamp" "2020-01-01T00:00:60Z"
       (Timedesc.of_iso8601 "2020-01-01T00:00:60Z"
        |> CCResult.get_exn
-       |> Timedesc.to_rfc3339
-       |> CCOption.get_exn_or "Expected successful RFC3339 construction")
+       |> Timedesc.to_rfc3339)
 
   let of_iso8601_leap_second_to_rfc3339_case1 () =
     Alcotest.(check string)
       "same timestamp" "2020-01-01T00:00:60.12305Z"
       (Timedesc.of_iso8601 "2020-01-01T00:00:60.12305Z"
        |> CCResult.get_exn
-       |> Timedesc.to_rfc3339
-       |> CCOption.get_exn_or "Expected successful RFC3339 construction")
+       |> Timedesc.to_rfc3339)
 
   let of_iso8601_case0 () =
     Alcotest.(check span_testable)
@@ -278,7 +276,6 @@ module Qc = struct
           let r =
             CCResult.get_exn
             @@ Timedesc.of_iso8601
-            @@ CCOption.get_exn_or "expected successful RFC3339 construction"
             @@ Timedesc.to_rfc3339 ~frac_s:9 dt
           in
           Timedesc.(Span.equal (to_timestamp_single r) (to_timestamp_single dt))
@@ -291,7 +288,6 @@ module Qc = struct
          let r =
            CCResult.get_exn
            @@ Timedesc.of_iso8601
-           @@ CCOption.get_exn_or "expected successful RFC3339 construction"
            @@ Timedesc.to_rfc3339 dt
          in
          Timedesc.(Span.equal (to_timestamp_single r) (to_timestamp_single dt))
@@ -304,7 +300,6 @@ module Qc = struct
          let r =
            CCResult.get_exn
            @@ Timedesc.of_iso8601
-           @@ CCOption.get_exn_or "expected successful RFC3339 construction"
            @@ Timedesc.to_rfc3339 ~frac_s dt
          in
          let r = Timedesc.to_timestamp_single r in
@@ -359,7 +354,6 @@ module Qc = struct
           let r =
             CCResult.get_exn
             @@ Timedesc.ISO_week_date_time.of_iso8601
-            @@ CCOption.get_exn_or "expected successful RFC3339 construction"
             @@ Timedesc.ISO_week_date_time.to_iso8601 ~frac_s:9 dt
           in
           Timedesc.(Span.equal (to_timestamp_single r) (to_timestamp_single dt))
@@ -374,7 +368,6 @@ module Qc = struct
          let r =
            CCResult.get_exn
            @@ Timedesc.ISO_week_date_time.of_iso8601
-           @@ CCOption.get_exn_or "expected successful RFC3339 construction"
            @@ Timedesc.ISO_week_date_time.to_iso8601 dt
          in
          Timedesc.(Span.equal (to_timestamp_single r) (to_timestamp_single dt))
@@ -389,7 +382,6 @@ module Qc = struct
          let r =
            CCResult.get_exn
            @@ Timedesc.ISO_week_date_time.of_iso8601
-           @@ CCOption.get_exn_or "expected successful RFC3339 construction"
            @@ Timedesc.ISO_week_date_time.to_iso8601 ~frac_s dt
          in
          let r = Timedesc.to_timestamp_single r in
@@ -406,7 +398,6 @@ module Qc = struct
           let r =
             CCResult.get_exn
             @@ Timedesc.ISO_ord_date_time.of_iso8601
-            @@ CCOption.get_exn_or "expected successful RFC3339 construction"
             @@ Timedesc.ISO_ord_date_time.to_iso8601 ~frac_s:9 dt
           in
           Timedesc.(Span.equal (to_timestamp_single r) (to_timestamp_single dt))
@@ -419,7 +410,6 @@ module Qc = struct
          let r =
            CCResult.get_exn
            @@ Timedesc.ISO_ord_date_time.of_iso8601
-           @@ CCOption.get_exn_or "expected successful RFC3339 construction"
            @@ Timedesc.ISO_ord_date_time.to_iso8601 dt
          in
          Timedesc.(Span.equal (to_timestamp_single r) (to_timestamp_single dt))
@@ -432,7 +422,6 @@ module Qc = struct
          let r =
            CCResult.get_exn
            @@ Timedesc.ISO_ord_date_time.of_iso8601
-           @@ CCOption.get_exn_or "expected successful RFC3339 construction"
            @@ Timedesc.ISO_ord_date_time.to_iso8601 ~frac_s dt
          in
          let r = Timedesc.to_timestamp_single r in

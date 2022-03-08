@@ -294,9 +294,8 @@ let pp_date_time ?(format : string = default_date_time_format_string) ()
   | Error msg -> invalid_format_string msg
   | Ok () -> ()
 
-let string_of_date_time ?format (x : Date_time.t) : string option =
-  try Some (Fmt.str "%a" (pp_date_time ?format ()) x)
-  with Date_time_cannot_deduce_offset_from_utc _ -> None
+let string_of_date_time ?format (x : Date_time.t) : string =
+  Fmt.str "%a" (pp_date_time ?format ()) x
 
 let pp_timestamp ?(display_using_tz = Time_zone.utc) ?format () formatter time =
   match Date_time.of_timestamp ~tz_of_date_time:display_using_tz time with
