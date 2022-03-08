@@ -529,9 +529,7 @@ let date_time =
   QCheck.make
     ~print:(fun dt ->
         dt
-        |> Timedesc.to_string
-        |> CCOption.get_exn_or
-          "Expected successful construction of string from timedesc object")
+        |> Timedesc.to_string)
     date_time_gen
 
 let zoneless = QCheck.map Timedesc.Zoneless.of_zoned date_time
