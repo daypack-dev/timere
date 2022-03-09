@@ -30,6 +30,10 @@
   - And for serious stuff users are expected to use only unambiguous date times anyway,
     which would not trigger this exception
 
+- Added ISO8601 printing facilities to `Timestamp` module for consistency
+
+  - They are just aliases to the RFC3339 printers
+
 ## Timere-parse 0.0.6
 
 - Bumped dependency of Timedesc to >= 0.6.0, Timere to >= 0.7.0
