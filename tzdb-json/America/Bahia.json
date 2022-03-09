@@ -1,7 +1,16 @@
 {
   "name": "America/Bahia",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": -10800 } ],
+    [ "-62167168800", { "is_dst": true, "offset": -7200 } ],
+    [ "499748400", { "is_dst": true, "offset": -7200 } ],
+    [ "511236000", { "is_dst": false, "offset": -10800 } ],
+    [ "530593200", { "is_dst": true, "offset": -7200 } ],
+    [ "540266400", { "is_dst": false, "offset": -10800 } ],
+    [ "562129200", { "is_dst": true, "offset": -7200 } ],
+    [ "571197600", { "is_dst": false, "offset": -10800 } ],
+    [ "592974000", { "is_dst": true, "offset": -7200 } ],
+    [ "602042400", { "is_dst": false, "offset": -10800 } ],
+    [ "624423600", { "is_dst": true, "offset": -7200 } ],
     [ "634701600", { "is_dst": false, "offset": -10800 } ],
     [ "656478000", { "is_dst": true, "offset": -7200 } ],
     [ "666756000", { "is_dst": false, "offset": -10800 } ],

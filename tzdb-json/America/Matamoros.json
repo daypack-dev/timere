@@ -2,6 +2,8 @@
   "name": "America/Matamoros",
   "table": [
     [ "-62167168800", { "is_dst": true, "offset": -18000 } ],
+    [ "576057600", { "is_dst": true, "offset": -18000 } ],
+    [ "594198000", { "is_dst": false, "offset": -21600 } ],
     [ "828864000", { "is_dst": true, "offset": -18000 } ],
     [ "846399600", { "is_dst": false, "offset": -21600 } ],
     [ "860313600", { "is_dst": true, "offset": -18000 } ],

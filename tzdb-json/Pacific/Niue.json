@@ -1,9 +1,7 @@
 {
   "name": "Pacific/Niue",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": -40800 } ],
-    [ "-2177412020", { "is_dst": false, "offset": -40800 } ],
-    [ "-599575200", { "is_dst": false, "offset": -41400 } ],
+    [ "-62167168800", { "is_dst": false, "offset": -39600 } ],
     [ "276089400", { "is_dst": false, "offset": -39600 } ]
   ]
 }

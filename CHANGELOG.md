@@ -20,7 +20,7 @@
 
   - Overall reduces tzdb storage usage by roughly 82%
 
-- `tzdb-full` now only considers 1990 to 2040 to further cut down size
+- `tzdb-full` now only considers 1970 to 2040 to further cut down size
 
 - Updated string conversion functions based on pretty printers which raise `Date_time_cannot_deduce_offset_from_utc`
   to raise the exception instead of returning `None`

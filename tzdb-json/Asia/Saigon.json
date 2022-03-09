@@ -1,15 +1,7 @@
 {
   "name": "Asia/Saigon",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": 25590 } ],
-    [ "-2004073600", { "is_dst": false, "offset": 25590 } ],
-    [ "-1851577590", { "is_dst": false, "offset": 25200 } ],
-    [ "-852105600", { "is_dst": false, "offset": 28800 } ],
-    [ "-782643600", { "is_dst": false, "offset": 32400 } ],
-    [ "-767869200", { "is_dst": false, "offset": 25200 } ],
-    [ "-718095600", { "is_dst": false, "offset": 28800 } ],
-    [ "-457776000", { "is_dst": false, "offset": 25200 } ],
-    [ "-315648000", { "is_dst": false, "offset": 28800 } ],
+    [ "-62167168800", { "is_dst": false, "offset": 25200 } ],
     [ "171820800", { "is_dst": false, "offset": 25200 } ]
   ]
 }

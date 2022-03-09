@@ -1,7 +1,8 @@
 {
   "name": "America/Mazatlan",
   "table": [
-    [ "-62167168800", { "is_dst": true, "offset": -21600 } ],
+    [ "-62167168800", { "is_dst": false, "offset": -25200 } ],
+    [ "28800", { "is_dst": false, "offset": -25200 } ],
     [ "828867600", { "is_dst": true, "offset": -21600 } ],
     [ "846403200", { "is_dst": false, "offset": -25200 } ],
     [ "860317200", { "is_dst": true, "offset": -21600 } ],

@@ -2,6 +2,10 @@
   "name": "Australia/Perth",
   "table": [
     [ "-62167168800", { "is_dst": true, "offset": 32400 } ],
+    [ "152042400", { "is_dst": true, "offset": 32400 } ],
+    [ "162928800", { "is_dst": false, "offset": 28800 } ],
+    [ "436298400", { "is_dst": true, "offset": 32400 } ],
+    [ "447184800", { "is_dst": false, "offset": 28800 } ],
     [ "690314400", { "is_dst": true, "offset": 32400 } ],
     [ "699386400", { "is_dst": false, "offset": 28800 } ],
     [ "1165082400", { "is_dst": true, "offset": 32400 } ],

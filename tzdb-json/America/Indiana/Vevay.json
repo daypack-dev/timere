@@ -2,6 +2,12 @@
   "name": "America/Indiana/Vevay",
   "table": [
     [ "-62167168800", { "is_dst": true, "offset": -14400 } ],
+    [ "9961200", { "is_dst": true, "offset": -14400 } ],
+    [ "25682400", { "is_dst": false, "offset": -18000 } ],
+    [ "41410800", { "is_dst": true, "offset": -14400 } ],
+    [ "57736800", { "is_dst": false, "offset": -18000 } ],
+    [ "73465200", { "is_dst": true, "offset": -14400 } ],
+    [ "89186400", { "is_dst": false, "offset": -18000 } ],
     [ "1143961200", { "is_dst": true, "offset": -14400 } ],
     [ "1162101600", { "is_dst": false, "offset": -18000 } ],
     [ "1173596400", { "is_dst": true, "offset": -14400 } ],

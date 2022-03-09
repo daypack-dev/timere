@@ -1,7 +1,16 @@
 {
   "name": "America/Campo_Grande",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": -14400 } ],
+    [ "-62167168800", { "is_dst": true, "offset": -10800 } ],
+    [ "499752000", { "is_dst": true, "offset": -10800 } ],
+    [ "511239600", { "is_dst": false, "offset": -14400 } ],
+    [ "530596800", { "is_dst": true, "offset": -10800 } ],
+    [ "540270000", { "is_dst": false, "offset": -14400 } ],
+    [ "562132800", { "is_dst": true, "offset": -10800 } ],
+    [ "571201200", { "is_dst": false, "offset": -14400 } ],
+    [ "592977600", { "is_dst": true, "offset": -10800 } ],
+    [ "602046000", { "is_dst": false, "offset": -14400 } ],
+    [ "624427200", { "is_dst": true, "offset": -10800 } ],
     [ "634705200", { "is_dst": false, "offset": -14400 } ],
     [ "656481600", { "is_dst": true, "offset": -10800 } ],
     [ "666759600", { "is_dst": false, "offset": -14400 } ],

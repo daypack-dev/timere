@@ -1,8 +1,7 @@
 {
   "name": "Asia/Thimbu",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": 19800 } ],
-    [ "-706341516", { "is_dst": false, "offset": 19800 } ],
+    [ "-62167168800", { "is_dst": false, "offset": 21600 } ],
     [ "560025000", { "is_dst": false, "offset": 21600 } ]
   ]
 }

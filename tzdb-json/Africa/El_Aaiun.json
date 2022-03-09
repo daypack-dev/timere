@@ -1,7 +1,14 @@
 {
   "name": "Africa/El_Aaiun",
   "table": [
-    [ "-62167168800", { "is_dst": true, "offset": 3600 } ],
+    [ "-62167168800", { "is_dst": false, "offset": 0 } ],
+    [ "198291600", { "is_dst": false, "offset": 0 } ],
+    [ "199756800", { "is_dst": true, "offset": 3600 } ],
+    [ "207702000", { "is_dst": false, "offset": 0 } ],
+    [ "231292800", { "is_dst": true, "offset": 3600 } ],
+    [ "244249200", { "is_dst": false, "offset": 0 } ],
+    [ "265507200", { "is_dst": true, "offset": 3600 } ],
+    [ "271033200", { "is_dst": false, "offset": 0 } ],
     [ "1212278400", { "is_dst": true, "offset": 3600 } ],
     [ "1220223600", { "is_dst": false, "offset": 0 } ],
     [ "1243814400", { "is_dst": true, "offset": 3600 } ],

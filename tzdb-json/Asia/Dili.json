@@ -1,7 +1,8 @@
 {
   "name": "Asia/Dili",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": 32400 } ],
+    [ "-62167168800", { "is_dst": false, "offset": 28800 } ],
+    [ "199897200", { "is_dst": false, "offset": 28800 } ],
     [ "969120000", { "is_dst": false, "offset": 32400 } ]
   ]
 }

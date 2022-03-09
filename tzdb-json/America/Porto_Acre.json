@@ -1,7 +1,13 @@
 {
   "name": "America/Porto_Acre",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": -14400 } ],
+    [ "-62167168800", { "is_dst": true, "offset": -14400 } ],
+    [ "499755600", { "is_dst": true, "offset": -14400 } ],
+    [ "511243200", { "is_dst": false, "offset": -18000 } ],
+    [ "530600400", { "is_dst": true, "offset": -14400 } ],
+    [ "540273600", { "is_dst": false, "offset": -18000 } ],
+    [ "562136400", { "is_dst": true, "offset": -14400 } ],
+    [ "571204800", { "is_dst": false, "offset": -18000 } ],
     [ "1214283600", { "is_dst": false, "offset": -14400 } ],
     [ "1384056000", { "is_dst": false, "offset": -18000 } ]
   ]
