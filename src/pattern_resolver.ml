@@ -244,6 +244,8 @@ module Matching_hours = struct
     let cur_branch_search_end_inc =
       get_cur_branch_search_end_inc ~overall_search_end_inc cur_branch
     in
+    let hour_start = cur_branch_search_start.hour in
+    let hour_end_inc = cur_branch_search_end_inc.hour in
     if Int_set.is_empty t.hours then
       Seq.map
         (fun hour -> { cur_branch with hour })
@@ -251,6 +253,8 @@ module Matching_hours = struct
     else
       t.hours
       |> Int_set.to_seq
+      |> Seq.filter (fun hour ->
+          hour_start <= hour && hour <= hour_end_inc)
       |> Seq.map (fun hour -> { cur_branch with hour })
 
   let matching_hour_inc_ranges
@@ -268,11 +272,15 @@ module Matching_hours = struct
       ( Branch.set_to_first_min_sec_ns { cur_branch with hour = x },
         Branch.set_to_last_min_sec_ns { cur_branch with hour = y } )
     in
+    let hour_start = cur_branch_search_start.hour in
+    let hour_end_inc = cur_branch_search_end_inc.hour in
     if Int_set.is_empty t.hours then
       Seq.return (cur_branch_search_start, cur_branch_search_end_inc)
     else
       t.hours
       |> Int_set.to_seq
+      |> Seq.filter (fun hour ->
+          hour_start <= hour && hour <= hour_end_inc)
       |> Time.Hour_ranges.Of_seq.range_seq_of_seq
       |> Time.Hour_ranges.get_inc
       |> Seq.map (map_inc ~cur_branch)
@@ -300,14 +308,18 @@ module Matching_days = struct
       Branch.set_to_last_day_hour_min_sec_ns cur_branch
 
   let int_month_days_of_matching_weekdays
+      ~(overall_search_start : Branch.t)
+      ~(overall_search_end_inc : Branch.t)
       ~(cur_branch : Branch.t)
       (t : Pattern.t) : int Seq.t =
-    let day_count =
-      Timedesc.Utils.day_count_of_month ~year:cur_branch.year
-        ~month:cur_branch.month
+    let cur_branch_search_start =
+      get_cur_branch_search_start ~overall_search_start cur_branch
     in
-    let day_start = 1 in
-    let day_end_inc = day_count in
+    let cur_branch_search_end_inc =
+      get_cur_branch_search_end_inc ~overall_search_end_inc cur_branch
+    in
+    let day_start = cur_branch_search_start.day in
+    let day_end_inc = cur_branch_search_end_inc.day in
     if Weekday_set.is_empty t.weekdays then OSeq.(day_start -- day_end_inc)
     else
       OSeq.(day_start -- day_end_inc)
@@ -352,7 +364,11 @@ module Matching_days = struct
       |> Int_set.of_seq
     in
     let month_days_of_matching_weekdays =
-      int_month_days_of_matching_weekdays t ~cur_branch |> Int_set.of_seq
+      int_month_days_of_matching_weekdays t
+        ~overall_search_start
+        ~overall_search_end_inc
+        ~cur_branch
+      |> Int_set.of_seq
     in
     Int_set.inter matching_month_days month_days_of_matching_weekdays
     |> Int_set.to_seq
@@ -386,7 +402,10 @@ module Matching_days = struct
     | true, true ->
       Seq.return (cur_branch_search_start, cur_branch_search_end_inc)
     | true, false ->
-      int_month_days_of_matching_weekdays ~cur_branch t
+      int_month_days_of_matching_weekdays
+        ~overall_search_start
+        ~overall_search_end_inc
+        ~cur_branch t
       |> Time.Month_day_ranges.Of_seq.range_seq_of_seq
       |> Time.Month_day_ranges.get_inc
       |> Seq.map (map_inc ~cur_branch)
