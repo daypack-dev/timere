@@ -212,15 +212,38 @@ module Matching_minutes = struct
 end
 
 module Matching_hours = struct
-  let get_cur_branch_search_start (cur_branch : Branch.t) : Branch.t =
-    Branch.set_to_first_hour_min_sec_ns cur_branch
+  let get_cur_branch_search_start
+      ~(overall_search_start : Branch.t)
+      (cur_branch : Branch.t) : Branch.t =
+    if overall_search_start.year = cur_branch.year
+    && overall_search_start.month = cur_branch.month
+    && overall_search_start.day = cur_branch.day
+    then
+      overall_search_start
+    else
+      Branch.set_to_first_hour_min_sec_ns cur_branch
 
-  let get_cur_branch_search_end_inc (cur_branch : Branch.t) : Branch.t =
-    Branch.set_to_last_hour_min_sec_ns cur_branch
+  let get_cur_branch_search_end_inc
+      ~(overall_search_end_inc : Branch.t)
+      (cur_branch : Branch.t) : Branch.t =
+    if overall_search_end_inc.year = cur_branch.year
+    && overall_search_end_inc.month = cur_branch.month
+    && overall_search_end_inc.day = cur_branch.day
+    then
+      overall_search_end_inc
+    else
+      Branch.set_to_last_hour_min_sec_ns cur_branch
 
-  let matching_hours (t : Pattern.t) (cur_branch : Branch.t) : Branch.t Seq.t =
-    let cur_branch_search_start = get_cur_branch_search_start cur_branch in
-    let cur_branch_search_end_inc = get_cur_branch_search_end_inc cur_branch in
+  let matching_hours
+      ~(overall_search_start : Branch.t)
+      ~(overall_search_end_inc : Branch.t)
+      (t : Pattern.t) (cur_branch : Branch.t) : Branch.t Seq.t =
+    let cur_branch_search_start =
+      get_cur_branch_search_start ~overall_search_start cur_branch
+    in
+    let cur_branch_search_end_inc =
+      get_cur_branch_search_end_inc ~overall_search_end_inc cur_branch
+    in
     if Int_set.is_empty t.hours then
       Seq.map
         (fun hour -> { cur_branch with hour })
@@ -230,10 +253,17 @@ module Matching_hours = struct
       |> Int_set.to_seq
       |> Seq.map (fun hour -> { cur_branch with hour })
 
-  let matching_hour_inc_ranges (t : Pattern.t) (cur_branch : Branch.t) :
+  let matching_hour_inc_ranges
+      ~(overall_search_start : Branch.t)
+      ~(overall_search_end_inc : Branch.t)
+      (t : Pattern.t) (cur_branch : Branch.t) :
     (Branch.t * Branch.t) Seq.t =
-    let cur_branch_search_start = get_cur_branch_search_start cur_branch in
-    let cur_branch_search_end_inc = get_cur_branch_search_end_inc cur_branch in
+    let cur_branch_search_start =
+      get_cur_branch_search_start ~overall_search_start cur_branch
+    in
+    let cur_branch_search_end_inc =
+      get_cur_branch_search_end_inc ~overall_search_end_inc cur_branch
+    in
     let map_inc ~(cur_branch : Branch.t) (x, y) =
       ( Branch.set_to_first_min_sec_ns { cur_branch with hour = x },
         Branch.set_to_last_min_sec_ns { cur_branch with hour = y } )
@@ -556,7 +586,10 @@ let matching_date_time_inc_ranges (search_param : Search_param.t)
                        ~overall_search_start
                        ~overall_search_end_inc
                        t)
-    |> Seq.flat_map (Matching_hours.matching_hour_inc_ranges t)
+    |> Seq.flat_map (Matching_hours.matching_hour_inc_ranges 
+                       ~overall_search_start
+                       ~overall_search_end_inc
+                       t)
   | ( _years_is_empty,
       _months_is_empty,
       _month_days_is_empty,
@@ -575,7 +608,10 @@ let matching_date_time_inc_ranges (search_param : Search_param.t)
                        ~overall_search_start
                        ~overall_search_end_inc
                        t)
-    |> Seq.flat_map (Matching_hours.matching_hours t)
+    |> Seq.flat_map (Matching_hours.matching_hours
+                       ~overall_search_start
+                       ~overall_search_end_inc
+                       t)
     |> Seq.flat_map (Matching_minutes.matching_minute_inc_ranges t)
   | ( _years_is_empty,
       _months_is_empty,
@@ -595,7 +631,10 @@ let matching_date_time_inc_ranges (search_param : Search_param.t)
                        ~overall_search_start
                        ~overall_search_end_inc
                        t)
-    |> Seq.flat_map (Matching_hours.matching_hours t)
+    |> Seq.flat_map (Matching_hours.matching_hours
+                       ~overall_search_start
+                       ~overall_search_end_inc
+                       t)
     |> Seq.flat_map (Matching_minutes.matching_minutes t)
     |> Seq.flat_map (Matching_seconds.matching_second_inc_ranges t)
   | ( _years_is_empty,
@@ -617,7 +656,10 @@ let matching_date_time_inc_ranges (search_param : Search_param.t)
                        ~overall_search_start
                        ~overall_search_end_inc
                        t)
-    |> Seq.flat_map (Matching_hours.matching_hours t)
+    |> Seq.flat_map (Matching_hours.matching_hours
+                       ~overall_search_start
+                       ~overall_search_end_inc
+                       t)
     |> Seq.flat_map (Matching_minutes.matching_minutes t)
     |> Seq.flat_map (Matching_seconds.matching_seconds t)
     |> Seq.flat_map (Matching_ns.matching_ns_inc_ranges t)
