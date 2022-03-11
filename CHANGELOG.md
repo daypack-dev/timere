@@ -10,6 +10,12 @@
 
   - `iso_week_pattern`, `iso_years`, `iso_year_ranges`, `iso_weeks`, `iso_week_ranges`
 
+- Pattern resolver optimization
+
+  - Added branch skipping for year, month, day, hour levels
+
+  - This starts the search closer to the first actual potential match
+
 ## Timedesc 0.7.0
 
 - Added `tzlocal.js` backend for `js_of_ocaml`
