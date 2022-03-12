@@ -16,6 +16,10 @@
 
   - This starts the search closer to the first actual potential match
 
+- Fixed handling of `length` in `deduce_child_result_space_bound_from_parent`
+
+  - Previously leads to incorrect result space computation, and may lead to time slots missing despite meeting criteria
+
 ## Timedesc 0.7.0
 
 - Added `tzlocal.js` backend for `js_of_ocaml`
