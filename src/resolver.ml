@@ -96,6 +96,9 @@ let deduce_child_result_space_bound_from_parent ~(parent : t) : result_space =
         space
         |> CCList.to_seq
         |> Seq.map (fun (x, y) ->
+            let x =
+              timestamp_safe_sub x n
+            in
             let y =
               if y >= Timedesc.Timestamp.max_val then y
               else timestamp_safe_sub y n
