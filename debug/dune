@@ -59,6 +59,12 @@
 )
 
 (rule
+ (targets seq_utils_.ml)
+ (deps    ../src/seq_utils_.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
  (targets seq_utils.ml)
  (deps    ../src/seq_utils.ml)
  (action  (copy %{deps} %{targets}))

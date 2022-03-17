@@ -18,7 +18,6 @@
             timedesc.tzlocal
             unix
             ptime
-            oseq
             mparser
             angstrom
             containers

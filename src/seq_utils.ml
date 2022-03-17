@@ -1,17 +1,10 @@
 open Int64_utils
+include Seq_utils_
 
 let nat : int Seq.t =
   let open OSeq.Generator in
   let rec aux n = yield n >>= fun () -> aux (n + 1) in
   run (aux 0)
-
-let zero_to_n_exc n : int Seq.t =
-  let rec aux cur n =
-    if cur < n then fun () -> Seq.Cons (cur, aux (cur + 1) n) else Seq.empty
-  in
-  aux 0 n
-
-let zero_to_n_inc n = zero_to_n_exc (n + 1)
 
 let a_to_b_exc_int64 ~a ~b : int64 Seq.t =
   let rec aux cur n =

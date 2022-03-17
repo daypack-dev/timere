@@ -1,6 +1,12 @@
 (rule
+ (targets seq_utils_.ml)
+ (deps    ../desc/seq_utils_.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
  (targets misc_utils.ml)
- (deps    ../src/misc_utils.ml)
+ (deps    ../desc/misc_utils.ml)
  (action  (copy %{deps} %{targets}))
 )
 

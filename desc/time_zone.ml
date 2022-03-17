@@ -259,7 +259,8 @@ module Raw = struct
                 ( ((k1, k2), entry1),
                   aux (fun () -> Seq.Cons ((k2, entry2), rest)) ))
     in
-    OSeq.(0 --^ size) |> OSeq.map (fun i -> (starts.{i}, entries.(i))) |> aux
+    Seq_utils_.zero_to_n_exc size
+    |> Seq.map (fun i -> (starts.{i}, entries.(i))) |> aux
 
   let to_transitions (t : t) : ((int64 * int64) * entry) list =
     CCList.of_seq @@ to_transition_seq t

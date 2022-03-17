@@ -23,6 +23,12 @@
 )
 
 (rule
+ (targets seq_utils_.ml)
+ (deps    ../desc/seq_utils_.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
  (alias  runtest)
  (action (run ../tests/main.exe)))
 

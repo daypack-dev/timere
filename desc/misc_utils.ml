@@ -38,7 +38,7 @@ let list_concat_map (f : 'a -> 'b list) (l : 'a list) : 'b list =
 
 let list_concat_mapi (f : int -> 'a -> 'b list) (l : 'a list) : 'b list =
   CCList.to_seq l
-  |> OSeq.mapi (fun i x -> (i, x))
+  |> Seq_utils_.mapi (fun i x -> (i, x))
   |> Seq.flat_map (fun (i, x) -> f i x |> CCList.to_seq)
   |> CCList.of_seq
 
