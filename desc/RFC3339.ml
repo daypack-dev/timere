@@ -1,6 +1,6 @@
 let pp_date formatter (date : Date.t) =
   let Date.Ymd'.{ year; month; day } = Date.Ymd'.view date in
-  Fmt.pf formatter "%04d-%02d-%02d" year month day
+  Format.fprintf formatter "%04d-%02d-%02d" year month day
 
 let pp_time ?frac_s () formatter (time : Time.t) =
   let { Time.hour; minute; second; ns } = Time.view time in
@@ -14,7 +14,7 @@ let pp_time ?frac_s () formatter (time : Time.t) =
   else if frac_s > 9 then invalid_arg "pp_time: frac_s cannot be > 9"
   else
     let second = if Time.is_leap_second time then 60 else second in
-    Fmt.pf formatter "%02d:%02d:%02d%s" hour minute second
+    Format.fprintf formatter "%02d:%02d:%02d%s" hour minute second
       (Printers.string_of_s_frac ~sep:'.' ~frac_s ~ns)
 
 let pp_date_time' ?frac_s pp_date () formatter (dt : Date_time.t) =
@@ -36,22 +36,22 @@ let pp_date_time' ?frac_s pp_date () formatter (dt : Date_time.t) =
             offset_view.hours
             offset_view.minutes
     in
-    Fmt.pf formatter "%aT%a%s" pp_date (Date_time.date dt)
+    Format.fprintf formatter "%aT%a%s" pp_date (Date_time.date dt)
       (pp_time ?frac_s ()) (Date_time.time dt) tz_off
 
 let pp_date_time ?frac_s () formatter (dt : Date_time.t) =
   pp_date_time' ?frac_s pp_date () formatter dt
 
 let of_date_time ?frac_s (dt : Date_time.t) : string =
-  Fmt.str "%a" (pp_date_time ?frac_s ()) dt
+  Format.asprintf "%a" (pp_date_time ?frac_s ()) dt
 
 let of_time ?frac_s (time : Time.t) : string =
-  Fmt.str "%a" (pp_time ?frac_s ()) time
+  Format.asprintf "%a" (pp_time ?frac_s ()) time
 
 let pp_timestamp ?frac_s () formatter (x : Span.t) =
   match Date_time.of_timestamp ~tz_of_date_time:Time_zone.utc x with
   | None -> invalid_arg "Invalid timestamp"
-  | Some dt -> Fmt.pf formatter "%a" (pp_date_time ?frac_s ()) dt
+  | Some dt -> Format.fprintf formatter "%a" (pp_date_time ?frac_s ()) dt
 
 let of_timestamp ?frac_s (x : Span.t) : string =
-  Fmt.str "%a" (pp_timestamp ?frac_s ()) x
+  Format.asprintf "%a" (pp_timestamp ?frac_s ()) x

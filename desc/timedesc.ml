@@ -15,7 +15,7 @@ let of_iso8601_exn' of_iso8601 s =
   | Ok x -> x
   | Error msg -> raise (ISO8601_parse_exn msg)
 
-let str_of_pp pp x = Fmt.str "%a" pp x
+let str_of_pp pp x = Format.asprintf "%a" pp x
 
 module Ym = struct
   include Ym

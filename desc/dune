@@ -23,7 +23,6 @@
             containers
             seq
             yojson
-            fmt
             bigarray
  )
 )

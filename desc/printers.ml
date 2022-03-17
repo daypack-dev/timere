@@ -277,12 +277,12 @@ let pp_date_time ?(format : string = default_date_time_format_string) ()
   let single formatter (date_time : Date_time.t) : (unit, unit) t =
     choice
       [
-        attempt (string "{{" |>> fun _ -> Fmt.pf formatter "{");
+        attempt (string "{{" |>> fun _ -> Format.fprintf formatter "{");
         (attempt (char '{')
          >> (Format_string_parsers.date_time_inner date_time << char '}')
-         |>> fun s -> Fmt.pf formatter "%s" s);
+         |>> fun s -> Format.fprintf formatter "%s" s);
         (many1_satisfy (function '{' -> false | _ -> true)
-         |>> fun s -> Fmt.pf formatter "%s" s);
+         |>> fun s -> Format.fprintf formatter "%s" s);
       ]
   in
   let p formatter (date_time : Date_time.t) : (unit, unit) t =
@@ -295,15 +295,15 @@ let pp_date_time ?(format : string = default_date_time_format_string) ()
   | Ok () -> ()
 
 let string_of_date_time ?format (x : Date_time.t) : string =
-  Fmt.str "%a" (pp_date_time ?format ()) x
+  Format.asprintf "%a" (pp_date_time ?format ()) x
 
 let pp_timestamp ?(display_using_tz = Time_zone.utc) ?format () formatter time =
   match Date_time.of_timestamp ~tz_of_date_time:display_using_tz time with
   | None -> invalid_arg "Invalid unix second"
-  | Some dt -> Fmt.pf formatter "%a" (pp_date_time ?format ()) dt
+  | Some dt -> Format.fprintf formatter "%a" (pp_date_time ?format ()) dt
 
 let string_of_timestamp ?display_using_tz ?format (time : Span.t) : string =
-  Fmt.str "%a" (pp_timestamp ?display_using_tz ?format ()) time
+  Format.asprintf "%a" (pp_timestamp ?display_using_tz ?format ()) time
 
 let pp_interval ?(display_using_tz = Time_zone.utc)
     ?(format = default_interval_format_string) () formatter
@@ -314,16 +314,16 @@ let pp_interval ?(display_using_tz = Time_zone.utc)
     (unit, unit) t =
     choice
       [
-        attempt (string "{{" |>> fun _ -> Fmt.pf formatter "{");
+        attempt (string "{{" |>> fun _ -> Format.fprintf formatter "{");
         (attempt (char '{')
          >> (attempt (char 's' >> return start_date_time)
              <|> (char 'e' >> return end_date_time))
          >>= fun date_time ->
          Format_string_parsers.date_time_inner date_time
          << char '}'
-         |>> fun s -> Fmt.pf formatter "%s" s);
+         |>> fun s -> Format.fprintf formatter "%s" s);
         (many1_satisfy (function '{' -> false | _ -> true)
-         |>> fun s -> Fmt.pf formatter "%s" s);
+         |>> fun s -> Format.fprintf formatter "%s" s);
       ]
   in
   let p (start_date_time : Date_time.t) (end_date_time : Date_time.t) :
@@ -355,17 +355,17 @@ let pp_interval ?(display_using_tz = Time_zone.utc)
 
 let string_of_interval ?display_using_tz ?format (interval : Date_time.interval)
   : string =
-  Fmt.str "%a" (pp_interval ?display_using_tz ?format ()) interval
+  Format.asprintf "%a" (pp_interval ?display_using_tz ?format ()) interval
 
-let pp_intervals ?display_using_tz ?format ?(sep = Fmt.cut) () formatter
+let pp_intervals ?display_using_tz ?format ?sep () formatter
     intervals =
-  Fmt.seq ~sep (pp_interval ?display_using_tz ?format ()) formatter intervals
+  Seq_utils_.pp ?sep (pp_interval ?display_using_tz ?format ()) formatter intervals
 
 let pp_span formatter (x : Span.t) : unit =
   let s, ns = Span.to_s_ns x in
-  Fmt.pf formatter "%Ld s + %d ns" s ns
+  Format.fprintf formatter "%Ld s + %d ns" s ns
 
-let string_of_span (x : Span.t) : string = Fmt.str "%a" pp_span x
+let string_of_span (x : Span.t) : string = Format.asprintf "%a" pp_span x
 
 let pp_span_for_human ?(format : string = default_span_for_human_format_string)
     () formatter (x : Span.t) : unit =
@@ -374,12 +374,12 @@ let pp_span_for_human ?(format : string = default_span_for_human_format_string)
   let single formatter (view : Span.For_human'.view) : (unit, unit) t =
     choice
       [
-        attempt (string "{{" |>> fun _ -> Fmt.pf formatter "{");
+        attempt (string "{{" |>> fun _ -> Format.fprintf formatter "{");
         (attempt (char '{')
          >> (Format_string_parsers.span_for_human_inner view << char '}')
-         |>> fun s -> Fmt.pf formatter "%s" s);
+         |>> fun s -> Format.fprintf formatter "%s" s);
         (many1_satisfy (function '{' -> false | _ -> true)
-         |>> fun s -> Fmt.pf formatter "%s" s);
+         |>> fun s -> Format.fprintf formatter "%s" s);
       ]
   in
   let p formatter (view : Span.For_human'.view) : (unit, unit) t =
@@ -393,7 +393,7 @@ let pp_span_for_human ?(format : string = default_span_for_human_format_string)
   | Ok () -> ()
 
 let string_of_span_for_human ?format (x : Span.t) : string =
-  Fmt.str "%a" (pp_span_for_human ?format ()) x
+  Format.asprintf "%a" (pp_span_for_human ?format ()) x
 
 let wrap_to_sexp_into_pp_sexp (f : 'a -> CCSexp.t) :
   Format.formatter -> 'a -> unit =
