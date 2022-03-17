@@ -25,6 +25,5 @@
             yojson
             fmt
             bigarray
-            fileutils
  )
 )
