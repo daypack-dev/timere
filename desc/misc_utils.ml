@@ -22,25 +22,25 @@ let convert_to_int_to_int64 (f : 'a -> int) : 'a -> int64 =
   fun x -> x |> f |> Int64.of_int
 
 let get_ok_error_list (l : ('a, 'b) result list) : ('a list, 'b) result =
-  List.find_opt CCResult.is_error l
+  List.find_opt Result.is_error l
   |> (fun x ->
       match x with
       | None -> None
       | Some (Ok _) -> None
       | Some (Error x) -> Some x)
   |> fun x ->
-  match x with None -> Ok (List.map CCResult.get_exn l) | Some x -> Error x
+  match x with None -> Ok (List.map Result.get_ok l) | Some x -> Error x
 
 let list_concat_map (f : 'a -> 'b list) (l : 'a list) : 'b list =
-  CCList.to_seq l
-  |> Seq.flat_map (fun x -> f x |> CCList.to_seq)
-  |> CCList.of_seq
+  List.to_seq l
+  |> Seq.flat_map (fun x -> f x |> List.to_seq)
+  |> List.of_seq
 
 let list_concat_mapi (f : int -> 'a -> 'b list) (l : 'a list) : 'b list =
-  CCList.to_seq l
+  List.to_seq l
   |> Seq_utils_.mapi (fun i x -> (i, x))
-  |> Seq.flat_map (fun (i, x) -> f i x |> CCList.to_seq)
-  |> CCList.of_seq
+  |> Seq.flat_map (fun (i, x) -> f i x |> List.to_seq)
+  |> List.of_seq
 
 let last_element_of_list (l : 'a list) : 'a option =
   let rec aux l =

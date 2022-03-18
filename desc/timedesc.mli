@@ -410,18 +410,6 @@ module Span : sig
 
   val pp : Format.formatter -> t -> unit
 
-  (** {1 Sexp} *)
-
-  val to_sexp : t -> CCSexp.t
-
-  val to_sexp_string : t -> string
-
-  val of_sexp : CCSexp.t -> (t, string) result
-
-  val of_sexp_string : string -> (t, string) result
-
-  val pp_sexp : Format.formatter -> t -> unit
-
   (** {1 Human friendly APIs} *)
 
   module For_human : sig
@@ -766,18 +754,6 @@ module Date : sig
   val of_iso8601_exn : string -> t
   (** @raise ISO8601_parse_exn if [of_iso8601] fails *)
 
-  (** {1 Sexp} *)
-
-  val to_sexp : t -> CCSexp.t
-
-  val to_sexp_string : t -> string
-
-  val of_sexp : CCSexp.t -> (t, string) result
-
-  val of_sexp_string : string -> (t, string) result
-
-  val pp_sexp : Format.formatter -> t -> unit
-
   (** {1 Gregorian calendar} *)
 
   module Ymd : sig
@@ -1033,18 +1009,6 @@ module Time : sig
 
   val of_iso8601_exn : string -> t
   (** @raise ISO8601_parse_exn if [of_iso8601] fails *)
-
-  (** {1 Sexp} *)
-
-  val to_sexp : t -> CCSexp.t
-
-  val to_sexp_string : t -> string
-
-  val of_sexp : CCSexp.t -> (t, string) result
-
-  val of_sexp_string : string -> (t, string) result
-
-  val pp_sexp : Format.formatter -> t -> unit
 end
 
 (** {2 Time zone}
@@ -1132,14 +1096,6 @@ module Time_zone : sig
     val of_string_exn : string -> t
   end
 
-  module Sexp : sig
-    val to_sexp : t -> CCSexp.t
-
-    val of_sexp : CCSexp.t -> t option
-
-    val of_string : string -> t option
-  end
-
   module JSON : sig
     val to_json : t -> Yojson.Basic.t
 
@@ -1169,14 +1125,6 @@ module Time_zone : sig
       val dump : db -> string
 
       val load : string -> db
-    end
-
-    module Sexp : sig
-      val of_sexp : CCSexp.t -> db option
-
-      val to_sexp : db -> CCSexp.t
-
-      val of_string : string -> db option
     end
   end
 end
@@ -1528,18 +1476,6 @@ val of_iso8601 : string -> (t, string) result
 val of_iso8601_exn : string -> t
 (** @raise ISO8601_parse_exn if [of_iso8601] fails *)
 
-(** {2 Sexp} *)
-
-val to_sexp : t -> CCSexp.t
-
-val to_sexp_string : t -> string
-
-val of_sexp : CCSexp.t -> (t, string) result
-
-val of_sexp_string : string -> (t, string) result
-
-val pp_sexp : Format.formatter -> t -> unit
-
 (** {1 Timestamp} *)
 
 module Timestamp : sig
@@ -1707,12 +1643,6 @@ module Timestamp : sig
 
   val of_iso8601_exn : string -> t
   (** @raise ISO8601_parse_exn if [of_iso8601] fails *)
-
-  (** {1 Sexp} *)
-
-  val of_sexp : CCSexp.t -> (t, string) result
-
-  val to_sexp : t -> CCSexp.t
 end
 
 (** {1 Interval} *)
@@ -1845,12 +1775,6 @@ module Zoneless : sig
   val maybe_zoneless_of_iso8601_exn :
     string -> [ `Zoned of t | `Zoneless of zoneless ]
   (** @raise ISO8601_parse_exn if [maybe_zoneless_of_iso8601] fails *)
-
-  (** {1 Sexp} *)
-
-  val to_sexp : zoneless -> CCSexp.t
-
-  val of_sexp : CCSexp.t -> (zoneless, string) result
 end
 
 (** {1 Other date time systems}*)
@@ -2091,10 +2015,6 @@ module Time_zone_info : sig
   val fixed_offset_from_utc : t -> Span.t option
 
   val equal : t -> t -> bool
-
-  val of_sexp : CCSexp.t -> (t, string) result
-
-  val to_sexp : t -> CCSexp.t
 end
 
 module Utils : sig

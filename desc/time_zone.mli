@@ -57,14 +57,6 @@ module Compressed : sig
   val of_string_exn : string -> t
 end
 
-module Sexp : sig
-  val to_sexp : t -> CCSexp.t
-
-  val of_sexp : CCSexp.t -> t option
-
-  val of_string : string -> t option
-end
-
 module JSON : sig
   val to_json : t -> Yojson.Basic.t
 
@@ -94,13 +86,5 @@ module Db : sig
     val dump : db -> string
 
     val load : string -> db
-  end
-
-  module Sexp : sig
-    val of_sexp : CCSexp.t -> db option
-
-    val to_sexp : db -> CCSexp.t
-
-    val of_string : string -> db option
   end
 end

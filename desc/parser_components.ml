@@ -142,7 +142,7 @@ let extraneous_text_check ~end_markers =
   >>= fun s ->
   match s with "" -> return () | text -> invalid_syntax ~text ~pos
 
-let result_of_mparser_result (x : 'a result) : ('a, string) CCResult.t =
+let result_of_mparser_result (x : 'a result) : ('a, string) Stdlib.result =
   match x with
   | Success x -> Ok x
   | Failed (_, err) -> (

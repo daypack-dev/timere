@@ -19,7 +19,7 @@ let ns_count_in_s_float = float_of_int ns_count_in_s
 
 let normalize { s; ns } =
   let rewrite_for_edge_case { s; ns } =
-    if ns = CCInt.min_int then
+    if ns = Int.min_int then
       if s > Int64.min_int then
         { s = Int64.pred s; ns = CCInt.min_int + ns_count_in_s }
       else raise Out_of_range
