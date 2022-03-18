@@ -21,7 +21,7 @@ let normalize { s; ns } =
   let rewrite_for_edge_case { s; ns } =
     if ns = Int.min_int then
       if s > Int64.min_int then
-        { s = Int64.pred s; ns = CCInt.min_int + ns_count_in_s }
+        { s = Int64.pred s; ns = Int.min_int + ns_count_in_s }
       else raise Out_of_range
     else { s; ns }
   in
@@ -90,7 +90,7 @@ let to_float_s ({ s; ns } : t) : float =
 
 let of_float_s (x : float) : t =
   let s = Int64.of_float x in
-  let frac = CCFloat.abs (x -. Int64.to_float s) in
+  let frac = Float.abs (x -. Int64.to_float s) in
   assert (frac <= 1.0);
   let ns = max 0 (int_of_float (frac *. ns_count_in_s_float)) in
   normalize
@@ -238,7 +238,7 @@ module For_human' = struct
     else
       ({ sign; days; hours; minutes; seconds; ns } : raw)
       |> span_of_raw
-      |> CCResult.return
+      |> Result.ok
 
   let make_frac_exn ?sign ?days ?hours ?minutes ?seconds ?ns () =
     match make_frac ?sign ?days ?hours ?minutes ?seconds ?ns () with

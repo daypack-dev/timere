@@ -123,7 +123,7 @@ module Format_string_parsers = struct
             >>= (fun x ->
                 return
                   (map_string_to_size_and_casing x
-                     (CCOption.get_exn_or "Expected valid month"
+                     (Misc_utils.option_get_exn_or "Expected valid month"
                       @@ full_string_of_month month)))
                 <|> (padding >>= fun padding -> return (pad_int padding month)));
         (attempt (string "day:")
@@ -394,7 +394,3 @@ let pp_span_for_human ?(format : string = default_span_for_human_format_string)
 
 let string_of_span_for_human ?format (x : Span.t) : string =
   Format.asprintf "%a" (pp_span_for_human ?format ()) x
-
-let wrap_to_sexp_into_pp_sexp (f : 'a -> CCSexp.t) :
-  Format.formatter -> 'a -> unit =
-  fun formatter x -> CCSexp.pp formatter (f x)

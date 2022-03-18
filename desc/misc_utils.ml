@@ -47,3 +47,20 @@ let last_element_of_list (l : 'a list) : 'a option =
     match l with [] -> None | [ x ] -> Some x | _ :: rest -> aux rest
   in
   aux l
+
+let option_get_exn_or (s : string) (x : 'a option) : 'a =
+  match x with
+  | None -> invalid_arg s
+  | Some x -> x
+
+let array_find_idx (f : 'a -> bool) (arr : 'a array) : (int * 'a) option =
+  let rec aux f i arr =
+    if i < Array.length arr then (
+      if f arr.(i) then
+        Some (i, arr.(i))
+      else
+        aux f (succ i) arr
+    ) else
+      None
+  in
+  aux f 0 arr

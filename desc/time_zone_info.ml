@@ -25,7 +25,7 @@ type error =
 
 let make ?tz ?fixed_offset_from_utc () : (t, error) result =
   let fixed_offset_from_utc =
-    CCOption.map
+    Option.map
       (fun offset -> Span.(make ~s:(Span.get_s offset) ()))
       fixed_offset_from_utc
   in

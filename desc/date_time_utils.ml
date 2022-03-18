@@ -200,13 +200,11 @@ let jd_of_iso_week_date ~year ~week ~weekday =
   jd_of_ydoy ~year ~day_of_year
 
 module Weekday_set = struct
-  include CCSet.Make (struct
+  include Set.Make (struct
       type t = weekday
 
       let compare = compare_weekday
     end)
-
-  let to_seq x = x |> to_list |> CCList.to_seq
 end
 
 let day_count_of_month ~year ~month =
@@ -293,7 +291,7 @@ let month_of_full_string s : int option =
   | _ -> None
 
 let abbr_string_of_month (month : int) : string option =
-  CCOption.map (fun s -> String.sub s 0 3) (full_string_of_month month)
+  Option.map (fun s -> String.sub s 0 3) (full_string_of_month month)
 
 let month_of_abbr_string s : int option =
   match s with

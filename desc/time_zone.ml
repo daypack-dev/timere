@@ -77,8 +77,8 @@ let process_table ((starts, entries) : table) : record =
       Array.fold_left
         (fun acc entry -> Int_set.add entry.offset acc)
         Int_set.empty entries
-      |> Int_set.to_list
-      |> CCArray.of_list
+      |> Int_set.to_seq
+      |> Array.of_seq
     in
     let table = (starts, entries) in
     assert (check_table table);
@@ -133,16 +133,16 @@ let fixed_offset_of_name (s : string) : Span.t option =
 
 let equal t1 t2 =
   (match (t1.typ, t2.typ) with
-   | Backed name1, Backed name2 -> CCString.equal name1 name2
-   | Offset_only s1, Offset_only s2 -> CCInt.equal s1 s2
+   | Backed name1, Backed name2 -> String.equal name1 name2
+   | Offset_only s1, Offset_only s2 -> Int.equal s1 s2
    | Backed name, Offset_only offset | Offset_only offset, Backed name -> (
        match fixed_offset_of_name name with
-       | Some offset' -> offset = CCInt64.to_int @@ Span.get_s offset'
+       | Some offset' -> offset = Int64.to_int @@ Span.get_s offset'
        | None -> false))
   && Bigarray.Array1.dim (fst t1.record.table)
      = Bigarray.Array1.dim (fst t2.record.table)
   && Array.length (snd t1.record.table) = Array.length (snd t2.record.table)
-  && CCArray.for_all2
+  && Array.for_all2
     (fun e1 e2 -> e1 = e2)
     (snd t1.record.table) (snd t2.record.table)
 
@@ -151,7 +151,7 @@ let one_day = Span.For_human'.(make_exn ~days:1 ())
 let make_offset_only (offset : Span.t) =
   if Span.abs offset > one_day then None
   else
-    let offset = CCInt64.to_int @@ Span.get_s offset in
+    let offset = Int64.to_int @@ Span.get_s offset in
     Some
       {
         typ = Offset_only offset;
@@ -163,12 +163,12 @@ let make_offset_only (offset : Span.t) =
       }
 
 let make_offset_only_exn offset =
-  match make_offset_only offset with
-  | None -> invalid_arg "make_offset_only_span_exn"
-  | Some x -> x
+  Misc_utils.option_get_exn_or
+  "make_offset_only_span_exn"
+  (make_offset_only offset)
 
 let utc : t =
-  CCOption.get_exn_or "Expected successful construction of UTC"
+  Misc_utils.option_get_exn_or "Expected successful construction of UTC"
     (make_offset_only Span.zero)
 
 let bsearch_table timestamp ((starts, _) : table) =
@@ -263,7 +263,7 @@ module Raw = struct
     |> Seq.map (fun i -> (starts.{i}, entries.(i))) |> aux
 
   let to_transitions (t : t) : ((int64 * int64) * entry) list =
-    CCList.of_seq @@ to_transition_seq t
+    List.of_seq @@ to_transition_seq t
 
   let table_of_transitions (l : (int64 * entry) list) : table option =
     let table =
@@ -287,7 +287,7 @@ module Raw = struct
       Some { typ = Backed name; record = process_table table }
 
   let of_table_exn ~name table =
-    CCOption.get_exn_or "Failed to construct time zone from table"
+    Misc_utils.option_get_exn_or "Failed to construct time zone from table"
       (of_table ~name table)
 
   let of_transitions ~name (l : (int64 * entry) list) : t option =
@@ -298,7 +298,7 @@ module Raw = struct
 end
 
 let offset_is_recorded offset (t : t) =
-  Array.mem (CCInt64.to_int @@ Span.get_s offset) t.record.recorded_offsets
+  Array.mem (Int64.to_int @@ Span.get_s offset) t.record.recorded_offsets
 
 module Compressed_table = struct
   type relative_entry = {
@@ -326,7 +326,7 @@ module Compressed_table = struct
     && x.is_dst = y.is_dst
     && x.offset = y.offset
 
-  module Relative_entry_set = CCSet.Make (struct
+  module Relative_entry_set = Set.Make (struct
       type t = relative_entry
 
       let compare x y =
@@ -379,8 +379,9 @@ module Compressed_table = struct
     let indices =
       Array.init count (fun i ->
           let (index_to_relative_entry, _) =
-            CCOption.get_exn_or "Unexpected failure in relative entry lookup" @@
-            CCArray.find_idx
+            Misc_utils.option_get_exn_or "Unexpected failure in relative entry lookup"
+            @@
+            Misc_utils.array_find_idx
               (fun x -> equal_relative_entry relative_entries.(i) x)
               uniq_relative_entries
           in
@@ -584,61 +585,6 @@ module Compressed = struct
     | None -> failwith "Failed to deserialize compressed time zone"
 end
 
-module Sexp = struct
-  let of_sexp (x : CCSexp.t) : t option =
-    let open Of_sexp_utils in
-    try
-      match x with
-      | `List l -> (
-          match l with
-          | `Atom "tz" :: `Atom name :: transitions ->
-            transitions
-            |> List.map (fun x ->
-                match x with
-                | `List [ start; `List [ `Atom is_dst; offset ] ] ->
-                  let start = int64_of_sexp start in
-                  let is_dst =
-                    match is_dst with
-                    | "t" -> true
-                    | "f" -> false
-                    | _ -> invalid_data ""
-                  in
-                  let offset = int_of_sexp offset in
-                  let entry = { is_dst; offset } in
-                  (start, entry)
-                | _ -> invalid_data "")
-            |> Raw.of_transitions ~name
-          | _ -> invalid_data "")
-      | `Atom _ -> invalid_data ""
-    with _ -> None
-
-  let to_sexp (t : t) : CCSexp.t =
-    let open To_sexp_utils in
-    CCSexp.(
-      list
-        (atom "tz"
-         :: atom (name t)
-         :: List.map
-           (fun ((start, _), entry) ->
-              list
-                [
-                  sexp_of_int64 start;
-                  list
-                    [
-                      (if entry.is_dst then atom "t" else atom "f");
-                      sexp_of_int entry.offset;
-                    ];
-                ])
-           (Raw.to_transitions t)))
-
-  let of_string s =
-    let res =
-      try CCSexp.parse_string s
-      with _ -> Error "Failed to parse string into sexp"
-    in
-    match res with Error _ -> None | Ok x -> of_sexp x
-end
-
 module JSON = struct
   let of_json json : t option =
     let exception Invalid_data in
@@ -696,7 +642,7 @@ module JSON = struct
                          ("offset", `Int entry.offset);
                        ];
                    ])
-             |> CCList.of_seq) );
+             |> List.of_seq) );
       ]
 end
 
@@ -708,7 +654,7 @@ module Db = struct
   let add tz db = M.add (name tz) tz.record.table db
 
   let find_opt name db =
-    M.find_opt name db |> CCOption.map (fun table -> Raw.of_table_exn ~name table)
+    M.find_opt name db |> Option.map (fun table -> Raw.of_table_exn ~name table)
 
   let remove name db = M.remove name db
 
@@ -727,37 +673,6 @@ module Db = struct
     let load (s : string) : db =
       M.map Compressed_table.of_string_exn
         (Marshal.from_string s 0)
-  end
-
-  module Sexp = struct
-    let of_sexp (x : CCSexp.t) : db option =
-      let open Of_sexp_utils in
-      try
-        match x with
-        | `Atom _ -> invalid_data ""
-        | `List l ->
-          Some
-            (l
-             |> CCList.to_seq
-             |> Seq.map (fun x ->
-                 match Sexp.of_sexp x with
-                 | None -> invalid_data ""
-                 | Some x -> x)
-             |> of_seq)
-      with _ -> None
-
-    let to_sexp db =
-      M.bindings db
-      |> List.map (fun (name, table) -> Raw.of_table_exn ~name table)
-      |> List.map Sexp.to_sexp
-      |> CCSexp.list
-
-    let of_string s =
-      let res =
-        try CCSexp.parse_string s
-        with _ -> Error "Failed to parse string into sexp"
-      in
-      match res with Error _ -> None | Ok x -> of_sexp x
   end
 end
 
@@ -809,7 +724,7 @@ let available_time_zones =
     |> Seq.map fst
     |> String_set.of_seq
   in
-  String_set.(union s0 s1 |> to_list)
+  String_set.(union s0 s1 |> to_seq |> List.of_seq)
 
 let local () : t option =
   match Timedesc_tzlocal.local () with
@@ -820,6 +735,6 @@ let local () : t option =
       None l
 
 let local_exn () : t =
-  match local () with
-  | None -> invalid_arg "local_exn: Could not determine the local timezone"
-  | Some x -> x
+  Misc_utils.option_get_exn_or
+  "local_exn: Could not determine the local timezone"
+  (local ())

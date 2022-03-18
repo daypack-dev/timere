@@ -135,14 +135,14 @@ let equal (x : t) (y : t) =
 let now ?tz_of_date_time () : t =
   timestamp_now ()
   |> of_timestamp ?tz_of_date_time
-  |> CCOption.get_exn_or "Expected successful date time construction for now"
+  |> Misc_utils.option_get_exn_or "Expected successful date time construction for now"
 
 let min_val =
-  CCOption.get_exn_or "Expected successful date time construction for min_val"
+  Misc_utils.option_get_exn_or "Expected successful date time construction for min_val"
   @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_min
 
 let max_val =
-  CCOption.get_exn_or "Expected successful date time construction for max_val"
+  Misc_utils.option_get_exn_or "Expected successful date time construction for max_val"
   @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_max
 
 let is_leap_second (dt : t) = Time.is_leap_second dt.time
@@ -238,7 +238,7 @@ module Zoneless' = struct
   let to_zoned_unambiguous ?tz ~offset_from_utc
       ({ date; time } as zl : zoneless) : (t, error_when_zoned) result =
     let make_invalid_tz_info_error ?tz ~offset_from_utc () =
-      Error (`Invalid_tz_info (CCOption.map Time_zone.name tz, offset_from_utc))
+      Error (`Invalid_tz_info (Option.map Time_zone.name tz, offset_from_utc))
     in
     (match
        Time_zone_info.make ?tz ~fixed_offset_from_utc:offset_from_utc ()
@@ -259,14 +259,14 @@ module Zoneless' = struct
            if e1.offset = offset_from_utc_s || e2.offset = offset_from_utc_s
            then Ok tz_info
            else make_invalid_tz_info_error ?tz ~offset_from_utc ()))
-    |> CCResult.map (fun ({ tz; fixed_offset_from_utc } : Time_zone_info.t) ->
+    |> Result.map (fun ({ tz; fixed_offset_from_utc } : Time_zone_info.t) ->
         {
           date;
           time;
           tz;
           offset_from_utc =
             `Single
-              (CCOption.get_exn_or
+              (Misc_utils.option_get_exn_or
                  "Expected fixed_offset_from_utc in tz_info to be Some _"
                  fixed_offset_from_utc);
         })
