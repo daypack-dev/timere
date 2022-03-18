@@ -94,9 +94,9 @@ let local () : string list =
             | None ->
               (* systemd distributions use symlinks that include the zone name *)
               let try3 =
-                let file = "/etc/localtime" in
-                if FileUtil.(test Is_link file) then
-                  let real_path = FileUtil.readlink file in
+                try
+                  let file = "/etc/localtime" in
+                  let real_path = Unix.readlink file in
                   let parts = String.split_on_char '/' real_path in
                   let combinations, _ =
                     List.fold_left
@@ -104,6 +104,7 @@ let local () : string list =
                       ([], parts) parts
                   in
                   List.map (String.concat "/") combinations
-                else []
+                with
+                | _ -> []
               in
               try3))

@@ -30,8 +30,6 @@ depends: [
   "containers" {>= "3.6"}
   "ptime"
   "yojson" {>= "1.6.0"}
-  "fmt" {>= "0.8.9"}
-  "fileutils"
   "js_of_ocaml" {>= "4.0.0"}
   "js_of_ocaml-ppx"
   "crowbar" {with-test}
