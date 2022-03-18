@@ -20,7 +20,6 @@
             ptime
             mparser
             angstrom
-            containers
             seq
             yojson
             bigarray

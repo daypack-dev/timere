@@ -37,7 +37,7 @@ let make ?(ns = 0) ?(s_frac = 0.0) ~hour ~minute ~second () : (t, error) result
         let second = if is_leap_second then 59 else second in
         let ns = if is_leap_second then ns + Span.ns_count_in_s else ns in
         let s =
-          CCInt64.to_int
+          Int64.to_int
           @@ Span.get_s
           @@ Span.For_human'.make_exn ~sign:`Pos ~hours:hour ~minutes:minute
             ~seconds:second ()
@@ -54,7 +54,7 @@ let to_span (x : t) : Span.t =
 
 let of_span (x : Span.t) : t option =
   if Span.(zero <= x && x < Constants.one_day) then
-    let s = CCInt64.to_int @@ Span.get_s x in
+    let s = Int64.to_int @@ Span.get_s x in
     let ns = Span.get_ns_offset x in
     Some { s; ns }
   else None

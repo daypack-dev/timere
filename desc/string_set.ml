@@ -1,4 +1,4 @@
-include CCSet.Make (struct
+include Set.Make (struct
     type t = string
 
     let compare = String.compare
