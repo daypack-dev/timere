@@ -1,3 +1,4 @@
+open Timedesc
 open Date_time_utils
 
 let sexp_of_month x =
@@ -19,8 +20,12 @@ let sexp_of_span (x : Span.t) =
   CCSexp.list
     [ sexp_of_int64 @@ Span.get_s x; sexp_of_int @@ Span.get_ns_offset x ]
 
-let sexp_of_tz_info ({ tz; fixed_offset_from_utc } : Time_zone_info.t) =
+let sexp_of_tz_info (info : Time_zone_info.t) =
   let open CCSexp in
+  let tz = Time_zone_info.tz info in
+  let fixed_offset_from_utc =
+    Time_zone_info.fixed_offset_from_utc info
+  in
   list
     (CCList.filter_map CCFun.id
        [
@@ -33,7 +38,7 @@ let sexp_of_tz_info ({ tz; fixed_offset_from_utc } : Time_zone_info.t) =
 
 let sexp_of_date (x : Date.t) =
   let open CCSexp in
-  let { Date.Ymd'.year; month; day } = Date.Ymd'.view x in
+  let { Date.Ymd.year; month; day } = Date.Ymd.view x in
   list [ sexp_of_int year; sexp_of_int month; sexp_of_int day ]
 
 let sexp_of_time (x : Time.t) =
@@ -42,14 +47,14 @@ let sexp_of_time (x : Time.t) =
   list
     [ sexp_of_int hour; sexp_of_int minute; sexp_of_int second; sexp_of_int ns ]
 
-let sexp_of_date_time (x : Date_time.t) =
+let sexp_of_date_time (x : t) =
   let open CCSexp in
   list
     [
-      sexp_of_date x.date;
-      sexp_of_time x.time;
-      sexp_of_tz_name x.tz;
-      (match x.offset_from_utc with
+      sexp_of_date (date x);
+      sexp_of_time (time x);
+      sexp_of_tz_name (tz x);
+      (match offset_from_utc x with
        | `Single offset ->
          list
            [
@@ -64,6 +69,6 @@ let sexp_of_date_time (x : Date_time.t) =
            ]);
     ]
 
-let sexp_of_zoneless (x : Date_time.Zoneless'.zoneless) =
+let sexp_of_zoneless (x : Zoneless.zoneless) =
   let open CCSexp in
-  list [ sexp_of_date x.date; sexp_of_time x.time ]
+  list [ sexp_of_date Zoneless.(date x); sexp_of_time Zoneless.(time x) ]

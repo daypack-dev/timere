@@ -73,12 +73,15 @@ val of_sexp_string : string -> (t, string) result
 val pp_sexp : Format.formatter -> t -> unit
 
 module Timestamp : sig
+  open Timestamp
+
   val of_sexp : CCSexp.t -> (t, string) result
 
   val to_sexp : t -> CCSexp.t
 end
 
 module Zoneless : sig
+  open Zoneless
   val to_sexp : zoneless -> CCSexp.t
 
   val of_sexp : CCSexp.t -> (zoneless, string) result

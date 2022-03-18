@@ -1081,6 +1081,10 @@ module Time_zone : sig
   }
 
   module Raw : sig
+    val of_table : name:string -> Timedesc_tzdb.table -> t option
+
+    val of_table_exn : name:string -> Timedesc_tzdb.table -> t
+
     val of_transitions : name:string -> (int64 * entry) list -> t option
 
     val to_transitions : t -> ((int64 * int64) * entry) list

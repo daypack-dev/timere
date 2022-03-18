@@ -1,3 +1,4 @@
+open Timedesc
 open Of_sexp_utils
 
 let int_of_sexp (x : CCSexp.t) =
@@ -25,7 +26,7 @@ let span_of_sexp (x : CCSexp.t) =
   | `List [ s; ns ] ->
     let s = int64_of_sexp s in
     let ns = int_of_sexp ns in
-    Span.make ~s ~ns ()
+    Timedesc.Span.make ~s ~ns ()
   | `List _ ->
     invalid_data
       (Printf.sprintf "List too long for span: %s" (CCSexp.to_string x))
@@ -46,16 +47,15 @@ let tz_info_of_sexp (x : CCSexp.t) : Time_zone_info.t =
     invalid_data (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x))
   | `List l -> (
       match l with
-      | [ x ] -> { tz = tz_make_of_sexp x; fixed_offset_from_utc = None }
+      | [ x ] -> Time_zone_info.make_exn ~tz:(tz_make_of_sexp x) ()
       | [ x; offset_from_utc ] ->
-        {
-          tz = tz_make_of_sexp x;
-          fixed_offset_from_utc =
-            Some
+          Time_zone_info.make_exn 
+          ~tz:(tz_make_of_sexp x)
+          ~fixed_offset_from_utc:
               (Span.make
                  ~s:(CCInt64.of_int @@ int_of_sexp offset_from_utc)
-                 ());
-        }
+                 ())
+              ()
       | _ ->
         invalid_data
           (Printf.sprintf "Invalid tz_info: %s" (CCSexp.to_string x)))

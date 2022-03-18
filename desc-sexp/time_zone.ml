@@ -1,3 +1,5 @@
+open Timedesc.Time_zone
+
   let of_sexp (x : CCSexp.t) : t option =
     let open Of_sexp_utils in
     try
@@ -52,6 +54,8 @@
     match res with Error _ -> None | Ok x -> of_sexp x
 
     module Db = struct
+      open Db
+
     let of_sexp (x : CCSexp.t) : db option =
       let open Of_sexp_utils in
       try
@@ -62,16 +66,16 @@
             (l
              |> CCList.to_seq
              |> Seq.map (fun x ->
-                 match Sexp.of_sexp x with
+                 match of_sexp x with
                  | None -> invalid_data ""
                  | Some x -> x)
              |> of_seq)
       with _ -> None
 
     let to_sexp db =
-      M.bindings db
-      |> List.map (fun (name, table) -> Raw.of_table_exn ~name table)
-      |> List.map Sexp.to_sexp
+      Timedesc_tzdb.M.bindings db
+      |> List.map (fun (name, table) -> Timedesc.Time_zone.Raw.of_table_exn ~name table)
+      |> List.map to_sexp
       |> CCSexp.list
 
     let of_string s =

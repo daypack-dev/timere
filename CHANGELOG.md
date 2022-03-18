@@ -44,6 +44,10 @@
 
   - They are just aliases to the RFC3339 printers
 
+- Significantly reduced number of dependencies, and moved sexp, json code into separate packages
+
+  - Removed dependencies: `fmt`, `containers`, `oseq`
+
 ## Timere-parse 0.0.6
 
 - Bumped dependency of Timedesc to >= 0.6.0, Timere to >= 0.7.0
