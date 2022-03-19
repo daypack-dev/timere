@@ -60,6 +60,10 @@ module Zoneless = struct
   let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.zoneless_of_sexp
 end
 
+module Time_zone = struct
+  include Time_zone
+end
+
 module Time_zone_info = struct
   let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.tz_info_of_sexp
 

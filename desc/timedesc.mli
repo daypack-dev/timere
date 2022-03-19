@@ -2014,6 +2014,12 @@ module Time_zone_info : sig
    *  e.g. "UTC+1" can be represented by fixed offset of 1 hour.
    * *)
 
+  val make_exn :
+    ?tz:Time_zone.t ->
+    ?fixed_offset_from_utc:Span.t ->
+    unit ->
+    t
+
   val tz : t -> Time_zone.t
 
   val fixed_offset_from_utc : t -> Span.t option

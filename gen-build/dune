@@ -5,6 +5,8 @@
  (libraries containers
             bigarray
             timedesc
+            timedesc-sexp
             timedesc.tzdb.none
+            timedesc.tzlocal.utc
  )
 )

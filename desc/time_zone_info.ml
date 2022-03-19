@@ -41,3 +41,8 @@ let make ?tz ?fixed_offset_from_utc () : (t, error) result =
     if Time_zone.offset_is_recorded offset_from_utc tz then
       Ok { tz; fixed_offset_from_utc = Some offset_from_utc }
     else Error (`Unrecorded_offset offset_from_utc)
+
+let make_exn ?tz ?fixed_offset_from_utc () : t =
+  match make ?tz ?fixed_offset_from_utc () with
+  | Ok x -> x
+  | Error _ -> invalid_arg "make_exn"

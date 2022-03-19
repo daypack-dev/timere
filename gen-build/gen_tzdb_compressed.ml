@@ -6,7 +6,7 @@ let () =
   Format.printf "Generating file %s from file %s@." file_output file_input;
   let db =
     CCOption.get_exn_or "Expected db to successfully load from sexp string"
-    @@ Timedesc.Time_zone.Db.Sexp.of_string
+    @@ Timedesc_sexp.Time_zone.Db.of_string
     @@ CCIO.(with_in file_input read_all)
   in
   CCIO.with_out ~flags:[ Open_wronly; Open_creat; Open_trunc ] file_output

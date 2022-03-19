@@ -69,7 +69,7 @@ let date_of_sexp (x : CCSexp.t) =
       let year = int_of_sexp year in
       let month = int_of_sexp month in
       let day = int_of_sexp day in
-      match Date.Ymd'.make ~year ~month ~day with
+      match Date.Ymd.make ~year ~month ~day with
       | Ok x -> x
       | Error _ -> invalid_data ())
   | _ -> invalid_data ()
@@ -97,7 +97,7 @@ let zoneless_of_sexp (x : CCSexp.t) =
   | `List [ date; time ] ->
     let date = date_of_sexp date in
     let time = time_of_sexp time in
-    Date_time.Zoneless'.make date time
+    Zoneless.make date time
   | _ -> invalid_data ()
 
 let date_time_of_sexp (x : CCSexp.t) =
@@ -123,20 +123,20 @@ let date_time_of_sexp (x : CCSexp.t) =
       match offset_from_utc with
       | `Single offset_from_utc -> (
           match
-            Date_time.Zoneless'.to_zoned_unambiguous ~tz ~offset_from_utc
-              (Date_time.Zoneless'.make date time)
+            Zoneless.to_zoned_unambiguous ~tz ~offset_from_utc
+              (Zoneless.make date time)
           with
           | Ok x -> x
           | Error _ -> invalid_data ())
       | `Ambiguous _ -> (
           match
-            Date_time.Zoneless'.to_zoned ~tz
-              (Date_time.Zoneless'.make date time)
+            Zoneless.to_zoned ~tz
+              (Zoneless.make date time)
           with
           | Ok x ->
             if
-              Date_time.equal_local_result ~eq:Span.equal offset_from_utc
-                Date_time.(offset_from_utc x)
+              equal_local_result ~eq:Span.equal offset_from_utc
+                Timedesc.(offset_from_utc x)
             then x
             else invalid_data ()
           | Error _ -> invalid_data ())
