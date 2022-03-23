@@ -12,7 +12,7 @@
 
 (rule
  (targets of_sexp_utils.ml)
- (deps    ../desc/of_sexp_utils.ml)
+ (deps    ../desc-sexp/of_sexp_utils.ml)
  (action  (copy %{deps} %{targets}))
 )
 

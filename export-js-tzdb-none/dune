@@ -23,7 +23,7 @@
             js_of_ocaml-lwt
             timere
             timedesc.tzdb.none
-            timedesc.tzlocal.js
+            timedesc-tzlocal-js
             timere-parse
             )
  (preprocess (pps js_of_ocaml-ppx lwt_ppx))
