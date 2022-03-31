@@ -430,7 +430,7 @@ let () =
   let db = Timedesc.Time_zone.Db.of_seq @@ CCList.to_seq time_zones in
   CCIO.with_out ~flags:output_flags data_output_file_name (fun oc ->
       Format.fprintf (CCFormat.of_chan oc) "%a@." CCSexp.pp
-        (Timedesc.Time_zone.Db.Sexp.to_sexp db));
+        (Timedesc_sexp.Time_zone.Db.to_sexp db));
 
   Printf.printf "Generating %s\n" tz_constants_file_name;
   CCIO.with_out ~flags:output_flags tz_constants_file_name (fun oc ->

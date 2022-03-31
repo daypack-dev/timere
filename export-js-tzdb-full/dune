@@ -5,7 +5,7 @@
             js_of_ocaml-lwt
             timere
             timedesc.tzdb.full
-            timedesc.tzlocal.js
+            timedesc-tzlocal-js
             timere-parse
             yojson
             )
