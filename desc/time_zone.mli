@@ -70,7 +70,7 @@ module JSON : sig
 end
 
 module Db : sig
-  type db
+  type db = Timedesc_tzdb.table Timedesc_tzdb.M.t
 
   val empty : db
 
