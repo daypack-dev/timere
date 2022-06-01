@@ -1,5 +1,9 @@
+open Timedesc
+
 module Time_zone = struct
-  let of_json json : Timedesc.Time_zone.t option =
+  open Time_zone
+
+  let of_json json : t option =
     let exception Invalid_data in
     try
       match json with
