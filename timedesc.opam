@@ -23,13 +23,10 @@ depends: [
   "ocaml" {>= "4.08.1"}
   "bisect_ppx" {dev & >= "2.5.0"}
   "dune" {>= "2.7.0"}
-  "oseq" {>= "0.3"}
   "seq"
   "mparser" {>= "1.2.3"}
   "angstrom" {>= "0.15.0"}
-  "containers" {>= "3.6"}
   "ptime"
-  "yojson" {>= "1.6.0"}
   "js_of_ocaml" {>= "4.0.0"}
   "js_of_ocaml-ppx"
   "crowbar" {with-test}

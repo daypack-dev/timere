@@ -21,7 +21,6 @@
             mparser
             angstrom
             seq
-            yojson
             bigarray
  )
 )
