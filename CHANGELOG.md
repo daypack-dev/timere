@@ -20,6 +20,12 @@
 
   - Previously leads to incorrect result space computation, and may lead to time slots missing despite meeting criteria
 
+## Timedesc 0.8.0
+
+- Significantly reduced number of dependencies, and moved sexp, json code into separate packages
+
+  - Removed dependencies: `fmt`, `containers`, `oseq`
+
 ## Timedesc 0.7.0
 
 - Added `tzlocal.js` backend for `js_of_ocaml`
@@ -43,10 +49,6 @@
 - Added ISO8601 printing facilities to `Timestamp` module for consistency
 
   - They are just aliases to the RFC3339 printers
-
-- Significantly reduced number of dependencies, and moved sexp, json code into separate packages
-
-  - Removed dependencies: `fmt`, `containers`, `oseq`
 
 ## Timere-parse 0.0.6
 
