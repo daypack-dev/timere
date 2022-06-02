@@ -21,7 +21,6 @@
             fileutils
             ptime
             timedesc
-            timedesc-sexp
             timedesc.tzdb.none
             timedesc.tzlocal.none
             bigarray
