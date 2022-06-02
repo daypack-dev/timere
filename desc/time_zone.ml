@@ -164,8 +164,8 @@ let make_offset_only (offset : Span.t) =
 
 let make_offset_only_exn offset =
   Misc_utils.option_get_exn_or
-  "make_offset_only_span_exn"
-  (make_offset_only offset)
+    "make_offset_only_span_exn"
+    (make_offset_only offset)
 
 let utc : t =
   Misc_utils.option_get_exn_or "Expected successful construction of UTC"
@@ -675,8 +675,8 @@ let local () : t option =
 
 let local_exn () : t =
   Misc_utils.option_get_exn_or
-  "local_exn: Could not determine the local timezone"
-  (local ())
+    "local_exn: Could not determine the local timezone"
+    (local ())
 
 module Sexp = struct
   open Sexplib
@@ -710,29 +710,29 @@ module Sexp = struct
 
   let to_sexp (t : t) : Sexp.t =
     let open To_sexp_utils in
-      Sexp.List
-        (Atom "tz"
-         :: Atom (name t)
-         :: List.map
-           (fun ((start, _), entry) ->
-              Sexp.List
-                [
-                  sexp_of_int64 start;
-                  Sexp.List
-                    [
-                      (if entry.is_dst then Atom "t" else Atom "f");
-                      sexp_of_int entry.offset;
-                    ];
-                ])
-           (Raw.to_transitions t))
+    Sexp.List
+      (Atom "tz"
+       :: Atom (name t)
+       :: List.map
+         (fun ((start, _), entry) ->
+            Sexp.List
+              [
+                sexp_of_int64 start;
+                Sexp.List
+                  [
+                    (if entry.is_dst then Atom "t" else Atom "f");
+                    sexp_of_int entry.offset;
+                  ];
+              ])
+         (Raw.to_transitions t))
 
   let of_string s =
-      match Sexp.of_string s with
-      | exception _ -> None
-      | x -> of_sexp x
+    match Sexp.of_string s with
+    | exception _ -> None
+    | x -> of_sexp x
 
-    module Db = struct
-      open Db
+  module Db = struct
+    open Db
 
     let of_sexp (x : Sexp.t) : db option =
       let open Of_sexp_utils in
@@ -752,14 +752,14 @@ module Sexp = struct
 
     let to_sexp db =
       Sexp.List
-      (Timedesc_tzdb.M.bindings db
-      |> List.map (fun (name, table) -> Raw.of_table_exn ~name table)
-      |> List.map to_sexp
-      )
+        (Timedesc_tzdb.M.bindings db
+         |> List.map (fun (name, table) -> Raw.of_table_exn ~name table)
+         |> List.map to_sexp
+        )
 
     let of_string s =
       match Sexp.of_string s with
       | exception _ -> None
       | x -> of_sexp x
-    end
+  end
 end

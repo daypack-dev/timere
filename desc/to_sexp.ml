@@ -3,10 +3,10 @@ open Date_time_utils
 
 let sexp_of_month x =
   Sexp.Atom
-  (match abbr_string_of_month x with
-  | Some x -> x
-  | None -> invalid_arg "Expected valid month"
-  )
+    (match abbr_string_of_month x with
+     | Some x -> x
+     | None -> invalid_arg "Expected valid month"
+    )
 
 let sexp_of_weekday x = Sexp.Atom (abbr_string_of_weekday x)
 

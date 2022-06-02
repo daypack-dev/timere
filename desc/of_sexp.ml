@@ -49,13 +49,13 @@ let tz_info_of_sexp (x : Sexp.t) : Time_zone_info.t =
       match l with
       | [ x ] -> Time_zone_info.make_exn ~tz:(tz_make_of_sexp x) ()
       | [ x; offset_from_utc ] ->
-          Time_zone_info.make_exn 
+        Time_zone_info.make_exn 
           ~tz:(tz_make_of_sexp x)
           ~fixed_offset_from_utc:
-              (Span.make
-                 ~s:(Int64.of_int @@ int_of_sexp offset_from_utc)
-                 ())
-              ()
+            (Span.make
+               ~s:(Int64.of_int @@ int_of_sexp offset_from_utc)
+               ())
+          ()
       | _ ->
         invalid_data
           (Printf.sprintf "Invalid tz_info: %s" (Sexp.to_string x)))

@@ -33,6 +33,6 @@ let wrap_of_sexp (f : Sexp.t -> 'a) : Sexp.t -> ('a, string) result =
 let wrap_of_sexp_into_of_sexp_string (f : Sexplib.Sexp.t -> 'a) :
   string -> ('a, string) result =
   fun s ->
-    match Sexplib.Sexp.of_string s with
-    | exception _ -> Error "Failed to parse string into sexp"
-    | x -> (wrap_of_sexp f) x
+  match Sexplib.Sexp.of_string s with
+  | exception _ -> Error "Failed to parse string into sexp"
+  | x -> (wrap_of_sexp f) x
