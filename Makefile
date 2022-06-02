@@ -16,10 +16,6 @@ all :
 desc :
 	dune build desc
 
-.PHONY: desc-sexp
-desc-sexp :
-	dune build desc-sexp
-
 .PHONY: desc-json
 desc-json :
 	dune build desc-json
