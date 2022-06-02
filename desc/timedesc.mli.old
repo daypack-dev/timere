@@ -412,11 +412,11 @@ module Span : sig
 
   (** {1 Sexp} *)
 
-  val to_sexp : t -> Sexplib.Sexp.t
+  val to_sexp : t -> CCSexp.t
 
   val to_sexp_string : t -> string
 
-  val of_sexp : Sexplib.Sexp.t -> (t, string) result
+  val of_sexp : CCSexp.t -> (t, string) result
 
   val of_sexp_string : string -> (t, string) result
 
@@ -768,11 +768,11 @@ module Date : sig
 
   (** {1 Sexp} *)
 
-  val to_sexp : t -> Sexplib.Sexp.t
+  val to_sexp : t -> CCSexp.t
 
   val to_sexp_string : t -> string
 
-  val of_sexp : Sexplib.Sexp.t -> (t, string) result
+  val of_sexp : CCSexp.t -> (t, string) result
 
   val of_sexp_string : string -> (t, string) result
 
@@ -1036,11 +1036,11 @@ module Time : sig
 
   (** {1 Sexp} *)
 
-  val to_sexp : t -> Sexplib.Sexp.t
+  val to_sexp : t -> CCSexp.t
 
   val to_sexp_string : t -> string
 
-  val of_sexp : Sexplib.Sexp.t -> (t, string) result
+  val of_sexp : CCSexp.t -> (t, string) result
 
   val of_sexp_string : string -> (t, string) result
 
@@ -1117,10 +1117,6 @@ module Time_zone : sig
   }
 
   module Raw : sig
-    val of_table : name:string -> Timedesc_tzdb.table -> t option
-
-    val of_table_exn : name:string -> Timedesc_tzdb.table -> t
-
     val of_transitions : name:string -> (int64 * entry) list -> t option
 
     val to_transitions : t -> ((int64 * int64) * entry) list
@@ -1137,15 +1133,23 @@ module Time_zone : sig
   end
 
   module Sexp : sig
-    val to_sexp : t -> Sexplib.Sexp.t
+    val to_sexp : t -> CCSexp.t
 
-    val of_sexp : Sexplib.Sexp.t -> t option
+    val of_sexp : CCSexp.t -> t option
+
+    val of_string : string -> t option
+  end
+
+  module JSON : sig
+    val to_json : t -> Yojson.Basic.t
+
+    val of_json : Yojson.Basic.t -> t option
 
     val of_string : string -> t option
   end
 
   module Db : sig
-    type db = Timedesc_tzdb.table Timedesc_tzdb.M.t
+    type db
 
     val empty : db
 
@@ -1168,9 +1172,9 @@ module Time_zone : sig
     end
 
     module Sexp : sig
-      val of_sexp : Sexplib.Sexp.t -> db option
+      val of_sexp : CCSexp.t -> db option
 
-      val to_sexp : db -> Sexplib.Sexp.t
+      val to_sexp : db -> CCSexp.t
 
       val of_string : string -> db option
     end
@@ -1526,11 +1530,11 @@ val of_iso8601_exn : string -> t
 
 (** {2 Sexp} *)
 
-val to_sexp : t -> Sexplib.Sexp.t
+val to_sexp : t -> CCSexp.t
 
 val to_sexp_string : t -> string
 
-val of_sexp : Sexplib.Sexp.t -> (t, string) result
+val of_sexp : CCSexp.t -> (t, string) result
 
 val of_sexp_string : string -> (t, string) result
 
@@ -1706,9 +1710,9 @@ module Timestamp : sig
 
   (** {1 Sexp} *)
 
-  val of_sexp : Sexplib.Sexp.t -> (t, string) result
+  val of_sexp : CCSexp.t -> (t, string) result
 
-  val to_sexp : t -> Sexplib.Sexp.t
+  val to_sexp : t -> CCSexp.t
 end
 
 (** {1 Interval} *)
@@ -1844,9 +1848,9 @@ module Zoneless : sig
 
   (** {1 Sexp} *)
 
-  val to_sexp : zoneless -> Sexplib.Sexp.t
+  val to_sexp : zoneless -> CCSexp.t
 
-  val of_sexp : Sexplib.Sexp.t -> (zoneless, string) result
+  val of_sexp : CCSexp.t -> (zoneless, string) result
 end
 
 (** {1 Other date time systems}*)
@@ -2082,21 +2086,15 @@ module Time_zone_info : sig
    *  e.g. "UTC+1" can be represented by fixed offset of 1 hour.
    * *)
 
-  val make_exn :
-    ?tz:Time_zone.t ->
-    ?fixed_offset_from_utc:Span.t ->
-    unit ->
-    t
-
   val tz : t -> Time_zone.t
 
   val fixed_offset_from_utc : t -> Span.t option
 
   val equal : t -> t -> bool
 
-  val of_sexp : Sexplib.Sexp.t -> (t, string) result
+  val of_sexp : CCSexp.t -> (t, string) result
 
-  val to_sexp : t -> Sexplib.Sexp.t
+  val to_sexp : t -> CCSexp.t
 end
 
 module Utils : sig

@@ -394,3 +394,7 @@ let pp_span_for_human ?(format : string = default_span_for_human_format_string)
 
 let string_of_span_for_human ?format (x : Span.t) : string =
   Format.asprintf "%a" (pp_span_for_human ?format ()) x
+
+let wrap_to_sexp_into_pp_sexp (f : 'a -> Sexplib.Sexp.t) :
+  Format.formatter -> 'a -> unit =
+  fun formatter x -> Sexplib.Sexp.pp formatter (f x)

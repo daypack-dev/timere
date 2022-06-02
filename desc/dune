@@ -22,5 +22,6 @@
             angstrom
             seq
             bigarray
+            sexplib
  )
 )
