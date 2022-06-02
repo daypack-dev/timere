@@ -61,6 +61,14 @@ module Compressed : sig
   val of_string_exn : string -> t
 end
 
+module Sexp : sig
+  val to_sexp : t -> Sexplib.Sexp.t
+
+  val of_sexp : Sexplib.Sexp.t -> t option
+
+  val of_string : string -> t option
+end
+
 module Db : sig
   type db = Timedesc_tzdb.table Timedesc_tzdb.M.t
 
@@ -82,5 +90,13 @@ module Db : sig
     val dump : db -> string
 
     val load : string -> db
+  end
+
+  module Sexp : sig
+    val to_sexp : db -> Sexplib.Sexp.t
+
+    val of_sexp : Sexplib.Sexp.t -> db option
+
+    val of_string : string -> db option
   end
 end

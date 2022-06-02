@@ -52,6 +52,17 @@ module Date = struct
 
   let of_iso8601_exn s = of_iso8601_exn' of_iso8601 s
 
+  let to_sexp = To_sexp.sexp_of_date
+
+  let to_sexp_string x = Sexplib.Sexp.to_string (To_sexp.sexp_of_date x)
+
+  let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.date_of_sexp
+
+  let of_sexp_string =
+    Of_sexp_utils.wrap_of_sexp_into_of_sexp_string Of_sexp.date_of_sexp
+
+  let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_date
+
   module Ymd = struct
     include Ymd'
 
@@ -111,6 +122,17 @@ module Time = struct
   let of_iso8601 = ISO8601_parsers.time_of_str
 
   let of_iso8601_exn s = of_iso8601_exn' of_iso8601 s
+
+  let to_sexp = To_sexp.sexp_of_time
+
+  let to_sexp_string x = Sexplib.Sexp.to_string (To_sexp.sexp_of_time x)
+
+  let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.time_of_sexp
+
+  let of_sexp_string =
+    Of_sexp_utils.wrap_of_sexp_into_of_sexp_string Of_sexp.time_of_sexp
+
+  let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_time
 end
 
 exception Invalid_format_string = Printers.Invalid_format_string
@@ -129,6 +151,17 @@ module Span = struct
   let to_string = Printers.string_of_span
 
   let pp = Printers.pp_span
+
+  let to_sexp = To_sexp.sexp_of_span
+
+  let to_sexp_string x = Sexplib.Sexp.to_string (To_sexp.sexp_of_span x)
+
+  let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.span_of_sexp
+
+  let of_sexp_string =
+    Of_sexp_utils.wrap_of_sexp_into_of_sexp_string Of_sexp.span_of_sexp
+
+  let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_span
 end
 
 module Timestamp = struct
@@ -179,6 +212,10 @@ module Timestamp = struct
   let of_iso8601 = ISO8601_parsers.timestamp_of_str
 
   let of_iso8601_exn = of_iso8601_exn' of_iso8601
+
+  let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.span_of_sexp
+
+  let to_sexp = To_sexp.sexp_of_span
 end
 
 let to_string = Printers.string_of_date_time
@@ -223,6 +260,17 @@ let to_iso8601_nano = to_rfc3339_nano
 let of_iso8601 = ISO8601_parsers.date_time_of_str
 
 let of_iso8601_exn = of_iso8601_exn' of_iso8601
+
+let to_sexp = To_sexp.sexp_of_date_time
+
+let to_sexp_string x = Sexplib.Sexp.to_string (To_sexp.sexp_of_date_time x)
+
+let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.date_time_of_sexp
+
+let of_sexp_string =
+  Of_sexp_utils.wrap_of_sexp_into_of_sexp_string Of_sexp.date_time_of_sexp
+
+let pp_sexp = Printers.wrap_to_sexp_into_pp_sexp To_sexp.sexp_of_date_time
 
 let min_of_local_result = min_of_local_result
 
@@ -312,10 +360,18 @@ module Zoneless = struct
   let maybe_zoneless_of_iso8601 = ISO8601_parsers.maybe_zoneless_of_str
 
   let maybe_zoneless_of_iso8601_exn = of_iso8601_exn' maybe_zoneless_of_iso8601
+
+  let to_sexp = To_sexp.sexp_of_zoneless
+
+  let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.zoneless_of_sexp
 end
 
 module Time_zone_info = struct
   include Time_zone_info
+
+  let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.tz_info_of_sexp
+
+  let to_sexp = To_sexp.sexp_of_tz_info
 end
 
 module Utils = struct
