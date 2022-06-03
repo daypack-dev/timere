@@ -1,6 +1,6 @@
 (rule
  (targets date_time_utils.ml)
- (deps    ../desc/date_time_utils.ml)
+ (deps    ../timedesc/date_time_utils.ml)
  (action  (copy %{deps} %{targets}))
 )
 
@@ -11,7 +11,7 @@
  (instrumentation (backend bisect_ppx))
  (libraries
             timedesc
-            timedesc.tzdb
+            timedesc-tzdb
             timedesc-tzlocal
             yojson
  )

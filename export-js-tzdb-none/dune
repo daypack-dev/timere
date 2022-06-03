@@ -22,9 +22,10 @@
  (libraries js_of_ocaml
             js_of_ocaml-lwt
             timere
-            timedesc.tzdb.none
+            timedesc-tzdb.none
             timedesc-tzlocal-js
             timere-parse
+            yojson
             )
  (preprocess (pps js_of_ocaml-ppx lwt_ppx))
  ; (js_of_ocaml (flags --source-map --debug-info))

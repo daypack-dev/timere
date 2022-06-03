@@ -5,7 +5,7 @@
  (libraries containers
             bigarray
             timedesc
-            timedesc.tzdb.none
-            timedesc.tzlocal.utc
+            timedesc-tzdb.none
+            timedesc-tzlocal.utc
  )
 )
