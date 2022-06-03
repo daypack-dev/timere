@@ -2,8 +2,7 @@
  (flags     (-w "+a-4-9-29-37-40-42-44-48-50-70@8"))
  (names gen_tzdb_compressed
  )
- (libraries containers
-            bigarray
+ (libraries bigarray
             timedesc
             timedesc-tzdb.none
             timedesc-tzlocal.utc
