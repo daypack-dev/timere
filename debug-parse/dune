@@ -1,6 +1,6 @@
 (rule
  (targets parser.ml)
- (deps    ../parse/parser.ml)
+ (deps    ../timere-parse/parser.ml)
  (action  (copy %{deps} %{targets}))
 )
 

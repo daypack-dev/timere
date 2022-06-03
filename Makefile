@@ -1,4 +1,14 @@
-SRCFILES = desc/*.ml desc/*.mli src/*.ml src/*.mli parse/*.ml parse/*.mli corpus/*.ml debug/*.ml tests/*.ml desc-tests/*.ml fuzz/*.ml gen/*.ml gen-build/*.ml tzdb-*/*.ml tzdb-*/*.mli tzlocal-*/*.ml tzlocal-*/*.mli export-js-tzdb-full/*.ml
+SRCFILES = timedesc/*.ml timedesc/*.mli \
+					 timere/*.ml timere/*.mli \
+					 timere-parse/*.ml timere-parse/*.mli	\
+					 corpus/*.ml debug/*.ml \
+					 timedesc-tests/*.ml \
+					 timere-tests/*.ml \
+					 fuzz/*.ml \
+					 gen/*.ml gen-build/*.ml \
+					 timedesc-tzdb/*/*.ml timedesc-tzdb/*.mli \
+					 timedesc-tzlocal/*/*.ml timedesc-tzlocal/*.mli \
+					 export-js-tzdb-full/*.ml
 
 OCAMLFORMAT = ocamlformat \
 	--inplace \
@@ -12,32 +22,36 @@ OCPINDENT = ocp-indent \
 all :
 	dune build @all
 
-.PHONY: desc
-desc :
-	dune build desc
+.PHONY: timedesc
+timedesc :
+	dune build timedesc/
 
-.PHONY: lib
-lib :
-	dune build src
+.PHONY: timedesc-json
+timedesc-json :
+	dune build timedesc-json
 
-.PHONY: desc-test
-desc-test : desc
-	OCAMLRUNPARAM=b dune runtest --force desc/
+.PHONY: timere
+timere :
+	dune build timere
 
-.PHONY: test
-test : lib
-	OCAMLRUNPARAM=b dune runtest --force src/
+.PHONY: timedesc-test
+timedesc-test : timedesc
+	OCAMLRUNPARAM=b dune runtest --force timedesc/
 
-.PHONY: cov-desc-test
-cov-desc-test : desc
+.PHONY: timere-test
+timere-test : timere
+	OCAMLRUNPARAM=b dune runtest --force timere/
+
+.PHONY: cov-timedesc-test
+cov-timedesc-test : timedesc
 	find . -name '*.coverage' | xargs rm -f
-	dune runtest --instrument-with bisect_ppx --force desc/
+	dune runtest --instrument-with bisect_ppx --force timedesc/
 	bisect-ppx-report html
 
-.PHONY: cov-test
-cov-test : lib
+.PHONY: cov-timere-test
+cov-timere-test : timere
 	find . -name '*.coverage' | xargs rm -f
-	dune runtest --instrument-with bisect_ppx --force tests/
+	dune runtest --instrument-with bisect_ppx --force timere/
 	bisect-ppx-report html
 
 .PHONY: debug
@@ -89,11 +103,6 @@ export-js-tzdb-full :
 export-js-tzdb-none :
 	dune build export-js-tzdb-none/export.bc.js
 	dune build export-js-tzdb-none/export_all.bc.js
-
-.PHONY: cinaps
-cinaps :
-	cinaps -i $(SRCFILES)
-	$(OCAMLFORMAT)
 
 .PHONY : clean
 clean:

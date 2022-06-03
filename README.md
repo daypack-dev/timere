@@ -84,11 +84,11 @@ Include `timedesc` (`timere` and `timere-parse` if needed) in the `libraries` st
 
 You can optionally pick one of the following two concrete implementations of time zone data source
 
-- `timedesc.tzdb.full`
+- `timedesc-tzdb.full`
 
   - This is the default implementation which embeds the IANA time zone database from year 1850 to year 2100 exclusive
 
-- `timedesc.tzdb.none`
+- `timedesc-tzdb.none`
 
   - This embeds no database.
     This is suitable for when you want to retrieve time zone data during run time, for instance, to reduce the built artifact size.
@@ -105,21 +105,21 @@ You can optionally pick one of the following two concrete implementations of tim
 
 You can optionally pick one of the following three concrete implementations of local time zone detection
 
-- `timedesc.tzlocal.unix`
+- `timedesc-tzlocal.unix`
 
   - This is the default implementation which tries to look up info of OS for local time zone name. Should work for common Linux distros.
 
-- `timedesc.tzlocal.js`
-
-  - This is an implementation for `js_of_ocaml` which uses `Intl.DateTimeFormat` to get the local time zone name. Should work in all modern browsers, as well as node.js.
-
-- `timedesc.tzlocal.none`
+- `timedesc-tzlocal.none`
 
   - This simply returns no time zone guesses
 
-- `timedesc.tzlocal.utc`
+- `timedesc-tzlocal.utc`
 
   - This simply returns UTC as the only guess
+
+- `timedesc-tzlocal-js` (requires package `timedesc-tzlocal-js`)
+
+  - This is an implementation for `js_of_ocaml` which uses `Intl.DateTimeFormat` to get the local time zone name. Should work in all modern browsers, as well as node.js.
 
 __Note__: While `tzdb-json/` may be useful and usable outside of Timere,
 we make no guarantees that the JSON format stays unmodified
@@ -134,8 +134,8 @@ To use Timedesc in utop, you need to pick the backends explicitly first
 For example, to use the default implementations, one can first type the following lines in utop
 
 ```
-#require "timedesc.tzdb.full";;
-#require "timedesc.tzlocal.unix";;
+#require "timedesc-tzdb.full";;
+#require "timedesc-tzlocal.unix";;
 #require "timedesc";;
 ```
 

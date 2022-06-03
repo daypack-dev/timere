@@ -1,3 +1,4 @@
+open Sexplib
 open Fuzz_utils
 
 let () =
@@ -52,7 +53,7 @@ let () =
           Crowbar.fail
             (Fmt.str "tz: %s, bound: %a\np1: %a, p2: %a\n"
                (Timedesc.Time_zone.name tz)
-               Timedesc.Span.pp bound CCSexp.pp
+               Timedesc.Span.pp bound Sexp.pp
                (To_sexp.sexp_of_points p1)
-               CCSexp.pp
+               Sexp.pp
                (To_sexp.sexp_of_points p2)))

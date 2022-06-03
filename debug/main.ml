@@ -1,3 +1,5 @@
+open Sexplib
+
 let display_timestamps ~display_using_tz s =
   match s () with
   | Seq.Nil -> print_endline "No timestamps"
@@ -140,7 +142,7 @@ let debug_resolver () =
   display_intervals ~display_using_tz:tz s;
   print_newline ()
 
-let debug_ccsexp_parse_string () = CCSexp.parse_string "\"\\256\"" |> ignore
+let debug_ccsexp_parse_string () = Sexp.of_string "\"\\256\"" |> ignore
 
 let debug_example () =
   let display_intervals ~display_using_tz s =
@@ -217,8 +219,8 @@ let debug_fuzz_pattern_intervals () =
       aux_pattern_intervals ~search_space:Resolver.default_result_space tz `Snd
         bound p1 p2)
   in
-  Printf.printf "p1: %s\n" (To_sexp.sexp_of_points p1 |> CCSexp.to_string);
-  Printf.printf "p2: %s\n" (To_sexp.sexp_of_points p2 |> CCSexp.to_string);
+  Printf.printf "p1: %s\n" (To_sexp.sexp_of_points p1 |> Sexp.to_string);
+  Printf.printf "p2: %s\n" (To_sexp.sexp_of_points p2 |> Sexp.to_string);
   print_endline "=====";
   display_timestamps ~display_using_tz:tz s1;
   print_endline "=====";
@@ -342,7 +344,7 @@ let debug_fuzz_pattern () =
        Builder.make_pattern ~rng ~min_year ~max_year_inc)
       []
   in
-  print_endline (CCSexp.to_string (To_sexp.sexp_of_pattern pattern));
+  print_endline (Sexp.to_string (To_sexp.sexp_of_pattern pattern));
   let s = Resolver.aux_pattern tz search_space pattern |> Resolver.normalize in
   let r =
     match search_space with

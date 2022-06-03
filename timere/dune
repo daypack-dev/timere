@@ -1,0 +1,42 @@
+(rule
+ (targets int64_utils.ml)
+ (deps    ../timedesc/int64_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets of_sexp_utils.ml)
+ (deps    ../timedesc/of_sexp_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets misc_utils.ml)
+ (deps    ../timedesc/misc_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (targets seq_utils_.ml)
+ (deps    ../timedesc/seq_utils_.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(rule
+ (alias  runtest)
+ (action (run ../tests/main.exe)))
+
+(library
+ (flags     (-w "+a-4-9-29-37-40-42-44-48-50-70@8"))
+ (name timere)
+ (public_name timere)
+ (instrumentation (backend bisect_ppx))
+ (libraries timedesc
+            sexplib
+            oseq
+            containers
+            seq
+            fmt
+            diet
+ )
+)

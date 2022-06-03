@@ -122,10 +122,10 @@ let to_be_exported =
           Timedesc.Time_zone.make_offset_only offset
 
         method toJSONString t =
-          Yojson.Basic.to_string @@ Timedesc.Time_zone.JSON.to_json t
+          Yojson.Basic.to_string @@ Timedesc_json.Time_zone.to_json t
 
         method ofJSONString s =
-          match Timedesc.Time_zone.JSON.of_string (Js.to_string s) with
+          match Timedesc_json.Time_zone.of_string (Js.to_string s) with
           | None -> raise_with_msg "Invalid JSON string"
           | Some x -> x
       end

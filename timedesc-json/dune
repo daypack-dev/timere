@@ -1,0 +1,17 @@
+(rule
+ (targets date_time_utils.ml)
+ (deps    ../timedesc/date_time_utils.ml)
+ (action  (copy %{deps} %{targets}))
+)
+
+(library
+ (flags     (-w "+a-4-9-29-37-40-42-44-48-50-70@8"))
+ (name timedesc_json)
+ (public_name timedesc-json)
+ (instrumentation (backend bisect_ppx))
+ (libraries
+            timedesc
+            yojson
+ )
+)
+

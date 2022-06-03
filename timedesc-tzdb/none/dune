@@ -1,0 +1,6 @@
+(library
+ (flags     (-w "+a-4-9-29-37-40-42-44-48-50-70@8"))
+ (name      timedesc_tzdb_none)
+ (public_name timedesc-tzdb.none)
+ (implements timedesc_tzdb)
+)

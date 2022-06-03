@@ -1,12 +1,12 @@
 (rule
  (targets int64_utils.ml)
- (deps    ../src/int64_utils.ml)
+ (deps    ../timedesc/int64_utils.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
  (targets parser_components.ml)
- (deps    ../desc/parser_components.ml)
+ (deps    ../timedesc/parser_components.ml)
  (action  (copy %{deps} %{targets}))
 )
 
@@ -21,8 +21,10 @@
             fileutils
             ptime
             timedesc
-            timedesc.tzdb.none
-            timedesc.tzlocal.none
+            timedesc-tzdb.none
+            timedesc-tzlocal.none
+            timedesc-json
+            yojson
             bigarray
  )
 )
