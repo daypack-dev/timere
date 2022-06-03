@@ -22,9 +22,13 @@
 
 ## Timedesc 0.8.0
 
-- Significantly reduced number of dependencies, and moved sexp, json code into separate packages
+- Significantly reduced number of dependencies, and moved js, json code into separate packages
 
   - Removed dependencies: `fmt`, `containers`, `oseq`
+
+- Moved `tzlocal` and `tzdb` stuff into their own separate virtual package (`timedesc-tzlocal` and `timedesc-tzdb` respectively)
+
+- Moved JS tzlocal backend into `timedesc-tzlocal-js` package
 
 ## Timedesc 0.7.0
 
