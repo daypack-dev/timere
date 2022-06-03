@@ -23,7 +23,7 @@ let to_sexp = To_sexp.to_sexp
 
 let to_sexp_string = To_sexp.to_sexp_string
 
-let of_sexp = Of_sexp.(wrap_of_sexp of_sexp)
+let of_sexp = Of_sexp_utils.wrap_of_sexp Of_sexp.of_sexp
 
 let of_sexp_string = Of_sexp.of_sexp_string
 

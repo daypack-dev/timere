@@ -551,11 +551,11 @@ val resolve_exn :
     as one would using the construction API directly.
 *)
 
-val to_sexp : t -> CCSexp.t
+val to_sexp : t -> Sexplib.Sexp.t
 
 val to_sexp_string : t -> string
 
-val of_sexp : CCSexp.t -> (t, string) result
+val of_sexp : Sexplib.Sexp.t -> (t, string) result
 
 val of_sexp_string : string -> (t, string) result
 
