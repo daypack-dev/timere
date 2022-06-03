@@ -1,30 +1,24 @@
 (rule
- (targets int_set.ml)
- (deps    ../desc/int_set.ml)
- (action  (copy %{deps} %{targets}))
-)
-
-(rule
  (targets int64_utils.ml)
- (deps    ../desc/int64_utils.ml)
+ (deps    ../timedesc/int64_utils.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
  (targets of_sexp_utils.ml)
- (deps    ../desc-sexp/of_sexp_utils.ml)
+ (deps    ../timedesc-sexp/of_sexp_utils.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
  (targets misc_utils.ml)
- (deps    ../desc/misc_utils.ml)
+ (deps    ../timedesc/misc_utils.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
  (targets seq_utils_.ml)
- (deps    ../desc/seq_utils_.ml)
+ (deps    ../timedesc/seq_utils_.ml)
  (action  (copy %{deps} %{targets}))
 )
 
@@ -38,6 +32,7 @@
  (public_name timere)
  (instrumentation (backend bisect_ppx))
  (libraries timedesc
+            sexplib
             oseq
             containers
             seq

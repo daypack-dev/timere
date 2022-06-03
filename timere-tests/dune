@@ -1,108 +1,108 @@
 (rule
  (targets infix.ml)
- (deps    ../src/infix.ml)
+ (deps    ../timere/infix.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
  (targets weekday_set.ml)
- (deps    ../src/weekday_set.ml)
+ (deps    ../timere/weekday_set.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
  (targets pattern.ml)
- (deps    ../src/pattern.ml)
+ (deps    ../timere/pattern.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
  (targets pattern_resolver.ml)
- (deps    ../src/pattern_resolver.ml)
+ (deps    ../timere/pattern_resolver.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
  (targets points.ml)
- (deps    ../src/points.ml)
+ (deps    ../timere/points.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
  (targets time_ast.ml)
- (deps    ../src/time_ast.ml)
+ (deps    ../timere/time_ast.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
  (targets time.ml)
- (deps    ../src/time.ml)
+ (deps    ../timere/time.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
  (targets int64_utils.ml)
- (deps    ../src/int64_utils.ml)
+ (deps    ../timere/int64_utils.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
  (targets seq_utils_.ml)
- (deps    ../desc/seq_utils_.ml)
+ (deps    ../timedesc/seq_utils_.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
  (targets seq_utils.ml)
- (deps    ../src/seq_utils.ml)
+ (deps    ../timere/seq_utils.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
  (targets misc_utils.ml)
- (deps    ../src/misc_utils.ml)
+ (deps    ../timere/misc_utils.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
  (targets to_sexp.ml)
- (deps    ../src/to_sexp.ml)
+ (deps    ../timere/to_sexp.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
  (targets of_sexp_utils.ml)
- (deps    ../desc/of_sexp_utils.ml)
+ (deps    ../timedesc/of_sexp_utils.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
  (targets of_sexp.ml)
- (deps    ../src/of_sexp.ml)
+ (deps    ../timere/of_sexp.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
  (targets printers.ml)
- (deps    ../src/printers.ml)
+ (deps    ../timere/printers.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
  (targets int_set.ml)
- (deps    ../src/int_set.ml)
+ (deps    ../timere/int_set.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
  (targets resolver.ml)
- (deps    ../src/resolver.ml)
+ (deps    ../timere/resolver.ml)
  (action  (copy %{deps} %{targets}))
 )
 
 (rule
  (targets test_utils.ml)
- (deps    ../desc-tests/test_utils.ml)
+ (deps    ../timedesc-tests/test_utils.ml)
  (action  (copy %{deps} %{targets}))
 )
 
