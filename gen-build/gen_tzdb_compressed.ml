@@ -9,11 +9,11 @@ let () =
   in
   let db =
     Fun.protect ~finally:(fun () -> close_in ic)
-    (fun () ->
-    really_input_string ic (in_channel_length ic)
-    |> Timedesc.Time_zone.Db.Sexp.of_string
-    |> Option.get
-    )
+      (fun () ->
+         really_input_string ic (in_channel_length ic)
+         |> Timedesc.Time_zone.Db.Sexp.of_string
+         |> Option.get
+      )
   in
   let oc =
     open_out_gen [ Open_wronly; Open_creat; Open_trunc ] 0o766 file_output

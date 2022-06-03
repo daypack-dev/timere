@@ -2,8 +2,8 @@ open Sexplib
 
 let sexp_of_month x =
   Sexp.Atom
-  (CCOption.get_exn_or "Expected valid month"
-  @@ Time.abbr_string_of_month x)
+    (CCOption.get_exn_or "Expected valid month"
+     @@ Time.abbr_string_of_month x)
 
 let sexp_of_weekday x = Sexp.Atom (Time.abbr_string_of_weekday x)
 
@@ -135,30 +135,30 @@ let sexp_of_pattern (pat : Pattern.t) : Sexp.t =
     |> List.map (fun (x, y) -> Sexp.List [ sexp_of_int x; sexp_of_int y ])
   in
   Sexp.List
-  (
-  CCList.filter_map CCFun.id
-    [
-    Some (Sexp.Atom "pattern");
-    (match years with [] -> None | _ -> Some Sexp.(List (Atom "years" :: years)));
-    (match months with
-     | [] -> None
-     | _ -> Some Sexp.(List (Atom "months" :: months)));
-    (match month_days with
-     | [] -> None
-     | _ -> Some Sexp.(List (Atom "month_days" :: month_days)));
-    (match weekdays with
-     | [] -> None
-     | _ -> Some Sexp.(List (Atom "weekdays" :: weekdays)));
-    (match hours with [] -> None | _ -> Some Sexp.(List (Atom "hours" :: hours)));
-    (match minutes with
-     | [] -> None
-     | _ -> Some Sexp.(List (Atom "minutes" :: minutes)));
-    (match seconds with
-     | [] -> None
-     | _ -> Some Sexp.(List (Atom "seconds" :: seconds)));
-    (match ns with [] -> None | _ -> Some Sexp.(List (Atom "ns" :: ns)));
-  ]
-  )
+    (
+      CCList.filter_map CCFun.id
+        [
+          Some (Sexp.Atom "pattern");
+          (match years with [] -> None | _ -> Some Sexp.(List (Atom "years" :: years)));
+          (match months with
+           | [] -> None
+           | _ -> Some Sexp.(List (Atom "months" :: months)));
+          (match month_days with
+           | [] -> None
+           | _ -> Some Sexp.(List (Atom "month_days" :: month_days)));
+          (match weekdays with
+           | [] -> None
+           | _ -> Some Sexp.(List (Atom "weekdays" :: weekdays)));
+          (match hours with [] -> None | _ -> Some Sexp.(List (Atom "hours" :: hours)));
+          (match minutes with
+           | [] -> None
+           | _ -> Some Sexp.(List (Atom "minutes" :: minutes)));
+          (match seconds with
+           | [] -> None
+           | _ -> Some Sexp.(List (Atom "seconds" :: seconds)));
+          (match ns with [] -> None | _ -> Some Sexp.(List (Atom "ns" :: ns)));
+        ]
+    )
 
 let sexp_list_of_unary_op (op : Time_ast.unary_op) =
   match op with
