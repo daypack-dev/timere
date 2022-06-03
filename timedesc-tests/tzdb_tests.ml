@@ -22,7 +22,7 @@ module Alco = struct
                  let tz_from_json =
                    CCOption.get_exn_or
                      "Expected to load from JSON string successfully"
-                   @@ Timedesc.Time_zone.JSON.of_string json_string
+                   @@ Timedesc_json.Time_zone.of_string json_string
                  in
                  assert (Timedesc.Time_zone.equal tz_in_memory tz_from_json)))
          Timedesc.Time_zone.available_time_zones)

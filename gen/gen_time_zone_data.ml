@@ -1,3 +1,5 @@
+open Sexplib
+
 type sign =
   | Plus
   | Minus
@@ -429,8 +431,8 @@ let () =
   in
   let db = Timedesc.Time_zone.Db.of_seq @@ CCList.to_seq time_zones in
   CCIO.with_out ~flags:output_flags data_output_file_name (fun oc ->
-      Format.fprintf (CCFormat.of_chan oc) "%a@." CCSexp.pp
-        (Timedesc_sexp.Time_zone.Db.to_sexp db));
+      Format.fprintf (CCFormat.of_chan oc) "%a@." Sexp.pp
+        (Timedesc.Time_zone.Db.Sexp.to_sexp db));
 
   Printf.printf "Generating %s\n" tz_constants_file_name;
   CCIO.with_out ~flags:output_flags tz_constants_file_name (fun oc ->
@@ -470,4 +472,4 @@ let greatest_pos_tz_offset_s = %d
       in
       CCIO.with_out ~flags:output_flags output_file_name (fun oc ->
           Yojson.Basic.pretty_to_channel oc
-            (Timedesc.Time_zone.JSON.to_json tz)))
+            (Timedesc_json.Time_zone.to_json tz)))

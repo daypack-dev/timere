@@ -1,3 +1,4 @@
+open Sexplib
 open Fuzz_utils
 open Span_set_utils
 
@@ -80,5 +81,5 @@ let () =
             (Fmt.str "tz: %s\nsearch_space: %a\npattern: %a\n"
                (Timedesc.Time_zone.name tz)
                (Fmt.list (Timedesc.Interval.pp ()))
-               search_space CCSexp.pp
+               search_space Sexp.pp
                (To_sexp.sexp_of_pattern pattern)))

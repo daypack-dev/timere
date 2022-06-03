@@ -23,6 +23,8 @@
             timedesc
             timedesc-tzdb.none
             timedesc-tzlocal.none
+            timedesc-json
+            yojson
             bigarray
  )
 )

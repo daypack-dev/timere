@@ -24,6 +24,7 @@
             timere
             timedesc-tzdb.none
             timedesc-tzlocal-js
+            timedesc-json
             timere-parse
             yojson
             )

@@ -11,8 +11,6 @@
  (instrumentation (backend bisect_ppx))
  (libraries
             timedesc
-            timedesc-tzdb
-            timedesc-tzlocal
             yojson
  )
 )

@@ -18,5 +18,6 @@
             timedesc
             timedesc-tzdb.full
             timedesc-tzlocal.unix
+            timedesc-json
             )
  )

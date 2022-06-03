@@ -6,6 +6,7 @@
             timere
             timedesc-tzdb.full
             timedesc-tzlocal-js
+            timedesc-json
             timere-parse
             yojson
             )

@@ -27,8 +27,8 @@ module Qc = struct
     QCheck.Test.make ~count:100_000 ~name:"to_of_json" time_zone (fun tz ->
         let tz' =
           tz
-          |> Timedesc.Time_zone.JSON.to_json
-          |> Timedesc.Time_zone.JSON.of_json
+          |> Timedesc_json.Time_zone.to_json
+          |> Timedesc_json.Time_zone.of_json
           |> CCOption.get_exn_or
             "Expected successful construction of time zone from JSOn"
         in
