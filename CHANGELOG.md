@@ -26,6 +26,8 @@
 
   - Removed dependencies: `fmt`, `containers`, `oseq`
 
+  - Moved JSON code into `timedesc-json` package along with Yojson dependency
+
 - Moved `tzlocal` and `tzdb` stuff into their own separate virtual package (`timedesc-tzlocal` and `timedesc-tzdb` respectively)
 
 - Moved JS tzlocal backend into `timedesc-tzlocal-js` package
