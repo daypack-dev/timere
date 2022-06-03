@@ -14,8 +14,8 @@
  (public_name timedesc)
  (instrumentation (backend bisect_ppx))
  (libraries
-            timedesc.tzdb
-            timedesc.tzlocal
+            timedesc-tzdb
+            timedesc-tzlocal
             unix
             ptime
             mparser

@@ -12,36 +12,36 @@ OCPINDENT = ocp-indent \
 all :
 	dune build @all
 
-.PHONY: desc
-desc :
-	dune build desc
+.PHONY: timedesc
+timedesc :
+	dune build timedesc/
 
-.PHONY: desc-json
-desc-json :
-	dune build desc-json
+.PHONY: timedesc-json
+timedesc-json :
+	dune build timedesc-json
 
-.PHONY: lib
-lib :
-	dune build src
+.PHONY: timere
+timere :
+	dune build timere
 
-.PHONY: desc-test
-desc-test : desc
-	OCAMLRUNPARAM=b dune runtest --force desc/
+.PHONY: timedesc-test
+timedesc-test : timedesc
+	OCAMLRUNPARAM=b dune runtest --force timedesc/
 
-.PHONY: test
-test : lib
-	OCAMLRUNPARAM=b dune runtest --force src/
+.PHONY: timere-test
+timere-test : timere
+	OCAMLRUNPARAM=b dune runtest --force timere/
 
-.PHONY: cov-desc-test
-cov-desc-test : desc
+.PHONY: cov-timedesc-test
+cov-timedesc-test : timedesc
 	find . -name '*.coverage' | xargs rm -f
-	dune runtest --instrument-with bisect_ppx --force desc/
+	dune runtest --instrument-with bisect_ppx --force timedesc/
 	bisect-ppx-report html
 
-.PHONY: cov-test
-cov-test : lib
+.PHONY: cov-timere-test
+cov-timere-test : timere
 	find . -name '*.coverage' | xargs rm -f
-	dune runtest --instrument-with bisect_ppx --force tests/
+	dune runtest --instrument-with bisect_ppx --force timere/
 	bisect-ppx-report html
 
 .PHONY: debug
@@ -93,11 +93,6 @@ export-js-tzdb-full :
 export-js-tzdb-none :
 	dune build export-js-tzdb-none/export.bc.js
 	dune build export-js-tzdb-none/export_all.bc.js
-
-.PHONY: cinaps
-cinaps :
-	cinaps -i $(SRCFILES)
-	$(OCAMLFORMAT)
 
 .PHONY : clean
 clean:

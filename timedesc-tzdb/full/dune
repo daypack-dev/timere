@@ -8,8 +8,8 @@
 (library
  (flags     (-w "+a-4-9-29-37-40-42-44-48-50-70@8"))
  (name      timedesc_tzdb_full)
- (public_name timedesc.tzdb.full)
+ (public_name timedesc-tzdb.full)
  (implements timedesc_tzdb)
- (libraries containers
+ (libraries
  )
 )
