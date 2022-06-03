@@ -12,7 +12,7 @@
  (libraries
             timedesc
             timedesc.tzdb
-            timedesc.tzlocal
+            timedesc-tzlocal
             yojson
  )
 )
