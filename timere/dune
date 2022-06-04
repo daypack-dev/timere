@@ -24,7 +24,7 @@
 
 (rule
  (alias  runtest)
- (action (run ../tests/main.exe)))
+ (action (run ../timere-tests/main.exe)))
 
 (library
  (flags     (-w "+a-4-9-29-37-40-42-44-48-50-70@8"))
