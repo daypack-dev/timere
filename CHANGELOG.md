@@ -28,11 +28,11 @@
 
   - Moved JSON code into `timedesc-json` package along with Yojson dependency
 
-- Moved `tzlocal` and `tzdb` stuff into their own separate virtual package (`timedesc-tzlocal` and `timedesc-tzdb` respectively)
+  - Moved `tzlocal` and `tzdb` stuff into their own separate virtual package (`timedesc-tzlocal` and `timedesc-tzdb` respectively)
 
-- Moved JS tzlocal backend into `timedesc-tzlocal-js` package
+  - Moved JS tzlocal backend into `timedesc-tzlocal-js` package
 
-## Timedesc 0.7.0
+## Timedesc 0.7.0 (not released on OPAM)
 
 - Added `tzlocal.js` backend for `js_of_ocaml`
 
