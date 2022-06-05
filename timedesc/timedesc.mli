@@ -1162,9 +1162,9 @@ module Time_zone : sig
     val names : db -> string list
 
     module Compressed : sig
-      val dump : db -> string
+      val to_string : db -> string
 
-      val load : string -> db
+      val of_string : string -> db option
     end
 
     module Sexp : sig

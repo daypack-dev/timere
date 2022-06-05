@@ -658,14 +658,65 @@ module Db = struct
   let names db = List.map fst (M.bindings db)
 
   module Compressed = struct
-    let dump (db : db) =
-      Marshal.to_string
-        (M.map Compressed_table.to_string db)
-        []
+    let to_string (db : db) =
+      let buffer = Buffer.create (512 * 1024) in
+      let table_count = M.cardinal db in
+      Buffer.add_uint16_be buffer table_count;
+      M.iter (fun name table ->
+        let name_len = String.length name in
+        assert (name_len <= 0xFF);
+        Buffer.add_uint8 buffer name_len;
+        Buffer.add_string buffer name;
+        let table_str = Compressed_table.to_string table in
+        let table_str_len = String.length table_str in
+        assert (table_str_len <= 0xFFFF);
+        Buffer.add_uint16_be buffer table_str_len;
+        Buffer.add_string buffer table_str;
+      ) db;
+      Buffer.contents buffer
 
-    let load (s : string) : db =
-      M.map Compressed_table.of_string_exn
-        (Marshal.from_string s 0)
+    module Parsers = struct
+      open Angstrom
+
+      let half_compressed_name_and_table : (string * string) Angstrom.t =
+        any_uint8 >>=
+          (fun name_len ->
+            take name_len >>=
+              (fun name ->
+                BE.any_uint16 >>=
+                  (fun table_str_len ->
+                    take table_str_len >>|
+                      (fun table_str ->
+                        (name, table_str)
+                      )
+                  )
+              )
+          )
+
+      let half_compressed : string M.t option Angstrom.t =
+        BE.any_uint16 >>=
+          (fun table_count ->
+            count table_count half_compressed_name_and_table >>|
+              (fun l ->
+                  l
+                  |> List.to_seq
+                  |> M.of_seq
+              )
+          )
+    end
+
+    let half_compressed_of_string (s : string) : string M.t option =
+      let open Angstrom in
+      match
+        parse_string ~consume:Consume.All Parsers.half_compressed s
+      with
+      | Ok x -> x
+      | Error _ -> None
+
+    let half_compressed_of_string_exn s =
+      match half_compressed_of_string s with
+      | Some x -> x
+      | None -> failwith "Failed to deserialize compressed tzdb"
   end
 
   module Sexp = struct
@@ -708,9 +759,9 @@ let db : table M.t ref =
   | Some db -> ref db
   | None -> ref M.empty
 
-let compressed : string M.t =
+let half_compressed : string M.t =
   match compressed with
-  | Some s -> Marshal.from_string s 0
+  | Some s -> Compressed.half_compressed_of_string_exn s
   | None -> M.empty
 
 let lookup_record name : record option =
@@ -719,7 +770,7 @@ let lookup_record name : record option =
     assert (check_table table);
     Some (process_table table)
   | None ->
-    match M.find_opt name compressed with
+    match M.find_opt name half_compressed with
     | Some compressed_table ->
       let table =
         Compressed_table.of_string_exn compressed_table
