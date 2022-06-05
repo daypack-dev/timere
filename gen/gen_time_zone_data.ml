@@ -67,7 +67,7 @@ let sexp_output_file_name =
   Printf.sprintf "%stzdb_%s.sexp" output_dir output_name_suffix
 
 let compressed_output_file_name =
-  Printf.sprintf "%stzdb_%s.ml" output_dir output_name_suffix
+  Printf.sprintf "%stzdb_compressed_%s.ml" output_dir output_name_suffix
 
 let tz_constants_file_name = output_dir ^ "time_zone_constants.ml"
 
