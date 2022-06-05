@@ -32,6 +32,8 @@
 
   - Moved JS tzlocal backend into `timedesc-tzlocal-js` package
 
+- Adjusted `Time_zone.Db.Compressed` API to remove use of `Marshal`
+
 ## Timedesc 0.7.0 (not released on OPAM)
 
 - Added `tzlocal.js` backend for `js_of_ocaml`
