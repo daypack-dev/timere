@@ -63,8 +63,11 @@ let output_flags = [ Open_wronly; Open_creat; Open_trunc; Open_text ]
 
 let output_list_file_name = output_dir ^ "available-time-zones.txt"
 
-let data_output_file_name =
+let sexp_output_file_name =
   Printf.sprintf "%stzdb_%s.sexp" output_dir output_name_suffix
+
+let compressed_output_file_name =
+  Printf.sprintf "%stzdb_%s.ml" output_dir output_name_suffix
 
 let tz_constants_file_name = output_dir ^ "time_zone_constants.ml"
 
@@ -413,7 +416,7 @@ let () =
   CCIO.with_out ~flags:output_flags output_list_file_name (fun oc ->
       CCIO.write_lines_l oc all_time_zones);
 
-  Printf.printf "Generating %s\n" data_output_file_name;
+  Printf.printf "Constructing tzdb\n";
   let time_zones : Timedesc.Time_zone.t list =
     List.map
       (fun (name, l) ->
@@ -430,9 +433,16 @@ let () =
       tables_utc
   in
   let db = Timedesc.Time_zone.Db.of_seq @@ CCList.to_seq time_zones in
-  CCIO.with_out ~flags:output_flags data_output_file_name (fun oc ->
+
+  Printf.printf "Generating sexp serialization of tzdb %s\n" sexp_output_file_name;
+  CCIO.with_out ~flags:output_flags sexp_output_file_name (fun oc ->
       Format.fprintf (CCFormat.of_chan oc) "%a@." Sexp.pp
         (Timedesc.Time_zone.Db.Sexp.to_sexp db));
+
+  Printf.printf "Generating compressed serialization of tzdb %s\n" compressed_output_file_name;
+  CCIO.with_out ~flags:output_flags compressed_output_file_name (fun oc ->
+      Format.fprintf (CCFormat.of_chan oc) "let s = %S@."
+        (Timedesc.Time_zone.Db.Compressed.dump db));
 
   Printf.printf "Generating %s\n" tz_constants_file_name;
   CCIO.with_out ~flags:output_flags tz_constants_file_name (fun oc ->
