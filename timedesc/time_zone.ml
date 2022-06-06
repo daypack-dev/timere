@@ -663,16 +663,16 @@ module Db = struct
       let table_count = M.cardinal db in
       Buffer.add_uint16_be buffer table_count;
       M.iter (fun name table ->
-        let name_len = String.length name in
-        assert (name_len <= 0xFF);
-        Buffer.add_uint8 buffer name_len;
-        Buffer.add_string buffer name;
-        let table_str = Compressed_table.to_string table in
-        let table_str_len = String.length table_str in
-        assert (table_str_len <= 0xFFFF);
-        Buffer.add_uint16_be buffer table_str_len;
-        Buffer.add_string buffer table_str;
-      ) db;
+          let name_len = String.length name in
+          assert (name_len <= 0xFF);
+          Buffer.add_uint8 buffer name_len;
+          Buffer.add_string buffer name;
+          let table_str = Compressed_table.to_string table in
+          let table_str_len = String.length table_str in
+          assert (table_str_len <= 0xFFFF);
+          Buffer.add_uint16_be buffer table_str_len;
+          Buffer.add_string buffer table_str;
+        ) db;
       Buffer.contents buffer
 
     module Parsers = struct
@@ -680,29 +680,29 @@ module Db = struct
 
       let half_compressed_name_and_table : (string * string) Angstrom.t =
         any_uint8 >>=
-          (fun name_len ->
-            take name_len >>=
-              (fun name ->
-                BE.any_uint16 >>=
-                  (fun table_str_len ->
-                    take table_str_len >>|
-                      (fun table_str ->
-                        (name, table_str)
-                      )
-                  )
+        (fun name_len ->
+           take name_len >>=
+           (fun name ->
+              BE.any_uint16 >>=
+              (fun table_str_len ->
+                 take table_str_len >>|
+                 (fun table_str ->
+                    (name, table_str)
+                 )
               )
-          )
+           )
+        )
 
       let half_compressed : string M.t Angstrom.t =
         BE.any_uint16 >>=
-          (fun table_count ->
-            count table_count half_compressed_name_and_table >>|
-              (fun l ->
-                  l
-                  |> List.to_seq
-                  |> M.of_seq
-              )
-          )
+        (fun table_count ->
+           count table_count half_compressed_name_and_table >>|
+           (fun l ->
+              l
+              |> List.to_seq
+              |> M.of_seq
+           )
+        )
     end
 
     let half_compressed_of_string (s : string) : string M.t option =
