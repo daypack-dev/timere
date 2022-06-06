@@ -5,7 +5,7 @@ SRCFILES = timedesc/*.ml timedesc/*.mli \
 					 timedesc-tests/*.ml \
 					 timere-tests/*.ml \
 					 fuzz/*.ml \
-					 gen/*.ml gen-build/*.ml \
+					 gen/*.ml \
 					 timedesc-tzdb/*/*.ml timedesc-tzdb/*.mli \
 					 timedesc-tzlocal/*/*.ml timedesc-tzlocal/*.mli \
 					 export-js-tzdb-full/*.ml
@@ -36,22 +36,22 @@ timere :
 
 .PHONY: timedesc-test
 timedesc-test : timedesc
-	OCAMLRUNPARAM=b dune runtest --force timedesc/
+	OCAMLRUNPARAM=b dune runtest --no-buffer --force timedesc/
 
 .PHONY: timere-test
 timere-test : timere
-	OCAMLRUNPARAM=b dune runtest --force timere/
+	OCAMLRUNPARAM=b dune runtest --no-buffer --force timere/
 
 .PHONY: cov-timedesc-test
 cov-timedesc-test : timedesc
 	find . -name '*.coverage' | xargs rm -f
-	dune runtest --instrument-with bisect_ppx --force timedesc/
+	dune runtest --instrument-with bisect_ppx --no-buffer --force timedesc/
 	bisect-ppx-report html
 
 .PHONY: cov-timere-test
 cov-timere-test : timere
 	find . -name '*.coverage' | xargs rm -f
-	dune runtest --instrument-with bisect_ppx --force timere/
+	dune runtest --instrument-with bisect_ppx --no-buffer --force timere/
 	bisect-ppx-report html
 
 .PHONY: debug
@@ -91,7 +91,6 @@ format :
 
 .PHONY: gen
 gen :
-	cd gen/ && dune build gen_time_zone_data.exe
 	dune exec gen/gen_time_zone_data.exe -- 1970 2040 full
 
 .PHONY: export-js-tzdb-full

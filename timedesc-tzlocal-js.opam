@@ -1,5 +1,5 @@
 opam-version: "2.0"
-synopsis: "JS implementation for timedesc-tzlocal virtual package"
+synopsis: "JS implementation for timedesc-tzlocal"
 description: """
 """
 maintainer: "Darren Ldl <darrenldldev@gmail.com>"
@@ -10,18 +10,10 @@ bug-reports: "https://github.com/daypack-dev/timere/issues"
 dev-repo: "git+https://github.com/daypack-dev/timere"
 depends: [
   "ocaml" {>= "4.08.1"}
-  "bisect_ppx" {dev & >= "2.5.0"}
   "dune" {>= "2.7.0"}
-  "seq"
-  "mparser" {>= "1.2.3"}
-  "angstrom" {>= "0.15.0"}
-  "ptime"
+  "timedesc-tzlocal"
   "js_of_ocaml" {>= "4.0.0"}
   "js_of_ocaml-ppx"
-  "crowbar" {with-test}
-  "alcotest" {with-test}
-  "qcheck-alcotest" {with-test}
-  "qcheck" {with-test}
 ]
 build: [
   ["dune" "build" "-p" name "-j" jobs]

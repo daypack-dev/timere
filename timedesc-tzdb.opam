@@ -1,0 +1,18 @@
+opam-version: "2.0"
+synopsis: "Virtual library for Timedesc time zone database backends"
+description: """
+"""
+maintainer: "Darren Ldl <darrenldldev@gmail.com>"
+authors: "Daypack developers"
+license: "MIT"
+homepage: "https://github.com/daypack-dev/timere"
+bug-reports: "https://github.com/daypack-dev/timere/issues"
+dev-repo: "git+https://github.com/daypack-dev/timere"
+depends: [
+  "ocaml" {>= "4.08.1"}
+  "dune" {>= "2.7.0"}
+]
+build: [
+  ["dune" "build" "-p" name "-j" jobs]
+]
+

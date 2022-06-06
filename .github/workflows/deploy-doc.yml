@@ -27,7 +27,16 @@ jobs:
 
       - name: Build
         run: |
-          opam install dune ptime oseq re mparser containers diet odoc yojson fmt fileutils angstrom
+          opam install dune containers fmt
+          opam install mparser re ptime oseq seq diet
+          opam install yojson fileutils
+          opam install utop ocp-indent
+          opam install alcotest crowbar
+          opam install js_of_ocaml js_of_ocaml-ppx lwt_ppx
+          opam install js_of_ocaml-lwt qcheck qcheck-alcotest
+          opam install angstrom
+          opam install sexplib
+          opam install odoc
           eval $(opam env); make doc
           mkdir public
           cp -r _build/default/_doc/_html/* public/

@@ -26,11 +26,15 @@
 
   - Removed dependencies: `fmt`, `containers`, `oseq`
 
-- Moved `tzlocal` and `tzdb` stuff into their own separate virtual package (`timedesc-tzlocal` and `timedesc-tzdb` respectively)
+  - Moved JSON code into `timedesc-json` package along with Yojson dependency
 
-- Moved JS tzlocal backend into `timedesc-tzlocal-js` package
+  - Moved `tzlocal` and `tzdb` stuff into their own separate virtual package (`timedesc-tzlocal` and `timedesc-tzdb` respectively)
 
-## Timedesc 0.7.0
+  - Moved JS tzlocal backend into `timedesc-tzlocal-js` package
+
+- Adjusted `Time_zone.Db.Compressed` API to remove use of `Marshal`
+
+## Timedesc 0.7.0 (not released on OPAM)
 
 - Added `tzlocal.js` backend for `js_of_ocaml`
 
