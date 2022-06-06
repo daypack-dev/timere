@@ -56,7 +56,7 @@ let check_table ((starts, entries) : table) : bool =
 let process_table ((starts, entries) : table) : record =
   let size = Bigarray.Array1.dim starts in
   assert (size = Array.length entries);
-  if size = 0 then failwith "Time zone record table is empty"
+  if size = 0 then invalid_arg "Time zone record table is empty"
   else
     let starts, entries =
       let first_start = starts.{0} in
@@ -533,7 +533,7 @@ module Compressed_table = struct
   let of_string_exn s =
     match of_string s with
     | Some x -> x
-    | None -> failwith "Failed to deserialize compressed table"
+    | None -> invalid_arg "Failed to deserialize compressed table"
 end
 
 module Compressed = struct
@@ -582,7 +582,7 @@ module Compressed = struct
   let of_string_exn s =
     match of_string s with
     | Some x -> x
-    | None -> failwith "Failed to deserialize compressed time zone"
+    | None -> invalid_arg "Failed to deserialize compressed time zone"
 end
 
 module Sexp = struct
@@ -693,7 +693,7 @@ module Db = struct
               )
           )
 
-      let half_compressed : string M.t option Angstrom.t =
+      let half_compressed : string M.t Angstrom.t =
         BE.any_uint16 >>=
           (fun table_count ->
             count table_count half_compressed_name_and_table >>|
@@ -710,13 +710,27 @@ module Db = struct
       match
         parse_string ~consume:Consume.All Parsers.half_compressed s
       with
-      | Ok x -> x
+      | Ok x -> Some x
       | Error _ -> None
 
     let half_compressed_of_string_exn s =
       match half_compressed_of_string s with
       | Some x -> x
-      | None -> failwith "Failed to deserialize compressed tzdb"
+      | None -> invalid_arg "Failed to deserialize compressed tzdb"
+
+    let of_string s : db option =
+      match half_compressed_of_string s with
+      | None -> None
+      | Some m ->
+        try
+          Some (M.map Compressed_table.of_string_exn m)
+        with
+        | _ -> None
+
+    let of_string_exn s : db =
+      match of_string s with
+      | Some m -> m
+      | None -> invalid_arg "Failed to deserialize compressed tzdb"
   end
 
   module Sexp = struct
@@ -761,7 +775,7 @@ let db : table M.t ref =
 
 let half_compressed : string M.t =
   match compressed with
-  | Some s -> Compressed.half_compressed_of_string_exn s
+  | Some s -> Db.Compressed.half_compressed_of_string_exn s
   | None -> M.empty
 
 let lookup_record name : record option =
@@ -798,7 +812,7 @@ let available_time_zones =
     |> String_set.of_seq
   in
   let s1 =
-    M.to_seq compressed
+    M.to_seq half_compressed
     |> Seq.map fst
     |> String_set.of_seq
   in

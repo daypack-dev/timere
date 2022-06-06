@@ -89,7 +89,13 @@ module Db : sig
   module Compressed : sig
     val to_string : db -> string
 
+    val half_compressed_of_string : string -> string Timedesc_tzdb.M.t option
+
+    val half_compressed_of_string_exn : string -> string Timedesc_tzdb.M.t
+
     val of_string : string -> db option
+
+    val of_string_exn : string -> db
   end
 
   module Sexp : sig

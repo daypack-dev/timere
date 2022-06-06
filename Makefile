@@ -5,7 +5,7 @@ SRCFILES = timedesc/*.ml timedesc/*.mli \
 					 timedesc-tests/*.ml \
 					 timere-tests/*.ml \
 					 fuzz/*.ml \
-					 gen/*.ml gen-build/*.ml \
+					 gen/*.ml \
 					 timedesc-tzdb/*/*.ml timedesc-tzdb/*.mli \
 					 timedesc-tzlocal/*/*.ml timedesc-tzlocal/*.mli \
 					 export-js-tzdb-full/*.ml

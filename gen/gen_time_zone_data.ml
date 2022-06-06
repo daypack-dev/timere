@@ -442,7 +442,7 @@ let () =
   Printf.printf "Generating compressed serialization of tzdb %s\n" compressed_output_file_name;
   CCIO.with_out ~flags:output_flags compressed_output_file_name (fun oc ->
       Format.fprintf (CCFormat.of_chan oc) "let s = %S@."
-        (Timedesc.Time_zone.Db.Compressed.dump db));
+        (Timedesc.Time_zone.Db.Compressed.to_string db));
 
   Printf.printf "Generating %s\n" tz_constants_file_name;
   CCIO.with_out ~flags:output_flags tz_constants_file_name (fun oc ->
