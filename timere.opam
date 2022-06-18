@@ -23,7 +23,7 @@ bug-reports: "https://github.com/daypack-dev/timere/issues"
 depends: [
   "ocaml" {>= "4.08.1"}
   "bisect_ppx" {dev & >= "2.5.0"}
-  "dune" {>= "2.7" & >= "2.7.0"}
+  "dune" {>= "2.9" & >= "2.7.0"}
   "seq"
   "oseq" {>= "0.3"}
   "containers" {>= "3.6"}
@@ -45,9 +45,11 @@ build: [
     name
     "-j"
     jobs
+    "--promote-install-files=false"
     "@install"
     "@runtest" {with-test}
     "@doc" {with-doc}
   ]
+  ["dune" "install" "-p" name "--create-install-files" name]
 ]
 dev-repo: "git+https://github.com/daypack-dev/timere.git"
