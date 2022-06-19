@@ -1,4 +1,4 @@
-FROM docker.io/ocaml/opam
+FROM docker.io/ocaml/opam:debian-11-ocaml-4.14-afl
 USER root
 RUN apt-get update
 RUN apt-get install --yes pkg-config
