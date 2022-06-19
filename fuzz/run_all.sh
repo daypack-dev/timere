@@ -4,7 +4,11 @@ cpu_count=$(grep -c ^processor /proc/cpuinfo)
 
 simul_test_count=$[cpu_count-1]
 
-test_timeout="30m"
+if [[ ! -v "TIMERE_FUZZ_TIMEOUT" ]]; then
+  test_timeout="30m"
+else
+  test_timeout="$TIMERE_FUZZ_TIMEOUT"
+fi
 
 script_dir=$(dirname $(readlink -f "$0"))
 
