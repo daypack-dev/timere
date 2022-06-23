@@ -8,6 +8,8 @@
 
 (generate_opam_files true)
 
+(name timere)
+
 (package
   (name timedesc)
   (synopsis "OCaml date time handling library")
