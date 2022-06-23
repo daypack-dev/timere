@@ -28,7 +28,7 @@ Features:
   (depends 
     (ocaml (>= "4.08.1"))
     (bisect_ppx (and :dev (>= "2.5.0")))
-    (dune (>= "2.7.0"))
+    dune
     timedesc-tzdb
     timedesc-tzlocal
     seq
@@ -48,7 +48,7 @@ Features:
   (description "")
   (depends
     (ocaml (>= "4.08.1"))
-    (dune (>= "2.7.0"))
+    dune
   )
 )
 
@@ -58,7 +58,7 @@ Features:
   (description "")
   (depends
     (ocaml (>= "4.08.1"))
-    (dune (>= "2.7.0"))
+    dune
   )
 )
 
@@ -68,7 +68,7 @@ Features:
   (description "")
   (depends
     (ocaml (>= "4.08.1"))
-    (dune (>= "2.7.0"))
+    dune
     timedesc-tzlocal
     (js_of_ocaml (>= "4.0.0"))
     js_of_ocaml-ppx
@@ -81,7 +81,7 @@ Features:
   (description "")
   (depends
     (ocaml (>= "4.08.1"))
-    (dune (>= "2.7.0"))
+    dune
     (timedesc (>= "0.8.0"))
   )
 )
@@ -106,7 +106,7 @@ Features:
   (depends 
     (ocaml (>= "4.08.1"))
     (bisect_ppx (and :dev (>= "2.5.0")))
-    (dune (>= "2.7.0"))
+    dune
     seq
     (oseq (>= "0.3"))
     (containers (>= "3.6"))
@@ -138,7 +138,7 @@ Features:
   (depends 
     (ocaml (>= "4.08.1"))
     (bisect_ppx (and :dev (>= "2.5.0")))
-    (dune (>= "2.7.0"))
+    dune
     (oseq (>= "0.3"))
     (re (>= "1.9.0"))
     (containers (>= "3.6"))

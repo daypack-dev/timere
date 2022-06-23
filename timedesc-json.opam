@@ -9,7 +9,7 @@ homepage: "https://github.com/daypack-dev/timere"
 bug-reports: "https://github.com/daypack-dev/timere/issues"
 depends: [
   "ocaml" {>= "4.08.1"}
-  "dune" {>= "2.9" & >= "2.7.0"}
+  "dune" {>= "2.9"}
   "timedesc" {>= "0.8.0"}
   "odoc" {with-doc}
 ]

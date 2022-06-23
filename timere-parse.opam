@@ -21,7 +21,7 @@ bug-reports: "https://github.com/daypack-dev/timere/issues"
 depends: [
   "ocaml" {>= "4.08.1"}
   "bisect_ppx" {dev & >= "2.5.0"}
-  "dune" {>= "2.9" & >= "2.7.0"}
+  "dune" {>= "2.9"}
   "oseq" {>= "0.3"}
   "re" {>= "1.9.0"}
   "containers" {>= "3.6"}
