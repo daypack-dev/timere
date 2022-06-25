@@ -31,8 +31,8 @@ Features:
     (ocaml (>= "4.08.1"))
     (bisect_ppx (and :dev (>= "2.5.0")))
     dune
-    timedesc-tzdb
-    timedesc-tzlocal
+    (timedesc-tzdb (= "TIMEDESC_VERSION"))
+    (timedesc-tzlocal (= "TIMEDESC_VERSION"))
     seq
     (mparser (>= "1.2.3"))
     (angstrom (>= "0.15.0"))
@@ -71,7 +71,7 @@ Features:
   (depends
     (ocaml (>= "4.08.1"))
     dune
-    timedesc-tzlocal
+    (timedesc-tzlocal (= "TIMEDESC_VERSION"))
     (js_of_ocaml (>= "4.0.0"))
     js_of_ocaml-ppx
   )
@@ -84,7 +84,7 @@ Features:
   (depends
     (ocaml (>= "4.08.1"))
     dune
-    (timedesc (>= "0.8.0"))
+    (timedesc (= "TIMEDESC_VERSION"))
   )
 )
 
