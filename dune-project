@@ -86,6 +86,7 @@ Features:
     (ocaml (>= "4.08.1"))
     dune
     (timedesc (= "TIMEDESC_VERSION"))
+    yojson
   )
 )
 

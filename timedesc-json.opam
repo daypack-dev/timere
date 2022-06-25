@@ -11,6 +11,7 @@ depends: [
   "ocaml" {>= "4.08.1"}
   "dune" {>= "2.9"}
   "timedesc" {= "TIMEDESC_VERSION"}
+  "yojson"
   "odoc" {with-doc}
 ]
 build: [
