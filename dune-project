@@ -38,6 +38,7 @@ Features:
     (angstrom (>= "0.15.0"))
     ptime
     sexplib
+    (result (>= "1.5"))
     (crowbar :with-test)
     (alcotest :with-test)
     (qcheck-alcotest :with-test)
