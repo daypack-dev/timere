@@ -36,22 +36,22 @@ timere :
 
 .PHONY: timedesc-test
 timedesc-test : timedesc
-	OCAMLRUNPARAM=b dune runtest --no-buffer --force timedesc/
+	OCAMLRUNPARAM=b dune exec ./timedesc-tests/main.exe --no-buffer --force timedesc/
 
 .PHONY: timere-test
 timere-test : timere
-	OCAMLRUNPARAM=b dune runtest --no-buffer --force timere/
+	OCAMLRUNPARAM=b dune exec ./timere-tests/main.exe --no-buffer --force timere/
 
 .PHONY: cov-timedesc-test
 cov-timedesc-test : timedesc
 	find . -name '*.coverage' | xargs rm -f
-	dune runtest --instrument-with bisect_ppx --no-buffer --force timedesc/
+	dune exec ./timedesc-tests/main.exe --instrument-with bisect_ppx --no-buffer --force timedesc/
 	bisect-ppx-report html
 
 .PHONY: cov-timere-test
 cov-timere-test : timere
 	find . -name '*.coverage' | xargs rm -f
-	dune runtest --instrument-with bisect_ppx --no-buffer --force timere/
+	OCAMLRUNPARAM=b dune exec ./timere-tests/main.exe --instrument-with bisect_ppx --no-buffer --force timere/
 	bisect-ppx-report html
 
 .PHONY: debug

@@ -13,7 +13,6 @@
             yojson
             fmt
             bigarray
-            fileutils
             diet
             timedesc
             timedesc-tzdb.full
