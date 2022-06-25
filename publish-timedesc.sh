@@ -32,6 +32,14 @@ echo "Checking if $git_tag exists in repo already"
 if [[ $(git tag -l "$git_tag") == "" ]]; then
   echo "Tagging commit"
   git tag "$git_tag"
+else
+  read -p "Tag already exists, remove tag [y/n]?" ans
+
+  if [[ $ans == "y" ]]; then
+    echo "Removing tag"
+    git tag -d "$git_tag"
+    git push --delete origin "$git_tag"
+  fi
 fi
 
 echo "Pushing all tags"
