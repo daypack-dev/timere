@@ -24,8 +24,8 @@ depends: [
   "ocaml" {>= "4.08.1"}
   "bisect_ppx" {dev & >= "2.5.0"}
   "dune" {>= "2.9"}
-  "timedesc-tzdb"
-  "timedesc-tzlocal"
+  "timedesc-tzdb" {= "TIMEDESC_VERSION"}
+  "timedesc-tzlocal" {= "TIMEDESC_VERSION"}
   "seq"
   "mparser" {>= "1.2.3"}
   "angstrom" {>= "0.15.0"}
