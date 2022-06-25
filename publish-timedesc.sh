@@ -83,6 +83,9 @@ for package in ${packages[@]}; do
   echo "Substituting TIMEDESC_VERSION"
   sed -i "s/TIMEDESC_VERSION/$ver/g" "$dest_opam"
 
+  echo "Removing @runtest"
+  sed -i 's/"@runtest"\s*{with-test}//g' "$dest_opam"
+
   echo "Adding url section to $dest_opam"
   echo "
 url {
