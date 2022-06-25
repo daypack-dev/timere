@@ -38,6 +38,43 @@ echo "Pushing all tags"
 
 git push --tags
 
-echo "Creating directory in $opam_repo"
+archive="$git_tag".tar.gz
 
-mkdir -p "$opam_repo"/packages/timedesc/timedesc."$ver"
+echo "Archiving as $archive"
+
+git archive --output=./"$archive" "$git_tag"
+
+echo "Hashing $archive"
+
+archive_hash=$(sha256sum "$archive" | awk '{ print $1 }')
+
+echo "Hash:" $archive_hash
+
+packages=(
+  "timedesc"
+  "timedesc-tzdb"
+  "timedesc-tzlocal"
+  "timedesc-tzlocal-js"
+  "timedesc-json"
+)
+
+for package in ${packages[@]}; do
+  package_dir="$opam_repo"/packages/"$package"/"$package"."$ver"
+  dest_opam="$package_dir"/"$package.opam"
+
+  echo "Making directory $package_dir"
+  mkdir -p "$package_dir"
+
+  echo "Copying $package.opam over"
+  cp "$package.opam" "$dest_opam"
+
+  echo "Adding url section to $dest_opam"
+  echo "
+  url {
+    src:
+      \"https://github.com/daypack-dev/timere/releases/download/$echo_tag/desc-v0.6.0.tar.gz\"
+    checksum:
+      \"sha256=$archive_hash\"
+  }
+  " >> "$dest_opam"
+done
