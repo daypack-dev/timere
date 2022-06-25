@@ -34,6 +34,9 @@
 
 - Adjusted `Time_zone.Db.Compressed` API to remove use of `Marshal`
 
+  - This in turn allows `timedesc-tzdb.full` to not depend on `timedesc`
+    as the compressed copy is stable and can be stored in repo directly
+
 ## Timedesc 0.7.0 (not released on OPAM)
 
 - Added `tzlocal.js` backend for `js_of_ocaml`

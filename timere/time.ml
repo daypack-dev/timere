@@ -869,7 +869,7 @@ let slice_valid_interval s =
 let equal_unary_op op1 op2 =
   match (op1, op2) with
   | Not, Not -> true
-  | Shift n1, Shift n2 | Lengthen n1, Lengthen n2 -> n1 = n2
+  | Shift n1, Shift n2 | Lengthen n1, Lengthen n2 -> Timedesc.Span.equal n1 n2
   | With_tz tz1, With_tz tz2 -> Timedesc.Time_zone.equal tz1 tz2
   | _, _ -> false
 
@@ -879,6 +879,8 @@ let equal t1 t2 =
     | Empty, Empty -> true
     | All, All -> true
     | Intervals s1, Intervals s2 -> OSeq.equal ~eq:( = ) s1 s2
+    | ISO_week_pattern (y1, w1), ISO_week_pattern (y2, w2) ->
+      Int_set.equal y1 y2 && Int_set.equal w1 w2
     | Pattern p1, Pattern p2 -> Pattern.equal p1 p2
     | Unary_op (op1, t1), Unary_op (op2, t2) ->
       equal_unary_op op1 op2 && aux t1 t2

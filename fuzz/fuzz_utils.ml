@@ -13,7 +13,13 @@ let timestamp =
         min Timedesc.Timestamp.(get_s max_val) s
         |> max Timedesc.Timestamp.(get_s min_val)
       in
-      Timedesc.Span.make ~s ~ns:(ns mod 1_000_000_000) ())
+      let ns =
+        if s = Timedesc.Timestamp.(get_s max_val) then
+          0
+        else
+          ns mod 1_000_000_000
+      in
+      Timedesc.Span.make ~s ~ns ())
 
 let pos_span = Crowbar.map [ timestamp ] Timedesc.Span.abs
 
