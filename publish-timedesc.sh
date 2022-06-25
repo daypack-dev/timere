@@ -33,7 +33,7 @@ if [[ $(git tag -l "$git_tag") == "" ]]; then
   echo "Tagging commit"
   git tag "$git_tag"
 else
-  read -p "Tag already exists, retag [y/n]?" ans
+  read -p "Tag already exists, retag [y/n]? " ans
 
   if [[ $ans == "y" ]]; then
     echo "Removing tag"
