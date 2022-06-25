@@ -1,3 +1,21 @@
+let read_lines_l (ic : in_channel) : string list =
+  let l = ref [] in
+  try
+    while true do
+      l := input_line ic :: !l
+    done;
+    failwith "Unreachable"
+  with
+  | End_of_file -> List.rev !l
+
+let with_in (file : string) (f : in_channel -> 'a) : 'a =
+  let ic = open_in_bin file in
+  Fun.protect
+  ~finally:(fun () -> close_in ic)
+  (fun () ->
+    f ic
+  )
+
 let local () : string list =
   (* Approach copied from Python package tzlocal:
      https://github.com/regebro/tzlocal
@@ -5,12 +23,12 @@ let local () : string list =
   match Sys.getenv_opt "TZ" with
   | Some name -> [ name ]
   | None -> (
-      if CCIO.File.exists "/system/bin/getprop" then (
+      if Sys.file_exists "/system/bin/getprop" then (
         (* if we are under Termux on Android *)
         let ic = Unix.open_process_in "getprop" in
-        let name = CCIO.read_all ic in
+        let name = read_lines_l ic in
         close_in ic;
-        [ name ])
+        name)
       else
         (* Look for distribution specific configs *)
         let try1 =
@@ -20,12 +38,12 @@ let local () : string list =
                | Some tz -> Some tz
                | None -> (
                    try
-                     CCIO.with_in ~flags:[ Open_rdonly ] file (fun ic ->
-                         let lines = CCIO.read_lines_l ic in
+                     with_in file (fun ic ->
+                         let lines = read_lines_l ic in
                          match lines with
                          | [] -> None
                          | x :: _ ->
-                           if CCString.sub x 0 5 = "TZif2" then None
+                           if String.sub x 0 5 = "TZif2" then None
                            else
                              List.fold_left
                                (fun tz line ->
@@ -60,8 +78,8 @@ let local () : string list =
                    | Some tz -> Some tz
                    | None -> (
                        try
-                         CCIO.with_in ~flags:[ Open_rdonly ] file (fun ic ->
-                             let lines = CCIO.read_lines_l ic in
+                         with_in file (fun ic ->
+                             let lines = read_lines_l ic in
                              List.fold_left
                                (fun tz line ->
                                   match tz with
@@ -71,19 +89,21 @@ let local () : string list =
                                         try
                                           Some
                                             (Scanf.sscanf line {| ZONE = "%[^"]"|}
-                                               CCFun.id)
+                                               Fun.id)
                                         with _ -> (
                                             try
                                               Some
                                                 (Scanf.sscanf line
-                                                   {| TIMEZONE = "%[^"]"|} CCFun.id)
+                                                   {| TIMEZONE = "%[^"]"|} Fun.id)
                                             with _ -> None)
                                       in
                                       match name with
                                       | None -> None
                                       | Some s ->
                                         Some
-                                          (CCString.replace ~sub:" " ~by:"_" s)))
+                                          (s
+                                      |> String.split_on_char ' '
+                                      |> String.concat "_")))
                                None lines)
                        with _ -> None))
                 None

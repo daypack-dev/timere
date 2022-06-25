@@ -3,8 +3,6 @@
  (name      timedesc_tzlocal_unix)
  (public_name timedesc-tzlocal.unix)
  (implements timedesc_tzlocal)
- (libraries containers
-            unix
-            fileutils
+ (libraries unix
  )
 )
