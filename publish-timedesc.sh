@@ -91,5 +91,5 @@ url {
   checksum:
     \"sha256=$archive_hash\"
 }
-  " >> "$dest_opam"
+" >> "$dest_opam"
 done
