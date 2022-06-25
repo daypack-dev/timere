@@ -142,7 +142,7 @@ let equal t1 t2 =
   && Bigarray.Array1.dim (fst t1.record.table)
      = Bigarray.Array1.dim (fst t2.record.table)
   && Array.length (snd t1.record.table) = Array.length (snd t2.record.table)
-  && Array.for_all2
+  && Array_utils.for_all2
     (fun e1 e2 -> e1 = e2)
     (snd t1.record.table) (snd t2.record.table)
 
