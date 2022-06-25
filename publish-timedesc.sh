@@ -39,6 +39,9 @@ else
     echo "Removing tag"
     git tag -d "$git_tag"
     git push --delete origin "$git_tag"
+
+    echo "Tagging commit"
+    git tag "$git_tag"
   fi
 fi
 
