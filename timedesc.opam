@@ -27,7 +27,7 @@ depends: [
   "timedesc-tzdb" {= "TIMEDESC_VERSION"}
   "timedesc-tzlocal" {= "TIMEDESC_VERSION"}
   "seq"
-  "mparser" {>= "1.2.3"}
+  "mparser" {>= "1.3"}
   "angstrom" {>= "0.15.0"}
   "ptime"
   "sexplib"
