@@ -11,10 +11,8 @@ let read_lines_l (ic : in_channel) : string list =
 let with_in (file : string) (f : in_channel -> 'a) : 'a =
   let ic = open_in_bin file in
   Fun.protect
-  ~finally:(fun () -> close_in ic)
-  (fun () ->
-    f ic
-  )
+    ~finally:(fun () -> close_in ic)
+    (fun () -> f ic)
 
 let local () : string list =
   (* Approach copied from Python package tzlocal:
@@ -102,8 +100,8 @@ let local () : string list =
                                       | Some s ->
                                         Some
                                           (s
-                                      |> String.split_on_char ' '
-                                      |> String.concat "_")))
+                                           |> String.split_on_char ' '
+                                           |> String.concat "_")))
                                None lines)
                        with _ -> None))
                 None
