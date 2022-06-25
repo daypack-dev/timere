@@ -42,6 +42,7 @@ archive="$git_tag".tar.gz
 
 echo "Archiving as $archive"
 
+rm -f "$archive"
 git archive --output=./"$archive" "$git_tag"
 
 echo "Hashing $archive"
@@ -60,7 +61,7 @@ packages=(
 
 for package in ${packages[@]}; do
   package_dir="$opam_repo"/packages/"$package"/"$package"."$ver"
-  dest_opam="$package_dir"/"$package.opam"
+  dest_opam="$package_dir"/opam
 
   echo "Making directory $package_dir"
   mkdir -p "$package_dir"
@@ -70,11 +71,11 @@ for package in ${packages[@]}; do
 
   echo "Adding url section to $dest_opam"
   echo "
-  url {
-    src:
-      \"https://github.com/daypack-dev/timere/releases/download/$echo_tag/desc-v0.6.0.tar.gz\"
-    checksum:
-      \"sha256=$archive_hash\"
-  }
+url {
+  src:
+    \"https://github.com/daypack-dev/timere/releases/download/$git_tag/$archive\"
+  checksum:
+    \"sha256=$archive_hash\"
+}
   " >> "$dest_opam"
 done
