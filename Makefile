@@ -36,11 +36,11 @@ timere :
 
 .PHONY: timedesc-test
 timedesc-test : timedesc
-	OCAMLRUNPARAM=b dune exec ./timedesc-tests/main.exe --no-buffer --force timedesc/
+	OCAMLRUNPARAM=b dune exec timedesc-tests/main.exe --no-buffer --force
 
 .PHONY: timere-test
 timere-test : timere
-	OCAMLRUNPARAM=b dune exec ./timere-tests/main.exe --no-buffer --force timere/
+	OCAMLRUNPARAM=b dune exec ./timere-tests/main.exe --no-buffer --force
 
 .PHONY: cov-timedesc-test
 cov-timedesc-test : timedesc
