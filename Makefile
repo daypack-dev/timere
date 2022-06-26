@@ -10,9 +10,9 @@ SRCFILES = timedesc/*.ml timedesc/*.mli \
 					 timedesc-tzlocal/*/*.ml timedesc-tzlocal/*.mli \
 					 export-js-tzdb-full/*.ml
 
-OCAMLFORMAT = ocamlformat \
-	--inplace \
-	$(SRCFILES)
+OPAMFILES = *.opam
+
+PATCH_OPAMFILES = sed -i 's/"@runtest"\s*{with-test}//g' $(OPAMFILES)
 
 OCPINDENT = ocp-indent \
 	--inplace \
@@ -21,18 +21,22 @@ OCPINDENT = ocp-indent \
 .PHONY: all
 all :
 	dune build @all
+	$(PATCH_OPAMFILES)
 
 .PHONY: timedesc
 timedesc :
 	dune build timedesc/
+	$(PATCH_OPAMFILES)
 
 .PHONY: timedesc-json
 timedesc-json :
 	dune build timedesc-json
+	$(PATCH_OPAMFILES)
 
 .PHONY: timere
 timere :
 	dune build timere
+	$(PATCH_OPAMFILES)
 
 .PHONY: timedesc-test
 timedesc-test : timedesc
