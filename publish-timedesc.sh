@@ -1,5 +1,7 @@
 #!/bin/bash
 
+RETAG_CONFIRM_TEXT="retag-timedesc"
+
 opam_repo="$HOME/opam-repository"
 
 echo "Checking if $opam_repo exists"
@@ -36,6 +38,13 @@ else
   read -p "Tag already exists, retag [y/n]? " ans
 
   if [[ $ans == "y" ]]; then
+    read -p "Type \"$RETAG_CONFIRM_TEXT\" to confirm: " ans
+
+    if [[ $ans != "$RETAG_CONFIRM_TEXT" ]]; then
+      echo "Publishing cancelled"
+      exit 0
+    fi
+
     echo "Removing tag"
     git tag -d "$git_tag"
     git push --delete origin "$git_tag"
