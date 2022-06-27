@@ -89,9 +89,6 @@ for package in ${packages[@]}; do
   echo "Copying $package.opam over"
   cp "$package.opam" "$dest_opam"
 
-  echo "Substituting TIMEDESC_VERSION"
-  sed -i "s/TIMEDESC_VERSION/$ver/g" "$dest_opam"
-
   echo "Adding url section to $dest_opam"
   echo "
 url {
