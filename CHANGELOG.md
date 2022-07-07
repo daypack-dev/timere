@@ -43,6 +43,8 @@
 
 - Added compressed binary encoding of time zone
 
+  - Many thanks to [@glennsl](https://github.com/glennsl), see [#46](https://github.com/daypack-dev/timere/issues/46) for details
+
   - Replaced `Time_zone.Db.Raw` with `Time_zone.Db.Compressed`
 
   - Overall reduces tzdb storage usage by roughly 82%
