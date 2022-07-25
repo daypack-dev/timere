@@ -410,18 +410,6 @@ module Span : sig
 
   val pp : Format.formatter -> t -> unit
 
-  (** {1 Sexp} *)
-
-  val to_sexp : t -> Sexplib.Sexp.t
-
-  val to_sexp_string : t -> string
-
-  val of_sexp : Sexplib.Sexp.t -> (t, string) result
-
-  val of_sexp_string : string -> (t, string) result
-
-  val pp_sexp : Format.formatter -> t -> unit
-
   (** {1 Human friendly APIs} *)
 
   module For_human : sig
@@ -766,18 +754,6 @@ module Date : sig
   val of_iso8601_exn : string -> t
   (** @raise ISO8601_parse_exn if [of_iso8601] fails *)
 
-  (** {1 Sexp} *)
-
-  val to_sexp : t -> Sexplib.Sexp.t
-
-  val to_sexp_string : t -> string
-
-  val of_sexp : Sexplib.Sexp.t -> (t, string) result
-
-  val of_sexp_string : string -> (t, string) result
-
-  val pp_sexp : Format.formatter -> t -> unit
-
   (** {1 Gregorian calendar} *)
 
   module Ymd : sig
@@ -1033,18 +1009,6 @@ module Time : sig
 
   val of_iso8601_exn : string -> t
   (** @raise ISO8601_parse_exn if [of_iso8601] fails *)
-
-  (** {1 Sexp} *)
-
-  val to_sexp : t -> Sexplib.Sexp.t
-
-  val to_sexp_string : t -> string
-
-  val of_sexp : Sexplib.Sexp.t -> (t, string) result
-
-  val of_sexp_string : string -> (t, string) result
-
-  val pp_sexp : Format.formatter -> t -> unit
 end
 
 (** {2 Time zone}
@@ -1136,14 +1100,6 @@ module Time_zone : sig
     val of_string_exn : string -> t
   end
 
-  module Sexp : sig
-    val to_sexp : t -> Sexplib.Sexp.t
-
-    val of_sexp : Sexplib.Sexp.t -> t option
-
-    val of_string : string -> t option
-  end
-
   module Db : sig
     type db = Timedesc_tzdb.table Timedesc_tzdb.M.t
 
@@ -1171,14 +1127,6 @@ module Time_zone : sig
       val of_string : string -> db option
 
       val of_string_exn : string -> db
-    end
-
-    module Sexp : sig
-      val of_sexp : Sexplib.Sexp.t -> db option
-
-      val to_sexp : db -> Sexplib.Sexp.t
-
-      val of_string : string -> db option
     end
   end
 end
@@ -1530,18 +1478,6 @@ val of_iso8601 : string -> (t, string) result
 val of_iso8601_exn : string -> t
 (** @raise ISO8601_parse_exn if [of_iso8601] fails *)
 
-(** {2 Sexp} *)
-
-val to_sexp : t -> Sexplib.Sexp.t
-
-val to_sexp_string : t -> string
-
-val of_sexp : Sexplib.Sexp.t -> (t, string) result
-
-val of_sexp_string : string -> (t, string) result
-
-val pp_sexp : Format.formatter -> t -> unit
-
 (** {1 Timestamp} *)
 
 module Timestamp : sig
@@ -1709,12 +1645,6 @@ module Timestamp : sig
 
   val of_iso8601_exn : string -> t
   (** @raise ISO8601_parse_exn if [of_iso8601] fails *)
-
-  (** {1 Sexp} *)
-
-  val of_sexp : Sexplib.Sexp.t -> (t, string) result
-
-  val to_sexp : t -> Sexplib.Sexp.t
 end
 
 (** {1 Interval} *)
@@ -1847,12 +1777,6 @@ module Zoneless : sig
   val maybe_zoneless_of_iso8601_exn :
     string -> [ `Zoned of t | `Zoneless of zoneless ]
   (** @raise ISO8601_parse_exn if [maybe_zoneless_of_iso8601] fails *)
-
-  (** {1 Sexp} *)
-
-  val to_sexp : zoneless -> Sexplib.Sexp.t
-
-  val of_sexp : Sexplib.Sexp.t -> (zoneless, string) result
 end
 
 (** {1 Other date time systems}*)
@@ -2099,10 +2023,6 @@ module Time_zone_info : sig
   val fixed_offset_from_utc : t -> Span.t option
 
   val equal : t -> t -> bool
-
-  val of_sexp : Sexplib.Sexp.t -> (t, string) result
-
-  val to_sexp : t -> Sexplib.Sexp.t
 end
 
 module Utils : sig

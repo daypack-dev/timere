@@ -37,7 +37,6 @@ Features:
     (mparser (>= "1.3"))
     (angstrom (>= "0.15.0"))
     ptime
-    sexplib
     (result (>= "1.5"))
     (crowbar :with-test)
     (alcotest :with-test)
@@ -88,6 +87,18 @@ Features:
     dune
     (timedesc (= :version))
     (yojson (>= "1.6.0"))
+  )
+)
+
+(package
+  (name timedesc-sexp)
+  (synopsis "Timedesc Sexp backend")
+  (description "")
+  (depends
+    (ocaml (>= "4.08.1"))
+    dune
+    (timedesc (= :version))
+    (sexplib (>= "v0.14.0"))
   )
 )
 
