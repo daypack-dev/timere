@@ -437,7 +437,7 @@ let () =
   Printf.printf "Generating sexp serialization of tzdb: %s\n" sexp_output_file_name;
   CCIO.with_out ~flags:output_flags sexp_output_file_name (fun oc ->
       Format.fprintf (CCFormat.of_chan oc) "%a@." Sexp.pp
-        (Timedesc.Time_zone.Db.Sexp.to_sexp db));
+        (Timedesc_sexp.Time_zone.Db.to_sexp db));
 
   Printf.printf "Generating compressed serialization of tzdb: %s\n" compressed_output_file_name;
   CCIO.with_out ~flags:output_flags compressed_output_file_name (fun oc ->

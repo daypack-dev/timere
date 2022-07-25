@@ -24,6 +24,7 @@
             timedesc-tzdb.none
             timedesc-tzlocal.none
             timedesc-json
+            timedesc-sexp
             yojson
             bigarray
  )
