@@ -6,7 +6,7 @@
 
 (rule
  (targets of_sexp_utils.ml)
- (deps    ../timedesc/of_sexp_utils.ml)
+ (deps    ../timedesc-sexp/of_sexp_utils.ml)
  (action  (copy %{deps} %{targets}))
 )
 
@@ -28,6 +28,7 @@
  (public_name timere)
  (instrumentation (backend bisect_ppx))
  (libraries timedesc
+            timedesc-sexp
             sexplib
             oseq
             containers

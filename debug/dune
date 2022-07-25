@@ -6,7 +6,7 @@
 
 (rule
  (targets of_sexp_utils.ml)
- (deps    ../timedesc/of_sexp_utils.ml)
+ (deps    ../timedesc-sexp/of_sexp_utils.ml)
  (action  (copy %{deps} %{targets}))
 )
 
@@ -154,6 +154,7 @@
             diet
             crowbar
             timedesc
+            timedesc-sexp
             timedesc-tzdb.full
             timedesc-tzlocal.unix
    )

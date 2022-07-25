@@ -39,7 +39,7 @@ let ints_of_sexp_list (x : Sexp.t) =
   | List l -> List.map int_of_sexp l
 
 let span_of_sexp sexp =
-  match Timedesc.Span.of_sexp sexp with
+  match Timedesc_sexp.Span.of_sexp sexp with
   | Ok x -> x
   | Error msg -> invalid_data msg
 
@@ -54,15 +54,15 @@ let tz_make_of_sexp (x : Sexp.t) =
       (Printf.sprintf "Expected atom for time zone: %s" (Sexp.to_string x))
 
 let tz_info_of_sexp x =
-  match Timedesc.Time_zone_info.of_sexp x with
+  match Timedesc_sexp.Time_zone_info.of_sexp x with
   | Ok x -> x
   | Error msg -> invalid_data msg
 
 let date_time_of_sexp x =
-  match Timedesc.of_sexp x with Ok x -> x | Error msg -> invalid_data msg
+  match Timedesc_sexp.of_sexp x with Ok x -> x | Error msg -> invalid_data msg
 
 let timestamp_of_sexp x =
-  match Timedesc.Timestamp.of_sexp x with
+  match Timedesc_sexp.Timestamp.of_sexp x with
   | Ok x -> x
   | Error msg -> invalid_data msg
 
