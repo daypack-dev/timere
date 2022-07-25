@@ -24,6 +24,8 @@
 
 - Moved sexp code into `timedesc-sexp` to further reduce core dependencies
 
+- Replaced use of mparser with angstrom
+
 ## Timedesc 0.8.0
 
 - Significantly reduced number of dependencies, and moved JS, JSON code into separate packages
