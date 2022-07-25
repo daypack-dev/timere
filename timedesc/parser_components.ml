@@ -31,8 +31,17 @@ let any_string : string t = take_while (fun _ -> true)
 
 let take_space : string t = take_while is_space
 
-let optional_char c =
-  skip (fun c' -> c' = c)
+let optional_char target =
+  peek_char
+  >>= (fun c ->
+      match c with
+      | None -> return ()
+      | Some c ->
+        if c = target then
+          skip (fun x -> x = target)
+        else
+          return ()
+    )
 
 let ident_string ~(reserved_words : string list) : string t =
   let reserved_words = List.map String.lowercase_ascii reserved_words in
