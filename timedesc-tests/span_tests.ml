@@ -445,8 +445,8 @@ module Qc = struct
     QCheck.Test.make ~count:100_000 ~name:"to_of_sexp" timestamp (fun s ->
         let s' =
           s
-          |> Timedesc.Span.to_sexp
-          |> Timedesc.Span.of_sexp
+          |> Timedesc_sexp.Span.to_sexp
+          |> Timedesc_sexp.Span.of_sexp
           |> CCResult.get_exn
         in
         Timedesc.Span.equal s s')
