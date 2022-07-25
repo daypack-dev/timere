@@ -16,7 +16,7 @@
  )
  (libraries oseq
             re
-            mparser
+            angstrom
             containers
             fileutils
             ptime

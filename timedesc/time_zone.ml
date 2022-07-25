@@ -101,32 +101,29 @@ let to_fixed_offset_from_utc t =
   | Offset_only s -> Some (Span.make_small ~s ())
 
 let fixed_offset_name_parser =
-  let open MParser in
+  let open Angstrom in
   let open Parser_components in
   string "UTC"
-  >> (attempt
-        (char '+'
-         >> return `Pos
-            <|> (char '-' >> return `Neg)
+  *> ((char '+'
+         *> return `Pos
+            <|> (char '-' *> return `Neg)
          >>= fun sign ->
-         attempt
-           (max_two_digit_nat_zero
+         (max_two_digit_nat_zero
             >>= fun hour ->
             char ':'
-            >> max_two_digit_nat_zero
-               << eof
+            *> max_two_digit_nat_zero
+            <* end_of_input
             >>= fun minute -> return (hour, minute))
-         <|> (max_two_digit_nat_zero << eof >>= fun hour -> return (hour, 0))
+         <|> (max_two_digit_nat_zero <* end_of_input >>= fun hour -> return (hour, 0))
          >>= fun (hour, minute) ->
          if hour < 24 && minute < 60 then
            return (Span.For_human'.make_exn ~sign ~hours:hour ~minutes:minute ())
          else fail "Invalid offset")
-      <|> (eof >> return Span.zero))
+      <|> (end_of_input *> return Span.zero))
 
 let fixed_offset_of_name (s : string) : Span.t option =
   match
-    Parser_components.result_of_mparser_result
-    @@ MParser.(parse_string (fixed_offset_name_parser << eof)) s ()
+    Angstrom.(parse_string ~consume:All fixed_offset_name_parser) s
   with
   | Ok x -> Some x
   | Error _ -> None
