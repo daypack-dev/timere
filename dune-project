@@ -34,7 +34,6 @@ Features:
     (timedesc-tzdb (= :version))
     (timedesc-tzlocal (= :version))
     seq
-    (mparser (>= "1.3"))
     (angstrom (>= "0.15.0"))
     ptime
     (result (>= "1.5"))
