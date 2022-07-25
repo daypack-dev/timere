@@ -67,7 +67,7 @@ end
 module Time_zone = struct
   open Sexplib
 
-  let of_sexp (x : Sexp.t) : Timedesc.t option =
+  let of_sexp (x : Sexp.t) : Timedesc.Time_zone.t option =
     let open Of_sexp_utils in
     try
       match x with
@@ -94,11 +94,11 @@ module Time_zone = struct
       | Atom _ -> invalid_data ""
     with _ -> None
 
-  let to_sexp (t : Timedesc.t) : Sexp.t =
+  let to_sexp (t : Timedesc.Time_zone.t) : Sexp.t =
     let open To_sexp_utils in
     Sexp.List
       (Atom "tz"
-       :: Atom (name t)
+       :: Atom (Timedesc.Time_zone.name t)
        :: List.map
          (fun ((start, _), entry) ->
             Sexp.List
@@ -106,11 +106,11 @@ module Time_zone = struct
                 sexp_of_int64 start;
                 Sexp.List
                   [
-                    (if entry.is_dst then Atom "t" else Atom "f");
+                    (if Timedesc.Time_zone.(entry.is_dst) then Atom "t" else Atom "f");
                     sexp_of_int entry.offset;
                   ];
               ])
-         (Raw.to_transitions t))
+         (Timedesc.Time_zone.Raw.to_transitions t))
 
   let of_string s =
     match Sexp.of_string s with
@@ -120,7 +120,7 @@ module Time_zone = struct
   module Db = struct
     open Sexplib
 
-    let of_sexp (x : Sexp.t) : db option =
+    let of_sexp (x : Sexp.t) : Timedesc.Time_zone.Db.db option =
       let open Of_sexp_utils in
       try
         match x with
@@ -130,17 +130,18 @@ module Time_zone = struct
             (l
              |> List.to_seq
              |> Seq.map (fun x ->
-                 match Sexp'.of_sexp x with
+                 match of_sexp x with
                  | None -> invalid_data ""
                  | Some x -> x)
-             |> of_seq)
+             |> Timedesc.Time_zone.Db.of_seq)
       with _ -> None
 
     let to_sexp db =
       Sexp.List
         (Timedesc_tzdb.M.bindings db
-         |> List.map (fun (name, table) -> Raw.of_table_exn ~name table)
-         |> List.map Sexp'.to_sexp
+         |> List.map (fun (name, table) ->
+             Timedesc.Time_zone.Raw.of_table_exn ~name table)
+         |> List.map to_sexp
         )
 
     let of_string s =
