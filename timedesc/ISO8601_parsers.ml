@@ -94,11 +94,11 @@ let hm_p : (int * int) Angstrom.t =
   let open Parser_components in
   choice
     [
-        (two_digit_nat_zero
-         >>= fun hour ->
-         optional_char ':'
-         *> two_digit_nat_zero
-         >>= fun minute -> return (hour, minute));
+      (two_digit_nat_zero
+       >>= fun hour ->
+       optional_char ':'
+       *> two_digit_nat_zero
+       >>= fun minute -> return (hour, minute));
       (two_digit_nat_zero >>= fun hour -> return (hour, 0));
     ]
 
@@ -107,31 +107,31 @@ let hms_p =
   let open Parser_components in
   choice
     [
-        (two_digit_nat_zero
-         >>= fun hour ->
-         optional_char ':'
-         *> two_digit_nat_zero
-         >>= fun minute ->
-         optional_char ':'
-         *> two_digit_nat_zero
-         >>= fun second ->
-         choice [ char '.'; char ',' ]
-         *> num_string
-         >>= fun s ->
-         let s = if String.length s > 9 then String.sub s 0 9 else s in
-         let len = String.length s in
-         if len = 9 then return (hour, minute, second, int_of_string s)
-         else
-           let ns = int_of_string s * Printers.get_divisor len in
-           return (hour, minute, second, ns));
-        (two_digit_nat_zero
-         >>= fun hour ->
-         optional_char ':'
-         *> two_digit_nat_zero
-         >>= fun minute ->
-         optional_char ':'
-         *> two_digit_nat_zero
-         >>= fun second -> return (hour, minute, second, 0));
+      (two_digit_nat_zero
+       >>= fun hour ->
+       optional_char ':'
+       *> two_digit_nat_zero
+       >>= fun minute ->
+       optional_char ':'
+       *> two_digit_nat_zero
+       >>= fun second ->
+       choice [ char '.'; char ',' ]
+       *> num_string
+       >>= fun s ->
+       let s = if String.length s > 9 then String.sub s 0 9 else s in
+       let len = String.length s in
+       if len = 9 then return (hour, minute, second, int_of_string s)
+       else
+         let ns = int_of_string s * Printers.get_divisor len in
+         return (hour, minute, second, ns));
+      (two_digit_nat_zero
+       >>= fun hour ->
+       optional_char ':'
+       *> two_digit_nat_zero
+       >>= fun minute ->
+       optional_char ':'
+       *> two_digit_nat_zero
+       >>= fun second -> return (hour, minute, second, 0));
       (hm_p >>| fun (hour, minute) -> (hour, minute, 0, 0));
     ]
 
@@ -150,13 +150,13 @@ let time_p : Time.t Angstrom.t =
 let offset_p : Span.t Angstrom.t =
   let open Angstrom in
   (char 'Z' *> return Span.zero)
-      <|> ((char '+' *> return `Pos)
-           <|>
-           (char '-' *> return `Neg)
-           >>= fun sign ->
-           hms_p
-           >>| fun (hour, minute, second, _ns) ->
-           Span.For_human'.make_exn ~sign ~hours:hour ~minutes:minute ~seconds:second ())
+  <|> ((char '+' *> return `Pos)
+       <|>
+       (char '-' *> return `Neg)
+       >>= fun sign ->
+       hms_p
+       >>| fun (hour, minute, second, _ns) ->
+       Span.For_human'.make_exn ~sign ~hours:hour ~minutes:minute ~seconds:second ())
 
 type maybe_zoneless =
   [ `Zoned of Date_time.t

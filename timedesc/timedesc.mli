@@ -1776,7 +1776,7 @@ module Zoneless : sig
 
   val maybe_zoneless_of_iso8601_exn :
     string -> [ `Zoned of t | `Zoneless of zoneless ]
-  (** @raise ISO8601_parse_exn if [maybe_zoneless_of_iso8601] fails *)
+    (** @raise ISO8601_parse_exn if [maybe_zoneless_of_iso8601] fails *)
 end
 
 (** {1 Other date time systems}*)

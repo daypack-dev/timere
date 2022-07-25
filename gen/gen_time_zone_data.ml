@@ -99,19 +99,19 @@ module Parser = struct
         <|>
         ((char '+' *> return Plus)
          <|> (char '-' *> return Minus)
-           >>= fun sign ->
-           digit
-           >>= fun h1 ->
-           digit
-           >>= fun h2 ->
-           let hour = int_of_string (Printf.sprintf "%c%c" h1 h2) in
-           (digit
-           >>= (fun m1 ->
-               digit
-               >>| fun m2 ->
-               let minute = int_of_string (Printf.sprintf "%c%c" m1 m2) in
-               Offset (sign, (hour * 60) + minute)))
-               <|> return (Offset (sign, hour * 60)))
+         >>= fun sign ->
+         digit
+         >>= fun h1 ->
+         digit
+         >>= fun h2 ->
+         let hour = int_of_string (Printf.sprintf "%c%c" h1 h2) in
+         (digit
+          >>= (fun m1 ->
+              digit
+              >>| fun m2 ->
+              let minute = int_of_string (Printf.sprintf "%c%c" m1 m2) in
+              Offset (sign, (hour * 60) + minute)))
+         <|> return (Offset (sign, hour * 60)))
 
   let date_time_p =
     non_space_string

@@ -100,8 +100,8 @@ module Format_string_parsers = struct
     <|> (case >>= fun c3 -> return (Abbreviated (c1, c2, c3)))
 
   let padding : char option t =
-      (satisfy (fun _ -> true)
-       >>= fun padding -> char 'X' *> return (Some padding))
+    (satisfy (fun _ -> true)
+     >>= fun padding -> char 'X' *> return (Some padding))
     <|> (char 'X' *> return None)
 
   let date_time_inner (date_time : Date_time.t) : string t =
@@ -287,7 +287,7 @@ let pp_date_time ?(format : string = default_date_time_format_string) ()
       [
         (string "{{" >>| fun _ -> Format.fprintf formatter "{");
         (char '{'
-          *> commit
+         *> commit
          *> (Format_string_parsers.date_time_inner date_time <* char '}')
          >>| fun s -> Format.fprintf formatter "%s" s);
         (take_while1 (function '{' -> false | _ -> true)
@@ -346,15 +346,15 @@ let pp_interval ?(display_using_tz = Time_zone.utc)
       | Some e -> (
           match
             parse_string
-            ~consume:All
+              ~consume:All
               (p s e
                >>= fun s ->
                pos
                >>= fun pos ->
                ((end_of_input *> return s)
                 <|> fail
-                    (Printf.sprintf "Expected EOI, pos: %d"
-                       pos)))
+                  (Printf.sprintf "Expected EOI, pos: %d"
+                     pos)))
               format
           with
           | Error msg -> invalid_format_string msg

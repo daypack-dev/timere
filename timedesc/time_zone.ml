@@ -105,20 +105,20 @@ let fixed_offset_name_parser =
   let open Parser_components in
   string "UTC"
   *> ((char '+'
-         *> return `Pos
-            <|> (char '-' *> return `Neg)
-         >>= fun sign ->
-         (max_two_digit_nat_zero
-            >>= fun hour ->
-            char ':'
-            *> max_two_digit_nat_zero
-            <* end_of_input
-            >>= fun minute -> return (hour, minute))
-         <|> (max_two_digit_nat_zero <* end_of_input >>= fun hour -> return (hour, 0))
-         >>= fun (hour, minute) ->
-         if hour < 24 && minute < 60 then
-           return (Span.For_human'.make_exn ~sign ~hours:hour ~minutes:minute ())
-         else fail "Invalid offset")
+       *> return `Pos
+       <|> (char '-' *> return `Neg)
+       >>= fun sign ->
+       (max_two_digit_nat_zero
+        >>= fun hour ->
+        char ':'
+        *> max_two_digit_nat_zero
+        <* end_of_input
+        >>= fun minute -> return (hour, minute))
+       <|> (max_two_digit_nat_zero <* end_of_input >>= fun hour -> return (hour, 0))
+       >>= fun (hour, minute) ->
+       if hour < 24 && minute < 60 then
+         return (Span.For_human'.make_exn ~sign ~hours:hour ~minutes:minute ())
+       else fail "Invalid offset")
       <|> (end_of_input *> return Span.zero))
 
 let fixed_offset_of_name (s : string) : Span.t option =
