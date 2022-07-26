@@ -38,7 +38,7 @@ let optional_char target =
       | None -> return ()
       | Some c ->
         if c = target then
-          skip (fun x -> x = target)
+          any_char *> return ()
         else
           return ()
     )
