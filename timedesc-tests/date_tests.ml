@@ -238,8 +238,8 @@ module Qc = struct
          let d = Timedesc.Date.Ymd.make_exn ~year ~month ~day in
          let d' =
            d
-           |> Timedesc.Date.to_sexp
-           |> Timedesc.Date.of_sexp
+           |> Timedesc_sexp.Date.to_sexp
+           |> Timedesc_sexp.Date.of_sexp
            |> CCResult.get_exn
          in
          Timedesc.Date.equal d d')

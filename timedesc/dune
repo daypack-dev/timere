@@ -14,10 +14,8 @@
             timedesc-tzlocal
             unix
             ptime
-            mparser
             angstrom
             seq
             bigarray
-            sexplib
  )
 )

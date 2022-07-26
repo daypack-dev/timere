@@ -34,10 +34,8 @@ Features:
     (timedesc-tzdb (= :version))
     (timedesc-tzlocal (= :version))
     seq
-    (mparser (>= "1.3"))
     (angstrom (>= "0.15.0"))
     ptime
-    sexplib
     (result (>= "1.5"))
     (crowbar :with-test)
     (alcotest :with-test)
@@ -92,6 +90,18 @@ Features:
 )
 
 (package
+  (name timedesc-sexp)
+  (synopsis "Timedesc Sexp backend")
+  (description "")
+  (depends
+    (ocaml (>= "4.08.1"))
+    dune
+    (timedesc (= :version))
+    (sexplib (>= "v0.14.0"))
+  )
+)
+
+(package
   (name timere)
   (synopsis "OCaml date time reasoning library")
   (description "
@@ -116,7 +126,8 @@ Features:
     (oseq (>= "0.3"))
     (containers (>= "3.6"))
     fmt
-    (timedesc (>= "0.8.0"))
+    (timedesc (>= "0.9.0"))
+    (timedesc-sexp (>= "0.9.0"))
     (diet (>= "0.4"))
     (crowbar :with-test)
     (alcotest :with-test)

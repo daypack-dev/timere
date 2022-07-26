@@ -15,7 +15,7 @@ let sexp_list_of_ints l = List.map sexp_of_int l
 
 let sexp_of_tz_name t = Sexp.Atom (Timedesc.Time_zone.name t)
 
-let sexp_of_span = Timedesc.Span.to_sexp
+let sexp_of_span = Timedesc_sexp.Span.to_sexp
 
 let sexp_of_points ({ pick; tz_info } : Points.t) =
   let open Points in
@@ -85,12 +85,12 @@ let sexp_of_points ({ pick; tz_info } : Points.t) =
                     sexp_of_int second;
                     sexp_of_int ns;
                   ])));
-         CCOption.map Timedesc.Time_zone_info.to_sexp tz_info;
+         CCOption.map Timedesc_sexp.Time_zone_info.to_sexp tz_info;
        ])
 
-let sexp_of_date_time = Timedesc.to_sexp
+let sexp_of_date_time = Timedesc_sexp.to_sexp
 
-let sexp_of_timestamp = Timedesc.Timestamp.to_sexp
+let sexp_of_timestamp = Timedesc_sexp.Timestamp.to_sexp
 
 let sexp_of_range ~(f : 'a -> Sexp.t) (r : 'a Time.Range.range) =
   match r with

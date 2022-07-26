@@ -446,7 +446,7 @@ module Qc = struct
   let to_of_sexp =
     QCheck.Test.make ~count:100_000 ~name:"to_of_sexp" date_time (fun s ->
         let s' =
-          s |> Timedesc.to_sexp |> Timedesc.of_sexp |> CCResult.get_exn
+          s |> Timedesc_sexp.to_sexp |> Timedesc_sexp.of_sexp |> CCResult.get_exn
         in
         Timedesc.equal s s')
 
@@ -455,8 +455,8 @@ module Qc = struct
       (fun s ->
          let s' =
            s
-           |> Timedesc.Zoneless.to_sexp
-           |> Timedesc.Zoneless.of_sexp
+           |> Timedesc_sexp.Zoneless.to_sexp
+           |> Timedesc_sexp.Zoneless.of_sexp
            |> CCResult.get_exn
          in
          Timedesc.Zoneless.equal s s')
@@ -466,8 +466,8 @@ module Qc = struct
       (fun s ->
          let s' =
            s
-           |> Timedesc.Timestamp.to_sexp
-           |> Timedesc.Timestamp.of_sexp
+           |> Timedesc_sexp.Timestamp.to_sexp
+           |> Timedesc_sexp.Timestamp.of_sexp
            |> CCResult.get_exn
          in
          Timedesc.Timestamp.equal s s')

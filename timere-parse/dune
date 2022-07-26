@@ -10,12 +10,6 @@
  (action  (copy %{deps} %{targets}))
 )
 
-(rule
- (targets parser_components.ml)
- (deps    ../timedesc/parser_components.ml)
- (action  (copy %{deps} %{targets}))
-)
-
 (library
  (flags     (-w "+a-4-9-29-37-40-42-44-48-50-70@8"))
  (name timere_parse)

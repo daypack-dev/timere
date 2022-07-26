@@ -8,6 +8,8 @@ SRCFILES = timedesc/*.ml timedesc/*.mli \
 					 gen/*.ml \
 					 timedesc-tzdb/*/*.ml timedesc-tzdb/*.mli \
 					 timedesc-tzlocal/*/*.ml timedesc-tzlocal/*.mli \
+					 timedesc-json/*.ml timedesc-json/*.mli \
+					 timedesc-sexp/*.ml timedesc-sexp/*.mli \
 					 export-js-tzdb-full/*.ml
 
 OPAMFILES = *.opam

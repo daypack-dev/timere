@@ -77,6 +77,7 @@ packages=(
   "timedesc-tzlocal"
   "timedesc-tzlocal-js"
   "timedesc-json"
+  "timedesc-sexp"
 )
 
 for package in ${packages[@]}; do

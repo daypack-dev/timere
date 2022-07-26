@@ -1,49 +1,12 @@
-open Angstrom
+open MParser
 
-let is_letter c =
-  match c with
-  | 'A'..'Z' -> true
-  | 'a'..'z' -> true
-  | _ -> false
+let alpha_string : (string, unit) t = many1_chars letter
 
-let is_space c =
-  match c with
-  | ' ' -> true
-  | '\t' -> true
-  | '\n' -> true
-  | _ -> false
+let any_string : (string, unit) t = many_satisfy (fun _ -> true)
 
-let is_not_space c =
-  not (is_space c)
+let take_space : (string, unit) t = many_chars space
 
-let is_digit c =
-  match c with
-  | '0'..'9' -> true
-  | _ -> false
-
-let digit : char t =
-  satisfy is_digit
-
-let alpha_string : string t =
-  take_while1 is_letter
-
-let any_string : string t = take_while (fun _ -> true)
-
-let take_space : string t = take_while is_space
-
-let optional_char target =
-  peek_char
-  >>= (fun c ->
-      match c with
-      | None -> return ()
-      | Some c ->
-        if c = target then
-          any_char *> return ()
-        else
-          return ()
-    )
-
-let ident_string ~(reserved_words : string list) : string t =
+let ident_string ~(reserved_words : string list) : (string, unit) t =
   let reserved_words = List.map String.lowercase_ascii reserved_words in
   alpha_string
   >>= fun s ->
@@ -52,77 +15,77 @@ let ident_string ~(reserved_words : string list) : string t =
   else return s
 
 let skip_non_num_string ~end_markers =
-  skip_while (function
+  skip_satisfy (function
       | '0' .. '9' -> false
       | c -> (
           match end_markers with
           | None -> true
           | Some x -> not (String.contains x c)))
 
-let num_string : string t =
-  take_while1 (function '0' .. '9' -> true | _ -> false)
+let num_string : (string, unit) t =
+  many1_satisfy (function '0' .. '9' -> true | _ -> false)
 
-let nat_zero : int t =
+let nat_zero : (int, unit) t =
   num_string
   >>= fun s ->
   try return (int_of_string s)
   with _ -> fail (Printf.sprintf "Integer %s is out of range" s)
 
-let nat_zero_w_original_str : (int * string) t =
+let nat_zero_w_original_str : (int * string, unit) t =
   num_string
   >>= fun s ->
   try return (int_of_string s, s)
   with _ -> fail (Printf.sprintf "Integer %s is out of range" s)
 
-let one_digit_nat_zero : int t =
+let one_digit_nat_zero : (int, unit) t =
   digit >>= fun c -> return (int_of_string (Printf.sprintf "%c" c))
 
-let two_digit_nat_zero : int t =
-  digit
-  >>= fun c1 ->
-  digit
-  >>= fun c2 -> return (int_of_string (Printf.sprintf "%c%c" c1 c2))
+let two_digit_nat_zero : (int, unit) t =
+  pair digit digit
+  >>= fun (c1, c2) -> return (int_of_string (Printf.sprintf "%c%c" c1 c2))
 
-let max_two_digit_nat_zero : int t =
-  two_digit_nat_zero
+let max_two_digit_nat_zero : (int, unit) t =
+  attempt two_digit_nat_zero
   <|> (digit >>= fun c -> return (int_of_string (Printf.sprintf "%c" c)))
 
-let float_non_neg : float t =
-  take_while1 is_digit
+let float_non_neg : (float, unit) t =
+  many1_satisfy (function '0' .. '9' -> true | _ -> false)
   >>= fun x ->
   char '.'
-  *> take_while1 is_digit
+  >> many1_satisfy (function '0' .. '9' -> true | _ -> false)
   >>= fun y ->
   let s = x ^ "." ^ y in
   try return (float_of_string s)
   with _ -> fail (Printf.sprintf "Float %s is out of range" s)
 
-let comma : char t = char ','
+let comma : (char, unit) t = char ','
 
-let dot : char t = char '.'
+let dot : (char, unit) t = char '.'
 
-let hyphen : char t = char '-'
+let hyphen : (char, unit) t = char '-'
 
-let non_square_bracket_string : string t =
-  take_while (function '[' | ']' -> false | _ -> true)
+let non_square_bracket_string : (string, unit) t =
+  many_satisfy (function '[' | ']' -> false | _ -> true)
 
-let non_curly_bracket_string : string t =
-  take_while (function '{' | '}' -> false | _ -> true)
+let non_curly_bracket_string : (string, unit) t =
+  many_satisfy (function '{' | '}' -> false | _ -> true)
 
-let non_parenthesis_string : string t =
-  take_while (function '(' | ')' -> false | _ -> true)
+let non_parenthesis_string : (string, unit) t =
+  many_satisfy (function '(' | ')' -> false | _ -> true)
 
-let non_space_string : string t = take_while1 is_not_space
+let non_space_string : (string, unit) t = many1_chars non_space
 
-let spaces = skip_while is_space
+let sep_by_comma (p : ('a, unit) t) : ('a list, unit) t =
+  sep_by p (attempt (spaces >> comma >> spaces))
 
-let spaces1 = take_while is_space *> return ()
+let sep_by_comma1 (p : ('a, unit) t) : ('a list, unit) t =
+  sep_by1 p (attempt (spaces >> comma >> spaces))
 
-let sep_by_comma (p : 'a t) : 'a list t =
-  sep_by p (spaces *> comma *> spaces)
+let option (default : 'a) p : ('a, 'b) t = attempt p <|> return default
 
-let sep_by_comma1 (p : 'a t) : 'a list t =
-  sep_by1 p (spaces *> comma *> spaces)
+let string_of_pos pos =
+  let _index, lnum, cnum = pos in
+  Printf.sprintf "%d:%d" lnum cnum
 
 (* let sep_res_seq ~by ~end_markers (p : ('a, 'b) t) : ('a result Seq.t, 'b) t =
  *   sep_by (char by)
@@ -169,17 +132,17 @@ let sep_by_comma1 (p : 'a t) : 'a list t =
  *   x >>= aux *)
 
 let invalid_syntax ~text ~pos =
-  fail (Printf.sprintf "Invalid syntax: %s, pos: %d" text pos)
+  fail (Printf.sprintf "Invalid syntax: %s, pos: %s" text (string_of_pos pos))
 
 let extraneous_text_check ~end_markers =
   spaces
-  *> pos
+  >> get_pos
   >>= fun pos ->
-  take_while (fun c -> not (String.contains end_markers c))
+  many_satisfy (fun c -> not (String.contains end_markers c))
   >>= fun s ->
   match s with "" -> return () | text -> invalid_syntax ~text ~pos
 
-(*let result_of_mparser_result (x : 'a result) : ('a, string) Stdlib.result =
+let result_of_mparser_result (x : 'a result) : ('a, string) Stdlib.result =
   match x with
   | Success x -> Ok x
   | Failed (_, err) -> (
@@ -211,4 +174,3 @@ let extraneous_text_check ~end_markers =
             Error
               (Printf.sprintf "Unknown error, pos: %s" (string_of_pos pos))
           | Some s -> Error s))
-*)

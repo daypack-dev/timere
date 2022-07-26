@@ -92,8 +92,8 @@ module Qc = struct
          let t = Timedesc.Time.make_exn ~hour ~minute ~second ~ns () in
          let t' =
            t
-           |> Timedesc.Time.to_sexp
-           |> Timedesc.Time.of_sexp
+           |> Timedesc_sexp.Time.to_sexp
+           |> Timedesc_sexp.Time.of_sexp
            |> CCResult.get_exn
          in
          Timedesc.Time.equal t t')

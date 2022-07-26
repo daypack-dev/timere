@@ -101,32 +101,29 @@ let to_fixed_offset_from_utc t =
   | Offset_only s -> Some (Span.make_small ~s ())
 
 let fixed_offset_name_parser =
-  let open MParser in
+  let open Angstrom in
   let open Parser_components in
   string "UTC"
-  >> (attempt
-        (char '+'
-         >> return `Pos
-            <|> (char '-' >> return `Neg)
-         >>= fun sign ->
-         attempt
-           (max_two_digit_nat_zero
-            >>= fun hour ->
-            char ':'
-            >> max_two_digit_nat_zero
-               << eof
-            >>= fun minute -> return (hour, minute))
-         <|> (max_two_digit_nat_zero << eof >>= fun hour -> return (hour, 0))
-         >>= fun (hour, minute) ->
-         if hour < 24 && minute < 60 then
-           return (Span.For_human'.make_exn ~sign ~hours:hour ~minutes:minute ())
-         else fail "Invalid offset")
-      <|> (eof >> return Span.zero))
+  *> ((char '+'
+       *> return `Pos
+       <|> (char '-' *> return `Neg)
+       >>= fun sign ->
+       (max_two_digit_nat_zero
+        >>= fun hour ->
+        char ':'
+        *> max_two_digit_nat_zero
+        <* end_of_input
+        >>= fun minute -> return (hour, minute))
+       <|> (max_two_digit_nat_zero <* end_of_input >>= fun hour -> return (hour, 0))
+       >>= fun (hour, minute) ->
+       if hour < 24 && minute < 60 then
+         return (Span.For_human'.make_exn ~sign ~hours:hour ~minutes:minute ())
+       else fail "Invalid offset")
+      <|> (end_of_input *> return Span.zero))
 
 let fixed_offset_of_name (s : string) : Span.t option =
   match
-    Parser_components.result_of_mparser_result
-    @@ MParser.(parse_string (fixed_offset_name_parser << eof)) s ()
+    Angstrom.(parse_string ~consume:All fixed_offset_name_parser) s
   with
   | Ok x -> Some x
   | Error _ -> None
@@ -585,60 +582,6 @@ module Compressed = struct
     | None -> invalid_arg "Failed to deserialize compressed time zone"
 end
 
-module Sexp = struct
-  open Sexplib
-
-  let of_sexp (x : Sexp.t) : t option =
-    let open Of_sexp_utils in
-    try
-      match x with
-      | List l -> (
-          match l with
-          | Atom "tz" :: Atom name :: transitions ->
-            transitions
-            |> List.map (fun x ->
-                match x with
-                | Sexp.List [ start; List [ Atom is_dst; offset ] ] ->
-                  let start = int64_of_sexp start in
-                  let is_dst =
-                    match is_dst with
-                    | "t" -> true
-                    | "f" -> false
-                    | _ -> invalid_data ""
-                  in
-                  let offset = int_of_sexp offset in
-                  let entry = { is_dst; offset } in
-                  (start, entry)
-                | _ -> invalid_data "")
-            |> Raw.of_transitions ~name
-          | _ -> invalid_data "")
-      | Atom _ -> invalid_data ""
-    with _ -> None
-
-  let to_sexp (t : t) : Sexp.t =
-    let open To_sexp_utils in
-    Sexp.List
-      (Atom "tz"
-       :: Atom (name t)
-       :: List.map
-         (fun ((start, _), entry) ->
-            Sexp.List
-              [
-                sexp_of_int64 start;
-                Sexp.List
-                  [
-                    (if entry.is_dst then Atom "t" else Atom "f");
-                    sexp_of_int entry.offset;
-                  ];
-              ])
-         (Raw.to_transitions t))
-
-  let of_string s =
-    match Sexp.of_string s with
-    | exception _ -> None
-    | x -> of_sexp x
-end
-
 module Db = struct
   type db = table M.t
 
@@ -731,40 +674,6 @@ module Db = struct
       match of_string s with
       | Some m -> m
       | None -> invalid_arg "Failed to deserialize compressed tzdb"
-  end
-
-  module Sexp = struct
-    module Sexp' = Sexp
-
-    open Sexplib
-
-    let of_sexp (x : Sexp.t) : db option =
-      let open Of_sexp_utils in
-      try
-        match x with
-        | Atom _ -> invalid_data ""
-        | List l ->
-          Some
-            (l
-             |> List.to_seq
-             |> Seq.map (fun x ->
-                 match Sexp'.of_sexp x with
-                 | None -> invalid_data ""
-                 | Some x -> x)
-             |> of_seq)
-      with _ -> None
-
-    let to_sexp db =
-      Sexp.List
-        (Timedesc_tzdb.M.bindings db
-         |> List.map (fun (name, table) -> Raw.of_table_exn ~name table)
-         |> List.map Sexp'.to_sexp
-        )
-
-    let of_string s =
-      match Sexp.of_string s with
-      | exception _ -> None
-      | x -> of_sexp x
   end
 end
 

@@ -16,8 +16,8 @@ module Qc = struct
     QCheck.Test.make ~count:100_000 ~name:"to_of_sexp" time_zone (fun tz ->
         let tz' =
           tz
-          |> Timedesc.Time_zone.Sexp.to_sexp
-          |> Timedesc.Time_zone.Sexp.of_sexp
+          |> Timedesc_sexp.Time_zone.to_sexp
+          |> Timedesc_sexp.Time_zone.of_sexp
           |> CCOption.get_exn_or
             "Expected successful construction of time zone from sexp"
         in
