@@ -59,7 +59,7 @@ let self_dir = "gen/"
 
 let output_dir = "gen-artifacts/"
 
-let output_flags = [ Open_wronly; Open_creat; Open_trunc; Open_text ]
+let output_flags = [ Open_wronly; Open_creat; Open_trunc; Open_binary ]
 
 let output_list_file_name = output_dir ^ "available-time-zones.txt"
 
