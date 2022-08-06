@@ -82,7 +82,7 @@ Include `timedesc` (`timere` and `timere-parse` if needed) in the `libraries` st
 
 #### Tzdb backend
 
-You can optionally pick one of the following two concrete implementations of time zone data source
+You can optionally pick one of the following concrete implementations of time zone data source
 
 - `timedesc-tzdb.full`
 
@@ -103,7 +103,7 @@ You can optionally pick one of the following two concrete implementations of tim
 
 #### Tzlocal backend
 
-You can optionally pick one of the following three concrete implementations of local time zone detection
+You can optionally pick one of the following concrete implementations of local time zone detection
 
 - `timedesc-tzlocal.unix`
 
