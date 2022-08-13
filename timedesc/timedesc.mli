@@ -747,6 +747,10 @@ module Date : sig
 
   val to_rfc3339 : t -> string
 
+  val pp_rfc5322 : Format.formatter -> t -> unit
+
+  val to_rfc5322 : t -> string
+
   (** {1 Parsing} *)
 
   val of_iso8601 : string -> (t, string) result
