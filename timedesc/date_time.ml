@@ -54,7 +54,7 @@ let to_timestamp_local (x : t) : Span.t =
   *)
   timestamp_local_of_date_and_time x.date x.time
 
-let to_timestamp_precise_unsafe (x : t) : timestamp Time_zone.local_result =
+let to_timestamp (x : t) : timestamp local_result =
   let open Span in
   let timestamp_local = to_timestamp_local x in
   match x.offset_from_utc with
@@ -64,15 +64,8 @@ let to_timestamp_precise_unsafe (x : t) : timestamp Time_zone.local_result =
     let x2 = timestamp_local - offset2 in
     `Ambiguous (min x1 x2, max x1 x2)
 
-let to_timestamp x : timestamp local_result =
-  match to_timestamp_precise_unsafe x with
-  | `None -> failwith "Unexpected case"
-  | `Single x -> `Single x
-  | `Ambiguous (x, y) -> `Ambiguous (x, y)
-
 let to_timestamp_float_s x : float local_result =
-  match to_timestamp_precise_unsafe x with
-  | `None -> failwith "Unexpected case"
+  match to_timestamp x with
   | `Single x -> `Single (Span.to_float_s x)
   | `Ambiguous (x, y) -> `Ambiguous (Span.to_float_s x, Span.to_float_s y)
 
