@@ -99,7 +99,7 @@ You can optionally pick one of the following concrete implementations of time zo
     
     - List of available time zones is available as `gen-artifacts/available-time-zones.txt`
 
-    - `Time_zone.JSON.of_string` can load files in `tzdb-json/`
+    - `Timedesc_json.Time_zone.of_string` can load files in `tzdb-json/`
 
 #### Tzlocal backend
 
