@@ -52,6 +52,10 @@ module Date = struct
 
   let of_iso8601_exn s = of_iso8601_exn' of_iso8601 s
 
+  let pp_rfc5322 = RFC5322.pp_date
+
+  let to_rfc5322 x = str_of_pp pp_rfc5322 x
+
   module Ymd = struct
     include Ymd'
 
