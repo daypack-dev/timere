@@ -119,10 +119,10 @@ let spaces = skip_while is_space
 let spaces1 = take_while is_space *> return ()
 
 let sep_by_comma (p : 'a t) : 'a list t =
-  sep_by p (spaces *> comma *> spaces)
+  sep_by (spaces *> comma *> spaces) p
 
 let sep_by_comma1 (p : 'a t) : 'a list t =
-  sep_by1 p (spaces *> comma *> spaces)
+  sep_by1 (spaces *> comma *> spaces) p
 
 (* let sep_res_seq ~by ~end_markers (p : ('a, 'b) t) : ('a result Seq.t, 'b) t =
  *   sep_by (char by)
