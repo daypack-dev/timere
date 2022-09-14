@@ -86,7 +86,7 @@ You can optionally pick one of the following concrete implementations of time zo
 
 - `timedesc-tzdb.full`
 
-  - This is the default implementation which embeds the IANA time zone database from year 1850 to year 2100 exclusive
+  - This is the default implementation which embeds the IANA time zone database from year 1970 to year 2040 exclusive
 
 - `timedesc-tzdb.none`
 
