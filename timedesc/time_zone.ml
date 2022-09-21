@@ -619,42 +619,34 @@ module Db = struct
       Buffer.contents buffer
 
     module Parsers = struct
-      open Angstrom
+      open Direct_parser_components
 
-      let half_compressed_name_and_table : (string * string) Angstrom.t =
-        any_uint8 >>=
-        (fun name_len ->
-           take name_len >>=
-           (fun name ->
-              BE.any_uint16 >>=
-              (fun table_str_len ->
-                 take table_str_len >>|
-                 (fun table_str ->
-                    (name, table_str)
-                 )
-              )
-           )
-        )
+      let half_compressed_name_and_table ~pos s : int * (string * string) =
+        let pos, name_len = uint8 ~pos s in
+        let pos, name = take ~pos name_len s in
+        let pos, table_str_len = be_uint16 ~pos s in
+        let pos, table_str = take ~pos table_str_len s in
+        (pos, (name, table_str))
 
-      let half_compressed : string M.t Angstrom.t =
-        BE.any_uint16 >>=
-        (fun table_count ->
-           count table_count half_compressed_name_and_table >>|
-           (fun l ->
-              l
-              |> List.to_seq
-              |> M.of_seq
-           )
-        )
+      let half_compressed ~pos s : int * string M.t =
+        let pos, table_count = be_uint16 ~pos s in
+        let pos = ref pos in
+        let m = ref M.empty in
+        for _=0 to table_count-1 do
+          let pos', (name, table_str) = half_compressed_name_and_table ~pos:!pos s in
+          pos := pos';
+          m := M.add name table_str !m;
+        done;
+        (!pos, !m)
     end
 
     let half_compressed_of_string (s : string) : string M.t option =
-      let open Angstrom in
-      match
-        parse_string ~consume:Consume.All Parsers.half_compressed s
+      try
+        let pos, m = Parsers.half_compressed ~pos:0 s in
+        assert (pos = String.length s);
+        Some m
       with
-      | Ok x -> Some x
-      | Error _ -> None
+      | _ -> None
 
     let half_compressed_of_string_exn s =
       match half_compressed_of_string s with
