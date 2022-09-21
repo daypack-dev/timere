@@ -20,6 +20,12 @@
 
   - Previously leads to incorrect result space computation, and may lead to time slots missing despite meeting criteria
 
+## Timedesc 0.9.1
+
+- Moved to using hand rolled parser for half compressed tzdb parsing
+
+  - Previous version using Angstrom causes stack overflow in JS targets
+
 ## Timedesc 0.9.0
 
 - Moved sexp code into `timedesc-sexp` to further reduce core dependencies
