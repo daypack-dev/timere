@@ -27,8 +27,9 @@ let count (type a) n (f : pos:int -> string -> int * a) ~pos s : int * a list =
   let buf = ref [] in
   let pos = ref pos in
   assert (n >= 0);
-  for i=0 to n-1 do
-    let pos, x = f ~pos:!pos s in
+  for _=0 to n-1 do
+    let pos', x = f ~pos:!pos s in
+    pos := pos';
     buf := x :: !buf;
   done;
   (!pos, List.rev !buf)
