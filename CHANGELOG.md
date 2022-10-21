@@ -22,7 +22,7 @@
 
 ## Timedesc 0.9.1
 
-- Moved to using hand rolled parser for half compressed tzdb parsing
+- Moved to using hand rolled parser for tzdb and related parsing
 
   - Previous version using Angstrom causes stack overflow in JS targets
 
