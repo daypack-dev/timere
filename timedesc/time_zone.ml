@@ -438,94 +438,99 @@ module Compressed_table = struct
     Buffer.contents buffer
 
   module Parsers = struct
-    open Angstrom
+    open Direct_parser_components
 
-    let offset_p ~is_pos ~hour_nz ~minute_nz ~second_nz =
+    let offset ~is_pos ~hour_nz ~minute_nz ~second_nz ~pos s =
       let sign = if is_pos then `Pos else `Neg in
-      (if hour_nz then any_int8 else return 0)
-      >>= (fun hours ->
-          (if minute_nz then any_int8 else return 0)
-          >>= (fun minutes ->
-              (if second_nz then any_int8 else return 0)
-              >>| (fun seconds ->
-                  Span.For_human'.make_exn ~sign ~hours ~minutes ~seconds ()
-                  |> Span.get_s
-                  |> Int64.to_int
-                )
-            )
-        )
+      let pos, hours =
+        if hour_nz then
+          uint8 ~pos s
+        else
+          pos, 0
+      in
+      let pos, minutes =
+        if minute_nz then
+          uint8 ~pos s
+        else
+          pos, 0
+      in
+      let pos, seconds =
+        if second_nz then
+          uint8 ~pos s
+        else
+          pos, 0
+      in
+      (pos,
+       Span.For_human'.make_exn ~sign ~hours ~minutes ~seconds ()
+       |> Span.get_s
+       |> Int64.to_int
+      )
 
-    let relative_entry_p =
-      any_uint8 >>= (fun flags ->
-          let is_abs         = flags land 0b0100_0000 <> 0 in
-          let value_is_64bit = flags land 0b0010_0000 <> 0 in
-          let is_dst         = flags land 0b0001_0000 <> 0 in
-          let is_pos         = flags land 0b0000_1000 <> 0 in
-          let hour_nz        = flags land 0b0000_0100 <> 0 in
-          let minute_nz      = flags land 0b0000_0010 <> 0 in
-          let second_nz      = flags land 0b0000_0001 <> 0 in
-          (if value_is_64bit then
-             BE.any_int64
+    let relative_entry ~pos s : int * relative_entry =
+      let pos, flags = uint8 ~pos s in
+      let is_abs         = flags land 0b0100_0000 <> 0 in
+      let value_is_64bit = flags land 0b0010_0000 <> 0 in
+      let is_dst         = flags land 0b0001_0000 <> 0 in
+      let is_pos         = flags land 0b0000_1000 <> 0 in
+      let hour_nz        = flags land 0b0000_0100 <> 0 in
+      let minute_nz      = flags land 0b0000_0010 <> 0 in
+      let second_nz      = flags land 0b0000_0001 <> 0 in
+      let pos, value =
+        if value_is_64bit then
+          be_int64 ~pos s
+        else
+          let pos, x = be_int32 ~pos s in
+          (pos, Int64.(logand (of_int32 x) 0xFFFF_FFFFL))
+      in
+      let pos, offset =
+        offset ~is_pos ~hour_nz ~minute_nz ~second_nz ~pos s
+      in
+      (pos, { value; is_abs; is_dst; offset })
+
+    let relative_table ~pos s : int * (relative_entry array * int array) =
+      let pos, uniq_relative_entry_count = uint8 ~pos s in
+      let pos, uniq_relative_entries =
+        count uniq_relative_entry_count relative_entry ~pos s
+      in
+      let pos, index_count = be_uint16 ~pos s in
+      let pos, indices = count index_count uint8 ~pos s in
+      (pos, (Array.of_list uniq_relative_entries, Array.of_list indices))
+
+    let table ~pos s : int * table option =
+      let pos, (uniq_relative_entries, indices) =
+        relative_table ~pos s
+      in
+      let size = Array.length indices in
+      let starts =
+        Bigarray.Array1.create Bigarray.Int64 Bigarray.c_layout size
+      in
+      let entries =
+        Array.make size { is_dst = false; offset = 0 }
+      in
+      Array.iteri (fun i index ->
+          let entry =
+            uniq_relative_entries.(index)
+          in
+          (if entry.is_abs then
+             starts.{i} <- entry.value
            else
-             lift (fun x ->
-                 Int64.(logand (of_int32 x) 0xFFFF_FFFFL)
-               )
-               BE.any_int32)
-          >>= (fun value ->
-              offset_p ~is_pos ~hour_nz ~minute_nz ~second_nz
-              >>| (fun offset -> { value; is_abs; is_dst; offset })
-            )
-        )
-
-    let relative_table : (relative_entry array * int array) Angstrom.t =
-      any_uint8 >>=
-      (fun uniq_relative_entry_count ->
-         count uniq_relative_entry_count relative_entry_p
-         >>= (fun uniq_relative_entries ->
-             BE.any_uint16 >>=
-             (fun index_count ->
-                count index_count any_int8 >>| (fun indices ->
-                    (Array.of_list uniq_relative_entries, Array.of_list indices)
-                  )
-             )
-           )
-      )
-
-    let table : table option Angstrom.t =
-      relative_table >>=
-      (fun (uniq_relative_entries, indices) ->
-         let size = Array.length indices in
-         let starts =
-           Bigarray.Array1.create Bigarray.Int64 Bigarray.c_layout size
-         in
-         let entries =
-           Array.make size { is_dst = false; offset = 0 }
-         in
-         Array.iteri (fun i index ->
-             let entry =
-               uniq_relative_entries.(index)
-             in
-             (if entry.is_abs then
-                starts.{i} <- entry.value
-              else
-                starts.{i} <- Int64.add starts.{i - 1} entry.value);
-             entries.(i) <- { is_dst = entry.is_dst; offset = entry.offset };
-           ) indices;
-         let table = (starts, entries) in
-         if check_table table then
-           return (Some table)
-         else
-           return None
-      )
+             starts.{i} <- Int64.add starts.{i - 1} entry.value);
+          entries.(i) <- { is_dst = entry.is_dst; offset = entry.offset };
+        ) indices;
+      let table = (starts, entries) in
+      if check_table table then
+        (pos, Some table)
+      else
+        (pos, None)
   end
 
   let of_string (s : string) : table option =
-    let open Angstrom in
-    match
-      parse_string ~consume:Consume.All Parsers.table s
+    try
+      let pos, x = Parsers.table ~pos:0 s in
+      assert (pos = String.length s);
+      x
     with
-    | Ok x -> x
-    | Error _ -> None
+    | _ -> None
 
   let of_string_exn s =
     match of_string s with
@@ -551,30 +556,25 @@ module Compressed = struct
     Buffer.contents buffer
 
   module Parsers = struct
-    let p : t option Angstrom.t =
-      let open Angstrom in
-      any_uint8 >>=
-      (fun name_len ->
-         take name_len >>=
-         (fun name ->
-            Compressed_table.Parsers.table >>|
-            (fun table ->
-               match table with
-               | None -> None
-               | Some table ->
-                 Raw.of_table ~name table
-            )
-         )
-      )
+    open Direct_parser_components
+
+    let p ~pos s : (int * t option) =
+      let pos, name_len = uint8 ~pos s in
+      let pos, name = take name_len ~pos s in
+      let pos, table = Compressed_table.Parsers.table ~pos s in
+      match table with
+      | None -> (pos, None)
+      | Some table ->
+        (pos, Raw.of_table ~name table)
   end
 
   let of_string (s : string) : t option =
-    let open Angstrom in
-    match
-      parse_string ~consume:Consume.All Parsers.p s
+    try
+      let pos, x = Parsers.p ~pos:0 s in
+      assert (pos = String.length s);
+      x
     with
-    | Ok x -> x
-    | Error _ -> None
+    | _ -> None
 
   let of_string_exn s =
     match of_string s with
