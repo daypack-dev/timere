@@ -1,0 +1,5 @@
+(executable
+ (name timedesc_empty)
+ (libraries timedesc)
+ (modes js)
+ )
