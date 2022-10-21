@@ -105,7 +105,7 @@
     [ "1617505200", { "is_dst": false, "offset": -14400 } ],
     [ "1630814400", { "is_dst": true, "offset": -10800 } ],
     [ "1648954800", { "is_dst": false, "offset": -14400 } ],
-    [ "1662264000", { "is_dst": true, "offset": -10800 } ],
+    [ "1662868800", { "is_dst": true, "offset": -10800 } ],
     [ "1680404400", { "is_dst": false, "offset": -14400 } ],
     [ "1693713600", { "is_dst": true, "offset": -10800 } ],
     [ "1712458800", { "is_dst": false, "offset": -14400 } ],
