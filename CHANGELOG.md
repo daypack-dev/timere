@@ -26,6 +26,8 @@
 
   - Previous version using Angstrom causes stack overflow in JS targets
 
+- Refreshed tzdb
+
 ## Timedesc 0.9.0
 
 - Moved sexp code into `timedesc-sexp` to further reduce core dependencies
