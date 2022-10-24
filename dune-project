@@ -47,7 +47,13 @@ Features:
 (package
   (name timedesc-tzdb)
   (synopsis "Virtual library for Timedesc time zone database backends")
-  (description "")
+  (description "
+Concrete implementations available in this package:
+
+- `timedesc-tzdb.full`
+
+- `timedesc-tzdb.none`
+")
   (depends
     (ocaml (>= "4.08.1"))
     dune
@@ -57,7 +63,17 @@ Features:
 (package
   (name timedesc-tzlocal)
   (synopsis "Virtual library for Timedesc local time zone detection backends")
-  (description "")
+  (description "
+Concrete implementations available in this package:
+
+- `timedesc-tzlocal.unix`
+
+- `timedesc-tzlocal.none`
+
+- `timedesc-tzlocal.utc`
+
+See timedesc-tzlocal-js for JavaScript backend
+")
   (depends
     (ocaml (>= "4.08.1"))
     dune
@@ -67,7 +83,9 @@ Features:
 (package
   (name timedesc-tzlocal-js)
   (synopsis "JS implementation for timedesc-tzlocal")
-  (description "")
+  (description "
+JavaScript implementation of timedesc-tzlocal
+")
   (depends
     (ocaml (>= "4.08.1"))
     dune
@@ -80,7 +98,9 @@ Features:
 (package
   (name timedesc-json)
   (synopsis "Timedesc JSON backend")
-  (description "")
+  (description "
+This package provides JSON serialization functions for various Timedesc values
+")
   (depends
     (ocaml (>= "4.08.1"))
     dune
@@ -92,7 +112,9 @@ Features:
 (package
   (name timedesc-sexp)
   (synopsis "Timedesc Sexp backend")
-  (description "")
+  (description "
+This package provides sexp serialization functions for various Timedesc values
+")
   (depends
     (ocaml (>= "4.08.1"))
     dune
