@@ -20,6 +20,10 @@
 
   - Previously leads to incorrect result space computation, and may lead to time slots missing despite meeting criteria
 
+## Timedesc 0.9.2
+
+- Fixed `get_local_tz_for_arg` error message
+
 ## Timedesc 0.9.1
 
 - Moved to using hand rolled parser for tzdb and related parsing
