@@ -11,7 +11,7 @@ license: "MIT"
 homepage: "https://github.com/daypack-dev/timere"
 bug-reports: "https://github.com/daypack-dev/timere/issues"
 depends: [
-  "ocaml" {>= "4.08.1"}
+  "ocaml" {>= "4.08"}
   "dune" {>= "2.9"}
   "timedesc" {= version}
   "yojson" {>= "1.6.0"}

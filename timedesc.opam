@@ -21,7 +21,7 @@ license: "MIT"
 homepage: "https://github.com/daypack-dev/timere"
 bug-reports: "https://github.com/daypack-dev/timere/issues"
 depends: [
-  "ocaml" {>= "4.08.1"}
+  "ocaml" {>= "4.08"}
   "bisect_ppx" {dev & >= "2.5.0"}
   "dune" {>= "2.9"}
   "timedesc-tzdb" {= version}

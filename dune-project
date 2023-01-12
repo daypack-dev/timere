@@ -28,7 +28,7 @@ Features:
 "
 )
   (depends 
-    (ocaml (>= "4.08.1"))
+    (ocaml (>= "4.08"))
     (bisect_ppx (and :dev (>= "2.5.0")))
     dune
     (timedesc-tzdb (= :version))
@@ -55,7 +55,7 @@ Concrete implementations available in this package:
 - `timedesc-tzdb.none`
 ")
   (depends
-    (ocaml (>= "4.08.1"))
+    (ocaml (>= "4.08"))
     dune
   )
 )
@@ -75,7 +75,7 @@ Concrete implementations available in this package:
 See timedesc-tzlocal-js for JavaScript backend
 ")
   (depends
-    (ocaml (>= "4.08.1"))
+    (ocaml (>= "4.08"))
     dune
   )
 )
@@ -87,7 +87,7 @@ See timedesc-tzlocal-js for JavaScript backend
 JavaScript implementation of timedesc-tzlocal
 ")
   (depends
-    (ocaml (>= "4.08.1"))
+    (ocaml (>= "4.08"))
     dune
     (timedesc-tzlocal (= :version))
     (js_of_ocaml (>= "4.0.0"))
@@ -102,7 +102,7 @@ JavaScript implementation of timedesc-tzlocal
 This package provides JSON serialization functions for various Timedesc values
 ")
   (depends
-    (ocaml (>= "4.08.1"))
+    (ocaml (>= "4.08"))
     dune
     (timedesc (= :version))
     (yojson (>= "1.6.0"))
@@ -116,7 +116,7 @@ This package provides JSON serialization functions for various Timedesc values
 This package provides sexp serialization functions for various Timedesc values
 ")
   (depends
-    (ocaml (>= "4.08.1"))
+    (ocaml (>= "4.08"))
     dune
     (timedesc (= :version))
     (sexplib (>= "v0.14.0"))
@@ -141,7 +141,7 @@ Features:
 "
 )
   (depends 
-    (ocaml (>= "4.08.1"))
+    (ocaml (>= "4.08"))
     (bisect_ppx (and :dev (>= "2.5.0")))
     dune
     seq
@@ -174,7 +174,7 @@ Features:
 "
 )
   (depends 
-    (ocaml (>= "4.08.1"))
+    (ocaml (>= "4.08"))
     (bisect_ppx (and :dev (>= "2.5.0")))
     dune
     (oseq (>= "0.3"))
