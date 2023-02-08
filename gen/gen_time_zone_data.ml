@@ -158,7 +158,7 @@ module Parser = struct
 end
 
 let parse_zdump_line (s : string) : (zdump_line, string) result =
-  Angstrom.(parse_string ~consume:Prefix Parser.zdump_line s)
+  Angstrom.(parse_string ~consume:All Parser.zdump_line s)
 
 let transitions_of_zdump_lines (l : zdump_line list) : transition list =
   let rec aux acc line_num l =

@@ -236,6 +236,8 @@ exception Invalid_format_string of string
 
 exception ISO8601_parse_exn of string
 
+exception RFC9110_parse_exn of string
+
 (** {1 Basic types} *)
 
 type weekday =
@@ -747,9 +749,9 @@ module Date : sig
 
   val to_rfc3339 : t -> string
 
-  val pp_rfc5322 : Format.formatter -> t -> unit
+  val pp_rfc9110 : Format.formatter -> t -> unit
 
-  val to_rfc5322 : t -> string
+  val to_rfc9110 : t -> string
 
   (** {1 Parsing} *)
 
@@ -1470,6 +1472,12 @@ val to_iso8601_micro : t -> string
 
 val to_iso8601_nano : t -> string
 
+val pp_rfc9110 : Format.formatter -> t -> unit
+(** {b Warning}: Subsecond value is truncated *)
+
+val to_rfc9110 : t -> string
+(** {b Warning}: Subsecond value is truncated *)
+
 (** {2 Parsing} *)
 
 val of_iso8601 : string -> (t, string) result
@@ -1481,6 +1489,16 @@ val of_iso8601 : string -> (t, string) result
 
 val of_iso8601_exn : string -> t
 (** @raise ISO8601_parse_exn if [of_iso8601] fails *)
+
+val of_rfc9110 : string -> (t, string) result
+(**
+   Parses RFC9110/RFC5322 (HTTP) date time.
+
+   Weekday is not checked to be correct.
+*)
+
+val of_rfc9110_exn : string -> t
+(** @raise RFC9110_parse_exn if [of_rfc9110] fails *)
 
 (** {1 Timestamp} *)
 
@@ -1638,6 +1656,12 @@ module Timestamp : sig
 
   val to_iso8601_nano : t -> string
 
+  val pp_rfc9110 : Format.formatter -> t -> unit
+  (** {b Warning}: Subsecond value is truncated *)
+
+  val to_rfc9110 : t -> string
+  (** {b Warning}: Subsecond value is truncated *)
+
   (** {1 Parsing} *)
 
   val of_iso8601 : string -> (t, string) result
@@ -1649,6 +1673,16 @@ module Timestamp : sig
 
   val of_iso8601_exn : string -> t
   (** @raise ISO8601_parse_exn if [of_iso8601] fails *)
+
+  val of_rfc9110 : string -> (t, string) result
+  (**
+     Parses RFC9110/RFC5322 (HTTP) date time.
+
+     Weekday is not checked to be correct.
+  *)
+
+  val of_rfc9110_exn : string -> t
+  (** @raise RFC9110_parse_exn if [of_rfc9110] fails *)
 end
 
 (** {1 Interval} *)
