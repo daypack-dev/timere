@@ -1472,6 +1472,10 @@ val to_iso8601_micro : t -> string
 
 val to_iso8601_nano : t -> string
 
+val pp_rfc9110 : Format.formatter -> t -> unit
+
+val to_rfc9110 : t -> string
+
 (** {2 Parsing} *)
 
 val of_iso8601 : string -> (t, string) result
@@ -1649,6 +1653,10 @@ module Timestamp : sig
   val to_iso8601_micro : t -> string
 
   val to_iso8601_nano : t -> string
+
+  val pp_rfc9110 : Format.formatter -> t -> unit
+
+  val to_rfc9110 : t -> string
 
   (** {1 Parsing} *)
 

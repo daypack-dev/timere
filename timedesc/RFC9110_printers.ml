@@ -23,3 +23,9 @@ let pp_date_time formatter (dt : Date_time.t) =
   match Date_time.to_timestamp dt with
   | `Ambiguous _ -> raise (Printers.Date_time_cannot_deduce_offset_from_utc dt)
   | `Single x -> pp_timestamp formatter x
+
+let of_date_time (dt : Date_time.t) : string =
+  Format.asprintf "%a" pp_date_time dt
+
+let of_timestamp (dt : Span.t) : string =
+  Format.asprintf "%a" pp_timestamp dt

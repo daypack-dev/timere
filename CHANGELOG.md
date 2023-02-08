@@ -32,11 +32,23 @@
 
   - `to_rfc9110`
 
+  - `Timestamp.pp_rfc9110`
+
+  - `Timestamp.to_rfc9110`
+
+  - `Date.pp_rfc9110`
+
+  - `Date.to_rfc9110`
+
 - and parsers
 
   - `of_rfc9110`
 
   - `of_rfc9110_exn`
+
+  - `Timestamp.of_rfc9110`
+
+  - `Timestamp.of_rfc9110_exn`
 
 ## Timedesc 0.9.1
 
