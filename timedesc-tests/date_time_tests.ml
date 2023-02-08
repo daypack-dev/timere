@@ -228,6 +228,144 @@ module Alco = struct
       (Timedesc.Timestamp.to_rfc3339
          (Timedesc.Span.make ~s:(-1888434001L) ~ns:999 ()))
 
+  let of_rfc9110_imf_fixdate_case0 () =
+    Alcotest.(check span_testable)
+      "same timestamp"
+      (CCResult.get_exn
+       @@ Timedesc.Timestamp.of_rfc9110 "Wed, 01 Jan 2020 23:59:59 GMT")
+      (Timedesc.make_exn
+         ~tz:(Timedesc.Time_zone.make_offset_only_exn Timedesc.Span.zero)
+         ~year:2020 ~month:1 ~day:1 ~hour:23 ~minute:59 ~second:59 ~ns:0
+         ()
+       |> Timedesc.to_timestamp_single)
+
+  let of_rfc9110_imf_fixdate_case1 () =
+    Alcotest.(check span_testable)
+      "same timestamp"
+      (CCResult.get_exn
+       @@ Timedesc.Timestamp.of_rfc9110 "Sun, 27 May 1979 23:59:59 GMT")
+      (Timedesc.make_exn
+         ~tz:(Timedesc.Time_zone.make_offset_only_exn Timedesc.Span.zero)
+         ~year:1979 ~month:5 ~day:27 ~hour:23 ~minute:59 ~second:59 ~ns:0
+         ()
+       |> Timedesc.to_timestamp_single)
+
+  let of_rfc9110_imf_fixdate_case2 () =
+    Alcotest.(check span_testable)
+      "same timestamp"
+      (CCResult.get_exn
+       @@ Timedesc.Timestamp.of_rfc9110 "Wed, 31 Dec 1969 23:59:59 GMT")
+      (Timedesc.make_exn
+         ~tz:(Timedesc.Time_zone.make_offset_only_exn Timedesc.Span.zero)
+         ~year:1969 ~month:12 ~day:31 ~hour:23 ~minute:59 ~second:59 ~ns:0
+         ()
+       |> Timedesc.to_timestamp_single)
+
+  let of_rfc9110_rfc850_date_case0 () =
+    Alcotest.(check span_testable)
+      "same timestamp"
+      (CCResult.get_exn
+       @@ Timedesc.Timestamp.of_rfc9110 "Wednesday, 01-Jan-20 23:59:59 GMT")
+      (Timedesc.make_exn
+         ~tz:(Timedesc.Time_zone.make_offset_only_exn Timedesc.Span.zero)
+         ~year:2020 ~month:1 ~day:1 ~hour:23 ~minute:59 ~second:59 ~ns:0
+         ()
+       |> Timedesc.to_timestamp_single)
+
+  let of_rfc9110_rfc850_date_case1 () =
+    Alcotest.(check span_testable)
+      "same timestamp"
+      (CCResult.get_exn
+       @@ Timedesc.Timestamp.of_rfc9110 "Sunday, 27-May-79 23:59:59 GMT")
+      (Timedesc.make_exn
+         ~tz:(Timedesc.Time_zone.make_offset_only_exn Timedesc.Span.zero)
+         ~year:1979 ~month:5 ~day:27 ~hour:23 ~minute:59 ~second:59 ~ns:0
+         ()
+       |> Timedesc.to_timestamp_single)
+
+  let of_rfc9110_rfc850_date_case2 () =
+    Alcotest.(check span_testable)
+      "same timestamp"
+      (CCResult.get_exn
+       @@ Timedesc.Timestamp.of_rfc9110 "Wednesday, 31-Dec-69 23:59:59 GMT")
+      (Timedesc.make_exn
+         ~tz:(Timedesc.Time_zone.make_offset_only_exn Timedesc.Span.zero)
+         ~year:1969 ~month:12 ~day:31 ~hour:23 ~minute:59 ~second:59 ~ns:0
+         ()
+       |> Timedesc.to_timestamp_single)
+
+  let of_rfc9110_asctime_date_case0 () =
+    Alcotest.(check span_testable)
+      "same timestamp"
+      (CCResult.get_exn
+       @@ Timedesc.Timestamp.of_rfc9110 "Wed Jan  1 23:59:59 2020")
+      (Timedesc.make_exn
+         ~tz:(Timedesc.Time_zone.make_offset_only_exn Timedesc.Span.zero)
+         ~year:2020 ~month:1 ~day:1 ~hour:23 ~minute:59 ~second:59 ~ns:0
+         ()
+       |> Timedesc.to_timestamp_single)
+
+  let of_rfc9110_asctime_date_case1 () =
+    Alcotest.(check span_testable)
+      "same timestamp"
+      (CCResult.get_exn
+       @@ Timedesc.Timestamp.of_rfc9110 "Sun May 27 23:59:59 1979")
+      (Timedesc.make_exn
+         ~tz:(Timedesc.Time_zone.make_offset_only_exn Timedesc.Span.zero)
+         ~year:1979 ~month:5 ~day:27 ~hour:23 ~minute:59 ~second:59 ~ns:0
+         ()
+       |> Timedesc.to_timestamp_single)
+
+  let of_rfc9110_asctime_date_case2 () =
+    Alcotest.(check span_testable)
+      "same timestamp"
+      (CCResult.get_exn
+       @@ Timedesc.Timestamp.of_rfc9110 "Wed Dec 31 23:59:59 1969")
+      (Timedesc.make_exn
+         ~tz:(Timedesc.Time_zone.make_offset_only_exn Timedesc.Span.zero)
+         ~year:1969 ~month:12 ~day:31 ~hour:23 ~minute:59 ~second:59 ~ns:0
+         ()
+       |> Timedesc.to_timestamp_single)
+
+  let to_rfc9110_case0 () =
+    Alcotest.(check string)
+      "same string" "Sun, 27 May 1979 07:32:00 GMT"
+      (Timedesc.Timestamp.to_rfc9110 (Timedesc.Span.make ~s:296638320L ()))
+
+  let to_rfc9110_case1 () =
+    Alcotest.(check string)
+      "same string" "Sun, 27 May 1979 07:32:00 GMT"
+      (Timedesc.Timestamp.to_rfc9110
+         (Timedesc.Span.make ~s:296638320L ~ns:999_999_000 ()))
+
+  let to_rfc9110_case2 () =
+    Alcotest.(check string)
+      "same string" "Sun, 27 May 1979 07:32:00 GMT"
+      (Timedesc.Timestamp.to_rfc9110
+         (Timedesc.Span.make ~s:296638320L ~ns:999_999_999 ()))
+
+  let to_rfc9110_case3 () =
+    Alcotest.(check string)
+      "same string" "Sun, 27 May 1979 07:32:00 GMT"
+      (Timedesc.Timestamp.to_rfc9110
+         (Timedesc.Span.make ~s:296638320L ~ns:999_999 ()))
+
+  let to_rfc9110_case4 () =
+    Alcotest.(check string)
+      "same string" "Wed, 31 Dec 1969 23:59:59 GMT"
+      (Timedesc.Timestamp.to_rfc9110 (Timedesc.Span.make ~s:(-1L) ~ns:0 ()))
+
+  let to_rfc9110_case5 () =
+    Alcotest.(check string)
+      "same string" "Wed, 31 Dec 1969 23:59:59 GMT"
+      (Timedesc.Timestamp.to_rfc9110 (Timedesc.Span.make ~s:(-1L) ~ns:999 ()))
+
+  let to_rfc9110_case6 () =
+    Alcotest.(check string)
+      "same string" "Mon, 28 Feb 1910 02:59:59 GMT"
+      (Timedesc.Timestamp.to_rfc9110
+         (Timedesc.Span.make ~s:(-1888434001L) ~ns:999 ()))
+
   let suite =
     [
       Alcotest.test_case "leap_second0" `Quick leap_second0;
@@ -266,6 +404,22 @@ module Alco = struct
       Alcotest.test_case "to_rfc3339_case4" `Quick to_rfc3339_case4;
       Alcotest.test_case "to_rfc3339_case5" `Quick to_rfc3339_case5;
       Alcotest.test_case "to_rfc3339_case6" `Quick to_rfc3339_case6;
+      Alcotest.test_case "of_rfc9110_imf_fixdate_case0" `Quick of_rfc9110_imf_fixdate_case0;
+      Alcotest.test_case "of_rfc9110_imf_fixdate_case1" `Quick of_rfc9110_imf_fixdate_case1;
+      Alcotest.test_case "of_rfc9110_imf_fixdate_case2" `Quick of_rfc9110_imf_fixdate_case2;
+      Alcotest.test_case "of_rfc9110_rfc850_date_case0" `Quick of_rfc9110_rfc850_date_case0;
+      Alcotest.test_case "of_rfc9110_rfc850_date_case1" `Quick of_rfc9110_rfc850_date_case1;
+      Alcotest.test_case "of_rfc9110_rfc850_date_case2" `Quick of_rfc9110_rfc850_date_case2;
+      Alcotest.test_case "of_rfc9110_asctime_date_case0" `Quick of_rfc9110_asctime_date_case0;
+      Alcotest.test_case "of_rfc9110_asctime_date_case1" `Quick of_rfc9110_asctime_date_case1;
+      Alcotest.test_case "of_rfc9110_asctime_date_case2" `Quick of_rfc9110_asctime_date_case2;
+      Alcotest.test_case "to_rfc9110_case0" `Quick to_rfc9110_case0;
+      Alcotest.test_case "to_rfc9110_case1" `Quick to_rfc9110_case1;
+      Alcotest.test_case "to_rfc9110_case2" `Quick to_rfc9110_case2;
+      Alcotest.test_case "to_rfc9110_case3" `Quick to_rfc9110_case3;
+      Alcotest.test_case "to_rfc9110_case4" `Quick to_rfc9110_case4;
+      Alcotest.test_case "to_rfc9110_case5" `Quick to_rfc9110_case5;
+      Alcotest.test_case "to_rfc9110_case6" `Quick to_rfc9110_case6;
     ]
 end
 

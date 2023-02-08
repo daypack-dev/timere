@@ -104,7 +104,14 @@ let rfc850_date_p =
   weekday_p *> spaces *> comma *> spaces
   *> max_two_digit_nat_zero >>= fun day ->
   spaces *> char '-' *> spaces *> month_p >>= fun month ->
-  spaces *> char '-' *> spaces *> nat_zero >>= fun year ->
+  spaces *> char '-' *> spaces
+  *> max_two_digit_nat_zero >>= fun year ->
+  let year =
+    if year >= 50 then
+      year + 1900
+    else
+      year + 2000
+  in
   spaces *> date' ~year ~month ~day >>= fun date ->
   time_p >>= fun time ->
   spaces *> gmt_p *>
