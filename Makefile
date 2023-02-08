@@ -40,22 +40,22 @@ timere :
 	dune build timere
 	$(PATCH_OPAMFILES)
 
-.PHONY: timedesc-test
-timedesc-test : timedesc
+.PHONY: timedesc-tests
+timedesc-tests : timedesc
 	OCAMLRUNPARAM=b dune exec timedesc-tests/main.exe --no-buffer --force
 
-.PHONY: timere-test
-timere-test : timere
+.PHONY: timere-tests
+timere-tests : timere
 	OCAMLRUNPARAM=b dune exec ./timere-tests/main.exe --no-buffer --force
 
-.PHONY: cov-timedesc-test
-cov-timedesc-test : timedesc
+.PHONY: cov-timedesc-tests
+cov-timedesc-tests : timedesc
 	find . -name '*.coverage' | xargs rm -f
 	dune exec ./timedesc-tests/main.exe --instrument-with bisect_ppx --no-buffer --force timedesc/
 	bisect-ppx-report html
 
-.PHONY: cov-timere-test
-cov-timere-test : timere
+.PHONY: cov-timere-tests
+cov-timere-tests : timere
 	find . -name '*.coverage' | xargs rm -f
 	OCAMLRUNPARAM=b dune exec ./timere-tests/main.exe --instrument-with bisect_ppx --no-buffer --force timere/
 	bisect-ppx-report html
