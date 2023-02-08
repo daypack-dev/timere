@@ -432,6 +432,34 @@ module Qc = struct
              ~ns:(int_of_float (10. ** float_of_int (CCInt.sub 9 frac_s)))
              ()))
 
+  let to_rfc9110_of_rfc9110_is_accurate =
+    QCheck.Test.make ~count:100_000 ~name:"to_rfc9110_of_rfc9110_is_accurate"
+      date_time
+      (fun dt ->
+         let r =
+           CCResult.get_exn
+           @@ Timedesc.of_rfc9110
+           @@ Timedesc.to_rfc9110 dt
+         in
+         let r = Timedesc.to_timestamp_single r in
+         let timestamp = Timedesc.to_timestamp_single dt in
+         Timedesc.Span.(
+           abs (r - timestamp)
+           < make ~s:1L ()))
+
+  let timestamp_to_rfc9110_of_rfc9110_is_accurate =
+    QCheck.Test.make ~count:100_000 ~name:"timestamp_to_rfc9110_of_rfc9110_is_accurate"
+      timestamp
+      (fun timestamp ->
+         let r =
+           CCResult.get_exn
+           @@ Timedesc.Timestamp.of_rfc9110
+           @@ Timedesc.Timestamp.to_rfc9110 timestamp
+         in
+         Timedesc.Span.(
+           abs (r - timestamp)
+           < make ~s:1L ()))
+
   let of_to_timestamp =
     QCheck.Test.make ~count:100_000 ~name:"of_to_timestamp"
       QCheck.(pair time_zone timestamp)
@@ -554,6 +582,8 @@ module Qc = struct
       iso_ord_date_time_to_iso8601_nano_of_iso8601_is_lossless;
       iso_ord_date_time_to_iso8601_w_default_frac_s_of_iso8601_is_lossless;
       iso_ord_date_time_to_iso8601_of_iso8601_is_accurate;
+      to_rfc9110_of_rfc9110_is_accurate;
+      timestamp_to_rfc9110_of_rfc9110_is_accurate;
       of_to_timestamp;
       to_of_sexp;
       zoneless_to_of_sexp;
