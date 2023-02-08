@@ -24,6 +24,20 @@
 
 - Fixed `get_local_tz_for_arg` error message
 
+- Refreshed tzdb
+
+- Added RFC9110 (HTTP Semantics) printers
+
+  - `pp_rfc9110`
+
+  - `to_rfc9110`
+
+- and parsers
+
+  - `of_rfc9110`
+
+  - `of_rfc9110_exn`
+
 ## Timedesc 0.9.1
 
 - Moved to using hand rolled parser for tzdb and related parsing
