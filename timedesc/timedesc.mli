@@ -1669,6 +1669,16 @@ module Timestamp : sig
 
   val of_iso8601_exn : string -> t
   (** @raise ISO8601_parse_exn if [of_iso8601] fails *)
+
+  val of_rfc9110 : string -> (t, string) result
+  (**
+     Parses RFC9110/RFC5322 (HTTP) date time.
+
+     Weekday is not checked to be correct.
+  *)
+
+  val of_rfc9110_exn : string -> t
+  (** @raise RFC9110_parse_exn if [of_rfc9110] fails *)
 end
 
 (** {1 Interval} *)

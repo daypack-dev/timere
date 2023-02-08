@@ -15,7 +15,7 @@ let pp_timestamp formatter (x : Span.t) =
   match Date_time.of_timestamp ~tz_of_date_time:Time_zone.utc x with
   | None -> invalid_arg "Invalid timestamp"
   | Some dt ->
-    Format.fprintf formatter "%a %a"
+    Format.fprintf formatter "%a %a GMT"
       pp_date (Date_time.date dt)
       pp_time (Date_time.time dt)
 

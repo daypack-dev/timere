@@ -91,8 +91,8 @@ let imf_fixdate_p =
   weekday_p *> spaces *> comma *> spaces
   *> max_two_digit_nat_zero
   >>= fun day ->
-  month_p >>= fun month ->
-  nat_zero >>= fun year ->
+  spaces *> month_p >>= fun month ->
+  spaces *> nat_zero >>= fun year ->
   date' ~year ~month ~day >>= fun date ->
   spaces *> time_p >>= fun time ->
   spaces *> gmt_p *>
@@ -103,8 +103,8 @@ let rfc850_date_p =
   let open Parser_components in
   weekday_p *> spaces *> comma *> spaces
   *> max_two_digit_nat_zero >>= fun day ->
-  char '-' *> month_p >>= fun month ->
-  char '-' *> nat_zero >>= fun year ->
+  spaces *> char '-' *> spaces *> month_p >>= fun month ->
+  spaces *> char '-' *> spaces *> nat_zero >>= fun year ->
   spaces *> date' ~year ~month ~day >>= fun date ->
   time_p >>= fun time ->
   spaces *> gmt_p *>
@@ -133,3 +133,8 @@ let date_time_of_str s : (Date_time.t, string) result =
       ]
   in
   parse_string ~consume:All (p <* spaces) s
+
+let timestamp_of_str s =
+  match date_time_of_str s with
+  | Ok dt -> Ok (Date_time.to_timestamp_single dt)
+  | Error msg -> Error msg

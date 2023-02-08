@@ -17,6 +17,11 @@ let of_iso8601_exn' of_iso8601 s =
   | Ok x -> x
   | Error msg -> raise (ISO8601_parse_exn msg)
 
+let of_rfc9110_exn' of_rfc9110 s =
+  match of_rfc9110 s with
+  | Ok x -> x
+  | Error msg -> raise (RFC9110_parse_exn msg)
+
 let str_of_pp pp x = Format.asprintf "%a" pp x
 
 module Ym = struct
@@ -189,6 +194,10 @@ module Timestamp = struct
   let of_iso8601 = ISO8601_parsers.timestamp_of_str
 
   let of_iso8601_exn = of_iso8601_exn' of_iso8601
+
+  let of_rfc9110 = RFC9110_parsers.timestamp_of_str
+
+  let of_rfc9110_exn = of_rfc9110_exn' of_rfc9110
 end
 
 let to_string = Printers.string_of_date_time
@@ -240,10 +249,7 @@ let of_iso8601_exn = of_iso8601_exn' of_iso8601
 
 let of_rfc9110 = RFC9110_parsers.date_time_of_str
 
-let of_rfc9110_exn s =
-  match of_rfc9110 s with
-  | Ok x -> x
-  | Error msg -> raise (RFC9110_parse_exn msg)
+let of_rfc9110_exn = of_rfc9110_exn' of_rfc9110
 
 let min_of_local_result = min_of_local_result
 
