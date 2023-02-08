@@ -1473,8 +1473,10 @@ val to_iso8601_micro : t -> string
 val to_iso8601_nano : t -> string
 
 val pp_rfc9110 : Format.formatter -> t -> unit
+(** {b Warning}: Subsecond information is truncated *)
 
 val to_rfc9110 : t -> string
+(** {b Warning}: Subsecond information is truncated *)
 
 (** {2 Parsing} *)
 
@@ -1655,8 +1657,10 @@ module Timestamp : sig
   val to_iso8601_nano : t -> string
 
   val pp_rfc9110 : Format.formatter -> t -> unit
+  (** {b Warning}: Subsecond information is truncated *)
 
   val to_rfc9110 : t -> string
+  (** {b Warning}: Subsecond information is truncated *)
 
   (** {1 Parsing} *)
 
