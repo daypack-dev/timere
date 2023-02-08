@@ -4,6 +4,8 @@ module Time_zone = Time_zone
 
 exception ISO8601_parse_exn of string
 
+exception RFC9110_parse_exn of string
+
 let frac_s_milli = 3
 
 let frac_s_micro = 6
@@ -52,9 +54,9 @@ module Date = struct
 
   let of_iso8601_exn s = of_iso8601_exn' of_iso8601 s
 
-  let pp_rfc5322 = RFC5322.pp_date
+  let pp_rfc9110 = RFC9110_printers.pp_date
 
-  let to_rfc5322 x = str_of_pp pp_rfc5322 x
+  let to_rfc9110 x = str_of_pp pp_rfc9110 x
 
   module Ymd = struct
     include Ymd'
@@ -227,6 +229,13 @@ let to_iso8601_nano = to_rfc3339_nano
 let of_iso8601 = ISO8601_parsers.date_time_of_str
 
 let of_iso8601_exn = of_iso8601_exn' of_iso8601
+
+let of_rfc9110 = RFC9110_parsers.date_time_of_str
+
+let of_rfc9110_exn s =
+  match of_rfc9110 s with
+  | Ok x -> x
+  | Error msg -> raise (RFC9110_parse_exn msg)
 
 let min_of_local_result = min_of_local_result
 
