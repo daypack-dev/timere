@@ -206,6 +206,10 @@ module Timestamp = struct
   let of_rfc9110 = RFC9110_parsers.timestamp_of_str
 
   let of_rfc9110_exn = of_rfc9110_exn' of_rfc9110
+
+  let of_http = of_rfc9110
+
+  let of_http_exn = of_rfc9110_exn
 end
 
 let to_string = Printers.string_of_date_time
@@ -262,6 +266,10 @@ let of_iso8601_exn = of_iso8601_exn' of_iso8601
 let of_rfc9110 = RFC9110_parsers.date_time_of_str
 
 let of_rfc9110_exn = of_rfc9110_exn' of_rfc9110
+
+let of_http = of_rfc9110
+
+let of_http_exn = of_rfc9110_exn
 
 let min_of_local_result = min_of_local_result
 

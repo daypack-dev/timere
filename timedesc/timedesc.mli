@@ -1522,6 +1522,12 @@ val of_rfc9110 : string -> (t, string) result
 val of_rfc9110_exn : string -> t
 (** @raise RFC9110_parse_exn if [of_rfc9110] fails *)
 
+val of_http : string -> (t, string) result
+(** Alias to [of_rfc9110] *)
+
+val of_http_exn : string -> t
+(** Alias to [of_rfc9110_exn] *)
+
 (** {1 Timestamp} *)
 
 module Timestamp : sig
@@ -1709,6 +1715,12 @@ module Timestamp : sig
 
   val of_rfc9110_exn : string -> t
   (** @raise RFC9110_parse_exn if [of_rfc9110] fails *)
+
+  val of_http : string -> (t, string) result
+  (** Alias to [of_rfc9110] *)
+
+  val of_http_exn : string -> t
+  (** Alias to [of_rfc9110_exn] *)
 end
 
 (** {1 Interval} *)
