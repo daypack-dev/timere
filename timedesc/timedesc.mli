@@ -753,6 +753,12 @@ module Date : sig
 
   val to_rfc9110 : t -> string
 
+  val pp_http : Format.formatter -> t -> unit
+  (** Alias to [pp_rfc9110] *)
+
+  val to_http : t -> string
+  (** Alias to [to_rfc9110] *)
+
   (** {1 Parsing} *)
 
   val of_iso8601 : string -> (t, string) result
@@ -1478,6 +1484,12 @@ val pp_rfc9110 : Format.formatter -> t -> unit
 val to_rfc9110 : t -> string
 (** {b Warning}: Subsecond value is truncated *)
 
+val pp_http : Format.formatter -> t -> unit
+(** Alias to [pp_rfc9110] *)
+
+val to_http : t -> string
+(** Alias to [to_rfc9110] *)
+
 (** {2 Parsing} *)
 
 val of_iso8601 : string -> (t, string) result
@@ -1492,7 +1504,17 @@ val of_iso8601_exn : string -> t
 
 val of_rfc9110 : string -> (t, string) result
 (**
-   Parses RFC9110/RFC5322 (HTTP) date time.
+    Parses RFC9110/RFC5322 (HTTP) date time.
+
+    More specifically, parses the following permissively:
+    {ul
+      {li IMF-fixdate}
+      {li RFC850}
+      {li {ul
+        {li If two-digit year >= 50, then it is treated as 1900 + year, otherwise treated as 2000 + year}
+      }}
+      {li ANSI C's asctime() format}
+    }
 
    Weekday is not checked to be correct.
 *)
@@ -1662,6 +1684,12 @@ module Timestamp : sig
   val to_rfc9110 : t -> string
   (** {b Warning}: Subsecond value is truncated *)
 
+  val pp_http : Format.formatter -> t -> unit
+  (** Alias to [pp_rfc9110] *)
+
+  val to_http : t -> string
+  (** Alias to [to_rfc9110] *)
+
   (** {1 Parsing} *)
 
   val of_iso8601 : string -> (t, string) result
@@ -1676,9 +1704,7 @@ module Timestamp : sig
 
   val of_rfc9110 : string -> (t, string) result
   (**
-     Parses RFC9110/RFC5322 (HTTP) date time.
-
-     Weekday is not checked to be correct.
+     See {!val:of_rfc9110}
   *)
 
   val of_rfc9110_exn : string -> t

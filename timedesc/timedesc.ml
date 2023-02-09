@@ -63,6 +63,10 @@ module Date = struct
 
   let to_rfc9110 x = str_of_pp pp_rfc9110 x
 
+  let pp_http = pp_rfc9110
+
+  let to_http = to_rfc9110
+
   module Ymd = struct
     include Ymd'
 
@@ -175,6 +179,8 @@ module Timestamp = struct
 
   let to_rfc3339 = RFC3339.of_timestamp
 
+  let pp_http = pp_rfc9110
+
   let to_rfc3339_milli = to_rfc3339 ~frac_s:frac_s_milli
 
   let to_rfc3339_micro = to_rfc3339 ~frac_s:frac_s_micro
@@ -190,6 +196,8 @@ module Timestamp = struct
   let to_iso8601_nano = to_rfc3339_nano
 
   let to_rfc9110 = RFC9110_printers.of_timestamp
+
+  let to_http = to_rfc9110
 
   let of_iso8601 = ISO8601_parsers.timestamp_of_str
 
@@ -227,6 +235,8 @@ let pp_rfc9110 = RFC9110_printers.pp_date_time
 
 let to_rfc3339 = RFC3339.of_date_time
 
+let pp_http = pp_rfc9110
+
 let to_rfc3339_milli = to_rfc3339 ~frac_s:frac_s_milli
 
 let to_rfc3339_micro = to_rfc3339 ~frac_s:frac_s_micro
@@ -242,6 +252,8 @@ let to_iso8601_micro = to_rfc3339_micro
 let to_iso8601_nano = to_rfc3339_nano
 
 let to_rfc9110 = RFC9110_printers.of_date_time
+
+let to_http = to_rfc9110
 
 let of_iso8601 = ISO8601_parsers.date_time_of_str
 
