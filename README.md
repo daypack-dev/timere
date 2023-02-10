@@ -66,6 +66,10 @@ See `examples/` for more examples
 
 - RFC9110 (HTTP) date time parsing and printing
 
+  - Parses IMF-fixdate, RFC850, and ANSI's C's asctime() format permissively
+
+  - Prints in IMF-fixdate
+
 #### Timere
 
 - Reasoning over time intervals via `timere` objects/expressions, examples:
