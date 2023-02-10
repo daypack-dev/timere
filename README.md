@@ -64,6 +64,8 @@ See `examples/` for more examples
 
 - ISO8601 parsing and RFC3339 printing
 
+- RFC9110 (HTTP) date time parsing and printing
+
 #### Timere
 
 - Reasoning over time intervals via `timere` objects/expressions, examples:
