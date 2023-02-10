@@ -67,9 +67,11 @@ git archive --output=./"$archive" "$git_tag"
 
 echo "Hashing $archive"
 
-archive_hash=$(sha256sum "$archive" | awk '{ print $1 }')
+hash_cmd=sha256sum
 
-echo "Hash:" $archive_hash
+archive_hash=$("$hash_cmd" "$archive" | awk '{ print $1 }')
+
+echo "Hash from $hash_cmd:" $archive_hash
 
 packages=(
   "timedesc"
