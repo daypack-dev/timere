@@ -116,7 +116,7 @@ let non_space_string : string t = take_while1 is_not_space
 
 let spaces = skip_while is_space
 
-let spaces1 = take_while is_space *> return ()
+let spaces1 = take_while1 is_space *> return ()
 
 let sep_by_comma (p : 'a t) : 'a list t =
   sep_by (spaces *> comma *> spaces) p
