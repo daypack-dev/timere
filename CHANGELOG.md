@@ -20,7 +20,7 @@
 
   - Previously leads to incorrect result space computation, and may lead to time slots missing despite meeting criteria
 
-- Bug fixes for pattern resolution with negative/wrap around index, e.g. -1 day of month
+- Bug fixes for pattern resolution with negative index, e.g. -1 day of month (last day of month)
 
 ## Timedesc 1.0.0
 
