@@ -167,6 +167,7 @@ let aux_pattern_mem search_using_tz (pattern : Pattern.t) (timestamp : int64) :
     pattern.month_days
     |> Int_set.to_seq
     |> Seq.map (fun mday -> if mday < 0 then day_count + mday + 1 else mday)
+    |> Seq.filter (fun mday -> 1 <= mday && mday <= day_count)
     |> OSeq.mem ~eq:( = ) (Timedesc.day dt)
   in
   let wday_is_fine =
