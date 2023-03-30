@@ -426,10 +426,11 @@ let aux_iso_week_pattern search_using_tz space years weeks =
           Timedesc.Utils.week_count_of_iso_year ~year
         in
         let weeks =
-          Seq.map (fun week ->
+          weeks
+          |> Seq.map (fun week ->
               if week < 0 then week_count + week + 1 else week
             )
-            weeks
+          |> Seq.filter (fun week -> week <= week_count)
         in
         Seq.map (fun week ->
             let x = Timedesc.ISO_week_date_time.make_exn
