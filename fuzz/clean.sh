@@ -2,7 +2,7 @@
 
 script_dir=$(dirname $(readlink -f "$0"))
 
-rm -r "$script_dir"/../fuzz-*-input
-rm -r "$script_dir"/../fuzz-*-output
-rm "$script_dir"/core.*
-rm ./core.*
+rm -rf "$script_dir"/../fuzz-*-input
+rm -rf "$script_dir"/../fuzz-*-output
+rm -f "$script_dir"/core.*
+rm -f ./core.*
