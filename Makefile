@@ -46,46 +46,46 @@ timedesc-tests : timedesc
 
 .PHONY: timere-tests
 timere-tests : timere
-	OCAMLRUNPARAM=b dune exec ./timere-tests/main.exe --no-buffer --force
+	OCAMLRUNPARAM=b dune exec timere-tests/main.exe --no-buffer --force
 
 .PHONY: cov-timedesc-tests
 cov-timedesc-tests : timedesc
 	find . -name '*.coverage' | xargs rm -f
-	dune exec ./timedesc-tests/main.exe --instrument-with bisect_ppx --no-buffer --force timedesc/
+	dune exec timedesc-tests/main.exe --instrument-with bisect_ppx --no-buffer --force timedesc/
 	bisect-ppx-report html
 
 .PHONY: cov-timere-tests
 cov-timere-tests : timere
 	find . -name '*.coverage' | xargs rm -f
-	OCAMLRUNPARAM=b dune exec ./timere-tests/main.exe --instrument-with bisect_ppx --no-buffer --force timere/
+	OCAMLRUNPARAM=b dune exec timere-tests/main.exe --instrument-with bisect_ppx --no-buffer --force timere/
 	bisect-ppx-report html
 
 .PHONY: debug
 debug : lib
-	dune exec ./debug/main.exe
+	dune exec debug/main.exe
 
 .PHONY: debug-parse
 debug-parse : lib
-	dune exec ./debug-parse/main.exe
+	dune exec debug-parse/main.exe
 
 .PHONY: corpus
 corpus: corpus-timeres corpus-date-times corpus-hmss corpus-spans
 
 .PHONY: corpus-timeres
 corpus-timeres:
-	dune exec ./corpus/timeres.exe > corpus-outputs/timeres.txt
+	dune exec corpus/timeres.exe > corpus-outputs/timeres.txt
 
 .PHONY: corpus-date-times
 corpus-date-times:
-	dune exec ./corpus/date_times.exe > corpus-outputs/date-times.txt
+	dune exec corpus/date_times.exe > corpus-outputs/date-times.txt
 
 .PHONY: corpus-hmss
 corpus-hmss:
-	dune exec ./corpus/hmss.exe > corpus-outputs/hmss.txt
+	dune exec corpus/hmss.exe > corpus-outputs/hmss.txt
 
 .PHONY: corpus-spans
 corpus-spans:
-	dune exec ./corpus/spans.exe > corpus-outputs/spans.txt
+	dune exec corpus/spans.exe > corpus-outputs/spans.txt
 
 .PHONY: doc
 doc :
