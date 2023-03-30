@@ -11,3 +11,4 @@ RUN opam install js_of_ocaml js_of_ocaml-ppx lwt_ppx
 RUN opam install js_of_ocaml-lwt qcheck qcheck-alcotest
 RUN opam install angstrom
 RUN opam install sexplib
+RUN opam install mparser
