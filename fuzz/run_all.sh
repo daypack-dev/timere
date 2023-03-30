@@ -121,7 +121,7 @@ if [[ $test_fail_count == 0 ]]; then
 else
     echo "$test_fail_count tests failed"
     echo ""
-    echo "List of tests failed :"
+    echo "List of tests failed:"
     for t in ${tests_failed[@]}; do
       echo "    "$t
     done
