@@ -20,6 +20,11 @@
 
   - Previously leads to incorrect result space computation, and may lead to time slots missing despite meeting criteria
 
+- Fixed handling of negative month day
+
+  - Bug introduced in 84792815ccfa1f8ae4bd9c228e314491dc31456a during
+    reintroduction of pattern resolver branch skipping optimization
+
 ## Timedesc 1.0.0
 
 - Fixed `get_local_tz_for_arg` error message
