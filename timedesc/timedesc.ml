@@ -457,4 +457,8 @@ module Utils = struct
   let weekday_of_jd = weekday_of_jd
 
   let doy_of_ymd = doy_of_ymd
+
+  let jd_of_iso_week_date = jd_of_iso_week_date
+
+  let iso_week_date_of_jd = iso_week_date_of_jd
 end

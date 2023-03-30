@@ -2177,9 +2177,13 @@ module Utils : sig
 
   val jd_span_of_unix_epoch : Span.t
 
+  val jd_of_iso_week_date : year:int -> week:int -> weekday:weekday -> int
+
   val ymd_of_jd : int -> int * int * int
 
   val weekday_of_jd : int -> weekday
+
+  val iso_week_date_of_jd : int -> int * int * weekday
 
   val doy_of_ymd : year:int -> month:int -> day:int -> int
 end
