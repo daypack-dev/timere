@@ -3,7 +3,7 @@ USER root
 RUN apt-get update
 RUN apt-get install --yes pkg-config
 RUN opam install dune containers fmt
-RUN opam install mparser re ptime oseq seq diet
+RUN opam install re ptime oseq seq diet
 RUN opam install yojson fileutils
 RUN opam install utop ocp-indent
 RUN opam install alcotest crowbar

@@ -18,7 +18,7 @@ depends: [
   "odoc" {with-doc}
 ]
 build: [
-  ["dune" "subst"] {dev}
+  ["dune" "subst" "--root" "."] {dev}
   [
     "dune"
     "build"
@@ -26,7 +26,8 @@ build: [
     name
     "-j"
     jobs
-    "--promote-install-files=false"
+    "--promote-install-files"
+    "false"
     "@install"
     
     "@doc" {with-doc}
