@@ -4,6 +4,14 @@
 
 - Added ISO week recognition rule with keyword `iso-week`
 
+## Timedesc 1.1.0
+
+- Exposed the following functions in `Utils`
+
+  - `iso_week_date_of_jd`
+
+  - `jd_of_iso_week_date`
+
 ## Timere 0.8.0
 
 - Added ISO week pattern
@@ -24,6 +32,9 @@
 
   - Bug introduced in 84792815ccfa1f8ae4bd9c228e314491dc31456a during
     reintroduction of pattern resolver branch skipping optimization
+
+  - The commit was made after relese of Timere 0.7.0, so the bug only affected
+    users who were pinning the repo directly
 
 ## Timedesc 1.0.0
 
