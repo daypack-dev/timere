@@ -344,11 +344,15 @@ module Matching_days = struct
     in
     let day_start = cur_branch_search_start.day in
     let day_end_inc = cur_branch_search_end_inc.day in
+    let day_count =
+      Timedesc.Utils.day_count_of_month ~year:cur_branch.year
+        ~month:cur_branch.month
+    in
     if Int_set.is_empty t.month_days then OSeq.(day_start -- day_end_inc)
     else
       t.month_days
       |> Int_set.to_seq
-      |> Seq.map (fun mday -> if mday < 0 then day_end_inc + mday + 1 else mday)
+      |> Seq.map (fun mday -> if mday < 0 then day_count + mday + 1 else mday)
       |> Seq.filter (fun mday -> 1 <= mday && mday <= day_end_inc)
 
   let matching_int_month_days
