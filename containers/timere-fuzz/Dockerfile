@@ -9,3 +9,4 @@ RUN opam install yojson fileutils
 RUN opam install alcotest crowbar
 RUN opam install mparser angstrom
 RUN opam install sexplib
+RUN opam install mparser
