@@ -16,7 +16,7 @@ log_dir="$script_dir"/../fuzz-logs
 
 echo "Building"
 
-dune build @all
+make
 
 echo ""
 
