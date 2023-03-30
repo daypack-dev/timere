@@ -349,7 +349,7 @@ module Matching_days = struct
       t.month_days
       |> Int_set.to_seq
       |> Seq.map (fun mday -> if mday < 0 then day_end_inc + mday + 1 else mday)
-      |> Seq.filter (fun mday -> mday <= day_end_inc)
+      |> Seq.filter (fun mday -> 1 <= mday && mday <= day_end_inc)
 
   let matching_int_month_days
       ~(overall_search_start : Branch.t)
