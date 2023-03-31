@@ -25,7 +25,7 @@ type error =
 exception Error_exn of error
 
 let make ~year ~week : (t, error) result =
-  if year < Constants.min_year || Constants.max_year < year then
+  if year < Constants.min_year - 1 || Constants.max_year + 1 < year then
     Error (`Invalid_iso_year year)
   else if week < 1 || week_count_of_iso_year ~year < week then
     Error (`Invalid_iso_week week)
