@@ -7,6 +7,7 @@ let () =
       ("Ym_tests.Alco", Ym_tests.Alco.suite);
       ("ISO_week_tests.Alco", ISO_week_tests.Alco.suite);
       ("Date_time_tests.Alco", Date_time_tests.Alco.suite);
+      ("Date_time_util_tests.Alco", Date_time_util_tests.Alco.suite);
       ("Tzdb_tests.Alco", Tzdb_tests.Alco.suite);
     ]
   in
@@ -18,6 +19,7 @@ let () =
       ("Ym_tests.Qc", Ym_tests.Qc.suite);
       ("ISO_week_tests.Qc", ISO_week_tests.Qc.suite);
       ("Date_time_tests.Qc", Date_time_tests.Qc.suite);
+      ("Date_time_util_tests.Qc", Date_time_util_tests.Qc.suite);
       ("Ptime_tests.Qc", Ptime_tests.Qc.suite);
       ("Time_zone_tests.Qc", Time_zone_tests.Qc.suite);
     ]
