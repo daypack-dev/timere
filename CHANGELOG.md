@@ -12,6 +12,10 @@
 
   - `jd_of_iso_week_date`
 
+- Made `ISO_week.make` slightly more lenient in the year range accepted
+
+  - Changing range from `[0, 9999]` to `[-1, 10000]`
+
 ## Timere 0.8.0
 
 - Added ISO week pattern
