@@ -4,18 +4,6 @@
 
 - Added ISO week recognition rule with keyword `iso-week`
 
-## Timedesc 1.1.0
-
-- Exposed the following functions in `Utils`
-
-  - `iso_week_date_of_jd`
-
-  - `jd_of_iso_week_date`
-
-- Made `ISO_week.make` slightly more lenient in the year range accepted
-
-  - Changing range from `[0, 9999]` to `[-1, 10000]`
-
 ## Timere 0.8.0
 
 - Added ISO week pattern
@@ -39,6 +27,18 @@
 
   - The commit was made after relese of Timere 0.7.0, so the bug only affected
     users who were pinning the repo directly
+
+## Timedesc 1.1.0
+
+- Exposed the following functions in `Utils`
+
+  - `iso_week_date_of_jd`
+
+  - `jd_of_iso_week_date`
+
+- Made `ISO_week.make` slightly more lenient in the year range accepted
+
+  - Changing range from `[0, 9999]` to `[-1, 10000]`
 
 ## Timedesc 1.0.0
 
