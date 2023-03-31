@@ -40,6 +40,8 @@
 
   - Changing range from `[0, 9999]` to `[-1, 10000]`
 
+  - Previously, `Timedesc.iso_week` would sometimes fail in the edge cases year 0 and 9999
+
 ## Timedesc 1.0.0
 
 - Fixed `get_local_tz_for_arg` error message
