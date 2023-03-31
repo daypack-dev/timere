@@ -14,8 +14,6 @@ SRCFILES = timedesc/*.ml timedesc/*.mli \
 
 OPAMFILES = *.opam
 
-PATCH_OPAMFILES = sed -i 's/"@runtest"\s*{with-test}//g' $(OPAMFILES)
-
 OCPINDENT = ocp-indent \
 	--inplace \
 	$(SRCFILES)
@@ -23,22 +21,18 @@ OCPINDENT = ocp-indent \
 .PHONY: all
 all :
 	dune build @all
-	$(PATCH_OPAMFILES)
 
 .PHONY: timedesc
 timedesc :
 	dune build timedesc/
-	$(PATCH_OPAMFILES)
 
 .PHONY: timedesc-json
 timedesc-json :
 	dune build timedesc-json
-	$(PATCH_OPAMFILES)
 
 .PHONY: timere
 timere :
 	dune build timere
-	$(PATCH_OPAMFILES)
 
 .PHONY: timedesc-tests
 timedesc-tests : timedesc
