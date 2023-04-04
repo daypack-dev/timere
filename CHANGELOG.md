@@ -28,6 +28,14 @@
   - The commit was made after relese of Timere 0.7.0, so the bug only affected
     users who were pinning the repo directly
 
+## Timedesc 1.1.1
+
+- Fixed format string parser for functions in `Span.For_human`
+
+  - `to_string`
+
+  - `pp`
+
 ## Timedesc 1.1.0
 
 - Exposed the following functions in `Utils`
