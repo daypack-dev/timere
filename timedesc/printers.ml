@@ -209,7 +209,8 @@ module Format_string_parsers = struct
       else Printf.sprintf "%s%s" (pad_int padding x) unit_str
     in
     let single ~empty_on_zero ~handle_padding ~name ~number =
-      (string name *> commit *> if empty_on_zero then string "-nz:" else string ":")
+      (string name *> if empty_on_zero then string "-nz:" else string ":")
+      *> commit
       *> (if handle_padding then padding else return None)
       >>= fun padding ->
       non_curly_bracket_string
@@ -235,30 +236,30 @@ module Format_string_parsers = struct
             (Printf.sprintf "%s%s" (string_of_s_frac ~sep ~frac_s ~ns) unit_str)
     in
     choice
-      [
-        single ~empty_on_zero:false ~handle_padding:false ~name:"days"
-          ~number:view.days;
-        single ~empty_on_zero:true ~handle_padding:false ~name:"days"
-          ~number:view.days;
-        single ~empty_on_zero:false ~handle_padding:true ~name:"hours"
-          ~number:view.hours;
-        single ~empty_on_zero:true ~handle_padding:true ~name:"hours"
-          ~number:view.hours;
-        single ~empty_on_zero:false ~handle_padding:true ~name:"mins"
-          ~number:view.minutes;
-        single ~empty_on_zero:true ~handle_padding:true ~name:"mins"
-          ~number:view.minutes;
-        single ~empty_on_zero:false ~handle_padding:true ~name:"secs"
-          ~number:view.seconds;
-        single ~empty_on_zero:true ~handle_padding:true ~name:"secs"
-          ~number:view.seconds;
-        single ~empty_on_zero:false ~handle_padding:true ~name:"ns"
-          ~number:view.ns;
-        single ~empty_on_zero:true ~handle_padding:true ~name:"ns"
-          ~number:view.ns;
-        sec_frac ~empty_on_zero:false ~ns:view.ns;
-        sec_frac ~empty_on_zero:true ~ns:view.ns;
-      ]
+      (
+        let large_units =
+          [
+            (false, "days", view.days);
+            (true, "hours", view.hours);
+            (true, "mins", view.minutes);
+            (true, "secs", view.seconds);
+            (true, "ns", view.ns);
+          ]
+          |> List.map (fun (handle_padding, name, number) ->
+              [
+                single ~empty_on_zero:true ~handle_padding ~name ~number;
+                single ~empty_on_zero:false ~handle_padding ~name ~number;
+              ]
+            )
+          |> List.flatten
+        in
+        large_units
+        @
+        [
+          sec_frac ~empty_on_zero:false ~ns:view.ns;
+          sec_frac ~empty_on_zero:true ~ns:view.ns;
+        ]
+      )
 end
 
 let default_date_time_format_string =
