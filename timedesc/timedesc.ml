@@ -328,17 +328,17 @@ end
 module Interval = struct
   type t = timestamp * timestamp
 
+  let equal (x1, y1) (x2, y2) = Span.(x1 = x2 && y1 = y2)
+
   let lt (x1, y1) (x2, y2) =
     (* lexicographic order *)
     Span.(x1 < x2 || (x1 = x2 && y1 < y2))
 
-  let le x y = lt x y || x = y
+  let le x y = lt x y || equal x y
 
   let gt x y = lt y x
 
   let ge x y = le y x
-
-  let equal (x1, y1) (x2, y2) = Span.(x1 = x2 && y1 = y2)
 
   let compare x y = if lt x y then -1 else if x = y then 0 else 1
 

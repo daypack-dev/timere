@@ -451,6 +451,18 @@ module Qc = struct
         in
         Timedesc.Span.equal s s')
 
+  let to_string_does_not_crash =
+    QCheck.Test.make ~count:100_000 ~name:"to_string_does_not_crash" timestamp (fun s ->
+        Timedesc.Span.to_string s |> ignore;
+        true
+      )
+
+  let for_human_to_string_does_not_crash =
+    QCheck.Test.make ~count:100_000 ~name:"for_human_to_string_does_not_crash" timestamp (fun s ->
+        Timedesc.Span.For_human.to_string s |> ignore;
+        true
+      )
+
   let suite =
     [
       make_is_lossless;
@@ -481,5 +493,7 @@ module Qc = struct
       accessors;
       of_to_view;
       to_of_sexp;
+      to_string_does_not_crash;
+      for_human_to_string_does_not_crash;
     ]
 end

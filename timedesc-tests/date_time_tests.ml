@@ -722,6 +722,15 @@ module Qc = struct
          let ns' = Timedesc.ns d in
          hour = hour' && minute = minute' && second = second' && ns = ns')
 
+  let to_string_does_not_crash =
+    QCheck.Test.make ~count:100_000 ~name:"to_string_does_not_crash" timestamp (fun ts ->
+        let dt =
+          Timedesc.of_timestamp_exn ~tz_of_date_time:Timedesc.Time_zone.utc ts
+        in
+        Timedesc.to_string dt |> ignore;
+        true
+      )
+
   let suite =
     [
       to_rfc3339_nano_of_iso8601_is_lossless;
@@ -747,5 +756,6 @@ module Qc = struct
       iso_week_date_accessors;
       ymd_date_accessors;
       time_accessors;
+      to_string_does_not_crash;
     ]
 end
