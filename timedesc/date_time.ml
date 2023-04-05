@@ -327,6 +327,27 @@ module Ymd_date_time = struct
         Span.For_human'.(offset.hours)
         Span.For_human'.(offset.minutes)
 
+  let of_date_and_time ?tz date time : (t, error) result =
+    match Zoneless'.to_zoned ?tz { date; time } with
+    | Error e -> Error (e :> error)
+    | Ok dt -> Ok dt
+
+  let of_date_and_time_exn ?tz date time : t =
+    match of_date_and_time ?tz date time with
+    | Ok x -> x
+    | Error e -> raise (Error_exn e)
+
+  let of_date_and_time_unambiguous ?tz ~offset_from_utc date time
+    : (t, error) result =
+    match Zoneless'.to_zoned_unambiguous ?tz ~offset_from_utc { date; time } with
+    | Error e -> Error (e :> error)
+    | Ok dt -> Ok dt
+
+  let of_date_and_time_unambiguous_exn ?tz ~offset_from_utc date time : t =
+    match of_date_and_time_unambiguous ?tz ~offset_from_utc date time with
+    | Ok x -> x
+    | Error e -> raise (Error_exn e)
+
   let make ?tz ?ns ?s_frac ~year ~month ~day ~hour ~minute ~second () :
     (t, error) result =
     match Date.Ymd'.make ~year ~month ~day with
@@ -335,7 +356,7 @@ module Ymd_date_time = struct
         match Time.make ~hour ~minute ~second ?ns ?s_frac () with
         | Error e -> Error (e :> error)
         | Ok time -> (
-            match Zoneless'.to_zoned ?tz { date; time } with
+            match of_date_and_time ?tz date time with
             | Error e -> Error (e :> error)
             | Ok dt -> Ok dt))
 
@@ -353,7 +374,7 @@ module Ymd_date_time = struct
         | Error e -> Error (e :> error)
         | Ok time -> (
             match
-              Zoneless'.to_zoned_unambiguous ?tz ~offset_from_utc { date; time }
+              of_date_and_time_unambiguous ?tz ~offset_from_utc date time
             with
             | Ok dt -> Ok dt
             | Error e -> Error (e :> error)))

@@ -1269,6 +1269,36 @@ val make_unambiguous_exn :
   t
 (** @raise Error_exn if [make_umabiguous] fails *)
 
+val of_date_and_time :
+  ?tz:Time_zone.t ->
+  Date.t ->
+  Time.t ->
+  (t, error) result
+(** See {!val:make} for details. *)
+
+val of_date_and_time_exn :
+  ?tz:Time_zone.t ->
+  Date.t ->
+  Time.t ->
+  t
+(** @raise Error_exn if [of_date_and_time_exn] fails *)
+
+val of_date_and_time_unambiguous :
+  ?tz:Time_zone.t ->
+  offset_from_utc:Span.t ->
+  Date.t ->
+  Time.t ->
+  (t, error) result
+(** See {!val:make_unambiguous} for details. *)
+
+val of_date_and_time_unambiguous_exn :
+  ?tz:Time_zone.t ->
+  offset_from_utc:Span.t ->
+  Date.t ->
+  Time.t ->
+  t
+(** @raise Error_exn if [of_date_and_time_unambiguous_exn] fails *)
+
 (** {2 Accessors} *)
 
 val date : t -> Date.t
