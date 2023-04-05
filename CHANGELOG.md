@@ -28,6 +28,18 @@
   - The commit was made after relese of Timere 0.7.0, so the bug only affected
     users who were pinning the repo directly
 
+## Timedesc 1.2.0
+
+- Added functions to reduce friction during construction of date time
+
+  - `of_date_and_time`
+
+  - `of_date_and_time_exn`
+
+  - `of_date_and_time_unambiguous`
+
+  - `of_date_and_time_unambiguous_exn`
+
 ## Timedesc 1.1.1
 
 - Fixed format string parser for functions in `Span.For_human`
