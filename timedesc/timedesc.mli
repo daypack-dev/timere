@@ -1281,7 +1281,7 @@ val of_date_and_time_exn :
   Date.t ->
   Time.t ->
   t
-(** @raise Error_exn if [of_date_and_time_exn] fails *)
+(** @raise Error_exn if [of_date_and_time] fails *)
 
 val of_date_and_time_unambiguous :
   ?tz:Time_zone.t ->
@@ -1297,7 +1297,7 @@ val of_date_and_time_unambiguous_exn :
   Date.t ->
   Time.t ->
   t
-(** @raise Error_exn if [of_date_and_time_unambiguous_exn] fails *)
+(** @raise Error_exn if [of_date_and_time_unambiguous] fails *)
 
 (** {2 Accessors} *)
 
