@@ -1827,7 +1827,7 @@ module Zoneless : sig
 
   (** {1 Constructors} *)
 
-  val make : Date.t -> Time.t -> zoneless
+  val of_date_and_time : Date.t -> Time.t -> zoneless
 
   (** {1 Accessors} *)
 

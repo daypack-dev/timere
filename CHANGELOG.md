@@ -28,6 +28,10 @@
   - The commit was made after relese of Timere 0.7.0, so the bug only affected
     users who were pinning the repo directly
 
+## Timedesc 2.0.0
+
+- Renamed `Zoneless.make` to `Zoneless.of_date_and_time` for consistency
+
 ## Timedesc 1.2.0
 
 - Added functions to reduce friction during construction of date time

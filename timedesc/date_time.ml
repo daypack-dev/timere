@@ -193,7 +193,7 @@ module Zoneless' = struct
 
   exception Error_when_zoned_exn of error_when_zoned
 
-  let make date time = { date; time }
+  let of_date_and_time date time = { date; time }
 
   let equal (x : zoneless) (y : zoneless) =
     Date.equal x.date y.date && Time.equal x.time y.time
