@@ -85,10 +85,10 @@ let make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ?second
     ?ns ~(lean_toward : lean_toward) () : (t, error) result =
   let tz_info =
     match
-      Timedesc.Time_zone_info.make ?tz ?fixed_offset_from_utc:offset_from_utc ()
+      Timedesc.Time_zone_info.make ?tz ?offset_from_utc ()
     with
     | Ok tz_info -> Ok (Some tz_info)
-    | Error `Missing_both_tz_and_fixed_offset_from_utc -> Ok None
+    | Error `Missing_both_tz_and_offset_from_utc -> Ok None
     | Error (`Invalid_offset tz_offset) | Error (`Unrecorded_offset tz_offset)
       ->
       Error
@@ -620,7 +620,7 @@ let to_date_time ~default_tz_info ({ pick; tz_info } : t) : Timedesc.t option =
   match pick with
   | YMDHMSN { year; month; month_day; hour; minute; second; ns } -> (
       let tz = Timedesc.Time_zone_info.tz tz_info in
-      match Timedesc.Time_zone_info.fixed_offset_from_utc tz_info with
+      match Timedesc.Time_zone_info.offset_from_utc tz_info with
       | Some offset_from_utc -> (
           match
             Timedesc.make_unambiguous ~tz ~offset_from_utc ~year ~month

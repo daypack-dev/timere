@@ -32,6 +32,10 @@
 
 - Renamed `Zoneless.make` to `Zoneless.of_date_and_time` for consistency
 
+- Adjusted `Time_zone_info` api
+
+  - Renamed `fixed_offset_from_utc` to `offset_from_utc` for consistency
+
 ## Timedesc 1.2.0
 
 - Added functions to reduce friction during construction of date time

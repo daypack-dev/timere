@@ -2095,14 +2095,14 @@ module Time_zone_info : sig
   *)
 
   type error =
-    [ `Missing_both_tz_and_fixed_offset_from_utc
+    [ `Missing_both_tz_and_offset_from_utc
     | `Invalid_offset of Span.t
     | `Unrecorded_offset of Span.t
     ]
 
   val make :
     ?tz:Time_zone.t ->
-    ?fixed_offset_from_utc:Span.t ->
+    ?offset_from_utc:Span.t ->
     unit ->
     (t, error) result
   (**
@@ -2110,20 +2110,20 @@ module Time_zone_info : sig
       then a fixed offset time zone is constructed, e.g.
       if say only an offset of 10 hours is provided, [tz] becomes "UTC+10".
 
-      [fixed_offset_from_utc] is the fixed offset from UTC.
+      [offset_from_utc] is the fixed offset from UTC.
       If an offset is not provided but the time zone can be represented by a fixed offset, then said offset is used,
       e.g. "UTC+1" can be represented by fixed offset of 1 hour.
   *)
 
   val make_exn :
     ?tz:Time_zone.t ->
-    ?fixed_offset_from_utc:Span.t ->
+    ?offset_from_utc:Span.t ->
     unit ->
     t
 
   val tz : t -> Time_zone.t
 
-  val fixed_offset_from_utc : t -> Span.t option
+  val offset_from_utc : t -> Span.t option
 
   val equal : t -> t -> bool
 end

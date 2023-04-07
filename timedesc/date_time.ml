@@ -234,13 +234,13 @@ module Zoneless' = struct
       Error (`Invalid_tz_info (Option.map Time_zone.name tz, offset_from_utc))
     in
     (match
-       Time_zone_info.make ?tz ~fixed_offset_from_utc:offset_from_utc ()
+       Time_zone_info.make ?tz ~offset_from_utc ()
      with
-     | Error `Missing_both_tz_and_fixed_offset_from_utc ->
+     | Error `Missing_both_tz_and_offset_from_utc ->
        failwith "Unexpected case"
      | Error (`Invalid_offset _) | Error (`Unrecorded_offset _) ->
        make_invalid_tz_info_error ?tz ~offset_from_utc ()
-     | Ok ({ tz = tz'; fixed_offset_from_utc = _ } as tz_info) -> (
+     | Ok ({ tz = tz'; offset_from_utc = _ } as tz_info) -> (
          let timestamp_local = Span.get_s @@ to_timestamp_local zl in
          let offset_from_utc_s = Int64.to_int @@ Span.get_s offset_from_utc in
          match Time_zone.lookup_timestamp_local tz' timestamp_local with
@@ -252,7 +252,7 @@ module Zoneless' = struct
            if e1.offset = offset_from_utc_s || e2.offset = offset_from_utc_s
            then Ok tz_info
            else make_invalid_tz_info_error ?tz ~offset_from_utc ()))
-    |> Result.map (fun ({ tz; fixed_offset_from_utc } : Time_zone_info.t) ->
+    |> Result.map (fun ({ tz; offset_from_utc } : Time_zone_info.t) ->
         {
           date;
           time;
@@ -260,8 +260,8 @@ module Zoneless' = struct
           offset_from_utc =
             `Single
               (Misc_utils.option_get_exn_or
-                 "Expected fixed_offset_from_utc in tz_info to be Some _"
-                 fixed_offset_from_utc);
+                 "Expected offset_from_utc in tz_info to be Some _"
+                 offset_from_utc);
         })
 
   let to_zoned_unambiguous_exn ?tz ~offset_from_utc zl =

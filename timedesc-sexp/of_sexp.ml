@@ -52,7 +52,7 @@ let tz_info_of_sexp (x : Sexp.t) : T.Time_zone_info.t =
       | [ x; offset_from_utc ] ->
         T.Time_zone_info.make_exn 
           ~tz:(tz_make_of_sexp x)
-          ~fixed_offset_from_utc:
+          ~offset_from_utc:
             (T.Span.make
                ~s:(Int64.of_int @@ int_of_sexp offset_from_utc)
                ())

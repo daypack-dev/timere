@@ -25,8 +25,8 @@ let sexp_of_span (x : T.Span.t) =
 
 let sexp_of_tz_info (info : T.Time_zone_info.t) =
   let tz = T.Time_zone_info.tz info in
-  let fixed_offset_from_utc =
-    T.Time_zone_info.fixed_offset_from_utc info
+  let offset_from_utc =
+    T.Time_zone_info.offset_from_utc info
   in
   Sexp.List
     (List.filter_map Fun.id
@@ -35,7 +35,7 @@ let sexp_of_tz_info (info : T.Time_zone_info.t) =
          Option.map
            (fun tz_offset ->
               sexp_of_int (Int64.to_int @@ T.Span.get_s tz_offset))
-           fixed_offset_from_utc;
+           offset_from_utc;
        ])
 
 let sexp_of_date (x : T.Date.t) =
