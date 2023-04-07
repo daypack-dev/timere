@@ -2094,9 +2094,6 @@ module Time_zone_info : sig
   *)
 
   type t
-  (** Time zone information of date time.
-
-  *)
 
   type error =
     [ `Missing_both_tz_and_fixed_offset_from_utc
@@ -2110,13 +2107,14 @@ module Time_zone_info : sig
     unit ->
     (t, error) result
   (**
-   *  [tz] is the time zone tied. If only an offset provided during construction, then one a fixed offset one is constructed, e.g.
-   *  if say only offset of 10 hours is provided, [tz] becomes "UTC+10".
-   *
-   *  [fixed_offset_from_utc] is the fixed offset from UTC.
-   *  If an offset is not provided but the time zone can be represented by a fixed offset, then said offset is used,
-   *  e.g. "UTC+1" can be represented by fixed offset of 1 hour.
-   * *)
+      [tz] is the time zone tied. If only an offset is provided during construction,
+      then a fixed offset time zone is constructed, e.g.
+      if say only an offset of 10 hours is provided, [tz] becomes "UTC+10".
+
+      [fixed_offset_from_utc] is the fixed offset from UTC.
+      If an offset is not provided but the time zone can be represented by a fixed offset, then said offset is used,
+      e.g. "UTC+1" can be represented by fixed offset of 1 hour.
+     *)
 
   val make_exn :
     ?tz:Time_zone.t ->
