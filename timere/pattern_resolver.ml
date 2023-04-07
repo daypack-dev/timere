@@ -10,7 +10,7 @@ module Branch = struct
   }
 
   let to_timestamp_local t =
-    Timedesc.Zoneless.make
+    Timedesc.Zoneless.of_date_and_time
       (Timedesc.Date.Ymd.make_exn ~year:t.year ~month:t.month ~day:t.day)
       (Timedesc.Time.make_exn ~hour:t.hour ~minute:t.minute ~second:t.second
          ~ns:t.ns ())

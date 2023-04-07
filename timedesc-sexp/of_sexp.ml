@@ -98,7 +98,7 @@ let zoneless_of_sexp (x : Sexp.t) =
   | List [ date; time ] ->
     let date = date_of_sexp date in
     let time = time_of_sexp time in
-    T.Zoneless.make date time
+    T.Zoneless.of_date_and_time date time
   | _ -> invalid_data ()
 
 let date_time_of_sexp (x : Sexp.t) =
@@ -124,15 +124,14 @@ let date_time_of_sexp (x : Sexp.t) =
       match offset_from_utc with
       | `Single offset_from_utc -> (
           match
-            T.Zoneless.to_zoned_unambiguous ~tz ~offset_from_utc
-              (T.Zoneless.make date time)
+            T.of_date_and_time_unambiguous ~tz ~offset_from_utc
+              date time
           with
           | Ok x -> x
           | Error _ -> invalid_data ())
       | `Ambiguous _ -> (
           match
-            T.Zoneless.to_zoned ~tz
-              (T.Zoneless.make date time)
+            T.of_date_and_time ~tz date time
           with
           | Ok x ->
             if
