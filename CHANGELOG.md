@@ -32,7 +32,7 @@
 
 - Renamed `Zoneless.make` to `Zoneless.of_date_and_time` for consistency
 
-- Adjusted `Time_zone_info` api
+- Adjusted `Time_zone_info` API
 
   - Renamed `fixed_offset_from_utc` to `offset_from_utc` for consistency
 
