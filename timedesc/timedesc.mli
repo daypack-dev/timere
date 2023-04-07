@@ -2090,10 +2090,9 @@ end
 (** {1 Misc} *)
 
 module Time_zone_info : sig
+  type t
   (** Time zone information that can be attached to date time like data
   *)
-
-  type t
 
   type error =
     [ `Missing_both_tz_and_fixed_offset_from_utc
