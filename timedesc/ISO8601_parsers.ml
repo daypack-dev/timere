@@ -175,8 +175,8 @@ let maybe_zoneless_of_str' date_p s : (maybe_zoneless, string) result =
     (offset_p <* spaces <* end_of_input)
     >>= (fun offset ->
         match
-          Date_time.Zoneless'.to_zoned_unambiguous ~offset_from_utc:offset
-            (Date_time.Zoneless'.make date time)
+          Date_time.Ymd_date_time.of_date_and_time_unambiguous
+            ~offset_from_utc:offset date time
         with
         | Error e ->
           fail
@@ -186,7 +186,7 @@ let maybe_zoneless_of_str' date_p s : (maybe_zoneless, string) result =
         | Ok x -> return (`Zoned x))
         <|> (spaces
              *> end_of_input
-             *> return (`Zoneless (Date_time.Zoneless'.make date time)))
+             *> return (`Zoneless (Date_time.Zoneless'.of_date_and_time date time)))
   in
   parse_string ~consume:All (p <* spaces) s
 

@@ -75,8 +75,8 @@ let date' ~year ~month ~day : Date.t Angstrom.t =
 let date_time' date time =
   let open Angstrom in
   match
-    Date_time.Zoneless'.to_zoned_unambiguous ~offset_from_utc:Span.zero
-      (Date_time.Zoneless'.make date time)
+    Date_time.Ymd_date_time.of_date_and_time_unambiguous ~offset_from_utc:Span.zero
+      date time
   with
   | Error e ->
     fail
