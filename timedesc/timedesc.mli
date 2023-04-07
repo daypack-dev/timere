@@ -2114,7 +2114,7 @@ module Time_zone_info : sig
       [fixed_offset_from_utc] is the fixed offset from UTC.
       If an offset is not provided but the time zone can be represented by a fixed offset, then said offset is used,
       e.g. "UTC+1" can be represented by fixed offset of 1 hour.
-     *)
+  *)
 
   val make_exn :
     ?tz:Time_zone.t ->
