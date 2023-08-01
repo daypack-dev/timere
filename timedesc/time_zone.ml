@@ -14,7 +14,7 @@ type t = {
   record : record;
 }
 
-type 'a local_result =
+type 'a local_dt_result =
   [ `None
   | `Single of 'a
   | `Ambiguous of 'a * 'a
@@ -193,7 +193,7 @@ let local_interval_of_table ((starts, entries) : table) (i : int) =
 
 let interval_mem (t : int64) ((x, y) : int64 * int64) = x <= t && t < y
 
-let lookup_timestamp_local (t : t) timestamp : entry local_result =
+let lookup_timestamp_local (t : t) timestamp : entry local_dt_result =
   let table = t.record.table in
   let starts, entries = table in
   let size = Bigarray.Array1.dim starts in

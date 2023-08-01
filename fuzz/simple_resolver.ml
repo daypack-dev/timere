@@ -61,7 +61,7 @@ let do_chunk_at_year_boundary tz (s : Time.Interval'.t Seq.t) :
             ~ns:(Timedesc.Span.ns_count_in_s - 1)
             ()
           |> Timedesc.to_timestamp
-          |> Timedesc.max_of_local_result
+          |> Timedesc.max_of_local_dt_result
           |> Timedesc.Span.succ
         in
         fun () ->
@@ -100,7 +100,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval'.t Seq.t) :
             ~ns:(Timedesc.Span.ns_count_in_s - 1)
             ()
           |> Timedesc.to_timestamp
-          |> Timedesc.max_of_local_result
+          |> Timedesc.max_of_local_dt_result
           |> Timedesc.Span.succ
         in
         fun () ->

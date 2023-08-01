@@ -5,7 +5,7 @@ type entry = {
   offset : int;
 }
 
-type 'a local_result =
+type 'a local_dt_result =
   [ `None
   | `Single of 'a
   | `Ambiguous of 'a * 'a
@@ -33,7 +33,7 @@ val available_time_zones : string list
 
 val lookup_timestamp_utc : t -> int64 -> entry option
 
-val lookup_timestamp_local : t -> int64 -> entry local_result
+val lookup_timestamp_local : t -> int64 -> entry local_dt_result
 
 module Raw : sig
   val of_table : name:string -> Timedesc_tzdb.table -> t option

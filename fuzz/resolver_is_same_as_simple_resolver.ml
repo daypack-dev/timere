@@ -5,14 +5,14 @@ let search_start_dt =
     ~tz:Timedesc.Time_zone.utc ()
 
 let search_start =
-  Timedesc.to_timestamp search_start_dt |> Timedesc.min_of_local_result
+  Timedesc.to_timestamp search_start_dt |> Timedesc.min_of_local_dt_result
 
 let search_end_exc_dt =
   Timedesc.make_exn ~year:2003 ~month:1 ~day:1 ~hour:0 ~minute:0 ~second:0
     ~tz:Timedesc.Time_zone.utc ()
 
 let search_end_exc =
-  Timedesc.to_timestamp search_end_exc_dt |> Timedesc.max_of_local_result
+  Timedesc.to_timestamp search_end_exc_dt |> Timedesc.max_of_local_dt_result
 
 let () =
   Crowbar.add_test ~name:"resolver_is_same_as_simple_resolver" [ time ]

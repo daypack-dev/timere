@@ -131,7 +131,7 @@ let result_space_of_year_range tz year_range =
       Timedesc.make_exn ~tz ~year:start ~month:1 ~day:1 ~hour:0 ~minute:0
         ~second:0 ()
       |> Timedesc.to_timestamp
-      |> Timedesc.min_of_local_result
+      |> Timedesc.min_of_local_dt_result
   in
   let aux_end_inc end_exc =
     if end_exc = Timedesc.(year max_val) then Timedesc.Timestamp.max_val
@@ -141,14 +141,14 @@ let result_space_of_year_range tz year_range =
         ~ns:(Timedesc.Span.ns_count_in_s - 1)
         ()
       |> Timedesc.to_timestamp
-      |> Timedesc.max_of_local_result
+      |> Timedesc.max_of_local_dt_result
       |> Timedesc.Span.succ
   in
   let aux_end_exc end_exc =
     Timedesc.make_exn ~tz ~year:end_exc ~month:1 ~day:1 ~hour:0 ~minute:0
       ~second:0 ()
     |> Timedesc.to_timestamp
-    |> Timedesc.min_of_local_result
+    |> Timedesc.min_of_local_dt_result
   in
   match year_range with
   | `Range_inc (start, end_inc) -> (aux_start start, aux_end_inc end_inc)
@@ -207,12 +207,12 @@ let overapproximate_result_space_bottom_up default_tz (t : t) : t =
         | None -> default_result_space
         | Some dt ->
           let space_start =
-            dt |> Timedesc.to_timestamp |> Timedesc.min_of_local_result
+            dt |> Timedesc.to_timestamp |> Timedesc.min_of_local_dt_result
           in
           let space_end_exc =
             dt
             |> Timedesc.to_timestamp
-            |> Timedesc.max_of_local_result
+            |> Timedesc.max_of_local_dt_result
             |> Timedesc.Span.add bound
           in
           [ (space_start, space_end_exc) ]
@@ -328,7 +328,7 @@ let do_chunk_at_year_boundary tz (s : Time.Interval'.t Seq.t) =
             ~ns:(Timedesc.Span.ns_count_in_s - 1)
             ()
           |> Timedesc.to_timestamp
-          |> Timedesc.max_of_local_result
+          |> Timedesc.max_of_local_dt_result
           |> Timedesc.Span.succ
         in
         fun () ->
@@ -363,7 +363,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval'.t Seq.t) =
             ~ns:(Timedesc.Span.ns_count_in_s - 1)
             ()
           |> Timedesc.to_timestamp
-          |> Timedesc.max_of_local_result
+          |> Timedesc.max_of_local_dt_result
           |> Timedesc.Span.succ
         in
         fun () ->
@@ -439,7 +439,7 @@ let aux_iso_week_pattern search_using_tz space years weeks =
                 ~hour:0 ~minute:0 ~second:0
                 ()
                     |> Timedesc.to_timestamp
-                    |> Timedesc.min_of_local_result
+                    |> Timedesc.min_of_local_dt_result
             in
             let year, week =
               Timedesc.ISO_week.make_exn ~year ~week
@@ -452,7 +452,7 @@ let aux_iso_week_pattern search_using_tz space years weeks =
                 ~hour:0 ~minute:0 ~second:0
                 ()
                     |> Timedesc.to_timestamp
-                    |> Timedesc.max_of_local_result
+                    |> Timedesc.max_of_local_dt_result
             in
             (x, y)
           ) weeks

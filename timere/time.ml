@@ -1423,11 +1423,11 @@ let after_timestamp timestamp =
   intervals [ (Timedesc.Span.succ timestamp, Timedesc.Timestamp.max_val) ]
 
 let before dt =
-  before_timestamp Timedesc.(to_timestamp dt |> min_of_local_result)
+  before_timestamp Timedesc.(to_timestamp dt |> min_of_local_dt_result)
 
-let since dt = since_timestamp Timedesc.(to_timestamp dt |> max_of_local_result)
+let since dt = since_timestamp Timedesc.(to_timestamp dt |> max_of_local_dt_result)
 
-let after dt = after_timestamp Timedesc.(to_timestamp dt |> max_of_local_result)
+let after dt = after_timestamp Timedesc.(to_timestamp dt |> max_of_local_dt_result)
 
 let nth_weekday_of_month (n : int) wday =
   let first_weekday_of_month wday =

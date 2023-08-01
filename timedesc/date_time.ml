@@ -16,28 +16,28 @@ let dummy_tz = Time_zone.utc
 
 let dummy_offset_from_utc = `Single Span.zero
 
-type 'a local_result =
+type 'a local_dt_result =
   [ `Single of 'a
   | `Ambiguous of 'a * 'a
   ]
 
-let equal_local_result ~eq (x : 'a local_result) (y : 'a local_result) =
+let equal_local_dt_result ~eq (x : 'a local_dt_result) (y : 'a local_dt_result) =
   match (x, y) with
   | `Single x, `Single y -> eq x y
   | `Ambiguous (x1, x2), `Ambiguous (y1, y2) -> eq x1 y1 && eq x2 y2
   | _, _ -> false
 
-let min_of_local_result (r : 'a local_result) : 'a =
+let min_of_local_dt_result (r : 'a local_dt_result) : 'a =
   match r with `Single x | `Ambiguous (x, _) -> x
 
-let max_of_local_result (r : 'a local_result) : 'a =
+let max_of_local_dt_result (r : 'a local_dt_result) : 'a =
   match r with `Single x | `Ambiguous (_, x) -> x
 
 type t = {
   date : Date.t;
   time : Time.t;
   tz : Time_zone.t;
-  offset_from_utc : Span.t local_result;
+  offset_from_utc : Span.t local_dt_result;
 }
 
 let jd_span_of_unix_epoch = Span.For_human'.make_exn ~days:jd_of_unix_epoch ()
@@ -54,7 +54,7 @@ let to_timestamp_local (x : t) : Span.t =
   *)
   timestamp_local_of_date_and_time x.date x.time
 
-let to_timestamp (x : t) : timestamp local_result =
+let to_timestamp (x : t) : timestamp local_dt_result =
   let open Span in
   let timestamp_local = to_timestamp_local x in
   match x.offset_from_utc with
@@ -64,7 +64,7 @@ let to_timestamp (x : t) : timestamp local_result =
     let x2 = timestamp_local - offset2 in
     `Ambiguous (min x1 x2, max x1 x2)
 
-let to_timestamp_float_s x : float local_result =
+let to_timestamp_float_s x : float local_dt_result =
   match to_timestamp x with
   | `Single x -> `Single (Span.to_float_s x)
   | `Ambiguous (x, y) -> `Ambiguous (Span.to_float_s x, Span.to_float_s y)
@@ -123,7 +123,7 @@ let equal (x : t) (y : t) =
   Date.equal x.date y.date
   && Time.equal x.time y.time
   && Time_zone.equal x.tz y.tz
-  && equal_local_result ~eq:Span.equal x.offset_from_utc y.offset_from_utc
+  && equal_local_dt_result ~eq:Span.equal x.offset_from_utc y.offset_from_utc
 
 let now ?tz_of_date_time () : t =
   timestamp_now ()
@@ -273,13 +273,13 @@ module Zoneless' = struct
 end
 
 let compare_chrono_min (x : t) (y : t) : int =
-  let x = min_of_local_result @@ to_timestamp x in
-  let y = min_of_local_result @@ to_timestamp y in
+  let x = min_of_local_dt_result @@ to_timestamp x in
+  let y = min_of_local_dt_result @@ to_timestamp y in
   Span.compare x y
 
 let compare_chrono_max (x : t) (y : t) : int =
-  let x = max_of_local_result @@ to_timestamp x in
-  let y = max_of_local_result @@ to_timestamp y in
+  let x = max_of_local_dt_result @@ to_timestamp x in
+  let y = max_of_local_dt_result @@ to_timestamp y in
   Span.compare x y
 
 let compare_struct (x : t) (y : t) : int =

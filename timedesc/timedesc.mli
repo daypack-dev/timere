@@ -48,12 +48,12 @@
 
     If you are aware of DST: Yes, Timedesc takes care of that for you properly as well - Timedesc does not
     allow you to construct a date time that does not exist for the particular time zone, and any
-    ambiguity is made explicit as return type via {!local_result}.
+    ambiguity is made explicit as return type via {!local_dt_result}.
 
     This does mean Timedesc does not "resolve" the result into one of the possibilities arbitrarily,
     and you need to resolve the ambiguity yourself.
-    If such a coercion is desirable, however, then you can use either {!min_of_local_result} or
-    {!max_of_local_result}.
+    If such a coercion is desirable, however, then you can use either {!min_of_local_dt_result} or
+    {!max_of_local_dt_result}.
 
     {2 Span/duration}
 
@@ -216,12 +216,12 @@ v}
     causing clocks to jump from 3am to 2am. Say we pick 2:30am again, we are actually pointing at {e two} time points (there are two 2:30am)
     unless we make an explicit selection between the first or second occurance.
     Whenever ambiguity of this form is a possiblity for the result of a function, say {!to_timestamp},
-    Timedesc uses {!local_result} variant type, of which [`Single _] indicates lack of ambiguity for the particular result,
+    Timedesc uses {!local_dt_result} variant type, of which [`Single _] indicates lack of ambiguity for the particular result,
     and [`Ambiguous _] indicates the result is ambiguous.
 
     Some other libraries coerce the ambiguous result
     into one of the two possible choices (which exact one may not be guaranteed). If user wishes to do similar coercions,
-    they may use {!min_of_local_result} or {!max_of_local_result}.
+    they may use {!min_of_local_dt_result} or {!max_of_local_dt_result}.
 
     For constructions, {!make} yields a possibly ambiguous construction,
     while {!make_unambiguous} yields an unambiguous construction.
@@ -250,7 +250,7 @@ type weekday =
   | `Sat
   ]
 
-type 'a local_result =
+type 'a local_dt_result =
   [ `Single of 'a
   | `Ambiguous of 'a * 'a
   ]
@@ -263,20 +263,20 @@ type 'a local_result =
         This happens when DST ends and "goes back an hour" for instance.
 *)
 
-val min_of_local_result : 'a local_result -> 'a
-(** For [min_of_local_result x]
+val min_of_local_dt_result : 'a local_dt_result -> 'a
+(** For [min_of_local_dt_result x]
     - if [x = `Single a], yields [a],
     - if [x = `Ambiguous (a, b)],  yields [a],
 *)
 
-val max_of_local_result : 'a local_result -> 'a
-(** For [max_of_local_result x]
+val max_of_local_dt_result : 'a local_dt_result -> 'a
+(** For [max_of_local_dt_result x]
     - if [x = `Single a], yields [a],
     - if [x = `Ambiguous (a, b)], yields [b],
 *)
 
-val equal_local_result :
-  eq:('a -> 'a -> bool) -> 'a local_result -> 'a local_result -> bool
+val equal_local_dt_result :
+  eq:('a -> 'a -> bool) -> 'a local_dt_result -> 'a local_dt_result -> bool
 
 (** {1 Span} *)
 
@@ -1159,7 +1159,7 @@ type t
     [t] may also map to two points on the UTC timeline in the case of DST and without
     an unambiguous offset, however.
 
-    In the ambiguous case, functions which return [_ local_result] will yield an [`Ambiguous _]
+    In the ambiguous case, functions which return [_ local_dt_result] will yield an [`Ambiguous _]
     value, and [`Single _] otherwise.
 
     [ns] may be [>= 10^9] to represent leap second, but always remains [< 2 * 10^9].
@@ -1341,18 +1341,18 @@ val is_leap_second : t -> bool
 
 val tz : t -> Time_zone.t
 
-val offset_from_utc : t -> Span.t local_result
+val offset_from_utc : t -> Span.t local_dt_result
 
 (** {2 Conversion} *)
 
-val to_timestamp : t -> timestamp local_result
+val to_timestamp : t -> timestamp local_dt_result
 (** [to_timestamp] loses information about leap second
 *)
 
 val to_timestamp_single : t -> timestamp
 (** @raise Invalid_argument if [to_timestamp] does not yield a [`Single] result *)
 
-val to_timestamp_float_s : t -> float local_result
+val to_timestamp_float_s : t -> float local_dt_result
 (** Returns timestamp in seconds, fraction represent *)
 
 val to_timestamp_float_s_single : t -> float
@@ -1371,13 +1371,13 @@ val of_timestamp_float_s_exn : ?tz_of_date_time:Time_zone.t -> float -> t
 val equal : t -> t -> bool
 
 val compare_chrono_min : t -> t -> int
-(** Compare based on ordering of [min_of_local_result @@ to_timestamp _]
+(** Compare based on ordering of [min_of_local_dt_result @@ to_timestamp _]
 
     {b Warning}: [compare_chrono_min x y = 0] does not imply [equal x y]
 *)
 
 val compare_chrono_max : t -> t -> int
-(** Compare based on ordering of [max_of_local_result @@ to_timestamp _]
+(** Compare based on ordering of [max_of_local_dt_result @@ to_timestamp _]
 
     {b Warning}: [compare_chrono_max x y = 0] does not imply [equal x y]
 *)

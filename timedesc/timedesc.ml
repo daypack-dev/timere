@@ -271,9 +271,9 @@ let of_http = of_rfc9110
 
 let of_http_exn = of_rfc9110_exn
 
-let min_of_local_result = min_of_local_result
+let min_of_local_dt_result = min_of_local_dt_result
 
-let max_of_local_result = max_of_local_result
+let max_of_local_dt_result = max_of_local_dt_result
 
 include Ymd_date_time
 
