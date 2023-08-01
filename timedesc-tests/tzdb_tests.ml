@@ -7,6 +7,14 @@ module Alco = struct
          Timedesc.Time_zone.available_time_zones)
       true
 
+  let tzdb_recompression_yields_same_form () =
+    Alcotest.(check string)
+      "same compressed form"
+      (Option.get Timedesc_tzdb.compressed)
+      (Option.get Timedesc_tzdb.compressed
+       |> Timedesc.Time_zone.Db.Compressed.of_string_exn
+       |> Timedesc.Time_zone.Db.Compressed.to_string)
+
   let tzdb_jsons_load_correctly () =
     Alcotest.(check unit)
       "everything loads correctly"
@@ -31,6 +39,8 @@ module Alco = struct
   let suite =
     [
       Alcotest.test_case "tzdb_make_all" `Quick tzdb_make_all;
+      Alcotest.test_case "tzdb_recompression_yields_same_form" `Quick
+        tzdb_recompression_yields_same_form;
       Alcotest.test_case "tzdb_jsons_load_correctly" `Quick
         tzdb_jsons_load_correctly;
     ]

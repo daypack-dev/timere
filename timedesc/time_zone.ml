@@ -337,13 +337,13 @@ module Compressed_table = struct
     let count = Array.length entries in
     let relative_entries =
       Array.init count (fun i ->
-          if i = 0 then
+          if i = 0 then (
             { value = starts.{i};
               is_abs = true;
               is_dst = entries.(i).is_dst;
               offset = entries.(i).offset;
             }
-          else
+          ) else (
             let a = starts.{i} in
             let b = starts.{i - 1} in
             let would_overflow =
@@ -364,6 +364,7 @@ module Compressed_table = struct
                 is_dst = entries.(i).is_dst;
                 offset = entries.(i).offset;
               }
+          )
         )
     in
     let uniq_relative_entries =

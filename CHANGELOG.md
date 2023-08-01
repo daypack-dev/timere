@@ -36,6 +36,8 @@
 
   - Renamed `fixed_offset_from_utc` to `offset_from_utc` for consistency
 
+- Fixed tzdb compression/decompression code
+
 ## Timedesc 1.2.0
 
 - Added functions to reduce friction during construction of date time

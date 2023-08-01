@@ -11,14 +11,14 @@ let be_int32 ~pos s : int * Int32.t =
   let pos, c23 = be_uint16 ~pos s in
   (pos, Int32.(add
                  (shift_left (of_int c01) 16)
-                 (of_int c23)))
+                 (logand 0xFFFFl (of_int c23))))
 
 let be_int64 ~pos s : int * Int64.t =
   let pos, c0123 = be_int32 ~pos s in
   let pos, c4567 = be_int32 ~pos s in
   (pos, Int64.(add
                  (shift_left (of_int32 c0123) 32)
-                 (of_int32 c4567)))
+                 (logand 0xFFFFFFFFL (of_int32 c4567))))
 
 let take ~pos len s : int * string =
   (pos + len, String.sub s pos len)
