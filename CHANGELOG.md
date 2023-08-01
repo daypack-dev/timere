@@ -38,6 +38,8 @@
 
 - Fixed tzdb compression/decompression code
 
+    - See [issue 74](https://github.com/daypack-dev/timere/issues/74)
+
 ## Timedesc 1.2.0
 
 - Added functions to reduce friction during construction of date time
