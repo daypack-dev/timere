@@ -366,6 +366,43 @@ module Alco = struct
       (Timedesc.Timestamp.to_rfc9110
          (Timedesc.Span.make ~s:(-1888434001L) ~ns:999 ()))
 
+  let known_offset0 () =
+    (* From: https://github.com/daypack-dev/timere/issues/74 *)
+    let zone = Timedesc.Time_zone.make_exn "Europe/Berlin" in
+    let t = Timedesc.of_iso8601_exn "2023-07-31T21:44:37.210709095Z" in
+    let ts = Timedesc.to_timestamp_float_s_single t in
+    let t = Timedesc.of_timestamp_float_s_exn ~tz_of_date_time:zone ts in
+    Alcotest.(check string)
+      "same string" "2023-07-31T23:44:37.210709095+02:00"
+      (Timedesc.to_iso8601 t)
+
+  let known_offset1 () =
+    let zone = Timedesc.Time_zone.make_exn "Europe/Berlin" in
+    let t = Timedesc.of_iso8601_exn "2023-11-10T21:44:37.210709095Z" in
+    let ts = Timedesc.to_timestamp_float_s_single t in
+    let t = Timedesc.of_timestamp_float_s_exn ~tz_of_date_time:zone ts in
+    Alcotest.(check string)
+      "same string" "2023-11-10T22:44:37.210709095+01:00"
+      (Timedesc.to_iso8601 t)
+
+  let known_offset2 () =
+    let zone = Timedesc.Time_zone.make_exn "Australia/Sydney" in
+    let t = Timedesc.of_iso8601_exn "2023-07-31T21:44:37.210709095Z" in
+    let ts = Timedesc.to_timestamp_float_s_single t in
+    let t = Timedesc.of_timestamp_float_s_exn ~tz_of_date_time:zone ts in
+    Alcotest.(check string)
+      "same string" "2023-08-01T07:44:37.210709095+10:00"
+      (Timedesc.to_iso8601 t)
+
+  let known_offset3 () =
+    let zone = Timedesc.Time_zone.make_exn "Australia/Sydney" in
+    let t = Timedesc.of_iso8601_exn "2023-11-10T21:44:37.210709095Z" in
+    let ts = Timedesc.to_timestamp_float_s_single t in
+    let t = Timedesc.of_timestamp_float_s_exn ~tz_of_date_time:zone ts in
+    Alcotest.(check string)
+      "same string" "2023-11-11T08:44:37.210709095+11:00"
+      (Timedesc.to_iso8601 t)
+
   let suite =
     [
       Alcotest.test_case "leap_second0" `Quick leap_second0;
@@ -420,6 +457,10 @@ module Alco = struct
       Alcotest.test_case "to_rfc9110_case4" `Quick to_rfc9110_case4;
       Alcotest.test_case "to_rfc9110_case5" `Quick to_rfc9110_case5;
       Alcotest.test_case "to_rfc9110_case6" `Quick to_rfc9110_case6;
+      Alcotest.test_case "known_offset0" `Quick known_offset0;
+      Alcotest.test_case "known_offset0" `Quick known_offset1;
+      Alcotest.test_case "known_offset0" `Quick known_offset2;
+      Alcotest.test_case "known_offset0" `Quick known_offset3;
     ]
 end
 
