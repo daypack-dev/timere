@@ -1,7 +1,8 @@
 {
   "name": "America/Antigua",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": -14400 } ],
-    [ "-1825098836", { "is_dst": false, "offset": -14400 } ]
+    [ "-62167168800", { "is_dst": false, "offset": -18000 } ],
+    [ "-1825098768", { "is_dst": false, "offset": -18000 } ],
+    [ "-599598000", { "is_dst": false, "offset": -14400 } ]
   ]
 }

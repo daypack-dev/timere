@@ -2,6 +2,6 @@
   "name": "Singapore",
   "table": [
     [ "-62167168800", { "is_dst": false, "offset": 28800 } ],
-    [ "378664200", { "is_dst": false, "offset": 28800 } ]
+    [ "378662400", { "is_dst": false, "offset": 28800 } ]
   ]
 }

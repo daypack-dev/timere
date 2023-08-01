@@ -1,11 +1,9 @@
 {
   "name": "Africa/Mogadishu",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": 9000 } ],
-    [ "-1946168836", { "is_dst": false, "offset": 9000 } ],
-    [ "-1309746600", { "is_dst": false, "offset": 10800 } ],
-    [ "-1261969200", { "is_dst": false, "offset": 9000 } ],
-    [ "-1041388200", { "is_dst": false, "offset": 9900 } ],
-    [ "-865305900", { "is_dst": false, "offset": 10800 } ]
+    [ "-62167168800", { "is_dst": false, "offset": 10800 } ],
+    [ "-2403572488", { "is_dst": false, "offset": 10800 } ],
+    [ "-1230778800", { "is_dst": false, "offset": 9000 } ],
+    [ "-410236200", { "is_dst": false, "offset": 10800 } ]
   ]
 }

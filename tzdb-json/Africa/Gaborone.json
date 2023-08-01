@@ -1,7 +1,10 @@
 {
   "name": "Africa/Gaborone",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": 7200 } ],
-    [ "-2109291020", { "is_dst": false, "offset": 7200 } ]
+    [ "-62167168800", { "is_dst": false, "offset": 5400 } ],
+    [ "-2682294220", { "is_dst": false, "offset": 5400 } ],
+    [ "-2109288600", { "is_dst": false, "offset": 7200 } ],
+    [ "-829526400", { "is_dst": true, "offset": 10800 } ],
+    [ "-813805200", { "is_dst": false, "offset": 7200 } ]
   ]
 }

@@ -2,6 +2,6 @@
   "name": "Africa/Bujumbura",
   "table": [
     [ "-62167168800", { "is_dst": false, "offset": 7200 } ],
-    [ "-2109291020", { "is_dst": false, "offset": 7200 } ]
+    [ "-2524528648", { "is_dst": false, "offset": 7200 } ]
   ]
 }

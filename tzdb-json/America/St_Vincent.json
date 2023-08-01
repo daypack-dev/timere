@@ -1,7 +1,8 @@
 {
   "name": "America/St_Vincent",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": -14400 } ],
-    [ "-1825098836", { "is_dst": false, "offset": -14400 } ]
+    [ "-62167168800", { "is_dst": false, "offset": -14696 } ],
+    [ "-2524506904", { "is_dst": false, "offset": -14696 } ],
+    [ "-1830369304", { "is_dst": false, "offset": -14400 } ]
   ]
 }

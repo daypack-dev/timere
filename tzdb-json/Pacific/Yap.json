@@ -1,11 +1,8 @@
 {
   "name": "Pacific/Yap",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": 36000 } ],
-    [ "-2177489228", { "is_dst": false, "offset": 36000 } ],
-    [ "-1743674400", { "is_dst": false, "offset": 32400 } ],
-    [ "-1606813200", { "is_dst": false, "offset": 36000 } ],
-    [ "-907408800", { "is_dst": false, "offset": 32400 } ],
-    [ "-770634000", { "is_dst": false, "offset": 36000 } ]
+    [ "-62167168800", { "is_dst": false, "offset": 35312 } ],
+    [ "-2840176120", { "is_dst": false, "offset": 35312 } ],
+    [ "-2366790512", { "is_dst": false, "offset": 36000 } ]
   ]
 }

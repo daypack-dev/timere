@@ -2,6 +2,6 @@
   "name": "Africa/Lusaka",
   "table": [
     [ "-62167168800", { "is_dst": false, "offset": 7200 } ],
-    [ "-2109291020", { "is_dst": false, "offset": 7200 } ]
+    [ "-2109289988", { "is_dst": false, "offset": 7200 } ]
   ]
 }

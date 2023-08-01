@@ -1,8 +1,13 @@
 {
   "name": "Asia/Vientiane",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": 24124 } ],
-    [ "-2840164924", { "is_dst": false, "offset": 24124 } ],
-    [ "-1570084924", { "is_dst": false, "offset": 25200 } ]
+    [ "-62167168800", { "is_dst": false, "offset": 25590 } ],
+    [ "-2004072624", { "is_dst": false, "offset": 25590 } ],
+    [ "-1851577590", { "is_dst": false, "offset": 25200 } ],
+    [ "-852105600", { "is_dst": false, "offset": 28800 } ],
+    [ "-782643600", { "is_dst": false, "offset": 32400 } ],
+    [ "-767869200", { "is_dst": false, "offset": 25200 } ],
+    [ "-718095600", { "is_dst": false, "offset": 28800 } ],
+    [ "-464428800", { "is_dst": false, "offset": 25200 } ]
   ]
 }

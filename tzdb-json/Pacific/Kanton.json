@@ -1,0 +1,8 @@
+{
+  "name": "Pacific/Kanton",
+  "table": [
+    [ "-62167168800", { "is_dst": false, "offset": -39600 } ],
+    [ "307627200", { "is_dst": false, "offset": -39600 } ],
+    [ "788871600", { "is_dst": false, "offset": 46800 } ]
+  ]
+}

@@ -2,7 +2,7 @@
   "name": "America/Aruba",
   "table": [
     [ "-62167168800", { "is_dst": false, "offset": -16200 } ],
-    [ "-1826738653", { "is_dst": false, "offset": -16200 } ],
+    [ "-1826738376", { "is_dst": false, "offset": -16200 } ],
     [ "-157750200", { "is_dst": false, "offset": -14400 } ]
   ]
 }

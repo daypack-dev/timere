@@ -2,6 +2,6 @@
   "name": "America/Guadeloupe",
   "table": [
     [ "-62167168800", { "is_dst": false, "offset": -14400 } ],
-    [ "-1825098836", { "is_dst": false, "offset": -14400 } ]
+    [ "-1848254032", { "is_dst": false, "offset": -14400 } ]
   ]
 }

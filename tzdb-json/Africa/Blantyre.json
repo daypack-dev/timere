@@ -1,7 +1,9 @@
 {
   "name": "Africa/Blantyre",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": 7200 } ],
-    [ "-2109291020", { "is_dst": false, "offset": 7200 } ]
+    [ "-62167168800", { "is_dst": false, "offset": 8470 } ],
+    [ "-1844302800", { "is_dst": false, "offset": 8470 } ],
+    [ "-1751682070", { "is_dst": false, "offset": 8460 } ],
+    [ "-1404440460", { "is_dst": false, "offset": 7200 } ]
   ]
 }

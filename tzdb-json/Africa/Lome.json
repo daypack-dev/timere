@@ -2,6 +2,6 @@
   "name": "Africa/Lome",
   "table": [
     [ "-62167168800", { "is_dst": false, "offset": 0 } ],
-    [ "-1830383032", { "is_dst": false, "offset": 0 } ]
+    [ "-2429827492", { "is_dst": false, "offset": 0 } ]
   ]
 }

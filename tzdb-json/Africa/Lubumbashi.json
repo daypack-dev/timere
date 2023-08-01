@@ -1,7 +1,8 @@
 {
   "name": "Africa/Lubumbashi",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": 7200 } ],
-    [ "-2109291020", { "is_dst": false, "offset": 7200 } ]
+    [ "-62167168800", { "is_dst": false, "offset": 3600 } ],
+    [ "-2276646592", { "is_dst": false, "offset": 3600 } ],
+    [ "-1567990800", { "is_dst": false, "offset": 7200 } ]
   ]
 }

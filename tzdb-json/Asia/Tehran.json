@@ -1,12 +1,13 @@
 {
   "name": "Asia/Tehran",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": 14400 } ],
-    [ "247177800", { "is_dst": false, "offset": 14400 } ],
-    [ "259272000", { "is_dst": true, "offset": 18000 } ],
-    [ "277758000", { "is_dst": false, "offset": 14400 } ],
+    [ "-62167168800", { "is_dst": true, "offset": 16200 } ],
+    [ "227820600", { "is_dst": true, "offset": 16200 } ],
+    [ "246223800", { "is_dst": false, "offset": 14400 } ],
+    [ "259617600", { "is_dst": true, "offset": 18000 } ],
+    [ "271108800", { "is_dst": false, "offset": 14400 } ],
     [ "283982400", { "is_dst": false, "offset": 12600 } ],
-    [ "290809800", { "is_dst": true, "offset": 16200 } ],
+    [ "296598600", { "is_dst": true, "offset": 16200 } ],
     [ "306531000", { "is_dst": false, "offset": 12600 } ],
     [ "322432200", { "is_dst": true, "offset": 16200 } ],
     [ "338499000", { "is_dst": false, "offset": 12600 } ],

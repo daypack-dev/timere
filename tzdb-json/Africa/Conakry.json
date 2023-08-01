@@ -2,6 +2,8 @@
   "name": "Africa/Conakry",
   "table": [
     [ "-62167168800", { "is_dst": false, "offset": 0 } ],
-    [ "-1830383032", { "is_dst": false, "offset": 0 } ]
+    [ "-1830380708", { "is_dst": false, "offset": 0 } ],
+    [ "-1131235200", { "is_dst": false, "offset": -3600 } ],
+    [ "-315615600", { "is_dst": false, "offset": 0 } ]
   ]
 }
