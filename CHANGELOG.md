@@ -40,6 +40,8 @@
 
     - See [issue 74](https://github.com/daypack-dev/timere/issues/74)
 
+- Renamed `local_result` to `local_dt_result`
+
 ## Timedesc 1.2.0
 
 - Added functions to reduce friction during construction of date time
