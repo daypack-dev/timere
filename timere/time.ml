@@ -878,7 +878,7 @@ let equal t1 t2 =
     match (t1, t2) with
     | Empty, Empty -> true
     | All, All -> true
-    | Intervals s1, Intervals s2 -> OSeq.equal ~eq:( = ) s1 s2
+    | Intervals s1, Intervals s2 -> OSeq.equal ( = ) s1 s2
     | ISO_week_pattern (y1, w1), ISO_week_pattern (y2, w2) ->
       Int_set.equal y1 y2 && Int_set.equal w1 w2
     | Pattern p1, Pattern p2 -> Pattern.equal p1 p2

@@ -25,7 +25,7 @@ depends: [
   "bisect_ppx" {dev & >= "2.5.0"}
   "dune" {>= "2.9"}
   "seq"
-  "oseq" {>= "0.3"}
+  "oseq" {>= "0.5"}
   "containers" {>= "3.6"}
   "fmt"
   "timedesc" {>= "1.1.0"}

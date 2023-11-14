@@ -12,7 +12,7 @@ let () =
           |> Time.Intervals.Inter.inter_multi_seq
           |> Time.slice_valid_interval
         in
-        let r = OSeq.equal ~eq:Time.Interval'.equal s s' in
+        let r = OSeq.equal Time.Interval'.equal s s' in
         if not r then
           Crowbar.fail
             (Fmt.str "tz: %s, times: %a\n"

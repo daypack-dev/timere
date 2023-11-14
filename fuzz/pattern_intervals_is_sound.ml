@@ -30,22 +30,22 @@ let () =
         let r =
           OSeq.for_all
             (fun (x, y) ->
-               OSeq.mem ~eq:( = ) x s1
-               && OSeq.mem ~eq:( = ) y s2
+               OSeq.mem ( = ) x s1
+               && OSeq.mem ( = ) y s2
                && Timedesc.Span.(y - x <= bound)
                && not (OSeq.exists Timedesc.Span.(fun x2 -> x < x2 && x2 < y) s2))
             r1
           && OSeq.for_all
             (fun (x, y) ->
-               OSeq.mem ~eq:( = ) x s1
-               && OSeq.mem ~eq:( = ) (Timedesc.Span.pred y) s2
+               OSeq.mem ( = ) x s1
+               && OSeq.mem ( = ) (Timedesc.Span.pred y) s2
                && Timedesc.Span.(Timedesc.Span.pred y - x <= bound)
                && not
                  (OSeq.exists Timedesc.Span.(fun x2 -> x < x2 && x2 <= y) s2))
             r2
           && OSeq.for_all
             (fun (x, y) ->
-               y = Timedesc.Span.succ x && OSeq.mem ~eq:Timedesc.Span.equal x s1)
+               y = Timedesc.Span.succ x && OSeq.mem Timedesc.Span.equal x s1)
             r3
           && OSeq.for_all
             (fun (x, y) ->
@@ -60,7 +60,7 @@ let () =
                  @@ Seq_utils.last_element_of_seq r
                in
                y = Timedesc.Span.succ x
-               && OSeq.mem ~eq:Timedesc.Span.equal x s2
+               && OSeq.mem Timedesc.Span.equal x s2
                && not
                  (OSeq.exists Timedesc.Span.(fun x2 -> xr < x2 && x2 < x) s2))
             r4

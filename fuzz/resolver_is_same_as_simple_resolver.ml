@@ -18,7 +18,7 @@ let () =
   Crowbar.add_test ~name:"resolver_is_same_as_simple_resolver" [ time ]
     (fun t ->
        let r =
-         OSeq.equal ~eq:Time.Interval'.equal
+         OSeq.equal Time.Interval'.equal
            (CCResult.get_exn
             @@ Resolver.resolve
               Time.(inter [ t; intervals [ (search_start, search_end_exc) ] ])
