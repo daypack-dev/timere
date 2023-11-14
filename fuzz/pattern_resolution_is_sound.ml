@@ -27,7 +27,7 @@ let timestamp_is_okay (tz : Timedesc.Time_zone.t) (pattern : Pattern.t)
     pattern.month_days
     |> Int_set.to_seq
     |> Seq.map (fun mday -> if mday < 0 then day_count + mday + 1 else mday)
-    |> OSeq.mem ~eq:( = ) (Timedesc.day dt)
+    |> OSeq.mem ( = ) (Timedesc.day dt)
   in
   let wday_is_fine =
     Weekday_set.is_empty pattern.weekdays

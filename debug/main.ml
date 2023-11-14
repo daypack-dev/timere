@@ -241,8 +241,8 @@ let debug_fuzz_pattern_intervals () =
           | Seq.Nil -> true
           | Seq.Cons (xr2, _) ->
             if
-              OSeq.mem ~eq:( = ) (x1, xr2) s
-              && OSeq.mem ~eq:( = ) (xr2, Timedesc.Span.succ xr2) s'
+              OSeq.mem ( = ) (x1, xr2) s
+              && OSeq.mem ( = ) (xr2, Timedesc.Span.succ xr2) s'
             then true
             else (
               print_endline
@@ -308,7 +308,7 @@ let debug_fuzz_union () =
   print_endline "=====";
   display_intervals ~display_using_tz:tz s;
   print_endline "=====";
-  Printf.printf "%b\n" (OSeq.equal ~eq:( = ) s s')
+  Printf.printf "%b\n" (OSeq.equal ( = ) s s')
 
 let debug_fuzz_pattern () =
   let tz_count = List.length Timedesc.Time_zone.available_time_zones in
@@ -392,7 +392,7 @@ let debug_fuzz_pattern () =
               |> Int_set.to_seq
               |> Seq.map (fun mday ->
                   if mday < 0 then day_count + mday + 1 else mday)
-              |> OSeq.mem ~eq:( = ) (Timedesc.day dt)
+              |> OSeq.mem ( = ) (Timedesc.day dt)
             in
             let wday_is_fine =
               Weekday_set.is_empty pattern.weekdays

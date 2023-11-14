@@ -8,7 +8,7 @@ let () =
         let t2 = Time.union l2 in
         let r1 = CCResult.get_exn @@ Resolver.resolve t1 in
         let r2 = CCResult.get_exn @@ Resolver.resolve t2 in
-        let r = OSeq.equal ~eq:Time.Interval'.equal r1 r2 in
+        let r = OSeq.equal Time.Interval'.equal r1 r2 in
         if not r then
           Crowbar.fail
             (Fmt.str "rand: %d, l1: %a\nl2: %a\n" rand

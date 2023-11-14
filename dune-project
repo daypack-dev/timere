@@ -145,7 +145,7 @@ Features:
     (bisect_ppx (and :dev (>= "2.5.0")))
     dune
     seq
-    (oseq (>= "0.3"))
+    (oseq (>= "0.5"))
     (containers (>= "3.6"))
     fmt
     (timedesc (>= "1.1.0"))
@@ -177,7 +177,7 @@ Features:
     (ocaml (>= "4.08"))
     (bisect_ppx (and :dev (>= "2.5.0")))
     dune
-    (oseq (>= "0.3"))
+    (oseq (>= "0.5"))
     (re (>= "1.9.0"))
     (containers (>= "3.6"))
     (timedesc (>= "0.8.0"))
