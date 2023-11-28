@@ -5,7 +5,7 @@
   )
 
 (library
- (flags     (-w "+a-4-9-29-37-40-42-44-48-50-32-30@8"))
+ (flags     (-w "+a-4-9-29-37-40-42-44-48-50-70@8"))
  (name      timedesc_tzlocal_unix_or_utc)
  (public_name timedesc-tzlocal.unix-or-utc)
  (implements timedesc_tzlocal)
