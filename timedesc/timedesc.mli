@@ -27,7 +27,7 @@
     If we want to get it into the representation used in Timedesc, say to perform arithmetic operations over it etc, then we can use {!Timestamp.of_float_s}. But in either case, we can always swap back and forth via
     {!to_timestamp} and {!of_timestamp}.
 
-    In general it is better to use {!timestamp} as much as possible, unless you require a precision higher
+    In general it is better to use {!type:timestamp} as much as possible, unless you require a precision higher
     than nanosecond. This is because floating point is a lossy representation -
     if you convert a date time to floating point
     and back, you may not get the same date time back (i.e. it may not round trip).
@@ -72,7 +72,7 @@
 
     [Timedesc.Span.For_human.make_frac_exn ~hours:1.5 ()]
 
-    Finally, to access the human friendly "view", we can use {!Span.For_human.view}.
+    Finally, to access the human friendly "view", we can use {!val:Span.For_human.view}.
 
     {2 Using both Ptime and Timedesc}
 
@@ -116,15 +116,15 @@
     Sometimes we are only interested in the date component rather than both date and time.
     We can use {!Date} module in this case.
 
-    To construct a Gregorian calendar date, we can use {!Date.Ymd_date.make}. To construct
-    ISO week date and ISO ordinal date, we can use {!Date.ISO_week_date.make} and {!Date.ISO_ord}
+    To construct a Gregorian calendar date, we can use {!val:Date.Ymd.make}. To construct
+    ISO week date and ISO ordinal date, we can use {!val:Date.ISO_week_date.make} and {!val:Date.ISO_ord.make}
     respectively.
 
     We have similar set of accessors for accessing values of {!Date.t}, such as {!Date.year},
     {!Date.iso_week}, {!Date.day_of_year}.
 
     To obtain a "view" (in a manner similar to the human-friendly "view" from {!Span.For_human}), we can
-    use {!Date.ISO_week_date.view} and {!Date.ISO_ord.view}.
+    use {!val:Date.ISO_week_date.view} and {!val:Date.ISO_ord.view}.
 
     {1 Further reading}
 
@@ -1208,7 +1208,7 @@ val make :
 
     See {!val:make_unambiguous} for the more precise construction.
 
-    See {!Date.Ymd_date.make} for error handling of date specification.
+    See {!Date.Ymd.make} for error handling of date specification.
 
     See {!Time.make} for error handling of time of day specification.
 *)
@@ -1794,7 +1794,7 @@ module Interval : sig
 {etzoff-sign}{etzoff-hour:0X}:{etzoff-min:0X}:{etzoff-sec:0X})
     v}
 
-        Follows same format string rules as {!val:Date_time.to_string}, but tags are prefixed with 's' for "start time", and 'e' for "end exc time",
+        Follows same format string rules as {!val:pp}, but tags are prefixed with 's' for "start time", and 'e' for "end exc time",
         e.g. for interval [(x, y)]
 
       - [{syear}] gives year of the [x]
@@ -2190,7 +2190,7 @@ module Utils : sig
 
   (** {b Warning}: Following functions are direct applications of the relevant formulas with little to no error checking.
 
-      You are advised to read the source code of the following functions in {v date_time_utils.ml} if you intend to use them
+      You are advised to read the source code of the following functions in [date_time_utils.ml] if you intend to use them
                                                                                to ensure they behave as you expect.
                                                                             *)
 
