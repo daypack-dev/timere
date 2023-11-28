@@ -2092,6 +2092,8 @@ end
 module Time_zone_info : sig
   type t
   (** A possibly valid pairing of time zone and offset.
+      Whether the pairing actually makes sense still depends on the attached date time
+      (or similar data).
   *)
 
   type error =
