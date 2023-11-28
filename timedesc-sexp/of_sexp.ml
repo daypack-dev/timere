@@ -135,7 +135,7 @@ let date_time_of_sexp (x : Sexp.t) =
           with
           | Ok x ->
             if
-              T.equal_local_dt_result ~eq:T.Span.equal offset_from_utc
+              T.equal_local_date_time_result ~eq:T.Span.equal offset_from_utc
                 T.(offset_from_utc x)
             then x
             else invalid_data ()
