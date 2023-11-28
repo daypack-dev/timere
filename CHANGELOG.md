@@ -28,6 +28,14 @@
   - The commit was made after relese of Timere 0.7.0, so the bug only affected
     users who were pinning the repo directly
 
+## Timedesc 3.0.0
+
+- Added `timedesc-tzlocal.unix-or-utc` and made it the default backend
+
+- Updated documentation of `Time_zone_info`
+
+    - See [issue 72](https://github.com/daypack-dev/timere/issues/72)
+
 ## Timedesc 2.0.0
 
 - Renamed `Zoneless.make` to `Zoneless.of_date_and_time` for consistency
