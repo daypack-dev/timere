@@ -37,7 +37,7 @@ let make_timestamp_intervals ~rng ~min_year ~max_year_inc =
       let start =
         make_date_time ~rng ~min_year ~max_year_inc
         |> Timedesc.to_timestamp
-        |> Timedesc.min_of_local_dt_result
+        |> Timedesc.min_of_local_date_time_result
       in
       let end_exc =
         Timedesc.Span.add start (Timedesc.Span.make ~ns:(rng ()) ())
