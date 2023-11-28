@@ -148,8 +148,8 @@ Features:
     (oseq (>= "0.5"))
     (containers (>= "3.6"))
     fmt
-    (timedesc (>= "2.0.0"))
-    (timedesc-sexp (>= "2.0.0"))
+    (timedesc (>= "3.0.0"))
+    (timedesc-sexp (>= "3.0.0"))
     (diet (>= "0.4"))
     (crowbar :with-test)
     (alcotest :with-test)
