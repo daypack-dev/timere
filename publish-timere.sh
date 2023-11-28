@@ -12,7 +12,7 @@ if [ ! -d "$opam_repo" ]; then
 fi
 
 ver=$(cat CHANGELOG.md \
-  | grep '## Timere' \
+  | grep '## Timere ' \
   | head -n 1 \
   | sed -n 's/^## Timere\s*\(\S*\)$/\1/p')
 
