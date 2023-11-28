@@ -21,7 +21,7 @@ type 'a local_date_time_result =
   | `Ambiguous of 'a * 'a
   ]
 
-let equal_local_date_time_result ~eq (x : 'a local_date_time_result) (y : 'a local_date_time_result) =
+let equal_local_date_time_result eq (x : 'a local_date_time_result) (y : 'a local_date_time_result) =
   match (x, y) with
   | `Single x, `Single y -> eq x y
   | `Ambiguous (x1, x2), `Ambiguous (y1, y2) -> eq x1 y1 && eq x2 y2
@@ -123,7 +123,7 @@ let equal (x : t) (y : t) =
   Date.equal x.date y.date
   && Time.equal x.time y.time
   && Time_zone.equal x.tz y.tz
-  && equal_local_date_time_result ~eq:Span.equal x.offset_from_utc y.offset_from_utc
+  && equal_local_date_time_result Span.equal x.offset_from_utc y.offset_from_utc
 
 let now ?tz_of_date_time () : t =
   timestamp_now ()

@@ -276,7 +276,7 @@ val max_of_local_date_time_result : 'a local_date_time_result -> 'a
 *)
 
 val equal_local_date_time_result :
-  eq:('a -> 'a -> bool) -> 'a local_date_time_result -> 'a local_date_time_result -> bool
+  ('a -> 'a -> bool) -> 'a local_date_time_result -> 'a local_date_time_result -> bool
 
 (** {1 Span} *)
 
