@@ -2091,7 +2091,7 @@ end
 
 module Time_zone_info : sig
   type t
-  (** Time zone information that can be attached to date time like data
+  (** A possibly valid pairing of time zone and offset.
   *)
 
   type error =
