@@ -2,5 +2,5 @@
  (name timedesc_tzlocal)
  (public_name timedesc-tzlocal)
  (virtual_modules timedesc_tzlocal)
- (default_implementation timedesc-tzlocal.unix)
+ (default_implementation timedesc-tzlocal.unix-or-utc)
 )
