@@ -389,7 +389,7 @@ module Ast_normalize = struct
       ~constr_single:(fun x -> Weekday x)
       l
 
-  let recognize_iso_week (l : token list) : token list =
+  (*let recognize_iso_week (l : token list) : token list =
     let rec recognize_single tokens =
       match tokens with
       | (pos_x, _, ISO_week_word) :: (_, _, Nat x) :: rest ->
@@ -431,6 +431,7 @@ module Ast_normalize = struct
       ~extract_grouped:(function ISO_weeks l -> Some l | _ -> None)
       ~constr_single:(fun x -> ISO_week x)
       l
+      *)
 
   let recognize_month_day (l : token list) : token list =
     let rec recognize_single tokens =
@@ -815,17 +816,17 @@ module Ast_normalize = struct
             |> recognize_hms
             |> recognize_float
             |> recognize_span
-            |> recognize_iso_week
+            (*|> recognize_iso_week*)
             |> recognize_month_day
             |> group_nats
             |> group_month_days
-            |> group_iso_weeks
+            (*|> group_iso_weeks*)
             |> group_weekdays
             |> group_months
             |> group_hms
             |> ungroup_nats
             |> ungroup_month_days
-            |> ungroup_iso_weeks
+            (*|> ungroup_iso_weeks*)
             |> ungroup_weekdays
             |> ungroup_months
             |> ungroup_hms
@@ -1034,6 +1035,7 @@ module Rules = struct
         | `Error msg -> `Error msg)
     | _ -> `None
 
+    (*
   let rule_iso_week l =
     match l with
     | [ (_, _, ISO_week x) ] when 1 <= x && x <= 53 ->
@@ -1049,6 +1051,7 @@ module Rules = struct
         | `Error msg -> `Error msg
       )
     | _ -> `None
+    *)
 
   let rule_month l =
     match l with
@@ -1590,7 +1593,7 @@ module Rules = struct
       rule_month_days;
       rule_month_and_days;
       rule_month;
-      rule_iso_week;
+      (*rule_iso_week;*)
       rule_ymd;
       rule_ym;
       rule_md;
