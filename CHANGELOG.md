@@ -18,6 +18,11 @@
 
     - See [issue 72](https://github.com/daypack-dev/timere/issues/72)
 
+- Replaced `local_dt_result` with `local_date_time_result` for consistency
+
+- Changed signature of `equal_local_date_time_result` so the argument for
+  the inner equality check function is no longer labelled
+
 ## Timere 0.8.0
 
 - Pattern resolver optimization
