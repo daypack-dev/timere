@@ -20,7 +20,7 @@ let month_p : int Angstrom.t =
   if String.length s < 3 then
     fail (Printf.sprintf "Invalid month: %s" s)
   else (
-    (match String.lowercase_ascii @@ StringLabels.sub ~pos:0 ~len:3 s with
+    (match String.lowercase_ascii @@ String.sub s 0 3 with
      | "jan" -> return 1
      | "feb" -> return 2
      | "mar" -> return 3
