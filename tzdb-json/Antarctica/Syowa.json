@@ -2,6 +2,6 @@
   "name": "Antarctica/Syowa",
   "table": [
     [ "-62167168800", { "is_dst": false, "offset": 10800 } ],
-    [ "-407808000", { "is_dst": false, "offset": 10800 } ]
+    [ "-719636812", { "is_dst": false, "offset": 10800 } ]
   ]
 }

@@ -1,9 +1,11 @@
 {
   "name": "Indian/Antananarivo",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": 10800 } ],
-    [ "-1846293004", { "is_dst": false, "offset": 10800 } ],
-    [ "-499924800", { "is_dst": true, "offset": 14400 } ],
-    [ "-492062400", { "is_dst": false, "offset": 10800 } ]
+    [ "-62167168800", { "is_dst": false, "offset": 9000 } ],
+    [ "-1946168836", { "is_dst": false, "offset": 9000 } ],
+    [ "-1309746600", { "is_dst": false, "offset": 10800 } ],
+    [ "-1261969200", { "is_dst": false, "offset": 9000 } ],
+    [ "-1041388200", { "is_dst": false, "offset": 9900 } ],
+    [ "-865305900", { "is_dst": false, "offset": 10800 } ]
   ]
 }

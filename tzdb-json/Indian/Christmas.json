@@ -1,7 +1,8 @@
 {
   "name": "Indian/Christmas",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": 25200 } ],
-    [ "-2364102172", { "is_dst": false, "offset": 25200 } ]
+    [ "-62167168800", { "is_dst": false, "offset": 24124 } ],
+    [ "-2840164924", { "is_dst": false, "offset": 24124 } ],
+    [ "-1570084924", { "is_dst": false, "offset": 25200 } ]
   ]
 }

@@ -1,8 +1,8 @@
 {
   "name": "America/Cayman",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": -18430 } ],
-    [ "-2524502068", { "is_dst": false, "offset": -18430 } ],
-    [ "-1827687170", { "is_dst": false, "offset": -18000 } ]
+    [ "-62167168800", { "is_dst": false, "offset": -19176 } ],
+    [ "-2524502512", { "is_dst": false, "offset": -19176 } ],
+    [ "-1946918424", { "is_dst": false, "offset": -18000 } ]
   ]
 }

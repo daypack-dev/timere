@@ -1,9 +1,8 @@
 {
   "name": "Antarctica/DumontDUrville",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": 36000 } ],
-    [ "-725846400", { "is_dst": false, "offset": 36000 } ],
-    [ "-566992800", { "is_dst": false, "offset": 0 } ],
-    [ "-415497600", { "is_dst": false, "offset": 36000 } ]
+    [ "-62167168800", { "is_dst": false, "offset": 35312 } ],
+    [ "-2840176120", { "is_dst": false, "offset": 35312 } ],
+    [ "-2366790512", { "is_dst": false, "offset": 36000 } ]
   ]
 }

@@ -1,8 +1,7 @@
 {
   "name": "Africa/Dakar",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": -3600 } ],
-    [ "-1830379816", { "is_dst": false, "offset": -3600 } ],
-    [ "-902098800", { "is_dst": false, "offset": 0 } ]
+    [ "-62167168800", { "is_dst": false, "offset": 0 } ],
+    [ "-1830383032", { "is_dst": false, "offset": 0 } ]
   ]
 }

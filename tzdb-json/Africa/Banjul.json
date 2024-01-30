@@ -1,9 +1,7 @@
 {
   "name": "Africa/Banjul",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": -3996 } ],
-    [ "-1830380004", { "is_dst": false, "offset": -3996 } ],
-    [ "-1159829604", { "is_dst": false, "offset": -3600 } ],
-    [ "-880930800", { "is_dst": false, "offset": 0 } ]
+    [ "-62167168800", { "is_dst": false, "offset": 0 } ],
+    [ "-1830383032", { "is_dst": false, "offset": 0 } ]
   ]
 }

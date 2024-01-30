@@ -2,6 +2,6 @@
   "name": "Indian/Reunion",
   "table": [
     [ "-62167168800", { "is_dst": false, "offset": 14400 } ],
-    [ "-1848886912", { "is_dst": false, "offset": 14400 } ]
+    [ "-1577936472", { "is_dst": false, "offset": 14400 } ]
   ]
 }

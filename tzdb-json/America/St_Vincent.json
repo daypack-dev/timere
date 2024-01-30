@@ -1,8 +1,10 @@
 {
   "name": "America/St_Vincent",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": -14696 } ],
-    [ "-2524506904", { "is_dst": false, "offset": -14696 } ],
-    [ "-1830369304", { "is_dst": false, "offset": -14400 } ]
+    [ "-62167168800", { "is_dst": false, "offset": -14400 } ],
+    [ "-2233035335", { "is_dst": false, "offset": -14400 } ],
+    [ "-873057600", { "is_dst": true, "offset": -10800 } ],
+    [ "-769395600", { "is_dst": true, "offset": -10800 } ],
+    [ "-765399600", { "is_dst": false, "offset": -14400 } ]
   ]
 }

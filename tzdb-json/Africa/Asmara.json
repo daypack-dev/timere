@@ -1,9 +1,11 @@
 {
   "name": "Africa/Asmara",
   "table": [
-    [ "-62167168800", { "is_dst": false, "offset": 9332 } ],
-    [ "-3155682932", { "is_dst": false, "offset": 9332 } ],
-    [ "-2524530932", { "is_dst": false, "offset": 9320 } ],
-    [ "-1062210920", { "is_dst": false, "offset": 10800 } ]
+    [ "-62167168800", { "is_dst": false, "offset": 9000 } ],
+    [ "-1946168836", { "is_dst": false, "offset": 9000 } ],
+    [ "-1309746600", { "is_dst": false, "offset": 10800 } ],
+    [ "-1261969200", { "is_dst": false, "offset": 9000 } ],
+    [ "-1041388200", { "is_dst": false, "offset": 9900 } ],
+    [ "-865305900", { "is_dst": false, "offset": 10800 } ]
   ]
 }

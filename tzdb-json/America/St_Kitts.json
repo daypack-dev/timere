@@ -2,6 +2,9 @@
   "name": "America/St_Kitts",
   "table": [
     [ "-62167168800", { "is_dst": false, "offset": -14400 } ],
-    [ "-1825098548", { "is_dst": false, "offset": -14400 } ]
+    [ "-2233035335", { "is_dst": false, "offset": -14400 } ],
+    [ "-873057600", { "is_dst": true, "offset": -10800 } ],
+    [ "-769395600", { "is_dst": true, "offset": -10800 } ],
+    [ "-765399600", { "is_dst": false, "offset": -14400 } ]
   ]
 }
