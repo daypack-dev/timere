@@ -16,7 +16,7 @@
             diet
             timedesc
             timedesc-tzdb.full
-            timedesc-tzlocal.unix
+            timedesc-tzlocal.unix-or-utc
             timedesc-json
             timedesc-sexp
             )
