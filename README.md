@@ -111,9 +111,17 @@ You can optionally pick one of the following concrete implementations of time zo
 
 You can optionally pick one of the following concrete implementations of local time zone detection
 
+- `timedesc-tzlocal.unix-or-utc`
+
+  - This is the default implementation which tries to look up info of OS for local time zone name,
+    and resorts to UTC if that fails.
+
 - `timedesc-tzlocal.unix`
 
-  - This is the default implementation which tries to look up info of OS for local time zone name. Should work for common Linux distros.
+  - This is the implementation which tries to look up info of OS for local time zone name,
+    but relevant calls for returning or using the local time zone will fail if said lookup
+    was unsuccessful.
+    Should work for common Linux distros.
 
 - `timedesc-tzlocal.none`
 
