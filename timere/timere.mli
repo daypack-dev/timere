@@ -133,15 +133,15 @@ val iso_week_pattern :
 (** Pattern matches over ISO week date times.
 
     A pattern [p] matches ISO week date time [dt] if
-    {v
+   {v
 (year of dt is in p.years or p.year_ranges)
 && (week of dt is in p.weeks or p.week_ranges)
     v}
 
-    Empty pattern levels are treated as wildcard, e.g. if [p.years] and [p.year_ranges] are both empty,
-    then [(dt.year is in p.years or p.year_ranges)] is [true].
-*)
-*)
+       Empty pattern levels are treated as wildcard, e.g. if [p.years] and [p.year_ranges] are both empty,
+       then [(dt.year is in p.years or p.year_ranges)] is [true].
+     *)
+    *)
 
 val years : int list -> t
 (** [years l] is a shorthand for [pattern ~years:l ()] *)

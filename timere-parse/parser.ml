@@ -419,19 +419,19 @@ module Ast_normalize = struct
     |> propagate_guesses
     |> List.rev
 
-  let group_iso_weeks (l : token list) : token list =
+    let group_iso_weeks (l : token list) : token list =
     group
       ~extract_single:(function ISO_week x -> Some x | _ -> None)
       ~extract_grouped:(function ISO_weeks l -> Some l | _ -> None)
       ~constr_grouped:(fun x -> ISO_weeks x)
       l
 
-  let ungroup_iso_weeks l =
+    let ungroup_iso_weeks l =
     ungroup
       ~extract_grouped:(function ISO_weeks l -> Some l | _ -> None)
       ~constr_single:(fun x -> ISO_week x)
       l
-      *)
+  *)
 
   let recognize_month_day (l : token list) : token list =
     let rec recognize_single tokens =
