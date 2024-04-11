@@ -10,6 +10,15 @@
 
   - `iso_week_pattern`, `iso_years`, `iso_year_ranges`, `iso_weeks`, `iso_week_ranges`
 
+## Timedesc 3.1.0
+
+- Fixed `12hour` handling in pretty-printer
+
+- Added `am/pm` to format string
+
+- Replaced `pretty print` with `pretty-print` to be consistent with
+  upstream stdlib Format, and fmt package documentation
+
 ## Timedesc 3.0.0
 
 - Added `timedesc-tzlocal.unix-or-utc` and made it the default backend
