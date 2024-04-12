@@ -77,7 +77,7 @@ let deduce_child_result_space_bound_from_parent ~(parent : t) : result_space =
   match parent with
   | All | Empty | Intervals _ | ISO_week_pattern _
   | Pattern _ | Pattern_intervals _ ->
-    failwith "Unexpected case"
+    failwith "unexpected case"
   | Unary_op (_, op, _) -> (
       match op with
       | Shift n ->
@@ -309,14 +309,14 @@ let do_chunk_at_year_boundary tz (s : Time.Interval'.t Seq.t) =
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((t1, t2), rest) ->
       let dt1 =
-        CCOption.get_exn_or "Expected successful date time construction"
+        CCOption.get_exn_or "expected successful date time construction"
         @@ Timedesc.of_timestamp ~tz_of_date_time:tz t1
       in
       let dt2 =
         t2
         |> Timedesc.Span.pred
         |> Timedesc.of_timestamp ~tz_of_date_time:tz
-        |> CCOption.get_exn_or "Expected successful date time construction"
+        |> CCOption.get_exn_or "expected successful date time construction"
       in
       let dt1_year = Timedesc.year dt1 in
       if dt1_year = Timedesc.year dt2 then fun () ->
@@ -342,7 +342,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval'.t Seq.t) =
     | Seq.Nil -> Seq.empty
     | Seq.Cons ((t1, t2), rest) ->
       let dt1 =
-        CCOption.get_exn_or "Expected successful date time construction"
+        CCOption.get_exn_or "expected successful date time construction"
         @@ Timedesc.of_timestamp ~tz_of_date_time:tz t1
       in
       let dt1_year = Timedesc.year dt1 in
@@ -350,7 +350,7 @@ let do_chunk_at_month_boundary tz (s : Time.Interval'.t Seq.t) =
         t2
         |> Timedesc.Span.pred
         |> Timedesc.of_timestamp ~tz_of_date_time:tz
-        |> CCOption.get_exn_or "Expected successful date time construction"
+        |> CCOption.get_exn_or "expected successful date time construction"
       in
       if
         dt1_year = Timedesc.year dt2
@@ -575,7 +575,7 @@ and skip_points_in_p1 ~last_start2 ~(rest1 : timestamp Seq.t) ~(p1 : Points.t)
 
 and aux_pattern_intervals ~search_space search_using_tz mode bound p1 p2 =
   let _, search_space_end_exc =
-    CCOption.get_exn_or "Expected successful retrieval of last element in list"
+    CCOption.get_exn_or "expected successful retrieval of last element in list"
     @@ Misc_utils.last_element_of_list search_space
   in
   let rec aux_pattern_intervals' s1 s2 space1 space2 p1 p2 =
@@ -660,7 +660,7 @@ and aux_inter search_using_tz timeres =
     else
       let batch_for_sampling =
         CCList.map
-          (CCOption.get_exn_or "Unexpected None in batch_for_sampling")
+          (CCOption.get_exn_or "unexpected None in batch_for_sampling")
           batch_for_sampling
       in
       match batch_for_sampling with
@@ -725,8 +725,8 @@ let resolve' ~search_using_tz (time : t) :
   try
     Ok (time |> optimize_search_space search_using_tz |> aux search_using_tz)
   with
-  | Interval_is_invalid -> Error "Invalid interval"
-  | Intervals_are_not_sorted -> Error "Intervals are not sorted"
+  | Interval_is_invalid -> Error "invalid interval"
+  | Intervals_are_not_sorted -> Error "intervals are not sorted"
 
 let resolve ?(search_using_tz = Timedesc.Time_zone.utc) (time : Time_ast.t) :
   (Time.Interval'.t Seq.t, string) result =

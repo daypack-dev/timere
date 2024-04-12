@@ -6,36 +6,36 @@ let month_of_sexp (x : Sexp.t) =
   | Sexp.Atom s -> (
       match Time.month_of_abbr_string s with
       | Some x -> x
-      | None -> invalid_data (Printf.sprintf "Failed to parse month: %s" s))
+      | None -> invalid_data (Printf.sprintf "failed to parse month: %s" s))
   | List _ ->
     invalid_data
-      (Printf.sprintf "Expected atom for month: %s" (Sexp.to_string x))
+      (Printf.sprintf "expected atom for month: %s" (Sexp.to_string x))
 
 let weekday_of_sexp (x : Sexp.t) =
   match x with
   | Sexp.Atom s -> (
       match Time.weekday_of_abbr_string s with
       | Some x -> x
-      | None -> invalid_data (Printf.sprintf "Failed to parse weekday: %s" s))
+      | None -> invalid_data (Printf.sprintf "failed to parse weekday: %s" s))
   | List _ ->
     invalid_data
-      (Printf.sprintf "Expected atom for weekday: %s" (Sexp.to_string x))
+      (Printf.sprintf "expected atom for weekday: %s" (Sexp.to_string x))
 
 let int_of_sexp (x : Sexp.t) =
   match x with
   | Atom s -> (
       try int_of_string s
       with Failure _ ->
-        invalid_data (Printf.sprintf "Failed to parse int: %s" s))
+        invalid_data (Printf.sprintf "failed to parse int: %s" s))
   | List _ ->
     invalid_data
-      (Printf.sprintf "Expected atom for int: %s" (Sexp.to_string x))
+      (Printf.sprintf "expected atom for int: %s" (Sexp.to_string x))
 
 let ints_of_sexp_list (x : Sexp.t) =
   match x with
   | Atom _ ->
     invalid_data
-      (Printf.sprintf "Expected list for ints: %s" (Sexp.to_string x))
+      (Printf.sprintf "expected list for ints: %s" (Sexp.to_string x))
   | List l -> List.map int_of_sexp l
 
 let span_of_sexp sexp =
@@ -48,10 +48,10 @@ let tz_make_of_sexp (x : Sexp.t) =
   | Atom s -> (
       match Timedesc.Time_zone.make s with
       | Some x -> x
-      | None -> invalid_data (Printf.sprintf "Unrecognized time zone: %s" s))
+      | None -> invalid_data (Printf.sprintf "unrecognized time zone: %s" s))
   | List _ ->
     invalid_data
-      (Printf.sprintf "Expected atom for time zone: %s" (Sexp.to_string x))
+      (Printf.sprintf "expected atom for time zone: %s" (Sexp.to_string x))
 
 let tz_info_of_sexp x =
   match Timedesc_sexp.Time_zone_info.of_sexp x with
@@ -70,13 +70,13 @@ let range_of_sexp ~(f : Sexp.t -> 'a) (x : Sexp.t) =
   match x with
   | List [ Atom "range_inc"; x; y ] -> `Range_inc (f x, f y)
   | List [ Atom "range_exc"; x; y ] -> `Range_exc (f x, f y)
-  | _ -> invalid_data (Printf.sprintf "Invalid range: %s" (Sexp.to_string x))
+  | _ -> invalid_data (Printf.sprintf "invalid range: %s" (Sexp.to_string x))
 
 let iso_week_pattern_of_sexp (x : Sexp.t) =
   match x with
   | Atom _ ->
     invalid_data
-      (Printf.sprintf "Expected list for ISO week pattern: %s" (Sexp.to_string x))
+      (Printf.sprintf "expected list for ISO week pattern: %s" (Sexp.to_string x))
   | List l -> (
       match l with
       | [ Atom "iso_week_pattern"; List years; List weeks ]-> (
@@ -86,14 +86,14 @@ let iso_week_pattern_of_sexp (x : Sexp.t) =
         )
       | _ ->
         invalid_data
-          (Printf.sprintf "Invalid pattern: %s" (Sexp.to_string x))
+          (Printf.sprintf "invalid pattern: %s" (Sexp.to_string x))
     )
 
 let pattern_of_sexp (x : Sexp.t) =
   match x with
   | Sexp.Atom _ ->
     invalid_data
-      (Printf.sprintf "Expected list for pattern: %s" (Sexp.to_string x))
+      (Printf.sprintf "expected list for pattern: %s" (Sexp.to_string x))
   | Sexp.List l -> (
       match l with
       | Atom "pattern" :: l -> (
@@ -149,7 +149,7 @@ let pattern_of_sexp (x : Sexp.t) =
                        `Range_inc (int_of_sexp x, int_of_sexp y)
                      | _ ->
                        invalid_data
-                         (Printf.sprintf "Invalid pattern: %s"
+                         (Printf.sprintf "invalid pattern: %s"
                             (Sexp.to_string x)))
                   ns,
                 l )
@@ -161,10 +161,10 @@ let pattern_of_sexp (x : Sexp.t) =
               ~seconds ~ns_ranges ()
           | _ ->
             invalid_data
-              (Printf.sprintf "Invalid pattern: %s" (Sexp.to_string x)))
+              (Printf.sprintf "invalid pattern: %s" (Sexp.to_string x)))
       | _ ->
         invalid_data
-          (Printf.sprintf "Invalid pattern: %s" (Sexp.to_string x)))
+          (Printf.sprintf "invalid pattern: %s" (Sexp.to_string x)))
 
 let points_of_sexp (x : Sexp.t) : Points.t =
   let open Points in
@@ -228,11 +228,11 @@ let points_of_sexp (x : Sexp.t) : Points.t =
           ns = int_of_sexp ns;
         }
     | _ ->
-      invalid_data (Printf.sprintf "Invalid points: %s" (Sexp.to_string x))
+      invalid_data (Printf.sprintf "invalid points: %s" (Sexp.to_string x))
   in
   match x with
   | Atom _ ->
-    invalid_data (Printf.sprintf "Invalid points: %s" (Sexp.to_string x))
+    invalid_data (Printf.sprintf "invalid points: %s" (Sexp.to_string x))
   | List l -> (
       match l with
       | [ Atom "points"; List (Atom "pick" :: pick) ] ->
@@ -244,7 +244,7 @@ let points_of_sexp (x : Sexp.t) : Points.t =
         }
       | _ ->
         invalid_data
-          (Printf.sprintf "Invalid points: %s" (Sexp.to_string x)))
+          (Printf.sprintf "invalid points: %s" (Sexp.to_string x)))
 
 let of_sexp (x : Sexp.t) =
   let open Time in
@@ -261,7 +261,7 @@ let of_sexp (x : Sexp.t) =
               | Sexp.List [ x; y ] -> (timestamp_of_sexp x, timestamp_of_sexp y)
               | _ ->
                 invalid_data
-                  (Printf.sprintf "Expected list for interval: %s"
+                  (Printf.sprintf "expected list for interval: %s"
                      (Sexp.to_string x)))
           |> sorted_intervals ~skip_invalid:false
         | Atom "iso_week_pattern" :: _ -> iso_week_pattern_of_sexp x
@@ -285,7 +285,7 @@ let of_sexp (x : Sexp.t) =
             | "whole_exc" -> (Some `Exc, `Whole)
             | "fst" -> (None, `Fst)
             | "snd" -> (None, `Snd)
-            | _ -> invalid_data (Printf.sprintf "Invalid mode: %s" mode)
+            | _ -> invalid_data (Printf.sprintf "invalid mode: %s" mode)
           in
           let bound = span_of_sexp bound in
           pattern_intervals ?inc_exc ~bound mode (points_of_sexp start)
@@ -293,10 +293,10 @@ let of_sexp (x : Sexp.t) =
         | [ Atom "unchunk"; x ] -> aux_chunked CCFun.id x
         | _ ->
           invalid_data
-            (Printf.sprintf "Invalid timere data: %s" (Sexp.to_string x)))
+            (Printf.sprintf "invalid timere data: %s" (Sexp.to_string x)))
     | Atom _ ->
       invalid_data
-        (Printf.sprintf "Expected list for timere data: %s"
+        (Printf.sprintf "expected list for timere data: %s"
            (Sexp.to_string x))
   and aux_chunked f (x : Sexp.t) : Time_ast.t =
     let open Infix in
@@ -350,10 +350,10 @@ let of_sexp (x : Sexp.t) =
             chunked
         | _ ->
           invalid_data
-            (Printf.sprintf "Invalid timere data: %s" (Sexp.to_string x)))
+            (Printf.sprintf "invalid timere data: %s" (Sexp.to_string x)))
     | Atom _ ->
       invalid_data
-        (Printf.sprintf "Expected list for timere data: %s"
+        (Printf.sprintf "expected list for timere data: %s"
            (Sexp.to_string x))
   in
   aux x

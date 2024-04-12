@@ -819,7 +819,7 @@ module Weekday_ranges = Ranges.Make (struct
     let of_int x =
       x
       |> Timedesc.Utils.weekday_of_tm_int
-      |> CCOption.get_exn_or "Expected successful construction of weekday"
+      |> CCOption.get_exn_or "expected successful construction of weekday"
   end)
 
 module Month_day_ranges = Ranges.Make (struct

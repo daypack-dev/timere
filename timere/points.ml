@@ -119,22 +119,22 @@ let make ?tz ?offset_from_utc ?year ?month ?day ?weekday ?hour ?minute ?second
     if not year_is_fine then
       Error
         (`Invalid_year
-           (CCOption.get_exn_or "Expected year to be Some _" year))
+           (CCOption.get_exn_or "expected year to be Some _" year))
     else if not month_day_is_fine then
       Error
-        (`Invalid_day (CCOption.get_exn_or "Expected day to be Some _" day))
+        (`Invalid_day (CCOption.get_exn_or "expected day to be Some _" day))
     else if not hour_is_fine then
       Error
         (`Invalid_hour
-           (CCOption.get_exn_or "Expected hour to be Some _" hour))
+           (CCOption.get_exn_or "expected hour to be Some _" hour))
     else if not minute_is_fine then
       Error
         (`Invalid_minute
-           (CCOption.get_exn_or "Expected minute to be Some _" minute))
+           (CCOption.get_exn_or "expected minute to be Some _" minute))
     else if not second_is_fine then
       Error
         (`Invalid_second
-           (CCOption.get_exn_or "Expected second to be Some _" second))
+           (CCOption.get_exn_or "expected second to be Some _" second))
     else
       let default_month =
         match lean_toward with `Earlier -> 1 | `Later -> 12

@@ -87,12 +87,12 @@ module Search_param = struct
     in
     let start_dt =
       CCOption.get_exn_or
-        "Expected successful date time construction from timestamp"
+        "expected successful date time construction from timestamp"
       @@ Timedesc.of_timestamp ~tz_of_date_time start
     in
     let end_inc_dt =
       CCOption.get_exn_or
-        "Expected successful date time construction from timestamp"
+        "expected successful date time construction from timestamp"
       @@ Timedesc.of_timestamp ~tz_of_date_time (Timedesc.Span.pred end_exc)
     in
     {
@@ -104,7 +104,7 @@ module Search_param = struct
     }
 end
 
-let failwith_unexpected_case (_ : 'a) = failwith "Unexpected case"
+let failwith_unexpected_case (_ : 'a) = failwith "unexpected case"
 
 module Matching_ns = struct
   let get_cur_branch_search_start cur_branch = Branch.set_to_first_ns cur_branch
