@@ -144,7 +144,10 @@ module Format_string_parsers = struct
          *> commit
          *> padding
          >>= fun padding ->
-         let hour = if hour = 0 then 12 else hour mod 12 in
+         let hour =
+           if hour = 0 then 12
+           else if hour > 12 then hour - 12 else hour
+         in
          return (pad_int padding hour));
         (string "min:"
          *> commit
