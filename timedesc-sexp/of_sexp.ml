@@ -7,45 +7,45 @@ let int_of_sexp (x : Sexp.t) =
   | Atom s -> (
       try int_of_string s
       with Failure _ ->
-        invalid_data (Printf.sprintf "Failed to parse int: %s" s))
+        invalid_data (Printf.sprintf "failed to parse int: %s" s))
   | List _ ->
     invalid_data
-      (Printf.sprintf "Expected atom for int: %s" (Sexp.to_string x))
+      (Printf.sprintf "expected atom for int: %s" (Sexp.to_string x))
 
 let ints_of_sexp_list (x : Sexp.t) =
   match x with
   | Atom _ ->
     invalid_data
-      (Printf.sprintf "Expected list for ints: %s" (Sexp.to_string x))
+      (Printf.sprintf "expected list for ints: %s" (Sexp.to_string x))
   | List l -> List.map int_of_sexp l
 
 let span_of_sexp (x : Sexp.t) =
   match x with
   | Atom _ ->
     invalid_data
-      (Printf.sprintf "Expected list for span: %s" (Sexp.to_string x))
+      (Printf.sprintf "expected list for span: %s" (Sexp.to_string x))
   | List [ s; ns ] ->
     let s = int64_of_sexp s in
     let ns = int_of_sexp ns in
     T.Span.make ~s ~ns ()
   | List _ ->
     invalid_data
-      (Printf.sprintf "List too long for span: %s" (Sexp.to_string x))
+      (Printf.sprintf "list too long for span: %s" (Sexp.to_string x))
 
 let tz_make_of_sexp (x : Sexp.t) =
   match x with
   | Atom s -> (
       match T.Time_zone.make s with
       | Some x -> x
-      | None -> invalid_data (Printf.sprintf "Unrecognized time zone: %s" s))
+      | None -> invalid_data (Printf.sprintf "unrecognized time zone: %s" s))
   | List _ ->
     invalid_data
-      (Printf.sprintf "Expected atom for time zone: %s" (Sexp.to_string x))
+      (Printf.sprintf "expected atom for time zone: %s" (Sexp.to_string x))
 
 let tz_info_of_sexp (x : Sexp.t) : T.Time_zone_info.t =
   match x with
   | Atom _ ->
-    invalid_data (Printf.sprintf "Invalid tz_info: %s" (Sexp.to_string x))
+    invalid_data (Printf.sprintf "invalid tz_info: %s" (Sexp.to_string x))
   | List l -> (
       match l with
       | [ x ] -> T.Time_zone_info.make_exn ~tz:(tz_make_of_sexp x) ()
@@ -59,11 +59,11 @@ let tz_info_of_sexp (x : Sexp.t) : T.Time_zone_info.t =
           ()
       | _ ->
         invalid_data
-          (Printf.sprintf "Invalid tz_info: %s" (Sexp.to_string x)))
+          (Printf.sprintf "invalid tz_info: %s" (Sexp.to_string x)))
 
 let date_of_sexp (x : Sexp.t) =
   let invalid_data () =
-    invalid_data (Printf.sprintf "Invalid date: %s" (Sexp.to_string x))
+    invalid_data (Printf.sprintf "invalid date: %s" (Sexp.to_string x))
   in
   match x with
   | List [ year; month; day ] -> (
@@ -77,7 +77,7 @@ let date_of_sexp (x : Sexp.t) =
 
 let time_of_sexp (x : Sexp.t) =
   let invalid_data () =
-    invalid_data (Printf.sprintf "Invalid time: %s" (Sexp.to_string x))
+    invalid_data (Printf.sprintf "invalid time: %s" (Sexp.to_string x))
   in
   match x with
   | List [ hour; minute; second; ns ] -> (
@@ -103,7 +103,7 @@ let zoneless_of_sexp (x : Sexp.t) =
 
 let date_time_of_sexp (x : Sexp.t) =
   let invalid_data () =
-    invalid_data (Printf.sprintf "Invalid date time: %s" (Sexp.to_string x))
+    invalid_data (Printf.sprintf "invalid date time: %s" (Sexp.to_string x))
   in
   match x with
   | List [ date; time; tz; offset_from_utc ] ->
