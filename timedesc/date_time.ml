@@ -128,14 +128,14 @@ let equal (x : t) (y : t) =
 let now ?tz_of_date_time () : t =
   timestamp_now ()
   |> of_timestamp ?tz_of_date_time
-  |> Misc_utils.option_get_exn_or "Expected successful date time construction for now"
+  |> Misc_utils.option_get_exn_or "expected successful date time construction for now"
 
 let min_val =
-  Misc_utils.option_get_exn_or "Expected successful date time construction for min_val"
+  Misc_utils.option_get_exn_or "expected successful date time construction for min_val"
   @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_min
 
 let max_val =
-  Misc_utils.option_get_exn_or "Expected successful date time construction for max_val"
+  Misc_utils.option_get_exn_or "expected successful date time construction for max_val"
   @@ of_timestamp ~tz_of_date_time:Time_zone.utc timestamp_max
 
 let is_leap_second (dt : t) = Time.is_leap_second dt.time
@@ -237,7 +237,7 @@ module Zoneless' = struct
        Time_zone_info.make ?tz ~offset_from_utc ()
      with
      | Error `Missing_both_tz_and_offset_from_utc ->
-       failwith "Unexpected case"
+       failwith "unexpected case"
      | Error (`Invalid_offset _) | Error (`Unrecorded_offset _) ->
        make_invalid_tz_info_error ?tz ~offset_from_utc ()
      | Ok ({ tz = tz'; offset_from_utc = _ } as tz_info) -> (
@@ -260,7 +260,7 @@ module Zoneless' = struct
           offset_from_utc =
             `Single
               (Misc_utils.option_get_exn_or
-                 "Expected offset_from_utc in tz_info to be Some _"
+                 "expected offset_from_utc in tz_info to be Some _"
                  offset_from_utc);
         })
 
@@ -310,19 +310,19 @@ module Ymd_date_time = struct
 
   let string_of_error (e : error) =
     match e with
-    | `Does_not_exist -> "Does not exist"
-    | `Invalid_year x -> Printf.sprintf "Invalid year: %d" x
-    | `Invalid_month x -> Printf.sprintf "Invalid month: %d" x
-    | `Invalid_day x -> Printf.sprintf "Invalid day: %d" x
-    | `Invalid_hour x -> Printf.sprintf "Invalid hour: %d" x
-    | `Invalid_minute x -> Printf.sprintf "Invalid minute: %d" x
-    | `Invalid_second x -> Printf.sprintf "Invalid second: %d" x
-    | `Invalid_s_frac x -> Printf.sprintf "Invalid frac: %f" x
-    | `Invalid_ns x -> Printf.sprintf "Invalid ns: %d" x
+    | `Does_not_exist -> "does not exist"
+    | `Invalid_year x -> Printf.sprintf "invalid year: %d" x
+    | `Invalid_month x -> Printf.sprintf "invalid month: %d" x
+    | `Invalid_day x -> Printf.sprintf "invalid day: %d" x
+    | `Invalid_hour x -> Printf.sprintf "invalid hour: %d" x
+    | `Invalid_minute x -> Printf.sprintf "invalid minute: %d" x
+    | `Invalid_second x -> Printf.sprintf "invalid second: %d" x
+    | `Invalid_s_frac x -> Printf.sprintf "invalid frac: %f" x
+    | `Invalid_ns x -> Printf.sprintf "invalid ns: %d" x
     | `Invalid_tz_info (tz, offset) ->
       let offset = Span.For_human'.view offset in
-      Printf.sprintf "Invalid tz info: %s, %c%d:%d"
-        (match tz with None -> "None" | Some tz -> tz)
+      Printf.sprintf "invalid tz info: %s, %c%d:%d"
+        (match tz with None -> "none" | Some tz -> tz)
         Span.For_human'.(match offset.sign with `Pos -> '+' | `Neg -> '-')
         Span.For_human'.(offset.hours)
         Span.For_human'.(offset.minutes)
@@ -406,7 +406,7 @@ module ISO_ord_date_time' = struct
 
   let string_of_error (e : error) =
     match e with
-    | `Invalid_day_of_year x -> Printf.sprintf "Invalid day of year: %d" x
+    | `Invalid_day_of_year x -> Printf.sprintf "invalid day of year: %d" x
     | ( `Does_not_exist | `Invalid_year _ | `Invalid_hour _ | `Invalid_minute _
       | `Invalid_second _ | `Invalid_s_frac _ | `Invalid_ns _
       | `Invalid_tz_info _ ) as e ->
@@ -470,8 +470,8 @@ module ISO_week_date_time' = struct
 
   let string_of_error (e : error) =
     match e with
-    | `Invalid_iso_year x -> Printf.sprintf "Invalid iso week year: %d" x
-    | `Invalid_iso_week x -> Printf.sprintf "Invalid iso week: %d" x
+    | `Invalid_iso_year x -> Printf.sprintf "invalid iso week year: %d" x
+    | `Invalid_iso_week x -> Printf.sprintf "invalid iso week: %d" x
     | ( `Does_not_exist | `Invalid_hour _ | `Invalid_minute _
       | `Invalid_second _ | `Invalid_s_frac _ | `Invalid_ns _
       | `Invalid_tz_info _ ) as e ->

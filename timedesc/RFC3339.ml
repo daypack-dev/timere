@@ -50,7 +50,7 @@ let of_time ?frac_s (time : Time.t) : string =
 
 let pp_timestamp ?frac_s () formatter (x : Span.t) =
   match Date_time.of_timestamp ~tz_of_date_time:Time_zone.utc x with
-  | None -> invalid_arg "Invalid timestamp"
+  | None -> invalid_arg "invalid timestamp"
   | Some dt -> Format.fprintf formatter "%a" (pp_date_time ?frac_s ()) dt
 
 let of_timestamp ?frac_s (x : Span.t) : string =

@@ -10,7 +10,7 @@ let ym_p : Ym.t Angstrom.t =
   | Ok x -> return x
   | Error e ->
     fail
-      (Printf.sprintf "Invalid date: %s"
+      (Printf.sprintf "invalid date: %s"
          (Date_time.Ymd_date_time.string_of_error
             (e :> Date_time.Ymd_date_time.error)))
 
@@ -27,7 +27,7 @@ let ymd_p : Date.t Angstrom.t =
   | Ok x -> return x
   | Error e ->
     fail
-      (Printf.sprintf "Invalid date: %s"
+      (Printf.sprintf "invalid date: %s"
          (Date_time.Ymd_date_time.string_of_error
             (e :> Date_time.Ymd_date_time.error)))
 
@@ -44,7 +44,7 @@ let iso_week_p : ISO_week.t Angstrom.t =
   | Ok x -> return x
   | Error e ->
     fail
-      (Printf.sprintf "Invalid date: %s"
+      (Printf.sprintf "invalid date: %s"
          (Date_time.ISO_week_date_time'.string_of_error
             (e :> Date_time.ISO_week_date_time'.error)))
 
@@ -58,14 +58,14 @@ let iso_week_date_p : Date.t Angstrom.t =
   *> one_digit_nat_zero
   >>= fun weekday ->
   match weekday_of_iso_int weekday with
-  | None -> fail "Invalid weekday"
+  | None -> fail "invalid weekday"
   | Some weekday -> (
       let year, week = ISO_week.year_week iso_week' in
       match Date.ISO_week_date'.make ~year ~week ~weekday with
       | Ok x -> return x
       | Error e ->
         fail
-          (Printf.sprintf "Invalid date: %s"
+          (Printf.sprintf "invalid date: %s"
              (Date_time.ISO_week_date_time'.string_of_error
                 (e :> Date_time.ISO_week_date_time'.error))))
 
@@ -81,7 +81,7 @@ let iso_ord_p : Date.t Angstrom.t =
   | Ok x -> return x
   | Error e ->
     fail
-      (Printf.sprintf "Invalid date: %s"
+      (Printf.sprintf "invalid date: %s"
          (Date_time.ISO_ord_date_time'.string_of_error
             (e :> Date_time.ISO_ord_date_time'.error)))
 
@@ -143,7 +143,7 @@ let time_p : Time.t Angstrom.t =
   | Ok x -> return x
   | Error e ->
     fail
-      (Printf.sprintf "Invalid time: %s"
+      (Printf.sprintf "invalid time: %s"
          (Date_time.Ymd_date_time.string_of_error
             (e :> Date_time.Ymd_date_time.error)))
 
@@ -180,7 +180,7 @@ let maybe_zoneless_of_str' date_p s : (maybe_zoneless, string) result =
         with
         | Error e ->
           fail
-            (Printf.sprintf "Invalid date time: %s"
+            (Printf.sprintf "invalid date time: %s"
                (Date_time.Ymd_date_time.string_of_error
                   (e :> Date_time.Ymd_date_time.error)))
         | Ok x -> return (`Zoned x))
@@ -204,12 +204,12 @@ let iso_ord_date_time_maybe_zoneless_of_str s : (maybe_zoneless, string) result
 let zoneless_of_str s : (Date_time.Zoneless'.zoneless, string) result =
   match maybe_zoneless_of_str s with
   | Ok (`Zoneless x) -> Ok x
-  | Ok (`Zoned _) -> Error "Extraneous offset from utc"
+  | Ok (`Zoned _) -> Error "extraneous offset from UTC"
   | Error msg -> Error msg
 
 let date_time_of_str' maybe_zoneless_of_str s : (Date_time.t, string) result =
   match maybe_zoneless_of_str s with
-  | Ok (`Zoneless _) -> Error "Missing offset from utc"
+  | Ok (`Zoneless _) -> Error "missing offset from UTC"
   | Ok (`Zoned x) -> Ok x
   | Error msg -> Error msg
 

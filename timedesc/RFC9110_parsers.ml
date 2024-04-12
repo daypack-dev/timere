@@ -18,7 +18,7 @@ let month_p : int Angstrom.t =
   let open Parser_components in
   alpha_string >>= fun s ->
   if String.length s < 3 then
-    fail (Printf.sprintf "Invalid month: %s" s)
+    fail (Printf.sprintf "invalid month: %s" s)
   else (
     (match String.lowercase_ascii @@ String.sub s 0 3 with
      | "jan" -> return 1
@@ -33,7 +33,7 @@ let month_p : int Angstrom.t =
      | "oct" -> return 10
      | "nov" -> return 11
      | "dec" -> return 12
-     | _ -> fail (Printf.sprintf "Invalid month: %s" s)
+     | _ -> fail (Printf.sprintf "invalid month: %s" s)
     )
   )
 
@@ -58,7 +58,7 @@ let time_p : Time.t Angstrom.t =
   | Ok x -> return x
   | Error e ->
     fail
-      (Printf.sprintf "Invalid time: %s"
+      (Printf.sprintf "invalid time: %s"
          (Date_time.Ymd_date_time.string_of_error
             (e :> Date_time.Ymd_date_time.error)))
 
@@ -68,7 +68,7 @@ let date' ~year ~month ~day : Date.t Angstrom.t =
   | Ok x -> return x
   | Error e ->
     fail
-      (Printf.sprintf "Invalid date: %s"
+      (Printf.sprintf "invalid date: %s"
          (Date_time.Ymd_date_time.string_of_error
             (e :> Date_time.Ymd_date_time.error)))
 
@@ -80,7 +80,7 @@ let date_time' date time =
   with
   | Error e ->
     fail
-      (Printf.sprintf "Invalid date time: %s"
+      (Printf.sprintf "invalid date time: %s"
          (Date_time.Ymd_date_time.string_of_error
             (e :> Date_time.Ymd_date_time.error)))
   | Ok x -> return x

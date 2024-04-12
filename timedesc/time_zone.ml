@@ -56,7 +56,7 @@ let check_table ((starts, entries) : table) : bool =
 let process_table ((starts, entries) : table) : record =
   let size = Bigarray.Array1.dim starts in
   assert (size = Array.length entries);
-  if size = 0 then invalid_arg "Time zone record table is empty"
+  if size = 0 then invalid_arg "time zone record table is empty"
   else
     let starts, entries =
       let first_start = starts.{0} in
@@ -118,7 +118,7 @@ let fixed_offset_name_parser =
        >>= fun (hour, minute) ->
        if hour < 24 && minute < 60 then
          return (Span.For_human'.make_exn ~sign ~hours:hour ~minutes:minute ())
-       else fail "Invalid offset")
+       else fail "invalid offset")
       <|> (end_of_input *> return Span.zero))
 
 let fixed_offset_of_name (s : string) : Span.t option =
@@ -165,7 +165,7 @@ let make_offset_only_exn offset =
     (make_offset_only offset)
 
 let utc : t =
-  Misc_utils.option_get_exn_or "Expected successful construction of UTC"
+  Misc_utils.option_get_exn_or "expected successful construction of UTC"
     (make_offset_only Span.zero)
 
 let bsearch_table timestamp ((starts, _) : table) =
@@ -233,7 +233,7 @@ let lookup_timestamp_local (t : t) timestamp : entry local_date_time_result =
         `Single x
       | Some x, Some y, None | Some x, None, Some y | None, Some x, Some y ->
         `Ambiguous (x, y)
-      | Some _, Some _, Some _ -> failwith "Unexpected case")
+      | Some _, Some _, Some _ -> failwith "unexpected case")
 
 module Raw = struct
   let to_transition_seq (t : t) : ((int64 * int64) * entry) Seq.t =
@@ -284,7 +284,7 @@ module Raw = struct
       Some { typ = Backed name; record = process_table table }
 
   let of_table_exn ~name table =
-    Misc_utils.option_get_exn_or "Failed to construct time zone from table"
+    Misc_utils.option_get_exn_or "failed to construct time zone from table"
       (of_table ~name table)
 
   let of_transitions ~name (l : (int64 * entry) list) : t option =
@@ -377,7 +377,7 @@ module Compressed_table = struct
     let indices =
       Array.init count (fun i ->
           let (index_to_relative_entry, _) =
-            Misc_utils.option_get_exn_or "Unexpected failure in relative entry lookup"
+            Misc_utils.option_get_exn_or "unexpected failure in relative entry lookup"
             @@
             Misc_utils.array_find_idx
               (fun x -> equal_relative_entry relative_entries.(i) x)
@@ -536,7 +536,7 @@ module Compressed_table = struct
   let of_string_exn s =
     match of_string s with
     | Some x -> x
-    | None -> invalid_arg "Failed to deserialize compressed table"
+    | None -> invalid_arg "failed to deserialize compressed table"
 end
 
 module Compressed = struct
@@ -580,7 +580,7 @@ module Compressed = struct
   let of_string_exn s =
     match of_string s with
     | Some x -> x
-    | None -> invalid_arg "Failed to deserialize compressed time zone"
+    | None -> invalid_arg "failed to deserialize compressed time zone"
 end
 
 module Db = struct
@@ -652,7 +652,7 @@ module Db = struct
     let half_compressed_of_string_exn s =
       match half_compressed_of_string s with
       | Some x -> x
-      | None -> invalid_arg "Failed to deserialize compressed tzdb"
+      | None -> invalid_arg "failed to deserialize compressed tzdb"
 
     let of_string s : db option =
       match half_compressed_of_string s with
@@ -666,7 +666,7 @@ module Db = struct
     let of_string_exn s : db =
       match of_string s with
       | Some m -> m
-      | None -> invalid_arg "Failed to deserialize compressed tzdb"
+      | None -> invalid_arg "failed to deserialize compressed tzdb"
   end
 end
 
@@ -730,6 +730,6 @@ let local () : t option =
 
 let local_exn () : t =
   Misc_utils.option_get_exn_or
-    "local_exn: Could not determine the local timezone"
+    "local_exn: could not determine the local timezone"
     (local ())
 

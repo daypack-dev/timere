@@ -29,7 +29,7 @@ let get_divisor frac_s =
   | 7 -> frac_s_7_divisor
   | 8 -> frac_s_8_divisor
   | 9 -> frac_s_9_divisor
-  | _ -> failwith "Unexpected case"
+  | _ -> failwith "unexpected case"
 
 let deduce_smallest_lossless_frac_s ~ns =
   if ns = 0 then 0
@@ -123,7 +123,7 @@ module Format_string_parsers = struct
             >>= (fun x ->
                 return
                   (map_string_to_size_and_casing x
-                     (Misc_utils.option_get_exn_or "Expected valid month"
+                     (Misc_utils.option_get_exn_or "expected valid month"
                       @@ full_string_of_month month)))
                 <|> (padding >>= fun padding -> return (pad_int padding month)));
         (string "day:"
@@ -177,7 +177,7 @@ module Format_string_parsers = struct
          option smallest_lossless_frac_s nat_zero
          >>= fun frac_s ->
          if frac_s > 9 then
-           fail "Number of digits after decimal separator cannot be > 9"
+           fail "number of digits after decimal separator cannot be > 9"
          else return (string_of_s_frac ~sep ~frac_s ~ns));
         (string "tzoff-sign"
          *> commit
@@ -240,7 +240,7 @@ module Format_string_parsers = struct
       option smallest_lossless_frac_s nat_zero
       >>= fun frac_s ->
       if frac_s > 9 then
-        fail "Number of digits after decimal separator cannot be > 9"
+        fail "number of digits after decimal separator cannot be > 9"
       else
         char 'X'
         *> non_curly_bracket_string

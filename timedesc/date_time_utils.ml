@@ -75,7 +75,7 @@ let weekday_of_jd jd =
   | 4 -> `Mon
   | 5 -> `Tue
   | 6 -> `Wed
-  | _ -> failwith "Unexpected case"
+  | _ -> failwith "unexpected case"
 
 let weekday_of_ymd ~year ~month ~day =
   weekday_of_jd (jd_of_ymd ~year ~month ~day)
@@ -103,14 +103,14 @@ let day_offset_from_start_of_year ~year ~month =
     | 10 -> 273
     | 11 -> 304
     | 12 -> 334
-    | _ -> failwith "Unexpected case"
+    | _ -> failwith "unexpected case"
   in
   if is_leap_year ~year then if month > 2 then aux month + 1 else aux month
   else aux month
 
 let md_of_ydoy ~year ~day_of_year : int * int =
   let rec aux ~month =
-    if month < 1 then failwith "Unexpected case"
+    if month < 1 then failwith "unexpected case"
     else
       let offset = day_offset_from_start_of_year ~year ~month in
       if offset + 1 <= day_of_year then month else aux ~month:(pred month)
@@ -221,7 +221,7 @@ let day_count_of_month ~year ~month =
   | 10 -> 31
   | 11 -> 30
   | 12 -> 31
-  | _ -> invalid_arg "Invalid month"
+  | _ -> invalid_arg "invalid month"
 
 let full_string_of_weekday (wday : weekday) : string =
   match wday with
