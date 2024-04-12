@@ -406,7 +406,7 @@ module Span : sig
 
   val ( + ) : t -> t -> t
 
-  (** {1 Pretty printing} *)
+  (** {1 Pretty-printing} *)
 
   val to_string : t -> string
 
@@ -511,10 +511,10 @@ module Span : sig
 
     val view : t -> view
 
-    (** {1 Pretty printing} *)
+    (** {1 Pretty-printing} *)
 
     val pp : ?format:string -> unit -> Format.formatter -> t -> unit
-    (** Pretty printing for span.
+    (** Pretty-printing for span.
      *
      *  Default format string:
         {v
@@ -621,7 +621,7 @@ module Ym : sig
 
   val diff_months : t -> t -> int
 
-  (** {1 Pretty printing} *)
+  (** {1 Pretty-printing} *)
 
   val pp_iso8601 : Format.formatter -> t -> unit
 
@@ -679,7 +679,7 @@ module ISO_week : sig
 
   val diff_weeks : t -> t -> int
 
-  (** {1 Pretty printing} *)
+  (** {1 Pretty-printing} *)
 
   val pp_iso8601 : Format.formatter -> t -> unit
 
@@ -743,7 +743,7 @@ module Date : sig
 
   val diff_days : t -> t -> int
 
-  (** {1 Pretty printing} *)
+  (** {1 Pretty-printing} *)
 
   val pp_rfc3339 : Format.formatter -> t -> unit
 
@@ -798,7 +798,7 @@ module Date : sig
 
     val view : t -> view
 
-    (** {1 Pretty printing} *)
+    (** {1 Pretty-printing} *)
 
     val pp_iso8601 : Format.formatter -> t -> unit
 
@@ -844,7 +844,7 @@ module Date : sig
 
     val view : t -> view
 
-    (** {1 Pretty printing} *)
+    (** {1 Pretty-printing} *)
 
     val pp_iso8601 : Format.formatter -> t -> unit
 
@@ -887,7 +887,7 @@ module Date : sig
 
     val view : t -> view
 
-    (** {1 Pretty printing} *)
+    (** {1 Pretty-printing} *)
 
     val pp_iso8601 : Format.formatter -> t -> unit
 
@@ -997,7 +997,7 @@ module Time : sig
 
   val of_span : Span.t -> t option
 
-  (** {1 Pretty printing} *)
+  (** {1 Pretty-printing} *)
 
   val pp_rfc3339 : ?frac_s:int -> unit -> Format.formatter -> t -> unit
 
@@ -1398,13 +1398,13 @@ val max_val : t
 
 val now : ?tz_of_date_time:Time_zone.t -> unit -> t
 
-(** {2 Pretty printing} *)
+(** {2 Pretty-printing} *)
 
 exception Date_time_cannot_deduce_offset_from_utc of t
 
 val pp : ?format:string -> unit -> Format.formatter -> t -> unit
 (**
-     Pretty printing for date time.
+     Pretty-printing for date time.
 
      Default format string:
    {v
@@ -1461,7 +1461,7 @@ val to_string : ?format:string -> t -> string
 
 val pp_rfc3339 : ?frac_s:int -> unit -> Format.formatter -> t -> unit
 (**
-     Pretty prints according to RFC3339, e.g. [2020-01-20T13:00:00.0001+10].
+     Pretty-prints according to RFC3339, e.g. [2020-01-20T13:00:00.0001+10].
 
      [frac_s] defaults to as many digits as required for a lossless representation.
 
@@ -1654,7 +1654,7 @@ module Timestamp : sig
 
   val ( + ) : t -> t -> t
 
-  (** {1 Pretty printing} *)
+  (** {1 Pretty-printing} *)
 
   val pp :
     ?display_using_tz:Time_zone.t ->
@@ -1663,7 +1663,7 @@ module Timestamp : sig
     Format.formatter ->
     t ->
     unit
-  (** Pretty printing for timestamp.
+  (** Pretty-printing for timestamp.
 
       Follows same format string rules and default format string as {!val:pp}.
   *)
@@ -1673,7 +1673,7 @@ module Timestamp : sig
 
   val pp_rfc3339 : ?frac_s:int -> unit -> Format.formatter -> t -> unit
   (**
-     Pretty prints according to RFC3339, e.g. [2020-01-20T13:00:00.0001+10].
+     Pretty-prints according to RFC3339, e.g. [2020-01-20T13:00:00.0001+10].
 
      [frac_s] determines the number of fractional digits to include.
 
@@ -1775,7 +1775,7 @@ module Interval : sig
 
   val compare : t -> t -> int
 
-  (** {1 Pretty printing} *)
+  (** {1 Pretty-printing} *)
 
   val pp :
     ?display_using_tz:Time_zone.t ->
@@ -1784,7 +1784,7 @@ module Interval : sig
     Format.formatter ->
     t ->
     unit
-  (** Pretty printing for interval.
+  (** Pretty-printing for interval.
 
         Default format string:
       {v
@@ -1958,7 +1958,7 @@ module ISO_week_date_time : sig
     unit ->
     t
 
-  (** {1 Pretty printing} *)
+  (** {1 Pretty-printing} *)
 
   val pp_iso8601 : ?frac_s:int -> unit -> Format.formatter -> t -> unit
 
@@ -2056,7 +2056,7 @@ module ISO_ord_date_time : sig
     unit ->
     t
 
-  (** {1 Pretty printing} *)
+  (** {1 Pretty-printing} *)
 
   val pp_iso8601 : ?frac_s:int -> unit -> Format.formatter -> t -> unit
 
