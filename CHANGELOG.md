@@ -14,6 +14,8 @@
 
 - Fixed `12hour` handling in pretty-printer
 
+    - See [issue #79](https://github.com/daypack-dev/timere/issues/79)
+
 - Added `am/pm` to format string
 
 - Replaced `pretty print` with `pretty-print` to be consistent with
