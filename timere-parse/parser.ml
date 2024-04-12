@@ -154,20 +154,20 @@ let parse_month (s : string) : (int, unit) CCResult.t =
 let weekday_p : (Timedesc.weekday, unit) t =
   alpha_string
   >>= fun x ->
-  if String.length x < 3 then fail (Printf.sprintf "String too short")
+  if String.length x < 3 then fail (Printf.sprintf "string too short")
   else
     match parse_weekday x with
     | Ok x -> return x
-    | Error _ -> fail (Printf.sprintf "Failed to interpret weekday string")
+    | Error _ -> fail (Printf.sprintf "failed to interpret weekday string")
 
 let month_p : (int, unit) t =
   alpha_string
   >>= fun x ->
-  if String.length x < 3 then fail (Printf.sprintf "String too short")
+  if String.length x < 3 then fail (Printf.sprintf "string too short")
   else
     match parse_month x with
     | Ok x -> return x
-    | Error _ -> fail (Printf.sprintf "Failed to interpret month string: %s" x)
+    | Error _ -> fail (Printf.sprintf "failed to interpret month string: %s" x)
 
 let symbols = "()[]&|>"
 
@@ -249,7 +249,7 @@ let token_p : (token, unit) MParser.t =
        >>= fun s ->
        fail_if_op s
        >> fail
-         (Printf.sprintf "%s: Unrecognized token: %s" (string_of_pos pos) s));
+         (Printf.sprintf "%s: unrecognized token: %s" (string_of_pos pos) s));
     ]
   >>= fun (guess, original_str) -> spaces >> return (pos, guess, original_str)
 
@@ -493,19 +493,19 @@ module Ast_normalize = struct
           if 0 <= hour && hour <= 24 then hour
           else
             invalid_data
-              (Printf.sprintf "%s: Invalid hour: %d" (string_of_pos pos_hour)
+              (Printf.sprintf "%s: invalid hour: %d" (string_of_pos pos_hour)
                  hour)
         | Hms_am ->
           if 1 <= hour && hour <= 12 then hour mod 12
           else
             invalid_data
-              (Printf.sprintf "%s: Invalid hour: %d am"
+              (Printf.sprintf "%s: invalid hour: %d am"
                  (string_of_pos pos_hour) hour)
         | Hms_pm ->
           if 1 <= hour && hour <= 12 then (hour mod 12) + 12
           else
             invalid_data
-              (Printf.sprintf "%s: Invalid hour: %d pm"
+              (Printf.sprintf "%s: invalid hour: %d pm"
                  (string_of_pos pos_hour) hour)
       in
       if 0 <= minute && minute < 60 then
@@ -517,7 +517,7 @@ module Ast_normalize = struct
                 Hms (Timedesc.Time.make_exn ~hour ~minute ~second ()) )
             else
               invalid_data
-                (Printf.sprintf "%s: Invalid hms: %d:%d:%d"
+                (Printf.sprintf "%s: invalid hms: %d:%d:%d"
                    (string_of_pos pos_hour) hour minute second)
           else
             ( pos_hour,
@@ -525,16 +525,16 @@ module Ast_normalize = struct
               Hms (Timedesc.Time.make_exn ~hour ~minute ~second ()) )
         else
           invalid_data
-            (Printf.sprintf "%s: Invalid second: %d"
+            (Printf.sprintf "%s: invalid second: %d"
                (string_of_pos
-                @@ CCOption.get_exn_or "Expected pos_second to be Some _"
+                @@ CCOption.get_exn_or "expected pos_second to be Some _"
                 @@ pos_second)
                minute)
       else
         invalid_data
-          (Printf.sprintf "%s: Invalid minute: %d"
+          (Printf.sprintf "%s: invalid minute: %d"
              (string_of_pos
-              @@ CCOption.get_exn_or "Expected pos_minute to be Some _"
+              @@ CCOption.get_exn_or "expected pos_minute to be Some _"
               @@ pos_minute)
              minute)
     in
@@ -607,7 +607,7 @@ module Ast_normalize = struct
 
   let recognize_span (l : token list) : token list =
     let make_span ~pos ~days ~hours ~minutes ~seconds =
-      ( CCOption.get_exn_or "Expected pos to be Some _" pos,
+      ( CCOption.get_exn_or "expected pos to be Some _" pos,
         text_map_empty,
         Span
           (Timedesc.Span.For_human.make_frac_exn
@@ -863,7 +863,7 @@ let parse_into_ast (s : string) : (ast, string) CCResult.t =
      >>= fun pos ->
      attempt eof
      >> return e
-        <|> fail (Printf.sprintf "Expected EOI, pos: %s" (string_of_pos pos)))
+        <|> fail (Printf.sprintf "expected EOI, pos: %s" (string_of_pos pos)))
     s ()
   |> result_of_mparser_result
 
@@ -883,35 +883,35 @@ let flatten_months pos (l : int Timere.range list) : int list rule_result =
   match Timere.Utils.flatten_month_range_list l with
   | Some x -> `Some x
   | None ->
-    `Error (Printf.sprintf "%s: Invalid month ranges" (string_of_pos pos))
+    `Error (Printf.sprintf "%s: invalid month ranges" (string_of_pos pos))
 
 let flatten_iso_weeks pos (l : int Timere.range list) : int list rule_result =
   match Timere.Utils.flatten_iso_week_range_list l with
   | Some x -> `Some x
   | None ->
-    `Error (Printf.sprintf "%s: Invalid iso week ranges" (string_of_pos pos))
+    `Error (Printf.sprintf "%s: invalid iso week ranges" (string_of_pos pos))
 
 let flatten_weekdays pos (l : Timedesc.weekday Timere.range list) :
   Timedesc.weekday list rule_result =
   match Timere.Utils.flatten_weekday_range_list l with
   | Some x -> `Some x
   | None ->
-    `Error (Printf.sprintf "%s: Invalid weekday ranges" (string_of_pos pos))
+    `Error (Printf.sprintf "%s: invalid weekday ranges" (string_of_pos pos))
 
 let flatten_month_days pos (l : int Timere.range list) : int list rule_result =
   match Timere.Utils.flatten_month_day_range_list l with
   | Some x -> `Some x
   | None ->
-    `Error (Printf.sprintf "%s: Invalid month day ranges" (string_of_pos pos))
+    `Error (Printf.sprintf "%s: invalid month day ranges" (string_of_pos pos))
 
 let pattern ?(years = []) ?(months = []) ?pos_days ?(days = []) ?(weekdays = [])
     ?(hms : Timedesc.Time.t option) () : Timere.t rule_result =
   let module T = Timedesc.Time in
   if not (List.for_all (fun x -> 1 <= x && x <= 31) days) then
     `Error
-      (Printf.sprintf "%s: Invalid month days"
+      (Printf.sprintf "%s: invalid month days"
          (string_of_pos
-          @@ CCOption.get_exn_or "Expected pos_days to be Some _"
+          @@ CCOption.get_exn_or "expected pos_days to be Some _"
           @@ pos_days))
   else
     let f = Timere.pattern ~years ~months ~days ~weekdays in
@@ -928,9 +928,9 @@ let points ?year ?month ?pos_day ?day ?weekday ?(hms : Timedesc.Time.t option)
   match day with
   | Some day when not (1 <= day && day <= 31) ->
     `Error
-      (Printf.sprintf "%s: Invalid month days"
+      (Printf.sprintf "%s: invalid month days"
          (string_of_pos
-          @@ CCOption.get_exn_or "Expected pos_day to be Some _"
+          @@ CCOption.get_exn_or "expected pos_day to be Some _"
           @@ pos_day))
   | _ -> (
       match (year, month, day, weekday, hms) with
@@ -1629,7 +1629,7 @@ let t_of_tokens (tokens : token list) : (Timere.t, string) CCResult.t =
     | [] ->
       let pos, _, _ = List.hd tokens in
       Error
-        (Printf.sprintf "%s: Unrecognized token pattern" (string_of_pos pos))
+        (Printf.sprintf "%s: unrecognized token pattern" (string_of_pos pos))
     | rule :: rest -> (
         match rule tokens with
         | `Some time -> Ok time
@@ -1663,7 +1663,7 @@ let t_of_ast (ast : ast) : (Timere.t, string) CCResult.t =
         | Error msg -> Error msg
         | Ok _l ->
           (* Ok (Timere.round_robin_pick l) *)
-          failwith "Unimplemented")
+          failwith "unimplemented")
   in
   aux ast
 
@@ -1688,22 +1688,22 @@ let date_time_t_of_ast ~tz (ast : ast) : (Timedesc.t, string) CCResult.t =
               ~second:(Timedesc.Time.second hms) ~tz ()
           with
           | Ok x -> Ok x
-          | Error _ -> Error "Invalid date time")
+          | Error _ -> Error "invalid date time")
     | Tokens [ (_, _, Ymd ((_, year), (_, month), (_, day))) ] -> (
         match
           Timedesc.make ~year ~month ~day ~hour:0 ~minute:0 ~second:0 ~tz ()
         with
         | Ok x -> Ok x
-        | Error _ -> Error "Invalid date time")
+        | Error _ -> Error "invalid date time")
     | Unary_op (With_time_zone tz, ast) -> aux tz ast
-    | _ -> Error "Unrecognized pattern"
+    | _ -> Error "unrecognized pattern"
   in
   aux tz ast
 
 let hms_t_of_ast (ast : ast) : (Timedesc.Time.t, string) CCResult.t =
   match ast with
   | Tokens [ (_, _, Hms hms) ] -> Ok hms
-  | _ -> Error "Unrecognized pattern"
+  | _ -> Error "unrecognized pattern"
 
 let parse_date_time ?(tz = Timedesc.Utils.get_local_tz_for_arg ()) s =
   match parse_into_ast s with
@@ -1724,7 +1724,7 @@ let parse_hms s =
 let span_t_of_ast (ast : ast) : (Timedesc.Span.t, string) CCResult.t =
   match ast with
   | Tokens [ (_, _, Span span) ] -> Ok span
-  | _ -> Error "Unrecognized pattern"
+  | _ -> Error "unrecognized pattern"
 
 let parse_span s =
   match parse_into_ast s with

@@ -29,13 +29,13 @@ let nat_zero : (int, unit) t =
   num_string
   >>= fun s ->
   try return (int_of_string s)
-  with _ -> fail (Printf.sprintf "Integer %s is out of range" s)
+  with _ -> fail (Printf.sprintf "integer %s is out of range" s)
 
 let nat_zero_w_original_str : (int * string, unit) t =
   num_string
   >>= fun s ->
   try return (int_of_string s, s)
-  with _ -> fail (Printf.sprintf "Integer %s is out of range" s)
+  with _ -> fail (Printf.sprintf "integer %s is out of range" s)
 
 let one_digit_nat_zero : (int, unit) t =
   digit >>= fun c -> return (int_of_string (Printf.sprintf "%c" c))
@@ -56,7 +56,7 @@ let float_non_neg : (float, unit) t =
   >>= fun y ->
   let s = x ^ "." ^ y in
   try return (float_of_string s)
-  with _ -> fail (Printf.sprintf "Float %s is out of range" s)
+  with _ -> fail (Printf.sprintf "float %s is out of range" s)
 
 let comma : (char, unit) t = char ','
 
@@ -105,7 +105,7 @@ let string_of_pos pos =
  *               <|> ( get_pos
  *                     >>= fun pos ->
  *                     any_string
- *                     >>= fun s -> (fail (Printf.sprintf "Invalid syntax: %s, pos: %s" s (string_of_pos pos) )) )
+ *                     >>= fun s -> (fail (Printf.sprintf "invalid syntax: %s, pos: %s" s (string_of_pos pos) )) )
  *             )
  *             s
  *             ()
@@ -147,7 +147,7 @@ let result_of_mparser_result (x : 'a result) : ('a, string) Stdlib.result =
   | Success x -> Ok x
   | Failed (_, err) -> (
       match err with
-      | No_error -> Error "Unknown error"
+      | No_error -> Error "unknown error"
       | Parse_error (pos, msgs) -> (
           match
             List.fold_left
@@ -158,11 +158,11 @@ let result_of_mparser_result (x : 'a result) : ('a, string) Stdlib.result =
                      match msg with
                      | Unexpected_error s ->
                        Some
-                         (Printf.sprintf "Unexpected: %s, pos: %s" s
+                         (Printf.sprintf "unexpected: %s, pos: %s" s
                             (string_of_pos pos))
                      | Expected_error s ->
                        Some
-                         (Printf.sprintf "Expected: %s, pos: %s" s
+                         (Printf.sprintf "expected: %s, pos: %s" s
                             (string_of_pos pos))
                      | Message_error s -> Some s
                      | Compound_error (s, _) -> Some s
@@ -172,5 +172,5 @@ let result_of_mparser_result (x : 'a result) : ('a, string) Stdlib.result =
           with
           | None ->
             Error
-              (Printf.sprintf "Unknown error, pos: %s" (string_of_pos pos))
+              (Printf.sprintf "unknown error, pos: %s" (string_of_pos pos))
           | Some s -> Error s))
