@@ -132,7 +132,7 @@ let string_of_pos pos =
  *   x >>= aux *)
 
 let invalid_syntax ~text ~pos =
-  fail (Printf.sprintf "Invalid syntax: %s, pos: %s" text (string_of_pos pos))
+  fail (Printf.sprintf "invalid syntax: %s, pos: %s" text (string_of_pos pos))
 
 let extraneous_text_check ~end_markers =
   spaces
