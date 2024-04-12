@@ -4,11 +4,19 @@
 
 - Added ISO week recognition rule with keyword `iso-week`
 
+- Changed error messages to not be capitalized
+
+    - See [issue #78](https://github.com/daypack-dev/timere/issues/78)
+
 ## Timere 0.9.0
 
 - Added ISO week pattern
 
   - `iso_week_pattern`, `iso_years`, `iso_year_ranges`, `iso_weeks`, `iso_week_ranges`
+
+- Changed error messages to not be capitalized
+
+    - See [issue #78](https://github.com/daypack-dev/timere/issues/78)
 
 ## Timedesc 3.1.0
 
@@ -20,6 +28,10 @@
 
 - Replaced `pretty print` with `pretty-print` to be consistent with
   upstream stdlib Format, and fmt package documentation
+
+- Changed error messages to not be capitalized
+
+    - See [issue #78](https://github.com/daypack-dev/timere/issues/78)
 
 ## Timedesc 3.0.0
 
