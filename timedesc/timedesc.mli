@@ -523,36 +523,36 @@ module Span : sig
 
         Format string specification:
         {v
-        {{                      literal {
-        {days:unit}             number of days
-                                unit is the string used after the number to denote its unit
-        {days-nz:unit}          same as above, but does not display if number is zero
+        {{                      Literal {
+        {days:unit}             Number of days
+                                Unit is the string used after the number to denote its unit
+        {days-nz:unit}          Same as above, but does not display if number is zero
 
-        {hours:cXunit}          number of hour, sub-day
-                                character 'c' before 'X' is used for padding
-                                (leave out character for no padding)
-                                unit is the string used after the number to denote its unit
-        {hours-nz:cXunit}       same as above, but does not display if number is zero
+        {hours:cXunit}          Number of hour, sub-day
+                                Character 'c' before 'X' is used for padding
+                                (leave out character for no padding, e.g. {hours:Xunit})
+                                Unit is the string used after the number to denote its unit
+        {hours-nz:cXunit}       Same as above, but does not display if number is zero
 
-        {mins:cXunit}           number of minutes, sub-hour
-                                character 'c' before 'X' is used for padding
-                                (leave out character for no padding)
-                                unit is the string used after the number to denote its unit
-        {mins-nz:cXunit}        same as above, but does not display if number is zero
+        {mins:cXunit}           Number of minutes, sub-hour
+                                Character 'c' before 'X' is used for padding
+                                (leave out character for no padding, e.g. {mins:Xunit})
+                                Unit is the string used after the number to denote its unit
+        {mins-nz:cXunit}        Same as above, but does not display if number is zero
 
-        {secs:cXunit}           number of seconds, sub-minute
-                                character 'c' before 'X' is used for padding
-                                (leave out character for no padding)
-                                unit is the string used after the number to denote its unit
-        {secs-nz:cXunit}        same as above, but does not display if number is zero
+        {secs:cXunit}           Number of seconds, sub-minute
+                                Character 'c' before 'X' is used for padding
+                                (leave out character for no padding, e.g. {secs:Xunit})
+                                Unit is the string used after the number to denote its unit
+        {secs-nz:cXunit}        Same as above, but does not display if number is zero
 
-        {sec-frac:cNXunit}      fraction of second, sub-second
+        {sec-frac:cNXunit}      Fraction of second, sub-second
                                 N determines the number of digits to take after decimal separator
-                                if N is not specified, then the smallest number of digits required
+                                If N is not specified, then the smallest number of digits required
                                 after decimal separator for a lossless representation is used
-                                character c is used as the decimal separator
-                                unit is the string used after the number to denote its unit
-        {secs-frac-nz:cNXunit}  same as above, but does not display if nanosecond count is
+                                Character c is used as the decimal separator
+                                Unit is the string used after the number to denote its unit
+        {secs-frac-nz:cNXunit}  Same as above, but does not display if nanosecond count is
                                 zero
         v}
      * *)
@@ -1415,39 +1415,54 @@ val pp : ?format:string -> unit -> Format.formatter -> t -> unit
      Format string specification:
    {v
 {{               literal {
-{year}           year
-{mon:Xxx}        abbreviated month name (e.g. Jan), casing of 'x' controls the casing
-{mon:Xx*}        full month name (e.g. January), casing of first 'x' controls casing of first letter,
+{year}           Year
+
+{mon:Xxx}        Abbreviated month name (e.g. Jan), casing of 'X'/'x' controls the casing
+{mon:Xx*}        Full month name (e.g. January), casing of first 'X'/'x' controls casing of first letter,
                  casing of second 'x' controls casing of following letters
-{mon:cX}         month in number form (e.g. 01) character 'c' before 'X' is used for padding
-                 (leave out character for no padding)
-{day:cX}         month day (e.g.  1) character 'c' before 'X' is used for padding
-                 (leave out character for no padding)
-{wday:Xxx}       abbreviated weekday name (e.g. Sun), the casing of 'x' controls the casing
-{wday:Xx*}       full weekday name (e.g. Sunday), casing of first 'x' controls casing of first letter,
-                 casing of second 'x' controls casing of following letters
-{hour:cX}        hour in 24-hour format, character 'c' before 'X' determines padding
-                 (leave out character for no padding)
-{12hour:cX}      hour in 12-hour format, character 'c' before 'X' determines padding
-                 (leave out character for no padding)
-{min:cX}         minute, character 'c' before 'X' determines padding
-                 (leave out character for no padding)
-{sec:cX}         second, character 'c' before 'X' determines padding
-                 (leave out character for no padding)
-{ns}             nanosecond
-{sec-frac:cN}    fraction of second
-                 character c is used as the decimal separator
+{mon:cX}         Month in number form (e.g. 01) character 'c' before 'X' is used for padding
+                 (leave out character for no padding, e.g. {mon:X})
+
+{day:cX}         Month day (e.g.  1) character 'c' before 'X' is used for padding
+                 (leave out character for no padding, e.g. {day:X})
+
+{wday:Xxx}       Abbreviated weekday name (e.g. Sun), the casing of 'X'/'x' controls the casing
+{wday:Xx*}       Full weekday name (e.g. Sunday), casing of first 'X'/'x' controls casing of first letter,
+                 casing of second 'X'/'x' controls casing of following letters
+
+{hour:cX}        Hour in 24-hour format, character 'c' before 'X' determines padding
+                 (leave out character for no padding, e.g. {hour:X})
+
+{12hour:cX}      Hour in 12-hour format, character 'c' before 'X' determines padding
+                 (leave out character for no padding, e.g. {12hour:X})
+{am/pm:XX}       AM/PM indicator, the casing of 'X'/'x' controls the casing
+{am/pm:x.x.}     Same as above, but with periods, e.g. "a.m."
+
+{min:cX}         Minute, character 'c' before 'X' determines padding
+                 (leave out character for no padding, e.g. {min:X})
+
+{sec:cX}         Second, character 'c' before 'X' determines padding
+                 (leave out character for no padding, e.g. {sec:X})
+
+{ns}             Nanosecond
+
+{sec-frac:cN}    Fraction of second
+                 Character c is used as the decimal separator
                  N determines the number of digits to take after decimal separator
                  if N is not specified, then the smallest number of digits required
                  after decimal separator for a lossless representation is used
                  result is truncated to said number of digits
-{tzoff-sign}     time zone offset sign ('+' or '-')
+
+{tzoff-sign}     Time zone offset sign ('+' or '-')
                  raises Date_time_cannot_deduce_offset_from_utc if time zone offset cannot be calculated
-{tzoff-hour:cX}  time zone offset hour, follows same padding rule as "{hour:cX}"
+
+{tzoff-hour:cX}  Time zone offset hour, follows same padding rule as "{hour:cX}"
                  raises Date_time_cannot_deduce_offset_from_utc if time zone offset cannot be calculated
-{tzoff-min:cX}   time zone offset minute, follows same padding rule as "{min:cX}"
+
+{tzoff-min:cX}   Time zone offset minute, follows same padding rule as "{min:cX}"
                  raises Date_time_cannot_deduce_offset_from_utc if time zone offset cannot be calculated
-{tzoff-sec:cX}   time zone offset second, follows same padding rule as "{sec:cX}"
+
+{tzoff-sec:cX}   Time zone offset second, follows same padding rule as "{sec:cX}"
                  raises Date_time_cannot_deduce_offset_from_utc if time zone offset cannot be calculated
      v}
 *)
