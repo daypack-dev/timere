@@ -1414,7 +1414,7 @@ val pp : ?format:string -> unit -> Format.formatter -> t -> unit
 
      Format string specification:
    {v
-{{               literal {
+{{               Literal {
 {year}           Year
 
 {mon:Xxx}        Abbreviated month name (e.g. Jan), casing of 'X'/'x' controls the casing
