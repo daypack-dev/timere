@@ -1155,6 +1155,30 @@ module Alco = struct
        |> CCResult.get_exn
        |> Timedesc.to_string ~format:"{sec-frac:.6}")
 
+  let to_string_tzoff_sign_case0 () =
+    Alcotest.(check string)
+      "same string"
+      "+"
+      (Timedesc.of_iso8601 "2020-01-02T10:30:40.1234Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{tzoff-sign}")
+
+  let to_string_tzoff_sign_case1 () =
+    Alcotest.(check string)
+      "same string"
+      "+"
+      (Timedesc.of_iso8601 "2020-01-02T10:30:40.123456789+10"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{tzoff-sign}")
+
+  let to_string_tzoff_sign_case2 () =
+    Alcotest.(check string)
+      "same string"
+      "-"
+      (Timedesc.of_iso8601 "2020-01-02T10:30:40.123456789-10"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{tzoff-sign}")
+
   let suite =
     [
       Alcotest.test_case "leap_second0" `Quick leap_second0;
@@ -1307,6 +1331,9 @@ module Alco = struct
       Alcotest.test_case "to_string_sec_frac_case_b1" `Quick to_string_sec_frac_case_b1;
       Alcotest.test_case "to_string_sec_frac_case_c0" `Quick to_string_sec_frac_case_c0;
       Alcotest.test_case "to_string_sec_frac_case_c1" `Quick to_string_sec_frac_case_c1;
+      Alcotest.test_case "to_string_tzoff_sign_case0" `Quick to_string_tzoff_sign_case0;
+      Alcotest.test_case "to_string_tzoff_sign_case1" `Quick to_string_tzoff_sign_case1;
+      Alcotest.test_case "to_string_tzoff_sign_case2" `Quick to_string_tzoff_sign_case2;
     ]
 end
 
