@@ -1447,7 +1447,7 @@ val pp : ?format:string -> unit -> Format.formatter -> t -> unit
 {ns}             Nanosecond
 
 {sec-frac:cN}    Fraction of second
-                 Character c is used as the decimal separator
+                 Character c is used as the decimal separator and is mandatory
                  N determines the number of digits to take after decimal separator
                  If N is not specified, then the smallest number of digits required
                  after decimal separator for a lossless representation is used
