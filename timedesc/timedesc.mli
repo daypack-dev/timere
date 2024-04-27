@@ -1449,7 +1449,7 @@ val pp : ?format:string -> unit -> Format.formatter -> t -> unit
 {sec-frac:cN}    Fraction of second
                  Character c is used as the decimal separator
                  N determines the number of digits to take after decimal separator
-                 if N is not specified, then the smallest number of digits required
+                 If N is not specified, then the smallest number of digits required
                  after decimal separator for a lossless representation is used
                  result is truncated to said number of digits
 
