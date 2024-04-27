@@ -150,16 +150,29 @@ module Format_string_parsers = struct
          in
          return (pad_int padding hour));
         (string "am/pm:"
-         *> commit
          *> case
          >>= fun case1 ->
          case
          >>= fun case2 ->
+         commit *>
          let c1, c2 =
            if hour < 12 then ('a', 'm')
            else ('p', 'm')
          in
          return (Printf.sprintf "%c%c"
+                   (map_char_to_case case1 c1) (map_char_to_case case2 c2)));
+        (string "am/pm:"
+         *> case
+         >>= fun case1 ->
+         char '.' *> commit *>
+         case
+         >>= fun case2 ->
+         char '.' *>
+         let c1, c2 =
+           if hour < 12 then ('a', 'm')
+           else ('p', 'm')
+         in
+         return (Printf.sprintf "%c.%c."
                    (map_char_to_case case1 c1) (map_char_to_case case2 c2)));
         (string "min:"
          *> commit
