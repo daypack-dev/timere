@@ -963,6 +963,198 @@ module Alco = struct
        |> CCResult.get_exn
        |> Timedesc.to_string ~format:"{12hour:0X}{am/pm:xx}")
 
+  let to_string_min_case_a0 () =
+    Alcotest.(check string)
+      "same string"
+      "4"
+      (Timedesc.of_iso8601 "2020-01-02T03:04:60Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{min:X}")
+
+  let to_string_min_case_a1 () =
+    Alcotest.(check string)
+      "same string"
+      "04"
+      (Timedesc.of_iso8601 "2020-01-02T03:04:60Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{min:0X}")
+
+  let to_string_min_case_a2 () =
+    Alcotest.(check string)
+      "same string"
+      " 4"
+      (Timedesc.of_iso8601 "2020-01-02T03:04:60Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{min: X}")
+
+  let to_string_min_case_a3 () =
+    Alcotest.(check string)
+      "same string"
+      "_4"
+      (Timedesc.of_iso8601 "2020-01-02T03:04:60Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{min:_X}")
+
+  let to_string_min_case_b0 () =
+    Alcotest.(check string)
+      "same string"
+      "40"
+      (Timedesc.of_iso8601 "2020-01-02T10:40:60Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{min:X}")
+
+  let to_string_min_case_b1 () =
+    Alcotest.(check string)
+      "same string"
+      "40"
+      (Timedesc.of_iso8601 "2020-01-02T10:40:60Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{min:0X}")
+
+  let to_string_min_case_b2 () =
+    Alcotest.(check string)
+      "same string"
+      "40"
+      (Timedesc.of_iso8601 "2020-01-02T10:40:60Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{min: X}")
+
+  let to_string_min_case_b3 () =
+    Alcotest.(check string)
+      "same string"
+      "40"
+      (Timedesc.of_iso8601 "2020-01-02T10:40:60Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{min:_X}")
+
+  let to_string_sec_case_a0 () =
+    Alcotest.(check string)
+      "same string"
+      "4"
+      (Timedesc.of_iso8601 "2020-01-02T03:30:04Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{sec:X}")
+
+  let to_string_sec_case_a1 () =
+    Alcotest.(check string)
+      "same string"
+      "04"
+      (Timedesc.of_iso8601 "2020-01-02T03:30:04Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{sec:0X}")
+
+  let to_string_sec_case_a2 () =
+    Alcotest.(check string)
+      "same string"
+      " 4"
+      (Timedesc.of_iso8601 "2020-01-02T03:30:04Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{sec: X}")
+
+  let to_string_sec_case_a3 () =
+    Alcotest.(check string)
+      "same string"
+      "_4"
+      (Timedesc.of_iso8601 "2020-01-02T03:30:04Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{sec:_X}")
+
+  let to_string_sec_case_b0 () =
+    Alcotest.(check string)
+      "same string"
+      "40"
+      (Timedesc.of_iso8601 "2020-01-02T10:30:40Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{sec:X}")
+
+  let to_string_sec_case_b1 () =
+    Alcotest.(check string)
+      "same string"
+      "40"
+      (Timedesc.of_iso8601 "2020-01-02T10:30:40Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{sec:0X}")
+
+  let to_string_sec_case_b2 () =
+    Alcotest.(check string)
+      "same string"
+      "40"
+      (Timedesc.of_iso8601 "2020-01-02T10:30:40Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{sec: X}")
+
+  let to_string_sec_case_b3 () =
+    Alcotest.(check string)
+      "same string"
+      "40"
+      (Timedesc.of_iso8601 "2020-01-02T10:30:40Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{sec:_X}")
+
+  let to_string_ns_case0 () =
+    Alcotest.(check string)
+      "same string"
+      "123400000"
+      (Timedesc.of_iso8601 "2020-01-02T10:30:40.1234Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{ns}")
+
+  let to_string_ns_case1 () =
+    Alcotest.(check string)
+      "same string"
+      "123456789"
+      (Timedesc.of_iso8601 "2020-01-02T10:30:40.123456789Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{ns}")
+
+  let to_string_sec_frac_case_a0 () =
+    Alcotest.(check string)
+      "same string"
+      ".1234"
+      (Timedesc.of_iso8601 "2020-01-02T10:30:40.1234Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{sec-frac:.}")
+
+  let to_string_sec_frac_case_a1 () =
+    Alcotest.(check string)
+      "same string"
+      ".123456"
+      (Timedesc.of_iso8601 "2020-01-02T10:30:40.123456Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{sec-frac:.}")
+
+  let to_string_sec_frac_case_b0 () =
+    Alcotest.(check string)
+      "same string"
+      "_1234"
+      (Timedesc.of_iso8601 "2020-01-02T10:30:40.1234Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{sec-frac:_}")
+
+  let to_string_sec_frac_case_b1 () =
+    Alcotest.(check string)
+      "same string"
+      "_123456789"
+      (Timedesc.of_iso8601 "2020-01-02T10:30:40.123456789Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{sec-frac:_}")
+
+  let to_string_sec_frac_case_c0 () =
+    Alcotest.(check string)
+      "same string"
+      ".123400"
+      (Timedesc.of_iso8601 "2020-01-02T10:30:40.1234Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{sec-frac:.6}")
+
+  let to_string_sec_frac_case_c1 () =
+    Alcotest.(check string)
+      "same string"
+      ".123456"
+      (Timedesc.of_iso8601 "2020-01-02T10:30:40.123456789Z"
+       |> CCResult.get_exn
+       |> Timedesc.to_string ~format:"{sec-frac:.6}")
+
   let suite =
     [
       Alcotest.test_case "leap_second0" `Quick leap_second0;
@@ -1091,6 +1283,30 @@ module Alco = struct
       Alcotest.test_case "to_string_12hour_ampm_case0" `Quick to_string_12hour_ampm_case0;
       Alcotest.test_case "to_string_12hour_ampm_case1" `Quick to_string_12hour_ampm_case1;
       Alcotest.test_case "to_string_12hour_ampm_case2" `Quick to_string_12hour_ampm_case2;
+      Alcotest.test_case "to_string_min_case_a0" `Quick to_string_min_case_a0;
+      Alcotest.test_case "to_string_min_case_a1" `Quick to_string_min_case_a1;
+      Alcotest.test_case "to_string_min_case_a2" `Quick to_string_min_case_a2;
+      Alcotest.test_case "to_string_min_case_a3" `Quick to_string_min_case_a3;
+      Alcotest.test_case "to_string_min_case_b0" `Quick to_string_min_case_b0;
+      Alcotest.test_case "to_string_min_case_b1" `Quick to_string_min_case_b1;
+      Alcotest.test_case "to_string_min_case_b2" `Quick to_string_min_case_b2;
+      Alcotest.test_case "to_string_min_case_b3" `Quick to_string_min_case_b3;
+      Alcotest.test_case "to_string_sec_case_a0" `Quick to_string_sec_case_a0;
+      Alcotest.test_case "to_string_sec_case_a1" `Quick to_string_sec_case_a1;
+      Alcotest.test_case "to_string_sec_case_a2" `Quick to_string_sec_case_a2;
+      Alcotest.test_case "to_string_sec_case_a3" `Quick to_string_sec_case_a3;
+      Alcotest.test_case "to_string_sec_case_b0" `Quick to_string_sec_case_b0;
+      Alcotest.test_case "to_string_sec_case_b1" `Quick to_string_sec_case_b1;
+      Alcotest.test_case "to_string_sec_case_b2" `Quick to_string_sec_case_b2;
+      Alcotest.test_case "to_string_sec_case_b3" `Quick to_string_sec_case_b3;
+      Alcotest.test_case "to_string_ns_case0" `Quick to_string_ns_case0;
+      Alcotest.test_case "to_string_ns_case1" `Quick to_string_ns_case1;
+      Alcotest.test_case "to_string_sec_frac_case_a0" `Quick to_string_sec_frac_case_a0;
+      Alcotest.test_case "to_string_sec_frac_case_a1" `Quick to_string_sec_frac_case_a1;
+      Alcotest.test_case "to_string_sec_frac_case_b0" `Quick to_string_sec_frac_case_b0;
+      Alcotest.test_case "to_string_sec_frac_case_b1" `Quick to_string_sec_frac_case_b1;
+      Alcotest.test_case "to_string_sec_frac_case_c0" `Quick to_string_sec_frac_case_c0;
+      Alcotest.test_case "to_string_sec_frac_case_c1" `Quick to_string_sec_frac_case_c1;
     ]
 end
 
