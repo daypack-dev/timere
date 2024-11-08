@@ -12,6 +12,11 @@
     [ "1552752000", { "is_dst": false, "offset": 28800 } ],
     [ "1570129200", { "is_dst": false, "offset": 39600 } ],
     [ "1583596800", { "is_dst": false, "offset": 28800 } ],
-    [ "1601740860", { "is_dst": false, "offset": 39600 } ]
+    [ "1601740860", { "is_dst": false, "offset": 39600 } ],
+    [ "1615640400", { "is_dst": false, "offset": 28800 } ],
+    [ "1633190460", { "is_dst": false, "offset": 39600 } ],
+    [ "1647090000", { "is_dst": false, "offset": 28800 } ],
+    [ "1664640060", { "is_dst": false, "offset": 39600 } ],
+    [ "1678291200", { "is_dst": false, "offset": 28800 } ]
   ]
 }

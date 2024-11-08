@@ -89,9 +89,9 @@
     [ "1666998000", { "is_dst": false, "offset": 7200 } ],
     [ "1682726400", { "is_dst": true, "offset": 10800 } ],
     [ "1698447600", { "is_dst": false, "offset": 7200 } ],
-    [ "1712966400", { "is_dst": true, "offset": 10800 } ],
+    [ "1713571200", { "is_dst": true, "offset": 10800 } ],
     [ "1729897200", { "is_dst": false, "offset": 7200 } ],
-    [ "1743811200", { "is_dst": true, "offset": 10800 } ],
+    [ "1744416000", { "is_dst": true, "offset": 10800 } ],
     [ "1761346800", { "is_dst": false, "offset": 7200 } ],
     [ "1774656000", { "is_dst": true, "offset": 10800 } ],
     [ "1792796400", { "is_dst": false, "offset": 7200 } ],
@@ -120,8 +120,6 @@
     [ "2153260800", { "is_dst": true, "offset": 10800 } ],
     [ "2168982000", { "is_dst": false, "offset": 7200 } ],
     [ "2184710400", { "is_dst": true, "offset": 10800 } ],
-    [ "2199826800", { "is_dst": false, "offset": 7200 } ],
-    [ "2202854400", { "is_dst": true, "offset": 10800 } ],
-    [ "2203455600", { "is_dst": false, "offset": 7200 } ]
+    [ "2199826800", { "is_dst": false, "offset": 7200 } ]
   ]
 }

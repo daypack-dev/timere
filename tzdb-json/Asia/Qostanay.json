@@ -50,6 +50,7 @@
     [ "1048971600", { "is_dst": true, "offset": 21600 } ],
     [ "1067115600", { "is_dst": false, "offset": 18000 } ],
     [ "1080421200", { "is_dst": true, "offset": 21600 } ],
-    [ "1099170000", { "is_dst": false, "offset": 21600 } ]
+    [ "1099170000", { "is_dst": false, "offset": 21600 } ],
+    [ "1709229600", { "is_dst": false, "offset": 18000 } ]
   ]
 }
