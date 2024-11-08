@@ -18,6 +18,10 @@
 
     - See [issue #78](https://github.com/daypack-dev/timere/issues/78)
 
+## Timedesc 3.1.1
+
+- Refreshed tzdb
+
 ## Timedesc 3.1.0
 
 - Fixed `12hour` handling in pretty-printer
