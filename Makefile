@@ -18,6 +18,10 @@ OCPINDENT = ocp-indent \
 	--inplace \
 	$(SRCFILES)
 
+.PHONY: podman-build
+podman-build:
+	podman build --format docker -t localhost/timere -f containers/timere/Containerfile .
+
 .PHONY: all
 all :
 	dune build @all
