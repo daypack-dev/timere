@@ -2,7 +2,9 @@
   "name": "Asia/Manila",
   "table": [
     [ "-62167168800", { "is_dst": true, "offset": 32400 } ],
-    [ "259344000", { "is_dst": true, "offset": 32400 } ],
-    [ "275151600", { "is_dst": false, "offset": 28800 } ]
+    [ "228326400", { "is_dst": true, "offset": 32400 } ],
+    [ "243702000", { "is_dst": false, "offset": 28800 } ],
+    [ "643219200", { "is_dst": true, "offset": 32400 } ],
+    [ "649177200", { "is_dst": false, "offset": 28800 } ]
   ]
 }

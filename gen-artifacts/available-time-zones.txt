@@ -97,6 +97,7 @@ America/Ciudad_Juarez
 America/Coral_Harbour
 America/Cordoba
 America/Costa_Rica
+America/Coyhaique
 America/Creston
 America/Cuiaba
 America/Curacao
@@ -247,6 +248,7 @@ Asia/Bahrain
 Asia/Baku
 Asia/Bangkok
 Asia/Barnaul
+Asia/Beijing
 Asia/Beirut
 Asia/Bishkek
 Asia/Brunei
