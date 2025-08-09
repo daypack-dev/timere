@@ -291,6 +291,9 @@ let () =
   let zoneinfo_file_dir = "/usr/share/zoneinfo/posix" in
   let all_zoneinfo_file_paths =
     FileUtil.(find ~follow:Follow Is_file zoneinfo_file_dir (fun x y -> y :: x) [])
+    |> List.filter (fun s ->
+        Filename.basename s <> "posixrules"
+      )
     |> List.sort_uniq String.compare
   in
   let all_time_zones_in_parts =
