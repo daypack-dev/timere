@@ -20,7 +20,11 @@ OCPINDENT = ocp-indent \
 
 .PHONY: podman-build
 podman-build:
-	podman build --format docker -t localhost/timere -f containers/timere/Containerfile .
+	podman build --format docker -t localhost/timere -f containers/Containerfile.timere .
+
+.PHONY: podman-build-with-refresh
+podman-build-with-refresh:
+	podman build --format docker --pull=newer --no-cache -t localhost/timere -f containers/Containerfile.timere .
 
 .PHONY: all
 all :
