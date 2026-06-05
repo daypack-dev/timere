@@ -438,8 +438,8 @@ let aux_iso_week_pattern search_using_tz space years weeks =
                 ~year ~week ~weekday:`Mon
                 ~hour:0 ~minute:0 ~second:0
                 ()
-                    |> Timedesc.to_timestamp
-                    |> Timedesc.min_of_local_date_time_result
+              |> Timedesc.to_timestamp
+              |> Timedesc.min_of_local_date_time_result
             in
             let year, week =
               Timedesc.ISO_week.make_exn ~year ~week
@@ -451,8 +451,8 @@ let aux_iso_week_pattern search_using_tz space years weeks =
                 ~year ~week ~weekday:`Mon
                 ~hour:0 ~minute:0 ~second:0
                 ()
-                    |> Timedesc.to_timestamp
-                    |> Timedesc.max_of_local_date_time_result
+              |> Timedesc.to_timestamp
+              |> Timedesc.max_of_local_date_time_result
             in
             (x, y)
           ) weeks
