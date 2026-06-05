@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+TZDIR=${TZDIR:-/usr/share/zoneinfo}
+
 podman run -it \
   -v ~/timere:/home/opam/timere \
   -v $TZDIR:/usr/share/zoneinfo \
