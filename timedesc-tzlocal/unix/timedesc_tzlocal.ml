@@ -18,8 +18,36 @@ let local () : string list =
   (* Approach copied from Python package tzlocal:
      https://github.com/regebro/tzlocal
   *)
+  let etc_localtime = "/etc/localtime" in
+  let process_etc_localtime_symlink () =
+    (* systemd distributions use symlinks that include the zone name *)
+    try
+      let real_path = Unix.readlink etc_localtime in
+      let parts = String.split_on_char '/' real_path in
+      let combinations, _ =
+        List.fold_left
+          (fun (acc, parts) _ -> (parts :: acc, List.tl parts))
+          ([], parts) parts
+      in
+      List.map (String.concat "/") combinations
+    with
+    | _ -> []
+  in
   match Sys.getenv_opt "TZ" with
-  | Some name -> [ name ]
+  | Some name -> (
+      let name =
+        if String.starts_with ~prefix:":" name then (
+          String.sub name 1 (String.length name - 1)
+        ) else (
+          name
+        )
+      in
+      if name = etc_localtime then (
+        process_etc_localtime_symlink ()
+      ) else (
+        [ name ]
+      )
+    )
   | None -> (
       if Sys.file_exists "/system/bin/getprop" then (
         (* if we are under Termux on Android *)
@@ -109,20 +137,6 @@ let local () : string list =
             in
             match try2 with
             | Some name -> [ name ]
-            | None ->
-              (* systemd distributions use symlinks that include the zone name *)
-              let try3 =
-                try
-                  let file = "/etc/localtime" in
-                  let real_path = Unix.readlink file in
-                  let parts = String.split_on_char '/' real_path in
-                  let combinations, _ =
-                    List.fold_left
-                      (fun (acc, parts) _ -> (parts :: acc, List.tl parts))
-                      ([], parts) parts
-                  in
-                  List.map (String.concat "/") combinations
-                with
-                | _ -> []
-              in
-              try3))
+            | None -> process_etc_localtime_symlink ()
+          )
+    )
