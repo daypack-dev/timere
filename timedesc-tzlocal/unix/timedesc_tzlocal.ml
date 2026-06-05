@@ -36,7 +36,7 @@ let local () : string list =
   match Sys.getenv_opt "TZ" with
   | Some name -> (
       let name =
-        if String.starts_with ~prefix:":" name then (
+        if name.[0] = ':' then (
           String.sub name 1 (String.length name - 1)
         ) else (
           name

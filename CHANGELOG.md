@@ -18,6 +18,10 @@
 
     - See [issue #78](https://github.com/daypack-dev/timere/issues/78)
 
+## Timedesc 3.1.2
+
+- Removed use of `String.starts_with` in `timedesc-tzlocal` so it builds on OCaml 4.11
+
 ## Timedesc 3.1.1
 
 - Refreshed tzdb
