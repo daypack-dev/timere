@@ -21,6 +21,7 @@
 ## Timedesc 3.1.1
 
 - Refreshed tzdb
+- Fixed handling of `TZ=:/etc/localtime` and `TZ=/etc/localtime`
 
 ## Timedesc 3.1.0
 
