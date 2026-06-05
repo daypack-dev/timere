@@ -730,6 +730,6 @@ let local () : t option =
 
 let local_exn () : t =
   Misc_utils.option_get_exn_or
-    "local_exn: could not determine the local timezone"
+    "local_exn: could not determine the local time zone"
     (local ())
 

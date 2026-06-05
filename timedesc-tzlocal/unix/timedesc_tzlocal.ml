@@ -95,7 +95,7 @@ let local () : string list =
             (* CentOS has a ZONE setting in /etc/sysconfig/clock,
                OpenSUSE has a TIMEZONE setting in /etc/sysconfig/clock and
                Gentoo has a TIMEZONE setting in /etc/conf.d/clock
-               We look through these files for a timezone
+               We look through these files for a time zone
             *)
             let try2 =
               List.fold_left
