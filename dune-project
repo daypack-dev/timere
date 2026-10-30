@@ -180,7 +180,7 @@ Features:
     (oseq (>= "0.5"))
     (re (>= "1.9.0"))
     (containers (>= "3.6"))
-    (timedesc (>= "0.8.0"))
+    (timedesc (>= "3.0.0"))
     (timere (>= "0.8.0"))
     (mparser (>= "1.2.3"))
     (crowbar :with-test)
