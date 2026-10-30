@@ -42,6 +42,10 @@ timedesc-json :
 timere :
 	dune build timere
 
+.PHONY: timere-parse
+timere-parse :
+	dune build timere-parse
+
 .PHONY: timedesc-tests
 timedesc-tests : timedesc
 	OCAMLRUNPARAM=b dune exec timedesc-tests/main.exe --no-buffer --force
