@@ -10,7 +10,11 @@ This repo houses:
 
 - Timere-parse - date time and duration natural language parsing library
 
-[API documentation](https://daypack-dev.github.io/timere/)
+**API documentation**:
+
+- [Timedesc](https://ocaml.org/p/timedesc)
+- [Timere](https://ocaml.org/p/timere)
+- [Timere-parse](https://ocaml.org/p/timere-parse)
 
 __Note__: The NLP component is WIP.
 
