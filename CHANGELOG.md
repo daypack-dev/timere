@@ -10,10 +10,6 @@
 
 ## Timere 0.9.0
 
-- Added ISO week pattern
-
-  - `iso_week_pattern`, `iso_years`, `iso_year_ranges`, `iso_weeks`, `iso_week_ranges`
-
 - Changed error messages to not be capitalized
 
     - See [issue #78](https://github.com/daypack-dev/timere/issues/78)
