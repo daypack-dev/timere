@@ -6,6 +6,8 @@
 
     - See [issue #78](https://github.com/daypack-dev/timere/issues/78)
 
+- Updated to use Timedesc `>= 3.0.0`
+
 ## Timere 0.9.0
 
 - Changed error messages to not be capitalized
