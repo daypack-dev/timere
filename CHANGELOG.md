@@ -2,8 +2,6 @@
 
 ## Timere-parse 0.0.7
 
-- Added ISO week recognition rule with keyword `iso-week`
-
 - Changed error messages to not be capitalized
 
     - See [issue #78](https://github.com/daypack-dev/timere/issues/78)
